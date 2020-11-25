@@ -151,7 +151,7 @@ public class MovementParkourAdv extends Movement {
     private int ticksFromJump = -1;
 
     private MovementParkourAdv(CalculationContext context, BetterBlockPos src, BetterBlockPos dest, EnumFacing simpleDirection, JumpType type) {
-        super(context.baritone, src, dest, EMPTY);
+        super(context.baritone, src, dest, EMPTY, dest.down());
         direction = VecUtils.subtract(dest, src);
         moveDist = calcMoveDist(context, src.x, src.y, src.z, direction.getX(), direction.getY(), direction.getZ(), MovementHelper.isBottomSlab(context.get(src.down())) ? 0.5 : 0, simpleDirection);
         this.ascendAmount = dest.y - src.y;
@@ -1235,20 +1235,24 @@ public class MovementParkourAdv extends Movement {
             if (d == Blocks.VINE || d == Blocks.LADDER) {
                 return state.setStatus(MovementStatus.SUCCESS);
             }
-        } else if (!ctx.playerFeet().equals(src) && // Don't jump on the src block (too early)
-                (((Math.abs(future.posX - (src.x + 0.5)) > 0.8 || Math.abs(future.posZ - (src.z + 0.5)) > 0.8) && distFromStart < 1.2) || // Centre 0.5 + Player hitbox 0.3 = 0.8, if we are this distance from src, jump
-                        ((type == JumpType.MOMENTUM_BLOCK || type == JumpType.MOMENTUM_NO_BLOCK) && distToJumpXZ < 0.6) || // During a momentum jump the momentum jump will position us so just jump whenever possible (i.e. as soon as we land)
-                        ((type == JumpType.EDGE || type == JumpType.EDGE_NEO) && distFromStart < 1))  // The prepLoc of an edge jump is on the edge of the block so just jump straight away
-                && ctx.player().onGround) { // To only log Jumping when we can actually jump
-            if (type != JumpType.EDGE_NEO) {
-                MovementHelper.moveTowards(ctx, state, dest); // make sure we are looking at the target when we jump for sprint jump bonuses
-                if (type == JumpType.MOMENTUM_BLOCK || type == JumpType.MOMENTUM_NO_BLOCK) {
-                    state.setInput(Input.SPRINT, true);
+        } else if (!ctx.playerFeet().equals(src)) {  // Don't jump on the src block (too early)
+            if ((((Math.abs(future.posX - (src.x + 0.5)) > 0.8 || Math.abs(future.posZ - (src.z + 0.5)) > 0.8) && distFromStart < 1.2) || // Centre 0.5 + Player hitbox 0.3 = 0.8, if we are this distance from src, jump
+                    ((type == JumpType.MOMENTUM_BLOCK || type == JumpType.MOMENTUM_NO_BLOCK) && distToJumpXZ < 0.6) || // During a momentum jump the momentum jump will position us so just jump whenever possible (i.e. as soon as we land)
+                    ((type == JumpType.EDGE || type == JumpType.EDGE_NEO) && distFromStart < 1))  // The prepLoc of an edge jump is on the edge of the block so just jump straight away
+                    && ctx.player().onGround) { // To only log Jumping when we can actually jump
+                if (type != JumpType.EDGE_NEO) {
+                    MovementHelper.moveTowards(ctx, state, dest); // make sure we are looking at the target when we jump for sprint jump bonuses
+                    if (type == JumpType.MOMENTUM_BLOCK || type == JumpType.MOMENTUM_NO_BLOCK) {
+                        state.setInput(Input.SPRINT, true);
+                    }
                 }
+                state.setInput(Input.JUMP, true);
+                logDebug("Jumping " + ticksFromJump);
+                ticksFromJump = 0; // Reset ticks from momentum/run-up phase
             }
-            state.setInput(Input.JUMP, true);
-            logDebug("Jumping " + ticksFromJump);
-            ticksFromJump = 0; // Reset ticks from momentum/run-up phase
+            if (!MovementHelper.canWalkOn(ctx, dest.down()) && !ctx.player().onGround && MovementHelper.attemptToPlaceABlock(state, baritone, dest.down(), true, false) == PlaceResult.READY_TO_PLACE) {
+                state.setInput(Input.CLICK_RIGHT, true);
+            }
         }
 
         if (TEST_LOG) {
