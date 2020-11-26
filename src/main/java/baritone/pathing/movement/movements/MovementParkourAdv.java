@@ -34,7 +34,6 @@ import net.minecraft.init.MobEffects;
 import net.minecraft.potion.Potion;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 
@@ -85,6 +84,7 @@ public class MovementParkourAdv extends Movement {
 
     enum JumpType {
         NORMAL(MAX_JUMP_WALK, MAX_JUMP_SPRINT), // Normal run and jump
+        NORMAL_CRAMPED(MAX_JUMP_WALK, MAX_JUMP_SPRINT), // normal jumps with low room for adjustments or side movements
         NORMAL_STRAIGHT_DESCEND(MAX_JUMP_WALK, MAX_JUMP_SPRINT), // A type that will use the normal jump on descends only (Since MovementParkour doesn't do descends)
         EDGE(3, MAX_JUMP_SPRINT), // No run up (for higher angle jumps)
         EDGE_NEO(-1, 4), // Around the pillar
@@ -105,7 +105,7 @@ public class MovementParkourAdv extends Movement {
     static {
         // The jumps that are valid (forward amount + 1, horizontal amount, the technique to use (defaults to NORMAL))
         int[][] validQuadrant = {{2, 0, JumpType.NORMAL_STRAIGHT_DESCEND.ordinal()}, {3, 0, JumpType.NORMAL_STRAIGHT_DESCEND.ordinal()}, {4, 0, JumpType.NORMAL_STRAIGHT_DESCEND.ordinal()}, {5, 0, JumpType.MOMENTUM.ordinal()},
-                {1, 1}, {2, 1}, {3, 1}, {4, 1}, {5, 1, JumpType.MOMENTUM.ordinal()},
+                {1, 1}, {2, 1, JumpType.NORMAL_CRAMPED.ordinal()}, {3, 1}, {4, 1}, {5, 1, JumpType.MOMENTUM.ordinal()},
                 {0, 2, JumpType.EDGE_NEO.ordinal()}, {1, 2, JumpType.EDGE.ordinal()}, {2, 2, JumpType.EDGE.ordinal()}, {3, 2, JumpType.EDGE.ordinal()}, {4, 2, JumpType.MOMENTUM.ordinal()},
                 {1, 3, JumpType.EDGE.ordinal()}, {2, 3, JumpType.EDGE.ordinal()}};
         for (int[] jump : validQuadrant) {
@@ -146,19 +146,39 @@ public class MovementParkourAdv extends Movement {
     private final EnumFacing simpleDirection;
     private final JumpType type;
 
+    private final float jumpAngle;
+
     private boolean inStartingPosition = false;
     private int ticksAtDest = 0;
-    private int ticksFromJump = -1;
+    private int ticksSinceJump = -1;
+    private int jumpTime;
 
     private MovementParkourAdv(CalculationContext context, BetterBlockPos src, BetterBlockPos dest, EnumFacing simpleDirection, JumpType type) {
         super(context.baritone, src, dest, EMPTY, dest.down());
-        direction = VecUtils.subtract(dest, src);
-        moveDist = calcMoveDist(context, src.x, src.y, src.z, direction.getX(), direction.getY(), direction.getZ(), MovementHelper.isBottomSlab(context.get(src.down())) ? 0.5 : 0, simpleDirection);
+        this.direction = VecUtils.subtract(dest, src);
+        this.moveDist = calcMoveDist(context, src.x, src.y, src.z, direction.getX(), direction.getY(), direction.getZ(), MovementHelper.isBottomSlab(context.get(src.down())) ? 0.5 : 0, simpleDirection);
         this.ascendAmount = dest.y - src.y;
         this.simpleDirection = simpleDirection;
         this.type = type;
-
         this.distanceXZ = getDistance(new Vec3i(dest.x - src.x, 0, dest.z - src.z), simpleDirection);
+        this.jumpAngle = (float) (getSignedAngle(simpleDirection.getXOffset(), simpleDirection.getZOffset(), direction.getX(), direction.getZ()));
+    }
+
+    /**
+     * angle from v1 to v2 (signed, clockwise is positive)
+     *
+     * @param x1 x of v1
+     * @param z1 z of v1
+     * @param x2 x of v2
+     * @param z2 z of v2
+     * @return angle from [-180, 180]
+     */
+    private static double getSignedAngle(double x1, double z1, double x2, double z2) {
+        return Math.atan2(x1 * z2 - z1 * x2, x1 * x2 + z1 * z2) * RotationUtils.RAD_TO_DEG;
+    }
+
+    private static double getSignedAngle(Vec3d v1, Vec3d v2) {
+        return getSignedAngle(v1.x, v1.z, v2.x, v2.z);
     }
 
     private static double getDistance(Vec3i vec, EnumFacing offset) {
@@ -259,7 +279,7 @@ public class MovementParkourAdv extends Movement {
         double length = getDistance(vector);
         ArrayList<Vec3d> line = new ArrayList<>();
         Vec3d vec = normalize(vector);
-        for (double i = 0; i <= length; i += (1 / accPerBlock)) {
+        for (double i = 1 / accPerBlock; i < length - (1 / accPerBlock); i += (1 / accPerBlock)) {
             line.add(vec.scale(i).add(0.5, 0.5, 0.5));
         }
         return line;
@@ -661,6 +681,7 @@ public class MovementParkourAdv extends Movement {
         switch (type) {
             case EDGE: // for now edge jumps cost the same as normal ones (just setup differently)
             case NORMAL:
+            case NORMAL_CRAMPED:
             case NORMAL_STRAIGHT_DESCEND:
                 return MOVE_COST * distance + context.jumpPenalty + costMod;
             case MOMENTUM:
@@ -697,6 +718,7 @@ public class MovementParkourAdv extends Movement {
         if (inStartingPosition || state.getStatus() == MovementStatus.WAITING) {
             return true;
         }
+        ticksSinceJump++;
         Vec3d offset;
         double accuracy;
         switch (type) {
@@ -704,6 +726,10 @@ public class MovementParkourAdv extends Movement {
             case NORMAL_STRAIGHT_DESCEND:
                 offset = new Vec3d(simpleDirection.getOpposite().getDirectionVec()).scale(PREP_OFFSET);
                 accuracy = 0.1;
+                break;
+            case NORMAL_CRAMPED:
+                offset = new Vec3d(simpleDirection.getOpposite().getDirectionVec()).scale(PREP_OFFSET).rotateYaw(-jumpAngle);
+                accuracy = 0.05;
                 break;
             case MOMENTUM_BLOCK:
                 offset = new Vec3d(simpleDirection.getOpposite().getDirectionVec()).scale(PREP_OFFSET);
@@ -715,7 +741,7 @@ public class MovementParkourAdv extends Movement {
                 break;
             case EDGE:
             case EDGE_NEO:
-                EnumFacing destDir = EnumFacing.fromAngle(MathHelper.atan2(src.x - dest.x, -(src.z - dest.z)) * RotationUtils.RAD_TO_DEG);
+                EnumFacing destDir = EnumFacing.fromAngle(Math.atan2(src.x - dest.x, -(src.z - dest.z)) * RotationUtils.RAD_TO_DEG);
                 offset = new Vec3d(simpleDirection.getDirectionVec()).scale(0.8).add(new Vec3d(destDir.getOpposite().getDirectionVec()).scale(0.2));
                 accuracy = 0.025;
                 break;
@@ -749,9 +775,11 @@ public class MovementParkourAdv extends Movement {
             }
             return false;
         } else {
-            logDebug("Achieved '" + df.format(distance) + "' blocks of accuracy to preploc. Jump Direction = " + simpleDirection + ", Remaining Motion = " + df.format(new Vec3d(ctx.player().motionX, ctx.player().motionY, ctx.player().motionZ).length()) + ", Using technique '" + type + "'");
+            logDebug("Achieved '" + df.format(distance) + "' blocks of accuracy to preploc. Time = " + ticksSinceJump + ", Jump Direction = " + simpleDirection + ", Remaining Motion = " + df.format(new Vec3d(ctx.player().motionX, ctx.player().motionY, ctx.player().motionZ).length()) + ", Using technique '" + type + "'");
             inStartingPosition = true;
             ticksAtDest = 0;
+            ticksSinceJump = 0;
+            jumpTime = calcJumpTime(ascendAmount, true, ctx);
             return true;
         }
     }
@@ -905,6 +933,7 @@ public class MovementParkourAdv extends Movement {
     /**
      * Move in the direction of moveDirYaw while facing towards playerYaw
      * (excluding MOVE_BACK)
+     * angleDiff negative is anti-clockwise (left)
      *
      * @param angleDiff  moveDirYaw - playerYaw
      * @return The input required
@@ -916,7 +945,7 @@ public class MovementParkourAdv extends Movement {
         if (angleDiff < -180) {
             angleDiff = -180 - angleDiff;
         }
-        // System.out.println("Side move diff of " + diff);
+        // System.out.println("Side move diff of " + angleDiff);
         if (angleDiff >= 20) {
             return Input.MOVE_RIGHT;
         }
@@ -954,8 +983,8 @@ public class MovementParkourAdv extends Movement {
         // Make vectors relative
         playerLookDest = VecUtils.subtract(playerLookDest, src);
         moveDest = VecUtils.subtract(moveDest, src);
-        return sideMove(MathHelper.atan2(playerLookDest.getX(), -playerLookDest.getZ()) * RotationUtils.RAD_TO_DEG,
-                MathHelper.atan2(moveDest.getX(), -moveDest.getZ()) * RotationUtils.RAD_TO_DEG);
+        return sideMove(Math.atan2(playerLookDest.getX(), -playerLookDest.getZ()) * RotationUtils.RAD_TO_DEG,
+                Math.atan2(moveDest.getX(), -moveDest.getZ()) * RotationUtils.RAD_TO_DEG);
     }
 
     private void landHere(IPlayerContext ctx, BlockPos src, double dist, MovementState state, int ticksRemaining, boolean inwards) {
@@ -1065,12 +1094,12 @@ public class MovementParkourAdv extends Movement {
             return state;
         }
 
-        if (ticksFromJump > 40) { // Should generally have <= 12 (exceptions are descending jumps)
+        if (ticksSinceJump > 40) { // Should generally have <= 12 (exceptions are descending jumps)
             logDebug("jump timed out");
             return state.setStatus(MovementStatus.FAILED);
         }
 
-        ticksFromJump++;
+        ticksSinceJump++;
 
         if (ctx.player().posY < (src.y + Math.min(ascendAmount, 0) - 0.5)) {
             // we have fallen
@@ -1082,23 +1111,33 @@ public class MovementParkourAdv extends Movement {
             state.setInput(Input.SPRINT, true);
         }
 
-        double jumpMod = 0.2; // Amount to shift the jump location by (towards the destination) (0.2 is max if block is present)
-        double xJumpMod = jumpMod - Math.abs(simpleDirection.getXOffset()) * jumpMod; // perpendicular to offset
-        double zJumpMod = jumpMod - Math.abs(simpleDirection.getZOffset()) * jumpMod;
+        double jumpMod = 0.18; // Amount to shift the jump location by (towards the destination) (0.2 is max if block is present)
+        double jumpModX = jumpMod - Math.abs(simpleDirection.getXOffset()) * jumpMod; // perpendicular to offset
+        double jumpModZ = jumpMod - Math.abs(simpleDirection.getZOffset()) * jumpMod;
         if ((dest.getX() - src.getX()) < 0) {
-            xJumpMod = -xJumpMod;
+            jumpModX = -jumpModX;
         }
         if ((dest.getZ() - src.getZ()) < 0) {
-            zJumpMod = -zJumpMod;
+            jumpModZ = -jumpModZ;
+        }
+        if (jumpAngle == 0) {
+            jumpModX = 0;
+            jumpModZ = 0;
         }
 
         final double JUMP_OFFSET = 0.33;
+        final double jumpExtension = 2; // to prevent sudden turns extend the look location
 
-        Vec3d jumpLoc = new Vec3d(src.getX() + 0.5 + xJumpMod + (simpleDirection.getXOffset() * (0.5 + JUMP_OFFSET)), src.getY(),
-                src.getZ() + 0.5 + zJumpMod + (simpleDirection.getZOffset() * (0.5 + JUMP_OFFSET)));
+        Vec3d jumpLoc = new Vec3d(src.getX() + 0.5 + jumpModX + (simpleDirection.getXOffset() * (0.5 + JUMP_OFFSET)), src.getY(),
+                src.getZ() + 0.5 + jumpModZ + (simpleDirection.getZOffset() * (0.5 + JUMP_OFFSET)));
+        Vec3d jumpLocExt = new Vec3d(src.getX() + 0.5 + (jumpModX + (simpleDirection.getXOffset() * (0.5 + JUMP_OFFSET))) * jumpExtension, src.getY(),
+                src.getZ() + 0.5 + (jumpModZ + (simpleDirection.getZOffset() * (0.5 + JUMP_OFFSET))) * jumpExtension);
         Vec3d startLoc = new Vec3d(src.getX() + 0.5 - (simpleDirection.getXOffset() * 0.3), src.getY(),
                 src.getZ() + 0.5 - (simpleDirection.getZOffset() * 0.3));
         Vec3d destVec = new Vec3d(dest.getX() + 0.5 - ctx.player().posX, dest.getY() - ctx.player().posY, dest.getZ() + 0.5 - ctx.player().posZ); // The vector pointing from the players location to the destination
+
+        // the angle we are looking at relative to the direction of the jump
+        float lookAngle = (float) (getSignedAngle(simpleDirection.getXOffset(), simpleDirection.getZOffset(), ctx.player().getLookVec().x, ctx.player().getLookVec().z));
 
         double curDist = Math.sqrt(ctx.playerFeetAsVec().squareDistanceTo(dest.getX() + 0.5, dest.getY(), dest.getZ() + 0.5));
         double distToJumpXZ = ctx.playerFeetAsVec().distanceTo(jumpLoc.subtract(0, jumpLoc.y - ctx.playerFeetAsVec().y, 0));
@@ -1117,19 +1156,20 @@ public class MovementParkourAdv extends Movement {
 
             switch (type) {
                 case NORMAL:
+                case NORMAL_CRAMPED:
                 case NORMAL_STRAIGHT_DESCEND:
-                    MovementHelper.moveTowards(ctx, state, src.offset(simpleDirection, 2));
+                    MovementHelper.moveTowards(ctx, state, jumpLocExt);
                     break;
                 case MOMENTUM_BLOCK:
-                    if (ticksFromJump == 0) {
+                    if (ticksSinceJump == 0) {
                         logDebug("Momentum jump");
                         state.setInput(Input.JUMP, true);
                         state.getInputStates().remove(Input.MOVE_FORWARD);
-                    } else if (ticksFromJump > 0) {
-                        if (ticksFromJump >= 10) {
+                    } else if (ticksSinceJump > 0) {
+                        if (ticksSinceJump >= 10) {
                             MovementHelper.moveTowards(ctx, state, dest);
-                            landHere(ctx, src, 0.8, state, calcJumpTime(0, true, ctx) - ticksFromJump, false);
-                        } else if (ticksFromJump <= 1 || ticksFromJump == 3) {
+                            landHere(ctx, src, 0.8, state, calcJumpTime(0, true, ctx) - ticksSinceJump, false);
+                        } else if (ticksSinceJump <= 1 || ticksSinceJump == 3) {
                             state.getInputStates().remove(Input.SPRINT); // not sprinting for a few ticks
                             MovementHelper.moveTowards(ctx, state, src.offset(simpleDirection));
                         } else {
@@ -1140,11 +1180,11 @@ public class MovementParkourAdv extends Movement {
                     }
                     break;
                 case MOMENTUM_NO_BLOCK:
-                    if (ticksFromJump >= 6) {
+                    if (ticksSinceJump >= 6) {
                         // logDebug("m 1, " + ticksFromJump);
                         MovementHelper.moveTowards(ctx, state, dest);
-                        landHere(ctx, src, 0.8, state, calcJumpTime(0, true, ctx) - ticksFromJump, false);
-                    } else if (ticksFromJump != 0) {
+                        landHere(ctx, src, 0.8, state, calcJumpTime(0, true, ctx) - ticksSinceJump, false);
+                    } else if (ticksSinceJump != 0) {
                         // logDebug("m 2");
                         state.setTarget(new MovementState.MovementTarget(
                                 new Rotation(RotationUtils.calcRotationFromVec3d(ctx.playerHead(),
@@ -1158,7 +1198,7 @@ public class MovementParkourAdv extends Movement {
                         MovementHelper.moveTowards(ctx, state, src.offset(simpleDirection, 2));
                         state.getInputStates().remove(Input.SPRINT);
                     }
-                    if (ticksFromJump == 0) {
+                    if (ticksSinceJump == 0) {
                         logDebug("Momentum jump");
                         MovementHelper.moveTowards(ctx, state, src.offset(simpleDirection, 2));
                         state.setInput(Input.SPRINT, true);
@@ -1213,19 +1253,17 @@ public class MovementParkourAdv extends Movement {
                 return state.setStatus(MovementStatus.SUCCESS);
             }
         } else if (!ctx.playerFeet().equals(src)) {  // Don't jump on the src block (too early)
-            if ((((Math.abs(future.posX - (src.x + 0.5)) > 0.8 || Math.abs(future.posZ - (src.z + 0.5)) > 0.8) && distFromStart < 1.2) || // Centre 0.5 + Player hitbox 0.3 = 0.8, if we are this distance from src, jump
+            if ((((Math.abs(future.posX - (src.x + 0.5)) > 0.85 || Math.abs(future.posZ - (src.z + 0.5)) > 0.85) && distFromStart < 1.2) || // Centre 0.5 + Player hitbox 0.3 = 0.8, if we are this distance from src, jump
                     ((type == JumpType.MOMENTUM_BLOCK || type == JumpType.MOMENTUM_NO_BLOCK) && distToJumpXZ < 0.6) || // During a momentum jump the momentum jump will position us so just jump whenever possible (i.e. as soon as we land)
                     ((type == JumpType.EDGE || type == JumpType.EDGE_NEO) && distFromStart < 1))  // The prepLoc of an edge jump is on the edge of the block so just jump straight away
                     && ctx.player().onGround) { // To only log Jumping when we can actually jump
-                if (type != JumpType.EDGE_NEO) {
+                if (type == JumpType.MOMENTUM_BLOCK || type == JumpType.MOMENTUM_NO_BLOCK) {
                     MovementHelper.moveTowards(ctx, state, dest); // make sure we are looking at the target when we jump for sprint jump bonuses
-                    if (type == JumpType.MOMENTUM_BLOCK || type == JumpType.MOMENTUM_NO_BLOCK) {
-                        state.setInput(Input.SPRINT, true);
-                    }
+                    state.setInput(Input.SPRINT, true);
                 }
                 state.setInput(Input.JUMP, true);
-                logDebug("Jumping " + ticksFromJump);
-                ticksFromJump = 0; // Reset ticks from momentum/run-up phase
+                logDebug("Jumping " + ticksSinceJump + " pos = " + ctx.playerFeetAsVec());
+                ticksSinceJump = 0; // Reset ticks from momentum/run-up phase
             }
             if (!MovementHelper.canWalkOn(ctx, dest.down()) && !ctx.player().onGround && MovementHelper.attemptToPlaceABlock(state, baritone, dest.down(), true, false) == PlaceResult.READY_TO_PLACE) {
                 state.setInput(Input.CLICK_RIGHT, true);
@@ -1235,33 +1273,52 @@ public class MovementParkourAdv extends Movement {
         if (curDest != null &&
                 type != JumpType.EDGE_NEO && (type != JumpType.MOMENTUM_BLOCK && type != JumpType.MOMENTUM_NO_BLOCK)) { // EDGE_NEO and MOMENTUM jumps are completed with very low room for error, dodging an obstacle will lead to missing the jump due to the slight decrease in speed
             // This is called after movement to also factor in key presses and look direction
-            int ticksRemaining = calcJumpTime(ascendAmount, true, ctx) - ticksFromJump;
-            MovementPrediction.PredictionResult future5 = MovementPrediction.getFutureLocation(ctx.player(), state, Math.min(5, ticksRemaining)); // The predicted location a few ticks in the future
+            int ticksRemaining = jumpTime - ticksSinceJump;
+            MovementPrediction.PredictionResult future5 = MovementPrediction.getFutureLocation(ctx.player(), state, Math.min(4, ticksRemaining)); // The predicted location a few ticks in the future
 
             // adjust movement to attempt to dodge obstacles
-            if (future5.collidedHorizontally && future.posY > dest.getY()) {
-                double angleDiff = VecUtils.getYaw(destVec.subtract(future5.getPosition())) - ctx.playerRotations().normalize().getYaw();
+            if (future5.collidedHorizontally && future.posY > dest.getY() && type != JumpType.NORMAL_CRAMPED) {
+                double angleDiff = getSignedAngle(destVec.subtract(future5.getPosition()), ctx.player().getLookVec());
                 if(Math.abs(angleDiff) > 20) {
-                    logDebug("Adjusting movement to dodge an obstacle. Predicted collision location = " + future5.getPosition() + " tick, " + ticksFromJump + " -> " + (ticksFromJump + Math.min(5, ticksRemaining)));
+                    logDebug("Adjusting movement to dodge an obstacle. Predicted collision location = " + future5.getPosition() + " tick, " + ticksSinceJump + " -> " + (ticksSinceJump + Math.min(4, ticksRemaining)));
                     state.setInput(sideMove(angleDiff), true);
                 }
             }
 
+            // logDebug("JumpAngle = " + jumpAngle)
+            if (type == JumpType.NORMAL_CRAMPED) {
+                // shift lookAngle away from jumpAngle
+
+                if (ticksRemaining >= 3) {
+                    // first half of jump
+                    state.getTarget().rotation = new Rotation(simpleDirection.getHorizontalAngle(), state.getTarget().rotation.getPitch());
+                } else {
+                    // second half of jump
+                    float angleToAdd = 15 + (Math.abs(jumpAngle) - Math.abs(lookAngle)) * 0.1F;
+                    if (jumpAngle > 1) {
+                        // jump is to the right
+                        state.getTarget().rotation = new Rotation(state.getTarget().rotation.getYaw() - angleToAdd, state.getTarget().rotation.getPitch());
+                        if (ticksRemaining <= 1) {
+                            state.setInput(Input.MOVE_RIGHT, true);
+                        }
+                    } else if (jumpAngle < 1) {
+                        // jump is to the left
+                        state.getTarget().rotation = new Rotation(state.getTarget().rotation.getYaw() + angleToAdd, state.getTarget().rotation.getPitch());
+                        if (ticksRemaining <= 1) {
+                            state.setInput(Input.MOVE_LEFT, true);
+                        }
+                    }
+                }
+                // logDebug("pos = " + ctx.playerFeetAsVec() + ", angle = " + angleToAdd + ", actAngle = " + ctx.playerRotations().getYaw() + ", ticksRemaining = " + ticksRemaining);
+            }
+
             Vec3d future5Pos = new Vec3d(future5.posX, startLoc.y, future5.posZ);
-            // logDebug("Overshoot? " + distanceXZ + " < " + future5Pos.distanceTo(startLoc) + " && " + distanceXZ + " > " + distFromStartXZ);
+
             if (distanceXZ < future5Pos.distanceTo(startLoc) && // overshot (in the future)
                     distanceXZ > distFromStartXZ) { // haven't overshot yet
-                logDebug("Adjusting movement to prevent overshoot. " + ticksFromJump);
+                logDebug("Adjusting movement to prevent overshoot. " + ticksSinceJump);
                 state.getInputStates().remove(Input.MOVE_FORWARD);
             }
-        }
-
-        if (TEST_LOG) {
-            MovementPrediction.PredictionResult r = MovementPrediction.getFutureLocation(ctx.player(), state, 1); // Predict location for next tick
-            logDebug("Prediction = " + new Vec3d(r.posX, r.posY, r.posZ));
-
-            logDebug("distToJumpXZ = " + distToJumpXZ + ", distFromStart = " + distFromStart + ", distFromStartXZ = " + distFromStartXZ + ", ticksFromStart = " + ticksFromJump);
-            logDebug("Player coords = " + ctx.playerFeetAsVec());
         }
 
         return state;

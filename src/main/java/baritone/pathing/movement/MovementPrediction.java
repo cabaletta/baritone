@@ -102,6 +102,8 @@ public class MovementPrediction {
             double playerWidth = 0.3; // 0.3 in each direction
             double playerHeight = 1.8; // modified while sneaking?
             boundingBox = new AxisAlignedBB(posX - playerWidth, posY, posZ - playerWidth, posX + playerWidth, posY + playerHeight, posZ + playerWidth);
+
+            positionCache.add(new Vec3d(posX, posY, posZ)); // prevent null pointers
         }
 
         public void resetPositionToBB() {
@@ -109,7 +111,6 @@ public class MovementPrediction {
             this.posY = boundingBox.minY;
             this.posZ = (boundingBox.minZ + boundingBox.maxZ) / 2.0D;
         }
-
 
         public void updateFallState(double y, boolean onGroundIn, IBlockState iblockstate) {
             if (onGroundIn) {
@@ -129,7 +130,11 @@ public class MovementPrediction {
         }
 
         public Vec3d getPosition() {
-            return new Vec3d(posX, posY, posZ);
+            return positionCache.get(tick);
+        }
+
+        public Vec3d getPosition(int tick) {
+            return positionCache.get(tick);
         }
 
         public boolean canJump() {
@@ -204,7 +209,7 @@ public class MovementPrediction {
     /**
      * Checks the if movement collides with blocks (no stair steps, no sneak till edge)
      *
-     * @param r
+     * @param r The player parameters to update
      */
     public static void moveAndCheckCollisions(PredictionResult r) {
         double x = r.motionX;

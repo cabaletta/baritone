@@ -324,7 +324,7 @@ public enum Moves {
         }
     },
 
-    PARKOUR_ADV_NORTH(0, 0, 0, true, true) {
+    PARKOUR_ADV_NORTH(0, 0, -5, true, true) {
         @Override
         public Movement apply0(CalculationContext context, BetterBlockPos src) {
             return MovementParkourAdv.cost(context, src, EnumFacing.NORTH);
@@ -336,7 +336,7 @@ public enum Moves {
         }
     },
 
-    PARKOUR_ADV_SOUTH(0, 0, 0, true, true) {
+    PARKOUR_ADV_SOUTH(0, 0, +5, true, true) {
         @Override
         public Movement apply0(CalculationContext context, BetterBlockPos src) {
             return MovementParkourAdv.cost(context, src, EnumFacing.SOUTH);
@@ -348,7 +348,7 @@ public enum Moves {
         }
     },
 
-    PARKOUR_ADV_EAST(0, 0, 0, true, true) {
+    PARKOUR_ADV_EAST(+5, 0, 0, true, true) {
         @Override
         public Movement apply0(CalculationContext context, BetterBlockPos src) {
             return MovementParkourAdv.cost(context, src, EnumFacing.EAST);
@@ -360,7 +360,7 @@ public enum Moves {
         }
     },
 
-    PARKOUR_ADV_WEST(0, 0, 0, true, true) {
+    PARKOUR_ADV_WEST(-5, 0, 0, true, true) {
         @Override
         public Movement apply0(CalculationContext context, BetterBlockPos src) {
             return MovementParkourAdv.cost(context, src, EnumFacing.WEST);
