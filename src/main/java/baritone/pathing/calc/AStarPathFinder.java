@@ -119,6 +119,7 @@ public final class AStarPathFinder extends AbstractNodeCostSearch {
                     numMovementsConsidered++;
                     double actionCost = res.cost;
                     if (actionCost >= ActionCosts.COST_INF) {
+                        res = res.getNext();
                         continue;
                     }
                     if (actionCost <= 0 || Double.isNaN(actionCost)) {
@@ -126,6 +127,7 @@ public final class AStarPathFinder extends AbstractNodeCostSearch {
                     }
                     // check destination after verifying it's not COST_INF -- some movements return a static IMPOSSIBLE object with COST_INF and destination being 0,0,0 to avoid allocating a new result for every failed calculation
                     if (moves.dynamicXZ && !worldBorder.entirelyContains(res.x, res.z)) { // see issue #218
+                        res = res.getNext();
                         continue;
                     }
                     if (!moves.dynamicXZ && (res.x != newX || res.z != newZ)) {

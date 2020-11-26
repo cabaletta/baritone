@@ -67,8 +67,7 @@ public class MovementParkourAdv extends Movement {
     private static final double MAX_JUMP_SPRINT = 4.6; // We can't make flat sprint jumps greater than this distance
     private static final double MAX_JUMP_WALK = 3.48; // We can make the jump without sprinting below this distance
 
-    private static final double MOVE_COST = SPRINT_ONE_BLOCK_COST; // Since WALK_ONE_BLOCK_COST is heavily penalised it sometimes chose longer sprint jumps over walking jumps. This is now the cost per move distance for all jumps (multiplied for harder ones).
-    private static final double COST_ADDER = 3.1; // The amount to add to the cost by (in attempt to increase the cost of small jumps that may be prioritised over faster movements)
+    private static final double LAND_COST = 1; // time taken to land and cancel momentum
     private static final double JUMP_IN_WATER_COST = 5;
 
     // Calculated using MovementPrediction (add 1.6 ((Player hitbox width + block center) * 2) to get values similar to MAX_JUMP_...), These are flat jumps (12 ticks)
@@ -83,22 +82,24 @@ public class MovementParkourAdv extends Movement {
     private static final DecimalFormat df = new DecimalFormat("#.##");
 
     enum JumpType {
-        NORMAL(MAX_JUMP_WALK, MAX_JUMP_SPRINT), // Normal run and jump
-        NORMAL_CRAMPED(MAX_JUMP_WALK, MAX_JUMP_SPRINT), // normal jumps with low room for adjustments or side movements
-        NORMAL_STRAIGHT_DESCEND(MAX_JUMP_WALK, MAX_JUMP_SPRINT), // A type that will use the normal jump on descends only (Since MovementParkour doesn't do descends)
-        EDGE(3, MAX_JUMP_SPRINT), // No run up (for higher angle jumps)
-        EDGE_NEO(-1, 4), // Around the pillar
+        NORMAL(MAX_JUMP_WALK, MAX_JUMP_SPRINT, 6), // Normal run and jump
+        NORMAL_CRAMPED(MAX_JUMP_WALK, MAX_JUMP_SPRINT, 7), // normal jumps with low room for adjustments or side movements
+        NORMAL_STRAIGHT_DESCEND(MAX_JUMP_WALK, MAX_JUMP_SPRINT, 6), // A type that will use the normal jump on descends only (Since MovementParkour doesn't do descends)
+        EDGE(3, MAX_JUMP_SPRINT, 5), // No run up (for higher angle jumps)
+        EDGE_NEO(-1, 4, 8), // Around the pillar
 
-        MOMENTUM(-1, MAX_JUMP_MOMENTUM), // An extra momentum jump 1bm
-        MOMENTUM_BLOCK(-1, MAX_JUMP_MOMENTUM), // momentum jump with block behind the player
-        MOMENTUM_NO_BLOCK(-1, MAX_JUMP_MOMENTUM); // momentum jump with no block behind the player
+        MOMENTUM(-1, MAX_JUMP_MOMENTUM, 12), // An extra momentum jump 1bm
+        MOMENTUM_BLOCK(-1, MAX_JUMP_MOMENTUM, 12), // momentum jump with block behind the player
+        MOMENTUM_NO_BLOCK(-1, MAX_JUMP_MOMENTUM, 12); // momentum jump with no block behind the player
 
+        final double prepCost;
         final double maxJumpNoSprint;
         final double maxJumpSprint;
 
-        JumpType(double maxJumpNoSprint, double maxJumpSprint) {
+        JumpType(double maxJumpNoSprint, double maxJumpSprint, double prepCost) {
             this.maxJumpNoSprint = maxJumpNoSprint;
             this.maxJumpSprint = maxJumpSprint;
+            this.prepCost = prepCost;
         }
     }
 
@@ -444,9 +445,6 @@ public class MovementParkourAdv extends Movement {
         return cost;
     }
 
-    static MutableMoveResult lowestCost = new MutableMoveResult();
-    static double lowestCostGoalHeuristic = COST_INF;
-
     public static MovementParkourAdv cost(CalculationContext context, BetterBlockPos src, EnumFacing simpleDirection) {
         MutableMoveResult res = new MutableMoveResult();
         cost(context, src.x, src.y, src.z, res, simpleDirection);
@@ -511,7 +509,8 @@ public class MovementParkourAdv extends Movement {
             extraAscend += 0.5;
         }
 
-        lowestCost.reset();
+        MutableMoveResult root = res;
+        firstResult = true;
 
         for (Vec3i posbJump : ALL_VALID_DIR.get(simpleDirection).keySet()) {
             JumpType type = ALL_VALID_DIR.get(simpleDirection).get(posbJump);
@@ -547,8 +546,7 @@ public class MovementParkourAdv extends Movement {
                     if (checkBlocksInWay(context, srcX, srcY, srcZ, posbJump, 1, simpleDirection, type, moveDis > type.maxJumpNoSprint)) {
                         continue; // Blocks are in the way
                     }
-
-                    getMoveResult(context, srcX, srcY, srcZ, destX, destY, destZ, extraAscend, posbJump, simpleDirection, type, 0, lowestCost, res);
+                    getMoveResult(context, srcX, srcY, srcZ, destX, destY, destZ, extraAscend, posbJump, simpleDirection, type, 0, res);
                 }
                 continue;
             }
@@ -566,7 +564,7 @@ public class MovementParkourAdv extends Movement {
                     if (checkBlocksInWay(context, srcX, srcY, srcZ, posbJump, -descendAmount, simpleDirection, type, (moveDis + descendAmount * DESCEND_DIST_PER_BLOCK) > type.maxJumpNoSprint)) {
                         continue; // Blocks are in the way
                     }
-                    getMoveResult(context, srcX, srcY, srcZ, destX, destY - descendAmount, destZ, extraAscend - descendAmount, posbJump, simpleDirection, type, 0, lowestCost, res);
+                    getMoveResult(context, srcX, srcY, srcZ, destX, destY - descendAmount, destZ, extraAscend - descendAmount, posbJump, simpleDirection, type, 0, res);
                 }
             }
 
@@ -594,35 +592,33 @@ public class MovementParkourAdv extends Movement {
                     double angle = Math.acos(((againstX - destX) * (posbJump.getX() + xDiff) + (againstZ - destZ) * (posbJump.getZ() + zDiff)) / Math.sqrt((posbJump.getX() + xDiff) * (posbJump.getX() + xDiff) + (posbJump.getZ() + zDiff) * (posbJump.getZ() + zDiff))) * RotationUtils.RAD_TO_DEG;
                     // System.out.println(new Vec3i(srcX, srcY, srcZ) + " -> " + new Vec3i(destX, destY, destZ) + ", Dir = " + simpleDirection + ", angle = " + angle + ", against = " + new Vec3i(againstX, againstY, againstZ));
                     if (angle <= 90 && !checkBlocksInWay(context, srcX, srcY, srcZ, posbJump, 0, simpleDirection, type, moveDis > type.maxJumpNoSprint)) { // we can't turn around that fast
-                        getMoveResult(context, srcX, srcY, srcZ, destX, destY, destZ, extraAscend, posbJump, simpleDirection, type, placeCost, lowestCost, res);
+                        getMoveResult(context, srcX, srcY, srcZ, destX, destY, destZ, extraAscend, posbJump, simpleDirection, type, placeCost, res);
                     }
                 }
             }
         }
-        res.x = lowestCost.x;
-        res.y = lowestCost.y;
-        res.z = lowestCost.z;
-        res.cost = lowestCost.cost;
-        if (TEST_LOG && res.cost < COST_INF) {
-            Vec3i jumpVec = new Vec3i(res.x - srcX, res.y - srcY, res.z - srcZ);
-            System.out.println(new Vec3i(srcX, srcY, srcZ) + " -> " + new Vec3i(res.x, res.y, res.z) + ", Dir = " + simpleDirection + ", Cost: " + res.cost + ", Distance: " + getDistance(jumpVec, simpleDirection) + ", MoveDis: " + calcMoveDist(context, srcX, srcY, srcZ, jumpVec.getX(), jumpVec.getY(), jumpVec.getZ(), extraAscend, simpleDirection));
-        }
+        res = root;
     }
 
-    private static void getMoveResult(CalculationContext context, int srcX, int srcY, int srcZ, int destX, int destY, int destZ, double extraAscend, Vec3i jump, EnumFacing jumpDirection, JumpType type, double costModifiers, MutableMoveResult curLowestCost, MutableMoveResult res) {
-        res.x = destX;
-        res.y = destY;
-        res.z = destZ;
-        res.cost = costFromJump(context, srcX, srcY, srcZ, jump.getX(), destY - srcY, jump.getZ(), extraAscend, jumpDirection, type) + costModifiers;
-        Goal goal = context.baritone.getCustomGoalProcess().getGoal();
-        double resHeuristic = goal.heuristic(destX, destY, destZ);
-        // System.out.println("type = " + type + ", res = " + res.cost + ", curLowest = " + curLowestCost.cost);
-        if (res.cost + resHeuristic < curLowestCost.cost + lowestCostGoalHeuristic) {
-            curLowestCost.x = res.x;
-            curLowestCost.y = res.y;
-            curLowestCost.z = res.z;
-            curLowestCost.cost = res.cost;
-            lowestCostGoalHeuristic = resHeuristic;
+    private static boolean firstResult;
+
+    private static void getMoveResult(CalculationContext context, int srcX, int srcY, int srcZ, int destX, int destY, int destZ, double extraAscend, Vec3i jump, EnumFacing jumpDirection, JumpType type, double costModifiers, MutableMoveResult res) {
+        double cost = costFromJump(context, srcX, srcY, srcZ, jump.getX(), destY - srcY, jump.getZ(), extraAscend, jumpDirection, type) + costModifiers;
+        System.out.println("cost = " + cost);
+        if (cost < COST_INF) {
+            if (firstResult) {
+                firstResult = false;
+            } else {
+                res = res.nextPotentialDestination();
+            }
+            res.x = destX;
+            res.y = destY;
+            res.z = destZ;
+            res.cost = cost;
+            if (TEST_LOG && res.cost < COST_INF) {
+                Vec3i jumpVec = new Vec3i(res.x - srcX, res.y - srcY, res.z - srcZ);
+                System.out.println(new Vec3i(srcX, srcY, srcZ) + " -> " + new Vec3i(res.x, res.y, res.z) + ", Dir = " + jumpDirection + ", Cost: " + res.cost + ", Distance: " + getDistance(jumpVec, jumpDirection) + ", MoveDis: " + calcMoveDist(context, srcX, srcY, srcZ, jumpVec.getX(), jumpVec.getY(), jumpVec.getZ(), extraAscend, jumpDirection));
+            }
         }
     }
 
@@ -670,47 +666,29 @@ public class MovementParkourAdv extends Movement {
     }
 
     private static double costFromJump(CalculationContext context, int srcX, int srcY, int srcZ, int jumpX, int jumpY, int jumpZ, double extraAscend, EnumFacing jumpDirection, JumpType type) {
-        double costMod = COST_ADDER;
+        double costMod = 0;
         IBlockState landingOn = context.bsi.get0(srcX + jumpX, srcY + jumpY - 1, srcZ + jumpZ);
         if (landingOn.getBlock() == Blocks.WATER) {
-            costMod += JUMP_IN_WATER_COST;
+            costMod = JUMP_IN_WATER_COST;
         }
-        jumpX -= jumpDirection.getXOffset();
-        jumpZ -= jumpDirection.getZOffset();
-        double distance = Math.sqrt(jumpX * jumpX + (jumpY + extraAscend) * (jumpY + extraAscend) + jumpZ * jumpZ) + 0.8;
         switch (type) {
-            case EDGE: // for now edge jumps cost the same as normal ones (just setup differently)
-            case NORMAL:
-            case NORMAL_CRAMPED:
-            case NORMAL_STRAIGHT_DESCEND:
-                return MOVE_COST * distance + context.jumpPenalty + costMod;
             case MOMENTUM:
-                double dis = Math.sqrt(jumpX * jumpX + jumpZ * jumpZ);
-                double angle = Math.acos((jumpX * jumpDirection.getXOffset() + jumpZ * jumpDirection.getZOffset()) / dis); // in radians acos(dot_product(xz, jumpDir))
-                distance += TURN_COST_PER_RADIAN * angle * 6; // prefer straight 4 block jumps as they are much easier
-                return MOVE_COST * distance * 2 + context.jumpPenalty * 2 + costMod; // Momentum jumps are unsafe, therefore should have high costs.
+                if (MovementHelper.fullyPassable(context, srcX - jumpDirection.getXOffset(), srcY, srcZ - jumpDirection.getZOffset())) {
+                    // type = MOMENTUM_NO_BLOCK
+                    if (jumpX > 0 || jumpZ > 0) {
+                        return COST_INF; // unsafe
+                    }
+                }
+                break;
             case EDGE_NEO:
-                // dividing by 2 is also an option (but possibly slower? (casting back to int?))
-                if (jumpX + jumpDirection.getXOffset() > 0) {
-                    jumpX = 1;
-                } else if (jumpX + jumpDirection.getXOffset() < 0) {
-                    jumpX = -1;
-                } else {
-                    jumpX = 0;
-                }
-                if (jumpZ + jumpDirection.getZOffset() > 0) {
-                    jumpZ = 1;
-                } else if (jumpZ + jumpDirection.getZOffset() < 0) {
-                    jumpZ = -1;
-                } else {
-                    jumpZ = 0;
-                }
+                jumpX = Integer.compare(jumpX + jumpDirection.getXOffset(), 0);
+                jumpZ = Integer.compare(jumpZ + jumpDirection.getZOffset(), 0);
                 if (MovementHelper.fullyPassable(context, srcX + jumpX, srcY + 1, srcZ + jumpZ)) {
                     return COST_INF; // don't neo if you can just do a normal jump
                 }
-                return MOVE_COST * distance * 2 + context.jumpPenalty * 3 + costMod; // due to neo's low distance they need extra multipliers
+                break;
         }
-        throw new UnsupportedOperationException("Add the new JumpType to this switch."); // Will never reach this unless a new type is added
+        return type.prepCost + calcJumpTime(jumpY + extraAscend, true, context.baritone.getPlayerContext()) + costMod + LAND_COST;
     }
 
     @Override
