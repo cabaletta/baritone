@@ -131,8 +131,14 @@ public class MovementParkour extends Movement {
                     res.y = y;
                     res.z = destZ;
                     res.cost = costFromJumpDistance(i) + context.jumpPenalty;
+                    // for example, right here, we might just do:
+                    res = res.nextPotentialDestination();
+                    // that like, marks this `res` as "done" and we've put in this movement option's data
                 }
+                // and instead of this return
                 return;
+                // we would just continue onto the rest of the loop, and if we find an alternate landing, we would just update `res` as normal, and everything would Just Work
+                // we could return ANY number of potential movement destinations like this, and as soon as we get each new one, we just pop it into the stack by writing to `res` then doing `res = res.nextPotentialDestination();`
             }
             if (!MovementHelper.fullyPassable(context, destX, y + 3, destZ)) {
                 return;

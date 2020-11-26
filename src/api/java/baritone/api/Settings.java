@@ -753,6 +753,11 @@ public final class Settings {
     public final Setting<Integer> maxCachedWorldScanCount = new Setting<>(10);
 
     /**
+     * Sets the minimum y level whilst mining - set to 0 to turn off.
+     */
+    public final Setting<Integer> minYLevelWhileMining = new Setting<>(0);
+
+    /**
      * This will only allow baritone to mine exposed ores, can be used to stop ore obfuscators on servers that use them.
      */
     public final Setting<Boolean> allowOnlyExposedOres = new Setting<>(false);
@@ -822,6 +827,11 @@ public final class Settings {
      * Can help on larger builds when schematic wants to break things its already built
      */
     public final Setting<Integer> startAtLayer = new Setting<>(0);
+
+    /**
+     * If a layer is unable to be constructed, just skip it.
+     */
+    public final Setting<Boolean> skipFailedLayers = new Setting<>(false);
 
     /**
      * How far to move before repeating the build. 0 to disable repeating on a certain axis, 0,0,0 to disable entirely
