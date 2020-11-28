@@ -82,15 +82,16 @@ public class MovementParkourAdv extends Movement {
     private static final DecimalFormat df = new DecimalFormat("#.##");
 
     enum JumpType {
-        NORMAL(MAX_JUMP_WALK, MAX_JUMP_SPRINT, 6), // Normal run and jump
-        NORMAL_CRAMPED(MAX_JUMP_WALK, MAX_JUMP_SPRINT, 7), // normal jumps with low room for adjustments or side movements
-        NORMAL_STRAIGHT_DESCEND(MAX_JUMP_WALK, MAX_JUMP_SPRINT, 6), // A type that will use the normal jump on descends only (Since MovementParkour doesn't do descends)
-        EDGE(3, MAX_JUMP_SPRINT, 5), // No run up (for higher angle jumps)
-        EDGE_NEO(-1, 4, 8), // Around the pillar
+        NORMAL(MAX_JUMP_WALK, MAX_JUMP_SPRINT, 7), // Normal run and jump
+        NORMAL_CRAMPED(MAX_JUMP_WALK, MAX_JUMP_SPRINT, 8), // normal jumps with low room for adjustments or side movements
+        NORMAL_STRAIGHT_DESCEND(MAX_JUMP_WALK, MAX_JUMP_SPRINT, 7), // A type that will use the normal jump on descends only (Since MovementParkour doesn't do descends)
 
-        MOMENTUM(-1, MAX_JUMP_MOMENTUM, 12), // An extra momentum jump 1bm
-        MOMENTUM_BLOCK(-1, MAX_JUMP_MOMENTUM, 12), // momentum jump with block behind the player
-        MOMENTUM_NO_BLOCK(-1, MAX_JUMP_MOMENTUM, 12); // momentum jump with no block behind the player
+        EDGE(3, MAX_JUMP_SPRINT, 7), // No run up (for higher angle jumps)
+        EDGE_NEO(-1, 4, 7), // Around the pillar
+
+        MOMENTUM(-1, MAX_JUMP_MOMENTUM, 12 + 6), // An extra momentum jump 1bm
+        MOMENTUM_BLOCK(-1, MAX_JUMP_MOMENTUM, 12 + 3), // momentum jump with block behind the player
+        MOMENTUM_NO_BLOCK(-1, MAX_JUMP_MOMENTUM, 12 + 6); // momentum jump with no block behind the player
 
         final double prepCost;
         final double maxJumpNoSprint;
@@ -604,7 +605,7 @@ public class MovementParkourAdv extends Movement {
 
     private static void getMoveResult(CalculationContext context, int srcX, int srcY, int srcZ, int destX, int destY, int destZ, double extraAscend, Vec3i jump, EnumFacing jumpDirection, JumpType type, double costModifiers, MutableMoveResult res) {
         double cost = costFromJump(context, srcX, srcY, srcZ, jump.getX(), destY - srcY, jump.getZ(), extraAscend, jumpDirection, type) + costModifiers;
-        System.out.println("cost = " + cost);
+        // System.out.println("cost = " + cost);
         if (cost < COST_INF) {
             if (firstResult) {
                 firstResult = false;
@@ -674,16 +675,24 @@ public class MovementParkourAdv extends Movement {
         switch (type) {
             case MOMENTUM:
                 if (MovementHelper.fullyPassable(context, srcX - jumpDirection.getXOffset(), srcY, srcZ - jumpDirection.getZOffset())) {
-                    // type = MOMENTUM_NO_BLOCK
-                    if (jumpX > 0 || jumpZ > 0) {
+                    type = JumpType.MOMENTUM_NO_BLOCK;
+                    if (jumpX > 0 && jumpZ > 0 && jumpY >= 0) {
+                        if (TEST_LOG) {
+                            System.out.println("Discarding angled MOMENTUM_NO_BLOCK.");
+                        }
                         return COST_INF; // unsafe
                     }
+                } else {
+                    type = JumpType.MOMENTUM_BLOCK;
                 }
                 break;
             case EDGE_NEO:
-                jumpX = Integer.compare(jumpX + jumpDirection.getXOffset(), 0);
-                jumpZ = Integer.compare(jumpZ + jumpDirection.getZOffset(), 0);
+                jumpX = Integer.compare(jumpX, 0);
+                jumpZ = Integer.compare(jumpZ, 0);
                 if (MovementHelper.fullyPassable(context, srcX + jumpX, srcY + 1, srcZ + jumpZ)) {
+                    if (TEST_LOG) {
+                        System.out.println("Discarding EDGE_NEO. src = " + new Vec3i(srcX, srcY, srcZ) + ", dir = " + jumpDirection + ", since " + new Vec3i(srcX + jumpX, srcY + 1, srcZ + jumpZ) + " is not a block");
+                    }
                     return COST_INF; // don't neo if you can just do a normal jump
                 }
                 break;
@@ -756,7 +765,7 @@ public class MovementParkourAdv extends Movement {
             logDebug("Achieved '" + df.format(distance) + "' blocks of accuracy to preploc. Time = " + ticksSinceJump + ", Jump Direction = " + simpleDirection + ", Remaining Motion = " + df.format(new Vec3d(ctx.player().motionX, ctx.player().motionY, ctx.player().motionZ).length()) + ", Using technique '" + type + "'");
             inStartingPosition = true;
             ticksAtDest = 0;
-            ticksSinceJump = 0;
+            ticksSinceJump = -1;
             jumpTime = calcJumpTime(ascendAmount, true, ctx);
             return true;
         }
@@ -1211,7 +1220,7 @@ public class MovementParkourAdv extends Movement {
             }
             // logDebug("Cancelling momentum for " + atDestTicks + " ticks, distance = " + df.format(curDist) + ", distance to edge = " + df.format(distance) + ", remaining motion = " + df.format(remMotion) + ", " + df.format(remMotion + slipMod));
             if (remMotion + slipMod < distance || (distance < 0.5 && distance > prevDistance)) {
-                logDebug("Canceled momentum for " + ticksAtDest + " ticks, distance = " + df.format(curDist) + ", distance to edge = " + df.format(distance) + ", remaining motion = " + df.format(remMotion));
+                logDebug("Canceled momentum for " + ticksAtDest + " ticks, distance = " + df.format(curDist) + ", distance to edge = " + df.format(distance) + ", remaining motion = " + df.format(remMotion) + ", time since jump = " + ticksSinceJump);
                 return state.setStatus(MovementStatus.SUCCESS);
             } else {
                 ticksAtDest++;
@@ -1233,7 +1242,7 @@ public class MovementParkourAdv extends Movement {
         } else if (!ctx.playerFeet().equals(src)) {  // Don't jump on the src block (too early)
             if ((((Math.abs(future.posX - (src.x + 0.5)) > 0.85 || Math.abs(future.posZ - (src.z + 0.5)) > 0.85) && distFromStart < 1.2) || // Centre 0.5 + Player hitbox 0.3 = 0.8, if we are this distance from src, jump
                     ((type == JumpType.MOMENTUM_BLOCK || type == JumpType.MOMENTUM_NO_BLOCK) && distToJumpXZ < 0.6) || // During a momentum jump the momentum jump will position us so just jump whenever possible (i.e. as soon as we land)
-                    ((type == JumpType.EDGE || type == JumpType.EDGE_NEO) && distFromStart < 1))  // The prepLoc of an edge jump is on the edge of the block so just jump straight away
+                    ((type == JumpType.EDGE || type == JumpType.EDGE_NEO) && distFromStart < 1.2))  // The prepLoc of an edge jump is on the edge of the block so just jump straight away
                     && ctx.player().onGround) { // To only log Jumping when we can actually jump
                 if (type == JumpType.MOMENTUM_BLOCK || type == JumpType.MOMENTUM_NO_BLOCK) {
                     MovementHelper.moveTowards(ctx, state, dest); // make sure we are looking at the target when we jump for sprint jump bonuses
