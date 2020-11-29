@@ -335,7 +335,7 @@ public enum Moves {
 
         @Override
         public boolean canHaveMultipleDestinations() {
-            return false;
+            return true;
         }
 
         @Override
@@ -357,7 +357,7 @@ public enum Moves {
 
         @Override
         public boolean canHaveMultipleDestinations() {
-            return false;
+            return true;
         }
 
         @Override
@@ -379,7 +379,7 @@ public enum Moves {
 
         @Override
         public boolean canHaveMultipleDestinations() {
-            return false;
+            return true;
         }
 
         @Override
@@ -401,7 +401,7 @@ public enum Moves {
 
         @Override
         public boolean canHaveMultipleDestinations() {
-            return false;
+            return true;
         }
 
         @Override
