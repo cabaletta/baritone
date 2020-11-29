@@ -115,7 +115,15 @@ class Path extends PathBase {
 
     private Movement runBackwards(BetterBlockPos src, BetterBlockPos dest, double cost) {
         for (Moves moves : Moves.values()) {
-            for (Movement move : moves.apply0(context, src)) {
+            if (moves.canHaveMultipleDestinations()) {
+                for (Movement move : moves.getMultiDestination(context, src)) {
+                    if (move.getDest().equals(dest)) {
+                        move.override(Math.min(move.calculateCost(context), cost));
+                        return move;
+                    }
+                }
+            } else {
+                Movement move = moves.apply0(context, src);
                 if (move.getDest().equals(dest)) {
                     // have to calculate the cost at calculation time so we can accurately judge whether a cost increase happened between cached calculation and real execution
                     // however, taking into account possible favoring that could skew the node cost, we really want the stricter limit of the two
