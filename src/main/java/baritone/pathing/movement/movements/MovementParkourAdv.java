@@ -348,7 +348,7 @@ public class MovementParkourAdv extends Movement {
     @Override
     public Set<BetterBlockPos> calculateValidPositions() {
         HashSet<BetterBlockPos> out = new HashSet<>();
-        for (Vec3i vec : getLineApprox(jump, 2, 3)) {
+        for (Vec3i vec : getLineApprox(jump, 1, 2)) {
             BetterBlockPos pos = new BetterBlockPos(src.add(vec));
             out.add(pos); // Jumping from blocks
             out.add(pos.up()); // Jumping into blocks
@@ -507,6 +507,10 @@ public class MovementParkourAdv extends Movement {
             return; // common case (makes all jumps in this direction invalid), block above head in directly adjacent block
         }
 
+        if (!MovementHelper.fullyPassable(context, srcX, srcY + 2, srcZ)) {
+            return; // common case (makes all jumps in this direction invalid), block above head
+        }
+
         IBlockState standingOn = context.get(srcX, srcY - 1, srcZ);
         if (standingOn.getBlock() == Blocks.VINE || standingOn.getBlock() == Blocks.LADDER || standingOn.getBlock() instanceof BlockLiquid) {
             return; // Can't parkour from these blocks.
@@ -597,16 +601,28 @@ public class MovementParkourAdv extends Movement {
                 continue; // Not allowed to place here
             }
 
+            xDiff += posbJump.getX();
+            zDiff += posbJump.getZ();
+            double jumpLength = Math.sqrt(xDiff * xDiff + zDiff * zDiff);
+            boolean blocksCheckedYet = false;
+            boolean blocksInWay = true;
+
             // Check if a block side is available/visible to place on
             for (int j = 0; j < 5; j++) {
-                int againstX = destX + HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP[j].getXOffset();
-                int againstY = destY - 1 + HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP[j].getYOffset();
-                int againstZ = destZ + HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP[j].getZOffset();
-                if (MovementHelper.canPlaceAgainst(context.bsi, againstX, againstY, againstZ)) {
-                    double angle = Math.acos(((againstX - destX) * (posbJump.getX() + xDiff) + (againstZ - destZ) * (posbJump.getZ() + zDiff)) / Math.sqrt((posbJump.getX() + xDiff) * (posbJump.getX() + xDiff) + (posbJump.getZ() + zDiff) * (posbJump.getZ() + zDiff))) * RotationUtils.RAD_TO_DEG;
+                int againstX = HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP[j].getXOffset();
+                int againstY = HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP[j].getYOffset();
+                int againstZ = HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP[j].getZOffset();
+                if (MovementHelper.canPlaceAgainst(context.bsi, destX + againstX, destY - 1 + againstY, destZ + againstZ)) {
+                    double angle = Math.acos((againstX * xDiff + againstZ * zDiff) / jumpLength) * RotationUtils.RAD_TO_DEG;
                     // System.out.println(new Vec3i(srcX, srcY, srcZ) + " -> " + new Vec3i(destX, destY, destZ) + ", Dir = " + jumpDirection + ", angle = " + angle + ", against = " + new Vec3i(againstX, againstY, againstZ));
-                    if (angle <= 90 && !checkBlocksInWay(context, srcX, srcY, srcZ, posbJump, 0, jumpDirection, type, moveDis > type.maxJumpNoSprint)) { // we can't turn around that fast
-                        getMoveResult(context, srcX, srcY, srcZ, destX, destY, destZ, extraAscend, posbJump, jumpDirection, type, placeCost, res);
+                    if (angle <= 90) { // we can't turn around that fast
+                        if (!blocksCheckedYet) { // reduce expensive block checking
+                            blocksInWay = checkBlocksInWay(context, srcX, srcY, srcZ, posbJump, 0, jumpDirection, type, moveDis > type.maxJumpNoSprint);
+                            blocksCheckedYet = true;
+                        }
+                        if (!blocksInWay) {
+                            getMoveResult(context, srcX, srcY, srcZ, destX, destY, destZ, extraAscend, posbJump, jumpDirection, type, placeCost, res);
+                        }
                     }
                 }
             }
@@ -687,11 +703,19 @@ public class MovementParkourAdv extends Movement {
         }
         switch (type) {
             case MOMENTUM:
-                if (MovementHelper.fullyPassable(context, srcX - jumpDirection.getXOffset(), srcY, srcZ - jumpDirection.getZOffset())) {
+                if (MovementHelper.fullyPassable(context, srcX - jumpDirection.getXOffset(), srcY, srcZ - jumpDirection.getZOffset()) &&
+                        MovementHelper.fullyPassable(context, srcX - jumpDirection.getXOffset(), srcY + 1, srcZ - jumpDirection.getZOffset())) {
                     type = JumpType.MOMENTUM_NO_BLOCK;
-                    if (jumpX > 0 && jumpZ > 0 && jumpY >= 0) {
+                    if (jumpX != 0 && jumpZ != 0 && jumpY >= 0) {
                         if (TEST_LOG) {
                             System.out.println("Discarding angled MOMENTUM_NO_BLOCK.");
+                        }
+                        return COST_INF; // unsafe
+                    }
+                    if (MovementHelper.canWalkOn(context.bsi, srcX - jumpDirection.getXOffset(), srcY - 1, srcZ - jumpDirection.getZOffset())) {
+                        // type = JumpType.MOMENTUM_2BM?
+                        if (TEST_LOG) {
+                            System.out.println("Discarding 2bm MOMENTUM_NO_BLOCK. (Not yet implemented/Overlaps with other jump)");
                         }
                         return COST_INF; // unsafe
                     }
@@ -752,11 +776,11 @@ public class MovementParkourAdv extends Movement {
         // System.out.println("Distance to prepLoc = " + distance);
         boolean prepLocPassable = MovementHelper.fullyPassable(ctx, src.add(new BlockPos(offset.add(offset.normalize().scale(0.4))))); // Checking 0.4 blocks in the direction of offset for a block (0.3 is the player hitbox width)
         if (((distance > accuracy && prepLocPassable) || (distance > (PREP_OFFSET - (0.2 - accuracy)) && !prepLocPassable)) &&
-                (ticksAtDest < 8 || accuracy >= 0.1)) { // Accuracies over 0.1 will require additional wait ticks to reduce excess momentum
+                (ticksAtDest < 8 || accuracy >= 0.1)) { // Accuracies under 0.1 will require additional wait ticks to reduce excess momentum
             if (ticksAtDest < 6) {
                 MovementHelper.moveTowards(ctx, state, offset.add(VecUtils.getBlockPosCenter(src)));
             }
-            if (distance < 0.2) {
+            if (distance < 0.25) {
                 state.setInput(Input.SNEAK, true);
                 if (distance < accuracy) {
                     ticksAtDest++;
@@ -1045,6 +1069,7 @@ public class MovementParkourAdv extends Movement {
                 if (!inwards && !future.collidedVertically) {
                     // oh no. this is as slow as we can go
                     logDebug("We've overshot..");
+                    MovementHelper.moveTowards(ctx, state, src);
                 } else if (inwards && !future.collidedVertically) {
                     state.setInput(Input.SNEAK, true);
                     state.setInput(Input.MOVE_FORWARD, true);
@@ -1054,7 +1079,6 @@ public class MovementParkourAdv extends Movement {
                 state.getInputStates().remove(Input.SNEAK);
             }
         }
-
     }
 
     /**
@@ -1107,10 +1131,10 @@ public class MovementParkourAdv extends Movement {
         double disX = Math.abs(relZ * momentum.x / momentum.z); // distance to edge in direction of momentum
         double disZ = Math.abs(relX * momentum.z / momentum.x);
 
-        disX = disX < disZ ? disX : disZ * momentum.x / momentum.z; // smallest distance to edge in direction of momentum
-        disZ = disX > disZ ? disZ : disX * momentum.z / momentum.x;
+        double x = disX < disZ ? disX : disZ * momentum.x / momentum.z; // smallest distance to edge in direction of momentum
+        double z = disX > disZ ? disZ : disX * momentum.z / momentum.x;
 
-        return Math.sqrt(disX * disX + disZ * disZ); // euclidean distance to edge in direction of momentum
+        return Math.sqrt(x * x + z * z); // euclidean distance to edge in direction of momentum
     }
 
     double prevDistance = 2; // starting value >= root(2)
