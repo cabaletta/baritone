@@ -18,6 +18,7 @@
 package baritone.pathing.movement;
 
 import baritone.Baritone;
+import baritone.api.utils.RotationUtils;
 import baritone.api.utils.input.Input;
 import net.minecraft.block.*;
 import net.minecraft.block.material.Material;
@@ -259,27 +260,26 @@ public class MovementPrediction {
         // update some movement related variables
         r.collidedHorizontally = initX != x || initZ != z;
         r.collidedVertically = initY != y;
-        r.onGround = r.collidedVertically && initY < 0.0D; // collided vertically in the downwards direction
         r.collided = r.collidedHorizontally || r.collidedVertically;
+        r.onGround = r.collidedVertically && initY < 0.0D; // collided vertically in the downwards direction
 
         // Check block underneath for fences/etc. that could cause fall damage early
         int blockX = MathHelper.floor(r.posX);
         int blockYdown = MathHelper.floor(r.posY - 0.20000000298023224D);
         int blockZ = MathHelper.floor(r.posZ);
         BlockPos blockpos = new BlockPos(blockX, blockYdown, blockZ);
-        IBlockState iblockstate = r.player.world.getBlockState(blockpos);
-        if (iblockstate.getMaterial() == Material.AIR) {
-            BlockPos blockpos1 = blockpos.down();
-            IBlockState iblockstate1 = r.player.world.getBlockState(blockpos1);
-            Block block1 = iblockstate1.getBlock();
+        IBlockState landingBlockState = r.player.world.getBlockState(blockpos);
+        if (landingBlockState.getMaterial() == Material.AIR) {
+            IBlockState posbFenceState = r.player.world.getBlockState(blockpos.down());
+            Block blockBelow = posbFenceState.getBlock();
 
-            if (block1 instanceof BlockFence || block1 instanceof BlockWall || block1 instanceof BlockFenceGate) {
-                iblockstate = iblockstate1;
+            if (blockBelow instanceof BlockFence || blockBelow instanceof BlockWall || blockBelow instanceof BlockFenceGate) {
+                landingBlockState = posbFenceState;
             }
         }
 
         // fall damage
-        r.updateFallState(y, r.onGround, iblockstate);
+        r.updateFallState(y, r.onGround, landingBlockState);
 
         // Set motion to 0 if collision occurs
         if (initX != x) {
@@ -290,14 +290,14 @@ public class MovementPrediction {
         }
 
         // Calculate landing collisions
-        Block block = iblockstate.getBlock();
-        // replaced block.onLanded()
-        if (initY != y) {
-            if (block instanceof BlockSlime && !r.isSneaking) {
+        Block landingBlock = landingBlockState.getBlock();
+        // replaced landingBlock.onLanded()
+        if (r.collidedVertically) {
+            if (landingBlock instanceof BlockSlime && !r.isSneaking) {
                 if (r.motionY < 0.0D) {
                     r.motionY = -r.motionY;
                 }
-            } else if (block instanceof BlockBed && !r.isSneaking) {
+            } else if (landingBlock instanceof BlockBed && !r.isSneaking) {
                 if (r.motionY < 0.0D) {
                     r.motionY = -r.motionY * 0.6600000262260437D;
                 }
@@ -308,14 +308,6 @@ public class MovementPrediction {
     }
 
     public static void onLivingUpdate(PredictionResult r, MovementState state) {
-        /*
-         * moveStrafing and moveForward represent relative movement.
-         * moveStrafing = 1.0 if moving left, -1.0 if moving right, else 0.0
-         * moveForward = 1.0 if moving forward, -1.0 if moving backward, else 0.0
-         *
-         * Furthermore, moveStrafing and moveForward *= 0.3 if the player is sneaking.
-         */
-
         double strafe = 0;
         if (state.getInputStates().getOrDefault(Input.MOVE_LEFT, false)) {
             strafe += 1;
@@ -343,7 +335,7 @@ public class MovementPrediction {
         // inertia determines how much speed is conserved on the next tick
         double inertia = 0.91;
         if (r.onGround) {
-            inertia = r.player.world.getBlockState(new BlockPos(MathHelper.floor(r.posX), MathHelper.floor(r.boundingBox.minY) - 1, MathHelper.floor(r.posZ))).getBlock().slipperiness * 0.91F; // -1 is 0.5 in 1.15+
+            inertia = r.player.world.getBlockState(new BlockPos(MathHelper.floor(r.posX), MathHelper.floor(r.posY) - 1, MathHelper.floor(r.posZ))).getBlock().slipperiness * 0.91F; // -1 is 0.5 in 1.15+
         }
 
         // acceleration = (0.6*0.91)^3 / (slipperiness*0.91)^3) -> redundant calculations...
@@ -362,7 +354,7 @@ public class MovementPrediction {
 
         double distance = strafe * strafe + forward * forward;
         if (distance >= 1.0E-4F) {
-            distance = MathHelper.sqrt(distance);
+            distance = Math.sqrt(distance);
 
             if (distance < 1.0F)
                 distance = 1.0F;
@@ -370,8 +362,8 @@ public class MovementPrediction {
             distance = moveMod / distance;
             strafe = strafe * distance;
             forward = forward * distance;
-            float sinYaw = MathHelper.sin((float) (r.rotationYaw * Math.PI / 180.0F));
-            float cosYaw = MathHelper.cos((float) (r.rotationYaw * Math.PI / 180.0F));
+            float sinYaw = MathHelper.sin((float) (r.rotationYaw * RotationUtils.DEG_TO_RAD));
+            float cosYaw = MathHelper.cos((float) (r.rotationYaw * RotationUtils.DEG_TO_RAD));
             r.motionX += strafe * cosYaw - forward * sinYaw;
             r.motionZ += forward * cosYaw + strafe * sinYaw;
         }
@@ -379,7 +371,7 @@ public class MovementPrediction {
         if (r.isJumping) {
             r.motionY = 0.42 + r.getPotionAmplifier(MobEffects.JUMP_BOOST) * 0.1;
             if (state.getInputStates().getOrDefault(Input.SPRINT, false)) {
-                double f = r.rotationYaw * 0.017453292; // radians
+                double f = r.rotationYaw * RotationUtils.DEG_TO_RAD;
                 r.motionX -= Math.sin(f) * 0.2;
                 r.motionZ += Math.cos(f) * 0.2;
             }
