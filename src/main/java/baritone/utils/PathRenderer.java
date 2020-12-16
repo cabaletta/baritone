@@ -78,8 +78,8 @@ public final class PathRenderer implements IRenderer, Helper {
             ((GuiClick) Helper.mc.currentScreen).onRender(event.getModelViewStack(), event.getProjectionMatrix());
         }
 
-        DimensionType thisPlayerDimension = behavior.baritone.getPlayerContext().world().func_230315_m_();
-        DimensionType currentRenderViewDimension = BaritoneAPI.getProvider().getPrimaryBaritone().getPlayerContext().world().func_230315_m_();
+        DimensionType thisPlayerDimension = behavior.baritone.getPlayerContext().world().getDimensionType();
+        DimensionType currentRenderViewDimension = BaritoneAPI.getProvider().getPrimaryBaritone().getPlayerContext().world().getDimensionType();
 
         if (thisPlayerDimension != currentRenderViewDimension) {
             // this is a path for a bot in a different dimension, don't render it

@@ -98,9 +98,9 @@ public class BaritoneAutoTest implements AbstractGameEventListener, Helper {
         if (mc.currentScreen instanceof MainMenuScreen) {
             System.out.println("Beginning Baritone automatic test routine");
             mc.displayGuiScreen(null);
-            WorldSettings worldsettings = new WorldSettings("BaritoneAutoTest", GameType.SURVIVAL, false, Difficulty.NORMAL, true, new GameRules(), DatapackCodec.field_234880_a_);
+            WorldSettings worldsettings = new WorldSettings("BaritoneAutoTest", GameType.SURVIVAL, false, Difficulty.NORMAL, true, new GameRules(), DatapackCodec.VANILLA_CODEC);
             final DynamicRegistries.Impl impl = DynamicRegistries.func_239770_b_();
-            mc.func_238192_a_("BaritoneAutoTest", worldsettings, impl, DimensionGeneratorSettings.func_242752_a(impl).create(false, OptionalLong.of(TEST_SEED)));
+            mc.createWorld("BaritoneAutoTest", worldsettings, impl, DimensionGeneratorSettings.func_242752_a(impl).create(false, OptionalLong.of(TEST_SEED)));
         }
 
         IntegratedServer server = mc.getIntegratedServer();
@@ -121,7 +121,7 @@ public class BaritoneAutoTest implements AbstractGameEventListener, Helper {
                 for (final ServerWorld world : mc.getIntegratedServer().getWorlds()) {
                     // If the world has initialized, set the spawn point to our defined starting position
                     if (world != null) {
-                        world.getGameRules().get(GameRules.SPAWN_RADIUS).func_234909_b_("0");
+                        world.getGameRules().get(GameRules.SPAWN_RADIUS).parseIntValue("0");
                         world.func_241124_a__(STARTING_POSITION, 0.0f);
                     }
                 }

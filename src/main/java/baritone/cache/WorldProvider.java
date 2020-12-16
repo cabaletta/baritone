@@ -64,7 +64,7 @@ public class WorldProvider implements IWorldProvider, Helper {
 
         // If there is an integrated server running (Aka Singleplayer) then do magic to find the world save file
         if (mc.isSingleplayer()) {
-            directory = DimensionType.func_236031_a_(world, integratedServer.func_240776_a_(FolderName.DOT).toFile());
+            directory = DimensionType.getDimensionFolder(world, integratedServer.func_240776_a_(FolderName.DOT).toFile());
 
             // Gets the "depth" of this directory relative the the game's run directory, 2 is the location of the world
             if (directory.toPath().relativize(mc.gameDir.toPath()).getNameCount() != 2) {
@@ -90,7 +90,7 @@ public class WorldProvider implements IWorldProvider, Helper {
         } catch (IOException ignored) {}
 
         // We will actually store the world data in a subfolder: "DIM<id>"
-        Path dir = DimensionType.func_236031_a_(world, directory).toPath();
+        Path dir = DimensionType.getDimensionFolder(world, directory).toPath();
         if (!Files.exists(dir)) {
             try {
                 Files.createDirectories(dir);

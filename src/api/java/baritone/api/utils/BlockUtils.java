@@ -57,7 +57,7 @@ public class BlockUtils {
         if (resourceCache.containsKey(name)) {
             return null; // cached as null
         }
-        block = Registry.BLOCK.func_241873_b(ResourceLocation.tryCreate(name.contains(":") ? name : "minecraft:" + name)).orElse(null);
+        block = Registry.BLOCK.getOptional(ResourceLocation.tryCreate(name.contains(":") ? name : "minecraft:" + name)).orElse(null);
         Map<String, Block> copy = new HashMap<>(resourceCache); // read only copy is safe, wont throw concurrentmodification
         copy.put(name, block);
         resourceCache = copy;

@@ -32,7 +32,7 @@ public enum EntityClassById implements IDatatypeFor<EntityType> {
     public EntityType get(IDatatypeContext ctx) throws CommandException {
         ResourceLocation id = new ResourceLocation(ctx.getConsumer().getString());
         EntityType entity;
-        if ((entity = Registry.ENTITY_TYPE.func_241873_b(id).orElse(null)) == null) {
+        if ((entity = Registry.ENTITY_TYPE.getOptional(id).orElse(null)) == null) {
             throw new IllegalArgumentException("no entity found by that id");
         }
         return entity;
