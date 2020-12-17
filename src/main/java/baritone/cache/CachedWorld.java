@@ -258,6 +258,10 @@ public final class CachedWorld implements ICachedWorld, Helper {
         });
     }
 
+    public synchronized void uncacheRegion(int regionX, int regionZ){
+        cachedRegions.remove(getRegionID(regionX, regionZ));
+    }
+
     public void tryLoadFromDisk(int regionX, int regionZ) {
         getOrCreateRegion(regionX, regionZ);
     }
