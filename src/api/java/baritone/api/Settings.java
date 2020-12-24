@@ -72,7 +72,7 @@ public final class Settings {
     /**
      * If this setting is on, no auto tool will occur at all, not at calculation time nor execution time
      */
-    public final Setting<Boolean> disableAutoTool = new Setting<>(false);
+    public final Setting<Boolean> disableAutoTool = new Setting<>(true);
 
     /**
      * It doesn't actually take twenty ticks to place a block, this cost is so high
@@ -293,6 +293,12 @@ public final class Settings {
      * How many degrees to randomize the pitch and yaw every tick. Set to 0 to disable
      */
     public final Setting<Double> randomLooking = new Setting<>(0.01d);
+
+    /**
+     * Enable smooth aim while mining/building. Aim is updated per tick (20 = 1 second)
+     * set to 1 to disable.
+     */
+    public final Setting<Float> smoothAim = new Setting<>(1f);
 
     /**
      * This is the big A* setting.
@@ -617,7 +623,7 @@ public final class Settings {
     /**
      * Move without having to force the client-sided rotations
      */
-    public final Setting<Boolean> freeLook = new Setting<>(true);
+    public final Setting<Boolean> freeLook = new Setting<>(false);
 
     /**
      * Will cause some minor behavioral differences to ensure that Baritone works on anticheats.
@@ -806,7 +812,7 @@ public final class Settings {
      * <p>
      * true = build from top to bottom
      */
-    public final Setting<Boolean> layerOrder = new Setting<>(false);
+    public final Setting<Boolean> layerOrder = new Setting<>(true);
 
     /**
      * Start building the schematic at a specific layer.
@@ -834,7 +840,7 @@ public final class Settings {
      * <p>
      * Experimental
      */
-    public final Setting<Boolean> breakFromAbove = new Setting<>(false);
+    public final Setting<Boolean> breakFromAbove = new Setting<>(true);
 
     /**
      * As well as breaking from above, set a goal to up and to the side of all blocks to break.
