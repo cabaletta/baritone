@@ -39,7 +39,7 @@ The easiest way to install Baritone is to install [Impact](https://impactclient.
 
 For 1.15.2, [click here](https://www.youtube.com/watch?v=j1qKtCZFURM) and see description. If you need Forge 1.15.2, look [here](https://github.com/cabaletta/baritone/releases/tag/v1.5.3), follow the instructions, and get the `api-forge` jar.
 
-For 1.16.4, [click here](https://www.youtube.com/watch?v=_4eVJ9Qz2J8) and see description. If you need Forge 1.14.4, look [here](https://github.com/cabaletta/baritone/releases/tag/v1.6.2) and get the `api-forge` jar.
+For 1.16.4, [click here](https://www.youtube.com/watch?v=_4eVJ9Qz2J8) and see description. If you need Forge 1.16.4, look [here](https://github.com/cabaletta/baritone/releases/tag/v1.6.2) and get the `api-forge` jar.
 
 This project is an updated version of [MineBot](https://github.com/leijurv/MineBot/),
 the original version of the bot for Minecraft 1.8.9, rebuilt for 1.12.2 through 1.15.2. Baritone focuses on reliability and particularly performance (it's over [30x faster](https://github.com/cabaletta/baritone/pull/180#issuecomment-423822928) than MineBot at calculating paths).
