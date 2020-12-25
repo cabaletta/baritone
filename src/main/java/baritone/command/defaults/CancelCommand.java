@@ -18,8 +18,6 @@
 package baritone.command.defaults;
 
 import baritone.api.IBaritone;
-import baritone.api.pathing.goals.Goal;
-import baritone.api.pathing.goals.GoalStrictDirection;
 import baritone.api.command.Command;
 import baritone.api.command.exception.CommandException;
 import baritone.api.command.argument.IArgConsumer;
@@ -28,21 +26,17 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
-public class TunnelCommand extends Command {
+public class CancelCommand extends Command {
 
-    public TunnelCommand(IBaritone baritone) {
-        super(baritone, "tunnel");
+    public CancelCommand(IBaritone baritone) {
+        super(baritone, "cancel", "stop");
     }
 
     @Override
     public void execute(String label, IArgConsumer args) throws CommandException {
         args.requireMax(0);
-        Goal goal = new GoalStrictDirection(
-                ctx.playerFeet(),
-                ctx.player().getHorizontalFacing()
-        );
-        baritone.getCustomGoalProcess().setGoalAndPath(goal);
-        logDirect(String.format("Goal: %s", goal.toString()));
+        baritone.getPathingBehavior().cancelEverything();
+        logDirect("ok canceled");
     }
 
     @Override
@@ -52,16 +46,16 @@ public class TunnelCommand extends Command {
 
     @Override
     public String getShortDesc() {
-        return "Set a goal to tunnel in your current direction";
+        return "Cancel what Baritone is currently doing";
     }
 
     @Override
     public List<String> getLongDesc() {
         return Arrays.asList(
-                "The tunnel command sets a goal that tells Baritone to mine completely straight in the direction that you're facing.",
+                "The cancel command tells Baritone to stop whatever it's currently doing.",
                 "",
                 "Usage:",
-                "> tunnel"
+                "> cancel"
         );
     }
 }

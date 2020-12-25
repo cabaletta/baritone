@@ -77,10 +77,6 @@ public interface IPlayerContext {
         return new Rotation(player().rotationYaw, player().rotationPitch);
     }
 
-    static double eyeHeight(boolean ifSneaking) {
-        return ifSneaking ? 1.54 : 1.62;
-    }
-
     /**
      * Returns the block that the crosshair is currently placed over. Updated once per tick.
      *
@@ -96,5 +92,18 @@ public interface IPlayerContext {
 
     default boolean isLookingAt(BlockPos pos) {
         return getSelectedBlock().equals(Optional.of(pos));
+    }
+
+    /**
+     * Returns the entity that the crosshair is currently placed over. Updated once per tick.
+     *
+     * @return The entity
+     */
+    default Optional<Entity> getSelectedEntity() {
+        RayTraceResult result = objectMouseOver();
+        if (result != null && result.typeOfHit == RayTraceResult.Type.ENTITY) {
+            return Optional.of(result.entityHit);
+        }
+        return Optional.empty();
     }
 }

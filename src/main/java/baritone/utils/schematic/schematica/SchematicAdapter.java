@@ -17,14 +17,14 @@
 
 package baritone.utils.schematic.schematica;
 
-import baritone.api.schematic.IStaticSchematic;
+import baritone.api.schematic.ISchematic;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.List;
 
-public final class SchematicAdapter implements IStaticSchematic {
+public final class SchematicAdapter implements ISchematic {
 
     private final SchematicWorld schematic;
 
@@ -34,12 +34,7 @@ public final class SchematicAdapter implements IStaticSchematic {
 
     @Override
     public IBlockState desiredState(int x, int y, int z, IBlockState current, List<IBlockState> approxPlaceable) {
-        return this.getDirect(x, y, z);
-    }
-
-    @Override
-    public IBlockState getDirect(int x, int y, int z) {
-        return this.schematic.getSchematic().getBlockState(new BlockPos(x, y, z));
+        return schematic.getSchematic().getBlockState(new BlockPos(x, y, z));
     }
 
     @Override

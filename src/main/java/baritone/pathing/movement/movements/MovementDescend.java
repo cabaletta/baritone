@@ -224,7 +224,7 @@ public class MovementDescend extends Movement {
             double destZ = (src.getZ() + 0.5) * 0.17 + (dest.getZ() + 0.5) * 0.83;
             EntityPlayerSP player = ctx.player();
             state.setTarget(new MovementState.MovementTarget(
-                    new Rotation(RotationUtils.calcRotationFromVec3d(ctx.playerHead(),
+                    new Rotation(RotationUtils.calcRotationFromVec3d(player.getPositionEyes(1.0F),
                             new Vec3d(destX, dest.getY(), destZ),
                             new Rotation(player.rotationYaw, player.rotationPitch)).getYaw(), player.rotationPitch),
                     false

@@ -184,7 +184,7 @@ public class MovementPillar extends Movement {
         }
         boolean ladder = fromDown.getBlock() == Blocks.LADDER || fromDown.getBlock() == Blocks.VINE;
         boolean vine = fromDown.getBlock() == Blocks.VINE;
-        Rotation rotation = RotationUtils.calcRotationFromVec3d(ctx.playerHead(),
+        Rotation rotation = RotationUtils.calcRotationFromVec3d(ctx.player().getPositionEyes(1.0F),
                 VecUtils.getBlockPosCenter(positionToPlace),
                 new Rotation(ctx.player().rotationYaw, ctx.player().rotationPitch));
         if (!ladder) {

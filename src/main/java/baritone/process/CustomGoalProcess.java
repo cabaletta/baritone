@@ -23,7 +23,6 @@ import baritone.api.process.ICustomGoalProcess;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
 import baritone.utils.BaritoneProcessHelper;
-import baritone.utils.NotificationHelper;
 
 /**
  * As set by ExampleBaritoneControl or something idk
@@ -93,9 +92,6 @@ public final class CustomGoalProcess extends BaritoneProcessHelper implements IC
                     onLostControl(); // we're there xd
                     if (Baritone.settings().disconnectOnArrival.value) {
                         ctx.world().sendQuittingDisconnectingPacket();
-                    }
-                    if (Baritone.settings().desktopNotifications.value && Baritone.settings().notificationOnPathComplete.value) {
-                        NotificationHelper.notify("Pathing complete", false);
                     }
                     return new PathingCommand(this.goal, PathingCommandType.CANCEL_AND_SET_GOAL);
                 }

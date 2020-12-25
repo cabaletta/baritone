@@ -75,7 +75,7 @@ public interface IBaritoneProcess {
      * to start eating this tick. {@code PauseForAutoEatProcess} should only actually right click once onTick is called with
      * {@code isSafeToCancel} true though.
      *
-     * @return Whether or not if this control is temporary
+     * @return Whethor or not if this control is temporary
      */
     boolean isTemporary();
 

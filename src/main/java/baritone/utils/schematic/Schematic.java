@@ -15,27 +15,30 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.utils.schematic.format.defaults;
+package baritone.utils.schematic;
 
-import baritone.utils.schematic.StaticSchematic;
+import baritone.api.schematic.ISchematic;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.nbt.NBTTagCompound;
 
-/**
- * @author Brady
- * @since 12/27/2019
- */
-public final class MCEditSchematic extends StaticSchematic {
+import java.util.List;
 
-    public MCEditSchematic(NBTTagCompound schematic) {
+public class Schematic implements ISchematic {
+
+    public final int widthX;
+    public final int heightY;
+    public final int lengthZ;
+    protected final IBlockState[][][] states;
+
+    public Schematic(NBTTagCompound schematic) {
         String type = schematic.getString("Materials");
         if (!type.equals("Alpha")) {
             throw new IllegalStateException("bad schematic " + type);
         }
-        this.x = schematic.getInteger("Width");
-        this.y = schematic.getInteger("Height");
-        this.z = schematic.getInteger("Length");
+        widthX = schematic.getInteger("Width");
+        heightY = schematic.getInteger("Height");
+        lengthZ = schematic.getInteger("Length");
         byte[] blocks = schematic.getByteArray("Blocks");
         byte[] metadata = schematic.getByteArray("Data");
 
@@ -48,11 +51,11 @@ public final class MCEditSchematic extends StaticSchematic {
                 additional[i * 2 + 1] = (byte) ((addBlocks[i] >> 0) & 0xF); // upper nibble
             }
         }
-        this.states = new IBlockState[this.x][this.z][this.y];
-        for (int y = 0; y < this.y; y++) {
-            for (int z = 0; z < this.z; z++) {
-                for (int x = 0; x < this.x; x++) {
-                    int blockInd = (y * this.z + z) * this.x + x;
+        states = new IBlockState[widthX][lengthZ][heightY];
+        for (int y = 0; y < heightY; y++) {
+            for (int z = 0; z < lengthZ; z++) {
+                for (int x = 0; x < widthX; x++) {
+                    int blockInd = (y * lengthZ + z) * widthX + x;
 
                     int blockID = blocks[blockInd] & 0xFF;
                     if (additional != null) {
@@ -61,9 +64,29 @@ public final class MCEditSchematic extends StaticSchematic {
                     }
                     Block block = Block.REGISTRY.getObjectById(blockID);
                     int meta = metadata[blockInd] & 0xFF;
-                    this.states[x][z][y] = block.getStateFromMeta(meta);
+                    states[x][z][y] = block.getStateFromMeta(meta);
                 }
             }
         }
+    }
+
+    @Override
+    public IBlockState desiredState(int x, int y, int z, IBlockState current, List<IBlockState> approxPlaceable) {
+        return states[x][z][y];
+    }
+
+    @Override
+    public int widthX() {
+        return widthX;
+    }
+
+    @Override
+    public int heightY() {
+        return heightY;
+    }
+
+    @Override
+    public int lengthZ() {
+        return lengthZ;
     }
 }
