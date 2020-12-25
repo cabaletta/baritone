@@ -30,8 +30,8 @@ import java.awt.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.function.Consumer;
 
 /**
@@ -60,6 +60,19 @@ public final class Settings {
      * Allow Baritone to move items in your inventory to your hotbar
      */
     public final Setting<Boolean> allowInventory = new Setting<>(false);
+
+    /**
+     * Disable baritone's auto-tool at runtime, but still assume that another mod will provide auto tool functionality
+     * <p>
+     * Specifically, path calculation will still assume that an auto tool will run at execution time, even though
+     * Baritone itself will not do that.
+     */
+    public final Setting<Boolean> assumeExternalAutoTool = new Setting<>(false);
+
+    /**
+     * If this setting is on, no auto tool will occur at all, not at calculation time nor execution time
+     */
+    public final Setting<Boolean> disableAutoTool = new Setting<>(false);
 
     /**
      * It doesn't actually take twenty ticks to place a block, this cost is so high
@@ -190,6 +203,15 @@ public final class Settings {
      * If a schematic asks for air at a certain position, and that position currently contains a block on this list, it will be treated as correct.
      */
     public final Setting<List<Block>> buildIgnoreBlocks = new Setting<>(new ArrayList<>(Arrays.asList(
+
+    )));
+
+    /**
+     * A list of blocks to become air
+     * <p>
+     * If a schematic asks for a block on this list, only air will be accepted at that location (and nothing on buildIgnoreBlocks)
+     */
+    public final Setting<List<Block>> okIfAir = new Setting<>(new ArrayList<>(Arrays.asList(
 
     )));
 
@@ -431,6 +453,11 @@ public final class Settings {
     public final Setting<Boolean> simplifyUnloadedYCoord = new Setting<>(true);
 
     /**
+     * Whenever a block changes, repack the whole chunk that it's in
+     */
+    public final Setting<Boolean> repackOnAnyBlockChange = new Setting<>(true);
+
+    /**
      * If a movement takes this many ticks more than its initial cost estimate, cancel it
      */
     public final Setting<Integer> movementTimeoutTicks = new Setting<>(100);
@@ -501,6 +528,18 @@ public final class Settings {
      * Fill in blocks behind you
      */
     public final Setting<Boolean> backfill = new Setting<>(false);
+
+    /**
+     * Shows popup message in the upper right corner, similarly to when you make an advancement
+     */
+    public final Setting<Boolean> logAsToast = new Setting<>(false);
+
+    /**
+     * The time of how long the message in the pop-up will display
+     * <p>
+     * If below 1000L (1sec), it's better to disable this
+     */
+    public final Setting<Long> toastTimer = new Setting<>(5000L);
 
     /**
      * Print all the debug messages to chat
@@ -700,6 +739,23 @@ public final class Settings {
     public final Setting<Integer> maxCachedWorldScanCount = new Setting<>(10);
 
     /**
+     * Sets the minimum y level whilst mining - set to 0 to turn off.
+     */
+    public final Setting<Integer> minYLevelWhileMining = new Setting<>(0);
+
+    /**
+     * This will only allow baritone to mine exposed ores, can be used to stop ore obfuscators on servers that use them.
+     */
+    public final Setting<Boolean> allowOnlyExposedOres = new Setting<>(false);
+
+    /**
+     * When allowOnlyExposedOres is enabled this is the distance around to search.
+     * <p>
+     * It is recommended to keep this value low, as it dramatically increases calculation times.
+     */
+    public final Setting<Integer> allowOnlyExposedOresDistance = new Setting<>(1);
+
+    /**
      * When GetToBlock doesn't know any locations for the desired block, explore randomly instead of giving up.
      */
     public final Setting<Boolean> exploreForBlocks = new Setting<>(true);
@@ -751,6 +807,17 @@ public final class Settings {
      * true = build from top to bottom
      */
     public final Setting<Boolean> layerOrder = new Setting<>(false);
+
+    /**
+     * Start building the schematic at a specific layer.
+     * Can help on larger builds when schematic wants to break things its already built
+     */
+    public final Setting<Integer> startAtLayer = new Setting<>(0);
+
+    /**
+     * If a layer is unable to be constructed, just skip it.
+     */
+    public final Setting<Boolean> skipFailedLayers = new Setting<>(false);
 
     /**
      * How far to move before repeating the build. 0 to disable repeating on a certain axis, 0,0,0 to disable entirely
@@ -810,6 +877,12 @@ public final class Settings {
      * When this setting is true, build a schematic with the highest Z coordinate being the origin, instead of the lowest
      */
     public final Setting<Boolean> schematicOrientationZ = new Setting<>(false);
+
+    /**
+     * The fallback used by the build command when no extension is specified. This may be useful if schematics of a
+     * particular format are used often, and the user does not wish to have to specify the extension with every usage.
+     */
+    public final Setting<String> schematicFallbackExtension = new Setting<>("schematic");
 
     /**
      * Distance to scan every tick for updates. Expanding this beyond player reach distance (i.e. setting it to 6 or above)
@@ -1040,6 +1113,35 @@ public final class Settings {
      */
     public final Setting<Boolean> renderSelectionCorners = new Setting<>(true);
 
+    /**
+     * Desktop notifications
+     */
+    public final Setting<Boolean> desktopNotifications = new Setting<>(false);
+
+    /**
+     * Desktop notification on path complete
+     */
+    public final Setting<Boolean> notificationOnPathComplete = new Setting<>(true);
+
+    /**
+     * Desktop notification on farm fail
+     */
+    public final Setting<Boolean> notificationOnFarmFail = new Setting<>(true);
+
+    /**
+     * Desktop notification on build finished
+     */
+    public final Setting<Boolean> notificationOnBuildFinished = new Setting<>(true);
+
+    /**
+     * Desktop notification on explore finished
+     */
+    public final Setting<Boolean> notificationOnExploreFinished = new Setting<>(true);
+
+    /**
+     * Desktop notification on mine fail
+     */
+    public final Setting<Boolean> notificationOnMineFail = new Setting<>(true);
 
     /**
      * A map of lowercase setting field names to their respective setting

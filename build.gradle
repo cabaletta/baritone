@@ -16,7 +16,7 @@
  */
 
 group 'baritone'
-version '1.2.10'
+version '1.2.14'
 
 buildscript {
     repositories {
@@ -117,6 +117,12 @@ javadoc {
 
 jar {
     from sourceSets.launch.output, sourceSets.api.output
+
+    if (!getProject().hasProperty("baritone.forge_build")) {
+        exclude "**/BaritoneForgeModXD.class"
+        exclude "**/mods.toml"
+    }
+
     preserveFileTimestamps = false
     reproducibleFileOrder = true
 

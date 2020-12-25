@@ -19,6 +19,7 @@ package baritone.utils;
 
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.init.Biomes;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
@@ -44,12 +45,12 @@ public final class BlockStateInterfaceAccessWrapper implements IBlockAccess {
     @Nullable
     @Override
     public TileEntity getTileEntity(BlockPos pos) {
-        throw new UnsupportedOperationException("getTileEntity not supported by BlockStateInterfaceAccessWrapper");
+        return null;
     }
 
     @Override
     public int getCombinedLight(BlockPos pos, int lightValue) {
-        throw new UnsupportedOperationException("getCombinedLight not supported by BlockStateInterfaceAccessWrapper");
+        return 0;
     }
 
     @Override
@@ -65,12 +66,12 @@ public final class BlockStateInterfaceAccessWrapper implements IBlockAccess {
 
     @Override
     public Biome getBiome(BlockPos pos) {
-        throw new UnsupportedOperationException("getBiome not supported by BlockStateInterfaceAccessWrapper");
+        return Biomes.FOREST;
     }
 
     @Override
     public int getStrongPower(BlockPos pos, EnumFacing direction) {
-        throw new UnsupportedOperationException("getStrongPower not supported by BlockStateInterfaceAccessWrapper");
+        return 0;
     }
 
     @Override
