@@ -22,12 +22,13 @@ import baritone.api.IBaritoneProvider;
 import baritone.api.cache.IWorldScanner;
 import baritone.api.command.ICommandSystem;
 import baritone.api.schematic.ISchematicSystem;
-import baritone.command.ExampleBaritoneControl;
 import baritone.cache.WorldScanner;
 import baritone.command.CommandSystem;
+import baritone.command.ExampleBaritoneControl;
+import baritone.utils.player.PrimaryPlayerContext;
 import baritone.utils.schematic.SchematicSystem;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -37,11 +38,11 @@ import java.util.List;
 public final class BaritoneProvider implements IBaritoneProvider {
 
     private final Baritone primary;
-    private final List<IBaritone> all;
+    private final List<IBaritone> all = new ArrayList<>();
 
     {
-        this.primary = new Baritone();
-        this.all = Collections.singletonList(this.primary);
+        this.primary = new Baritone(PrimaryPlayerContext.INSTANCE);
+        this.all.add(this.primary);
 
         // Setup chat control, just for the primary instance
         new ExampleBaritoneControl(this.primary);

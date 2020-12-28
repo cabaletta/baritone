@@ -17,6 +17,8 @@
 
 -keep class baritone.api.** { *; } # this is the keep api
 
+-keep class baritone.Baritone
+
 # service provider needs these class names
 -keep class baritone.BaritoneProvider
 -keep class baritone.api.IBaritoneProvider
