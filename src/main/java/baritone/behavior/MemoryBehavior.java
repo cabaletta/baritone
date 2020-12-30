@@ -167,10 +167,6 @@ public final class MemoryBehavior extends Behavior {
     @Override
     public void onPlayerDeath() {
         baritone.getWorldProvider().getCurrentWorld().getWaypoints().addWaypoint(new Waypoint("death", Waypoint.Tag.DEATH, ctx.playerFeet()));
-        if (baritone.settings().stopOnDeath.value) {
-            baritone.getPathingBehavior().cancelEverything();
-            baritone.getWorldProvider().logDirect("stopOnDeath is set, cancelling all tasks due to death");
-        }
     }
 
 
