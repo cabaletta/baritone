@@ -81,16 +81,6 @@ public class Rotation {
     }
 
     /**
-     * @return A copy of the opposite rotation of the given rotation
-     */
-    public Rotation opposite() {
-        return new Rotation(
-                this.yaw - 180,
-                this.pitch * -1
-        );
-    }
-
-    /**
      * @return A copy of this rotation with the pitch clamped
      */
     public Rotation clamp() {

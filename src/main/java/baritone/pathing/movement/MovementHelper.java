@@ -156,14 +156,6 @@ public interface MovementHelper extends ActionCosts, Helper {
         );
     }
 
-    static boolean fullyPassable(CalculationContext context, Vec3i pos) {
-        return fullyPassable(
-                context.bsi.access,
-                context.bsi.isPassableBlockPos.setPos(pos.getX(), pos.getY(), pos.getZ()),
-                context.bsi.get0(pos.getX(), pos.getY(), pos.getZ())
-        );
-    }
-
     static boolean fullyPassable(IPlayerContext ctx, BlockPos pos) {
         return fullyPassable(ctx.world(), pos, ctx.world().getBlockState(pos));
     }
@@ -357,10 +349,6 @@ public interface MovementHelper extends ActionCosts, Helper {
 
     static boolean canWalkOn(IPlayerContext ctx, BetterBlockPos pos) {
         return canWalkOn(new BlockStateInterface(ctx), pos.x, pos.y, pos.z);
-    }
-
-    static boolean canWalkOn(BlockStateInterface bsi, BetterBlockPos pos, IBlockState state) {
-        return canWalkOn(bsi, pos.x, pos.y, pos.z, state);
     }
 
     static boolean canWalkOn(BlockStateInterface bsi, int x, int y, int z) {

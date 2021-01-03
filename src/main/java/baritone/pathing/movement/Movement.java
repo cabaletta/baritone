@@ -37,7 +37,6 @@ public abstract class Movement implements IMovement, MovementHelper {
 
     public static final EnumFacing[] HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP = {EnumFacing.NORTH, EnumFacing.SOUTH, EnumFacing.EAST, EnumFacing.WEST, EnumFacing.DOWN};
 
-
     protected final IBaritone baritone;
     protected final IPlayerContext ctx;
 

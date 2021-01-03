@@ -149,26 +149,4 @@ public final class VecUtils {
     public static Vec3i subtract(Vec3i vec1, Vec3i vec2) {
         return new Vec3i(vec1.getX() - vec2.getX(), vec1.getY() - vec2.getY(), vec1.getZ() - vec2.getZ());
     }
-
-    /**
-     * The angle between two vectors
-     *
-     * @param vec1  The first vector
-     * @param vec2  The second vector
-     * @return      The angle between the two in radians
-     */
-    public static double angle(Vec3d vec1, Vec3d vec2) {
-        return Math.acos(vec1.normalize().dotProduct(vec2.normalize()));
-    }
-
-    public static double getYaw(Vec3d vec) {
-        double yaw = 0;
-        if(vec.x > 0) {
-            yaw = Math.toDegrees(angle(vec, new Vec3d(0, 0, -1))) + 180; // (0, 0, -1) = NORTH
-        } else {
-            yaw = Math.toDegrees(angle(vec, new Vec3d(0, 0, 1))); // (0, 0, 1) = SOUTH
-        }
-        return yaw;
-    }
-
 }
