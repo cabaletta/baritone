@@ -21,6 +21,7 @@ import baritone.api.schematic.IStaticSchematic;
 import baritone.api.schematic.format.ISchematicFormat;
 import baritone.utils.schematic.format.defaults.MCEditSchematic;
 import baritone.utils.schematic.format.defaults.SpongeSchematic;
+import baritone.utils.schematic.format.defaults.LitematicaSchematic;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.CompressedStreamTools;
 import org.apache.commons.io.FilenameUtils;
@@ -65,6 +66,24 @@ public enum DefaultSchematicFormats implements ISchematicFormat {
                     return new SpongeSchematic(nbt);
                 default:
                     throw new UnsupportedOperationException("Unsupported Version of a Sponge Schematic");
+            }
+        }
+    },
+    /**
+     * The Litematica Schematic Specification. Commonly denoted by the ".litematic" file extension.
+     *
+     */
+    LITEMATIC("litematic") {
+
+        @Override
+        public IStaticSchematic parse(InputStream input) throws IOException {
+            CompoundNBT nbt = CompressedStreamTools.readCompressed(input);
+            int version = nbt.getInt("Version");
+            switch (version) {
+                case 5:
+                    return new LitematicaSchematic(nbt);
+                default:
+                    throw new UnsupportedOperationException("Unsupported Version of a Litematica Schematic");
             }
         }
     };
