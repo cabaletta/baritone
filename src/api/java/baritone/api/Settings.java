@@ -207,6 +207,15 @@ public final class Settings {
     )));
 
     /**
+     * A list of blocks to be treated as correct.
+     * <p>
+     * If a schematic asks for any block on this list at a certain position, it will be treated as correct, regardless of what it currently is.
+     */
+    public final Setting<List<Block>> buildSkipBlocks = new Setting<>(new ArrayList<>(Arrays.asList(
+
+    )));
+
+    /**
      * A list of blocks to become air
      * <p>
      * If a schematic asks for a block on this list, only air will be accepted at that location (and nothing on buildIgnoreBlocks)
