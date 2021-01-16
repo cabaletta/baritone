@@ -216,6 +216,13 @@ public final class Settings {
     )));
 
     /**
+     * A mapping of blocks to blocks treated as correct in their position
+     * <p>
+     * If a schematic asks for a block on this mapping, all blocks on the mapped list will be accepted at that location as well
+     */
+    public final Setting<Map<Block, List<Block>>> buildValidSubstitutes = new Setting<>(new HashMap<>());
+
+    /**
      * A list of blocks to become air
      * <p>
      * If a schematic asks for a block on this list, only air will be accepted at that location (and nothing on buildIgnoreBlocks)
