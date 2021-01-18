@@ -49,23 +49,18 @@ public class SubstituteSchematic extends AbstractSchematic {
         }
         List<Block> substitutes = substitutions.get(desiredBlock);
         if (substitutes.contains(current.getBlock()) && !current.getBlock().equals(Blocks.AIR)) {// don't preserve air, it's almost always there and almost never wanted
-            System.out.println(String.format("%s is already placed", current));
             return current;
         }
         for (Block substitute : substitutes) {
             if (substitute.equals(Blocks.AIR)) {
-                System.out.println("air, lol");
                 return Blocks.AIR.getDefaultState(); // can always "place" air
             }
             for (IBlockState placeable : approxPlaceable) {
                 if (substitute.equals(placeable.getBlock())) {
-                    System.out.println(String.format("%s can be placed", placeable));
                     return placeable;
                 }
             }
-            System.out.println(String.format("%s is not an option", substitute));
         }
-        System.out.println(String.format("%s fail", substitutes.get(0).getDefaultState()));
         return substitutes.get(0).getDefaultState();
     }
 }
