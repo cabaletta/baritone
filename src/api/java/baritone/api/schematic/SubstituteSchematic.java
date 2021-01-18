@@ -19,8 +19,10 @@ package baritone.api.schematic;
 
 import baritone.api.utils.BlockOptionalMetaLookup;
 import net.minecraft.block.Block;
+import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -49,7 +51,7 @@ public class SubstituteSchematic extends AbstractSchematic {
         }
         List<Block> substitutes = substitutions.get(desiredBlock);
         if (substitutes.contains(current.getBlock()) && !current.getBlock().equals(Blocks.AIR)) {// don't preserve air, it's almost always there and almost never wanted
-            return current;
+            return withBlock(desired, current.getBlock());
         }
         for (Block substitute : substitutes) {
             if (substitute.equals(Blocks.AIR)) {
@@ -57,10 +59,25 @@ public class SubstituteSchematic extends AbstractSchematic {
             }
             for (IBlockState placeable : approxPlaceable) {
                 if (substitute.equals(placeable.getBlock())) {
-                    return placeable;
+                    return withBlock(desired, placeable.getBlock());
                 }
             }
         }
         return substitutes.get(0).getDefaultState();
+    }
+
+    private IBlockState withBlock(IBlockState state, Block block) {
+        Collection<IProperty<?>> properties = state.getPropertyKeys();
+        IBlockState newState = block.getDefaultState();
+        for (IProperty<?> property : properties) {
+            try {
+                newState = copySingleProp(state, newState, property);
+            } catch (IllegalArgumentException e) { //property does not exist for target block
+            }
+        }
+        return newState;
+    }
+    private <T extends Comparable<T>> IBlockState copySingleProp(IBlockState fromState, IBlockState toState, IProperty<T> prop) {
+        return toState.withProperty(prop, fromState.getValue(prop));
     }
 }
