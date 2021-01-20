@@ -50,18 +50,21 @@ buildscript {
 
 import baritone.gradle.task.CreateDistTask
 import baritone.gradle.task.ProguardTask
+import baritone.gradle.fabric.CreateVolderYarn
 
 import net.minecraftforge.gradle.userdev.tasks.GenerateSRG
 import net.minecraftforge.gradle.userdev.tasks.RenameJarInPlace
 import org.apache.tools.ant.taskdefs.condition.Os
 
-def isMCP = !getProject().hasProperty("baritone.fabric_build")
-
 apply plugin: 'java'
-if (isMCP) {
+
+def mcpVersion = [channel: 'snapshot', version: '20201028-1.16.3']
+
+if (!getProject().hasProperty("baritone.fabric_build")) {
     apply plugin: 'net.minecraftforge.gradle'
     apply plugin: 'org.spongepowered.mixin'
 } else {
+    CreateVolderYarn.genMappings("1.16.4", mcpVersion)
     apply plugin: 'fabric-loom'
 }
 
@@ -102,9 +105,9 @@ task sourceJar(type: Jar, dependsOn: classes) {
     classifier = 'sources'
     from sourceSets.api.allSource
 }
-if (isMCP) {
+if (!getProject().hasProperty("baritone.fabric_build")) {
     minecraft {
-        mappings channel: 'snapshot', version: '20201028-1.16.3'
+        mappings mcpVersion
 
         if (getProject().hasProperty("baritone.forge_build")) {
             reobfMappings 'searge'
@@ -173,7 +176,7 @@ repositories {
 }
 
 dependencies {
-    if (isMCP) {
+    if (!getProject().hasProperty("baritone.fabric_build")) {
         minecraft 'com.github.ImpactDevelopment:Vanilla:1.16.4'
 
         runtime launchCompile('net.minecraft:launchwrapper:1.12') {
@@ -214,7 +217,7 @@ javadoc {
     classpath += sourceSets.api.compileClasspath
 }
 
-if (!isMCP) {
+if (!!getProject().hasProperty("baritone.fabric_build")) {
 
     tasks.withType(JavaCompile).configureEach {
         // ensure that the encoding is set to UTF-8, no matter what the system default is
@@ -272,7 +275,7 @@ File getClientJarFabric() {
         .get()
 }
 
-if (isMCP) {
+if (!getProject().hasProperty("baritone.fabric_build")) {
     task copyMcJar(type: Copy) {
         def mcJar = {getClientJar()}
 
