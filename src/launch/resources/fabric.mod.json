@@ -7,7 +7,7 @@
   "name": "Baritone",
   "description": "Google Maps for Blockgame",
   "authors": [
-    "people"
+    "leijurv", "Brady"
   ],
   "contact": {
     "homepage": "https://github.com/cabaletta/baritone",
@@ -15,7 +15,7 @@
   },
 
   "license": "LGPL-3.0",
-  "icon": "assets/modid/icon.png",
+  "icon": "assets/baritone/icon.png",
 
   "environment": "*",
   "entrypoints": {
@@ -27,8 +27,5 @@
   "depends": {
     "fabricloader": ">=0.7.4",
     "minecraft": "1.16.x"
-  },
-  "suggests": {
-    "another-mod": "*"
   }
 }
