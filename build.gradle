@@ -52,7 +52,6 @@ import baritone.gradle.task.CreateDistTask
 import baritone.gradle.task.ProguardTask
 import baritone.gradle.fabric.CreateVolderYarn
 
-import net.minecraftforge.gradle.userdev.tasks.GenerateSRG
 import net.minecraftforge.gradle.userdev.tasks.RenameJarInPlace
 import org.apache.tools.ant.taskdefs.condition.Os
 
@@ -60,12 +59,12 @@ apply plugin: 'java'
 
 def mcpVersion = [channel: 'snapshot', version: '20201028-1.16.3']
 
-if (!getProject().hasProperty("baritone.fabric_build")) {
-    apply plugin: 'net.minecraftforge.gradle'
-    apply plugin: 'org.spongepowered.mixin'
-} else {
+if (getProject().hasProperty("baritone.fabric_build")) {
     CreateVolderYarn.genMappings("1.16.4", mcpVersion)
     apply plugin: 'fabric-loom'
+} else {
+    apply plugin: 'net.minecraftforge.gradle'
+    apply plugin: 'org.spongepowered.mixin'
 }
 
 
@@ -176,7 +175,19 @@ repositories {
 }
 
 dependencies {
-    if (!getProject().hasProperty("baritone.fabric_build")) {
+    if (getProject().hasProperty("baritone.fabric_build")) {
+        minecraft "com.mojang:minecraft:1.16.4"
+        mappings fileTree(dir: "volderyarn", include: "**.jar")
+        modImplementation "net.fabricmc:fabric-loader:0.9.1+build.205"
+
+        // this makes it compile with the forge tweak stuff
+        implementation 'com.github.ImpactDevelopment:SimpleTweaker:1.2'
+        implementation('net.minecraft:launchwrapper:1.12') {
+            exclude module: 'lwjgl'
+        }
+
+        implementation 'com.google.code.findbugs:jsr305:3.0.2'
+    } else {
         minecraft 'com.github.ImpactDevelopment:Vanilla:1.16.4'
 
         runtime launchCompile('net.minecraft:launchwrapper:1.12') {
@@ -192,18 +203,6 @@ dependencies {
             exclude module: 'commons-io'
             exclude module: 'log4j-core'
         }
-    } else {
-        minecraft "com.mojang:minecraft:1.16.4"
-        mappings fileTree(dir: "volderyarn", include: "**.jar")
-        modImplementation "net.fabricmc:fabric-loader:0.9.1+build.205"
-
-        // this makes it compile with the forge tweak stuff
-        implementation 'com.github.ImpactDevelopment:SimpleTweaker:1.2'
-        implementation('net.minecraft:launchwrapper:1.12') {
-            exclude module: 'lwjgl'
-        }
-
-        implementation 'com.google.code.findbugs:jsr305:3.0.2'
     }
 
     testImplementation 'junit:junit:4.12'
@@ -217,8 +216,8 @@ javadoc {
     classpath += sourceSets.api.compileClasspath
 }
 
-if (!!getProject().hasProperty("baritone.fabric_build")) {
-
+if (getProject().hasProperty("baritone.fabric_build")) {
+    // skidded from fabric-example-mod (comments and all)
     tasks.withType(JavaCompile).configureEach {
         // ensure that the encoding is set to UTF-8, no matter what the system default is
         // this fixes some edge cases with special characters not displaying correctly
@@ -241,9 +240,14 @@ jar {
     preserveFileTimestamps = false
     reproducibleFileOrder = true
 
-    filesMatching("fabric.mod.json") {
-        expand "version": version
+    if (getProject().hasProperty("baritone.fabric_build")) {
+        filesMatching("fabric.mod.json") {
+            expand "version": version
+        }
+    } else {
+        exclude("fabric.mod.json")
     }
+
 
     manifest {
         attributes(
@@ -275,7 +279,23 @@ File getClientJarFabric() {
         .get()
 }
 
-if (!getProject().hasProperty("baritone.fabric_build")) {
+if (getProject().hasProperty("baritone.fabric_build")) {
+    task copyMcJar(type: Copy) {
+        def mcJar = {getClientJarFabric()}
+
+        from mcJar
+        into 'build/createMcIntermediaryJar/'
+        rename {'client.jar'}
+    }
+
+    task proguard(type: ProguardTask, dependsOn: copyMcJar) {
+        url 'https://downloads.sourceforge.net/project/proguard/proguard/6.0/proguard6.0.3.zip'
+        extract 'proguard6.0.3/lib/proguard.jar'
+    }
+
+    task createDist(type: CreateDistTask, dependsOn: proguard)
+
+} else {
     task copyMcJar(type: Copy) {
         def mcJar = {getClientJar()}
 
@@ -291,7 +311,7 @@ if (!getProject().hasProperty("baritone.fabric_build")) {
         // fork
         setMappingType(net.minecraftforge.gradle.common.util.MappingFile.Mapping.SEARGE)
         setJarTask('trans alaska pipeline')
-}
+    }
 
     project.afterEvaluate {
         createSrgMc.dependsOn(extractSrg, copyMcJar)
@@ -300,22 +320,6 @@ if (!getProject().hasProperty("baritone.fabric_build")) {
 
 
     task proguard(type: ProguardTask, dependsOn: createSrgMc) { // TODO: dont need to create srg mc if doing notch build
-        url 'https://downloads.sourceforge.net/project/proguard/proguard/6.0/proguard6.0.3.zip'
-        extract 'proguard6.0.3/lib/proguard.jar'
-    }
-
-    task createDist(type: CreateDistTask, dependsOn: proguard)
-
-} else {
-    task copyMcJar(type: Copy) {
-        def mcJar = {getClientJarFabric()}
-
-        from mcJar
-        into 'build/createMcIntermediaryJar/'
-        rename {'client.jar'}
-    }
-
-    task proguard(type: ProguardTask, dependsOn: copyMcJar) {
         url 'https://downloads.sourceforge.net/project/proguard/proguard/6.0/proguard6.0.3.zip'
         extract 'proguard6.0.3/lib/proguard.jar'
     }
