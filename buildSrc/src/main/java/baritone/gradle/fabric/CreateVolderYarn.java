@@ -53,7 +53,13 @@ public class CreateVolderYarn {
         for (ClassData clazz : mappings.values()) {
             builder.append("\n").append(clazz.getIntToMCP());
         }
-        try (ZipOutputStream output = new ZipOutputStream(new FileOutputStream(new File(VOLDER_YARN_PATH)))) {
+        
+        File outputFile = new File(VOLDER_YARN_PATH);
+        if (!outputFile.getParentFile().exists()) {
+            if (!outputFile.getParentFile().mkdir()) throw new FileNotFoundException("Failed to create folder for volderyarn!");
+        }
+        
+        try (ZipOutputStream output = new ZipOutputStream(new FileOutputStream(outputFile))) {
             output.putNextEntry(new ZipEntry("mappings/mappings.tiny"));
             byte[] outData = builder.toString().getBytes(StandardCharsets.UTF_8);
             output.write(outData, 0, outData.length);
@@ -140,8 +146,6 @@ public class CreateVolderYarn {
                         builder.append(new String(buff, 0, read));
                     }
                     fileContents.put(entry.getName(), builder.toString());
-                } else {
-                    System.out.println("DEBUG: " + entry.getName());
                 }
             }
             return fileContents;

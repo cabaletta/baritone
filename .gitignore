@@ -4,6 +4,7 @@
 run/
 autotest/
 dist/
+volderyarn/
 
 # Gradle
 build/
