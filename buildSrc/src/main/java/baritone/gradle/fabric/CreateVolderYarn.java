@@ -31,7 +31,8 @@ import java.util.zip.ZipOutputStream;
  * @Author Wagyourtail
  */
 public class CreateVolderYarn {
-    public static String VOLDER_YARN_PATH = "./volderyarn/volderyarn.jar";
+    public static String VOLDERYARNFOLDER = "./volderyarn/";
+    public static String VOLDERYARN = "volderyarn-%s-%s-%s.jar";
     
     public static void genMappings(String mcVersion, Map<String, String> mcpVersion) throws IOException {
         //download yarn intermediary
@@ -54,7 +55,13 @@ public class CreateVolderYarn {
             builder.append("\n").append(clazz.getIntToMCP());
         }
         
-        File outputFile = new File(VOLDER_YARN_PATH);
+        File outputFolder = new File(VOLDERYARNFOLDER);
+        
+        for (File f : outputFolder.listFiles()) {
+            if (!f.isDirectory()) f.delete();
+        }
+        
+        File outputFile = new File(outputFolder, String.format(VOLDERYARN, mcVersion, mcpVersion.get("channel"), mcpVersion.get("version")));
         if (!outputFile.getParentFile().exists()) {
             if (!outputFile.getParentFile().mkdir()) throw new FileNotFoundException("Failed to create folder for volderyarn!");
         }
