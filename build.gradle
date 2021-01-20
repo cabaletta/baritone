@@ -52,8 +52,7 @@ import net.minecraftforge.gradle.userdev.tasks.GenerateSRG
 import net.minecraftforge.gradle.userdev.tasks.RenameJarInPlace
 import org.apache.tools.ant.taskdefs.condition.Os
 
-def isMCP = false
-
+def isMCP = !getProject().hasProperty("baritone.fabric_build")
 
 apply plugin: 'java'
 if (isMCP) {
@@ -150,7 +149,7 @@ if (isMCP) {
 
     mixin {
         defaultObfuscationEnv searge
-        add sourceSets.launch, 'mixins.baritone.refmap.json'
+        add sourceSets.launch, 'baritone-refmap.json'
     }
 }
 
@@ -192,7 +191,9 @@ dependencies {
 
         // this makes it compile with the forge tweak stuff
         implementation 'com.github.ImpactDevelopment:SimpleTweaker:1.2'
-        implementation 'net.minecraft:launchwrapper:1.12'
+        implementation('net.minecraft:launchwrapper:1.12') {
+            exclude module: 'lwjgl'
+        }
 
         implementation 'com.google.code.findbugs:jsr305:3.0.2'
     }
@@ -257,6 +258,15 @@ File getClientJar() {
             .get()
 }
 
+File getClientJarFabric() {
+    return project.getConvention().getPlugin(JavaPluginConvention.class).getSourceSets().findByName("launch").getRuntimeClasspath().getFiles()
+        .stream()
+        .filter({f -> f.getName().endsWith("-v2.jar") && f.getName().startsWith("minecraft-")})
+        .map({f -> new File(f.getParentFile().getParentFile(), f.getName().toString().replace("mapped", "intermediary"))})
+        .findFirst()
+        .get()
+}
+
 if (isMCP) {
     task copyMcJar(type: Copy) {
         def mcJar = {getClientJar()}
@@ -288,5 +298,21 @@ if (isMCP) {
 
     task createDist(type: CreateDistTask, dependsOn: proguard)
 
-    build.finalizedBy(createDist)
+} else {
+    task copyMcJar(type: Copy) {
+        def mcJar = {getClientJarFabric()}
+
+        from mcJar
+        into 'build/createMcIntermediaryJar/'
+        rename {'client.jar'}
+    }
+
+    task proguard(type: ProguardTask, dependsOn: copyMcJar) {
+        url 'https://downloads.sourceforge.net/project/proguard/proguard/6.0/proguard6.0.3.zip'
+        extract 'proguard6.0.3/lib/proguard.jar'
+    }
+
+    task createDist(type: CreateDistTask, dependsOn: proguard)
+
 }
+build.finalizedBy(createDist)

@@ -41,13 +41,16 @@ class BaritoneGradleTask extends DefaultTask {
             PROGUARD_STANDALONE_CONFIG      = "standalone.pro",
             PROGUARD_EXPORT_PATH            = "proguard_out.jar",
 
-            ARTIFACT_STANDARD          = "%s-%s.jar",
-            ARTIFACT_UNOPTIMIZED       = "%s-unoptimized-%s.jar",
-            ARTIFACT_API               = "%s-api-%s.jar",
-            ARTIFACT_STANDALONE        = "%s-standalone-%s.jar",
-            ARTIFACT_FORGE_UNOPTIMIZED = "%s-unoptimized-forge-%s.jar",
-            ARTIFACT_FORGE_API         = "%s-api-forge-%s.jar",
-            ARTIFACT_FORGE_STANDALONE  = "%s-standalone-forge-%s.jar";
+            ARTIFACT_STANDARD           = "%s-%s.jar",
+            ARTIFACT_UNOPTIMIZED        = "%s-unoptimized-%s.jar",
+            ARTIFACT_API                = "%s-api-%s.jar",
+            ARTIFACT_STANDALONE         = "%s-standalone-%s.jar",
+            ARTIFACT_FORGE_UNOPTIMIZED  = "%s-unoptimized-forge-%s.jar",
+            ARTIFACT_FORGE_API          = "%s-api-forge-%s.jar",
+            ARTIFACT_FORGE_STANDALONE   = "%s-standalone-forge-%s.jar",
+            ARTIFACT_FABRIC_UNOPTIMIZED = "%s-unoptimized-fabric-%s.jar",
+            ARTIFACT_FABRIC_API         = "%s-api-fabric-%s.jar",
+            ARTIFACT_FABRIC_STANDALONE  = "%s-standalone-fabric-%s.jar";
 
     protected String artifactName, artifactVersion;
     protected final Path
@@ -65,6 +68,10 @@ class BaritoneGradleTask extends DefaultTask {
             this.artifactUnoptimizedPath = this.getBuildFile(formatVersion(ARTIFACT_FORGE_UNOPTIMIZED));
             this.artifactApiPath         = this.getBuildFile(formatVersion(ARTIFACT_FORGE_API));
             this.artifactStandalonePath  = this.getBuildFile(formatVersion(ARTIFACT_FORGE_STANDALONE));
+        } else if (getProject().hasProperty("baritone.fabric_build")) {
+            this.artifactUnoptimizedPath = this.getBuildFile(formatVersion(ARTIFACT_FABRIC_UNOPTIMIZED));
+            this.artifactApiPath         = this.getBuildFile(formatVersion(ARTIFACT_FABRIC_API));
+            this.artifactStandalonePath  = this.getBuildFile(formatVersion(ARTIFACT_FABRIC_STANDALONE));
         } else {
             this.artifactUnoptimizedPath = this.getBuildFile(formatVersion(ARTIFACT_UNOPTIMIZED));
             this.artifactApiPath         = this.getBuildFile(formatVersion(ARTIFACT_API));

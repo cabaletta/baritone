@@ -112,6 +112,9 @@ public class ProguardTask extends BaritoneGradleTask {
                 if (getProject().hasProperty("baritone.forge_build")) {
                     libraries = dependencies
                         .map(f -> f.toString().endsWith("client.jar") ? getSrgMcJar() : f);
+                } else if (getProject().hasProperty("baritone.fabric_build")) {
+                    libraries = dependencies
+                        .map(f -> f.getName().endsWith("-v2.jar") && f.getName().startsWith("minecraft-") ? getSrgMcJar() : f);
                 } else {
                     libraries = dependencies;
                 }
