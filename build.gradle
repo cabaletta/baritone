@@ -101,7 +101,9 @@ task sourceJar(type: Jar, dependsOn: classes) {
     classifier = 'sources'
     from sourceSets.api.allSource
 }
-if (!getProject().hasProperty("baritone.fabric_build")) {
+if (getProject().hasProperty("baritone.fabric_build")) {
+    minecraft.refmapName="mixins.baritone.refmap.json"
+} else {
     minecraft {
         mappings mcpVersion
 
@@ -151,7 +153,7 @@ if (!getProject().hasProperty("baritone.fabric_build")) {
 
     mixin {
         defaultObfuscationEnv searge
-        add sourceSets.launch, 'baritone-refmap.json'
+        add sourceSets.launch, 'mixins.baritone.refmap.json'
     }
 }
 
