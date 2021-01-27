@@ -179,7 +179,7 @@ repositories {
 dependencies {
     if (getProject().hasProperty("baritone.fabric_build")) {
         minecraft "com.mojang:minecraft:1.16.4"
-        mappings fileTree(dir: "volderyarn", include: "**.jar")
+        mappings fileTree(dir: "./build/volderyarn", include: "**.jar")
         modImplementation "net.fabricmc:fabric-loader:0.9.1+build.205"
 
         // this makes it compile with the forge tweak stuff
