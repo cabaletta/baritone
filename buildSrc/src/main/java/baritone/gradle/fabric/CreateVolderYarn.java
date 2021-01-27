@@ -31,7 +31,7 @@ import java.util.zip.ZipOutputStream;
  * @Author Wagyourtail
  */
 public class CreateVolderYarn {
-    public static String VOLDERYARNFOLDER = "./volderyarn/";
+    public static String VOLDERYARNFOLDER = "./build/volderyarn/";
     public static String VOLDERYARN = "volderyarn-%s-%s-%s.jar";
     
     public static void genMappings(String mcVersion, Map<String, String> mcpVersion) throws IOException {
@@ -56,6 +56,7 @@ public class CreateVolderYarn {
         }
         
         File outputFolder = new File(VOLDERYARNFOLDER);
+        if (!outputFolder.exists() && !outputFolder.mkdirs()) throw new RuntimeException("Failed to create dir for volderyarn mappings.");
         
         for (File f : outputFolder.listFiles()) {
             if (!f.isDirectory()) f.delete();
