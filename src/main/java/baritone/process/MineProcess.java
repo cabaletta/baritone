@@ -61,8 +61,10 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
     private Map<BlockPos, Long> anticipatedDrops;
     private BlockPos branchPoint;
     private GoalRunAway branchPointRunaway;
-    private int desiredQuantity;
+    private Map<BlockOptionalMeta, Integer> desiredQuantity;
     private int tickCount;
+    private BlockPos startPos;
+    private int radius;
 
     public MineProcess(Baritone baritone) {
         super(baritone);
@@ -75,16 +77,26 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
 
     @Override
     public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
-        if (desiredQuantity > 0) {
-            int curr = ctx.player().inventory.mainInventory.stream()
-                    .filter(stack -> filter.has(stack))
-                    .mapToInt(ItemStack::getCount).sum();
-            System.out.println("Currently have " + curr + " valid items");
-            if (curr >= desiredQuantity) {
-                logDirect("Have " + curr + " valid items");
-                cancel();
-                return null;
+        List<BlockOptionalMeta> blocksLeft = new ArrayList<>();
+        for (BlockOptionalMeta bom : filter.blocks()) {
+            if (desiredQuantity.get(bom) > 0) {
+                int curr = ctx.player().inventory.mainInventory.stream()
+                        .filter(bom::matches)
+                        .mapToInt(ItemStack::getCount).sum();
+                System.out.println("Currently have " + curr + " valid " + bom.getBlock().getLocalizedName());
+                if (curr >= desiredQuantity.get(bom)) {
+                    logDirect("Have " + curr + " valid " + bom.getBlock().getLocalizedName());
+                } else {
+                    blocksLeft.add(bom);
+                }
+            } else {
+                blocksLeft.add(bom);
             }
+        }
+        filter = new BlockOptionalMetaLookup(blocksLeft.toArray(new BlockOptionalMeta[0]));
+        // go into the circle so part of the circle is definitely in the cache
+        if (radius != 0 && Math.sqrt(Math.pow(startPos.getZ() - ctx.playerFeet().getZ(), 2) + startPos.getX() - ctx.playerFeet().getX()) > radius) {
+            return new PathingCommand(new GoalGetToBlock(startPos), PathingCommandType.SET_GOAL_AND_PATH);
         }
         if (calcFailed) {
             if (!knownOreLocations.isEmpty() && Baritone.settings().blacklistClosestOnFailure.value) {
@@ -168,7 +180,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
 
     @Override
     public void onLostControl() {
-        mine(0, (BlockOptionalMetaLookup) null);
+        mine(null, 0, null, null);
     }
 
     @Override
@@ -180,6 +192,12 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         boolean legit = Baritone.settings().legitMine.value;
         List<BlockPos> locs = knownOreLocations;
         if (!locs.isEmpty()) {
+            locs.removeIf(pos -> {
+                if (radius == 0) {
+                    return false;
+                }
+                return (Math.sqrt(Math.pow(startPos.getZ() - pos.getZ(), 2) + startPos.getX() - pos.getX()) >= radius);
+            });
             CalculationContext context = new CalculationContext(baritone);
             List<BlockPos> locs2 = prune(context, new ArrayList<>(locs), filter, ORE_LOCATIONS_COUNT, blacklist, droppedItemsScan());
             // can't reassign locs, gotta make a new var locs2, because we use it in a lambda right here, and variables you use in a lambda must be effectively final
@@ -456,18 +474,20 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
     }
 
     @Override
-    public void mineByName(int quantity, String... blocks) {
-        mine(quantity, new BlockOptionalMetaLookup(blocks));
+    public void mineByName(Map<BlockOptionalMeta, Integer> quantity, String... blocks) {
+        mine(null, 0, quantity, new BlockOptionalMetaLookup(blocks));
     }
 
     @Override
-    public void mine(int quantity, BlockOptionalMetaLookup filter) {
+    public void mine(BlockPos startPos, int radius, Map<BlockOptionalMeta, Integer> quantity, BlockOptionalMetaLookup filter) {
         this.filter = filter;
         if (filter != null && !Baritone.settings().allowBreak.value) {
             logDirect("Unable to mine when allowBreak is false!");
-            this.mine(quantity, (BlockOptionalMetaLookup) null);
+            this.mine(null, 0, quantity, null);
             return;
         }
+        this.radius = radius;
+        this.startPos = startPos;
         this.desiredQuantity = quantity;
         this.knownOreLocations = new ArrayList<>();
         this.blacklist = new ArrayList<>();

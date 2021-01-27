@@ -20,7 +20,10 @@ package baritone.api.process;
 import baritone.api.utils.BlockOptionalMeta;
 import baritone.api.utils.BlockOptionalMetaLookup;
 import net.minecraft.block.Block;
+import net.minecraft.util.math.BlockPos;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Stream;
 
 /**
@@ -34,20 +37,22 @@ public interface IMineProcess extends IBaritoneProcess {
      * the number of specified items to get from the blocks that
      * are mined.
      *
-     * @param quantity The total number of items to get
+     * @param quantity The number of items to get per block
      * @param blocks   The blocks to mine
      */
-    void mineByName(int quantity, String... blocks);
+    void mineByName(Map<BlockOptionalMeta, Integer> quantity, String... blocks);
 
     /**
-     * Begin to search for and mine the specified blocks until
+     * Begin to search for and mine the specified blocks in a specified radius until
      * the number of specified items to get from the blocks that
      * are mined. This is based on the first target block to mine.
      *
-     * @param quantity The number of items to get from blocks mined
+     * @param startPos center of the circle
+     * @param radius   radius of the circle that is used for mining
+     * @param quantity The number of items to get for a block
      * @param filter   The blocks to mine
      */
-    void mine(int quantity, BlockOptionalMetaLookup filter);
+    void mine(BlockPos startPos, int radius, Map<BlockOptionalMeta, Integer> quantity, BlockOptionalMetaLookup filter);
 
     /**
      * Begin to search for and mine the specified blocks.
@@ -55,7 +60,11 @@ public interface IMineProcess extends IBaritoneProcess {
      * @param filter The blocks to mine
      */
     default void mine(BlockOptionalMetaLookup filter) {
-        mine(0, filter);
+        Map<BlockOptionalMeta, Integer> quantity = new HashMap<>();
+        for (BlockOptionalMeta bom : filter.blocks()) {
+            quantity.put(bom, 0);
+        }
+        mine(null, 0, quantity, filter);
     }
 
     /**
@@ -64,7 +73,7 @@ public interface IMineProcess extends IBaritoneProcess {
      * @param blocks The blocks to mine
      */
     default void mineByName(String... blocks) {
-        mineByName(0, blocks);
+        mine(new BlockOptionalMetaLookup(blocks));
     }
 
     /**
@@ -72,8 +81,8 @@ public interface IMineProcess extends IBaritoneProcess {
      *
      * @param boms The blocks to mine
      */
-    default void mine(int quantity, BlockOptionalMeta... boms) {
-        mine(quantity, new BlockOptionalMetaLookup(boms));
+    default void mine(Map<BlockOptionalMeta, Integer> quantity, BlockOptionalMeta... boms) {
+        mine(null, 0, quantity, new BlockOptionalMetaLookup(boms));
     }
 
     /**
@@ -82,17 +91,21 @@ public interface IMineProcess extends IBaritoneProcess {
      * @param boms The blocks to mine
      */
     default void mine(BlockOptionalMeta... boms) {
-        mine(0, boms);
+        Map<BlockOptionalMeta, Integer> quantity = new HashMap<>();
+        for (BlockOptionalMeta bom : boms) {
+            quantity.put(bom, 0);
+        }
+        mine(quantity, boms);
     }
 
     /**
      * Begin to search for and mine the specified blocks.
      *
-     * @param quantity The total number of items to get
+     * @param quantity The number of items to get for a block block
      * @param blocks   The blocks to mine
      */
-    default void mine(int quantity, Block... blocks) {
-        mine(quantity, new BlockOptionalMetaLookup(
+    default void mine(Map<BlockOptionalMeta, Integer> quantity, Block... blocks) {
+        mine(null, 0, quantity, new BlockOptionalMetaLookup(
                 Stream.of(blocks)
                         .map(BlockOptionalMeta::new)
                         .toArray(BlockOptionalMeta[]::new)
@@ -105,7 +118,12 @@ public interface IMineProcess extends IBaritoneProcess {
      * @param blocks The blocks to mine
      */
     default void mine(Block... blocks) {
-        mine(0, blocks);
+        BlockOptionalMetaLookup boml = new BlockOptionalMetaLookup(Stream.of(blocks).map(BlockOptionalMeta::new).toArray(BlockOptionalMeta[]::new));
+        Map<BlockOptionalMeta, Integer> quantity = new HashMap<>();
+        for (BlockOptionalMeta bom : boml.blocks()) {
+            quantity.put(bom, 0);
+        }
+        mine(null, 0, quantity, boml);
     }
 
     /**
