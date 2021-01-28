@@ -71,7 +71,13 @@ public class GoalNear implements Goal, IGoalRenderPos {
                 }
             }
         }
-        return Collections.max(maybeAlwaysInside);
+        double maxInside = Double.NEGATIVE_INFINITY;
+        for (double inside : maybeAlwaysInside) {
+            if (inside < minOutside) {
+                maxInside = Math.max(maxInside, inside);
+            }
+        }
+        return maxInside;
     }
 
     @Override

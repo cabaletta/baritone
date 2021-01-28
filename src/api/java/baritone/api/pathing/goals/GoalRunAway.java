@@ -23,7 +23,6 @@ import net.minecraft.util.math.BlockPos;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.NoSuchElementException;
 
 /**
  * Useful for automated combat (retreating specifically)
@@ -114,11 +113,13 @@ public class GoalRunAway implements Goal {
                 }
             }
         }
-        try {
-            return Collections.max(maybeAlwaysInside);
-        } catch (NoSuchElementException e) {
-            return Double.NEGATIVE_INFINITY;
+        double maxInside = Double.NEGATIVE_INFINITY;
+        for (double inside : maybeAlwaysInside) {
+            if (inside < minOutside) {
+                maxInside = Math.max(maxInside, inside);
+            }
         }
+        return maxInside;
     }
 
     @Override
