@@ -10,7 +10,6 @@ install:
 
 script:
 - docker run --name baritone cabaletta/baritone ./gradlew javadoc
-#- docker run --name baritone cabaletta/baritone /bin/sh -c "set -e; /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 128x128x24 -ac +extension GLX +render; DISPLAY=:99 BARITONE_AUTO_TEST=true ./gradlew runClient"
 - docker cp baritone:/code/dist dist
 - ls dist
 - cat dist/checksums.txt
