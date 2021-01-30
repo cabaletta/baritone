@@ -637,14 +637,14 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             if (logMissing && !missing.isEmpty()) {
                 logDirect("Missing materials for at least:");
                 logDirect(missing.entrySet().stream()
-                          .map(e -> String.format("%sx %s", e.getValue(), e.getKey()))
-                          .collect(Collectors.joining("\n")));
+                        .map(e -> String.format("%sx %s", e.getValue(), e.getKey()))
+                        .collect(Collectors.joining("\n")));
             }
             if (logMissing && !flowingLiquids.isEmpty()) {
                 logDirect("Unreplaceable liquids at at least:");
                 logDirect(flowingLiquids.stream()
-                          .map(p -> String.format("%s %s %s", p.x, p.y, p.z))
-                          .collect(Collectors.joining("\n")));
+                        .map(p -> String.format("%s %s %s", p.x, p.y, p.z))
+                        .collect(Collectors.joining("\n")));
             }
             return null;
         }

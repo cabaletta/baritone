@@ -18,7 +18,6 @@
 package baritone.api.event.events;
 
 import baritone.api.event.events.type.Cancellable;
-import baritone.api.event.events.type.Overrideable;
 
 /**
  * @author LoganDark

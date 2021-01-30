@@ -18,6 +18,7 @@
 package baritone.command.argument;
 
 import baritone.api.IBaritone;
+import baritone.api.command.argument.IArgConsumer;
 import baritone.api.command.argument.ICommandArgument;
 import baritone.api.command.datatypes.IDatatype;
 import baritone.api.command.datatypes.IDatatypeContext;
@@ -27,7 +28,6 @@ import baritone.api.command.exception.CommandException;
 import baritone.api.command.exception.CommandInvalidTypeException;
 import baritone.api.command.exception.CommandNotEnoughArgumentsException;
 import baritone.api.command.exception.CommandTooManyArgumentsException;
-import baritone.api.command.argument.IArgConsumer;
 import baritone.api.command.manager.ICommandManager;
 
 import java.util.ArrayList;

@@ -34,11 +34,10 @@ public interface IDatatypeFor<T> extends IDatatype {
      * if the expected input does not conform to a parseable value. As far as a {@link CommandException} being
      * thrown is concerned, see the note below for specifics.
      *
-     * @see IDatatypeContext
-     *
      * @param ctx The context
      * @return The parsed data-type
      * @throws CommandException If there was an issue parsing using another type or arguments could not be polled.
+     * @see IDatatypeContext
      */
     T get(IDatatypeContext ctx) throws CommandException;
 }

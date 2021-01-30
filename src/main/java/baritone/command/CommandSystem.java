@@ -18,8 +18,8 @@
 package baritone.command;
 
 import baritone.api.command.ICommandSystem;
-import baritone.command.argparser.ArgParserManager;
 import baritone.api.command.argparser.IArgParserManager;
+import baritone.command.argparser.ArgParserManager;
 
 /**
  * @author Brady
