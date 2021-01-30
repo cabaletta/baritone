@@ -81,7 +81,10 @@ public class CreateDistTask extends BaritoneGradleTask {
                 getRelativeFile("dist/" + formatVersion(ARTIFACT_STANDALONE)),
                 getRelativeFile("dist/" + formatVersion(ARTIFACT_FORGE_STANDALONE)),
                 getRelativeFile("dist/" + formatVersion(ARTIFACT_UNOPTIMIZED)),
-                getRelativeFile("dist/" + formatVersion(ARTIFACT_FORGE_UNOPTIMIZED))
+                getRelativeFile("dist/" + formatVersion(ARTIFACT_FORGE_UNOPTIMIZED)),
+                getRelativeFile("dist/" + formatVersion(ARTIFACT_FABRIC_API)),
+                getRelativeFile("dist/" + formatVersion(ARTIFACT_FABRIC_STANDALONE)),
+                getRelativeFile("dist/" + formatVersion(ARTIFACT_FABRIC_UNOPTIMIZED))
         );
     }
 
