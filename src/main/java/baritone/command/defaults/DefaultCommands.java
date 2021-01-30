@@ -60,10 +60,11 @@ public final class DefaultCommands {
                 new FindCommand(baritone),
                 new MineCommand(baritone),
                 new ClickCommand(baritone),
+                new SurfaceCommand(baritone),
                 new ThisWayCommand(baritone),
                 new WaypointsCommand(baritone),
                 new CommandAlias(baritone, "sethome", "Sets your home waypoint", "waypoints save home"),
-                new CommandAlias(baritone, "home", "Set goal to your home waypoint", "waypoints goal home"),
+                new CommandAlias(baritone, "home", "Path to your home waypoint", "waypoints goto home"),
                 new SelCommand(baritone)
         ));
         ExecutionControlCommands prc = new ExecutionControlCommands(baritone);

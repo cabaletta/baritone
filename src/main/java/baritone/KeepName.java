@@ -15,25 +15,7 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.utils;
+package baritone;
 
-import baritone.Baritone;
-import baritone.api.process.IBaritoneProcess;
-import baritone.api.utils.Helper;
-import baritone.api.utils.IPlayerContext;
-
-public abstract class BaritoneProcessHelper implements IBaritoneProcess, Helper {
-
-    protected final Baritone baritone;
-    protected final IPlayerContext ctx;
-
-    public BaritoneProcessHelper(Baritone baritone) {
-        this.baritone = baritone;
-        this.ctx = baritone.getPlayerContext();
-    }
-
-    @Override
-    public boolean isTemporary() {
-        return false;
-    }
-}
+// Annotation for classes and class members that should not be renamed by proguard
+public @interface KeepName { }
