@@ -20,8 +20,8 @@ package baritone.api;
 import baritone.api.cache.IWorldScanner;
 import baritone.api.command.ICommand;
 import baritone.api.command.ICommandSystem;
-import net.minecraft.client.entity.player.ClientPlayerEntity;
 import baritone.api.schematic.ISchematicSystem;
+import net.minecraft.client.entity.player.ClientPlayerEntity;
 
 import java.util.List;
 import java.util.Objects;

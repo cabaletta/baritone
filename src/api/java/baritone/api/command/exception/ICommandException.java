@@ -38,8 +38,8 @@ import static baritone.api.utils.Helper.HELPER;
 public interface ICommandException {
 
     /**
-     * @see Exception#getMessage()
      * @return The exception details
+     * @see Exception#getMessage()
      */
     String getMessage();
 

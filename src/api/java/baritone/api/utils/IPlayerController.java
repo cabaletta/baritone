@@ -17,10 +17,10 @@
 
 package baritone.api.utils;
 
+import baritone.api.BaritoneAPI;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.container.ClickType;
-import baritone.api.BaritoneAPI;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Direction;

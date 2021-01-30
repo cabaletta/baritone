@@ -17,8 +17,8 @@
 
 package baritone.api.command.datatypes;
 
-import baritone.api.utils.BlockOptionalMeta;
 import baritone.api.command.exception.CommandException;
+import baritone.api.utils.BlockOptionalMeta;
 
 import java.util.stream.Stream;
 
