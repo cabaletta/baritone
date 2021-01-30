@@ -23,7 +23,6 @@ import baritone.api.event.events.BlockInteractEvent;
 import baritone.api.event.events.TickEvent;
 import baritone.api.event.events.WorldEvent;
 import baritone.api.event.events.type.EventState;
-import baritone.utils.BaritoneAutoTest;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.GuiScreen;
@@ -61,17 +60,6 @@ public class MixinMinecraft {
     )
     private void postInit(CallbackInfo ci) {
         BaritoneAPI.getProvider().getPrimaryBaritone();
-    }
-
-    @Inject(
-            method = "init",
-            at = @At(
-                    value = "INVOKE",
-                    target = "net/minecraft/client/Minecraft.startTimerHackThread()V"
-            )
-    )
-    private void preInit(CallbackInfo ci) {
-        BaritoneAutoTest.INSTANCE.onPreInit();
     }
 
     @Inject(
