@@ -407,6 +407,16 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
                 // remove any that are implausible to mine (encased in bedrock, or touching lava)
                 .filter(pos -> MineProcess.plausibleToBreak(ctx, pos))
 
+                .filter(pos -> {
+                    if (Baritone.settings().allowOnlyExposedOres.value) {
+                        return isNextToAir(ctx, pos);
+                    } else {
+                        return true;
+                    }
+                })
+
+                .filter(pos -> pos.getY() >= Baritone.settings().minYLevelWhileMining.value)
+
                 .filter(pos -> !blacklist.contains(pos))
 
                 .sorted(Comparator.comparingDouble(ctx.getBaritone().getPlayerContext().player().getPosition()::distanceSq))
@@ -417,6 +427,22 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         }
         return locs;
     }
+
+    public static boolean isNextToAir(CalculationContext ctx, BlockPos pos) {
+        int radius = Baritone.settings().allowOnlyExposedOresDistance.value;
+        for (int dx = -radius; dx <= radius; dx++) {
+            for (int dy = -radius; dy <= radius; dy++) {
+                for (int dz = -radius; dz <= radius; dz++) {
+                    if (Math.abs(dx) + Math.abs(dy) + Math.abs(dz) <= radius
+                            && MovementHelper.isTransparent(ctx.getBlock(pos.getX() + dx, pos.getY() + dy, pos.getZ() + dz))) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
 
     public static boolean plausibleToBreak(CalculationContext ctx, BlockPos pos) {
         if (MovementHelper.getMiningDurationTicks(ctx, pos.getX(), pos.getY(), pos.getZ(), ctx.bsi.get0(pos), true) >= COST_INF) {

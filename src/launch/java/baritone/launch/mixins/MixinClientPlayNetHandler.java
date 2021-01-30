@@ -25,10 +25,7 @@ import baritone.api.event.events.type.EventState;
 import baritone.cache.CachedChunk;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.client.network.play.ClientPlayNetHandler;
-import net.minecraft.network.play.server.SChangeBlockPacket;
-import net.minecraft.network.play.server.SChunkDataPacket;
-import net.minecraft.network.play.server.SCombatPacket;
-import net.minecraft.network.play.server.SMultiBlockChangePacket;
+import net.minecraft.network.play.server.*;
 import net.minecraft.util.math.ChunkPos;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -81,6 +78,36 @@ public class MixinClientPlayNetHandler {
                                 packetIn.getChunkX(),
                                 packetIn.getChunkZ()
                         )
+                );
+            }
+        }
+    }
+
+    @Inject(
+            method = "processChunkUnload",
+            at = @At("HEAD")
+    )
+    private void preChunkUnload(SUnloadChunkPacket packet, CallbackInfo ci) {
+        for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
+            ClientPlayerEntity player = ibaritone.getPlayerContext().player();
+            if (player != null && player.connection == (ClientPlayNetHandler) (Object) this) {
+                ibaritone.getGameEventHandler().onChunkEvent(
+                        new ChunkEvent(EventState.PRE, ChunkEvent.Type.UNLOAD, packet.getX(), packet.getZ())
+                );
+            }
+        }
+    }
+
+    @Inject(
+            method = "processChunkUnload",
+            at = @At("RETURN")
+    )
+    private void postChunkUnload(SUnloadChunkPacket packet, CallbackInfo ci) {
+        for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
+            ClientPlayerEntity player = ibaritone.getPlayerContext().player();
+            if (player != null && player.connection == (ClientPlayNetHandler) (Object) this) {
+                ibaritone.getGameEventHandler().onChunkEvent(
+                        new ChunkEvent(EventState.POST, ChunkEvent.Type.UNLOAD, packet.getX(), packet.getZ())
                 );
             }
         }

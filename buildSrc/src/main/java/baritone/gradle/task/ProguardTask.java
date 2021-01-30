@@ -20,6 +20,8 @@ package baritone.gradle.task;
 import baritone.gradle.util.Determinizer;
 import org.apache.commons.io.IOUtils;
 import org.gradle.api.plugins.JavaPluginConvention;
+import org.gradle.api.tasks.Input;
+import org.gradle.api.tasks.TaskAction;
 import org.gradle.api.JavaVersion;
 import org.gradle.api.NamedDomainObjectContainer;
 import org.gradle.api.artifacts.Configuration;
