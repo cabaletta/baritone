@@ -61,6 +61,9 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
     private List<BlockPos> locations;
     private int tickCount;
 
+    private int range;
+    private BlockPos center;
+
     private static final List<Item> FARMLAND_PLANTABLE = Arrays.asList(
             Items.BEETROOT_SEEDS,
             Items.MELON_SEEDS,
@@ -97,7 +100,13 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
     }
 
     @Override
-    public void farm() {
+    public void farm(int range, BlockPos pos) {
+        if (pos == null) {
+            center = baritone.getPlayerContext().playerFeet();
+        } else {
+            center = pos;
+        }
+        this.range = range;
         active = true;
         locations = null;
     }
@@ -191,6 +200,11 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
         List<BlockPos> bonemealable = new ArrayList<>();
         List<BlockPos> openSoulsand = new ArrayList<>();
         for (BlockPos pos : locations) {
+            //check if the target block is out of range.
+            if (range != 0 && pos.getDistance(center.getX(), center.getY(), center.getZ()) > range) {
+                continue;
+            }
+
             IBlockState state = ctx.world().getBlockState(pos);
             boolean airAbove = ctx.world().getBlockState(pos.up()).getBlock() instanceof BlockAir;
             if (state.getBlock() == Blocks.FARMLAND) {
