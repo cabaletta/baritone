@@ -22,7 +22,6 @@ import baritone.api.IBaritone;
 import baritone.api.event.events.TickEvent;
 import baritone.api.event.events.WorldEvent;
 import baritone.api.event.events.type.EventState;
-import baritone.utils.BaritoneAutoTest;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.client.gui.screen.Screen;
@@ -55,14 +54,6 @@ public class MixinMinecraft {
     )
     private void postInit(CallbackInfo ci) {
         BaritoneAPI.getProvider().getPrimaryBaritone();
-    }
-
-    @Inject(
-            method = "startTimerHackThread",
-            at = @At("HEAD")
-    )
-    private void preInit(CallbackInfo ci) {
-        BaritoneAutoTest.INSTANCE.onPreInit();
     }
 
     @Inject(
