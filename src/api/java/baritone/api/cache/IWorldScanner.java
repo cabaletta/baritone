@@ -88,7 +88,7 @@ public interface IWorldScanner {
      * Queues the chunks in a square formation around the specified player, using the specified
      * range, which represents 1/2 the square's dimensions, where the player is in the center.
      *
-     * @param ctx The player, describing the origin
+     * @param ctx   The player, describing the origin
      * @param range The range to repack
      * @return The amount of chunks successfully queued for repacking
      */

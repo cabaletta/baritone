@@ -17,10 +17,10 @@
 
 package baritone.utils.schematic;
 
-import net.minecraft.block.AirBlock;
-import net.minecraft.block.BlockState;
 import baritone.api.schematic.IStaticSchematic;
 import baritone.api.schematic.MaskSchematic;
+import net.minecraft.block.AirBlock;
+import net.minecraft.block.BlockState;
 
 import java.util.OptionalInt;
 import java.util.function.Predicate;

@@ -20,20 +20,15 @@ package baritone.command.defaults;
 import baritone.api.IBaritone;
 import baritone.api.cache.IWaypoint;
 import baritone.api.command.Command;
+import baritone.api.command.argument.IArgConsumer;
 import baritone.api.command.datatypes.ForWaypoints;
 import baritone.api.command.exception.CommandException;
-import baritone.api.command.argument.IArgConsumer;
 import baritone.api.command.exception.CommandInvalidStateException;
-import baritone.api.command.helpers.Paginator;
-import baritone.api.pathing.goals.Goal;
-import baritone.api.pathing.goals.GoalBlock;
 import baritone.api.utils.BetterBlockPos;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
-
-import static baritone.api.command.IBaritoneChatControl.FORCE_COMMAND_PREFIX;
 
 public class FarmCommand extends Command {
 
@@ -51,7 +46,7 @@ public class FarmCommand extends Command {
             range = args.getAs(Integer.class);
         }
         //waypoint
-        if (args.has(1)){
+        if (args.has(1)) {
             IWaypoint[] waypoints = args.getDatatypeFor(ForWaypoints.INSTANCE);
             IWaypoint waypoint = null;
             switch (waypoints.length) {
