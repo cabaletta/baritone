@@ -30,6 +30,7 @@ import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.MovementHelper;
 import baritone.utils.BaritoneProcessHelper;
 import baritone.utils.BlockStateInterface;
+import baritone.utils.NotificationHelper;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockAir;
 import net.minecraft.block.BlockFalling;
@@ -88,10 +89,16 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         if (calcFailed) {
             if (!knownOreLocations.isEmpty() && Baritone.settings().blacklistClosestOnFailure.value) {
                 logDirect("Unable to find any path to " + filter + ", blacklisting presumably unreachable closest instance...");
+                if (Baritone.settings().desktopNotifications.value && Baritone.settings().notificationOnMineFail.value) {
+                    NotificationHelper.notify("Unable to find any path to " + filter + ", blacklisting presumably unreachable closest instance...", true);
+                }
                 knownOreLocations.stream().min(Comparator.comparingDouble(ctx.player()::getDistanceSq)).ifPresent(blacklist::add);
                 knownOreLocations.removeIf(blacklist::contains);
             } else {
                 logDirect("Unable to find any path to " + filter + ", canceling mine");
+                if (Baritone.settings().desktopNotifications.value && Baritone.settings().notificationOnMineFail.value) {
+                    NotificationHelper.notify("Unable to find any path to " + filter + ", canceling mine", true);
+                }
                 cancel();
                 return null;
             }
@@ -221,6 +228,9 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         locs.addAll(dropped);
         if (locs.isEmpty()) {
             logDirect("No locations for " + filter + " known, cancelling");
+            if (Baritone.settings().desktopNotifications.value && Baritone.settings().notificationOnMineFail.value) {
+                NotificationHelper.notify("No locations for " + filter + " known, cancelling", true);
+            }
             cancel();
             return;
         }
@@ -399,6 +409,16 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
                 // remove any that are implausible to mine (encased in bedrock, or touching lava)
                 .filter(pos -> MineProcess.plausibleToBreak(ctx, pos))
 
+                .filter(pos -> {
+                    if (Baritone.settings().allowOnlyExposedOres.value) {
+                        return isNextToAir(ctx, pos);
+                    } else {
+                        return true;
+                    }
+                })
+
+                .filter(pos -> pos.getY() >= Baritone.settings().minYLevelWhileMining.value)
+
                 .filter(pos -> !blacklist.contains(pos))
 
                 .sorted(Comparator.comparingDouble(ctx.getBaritone().getPlayerContext().player()::getDistanceSq))
@@ -409,6 +429,22 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         }
         return locs;
     }
+
+    public static boolean isNextToAir(CalculationContext ctx, BlockPos pos) {
+        int radius = Baritone.settings().allowOnlyExposedOresDistance.value;
+        for (int dx = -radius; dx <= radius; dx++) {
+            for (int dy = -radius; dy <= radius; dy++) {
+                for (int dz = -radius; dz <= radius; dz++) {
+                    if (Math.abs(dx) + Math.abs(dy) + Math.abs(dz) <= radius
+                            && MovementHelper.isTransparent(ctx.getBlock(pos.getX() + dx, pos.getY() + dy, pos.getZ() + dz))) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
 
     public static boolean plausibleToBreak(CalculationContext ctx, BlockPos pos) {
         if (MovementHelper.getMiningDurationTicks(ctx, pos.getX(), pos.getY(), pos.getZ(), ctx.bsi.get0(pos), true) >= COST_INF) {

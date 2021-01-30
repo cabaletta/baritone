@@ -17,6 +17,7 @@
 
 package baritone.command.defaults;
 
+import baritone.KeepName;
 import baritone.api.IBaritone;
 import baritone.api.command.Command;
 import baritone.api.command.datatypes.EntityClassById;
@@ -131,6 +132,7 @@ public class FollowCommand extends Command {
         );
     }
 
+    @KeepName
     private enum FollowGroup {
         ENTITIES(EntityLiving.class::isInstance),
         PLAYERS(EntityPlayer.class::isInstance); /* ,
@@ -143,6 +145,7 @@ public class FollowCommand extends Command {
         }
     }
 
+    @KeepName
     private enum FollowList {
         ENTITY(EntityClassById.INSTANCE),
         PLAYER(NearbyPlayer.INSTANCE);
