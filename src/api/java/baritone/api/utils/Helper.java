@@ -67,7 +67,7 @@ public interface Helper {
     /**
      * Send a message to display as a toast popup
      *
-     * @param title The title to display in the popup
+     * @param title   The title to display in the popup
      * @param message The message to display in the popup
      */
     default void logToast(ITextComponent title, ITextComponent message) {
@@ -77,7 +77,7 @@ public interface Helper {
     /**
      * Send a message to display as a toast popup
      *
-     * @param title The title to display in the popup
+     * @param title   The title to display in the popup
      * @param message The message to display in the popup
      */
     default void logToast(String title, String message) {
@@ -144,8 +144,8 @@ public interface Helper {
      * Send a message to chat regardless of chatDebug (should only be used for critically important messages, or as a
      * direct response to a chat command)
      *
-     * @param message The message to display in chat
-     * @param color   The color to print that message in
+     * @param message    The message to display in chat
+     * @param color      The color to print that message in
      * @param logAsToast Whether to log as a toast notification
      */
     default void logDirect(String message, TextFormatting color, boolean logAsToast) {
@@ -171,7 +171,7 @@ public interface Helper {
      * Send a message to chat regardless of chatDebug (should only be used for critically important messages, or as a
      * direct response to a chat command)
      *
-     * @param message The message to display in chat
+     * @param message    The message to display in chat
      * @param logAsToast Whether to log as a toast notification
      */
     default void logDirect(String message, boolean logAsToast) {

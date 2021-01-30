@@ -67,24 +67,24 @@ public class MovementDiagonal extends Movement {
         double y = player.posY - 1;
         double z = player.posZ;
         //standard
-        if (ctx.playerFeet().equals(src)){
+        if (ctx.playerFeet().equals(src)) {
             return true;
         }
         //both corners are walkable
         if (MovementHelper.canWalkOn(ctx, new BlockPos(src.x, src.y - 1, dest.z))
-            && MovementHelper.canWalkOn(ctx, new BlockPos(dest.x, src.y - 1, src.z))){
-                return true;
+                && MovementHelper.canWalkOn(ctx, new BlockPos(dest.x, src.y - 1, src.z))) {
+            return true;
         }
         //we are in a likely unwalkable corner, check for a supporting block
         if (ctx.playerFeet().equals(new BetterBlockPos(src.x, src.y, dest.z))
-            || ctx.playerFeet().equals(new BetterBlockPos(dest.x, src.y, src.z))){
-                return (MovementHelper.canWalkOn(ctx, new BetterBlockPos(x + offset, y, z + offset))
-                   || MovementHelper.canWalkOn(ctx, new BetterBlockPos(x + offset, y, z - offset))
-                   || MovementHelper.canWalkOn(ctx, new BetterBlockPos(x - offset, y, z + offset))
-                   || MovementHelper.canWalkOn(ctx, new BetterBlockPos(x - offset, y, z - offset)));
+                || ctx.playerFeet().equals(new BetterBlockPos(dest.x, src.y, src.z))) {
+            return (MovementHelper.canWalkOn(ctx, new BetterBlockPos(x + offset, y, z + offset))
+                    || MovementHelper.canWalkOn(ctx, new BetterBlockPos(x + offset, y, z - offset))
+                    || MovementHelper.canWalkOn(ctx, new BetterBlockPos(x - offset, y, z + offset))
+                    || MovementHelper.canWalkOn(ctx, new BetterBlockPos(x - offset, y, z - offset)));
         }
         return true;
-   }
+    }
 
     @Override
     public double calculateCost(CalculationContext context) {

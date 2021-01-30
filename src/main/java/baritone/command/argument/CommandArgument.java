@@ -17,9 +17,9 @@
 
 package baritone.command.argument;
 
-import baritone.command.argparser.ArgParserManager;
 import baritone.api.command.argument.ICommandArgument;
 import baritone.api.command.exception.CommandInvalidTypeException;
+import baritone.command.argparser.ArgParserManager;
 
 import java.util.stream.Stream;
 

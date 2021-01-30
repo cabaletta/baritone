@@ -19,18 +19,15 @@ package baritone.api.utils;
 
 import baritone.api.utils.accessor.IItemStack;
 import com.google.common.collect.ImmutableSet;
-import net.minecraft.block.*;
+import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.item.ItemStack;
-import net.minecraft.state.IProperty;
-import net.minecraft.state.properties.*;
-import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.registry.IRegistry;
 
 import javax.annotation.Nonnull;
-import java.util.*;
-import java.util.function.Consumer;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
