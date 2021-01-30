@@ -22,7 +22,10 @@ import net.minecraft.block.SlabBlock;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
-import net.minecraft.util.math.*;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.BlockRayTraceResult;
+import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 import java.util.Optional;
@@ -106,18 +109,5 @@ public interface IPlayerContext {
 
     default boolean isLookingAt(BlockPos pos) {
         return getSelectedBlock().equals(Optional.of(pos));
-    }
-
-    /**
-     * Returns the entity that the crosshair is currently placed over. Updated once per tick.
-     *
-     * @return The entity
-     */
-    default Optional<Entity> getSelectedEntity() {
-        RayTraceResult result = objectMouseOver();
-        if (result != null && result.getType() == RayTraceResult.Type.ENTITY) {
-            return Optional.of(((EntityRayTraceResult) result).getEntity());
-        }
-        return Optional.empty();
     }
 }

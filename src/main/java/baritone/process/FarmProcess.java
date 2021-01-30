@@ -31,6 +31,7 @@ import baritone.api.utils.input.Input;
 import baritone.cache.WorldScanner;
 import baritone.pathing.movement.MovementHelper;
 import baritone.utils.BaritoneProcessHelper;
+import baritone.utils.NotificationHelper;
 import net.minecraft.block.*;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.ItemEntity;
@@ -56,6 +57,9 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
 
     private List<BlockPos> locations;
     private int tickCount;
+
+    private int range;
+    private BlockPos center;
 
     private static final List<Item> FARMLAND_PLANTABLE = Arrays.asList(
             Items.BEETROOT_SEEDS,
@@ -93,7 +97,13 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
     }
 
     @Override
-    public void farm() {
+    public void farm(int range, BlockPos pos) {
+        if (pos == null) {
+            center = baritone.getPlayerContext().playerFeet();
+        } else {
+            center = pos;
+        }
+        this.range = range;
         active = true;
         locations = null;
     }
@@ -187,6 +197,11 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
         List<BlockPos> bonemealable = new ArrayList<>();
         List<BlockPos> openSoulsand = new ArrayList<>();
         for (BlockPos pos : locations) {
+            //check if the target block is out of range.
+            if (range != 0 && pos.distanceSq(center) > range * range) {
+                continue;
+            }
+
             BlockState state = ctx.world().getBlockState(pos);
             boolean airAbove = ctx.world().getBlockState(pos.up()).getBlock() instanceof AirBlock;
             if (state.getBlock() == Blocks.FARMLAND) {
@@ -254,6 +269,9 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
 
         if (calcFailed) {
             logDirect("Farm failed");
+            if (Baritone.settings().desktopNotifications.value && Baritone.settings().notificationOnFarmFail.value) {
+                NotificationHelper.notify("Farm failed", true);
+            }
             onLostControl();
             return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
         }

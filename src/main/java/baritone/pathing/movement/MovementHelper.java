@@ -436,7 +436,9 @@ public interface MovementHelper extends ActionCosts, Helper {
      * @param ts  previously calculated ToolSet
      */
     static void switchToBestToolFor(IPlayerContext ctx, BlockState b, ToolSet ts, boolean preferSilkTouch) {
-        ctx.player().inventory.currentItem = ts.getBestSlot(b.getBlock(), preferSilkTouch);
+        if (!Baritone.settings().disableAutoTool.value && !Baritone.settings().assumeExternalAutoTool.value) {
+            ctx.player().inventory.currentItem = ts.getBestSlot(b.getBlock(), preferSilkTouch);
+        }
     }
 
     static void moveTowards(IPlayerContext ctx, MovementState state, BlockPos pos) {
@@ -580,5 +582,12 @@ public interface MovementHelper extends ActionCosts, Helper {
 
     enum PlaceResult {
         READY_TO_PLACE, ATTEMPTING, NO_OPTION;
+    }
+
+    static boolean isTransparent(Block b) {
+
+        return b == Blocks.AIR ||
+                b == Blocks.LAVA ||
+                b == Blocks.WATER;
     }
 }

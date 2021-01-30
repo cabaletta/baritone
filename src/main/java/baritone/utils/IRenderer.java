@@ -47,7 +47,6 @@ public interface IRenderer {
 
     static void startLines(Color color, float alpha, float lineWidth, boolean ignoreDepth) {
         RenderSystem.enableBlend();
-        RenderSystem.disableLighting();
         RenderSystem.blendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
         glColor(color, alpha);
         RenderSystem.lineWidth(lineWidth);
@@ -70,7 +69,6 @@ public interface IRenderer {
 
         RenderSystem.depthMask(true);
         RenderSystem.enableTexture();
-        RenderSystem.enableLighting();
         RenderSystem.disableBlend();
     }
 

@@ -18,13 +18,22 @@
 package baritone.command.defaults;
 
 import baritone.api.IBaritone;
+import baritone.api.cache.IWaypoint;
 import baritone.api.command.Command;
+import baritone.api.command.datatypes.ForWaypoints;
 import baritone.api.command.exception.CommandException;
 import baritone.api.command.argument.IArgConsumer;
+import baritone.api.command.exception.CommandInvalidStateException;
+import baritone.api.command.helpers.Paginator;
+import baritone.api.pathing.goals.Goal;
+import baritone.api.pathing.goals.GoalBlock;
+import baritone.api.utils.BetterBlockPos;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
+
+import static baritone.api.command.IBaritoneChatControl.FORCE_COMMAND_PREFIX;
 
 public class FarmCommand extends Command {
 
@@ -34,8 +43,30 @@ public class FarmCommand extends Command {
 
     @Override
     public void execute(String label, IArgConsumer args) throws CommandException {
-        args.requireMax(0);
-        baritone.getFarmProcess().farm();
+        args.requireMax(2);
+        int range = 0;
+        BetterBlockPos origin = null;
+        //range
+        if (args.has(1)) {
+            range = args.getAs(Integer.class);
+        }
+        //waypoint
+        if (args.has(1)){
+            IWaypoint[] waypoints = args.getDatatypeFor(ForWaypoints.INSTANCE);
+            IWaypoint waypoint = null;
+            switch (waypoints.length) {
+                case 0:
+                    throw new CommandInvalidStateException("No waypoints found");
+                case 1:
+                    waypoint = waypoints[0];
+                    break;
+                default:
+                    throw new CommandInvalidStateException("Multiple waypoints were found");
+            }
+            origin = waypoint.getLocation();
+        }
+
+        baritone.getFarmProcess().farm(range, origin);
         logDirect("Farming");
     }
 
@@ -55,7 +86,9 @@ public class FarmCommand extends Command {
                 "The farm command starts farming nearby plants. It harvests mature crops and plants new ones.",
                 "",
                 "Usage:",
-                "> farm"
+                "> farm - farms every crop it can find.",
+                "> farm <range> - farm crops within range from the starting position.",
+                "> farm <range> <waypoint> - farm crops within range from waypoint."
         );
     }
 }

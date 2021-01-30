@@ -17,15 +17,16 @@
 
 package baritone.launch.mixins;
 
+import baritone.Baritone;
 import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.event.events.ChunkEvent;
 import baritone.api.event.events.type.EventState;
+import baritone.cache.CachedChunk;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.client.network.play.ClientPlayNetHandler;
-import net.minecraft.network.play.server.SChunkDataPacket;
-import net.minecraft.network.play.server.SCombatPacket;
-import net.minecraft.network.play.server.SUnloadChunkPacket;
+import net.minecraft.network.play.server.*;
+import net.minecraft.util.math.ChunkPos;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -107,6 +108,69 @@ public class MixinClientPlayNetHandler {
             if (player != null && player.connection == (ClientPlayNetHandler) (Object) this) {
                 ibaritone.getGameEventHandler().onChunkEvent(
                         new ChunkEvent(EventState.POST, ChunkEvent.Type.UNLOAD, packet.getX(), packet.getZ())
+                );
+            }
+        }
+    }
+
+    @Inject(
+            method = "handleBlockChange",
+            at = @At("RETURN")
+    )
+    private void postHandleBlockChange(SChangeBlockPacket packetIn, CallbackInfo ci) {
+        if (!Baritone.settings().repackOnAnyBlockChange.value) {
+            return;
+        }
+        if (!CachedChunk.BLOCKS_TO_KEEP_TRACK_OF.contains(packetIn.getState().getBlock())) {
+            return;
+        }
+        for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
+            ClientPlayerEntity player = ibaritone.getPlayerContext().player();
+            if (player != null && player.connection == (ClientPlayNetHandler) (Object) this) {
+                ibaritone.getGameEventHandler().onChunkEvent(
+                        new ChunkEvent(
+                                EventState.POST,
+                                ChunkEvent.Type.POPULATE_FULL,
+                                packetIn.getPos().getX() >> 4,
+                                packetIn.getPos().getZ() >> 4
+                        )
+                );
+            }
+        }
+    }
+
+    @Inject(
+            method = "handleMultiBlockChange",
+            at = @At("RETURN")
+    )
+    private void postHandleMultiBlockChange(SMultiBlockChangePacket packetIn, CallbackInfo ci) {
+        if (!Baritone.settings().repackOnAnyBlockChange.value) {
+            return;
+        }
+        if (packetIn.getChangedBlocks().length == 0) {
+            return;
+        }
+        https:
+//docs.oracle.com/javase/specs/jls/se7/html/jls-14.html#jls-14.15
+        {
+            for (SMultiBlockChangePacket.UpdateData update : packetIn.getChangedBlocks()) {
+                if (CachedChunk.BLOCKS_TO_KEEP_TRACK_OF.contains(update.getBlockState().getBlock())) {
+                    break https;
+                }
+            }
+            return;
+        }
+        ChunkPos pos = new ChunkPos(packetIn.getChangedBlocks()[0].getPos());
+        for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
+            ClientPlayerEntity player = ibaritone.getPlayerContext().player();
+            if (player != null && player.connection == (ClientPlayNetHandler) (Object) this) {
+                ibaritone.getGameEventHandler().onChunkEvent(
+                        new ChunkEvent(
+                                EventState.POST,
+                                ChunkEvent.Type.POPULATE_FULL,
+                                pos.x,
+                                pos.z
+                        )
                 );
             }
         }
