@@ -19,10 +19,10 @@ package baritone.api.command.helpers;
 
 import baritone.api.BaritoneAPI;
 import baritone.api.Settings;
-import baritone.api.event.events.TabCompleteEvent;
-import baritone.api.utils.SettingsUtil;
 import baritone.api.command.argument.IArgConsumer;
 import baritone.api.command.manager.ICommandManager;
+import baritone.api.event.events.TabCompleteEvent;
+import baritone.api.utils.SettingsUtil;
 import net.minecraft.util.ResourceLocation;
 
 import java.util.Comparator;
@@ -236,7 +236,6 @@ public class TabCompleteHelper {
      * Appends every command in the specified {@link ICommandManager} to this {@link TabCompleteHelper}
      *
      * @param manager A command manager
-     *
      * @return This {@link TabCompleteHelper}
      */
     public TabCompleteHelper addCommands(ICommandManager manager) {

@@ -46,8 +46,8 @@ public interface IArgParserManager {
     /**
      * Attempt to parse the specified argument with a stateless {@link IArgParser} that outputs the specified class.
      *
-     * @param type  The type to try and parse the argument into.
-     * @param arg   The argument to parse.
+     * @param type The type to try and parse the argument into.
+     * @param arg  The argument to parse.
      * @return An instance of the specified class.
      * @throws CommandInvalidTypeException If the parsing failed
      */

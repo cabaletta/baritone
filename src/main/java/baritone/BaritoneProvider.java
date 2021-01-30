@@ -22,9 +22,9 @@ import baritone.api.IBaritoneProvider;
 import baritone.api.cache.IWorldScanner;
 import baritone.api.command.ICommandSystem;
 import baritone.api.schematic.ISchematicSystem;
-import baritone.command.ExampleBaritoneControl;
 import baritone.cache.WorldScanner;
 import baritone.command.CommandSystem;
+import baritone.command.ExampleBaritoneControl;
 import baritone.utils.schematic.SchematicSystem;
 
 import java.util.Collections;

@@ -30,7 +30,6 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.chunk.AbstractChunkProvider;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkSection;
-import net.minecraft.world.chunk.IChunk;
 
 import java.util.*;
 import java.util.stream.IntStream;

@@ -18,8 +18,8 @@
 package baritone.api.event.events;
 
 import baritone.api.event.events.type.EventState;
-import net.minecraft.network.NetworkManager;
 import net.minecraft.network.IPacket;
+import net.minecraft.network.NetworkManager;
 
 /**
  * @author Brady

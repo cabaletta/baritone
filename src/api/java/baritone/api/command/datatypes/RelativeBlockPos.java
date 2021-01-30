@@ -18,8 +18,8 @@
 package baritone.api.command.datatypes;
 
 import baritone.api.command.argument.IArgConsumer;
-import baritone.api.utils.BetterBlockPos;
 import baritone.api.command.exception.CommandException;
+import baritone.api.utils.BetterBlockPos;
 
 import java.util.stream.Stream;
 
