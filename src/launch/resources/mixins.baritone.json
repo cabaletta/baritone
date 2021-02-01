@@ -22,6 +22,8 @@
     "MixinNetworkManager",
     "MixinPlayerController",
     "MixinScreen",
+    "MixinSodiumChunkProvider",
+    "MixinSodiumFixedLongHashTable",
     "MixinWorldRenderer"
   ]
 }
