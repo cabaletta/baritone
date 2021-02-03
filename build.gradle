@@ -161,8 +161,8 @@ repositories {
     mavenCentral()
 
     maven {
-        name = 'spongepowered-repo'
-        url = 'http://repo.spongepowered.org/maven/'
+        name = 'SpongePowered'
+        url = 'https://repo.spongepowered.org/repository/maven-public/'
     }
 
     maven {
