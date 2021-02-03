@@ -75,18 +75,15 @@ public class MixinSodiumChunkProvider implements IClientChunkProvider {
     
     @Override
     public ISodiumChunkArray extractReferenceArray() {
+        https://docs.oracle.com/javase/specs/jls/se7/html/jls-14.html#jls-14.15
         if (chunkArrayField == null) {
-            boolean flag = true;
             for (Field f : this.getClass().getDeclaredFields()) {
                 if (ISodiumChunkArray.class.isAssignableFrom(f.getType())) {
                     chunkArrayField = f;
-                    flag = false;
-                    break;
+                    break https;
                 }
-            } // else
-            if (flag) {
-                throw new RuntimeException(Arrays.toString(this.getClass().getDeclaredFields()));
             }
+            throw new RuntimeException(Arrays.toString(this.getClass().getDeclaredFields()));
         }
         try {
             return (ISodiumChunkArray) chunkArrayField.get(this);
