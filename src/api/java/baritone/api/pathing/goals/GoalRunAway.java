@@ -31,7 +31,7 @@ public class GoalRunAway implements Goal {
 
     private final BlockPos[] from;
 
-    private final double distanceSq;
+    private final int distanceSq;
 
     private final Integer maintainY;
 
@@ -44,7 +44,7 @@ public class GoalRunAway implements Goal {
             throw new IllegalArgumentException();
         }
         this.from = from;
-        this.distanceSq = distance * distance;
+        this.distanceSq = (int) (distance * distance);
         this.maintainY = maintainY;
     }
 
@@ -56,7 +56,7 @@ public class GoalRunAway implements Goal {
         for (BlockPos p : from) {
             int diffX = x - p.getX();
             int diffZ = z - p.getZ();
-            double distSq = diffX * diffX + diffZ * diffZ;
+            int distSq = diffX * diffX + diffZ * diffZ;
             if (distSq < distanceSq) {
                 return false;
             }
