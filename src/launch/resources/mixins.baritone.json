@@ -15,6 +15,7 @@
     "MixinCommandSuggestionHelper",
     "MixinEntity",
     "MixinEntityRenderManager",
+    "MixinImmersivePortalsChunkProvicer",
     "MixinItemStack",
     "MixinLivingEntity",
     "MixinLootContext",
