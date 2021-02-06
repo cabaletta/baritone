@@ -60,7 +60,7 @@ apply plugin: 'java'
 def mcpVersion = [channel: 'snapshot', version: '20201028-1.16.3']
 
 if (getProject().hasProperty("baritone.fabric_build")) {
-    CreateVolderYarn.genMappings("1.16.4", mcpVersion)
+    CreateVolderYarn.genMappings("1.16.5", mcpVersion)
     apply plugin: 'fabric-loom'
 } else {
     apply plugin: 'net.minecraftforge.gradle'
@@ -178,7 +178,7 @@ repositories {
 
 dependencies {
     if (getProject().hasProperty("baritone.fabric_build")) {
-        minecraft "com.mojang:minecraft:1.16.4"
+        minecraft "com.mojang:minecraft:1.16.5"
         mappings fileTree(dir: "./build/volderyarn", include: "**.jar")
         modImplementation "net.fabricmc:fabric-loader:0.9.1+build.205"
 
@@ -190,7 +190,7 @@ dependencies {
 
         implementation 'com.google.code.findbugs:jsr305:3.0.2'
     } else {
-        minecraft 'com.github.ImpactDevelopment:Vanilla:1.16.4'
+        minecraft 'com.github.ImpactDevelopment:Vanilla:1.16.5'
 
         runtime launchCompile('net.minecraft:launchwrapper:1.12') {
             exclude module: 'lwjgl'
