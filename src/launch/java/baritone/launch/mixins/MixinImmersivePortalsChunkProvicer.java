@@ -56,7 +56,7 @@ public class MixinImmersivePortalsChunkProvicer extends ClientChunkProvider impl
             result.overwriteChunkMap(new Long2ObjectLinkedOpenHashMap<>(chunkMap));
             return (ClientChunkProvider) result;
         } catch (InstantiationException | InvocationTargetException | NoSuchMethodException | IllegalAccessException e) {
-            throw new RuntimeException("Sodium chunk manager initialization for baritone failed", e);
+            throw new RuntimeException("Immersive Portals chunk manager initialization for baritone failed", e);
         }
     }
     
