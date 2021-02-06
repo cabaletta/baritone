@@ -24,6 +24,8 @@ import net.minecraft.block.Blocks;
 import net.minecraft.client.Minecraft;
 import net.minecraft.item.Item;
 import net.minecraft.util.math.vector.Vector3i;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.util.text.ITextComponent;
 
 import java.awt.*;
@@ -1216,6 +1218,8 @@ public final class Settings {
     // here be dragons
 
     Settings() {
+        Registry.BLOCK.getValue(new ResourceLocation("immersive_portals", "portal_placeholder")).ifPresent(blocksToAvoid.defaultValue::add);
+    
         Field[] temp = getClass().getFields();
 
         Map<String, Setting<?>> tmpByName = new HashMap<>();
