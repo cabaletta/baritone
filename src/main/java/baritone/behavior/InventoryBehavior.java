@@ -112,6 +112,9 @@ public final class InventoryBehavior extends Behavior {
             if (stack.isEmpty()) {
                 continue;
             }
+            if (Baritone.settings().itemSaver.value && stack.getItemDamage() >= stack.getMaxDamage() && stack.getMaxDamage() > 1) {
+                continue;
+            }
             if (cla$$.isInstance(stack.getItem())) {
                 double speed = ToolSet.calculateSpeedVsBlock(stack, against.getDefaultState()); // takes into account enchants
                 if (speed > bestSpeed) {

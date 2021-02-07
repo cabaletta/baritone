@@ -10,6 +10,9 @@
 [![Minecraft](https://img.shields.io/badge/MC-1.13.2-brightgreen.svg)](https://github.com/cabaletta/baritone/tree/1.13.2/)
 [![Minecraft](https://img.shields.io/badge/MC-1.14.4-brightgreen.svg)](https://github.com/cabaletta/baritone/tree/1.14.4/)
 [![Minecraft](https://img.shields.io/badge/MC-1.15.2-brightgreen.svg)](https://github.com/cabaletta/baritone/tree/1.15.2/)
+[![Minecraft](https://img.shields.io/badge/MC-1.16.2-brightgreen.svg)](https://github.com/cabaletta/baritone/tree/1.16.2/)
+[![Minecraft](https://img.shields.io/badge/MC-1.16.4-brightgreen.svg)](https://github.com/cabaletta/baritone/tree/1.16.4/)
+[![Minecraft](https://img.shields.io/badge/MC-1.16.5-brightgreen.svg)](https://github.com/cabaletta/baritone/tree/1.16.5/)
 [![Code of Conduct](https://img.shields.io/badge/%E2%9D%A4-code%20of%20conduct-blue.svg?style=flat)](https://github.com/cabaletta/baritone/blob/master/CODE_OF_CONDUCT.md)
 [![Known Vulnerabilities](https://snyk.io/test/github/cabaletta/baritone/badge.svg?targetFile=build.gradle)](https://snyk.io/test/github/cabaletta/baritone?targetFile=build.gradle)
 [![Contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/cabaletta/baritone/issues/)
@@ -25,7 +28,7 @@
 [![KAMI Blue integration](https://img.shields.io/badge/KAMI%20Blue%20integration-v1.2.14--master-green)](https://github.com/kami-blue/client)
 [![ForgeHax integration](https://img.shields.io/badge/ForgeHax%20%22integration%22-scuffed-yellow.svg)](https://github.com/fr1kin/ForgeHax/)
 [![Aristois add-on integration](https://img.shields.io/badge/Aristois%20add--on%20integration-v1.3.4%20/%20v1.4.1-green.svg)](https://gitlab.com/emc-mods-indrit/baritone_api)
-[![rootNET integration](https://img.shields.io/badge/rootNET%20integration-v1.2.11-green.svg)](https://rootnet.dev/)
+[![rootNET integration](https://img.shields.io/badge/rootNET%20integration-v1.2.14-green.svg)](https://rootnet.dev/)
 [![Future integration](https://img.shields.io/badge/Future%20integration-v1.2.12%20%2F%20v1.3.6%20%2F%20v1.4.4-red)](https://futureclient.net/)
 [![RusherHack integration](https://img.shields.io/badge/RusherHack%20integration-v1.2.14-green)](https://rusherhack.org/)
 [![forthebadge](https://forthebadge.com/images/badges/built-with-swag.svg)](http://forthebadge.com/)
@@ -39,8 +42,10 @@ The easiest way to install Baritone is to install [Impact](https://impactclient.
 
 For 1.15.2, [click here](https://www.youtube.com/watch?v=j1qKtCZFURM) and see description. If you need Forge 1.15.2, look [here](https://github.com/cabaletta/baritone/releases/tag/v1.5.3), follow the instructions, and get the `api-forge` jar.
 
+For 1.16.5, [click here](https://www.youtube.com/watch?v=_4eVJ9Qz2J8) and see description. If you need Forge or Fabric 1.16.5, look [here](https://github.com/cabaletta/baritone/releases/tag/v1.6.3) and get the `api-forge` or `api-fabric` jar. **For 1.16.5 Fabric, just click [here](https://github.com/cabaletta/baritone/releases/download/v1.6.3/baritone-api-fabric-1.6.3.jar)**.
+
 This project is an updated version of [MineBot](https://github.com/leijurv/MineBot/),
-the original version of the bot for Minecraft 1.8.9, rebuilt for 1.12.2 through 1.15.2. Baritone focuses on reliability and particularly performance (it's over [30x faster](https://github.com/cabaletta/baritone/pull/180#issuecomment-423822928) than MineBot at calculating paths).
+the original version of the bot for Minecraft 1.8.9, rebuilt for 1.12.2 through 1.16.5. Baritone focuses on reliability and particularly performance (it's over [30x faster](https://github.com/cabaletta/baritone/pull/180#issuecomment-423822928) than MineBot at calculating paths).
 
 Have committed at least once a day from Aug 1, 2018, to Aug 1, 2019.
 

@@ -20,13 +20,13 @@ package baritone.command.defaults;
 import baritone.Baritone;
 import baritone.api.IBaritone;
 import baritone.api.Settings;
-import baritone.api.utils.SettingsUtil;
 import baritone.api.command.Command;
+import baritone.api.command.argument.IArgConsumer;
 import baritone.api.command.exception.CommandException;
 import baritone.api.command.exception.CommandInvalidTypeException;
-import baritone.api.command.argument.IArgConsumer;
 import baritone.api.command.helpers.Paginator;
 import baritone.api.command.helpers.TabCompleteHelper;
+import baritone.api.utils.SettingsUtil;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
@@ -39,9 +39,9 @@ import java.util.Locale;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static baritone.api.command.IBaritoneChatControl.FORCE_COMMAND_PREFIX;
 import static baritone.api.utils.SettingsUtil.settingTypeToString;
 import static baritone.api.utils.SettingsUtil.settingValueToString;
-import static baritone.api.command.IBaritoneChatControl.FORCE_COMMAND_PREFIX;
 
 public class SetCommand extends Command {
 
