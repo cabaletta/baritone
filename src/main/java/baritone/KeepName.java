@@ -15,20 +15,7 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.api.event.events;
+package baritone;
 
-import baritone.api.event.events.type.Cancellable;
-
-/**
- * @author LoganDark
- */
-public class TabCompleteEvent extends Cancellable {
-
-    public final String prefix;
-    public String[] completions;
-
-    public TabCompleteEvent(String prefix) {
-        this.prefix = prefix;
-        this.completions = null;
-    }
-}
+// Annotation for classes and class members that should not be renamed by proguard
+public @interface KeepName {}

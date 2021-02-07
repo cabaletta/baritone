@@ -20,7 +20,6 @@ package baritone.api.utils;
 import baritone.api.cache.IWorldData;
 import net.minecraft.block.BlockSlab;
 import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
@@ -96,18 +95,5 @@ public interface IPlayerContext {
 
     default boolean isLookingAt(BlockPos pos) {
         return getSelectedBlock().equals(Optional.of(pos));
-    }
-
-    /**
-     * Returns the entity that the crosshair is currently placed over. Updated once per tick.
-     *
-     * @return The entity
-     */
-    default Optional<Entity> getSelectedEntity() {
-        RayTraceResult result = objectMouseOver();
-        if (result != null && result.typeOfHit == RayTraceResult.Type.ENTITY) {
-            return Optional.of(result.entityHit);
-        }
-        return Optional.empty();
     }
 }

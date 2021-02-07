@@ -77,7 +77,7 @@ public class TunnelCommand extends Command {
                     default:
                         throw new IllegalStateException("Unexpected value: " + enumFacing);
                 }
-                logDirect(String.format("Creating a tunnel %s block(s) high, %s block(s) wide, and %s block(s) deep", height+1, width+1, depth));
+                logDirect(String.format("Creating a tunnel %s block(s) high, %s block(s) wide, and %s block(s) deep", height + 1, width + 1, depth));
                 baritone.getBuilderProcess().clearArea(corner1, corner2);
             }
         } else {

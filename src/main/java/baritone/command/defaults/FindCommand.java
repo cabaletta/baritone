@@ -18,11 +18,11 @@
 package baritone.command.defaults;
 
 import baritone.api.IBaritone;
-import baritone.api.utils.BetterBlockPos;
 import baritone.api.command.Command;
+import baritone.api.command.argument.IArgConsumer;
 import baritone.api.command.datatypes.BlockById;
 import baritone.api.command.exception.CommandException;
-import baritone.api.command.argument.IArgConsumer;
+import baritone.api.utils.BetterBlockPos;
 import net.minecraft.block.Block;
 
 import java.util.ArrayList;

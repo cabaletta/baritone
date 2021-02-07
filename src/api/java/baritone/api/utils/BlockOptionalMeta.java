@@ -234,11 +234,10 @@ public final class BlockOptionalMeta {
     /**
      * Evaluate the target meta value for the specified state. The target meta value is
      * most often that which is influenced by the variant/color property of the block state.
-     * 
-     * @see #normalize(IBlockState) 
-     * 
+     *
      * @param state The state to check
      * @return The target meta of the state
+     * @see #normalize(IBlockState)
      */
     public static int stateMeta(IBlockState state) {
         return state.getBlock().getMetaFromState(normalize(state));

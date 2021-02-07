@@ -45,7 +45,6 @@ public interface IRenderer {
 
     static void startLines(Color color, float alpha, float lineWidth, boolean ignoreDepth) {
         GlStateManager.enableBlend();
-        GlStateManager.disableLighting();
         GlStateManager.tryBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
         glColor(color, alpha);
         GlStateManager.glLineWidth(lineWidth);
@@ -68,7 +67,6 @@ public interface IRenderer {
 
         GlStateManager.depthMask(true);
         GlStateManager.enableTexture2D();
-        GlStateManager.enableLighting();
         GlStateManager.disableBlend();
     }
 

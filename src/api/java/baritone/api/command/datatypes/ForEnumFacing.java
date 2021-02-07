@@ -17,8 +17,8 @@
 
 package baritone.api.command.datatypes;
 
-import baritone.api.command.helpers.TabCompleteHelper;
 import baritone.api.command.exception.CommandException;
+import baritone.api.command.helpers.TabCompleteHelper;
 import net.minecraft.util.EnumFacing;
 
 import java.util.Locale;

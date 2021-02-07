@@ -1,0 +1,31 @@
+<emoji> <title> (<ticket>)
+
+# 📝 Update README.md (WD-1234)
+# ✅ Add unit test for inputs (WD-1234)
+
+# <emoji> can be:
+# 🎨 :art: when improving structure of the code
+# ⚡️ :zap: when improving performance
+# 🔥 :fire: when removing code or files
+# ✨ :sparkles: when introducing new features
+# 🚧 :construction: when work in progress
+# 🔨 :hammer: when refactoring code
+# 📝 :memo: when writing docs
+# 💄 :lipstick: when updating the UI and style files
+# 📈 :chart_with_upwards_trend: when adding analytics or tracking code
+# 🌐 :globe_with_meridians: when adding internationalization and localization
+# ✏️ :pencil2: when fixing typos
+# 🚚 :truck: when moving or renaming files
+# ✅ :white_check_mark: when adding tests
+
+# 👌 :ok_hand: when updating code due to code review changes
+# 🐛 :bug: when fixing a bug
+# 🚑 :ambulance: when doing a critical hotfix
+# 🚨 :rotating_light: when removing linter warnings
+
+# 🔀 :twisted_rightwards_arrows: when merging branches
+# ⬆️ :arrow_up: when upgrading dependencies
+# ⬇️ :arrow_down: when downgrading dependencies
+# 🔧 :wrench: when changing configuration files
+# 🔖 :bookmark: when releasing / version tagging
+# 💚 :green_heart: when fixing the CI build

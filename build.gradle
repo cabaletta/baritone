@@ -26,7 +26,7 @@ buildscript {
         }
         maven {
             name = 'SpongePowered'
-            url = 'http://repo.spongepowered.org/maven'
+            url = 'https://repo.spongepowered.org/repository/maven-public/'
         }
         jcenter()
     }
@@ -81,7 +81,7 @@ repositories {
 
     maven {
         name = 'spongepowered-repo'
-        url = 'http://repo.spongepowered.org/maven/'
+        url = 'https://repo.spongepowered.org/repository/maven-public/'
     }
 
     maven {
@@ -118,6 +118,12 @@ javadoc {
 
 jar {
     from sourceSets.launch.output, sourceSets.api.output
+
+    if (!getProject().hasProperty("baritone.forge_build")) {
+        exclude "**/BaritoneForgeModXD.class"
+        exclude "**/mods.toml"
+    }
+
     preserveFileTimestamps = false
     reproducibleFileOrder = true
 

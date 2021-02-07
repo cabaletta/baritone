@@ -48,9 +48,9 @@ public final class CommandArguments {
         int lastEnd = -1;
         while (argMatcher.find()) {
             args.add(new CommandArgument(
-                args.size(),
-                argMatcher.group(),
-                string.substring(argMatcher.start())
+                    args.size(),
+                    argMatcher.group(),
+                    string.substring(argMatcher.start())
             ));
             lastEnd = argMatcher.end();
         }

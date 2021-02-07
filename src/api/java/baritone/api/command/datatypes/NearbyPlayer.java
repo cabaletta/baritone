@@ -18,8 +18,8 @@
 package baritone.api.command.datatypes;
 
 import baritone.api.IBaritone;
-import baritone.api.command.helpers.TabCompleteHelper;
 import baritone.api.command.exception.CommandException;
+import baritone.api.command.helpers.TabCompleteHelper;
 import net.minecraft.entity.player.EntityPlayer;
 
 import java.util.List;

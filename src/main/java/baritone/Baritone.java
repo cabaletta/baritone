@@ -25,11 +25,14 @@ import baritone.api.utils.Helper;
 import baritone.api.utils.IPlayerContext;
 import baritone.behavior.*;
 import baritone.cache.WorldProvider;
+import baritone.command.manager.CommandManager;
 import baritone.event.GameEventHandler;
 import baritone.process.*;
 import baritone.selection.SelectionManager;
-import baritone.utils.*;
-import baritone.command.manager.CommandManager;
+import baritone.utils.BlockStateInterface;
+import baritone.utils.GuiClick;
+import baritone.utils.InputOverrideHandler;
+import baritone.utils.PathingControlManager;
 import baritone.utils.player.PrimaryPlayerContext;
 import net.minecraft.client.Minecraft;
 
@@ -104,23 +107,19 @@ public class Baritone implements IBaritone {
 
         this.pathingControlManager = new PathingControlManager(this);
         {
-            followProcess = new FollowProcess(this);
-            mineProcess = new MineProcess(this);
-            customGoalProcess = new CustomGoalProcess(this); // very high iq
-            getToBlockProcess = new GetToBlockProcess(this);
-            builderProcess = new BuilderProcess(this);
-            exploreProcess = new ExploreProcess(this);
-            backfillProcess = new BackfillProcess(this);
-            farmProcess = new FarmProcess(this);
+            this.pathingControlManager.registerProcess(followProcess = new FollowProcess(this));
+            this.pathingControlManager.registerProcess(mineProcess = new MineProcess(this));
+            this.pathingControlManager.registerProcess(customGoalProcess = new CustomGoalProcess(this)); // very high iq
+            this.pathingControlManager.registerProcess(getToBlockProcess = new GetToBlockProcess(this));
+            this.pathingControlManager.registerProcess(builderProcess = new BuilderProcess(this));
+            this.pathingControlManager.registerProcess(exploreProcess = new ExploreProcess(this));
+            this.pathingControlManager.registerProcess(backfillProcess = new BackfillProcess(this));
+            this.pathingControlManager.registerProcess(farmProcess = new FarmProcess(this));
         }
 
         this.worldProvider = new WorldProvider();
         this.selectionManager = new SelectionManager(this);
         this.commandManager = new CommandManager(this);
-
-        if (BaritoneAutoTest.ENABLE_AUTO_TEST) {
-            this.gameEventHandler.registerEventListener(BaritoneAutoTest.INSTANCE);
-        }
     }
 
     @Override

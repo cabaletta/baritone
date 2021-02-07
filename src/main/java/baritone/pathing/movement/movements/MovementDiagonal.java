@@ -31,6 +31,7 @@ import baritone.utils.pathing.MutableMoveResult;
 import com.google.common.collect.ImmutableSet;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
@@ -54,6 +55,35 @@ public class MovementDiagonal extends Movement {
 
     private MovementDiagonal(IBaritone baritone, BetterBlockPos start, BetterBlockPos end, BetterBlockPos dir1, BetterBlockPos dir2) {
         super(baritone, start, end, new BetterBlockPos[]{dir1, dir1.up(), dir2, dir2.up(), end, end.up()});
+    }
+
+    @Override
+    protected boolean safeToCancel(MovementState state) {
+        //too simple. backfill does not work after cornering with this
+        //return MovementHelper.canWalkOn(ctx, ctx.playerFeet().down());
+        EntityPlayerSP player = ctx.player();
+        double offset = 0.25;
+        double x = player.posX;
+        double y = player.posY - 1;
+        double z = player.posZ;
+        //standard
+        if (ctx.playerFeet().equals(src)) {
+            return true;
+        }
+        //both corners are walkable
+        if (MovementHelper.canWalkOn(ctx, new BlockPos(src.x, src.y - 1, dest.z))
+                && MovementHelper.canWalkOn(ctx, new BlockPos(dest.x, src.y - 1, src.z))) {
+            return true;
+        }
+        //we are in a likely unwalkable corner, check for a supporting block
+        if (ctx.playerFeet().equals(new BetterBlockPos(src.x, src.y, dest.z))
+                || ctx.playerFeet().equals(new BetterBlockPos(dest.x, src.y, src.z))) {
+            return (MovementHelper.canWalkOn(ctx, new BetterBlockPos(x + offset, y, z + offset))
+                    || MovementHelper.canWalkOn(ctx, new BetterBlockPos(x + offset, y, z - offset))
+                    || MovementHelper.canWalkOn(ctx, new BetterBlockPos(x - offset, y, z + offset))
+                    || MovementHelper.canWalkOn(ctx, new BetterBlockPos(x - offset, y, z - offset)));
+        }
+        return true;
     }
 
     @Override

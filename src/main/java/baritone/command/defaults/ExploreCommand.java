@@ -18,11 +18,11 @@
 package baritone.command.defaults;
 
 import baritone.api.IBaritone;
-import baritone.api.pathing.goals.GoalXZ;
 import baritone.api.command.Command;
+import baritone.api.command.argument.IArgConsumer;
 import baritone.api.command.datatypes.RelativeGoalXZ;
 import baritone.api.command.exception.CommandException;
-import baritone.api.command.argument.IArgConsumer;
+import baritone.api.pathing.goals.GoalXZ;
 
 import java.util.Arrays;
 import java.util.List;

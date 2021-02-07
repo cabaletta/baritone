@@ -41,7 +41,6 @@ public enum DefaultSchematicFormats implements ISchematicFormat {
      * The MCEdit schematic specification. Commonly denoted by the ".schematic" file extension.
      */
     MCEDIT("schematic") {
-
         @Override
         public IStaticSchematic parse(InputStream input) throws IOException {
             return new MCEditSchematic(CompressedStreamTools.readCompressed(input));
@@ -54,7 +53,6 @@ public enum DefaultSchematicFormats implements ISchematicFormat {
      * @see <a href="https://github.com/SpongePowered/Schematic-Specification">Sponge Schematic Specification</a>
      */
     SPONGE("schem") {
-
         @Override
         public IStaticSchematic parse(InputStream input) throws IOException {
             NBTTagCompound nbt = CompressedStreamTools.readCompressed(input);

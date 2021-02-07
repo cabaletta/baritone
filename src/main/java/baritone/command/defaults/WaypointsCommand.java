@@ -20,18 +20,18 @@ package baritone.command.defaults;
 import baritone.api.IBaritone;
 import baritone.api.cache.IWaypoint;
 import baritone.api.cache.Waypoint;
-import baritone.api.pathing.goals.Goal;
-import baritone.api.pathing.goals.GoalBlock;
-import baritone.api.utils.BetterBlockPos;
 import baritone.api.command.Command;
+import baritone.api.command.argument.IArgConsumer;
 import baritone.api.command.datatypes.ForWaypoints;
 import baritone.api.command.datatypes.RelativeBlockPos;
 import baritone.api.command.exception.CommandException;
 import baritone.api.command.exception.CommandInvalidStateException;
 import baritone.api.command.exception.CommandInvalidTypeException;
-import baritone.api.command.argument.IArgConsumer;
 import baritone.api.command.helpers.Paginator;
 import baritone.api.command.helpers.TabCompleteHelper;
+import baritone.api.pathing.goals.Goal;
+import baritone.api.pathing.goals.GoalBlock;
+import baritone.api.utils.BetterBlockPos;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
@@ -235,6 +235,10 @@ public class WaypointsCommand extends Command {
                     Goal goal = new GoalBlock(waypoint.getLocation());
                     baritone.getCustomGoalProcess().setGoal(goal);
                     logDirect(String.format("Goal: %s", goal));
+                } else if (action == Action.GOTO) {
+                    Goal goal = new GoalBlock(waypoint.getLocation());
+                    baritone.getCustomGoalProcess().setGoalAndPath(goal);
+                    logDirect(String.format("Going to: %s", goal));
                 }
             }
         }
@@ -292,7 +296,8 @@ public class WaypointsCommand extends Command {
                 "> wp <s/save> <tag> <name> <pos> - Save the waypoint with the specified name and position.",
                 "> wp <i/info/show> <tag> - Show info on a waypoint by tag.",
                 "> wp <d/delete> <tag> - Delete a waypoint by tag.",
-                "> wp <g/goal/goto> <tag> - Set a goal to a waypoint by tag."
+                "> wp <g/goal> <tag> - Set a goal to a waypoint by tag.",
+                "> wp <goto> <tag> - Set a goal to a waypoint by tag and start pathing."
         );
     }
 
@@ -302,7 +307,8 @@ public class WaypointsCommand extends Command {
         SAVE("save", "s"),
         INFO("info", "show", "i"),
         DELETE("delete", "d"),
-        GOAL("goal", "goto", "g");
+        GOAL("goal", "g"),
+        GOTO("goto");
         private final String[] names;
 
         Action(String... names) {
