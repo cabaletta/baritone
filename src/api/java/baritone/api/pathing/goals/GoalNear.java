@@ -19,10 +19,9 @@ package baritone.api.pathing.goals;
 
 import baritone.api.utils.SettingsUtil;
 import baritone.api.utils.interfaces.IGoalRenderPos;
+import it.unimi.dsi.fastutil.doubles.DoubleOpenHashSet;
+import it.unimi.dsi.fastutil.doubles.DoubleIterator;
 import net.minecraft.util.math.BlockPos;
-
-import java.util.Collections;
-import java.util.HashSet;
 
 public class GoalNear implements Goal, IGoalRenderPos {
 
@@ -57,7 +56,7 @@ public class GoalNear implements Goal, IGoalRenderPos {
     @Override
     public double heuristic() {// TODO less hacky solution
         int range = (int) Math.ceil(Math.sqrt(rangeSq));
-        HashSet<Double> maybeAlwaysInside = new HashSet<>();
+        DoubleOpenHashSet maybeAlwaysInside = new DoubleOpenHashSet();
         double minOutside = Double.POSITIVE_INFINITY;
         for (int dx = -range; dx <= range; dx++) {
             for (int dy = -range; dy <= range; dy++) {
@@ -72,7 +71,9 @@ public class GoalNear implements Goal, IGoalRenderPos {
             }
         }
         double maxInside = Double.NEGATIVE_INFINITY;
-        for (double inside : maybeAlwaysInside) {
+        DoubleIterator it = maybeAlwaysInside.iterator();
+        while(it.hasNext()) {
+            double inside = it.nextDouble();
             if (inside < minOutside) {
                 maxInside = Math.max(maxInside, inside);
             }

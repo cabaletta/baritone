@@ -18,11 +18,11 @@
 package baritone.api.pathing.goals;
 
 import baritone.api.utils.SettingsUtil;
+import it.unimi.dsi.fastutil.doubles.DoubleOpenHashSet;
+import it.unimi.dsi.fastutil.doubles.DoubleIterator;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
 
 /**
  * Useful for automated combat (retreating specifically)
@@ -99,7 +99,7 @@ public class GoalRunAway implements Goal {
             maxY = Math.max(minY, p.getY() + distance);
             maxZ = Math.max(minZ, p.getZ() + distance);
         }
-        HashSet<Double> maybeAlwaysInside = new HashSet<>();
+        DoubleOpenHashSet maybeAlwaysInside = new DoubleOpenHashSet();
         double minOutside = Double.POSITIVE_INFINITY;
         for (int x = minX; x <= maxX; x++) {
             for (int y = minY; y <= maxY; y++) {
@@ -114,7 +114,9 @@ public class GoalRunAway implements Goal {
             }
         }
         double maxInside = Double.NEGATIVE_INFINITY;
-        for (double inside : maybeAlwaysInside) {
+        DoubleIterator it = maybeAlwaysInside.iterator();
+        while(it.hasNext()) {
+            double inside = it.nextDouble();
             if (inside < minOutside) {
                 maxInside = Math.max(maxInside, inside);
             }
