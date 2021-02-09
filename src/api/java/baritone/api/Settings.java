@@ -1119,6 +1119,11 @@ public final class Settings {
     public final Setting<Boolean> renderSelectionCorners = new Setting<>(true);
 
     /**
+     * Use sword to mine.
+     */
+    public final Setting<Boolean> useSwordToMine = new Setting<>(true);
+
+    /**
      * Desktop notifications
      */
     public final Setting<Boolean> desktopNotifications = new Setting<>(false);
