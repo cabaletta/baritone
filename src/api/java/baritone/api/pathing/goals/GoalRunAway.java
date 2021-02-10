@@ -85,12 +85,12 @@ public class GoalRunAway implements Goal {
     @Override
     public double heuristic() {// TODO less hacky solution
         int distance = (int) Math.ceil(Math.sqrt(distanceSq));
-        int minX = from[0].getX() - distance;
-        int minY = from[0].getY() - distance;
-        int minZ = from[0].getZ() - distance;
-        int maxX = from[0].getX() + distance;
-        int maxY = from[0].getY() + distance;
-        int maxZ = from[0].getZ() + distance;
+        int minX = Integer.MAX_VALUE;
+        int minY = Integer.MAX_VALUE;
+        int minZ = Integer.MAX_VALUE;
+        int maxX = Integer.MIN_VALUE;
+        int maxY = Integer.MIN_VALUE;
+        int maxZ = Integer.MIN_VALUE;
         for (BlockPos p : from) {
             minX = Math.min(minX, p.getX() - distance);
             minY = Math.min(minY, p.getY() - distance);
