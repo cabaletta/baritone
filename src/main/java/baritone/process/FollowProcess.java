@@ -18,15 +18,14 @@
 package baritone.process;
 
 import baritone.Baritone;
-import baritone.api.pathing.goals.Goal;
-import baritone.api.pathing.goals.GoalComposite;
-import baritone.api.pathing.goals.GoalNear;
-import baritone.api.pathing.goals.GoalXZ;
+import baritone.api.pathing.goals.*;
 import baritone.api.process.IFollowProcess;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
 import baritone.utils.BaritoneProcessHelper;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.item.EntityItem;
+import net.minecraft.entity.item.EntityXPOrb;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.List;
@@ -50,6 +49,13 @@ public final class FollowProcess extends BaritoneProcessHelper implements IFollo
 
     @Override
     public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
+        for (Entity entity : ctx.world().loadedEntityList) {
+            if (entity instanceof EntityItem | entity instanceof EntityXPOrb) {
+                if (Math.sqrt(entity.getDistanceSq(mc.player)) < Baritone.settings().followPickUpDroppedItemRadius.value) {
+                    return new PathingCommand(new GoalBlock(new BlockPos(entity.posX, entity.posY, entity.posZ)), PathingCommandType.REVALIDATE_GOAL_AND_PATH);
+                }
+            }
+        }
         scanWorld();
         Goal goal = new GoalComposite(cache.stream().map(this::towards).toArray(Goal[]::new));
         return new PathingCommand(goal, PathingCommandType.REVALIDATE_GOAL_AND_PATH);

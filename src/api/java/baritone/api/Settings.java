@@ -994,6 +994,11 @@ public final class Settings {
     public final Setting<Integer> followRadius = new Setting<>(3);
 
     /**
+     * Pick up dropped items in a certain radius whilst following.
+     */
+    public final Setting<Integer> followPickUpDroppedItemRadius = new Setting<>(0);
+
+    /**
      * Turn this on if your exploration filter is enormous, you don't want it to check if it's done,
      * and you are just fine with it just hanging on completion
      */
