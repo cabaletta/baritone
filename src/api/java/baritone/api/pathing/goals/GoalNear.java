@@ -56,7 +56,7 @@ public class GoalNear implements Goal, IGoalRenderPos {
     @Override
     public double heuristic() {// TODO less hacky solution
         int range = (int) Math.ceil(Math.sqrt(rangeSq));
-        DoubleOpenHashSet maybeAlwaysInside = new DoubleOpenHashSet();
+        DoubleOpenHashSet maybeAlwaysInside = new DoubleOpenHashSet(); // see pull request #1978
         double minOutside = Double.POSITIVE_INFINITY;
         for (int dx = -range; dx <= range; dx++) {
             for (int dy = -range; dy <= range; dy++) {
@@ -72,7 +72,7 @@ public class GoalNear implements Goal, IGoalRenderPos {
         }
         double maxInside = Double.NEGATIVE_INFINITY;
         DoubleIterator it = maybeAlwaysInside.iterator();
-        while(it.hasNext()) {
+        while (it.hasNext()) {
             double inside = it.nextDouble();
             if (inside < minOutside) {
                 maxInside = Math.max(maxInside, inside);

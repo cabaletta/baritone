@@ -99,7 +99,7 @@ public class GoalRunAway implements Goal {
             maxY = Math.max(minY, p.getY() + distance);
             maxZ = Math.max(minZ, p.getZ() + distance);
         }
-        DoubleOpenHashSet maybeAlwaysInside = new DoubleOpenHashSet();
+        DoubleOpenHashSet maybeAlwaysInside = new DoubleOpenHashSet(); // see pull request #1978
         double minOutside = Double.POSITIVE_INFINITY;
         for (int x = minX; x <= maxX; x++) {
             for (int y = minY; y <= maxY; y++) {
@@ -115,7 +115,7 @@ public class GoalRunAway implements Goal {
         }
         double maxInside = Double.NEGATIVE_INFINITY;
         DoubleIterator it = maybeAlwaysInside.iterator();
-        while(it.hasNext()) {
+        while (it.hasNext()) {
             double inside = it.nextDouble();
             if (inside < minOutside) {
                 maxInside = Math.max(maxInside, inside);
