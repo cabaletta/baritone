@@ -40,8 +40,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static baritone.api.command.IBaritoneChatControl.FORCE_COMMAND_PREFIX;
-import static baritone.api.utils.SettingsUtil.settingTypeToString;
-import static baritone.api.utils.SettingsUtil.settingValueToString;
+import static baritone.api.utils.SettingsUtil.*;
 
 public class SetCommand extends Command {
 
@@ -88,6 +87,7 @@ public class SetCommand extends Command {
                         hoverComponent.appendText(setting.getName());
                         hoverComponent.appendText(String.format("\nType: %s", settingTypeToString(setting)));
                         hoverComponent.appendText(String.format("\n\nValue:\n%s", settingValueToString(setting)));
+                        hoverComponent.appendText(String.format("\n\nDefault Value:\n%s", settingDefaultToString(setting)));
                         String commandSuggestion = Baritone.settings().prefix.value + String.format("set %s ", setting.getName());
                         ITextComponent component = new TextComponentString(setting.getName());
                         component.getStyle().setColor(TextFormatting.GRAY);
