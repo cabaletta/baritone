@@ -17,7 +17,6 @@
 
 package baritone.api.schematic;
 
-import baritone.api.utils.BlockOptionalMetaLookup;
 import net.minecraft.block.Block;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.IBlockState;
