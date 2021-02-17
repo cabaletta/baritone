@@ -343,6 +343,13 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
 
     @Override
     public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
+        return onTick(calcFailed, isSafeToCancel, 0);
+    }
+
+    public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel, int recursions) {
+        if (recursions > 1000) { // onTick calls itself, don't crash
+            return new PathingCommand(null, PathingCommandType.SET_GOAL_AND_PATH);
+        }
         approxPlaceable = approxPlaceable(36);
         if (baritone.getInputOverrideHandler().isInputForcedDown(Input.CLICK_LEFT)) {
             ticks = 5;
@@ -401,7 +408,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             if (Baritone.settings().buildInLayers.value && layer < realSchematic.heightY()) {
                 logDirect("Starting layer " + layer);
                 layer++;
-                return onTick(calcFailed, isSafeToCancel);
+                return onTick(calcFailed, isSafeToCancel, recursions + 1);
             }
             Vec3i repeat = Baritone.settings().buildRepeat.value;
             int max = Baritone.settings().buildRepeatCount.value;
@@ -418,7 +425,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             layer = 0;
             origin = new BlockPos(origin).add(repeat);
             logDirect("Repeating build in vector " + repeat + ", new origin is " + origin);
-            return onTick(calcFailed, isSafeToCancel);
+            return onTick(calcFailed, isSafeToCancel, recursions + 1);
         }
         if (Baritone.settings().distanceTrim.value) {
             trim();
@@ -488,7 +495,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                 if (Baritone.settings().skipFailedLayers.value && Baritone.settings().buildInLayers.value && layer < realSchematic.heightY()) {
                     logDirect("Skipping layer that I cannot construct! Layer #" + layer);
                     layer++;
-                    return onTick(calcFailed, isSafeToCancel);
+                    return onTick(calcFailed, isSafeToCancel, recursions + 1);
                 }
                 logDirect("Unable to do it. Pausing. resume to resume, cancel to cancel");
                 paused = true;
