@@ -381,6 +381,13 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                 }
 
                 @Override
+                public void reset(){
+                    if (!(realSchematic instanceof IStaticSchematic)){
+                        realSchematic.reset();
+                    }
+                }
+
+                @Override
                 public int widthX() {
                     return realSchematic.widthX();
                 }
@@ -417,6 +424,9 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             // build repeat time
             layer = 0;
             origin = new BlockPos(origin).add(repeat);
+            if (!(schematic instanceof IStaticSchematic) && !Baritone.settings().buildRepeatSneaky.value){
+                schematic.reset();
+            }
             logDirect("Repeating build in vector " + repeat + ", new origin is " + origin);
             return onTick(calcFailed, isSafeToCancel);
         }
