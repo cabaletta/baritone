@@ -73,8 +73,8 @@ public class CompositeSchematic extends AbstractSchematic {
     }
 
     @Override
-    public void reset(){
-        for (CompositeSchematicEntry entry : schematicArr){
+    public void reset() {
+        for (CompositeSchematicEntry entry : schematicArr) {
             if (!(entry.schematic instanceof IStaticSchematic)) {
                 entry.schematic.reset();
             }
