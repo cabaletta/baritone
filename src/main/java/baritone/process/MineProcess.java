@@ -211,6 +211,10 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
                 public boolean isInGoal(int x, int y, int z) {
                     return false;
                 }
+                @Override
+                public double heuristic() {
+                    return Double.NEGATIVE_INFINITY;
+                }
             };
         }
         return new PathingCommand(branchPointRunaway, PathingCommandType.REVALIDATE_GOAL_AND_PATH);

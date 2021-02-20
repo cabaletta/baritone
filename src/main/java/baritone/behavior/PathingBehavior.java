@@ -52,6 +52,10 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
     private Goal goal;
     private CalculationContext context;
 
+    /*eta*/
+    private int ticksElapsedSoFar;
+    private BetterBlockPos startPosition;
+
     private boolean safeToCancel;
     private boolean pauseRequestedLastTick;
     private boolean unpausedLastTick;
@@ -98,6 +102,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         expectedSegmentStart = pathStart();
         baritone.getPathingControlManager().preTick();
         tickPath();
+        ticksElapsedSoFar++;
         dispatchEvents();
     }
 
@@ -372,6 +377,40 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         return context;
     }
 
+    public Optional<Double> estimatedTicksToGoal() {
+        BetterBlockPos currentPos = ctx.playerFeet();
+        if (goal == null || currentPos == null || startPosition == null) {
+            return Optional.empty();
+        }
+        if (goal.isInGoal(ctx.playerFeet())) {
+            resetEstimatedTicksToGoal();
+            return Optional.of(0.0);
+        }
+        if (ticksElapsedSoFar == 0) {
+            return Optional.empty();
+        }
+        double current = goal.heuristic(currentPos.x, currentPos.y, currentPos.z);
+        double start = goal.heuristic(startPosition.x, startPosition.y, startPosition.z);
+        if (current == start) {// can't check above because current and start can be equal even if currentPos and startPosition are not
+            return Optional.empty();
+        }
+        double eta = Math.abs(current - goal.heuristic()) * ticksElapsedSoFar / Math.abs(start - current);
+        return Optional.of(eta);
+    }
+
+    private void resetEstimatedTicksToGoal() {
+        resetEstimatedTicksToGoal(expectedSegmentStart);
+    }
+
+    private void resetEstimatedTicksToGoal(BlockPos start) {
+        resetEstimatedTicksToGoal(new BetterBlockPos(start));
+    }
+
+    private void resetEstimatedTicksToGoal(BetterBlockPos start) {
+        ticksElapsedSoFar = 0;
+        startPosition = start;
+    }
+
     /**
      * See issue #209
      *
@@ -468,6 +507,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                         if (executor.get().getPath().positions().contains(expectedSegmentStart)) {
                             queuePathEvent(PathEvent.CALC_FINISHED_NOW_EXECUTING);
                             current = executor.get();
+                            resetEstimatedTicksToGoal(start);
                         } else {
                             logDebug("Warning: discarding orphan path segment with incorrect start");
                         }
