@@ -19,8 +19,8 @@ package baritone.api.utils;
 
 import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
+import net.minecraft.block.AbstractFireBlock;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.FireBlock;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.Direction;
@@ -234,7 +234,7 @@ public final class RotationUtils {
             if (((BlockRayTraceResult) result).getPos().equals(pos)) {
                 return Optional.of(rotation);
             }
-            if (entity.world.getBlockState(pos).getBlock() instanceof FireBlock && ((BlockRayTraceResult) result).getPos().equals(pos.down())) {
+            if (entity.world.getBlockState(pos).getBlock() instanceof AbstractFireBlock && ((BlockRayTraceResult) result).getPos().equals(pos.down())) {
                 return Optional.of(rotation);
             }
         }

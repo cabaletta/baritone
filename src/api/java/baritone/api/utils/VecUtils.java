@@ -17,8 +17,8 @@
 
 package baritone.api.utils;
 
+import net.minecraft.block.AbstractFireBlock;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.FireBlock;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
@@ -54,7 +54,7 @@ public final class VecUtils {
         if (Double.isNaN(xDiff) || Double.isNaN(yDiff) || Double.isNaN(zDiff)) {
             throw new IllegalStateException(b + " " + pos + " " + shape);
         }
-        if (b.getBlock() instanceof FireBlock) {//look at bottom of fire when putting it out
+        if (b.getBlock() instanceof AbstractFireBlock) {//look at bottom of fire when putting it out
             yDiff = 0;
         }
         return new Vector3d(
