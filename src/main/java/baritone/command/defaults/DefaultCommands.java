@@ -52,6 +52,7 @@ public final class DefaultCommands {
                 new RenderCommand(baritone),
                 new FarmCommand(baritone),
                 new FollowCommand(baritone),
+                new PickupCommand(baritone),
                 new ExploreFilterCommand(baritone),
                 new ReloadAllCommand(baritone),
                 new SaveAllCommand(baritone),

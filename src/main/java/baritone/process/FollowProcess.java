@@ -19,6 +19,7 @@ package baritone.process;
 
 import baritone.Baritone;
 import baritone.api.pathing.goals.Goal;
+import baritone.api.pathing.goals.GoalBlock;
 import baritone.api.pathing.goals.GoalComposite;
 import baritone.api.pathing.goals.GoalNear;
 import baritone.api.pathing.goals.GoalXZ;
@@ -27,6 +28,8 @@ import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
 import baritone.utils.BaritoneProcessHelper;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.item.EntityItem;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.List;
@@ -43,6 +46,7 @@ public final class FollowProcess extends BaritoneProcessHelper implements IFollo
 
     private Predicate<Entity> filter;
     private List<Entity> cache;
+    private boolean into;
 
     public FollowProcess(Baritone baritone) {
         super(baritone);
@@ -57,11 +61,14 @@ public final class FollowProcess extends BaritoneProcessHelper implements IFollo
 
     private Goal towards(Entity following) {
         BlockPos pos;
-        if (Baritone.settings().followOffsetDistance.value == 0) {
+        if (Baritone.settings().followOffsetDistance.value == 0 || into) {
             pos = new BlockPos(following);
         } else {
             GoalXZ g = GoalXZ.fromDirection(following.getPositionVector(), Baritone.settings().followOffsetDirection.value, Baritone.settings().followOffsetDistance.value);
             pos = new BlockPos(g.getX(), following.posY, g.getZ());
+        }
+        if (into) {
+            return new GoalBlock(pos);
         }
         return new GoalNear(pos, Baritone.settings().followRadius.value);
     }
@@ -112,6 +119,13 @@ public final class FollowProcess extends BaritoneProcessHelper implements IFollo
     @Override
     public void follow(Predicate<Entity> filter) {
         this.filter = filter;
+        this.into = false;
+    }
+
+    @Override
+    public void pickup(Predicate<ItemStack> filter) {
+        this.filter = e -> e instanceof EntityItem && filter.test(((EntityItem) e).getItem());
+        this.into = true;
     }
 
     @Override
