@@ -36,6 +36,17 @@ public interface IFollowProcess extends IBaritoneProcess {
     void follow(Predicate<Entity> filter);
 
     /**
+     * Set the follow target to any entities matching this predicate
+     * and use radius, offset and direction over the setting values
+     *
+     * @param filter the predicate
+     * @param radius the radius, -1 to use settings
+     * @param offset the offset, -1 to use settings
+     * @param offsetDirection the direction of the offset, -1 to use settings
+     */
+    void follow(Predicate<Entity> filter, int radius, int offset, int offsetDirection);
+
+    /**
      * @return The entities that are currently being followed. null if not currently following, empty if nothing matches the predicate
      */
     List<Entity> following();
