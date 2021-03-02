@@ -30,9 +30,9 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.ResourceLocation;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -47,9 +47,10 @@ public class FollowCommand extends Command {
         args.requireMin(1);
         FollowGroup group;
         FollowList list;
-        List<Entity> entities = new ArrayList<>();
-        List<Class<? extends Entity>> classes = new ArrayList<>();
+        Predicate<Entity> filter = (e -> false);
+        List<Object> following = new ArrayList<>();
         if (args.hasExactlyOne()) {
+            list = null;
             baritone.getFollowProcess().follow((group = args.getEnum(FollowGroup.class)).filter);
         } else {
             args.requireMin(2);
@@ -57,34 +58,16 @@ public class FollowCommand extends Command {
             list = args.getEnum(FollowList.class);
             while (args.hasAny()) {
                 Object gotten = args.getDatatypeFor(list.datatype);
-                if (gotten instanceof Class) {
-                    //noinspection unchecked
-                    classes.add((Class<? extends Entity>) gotten);
-                } else {
-                    entities.add((Entity) gotten);
-                }
+                filter = filter.or(list.filterFor.apply(gotten));
+                following.add(gotten);
             }
-            baritone.getFollowProcess().follow(
-                    classes.isEmpty()
-                            ? entities::contains
-                            : e -> classes.stream().anyMatch(c -> c.isInstance(e))
-            );
+            baritone.getFollowProcess().follow(filter);
         }
         if (group != null) {
             logDirect(String.format("Following all %s", group.name().toLowerCase(Locale.US)));
         } else {
             logDirect("Following these types of entities:");
-            if (classes.isEmpty()) {
-                entities.stream()
-                        .map(Entity::toString)
-                        .forEach(this::logDirect);
-            } else {
-                classes.stream()
-                        .map(EntityList::getKey)
-                        .map(Objects::requireNonNull)
-                        .map(ResourceLocation::toString)
-                        .forEach(this::logDirect);
-            }
+            following.stream().map(list.toString::apply).forEach(this::logDirect);
         }
     }
 
@@ -146,13 +129,21 @@ public class FollowCommand extends Command {
 
     @KeepName
     private enum FollowList {
-        ENTITY(EntityClassById.INSTANCE),
-        PLAYER(NearbyPlayer.INSTANCE);
+        ENTITY(EntityClassById.INSTANCE,
+                c -> Objects.requireNonNull(EntityList.getKey((Class<? extends Entity>) c)),
+                c -> ((Class<? extends Entity>) c)::isInstance
+        ),
+        PLAYER(NearbyPlayer.INSTANCE, e -> e, e -> e::equals);
 
         final IDatatypeFor datatype;
+        final Function<Object, String> toString;
+        final Function<Object, Predicate<Entity>> filterFor;
 
-        FollowList(IDatatypeFor datatype) {
+        FollowList(IDatatypeFor datatype, Function<Object, Object> toString, Function<Object, Predicate<Entity>> filterFor) {
             this.datatype = datatype;
+            this.toString = toString.andThen(Object::toString);
+            this.filterFor = filterFor;
         }
+
     }
 }
