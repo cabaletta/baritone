@@ -23,13 +23,17 @@ import baritone.api.command.Command;
 import baritone.api.command.argument.IArgConsumer;
 import baritone.api.command.datatypes.EntityClassById;
 import baritone.api.command.datatypes.IDatatypeFor;
+import baritone.api.command.datatypes.ItemById;
 import baritone.api.command.datatypes.NearbyPlayer;
 import baritone.api.command.exception.CommandException;
 import baritone.api.command.helpers.TabCompleteHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.Item;
+import net.minecraft.util.ResourceLocation;
 
 import java.util.*;
 import java.util.function.Function;
@@ -109,6 +113,8 @@ public class FollowCommand extends Command {
                 "Usage:",
                 "> follow entities - Follows all entities.",
                 "> follow entity <entity1> <entity2> <...> - Follow certain entities (for example 'skeleton', 'horse' etc.)",
+                "> follow items - Follow all item entities",
+                "> follow item <item1> <item2> <...> - Follow certain items (for example 'carrot', 'bone' etc.)",
                 "> follow players - Follow players",
                 "> follow player <username1> <username2> <...> - Follow certain players"
         );
@@ -117,6 +123,7 @@ public class FollowCommand extends Command {
     @KeepName
     private enum FollowGroup {
         ENTITIES(EntityLiving.class::isInstance),
+        ITEMS(EntityItem.class::isInstance),
         PLAYERS(EntityPlayer.class::isInstance); /* ,
         FRIENDLY(entity -> entity.getAttackTarget() != HELPER.mc.player),
         HOSTILE(FRIENDLY.filter.negate()); */
@@ -132,6 +139,10 @@ public class FollowCommand extends Command {
         ENTITY(EntityClassById.INSTANCE,
                 c -> Objects.requireNonNull(EntityList.getKey((Class<? extends Entity>) c)),
                 c -> ((Class<? extends Entity>) c)::isInstance
+        ),
+        ITEM(ItemById.INSTANCE,
+                i -> Item.REGISTRY.getNameForObject((Item) i),
+                i -> (e -> e instanceof EntityItem && ((EntityItem) e).getItem().getItem().equals(i))
         ),
         PLAYER(NearbyPlayer.INSTANCE, e -> e, e -> e::equals);
 
