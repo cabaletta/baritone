@@ -43,6 +43,9 @@ public final class FollowProcess extends BaritoneProcessHelper implements IFollo
 
     private Predicate<Entity> filter;
     private List<Entity> cache;
+    private int radius;
+    private int offset;
+    private int direction;
 
     public FollowProcess(Baritone baritone) {
         super(baritone);
@@ -60,10 +63,10 @@ public final class FollowProcess extends BaritoneProcessHelper implements IFollo
         if (Baritone.settings().followOffsetDistance.value == 0) {
             pos = new BlockPos(following);
         } else {
-            GoalXZ g = GoalXZ.fromDirection(following.getPositionVector(), Baritone.settings().followOffsetDirection.value, Baritone.settings().followOffsetDistance.value);
+            GoalXZ g = GoalXZ.fromDirection(following.getPositionVector(), direction < 0 ? Baritone.settings().followOffsetDirection.value : direction, offset < 0 ? Baritone.settings().followOffsetDistance.value : offset);
             pos = new BlockPos(g.getX(), following.posY, g.getZ());
         }
-        return new GoalNear(pos, Baritone.settings().followRadius.value);
+        return new GoalNear(pos, radius < 0 ? Baritone.settings().followRadius.value : radius);
     }
 
 
@@ -111,7 +114,15 @@ public final class FollowProcess extends BaritoneProcessHelper implements IFollo
 
     @Override
     public void follow(Predicate<Entity> filter) {
+        this.follow(filter, -1, -1, -1);
+    }
+
+    @Override
+    public void follow(Predicate<Entity> filter, int radius, int offset, int offsetDirection) {
         this.filter = filter;
+        this.radius = radius;
+        this.offset = offset;
+        this.direction = direction;
     }
 
     @Override
