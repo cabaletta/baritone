@@ -802,7 +802,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         if (Baritone.settings().buildSkipBlocks.value.contains(desired.getBlock()) && !itemVerify) {
             return true;
         }
-        if (Baritone.settings().buildValidSubstitutes.value.getOrDefault(desired.getBlock(), Arrays.asList()).contains(current.getBlock()) && !itemVerify) {
+        if (Baritone.settings().buildValidSubstitutes.value.getOrDefault(desired.getBlock(), Collections.emptyList()).contains(current.getBlock()) && !itemVerify) {
             return true;
         }
         return current.equals(desired);
