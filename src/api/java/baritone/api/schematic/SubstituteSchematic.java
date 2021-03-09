@@ -18,6 +18,7 @@
 package baritone.api.schematic;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockAir;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
@@ -49,12 +50,12 @@ public class SubstituteSchematic extends AbstractSchematic {
             return desired;
         }
         List<Block> substitutes = substitutions.get(desiredBlock);
-        if (substitutes.contains(current.getBlock()) && !current.getBlock().equals(Blocks.AIR)) {// don't preserve air, it's almost always there and almost never wanted
+        if (substitutes.contains(current.getBlock()) && !(current.getBlock() instanceof BlockAir)) {// don't preserve air, it's almost always there and almost never wanted
             return withBlock(desired, current.getBlock());
         }
         for (Block substitute : substitutes) {
-            if (substitute.equals(Blocks.AIR)) {
-                return Blocks.AIR.getDefaultState(); // can always "place" air
+            if (substitute instanceof BlockAir) {
+                return current.getBlock() instanceof BlockAir ? current : Blocks.AIR.getDefaultState(); // can always "place" air
             }
             for (IBlockState placeable : approxPlaceable) {
                 if (substitute.equals(placeable.getBlock())) {
