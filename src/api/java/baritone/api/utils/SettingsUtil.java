@@ -35,6 +35,7 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -260,6 +261,36 @@ public class SettingsUtil {
             @Override
             public boolean accepts(Type type) {
                 return List.class.isAssignableFrom(TypeUtils.resolveBaseClass(type));
+            }
+        },
+        MAPPING() {
+            @Override
+            public Object parse(ParserContext context, String raw) {
+                Type keyType = ((ParameterizedType) context.getSetting().getType()).getActualTypeArguments()[0];
+                Type valueType = ((ParameterizedType) context.getSetting().getType()).getActualTypeArguments()[1];
+                Parser keyParser = Parser.getParser(keyType);
+                Parser valueParser = Parser.getParser(valueType);
+
+                return Stream.of(raw.split(",(?=[^,]*->)"))
+                        .map(s -> s.split("->"))
+                        .collect(Collectors.toMap(s -> keyParser.parse(context, s[0]), s -> valueParser.parse(context, s[1])));
+            }
+
+            @Override
+            public String toString(ParserContext context, Object value) {
+                Type keyType = ((ParameterizedType) context.getSetting().getType()).getActualTypeArguments()[0];
+                Type valueType = ((ParameterizedType) context.getSetting().getType()).getActualTypeArguments()[1];
+                Parser keyParser = Parser.getParser(keyType);
+                Parser valueParser = Parser.getParser(valueType);
+
+                return ((Map<?,?>) value).entrySet().stream()
+                        .map(o -> keyParser.toString(context, o.getKey()) + "->" + valueParser.toString(context, o.getValue()))
+                        .collect(Collectors.joining(","));
+            }
+
+            @Override
+            public boolean accepts(Type type) {
+                return Map.class.isAssignableFrom(TypeUtils.resolveBaseClass(type));
             }
         };
 

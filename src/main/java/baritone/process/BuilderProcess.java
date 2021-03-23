@@ -26,6 +26,7 @@ import baritone.api.process.IBuilderProcess;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
 import baritone.api.schematic.FillSchematic;
+import baritone.api.schematic.SubstituteSchematic;
 import baritone.api.schematic.ISchematic;
 import baritone.api.schematic.IStaticSchematic;
 import baritone.api.schematic.format.ISchematicFormat;
@@ -85,6 +86,9 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         this.name = name;
         this.schematic = schematic;
         this.realSchematic = null;
+        if (!Baritone.settings().buildSubstitutes.value.isEmpty()) {
+            this.schematic = new SubstituteSchematic(this.schematic, Baritone.settings().buildSubstitutes.value);
+        }
         int x = origin.getX();
         int y = origin.getY();
         int z = origin.getZ();
@@ -588,7 +592,8 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                         continue;
                     }
                     // this is not in render distance
-                    if (!observedCompleted.contains(BetterBlockPos.longHash(blockX, blockY, blockZ))) {
+                    if (!observedCompleted.contains(BetterBlockPos.longHash(blockX, blockY, blockZ))
+                          && !Baritone.settings().buildSkipBlocks.value.contains(schematic.desiredState(x, y, z, current, this.approxPlaceable).getBlock())) {
                         // and we've never seen this position be correct
                         // therefore mark as incorrect
                         incorrectPositions.add(new BetterBlockPos(blockX, blockY, blockZ));
@@ -833,6 +838,12 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         if (!(current.getBlock() instanceof BlockAir) && Baritone.settings().buildIgnoreExisting.value && !itemVerify) {
             return true;
         }
+        if (Baritone.settings().buildSkipBlocks.value.contains(desired.getBlock()) && !itemVerify) {
+            return true;
+        }
+        if (Baritone.settings().buildValidSubstitutes.value.getOrDefault(desired.getBlock(), Collections.emptyList()).contains(current.getBlock()) && !itemVerify) {
+            return true;
+        }
         return current.equals(desired);
     }
 
@@ -870,7 +881,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                 return COST_INF;
             }
             IBlockState sch = getSchematic(x, y, z, current);
-            if (sch != null) {
+            if (sch != null && !Baritone.settings().buildSkipBlocks.value.contains(sch.getBlock())) {
                 // TODO this can return true even when allowPlace is off.... is that an issue?
                 if (sch.getBlock() == Blocks.AIR) {
                     // we want this to be air, but they're asking if they can place here
@@ -904,7 +915,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                 return COST_INF;
             }
             IBlockState sch = getSchematic(x, y, z, current);
-            if (sch != null) {
+            if (sch != null && !Baritone.settings().buildSkipBlocks.value.contains(sch.getBlock())) {
                 if (sch.getBlock() == Blocks.AIR) {
                     // it should be air
                     // regardless of current contents, we can break it
