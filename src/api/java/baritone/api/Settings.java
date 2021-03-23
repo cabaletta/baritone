@@ -207,6 +207,11 @@ public final class Settings {
     )));
 
     /**
+     * If this is true, the builder will use avoid checks from mining(for example: does will not break block near liquid).
+     */
+    public final Setting<Boolean> buildAvoidBreakCheck = new Setting<>(false);
+
+    /**
      * A list of blocks to become air
      * <p>
      * If a schematic asks for a block on this list, only air will be accepted at that location (and nothing on buildIgnoreBlocks)

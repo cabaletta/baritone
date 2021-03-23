@@ -208,7 +208,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                         continue; // irrelevant
                     }
                     IBlockState curr = bcc.bsi.get0(x, y, z);
-                    if (curr.getBlock() != Blocks.AIR && !(curr.getBlock() instanceof BlockLiquid) && !valid(curr, desired, false)) {
+                    if (curr.getBlock() != Blocks.AIR && !(curr.getBlock() instanceof BlockLiquid) && !valid(bcc.bsi, x, y, z, curr, desired, false)) {
                         BetterBlockPos pos = new BetterBlockPos(x, y, z);
                         Optional<Rotation> rot = RotationUtils.reachable(ctx.player(), pos, ctx.playerController().getBlockReachDistance());
                         if (rot.isPresent()) {
@@ -549,7 +549,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                     if (desired != null) {
                         // we care about this position
                         BetterBlockPos pos = new BetterBlockPos(x, y, z);
-                        if (valid(bcc.bsi.get0(x, y, z), desired, false)) {
+                        if (valid(bcc.bsi, x, y, z, bcc.bsi.get0(x, y, z), desired, false)) {
                             incorrectPositions.remove(pos);
                             observedCompleted.add(BetterBlockPos.longHash(pos));
                         } else {
@@ -576,7 +576,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                     }
                     if (bcc.bsi.worldContainsLoadedChunk(blockX, blockZ)) { // check if its in render distance, not if its in cache
                         // we can directly observe this block, it is in render distance
-                        if (valid(bcc.bsi.get0(blockX, blockY, blockZ), schematic.desiredState(x, y, z, current, this.approxPlaceable), false)) {
+                        if (valid(bcc.bsi, blockX, blockY, blockZ, bcc.bsi.get0(blockX, blockY, blockZ), schematic.desiredState(x, y, z, current, this.approxPlaceable), false)) {
                             observedCompleted.add(BetterBlockPos.longHash(blockX, blockY, blockZ));
                         } else {
                             incorrectPositions.add(new BetterBlockPos(blockX, blockY, blockZ));
@@ -817,6 +817,14 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         return result;
     }
 
+    private boolean valid(BlockStateInterface bsi, int x, int y, int z, IBlockState current, IBlockState desired, boolean itemVerify) {
+        if (desired.getBlock() instanceof BlockAir && Baritone.settings().buildAvoidBreakCheck.value && MovementHelper.avoidBreaking(bsi, x, y, z, desired)) {
+            return true;
+        } else {
+            return valid(current, desired, itemVerify);
+        }
+    }
+
     private boolean valid(IBlockState current, IBlockState desired, boolean itemVerify) {
         if (desired == null) {
             return true;
@@ -912,7 +920,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                 }
                 // it should be a real block
                 // is it already that block?
-                if (valid(bsi.get0(x, y, z), sch, false)) {
+                if (valid(bsi, x, y, z, bsi.get0(x, y, z), sch, false)) {
                     return Baritone.settings().breakCorrectBlockPenaltyMultiplier.value;
                 } else {
                     // can break if it's wrong
