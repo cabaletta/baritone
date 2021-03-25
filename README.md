@@ -1,38 +1,51 @@
 # Baritone
-[![HitCount](http://hits.dwyl.com/cabaletta/baritone.svg)](http://hits.dwyl.com/cabaletta/baritone/)
-[![GitHub All Releases](https://img.shields.io/github/downloads/cabaletta/baritone/total.svg)](https://github.com/cabaletta/baritone/releases/)
+<p align="center">
+  <a href="http://hits.dwyl.com/cabaletta/baritone/"><img src="http://hits.dwyl.com/cabaletta/baritone.svg" alt="HitCount"/></a>
+  <a href="https://github.com/cabaletta/baritone/releases/"><img src="https://img.shields.io/github/downloads/cabaletta/baritone/total.svg" alt="GitHub All Releases"/></a>
+</p>
 
-[![Build Status](https://travis-ci.com/cabaletta/baritone.svg?branch=master)](https://travis-ci.com/cabaletta/baritone/)
-[![Release](https://img.shields.io/github/release/cabaletta/baritone.svg)](https://github.com/cabaletta/baritone/releases/)
-[![License](https://img.shields.io/badge/license-LGPL--3.0%20with%20anime%20exception-green.svg)](LICENSE)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/a73d037823b64a5faf597a18d71e3400)](https://www.codacy.com/app/leijurv/baritone?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=cabaletta/baritone&amp;utm_campaign=Badge_Grade)
-[![Minecraft](https://img.shields.io/badge/MC-1.12.2-brightgreen.svg)](https://github.com/cabaletta/baritone/tree/master/)
-[![Minecraft](https://img.shields.io/badge/MC-1.13.2-brightgreen.svg)](https://github.com/cabaletta/baritone/tree/1.13.2/)
-[![Minecraft](https://img.shields.io/badge/MC-1.14.4-brightgreen.svg)](https://github.com/cabaletta/baritone/tree/1.14.4/)
-[![Minecraft](https://img.shields.io/badge/MC-1.15.2-brightgreen.svg)](https://github.com/cabaletta/baritone/tree/1.15.2/)
-[![Minecraft](https://img.shields.io/badge/MC-1.16.2-brightgreen.svg)](https://github.com/cabaletta/baritone/tree/1.16.2/)
-[![Minecraft](https://img.shields.io/badge/MC-1.16.4-brightgreen.svg)](https://github.com/cabaletta/baritone/tree/1.16.4/)
-[![Minecraft](https://img.shields.io/badge/MC-1.16.5-brightgreen.svg)](https://github.com/cabaletta/baritone/tree/1.16.5/)
-[![Code of Conduct](https://img.shields.io/badge/%E2%9D%A4-code%20of%20conduct-blue.svg?style=flat)](https://github.com/cabaletta/baritone/blob/master/CODE_OF_CONDUCT.md)
-[![Known Vulnerabilities](https://snyk.io/test/github/cabaletta/baritone/badge.svg?targetFile=build.gradle)](https://snyk.io/test/github/cabaletta/baritone?targetFile=build.gradle)
-[![Contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/cabaletta/baritone/issues/)
-[![Issues](https://img.shields.io/github/issues/cabaletta/baritone.svg)](https://github.com/cabaletta/baritone/issues/)
-[![GitHub issues-closed](https://img.shields.io/github/issues-closed/cabaletta/baritone.svg)](https://github.com/cabaletta/baritone/issues?q=is%3Aissue+is%3Aclosed)
-[![Pull Requests](https://img.shields.io/github/issues-pr/cabaletta/baritone.svg)](https://github.com/cabaletta/baritone/pulls/)
-![Code size](https://img.shields.io/github/languages/code-size/cabaletta/baritone.svg)
-![GitHub repo size](https://img.shields.io/github/repo-size/cabaletta/baritone.svg)
-![Lines of Code](https://tokei.rs/b1/github/cabaletta/baritone?category=code)
-[![GitHub contributors](https://img.shields.io/github/contributors/cabaletta/baritone.svg)](https://github.com/cabaletta/baritone/graphs/contributors/)
-[![GitHub commits](https://img.shields.io/github/commits-since/cabaletta/baritone/v1.0.0.svg)](https://github.com/cabaletta/baritone/commit/)
-[![Impact integration](https://img.shields.io/badge/Impact%20integration-v1.2.14%20/%20v1.3.8%20/%20v1.4.6%20/%20v1.5.3-brightgreen.svg)](https://impactclient.net/)
-[![KAMI Blue integration](https://img.shields.io/badge/KAMI%20Blue%20integration-v1.2.14--master-green)](https://github.com/kami-blue/client)
-[![ForgeHax integration](https://img.shields.io/badge/ForgeHax%20%22integration%22-scuffed-yellow.svg)](https://github.com/fr1kin/ForgeHax/)
-[![Aristois add-on integration](https://img.shields.io/badge/Aristois%20add--on%20integration-v1.3.4%20/%20v1.4.1-green.svg)](https://gitlab.com/emc-mods-indrit/baritone_api)
-[![rootNET integration](https://img.shields.io/badge/rootNET%20integration-v1.2.14-green.svg)](https://rootnet.dev/)
-[![Future integration](https://img.shields.io/badge/Future%20integration-v1.2.12%20%2F%20v1.3.6%20%2F%20v1.4.4-red)](https://futureclient.net/)
-[![RusherHack integration](https://img.shields.io/badge/RusherHack%20integration-v1.2.14-green)](https://rusherhack.org/)
-[![forthebadge](https://forthebadge.com/images/badges/built-with-swag.svg)](http://forthebadge.com/)
-[![forthebadge](https://forthebadge.com/images/badges/mom-made-pizza-rolls.svg)](http://forthebadge.com/)
+<p align="center">
+  <a href="https://github.com/cabaletta/baritone/tree/master/"><img src="https://img.shields.io/badge/MC-1.12.2-brightgreen.svg" alt="Minecraft"/></a>
+  <a href="https://github.com/cabaletta/baritone/tree/1.13.2/"><img src="https://img.shields.io/badge/MC-1.13.2-brightgreen.svg" alt="Minecraft"/></a>
+  <a href="https://github.com/cabaletta/baritone/tree/1.14.4/"><img src="https://img.shields.io/badge/MC-1.14.4-brightgreen.svg" alt="Minecraft"/></a>
+  <a href="https://github.com/cabaletta/baritone/tree/1.15.2/"><img src="https://img.shields.io/badge/MC-1.15.2-brightgreen.svg" alt="Minecraft"/></a>
+  <a href="https://github.com/cabaletta/baritone/tree/1.16.2/"><img src="https://img.shields.io/badge/MC-1.16.2-brightgreen.svg" alt="Minecraft"/></a>
+  <a href="https://github.com/cabaletta/baritone/tree/1.16.4/"><img src="https://img.shields.io/badge/MC-1.16.4-brightgreen.svg" alt="Minecraft"/></a>
+  <a href="https://github.com/cabaletta/baritone/tree/1.16.5/"><img src="https://img.shields.io/badge/MC-1.16.5-brightgreen.svg" alt="Minecraft"/></a>
+</p>
+
+<p align="center">
+  <a href="https://travis-ci.com/cabaletta/baritone/"><img src="https://travis-ci.com/cabaletta/baritone.svg?branch=master" alt="Build Status"/></a>
+  <a href="https://github.com/cabaletta/baritone/releases/"><img src="https://img.shields.io/github/release/cabaletta/baritone.svg" alt="Release"/></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-LGPL--3.0%20with%20anime%20exception-green.svg" alt="License"/></a>
+  <a href="https://www.codacy.com/app/leijurv/baritone?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=cabaletta/baritone&amp;utm_campaign=Badge_Grade"><img src="https://api.codacy.com/project/badge/Grade/a73d037823b64a5faf597a18d71e3400" alt="Codacy Badge"/></a>
+  <a href="https://github.com/cabaletta/baritone/blob/master/CODE_OF_CONDUCT.md"><img src="https://img.shields.io/badge/%E2%9D%A4-code%20of%20conduct-blue.svg?style=flat" alt="Code of Conduct"/></a>
+  <a href="https://snyk.io/test/github/cabaletta/baritone?targetFile=build.gradle"><img src="https://snyk.io/test/github/cabaletta/baritone/badge.svg?targetFile=build.gradle" alt="Known Vulnerabilities"/></a>
+  <a href="https://github.com/cabaletta/baritone/issues/"><img src="https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat" alt="Contributions welcome"/></a>
+  <a href="https://github.com/cabaletta/baritone/issues/"><img src="https://img.shields.io/github/issues/cabaletta/baritone.svg" alt="Issues"/></a>
+  <a href="https://github.com/cabaletta/baritone/issues?q=is%3Aissue+is%3Aclosed"><img src="https://img.shields.io/github/issues-closed/cabaletta/baritone.svg" alt="GitHub issues-closed"/></a>
+  <a href="https://github.com/cabaletta/baritone/pulls/"><img src="https://img.shields.io/github/issues-pr/cabaletta/baritone.svg" alt="Pull Requests"/></a>
+  <a href="https://github.com/cabaletta/baritone/graphs/contributors/"><img src="https://img.shields.io/github/contributors/cabaletta/baritone.svg" alt="GitHub contributors"/></a>
+  <a href="https://github.com/cabaletta/baritone/commit/"><img src="https://img.shields.io/github/commits-since/cabaletta/baritone/v1.0.0.svg" alt="GitHub commits"/></a>
+  <img src="https://img.shields.io/github/languages/code-size/cabaletta/baritone.svg" alt="Code size"/>
+  <img src="https://img.shields.io/github/repo-size/cabaletta/baritone.svg" alt="GitHub repo size"/>
+  <img src="https://tokei.rs/b1/github/cabaletta/baritone?category=code" alt="Lines of Code"/>
+</p>
+
+<p align="center">
+  <a href="https://impactclient.net/"><img src="https://img.shields.io/badge/Impact%20integration-v1.2.14%20/%20v1.3.8%20/%20v1.4.6%20/%20v1.5.3%20/%20v1.6.3-brightgreen.svg" alt="Impact integration"/></a>
+  <a href="https://github.com/kami-blue/client"><img src="https://img.shields.io/badge/KAMI%20Blue%20integration-v1.2.14--master-green" alt="KAMI Blue integration"/></a>
+  <a href="https://github.com/fr1kin/ForgeHax/"><img src="https://img.shields.io/badge/ForgeHax%20%22integration%22-scuffed-yellow.svg" alt="ForgeHax integration"/></a>
+  <a href="https://aristois.net/"><img src="https://img.shields.io/badge/Aristois%20add--on%20integration-v1.6.3-green.svg" alt="Aristois add-on integration"/></a>
+  <a href="https://rootnet.dev/"><img src="https://img.shields.io/badge/rootNET%20integration-v1.2.14-green.svg" alt="rootNET integration"/></a>
+  <a href="https://futureclient.net/"><img src="https://img.shields.io/badge/Future%20integration-v1.2.12%20%2F%20v1.3.6%20%2F%20v1.4.4-red" alt="Future integration"/></a>
+  <a href="https://rusherhack.org/"><img src="https://img.shields.io/badge/RusherHack%20integration-v1.2.14-green" alt="RusherHack integration"/></a>
+</p>
+
+<p align="center">
+  <a href="http://forthebadge.com/"><img src="https://forthebadge.com/images/badges/built-with-swag.svg" alt="forthebadge"/></a>
+  <a href="http://forthebadge.com/"><img src="https://forthebadge.com/images/badges/mom-made-pizza-rolls.svg" alt="forthebadge"/></a>
+</p>
 
 A Minecraft pathfinder bot.
 
