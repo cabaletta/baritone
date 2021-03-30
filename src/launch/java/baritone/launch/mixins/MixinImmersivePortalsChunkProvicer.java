@@ -40,8 +40,7 @@ public class MixinImmersivePortalsChunkProvicer extends ClientChunkProvider impl
     @Unique
     private static Constructor<?> thisConstructor;
     
-    //protected in 1.16
-    @Shadow
+    @Shadow(aliases = {"field_73235_d"})
     @Final
     private ClientWorld world;
     
