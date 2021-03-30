@@ -24,6 +24,9 @@ import net.minecraft.client.multiplayer.ClientChunkProvider;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.world.chunk.Chunk;
 import org.spongepowered.asm.mixin.*;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -40,9 +43,14 @@ public class MixinImmersivePortalsChunkProvicer extends ClientChunkProvider impl
     @Unique
     private static Constructor<?> thisConstructor;
     
-    @Shadow(aliases = {"field_73235_d"})
-    @Final
-    private ClientWorld world;
+    @Unique
+    protected ClientWorld clientWorld;
+    
+    //have to do this because forge remaps world for some reason and fabric leave it since it obviously shouldn't be remapped
+    @Inject(at = @At("TAIL"), method = "<init>", remap = false)
+    private void onInit(ClientWorld clientWorldIn, int viewDistance, CallbackInfo ci) {
+        this.clientWorld = clientWorldIn;
+    }
     
     
     @Override
@@ -51,7 +59,7 @@ public class MixinImmersivePortalsChunkProvicer extends ClientChunkProvider impl
             if (thisConstructor == null) {
                 thisConstructor = this.getClass().getConstructor(ClientWorld.class, int.class);
             }
-            IImmersivePortalsClientChunkProvider result = (IImmersivePortalsClientChunkProvider) thisConstructor.newInstance(world, 0); // distance literally doesn't matter because of how they do it lmao
+            IImmersivePortalsClientChunkProvider result = (IImmersivePortalsClientChunkProvider) thisConstructor.newInstance(clientWorld, 0); // distance literally doesn't matter because of how they do it lmao
             result.overwriteChunkMap(new Long2ObjectLinkedOpenHashMap<>(chunkMap));
             return (ClientChunkProvider) result;
         } catch (InstantiationException | InvocationTargetException | NoSuchMethodException | IllegalAccessException e) {
