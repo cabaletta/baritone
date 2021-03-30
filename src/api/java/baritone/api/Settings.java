@@ -1218,7 +1218,7 @@ public final class Settings {
     // here be dragons
 
     Settings() {
-        Registry.BLOCK.getValue(new ResourceLocation("immersive_portals", "portal_placeholder")).ifPresent(blocksToAvoid.defaultValue::add);
+        Registry.BLOCK.getOptional(new ResourceLocation("immersive_portals", "nether_portal_block")).ifPresent(blocksToAvoid.defaultValue::add);
     
         Field[] temp = getClass().getFields();
 
