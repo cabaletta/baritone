@@ -79,25 +79,44 @@ public final class BetterBlockPos extends BlockPos {
         return longHash(pos.x, pos.y, pos.z);
     }
 
+    private static final int NUM_X_BITS = 26;
+    private static final int NUM_Z_BITS = NUM_X_BITS;
+    private static final int NUM_Y_BITS = 64 - NUM_X_BITS - NUM_Z_BITS;
+    private static final int Y_SHIFT = 0 + NUM_Z_BITS;
+    private static final int X_SHIFT = Y_SHIFT + NUM_Y_BITS;
+    private static final long X_MASK = (1L << NUM_X_BITS) - 1L;
+    private static final long Y_MASK = (1L << NUM_Y_BITS) - 1L;
+    private static final long Z_MASK = (1L << NUM_Z_BITS) - 1L;
+
+    public long toLong() {
+        return toLong(this.x, this.y, this.z);
+    }
+
+
+    public static BetterBlockPos fromLong(long serialized) {
+        int x = (int) (serialized << (64 - X_SHIFT - NUM_X_BITS) >> (64 - NUM_X_BITS));
+        int y = (int) (serialized << (64 - Y_SHIFT - NUM_Y_BITS) >> (64 - NUM_Y_BITS));
+        int z = (int) (serialized << (64 - NUM_Z_BITS) >> (64 - NUM_Z_BITS));
+        return new BetterBlockPos(x, y, z);
+    }
+
+    public static long toLong(final int x, final int y, final int z) {
+        return ((long) x & X_MASK) << X_SHIFT | ((long) y & Y_MASK) << Y_SHIFT | ((long) z & Z_MASK);
+    }
+
+    private static final long MURMUR_MASK = murmur64(BetterBlockPos.class.hashCode());
+
     public static long longHash(int x, int y, int z) {
-        // TODO use the same thing as BlockPos.fromLong();
-        // invertibility would be incredibly useful
-        /*
-         *   This is the hashcode implementation of Vec3i (the superclass of the class which I shall not name)
-         *
-         *   public int hashCode() {
-         *       return (this.getY() + this.getZ() * 31) * 31 + this.getX();
-         *   }
-         *
-         *   That is terrible and has tons of collisions and makes the HashMap terribly inefficient.
-         *
-         *   That's why we grab out the X, Y, Z and calculate our own hashcode
-         */
-        long hash = 3241;
-        hash = 3457689L * hash + x;
-        hash = 8734625L * hash + y;
-        hash = 2873465L * hash + z;
-        return hash;
+        return murmur64(MURMUR_MASK ^ toLong(x, y, z));
+    }
+
+    public static long murmur64(long h) {
+        h ^= h >>> 33;
+        h *= 0xff51afd7ed558ccdL;
+        h ^= h >>> 33;
+        h *= 0xc4ceb9fe1a85ec53L;
+        h ^= h >>> 33;
+        return h;
     }
 
     @Override
