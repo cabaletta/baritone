@@ -72,7 +72,7 @@ public final class Settings {
     /**
      * If this setting is on, no auto tool will occur at all, not at calculation time nor execution time
      */
-    public final Setting<Boolean> disableAutoTool = new Setting<>(false);
+    public final Setting<Boolean> autoTool = new Setting<>(true);
 
     /**
      * It doesn't actually take twenty ticks to place a block, this cost is so high
