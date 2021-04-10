@@ -35,6 +35,7 @@ import baritone.api.utils.RayTraceUtils;
 import baritone.api.utils.Rotation;
 import baritone.api.utils.RotationUtils;
 import baritone.api.utils.input.Input;
+import baritone.behavior.PathingBehavior;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
@@ -911,7 +912,8 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
 
         @Override
         public double breakCostMultiplierAt(int x, int y, int z, IBlockState current) {
-            if (!allowBreak || isPossiblyProtected(x, y, z)) {
+//            baritone.getPathingBehavior().updateIsCloseToHome();
+            if (!allowBreak || isPossiblyProtected(x, y, z)|| baritone.getPathingBehavior().isCloseToHome()) {
                 return COST_INF;
             }
             IBlockState sch = getSchematic(x, y, z, current);

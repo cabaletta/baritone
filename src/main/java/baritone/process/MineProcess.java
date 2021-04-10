@@ -24,6 +24,7 @@ import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
 import baritone.api.utils.*;
 import baritone.api.utils.input.Input;
+import baritone.behavior.PathingBehavior;
 import baritone.cache.CachedChunk;
 import baritone.cache.WorldScanner;
 import baritone.pathing.movement.CalculationContext;
@@ -103,8 +104,9 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
                 return null;
             }
         }
-        if (!Baritone.settings().allowBreak.value) {
-            logDirect("Unable to mine when allowBreak is false!");
+//        baritone.getPathingBehavior().updateIsCloseToHome();
+        if (!Baritone.settings().allowBreak.value|| baritone.getPathingBehavior().isCloseToHome()) {
+            logDirect("Unable to mine when allowBreak is false or when you\'re too close to home!");
             cancel();
             return null;
         }
@@ -467,8 +469,9 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
     @Override
     public void mine(int quantity, BlockOptionalMetaLookup filter) {
         this.filter = filter;
-        if (filter != null && !Baritone.settings().allowBreak.value) {
-            logDirect("Unable to mine when allowBreak is false!");
+//        baritone.getPathingBehavior().updateIsCloseToHome();
+        if (filter != null && (!Baritone.settings().allowBreak.value || baritone.getPathingBehavior().isCloseToHome())) {
+            logDirect("Unable to mine when allowBreak is false or when you\'re too close to home!");
             this.mine(quantity, (BlockOptionalMetaLookup) null);
             return;
         }

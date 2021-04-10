@@ -1184,6 +1184,16 @@ public final class Settings {
     public final Setting<Boolean> notificationOnMineFail = new Setting<>(true);
 
     /**
+     * Disallow block placement and breaking within a range from the home waypoint(if it exists)
+     */
+    public final Setting<Double> homeProtectionRange = new Setting<>(0.0);
+
+    /**
+     * Disallow block placement and breaking within a range from the home waypoint(if it exists)
+     */
+    public final Setting<Integer> homeProtectionUpdateInerval = new Setting<>(5);
+
+    /**
      * A map of lowercase setting field names to their respective setting
      */
     public final Map<String, Setting<?>> byLowerName;

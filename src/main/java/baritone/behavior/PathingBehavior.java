@@ -18,7 +18,11 @@
 package baritone.behavior;
 
 import baritone.Baritone;
+import baritone.api.BaritoneAPI;
+import baritone.api.IBaritone;
 import baritone.api.behavior.IPathingBehavior;
+import baritone.api.cache.IWaypoint;
+import baritone.api.command.datatypes.ForWaypoints;
 import baritone.api.event.events.*;
 import baritone.api.pathing.calc.IPath;
 import baritone.api.pathing.goals.Goal;
@@ -36,6 +40,7 @@ import baritone.pathing.path.PathExecutor;
 import baritone.utils.PathRenderer;
 import baritone.utils.PathingCommandContext;
 import baritone.utils.pathing.Favoring;
+import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.ArrayList;
@@ -62,6 +67,10 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
     private boolean pausedThisTick;
     private boolean cancelRequested;
     private boolean calcFailedLastTick;
+
+    public boolean isCloseToHome;
+    public boolean lastIsCloseToHome;
+    public int tickCount;
 
     private volatile AbstractNodeCostSearch inProgress;
     private final Object pathCalcLock = new Object();
@@ -93,6 +102,9 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
 
     @Override
     public void onTick(TickEvent event) {
+        if (tickCount++ % BaritoneAPI.getSettings().homeProtectionUpdateInerval.value == 0) {
+            updateIsCloseToHome();
+        }
         dispatchEvents();
         if (event.getType() == TickEvent.Type.OUT) {
             secretInternalSegmentCancel();
@@ -564,5 +576,50 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
     @Override
     public void onRenderPass(RenderEvent event) {
         PathRenderer.render(event, this);
+    }
+
+    @Override
+    public boolean isCloseToHome() {
+        return isCloseToHome;
+    }
+
+    @Override
+    public void updateIsCloseToHome() {
+        try {
+            IBaritone bar = BaritoneAPI.getProvider().getPrimaryBaritone();
+            EntityPlayerSP player = bar.getPlayerContext().player();
+            IWaypoint[] waypoints = ForWaypoints.getWaypointsByTag(bar, IWaypoint.Tag.HOME);
+            if (waypoints.length > 0) {
+                for (IWaypoint wp : waypoints) {
+                    boolean isClose = wp.getLocation().getDistance((int) Math.round(player.posX), (int) Math.round(player.posY), (int) Math.round(player.posZ)) <= Baritone.settings().homeProtectionRange.value;
+                    if (isClose) {
+//                    Helper.HELPER.logDirect("true");
+                        isCloseToHome = true;
+                        logProtectedHomeArea();
+                        return;
+                    }
+                }
+            }
+//        Helper.HELPER.logDirect("false");
+            isCloseToHome = false;
+            logProtectedHomeArea();
+            return;
+        }
+        catch (Exception err) {
+            return;
+        }
+    }
+
+    private void logProtectedHomeArea() {
+        if (isCloseToHome != lastIsCloseToHome) {
+            if (isCloseToHome) {
+                logDirect("Entered protected home area");
+                lastIsCloseToHome = isCloseToHome;
+            }
+            else {
+                logDirect("Left protected home area");
+                lastIsCloseToHome = isCloseToHome;
+            }
+        }
     }
 }

@@ -129,4 +129,15 @@ public interface IPathingBehavior extends IBehavior {
      * @return The next path executor
      */
     IPathExecutor getNext();
+
+    /**
+     * Returns true when close to home.
+     * @return true when close to home
+     */
+    boolean isCloseToHome();
+
+    /**
+     * Updates @isCloseToHome
+     */
+    void updateIsCloseToHome();
 }
