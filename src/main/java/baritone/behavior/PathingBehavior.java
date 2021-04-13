@@ -102,7 +102,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
 
     @Override
     public void onTick(TickEvent event) {
-        if (tickCount++ % BaritoneAPI.getSettings().homeProtectionUpdateInerval.value == 0) {
+        if (tickCount++ % BaritoneAPI.getSettings().homeProtectionUpdateInterval.value == 0) {
             updateIsCloseToHome();
         }
         dispatchEvents();

@@ -1196,7 +1196,7 @@ public final class Settings {
     /**
      * Disallow block placement and breaking within a range from the home waypoint(if it exists)
      */
-    public final Setting<Integer> homeProtectionUpdateInerval = new Setting<>(5);
+    public final Setting<Integer> homeProtectionUpdateInterval = new Setting<>(5);
 
     /**
      * A map of lowercase setting field names to their respective setting
