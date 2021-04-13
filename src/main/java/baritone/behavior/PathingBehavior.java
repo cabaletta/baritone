@@ -611,7 +611,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
     }
 
     private void logProtectedHomeArea() {
-        if (isCloseToHome != lastIsCloseToHome) {
+        if (isCloseToHome != lastIsCloseToHome && BaritoneAPI.getSettings().homeProtectionChatNotification.value) {
             if (isCloseToHome) {
                 logDirect("Entered protected home area");
                 lastIsCloseToHome = isCloseToHome;
