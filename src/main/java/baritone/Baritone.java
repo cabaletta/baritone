@@ -24,6 +24,7 @@ import baritone.api.event.listener.IEventBus;
 import baritone.api.utils.Helper;
 import baritone.api.utils.IPlayerContext;
 import baritone.behavior.*;
+import baritone.builder.Main;
 import baritone.cache.WorldProvider;
 import baritone.command.manager.CommandManager;
 import baritone.event.GameEventHandler;
@@ -120,6 +121,12 @@ public class Baritone implements IBaritone {
         this.worldProvider = new WorldProvider();
         this.selectionManager = new SelectionManager(this);
         this.commandManager = new CommandManager(this);
+
+        try {
+            Main.main();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

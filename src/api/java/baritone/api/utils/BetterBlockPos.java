@@ -17,6 +17,7 @@
 
 package baritone.api.utils;
 
+import it.unimi.dsi.fastutil.HashCommon;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
@@ -81,42 +82,55 @@ public final class BetterBlockPos extends BlockPos {
 
     private static final int NUM_X_BITS = 26;
     private static final int NUM_Z_BITS = NUM_X_BITS;
-    private static final int NUM_Y_BITS = 64 - NUM_X_BITS - NUM_Z_BITS;
-    private static final int Y_SHIFT = 0 + NUM_Z_BITS;
-    private static final int X_SHIFT = Y_SHIFT + NUM_Y_BITS;
-    private static final long X_MASK = (1L << NUM_X_BITS) - 1L;
+    private static final int NUM_Y_BITS = 9; // note: even though Y goes from 0 to 255, that doesn't mean 8 bits will "just work" because the deserializer assumes signed. i could change it for just Y to assume unsigned and leave X and Z as signed, however, we know that in 1.17 they plan to add negative Y. for that reason, the better approach is to give the extra bits to Y and leave it as signed.
+    // also, if 1.17 sticks with the current plan which is -64 to +320, we could have 9 bits for Y and a constant offset of -64 to change it to -128 to +256.
+    // that would result in the packed long representation of any valid coordinate still being a positive integer
+    // i like that property, so i will keep num_y_bits at 9 and plan for an offset in 1.17
+    // it also gives 1 bit of wiggle room in case anything else happens in the future, so we are only using 63 out of 64 bits at the moment
+    private static final int Z_SHIFT = 0;
+    private static final int Y_SHIFT = Z_SHIFT + NUM_Z_BITS + 1; // 1 padding bit to make twos complement not overflow
+    private static final int X_SHIFT = Y_SHIFT + NUM_Y_BITS + 1; // and also here too
+    private static final long X_MASK = (1L << NUM_X_BITS) - 1L;  // X doesn't need padding as the overflow carry bit is just discarded, like a normal long (-1) + (1) = 0
     private static final long Y_MASK = (1L << NUM_Y_BITS) - 1L;
     private static final long Z_MASK = (1L << NUM_Z_BITS) - 1L;
+    public static final long POST_ADDITION_MASK = toLong(-1, -1, -1);
 
     public long toLong() {
         return toLong(this.x, this.y, this.z);
     }
 
-
     public static BetterBlockPos fromLong(long serialized) {
-        int x = (int) (serialized << (64 - X_SHIFT - NUM_X_BITS) >> (64 - NUM_X_BITS));
-        int y = (int) (serialized << (64 - Y_SHIFT - NUM_Y_BITS) >> (64 - NUM_Y_BITS));
-        int z = (int) (serialized << (64 - NUM_Z_BITS) >> (64 - NUM_Z_BITS));
-        return new BetterBlockPos(x, y, z);
+        return new BetterBlockPos(XfromLong(serialized), YfromLong(serialized), ZfromLong(serialized));
+    }
+
+    public static int XfromLong(long serialized) {
+        return (int) (serialized << (64 - X_SHIFT - NUM_X_BITS) >> (64 - NUM_X_BITS));
+    }
+
+    public static int YfromLong(long serialized) {
+        return (int) (serialized << (64 - Y_SHIFT - NUM_Y_BITS) >> (64 - NUM_Y_BITS));
+    }
+
+    public static int ZfromLong(long serialized) {
+        return (int) (serialized << (64 - Z_SHIFT - NUM_Z_BITS) >> (64 - NUM_Z_BITS));
     }
 
     public static long toLong(final int x, final int y, final int z) {
-        return ((long) x & X_MASK) << X_SHIFT | ((long) y & Y_MASK) << Y_SHIFT | ((long) z & Z_MASK);
+        return ((long) x & X_MASK) << X_SHIFT | ((long) y & Y_MASK) << Y_SHIFT | ((long) z & Z_MASK) << Z_SHIFT;
     }
 
     private static final long MURMUR_MASK = murmur64(BetterBlockPos.class.hashCode());
 
     public static long longHash(int x, int y, int z) {
-        return murmur64(MURMUR_MASK ^ toLong(x, y, z));
+        return longHash(toLong(x, y, z));
+    }
+
+    public static long longHash(long packed) {
+        return murmur64(MURMUR_MASK ^ packed);
     }
 
     public static long murmur64(long h) {
-        h ^= h >>> 33;
-        h *= 0xff51afd7ed558ccdL;
-        h ^= h >>> 33;
-        h *= 0xc4ceb9fe1a85ec53L;
-        h ^= h >>> 33;
-        return h;
+        return HashCommon.murmurHash3(h);
     }
 
     @Override
