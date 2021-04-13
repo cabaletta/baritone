@@ -43,6 +43,7 @@ import baritone.utils.BlockStateInterface;
 import baritone.utils.NotificationHelper;
 import baritone.utils.PathingCommandContext;
 import baritone.utils.schematic.MapArtSchematic;
+import baritone.utils.schematic.SelectionSchematic;
 import baritone.utils.schematic.SchematicSystem;
 import baritone.utils.schematic.schematica.SchematicaHelper;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
@@ -150,10 +151,13 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             Optional<Tuple<IStaticSchematic, BlockPos>> schematic = SchematicaHelper.getOpenSchematic();
             if (schematic.isPresent()) {
                 IStaticSchematic s = schematic.get().getFirst();
+                BlockPos origin = schematic.get().getSecond();
+                ISchematic schem = Baritone.settings().mapArtMode.value ? new MapArtSchematic(s) : s;
+                schem = Baritone.settings().schematicaOnlyBuildSelection.value ? new SelectionSchematic(schem, origin, baritone.getSelectionManager().getSelections()) : schem;
                 this.build(
                         schematic.get().getFirst().toString(),
-                        Baritone.settings().mapArtMode.value ? new MapArtSchematic(s) : s,
-                        schematic.get().getSecond()
+                        schem,
+                        origin
                 );
             } else {
                 logDirect("No schematic currently open");
