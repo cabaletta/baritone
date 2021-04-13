@@ -105,7 +105,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
             }
         }
 //        baritone.getPathingBehavior().updateIsCloseToHome();
-        if (!Baritone.settings().allowBreak.value|| baritone.getPathingBehavior().isCloseToHome()) {
+        if (!Baritone.settings().allowBreak.value || baritone.getPathingBehavior().isCloseToHome()) {
             logDirect("Unable to mine when allowBreak is false or when you\'re too close to home!");
             cancel();
             return null;

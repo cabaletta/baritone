@@ -913,7 +913,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         @Override
         public double breakCostMultiplierAt(int x, int y, int z, IBlockState current) {
 //            baritone.getPathingBehavior().updateIsCloseToHome();
-            if (!allowBreak || isPossiblyProtected(x, y, z)|| baritone.getPathingBehavior().isCloseToHome()) {
+            if (!allowBreak || isPossiblyProtected(x, y, z) || baritone.getPathingBehavior().isCloseToHome()) {
                 return COST_INF;
             }
             IBlockState sch = getSchematic(x, y, z, current);
