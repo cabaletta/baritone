@@ -18,6 +18,9 @@
 package baritone.builder;
 
 import baritone.api.utils.BetterBlockPos;
+import it.unimi.dsi.fastutil.HashCommon;
+import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
@@ -106,11 +109,12 @@ public class DependencyGraphScaffoldingOverlay {
 
     public class CollapsedDependencyGraph {
 
-        private final List<CollapsedDependencyGraphComponent> components;
+        private int nextComponentID;
+        private final Int2ObjectOpenHashMap<CollapsedDependencyGraphComponent> components;
         private final Long2ObjectOpenHashMap<CollapsedDependencyGraphComponent> posToComponent;
 
         private CollapsedDependencyGraph(TarjansAlgorithm.TarjansResult partition) {
-            components = new ArrayList<>(partition.numComponents());
+            components = new Int2ObjectOpenHashMap<>();
             for (int i = 0; i < partition.numComponents(); i++) {
                 addComponent();
             }
@@ -152,8 +156,9 @@ public class DependencyGraphScaffoldingOverlay {
         }
 
         private CollapsedDependencyGraphComponent addComponent() {
-            CollapsedDependencyGraphComponent component = new CollapsedDependencyGraphComponent(components.size());
-            components.add(component);
+            CollapsedDependencyGraphComponent component = new CollapsedDependencyGraphComponent(nextComponentID);
+            components.put(component.id, component);
+            nextComponentID++;
             return component;
         }
 
@@ -192,14 +197,8 @@ public class DependencyGraphScaffoldingOverlay {
                 long pos = it.nextLong();
                 posToComponent.put(pos, parent);
             }
-            for (int i = child.index + 1; i < components.size(); i++) {
-                /*if (Main.DEBUG && components.get(i).index != i) {
-                    throw new IllegalStateException("catch this bug a little bit earlier than otherwise...");
-                }*/
-                components.get(i).index--;
-            }
-            components.remove(child.index);
-            child.index = -1;
+            components.remove(child.id);
+            child.id = -1;
             //System.out.println("Debug child contains: " + child.positions.contains(963549069314L) + " " + parent.positions.contains(963549069314L));
             return parent;
         }
@@ -287,16 +286,16 @@ public class DependencyGraphScaffoldingOverlay {
 
         public class CollapsedDependencyGraphComponent {
 
-            private int index;
+            private int id;
             private final int hash;
             private final LongOpenHashSet positions = new LongOpenHashSet();
             private final Set<CollapsedDependencyGraphComponent> outgoingEdges = new HashSet<>();
             private final Set<CollapsedDependencyGraphComponent> incomingEdges = new HashSet<>();
             private int y = -1;
 
-            private CollapsedDependencyGraphComponent(int index) {
-                this.index = index;
-                this.hash = System.identityHashCode(this);
+            private CollapsedDependencyGraphComponent(int id) {
+                this.id = id;
+                this.hash = HashCommon.murmurHash3(id);
             }
 
             @Override
@@ -318,19 +317,19 @@ public class DependencyGraphScaffoldingOverlay {
             }
 
             public boolean deleted() {
-                return index < 0;
+                return id < 0;
             }
         }
 
         private void sanityCheck() {
             LongOpenHashSet inComponents = new LongOpenHashSet();
-            int index = 0;
-            for (CollapsedDependencyGraphComponent component : components) {
-                if (component.index != index++) {
+            for (int componentID : components.keySet()) {
+                CollapsedDependencyGraphComponent component = components.get(componentID);
+                if (component.id != componentID) {
                     throw new IllegalStateException();
                 }
                 if (component.incomingEdges.contains(component) || component.outgoingEdges.contains(component)) {
-                    throw new IllegalStateException(component.index + "");
+                    throw new IllegalStateException(component.id + "");
                 }
                 if (component.positions.isEmpty()) {
                     throw new IllegalStateException();
@@ -344,7 +343,7 @@ public class DependencyGraphScaffoldingOverlay {
                         throw new IllegalStateException();
                     }
                     if (component.incomingEdges.contains(out)) {
-                        throw new IllegalStateException(out.index + " is both an incoming AND and outgoing of " + component.index);
+                        throw new IllegalStateException(out.id + " is both an incoming AND and outgoing of " + component.id);
                     }
                 }
                 for (CollapsedDependencyGraphComponent in : component.incomingEdges) {
@@ -352,7 +351,7 @@ public class DependencyGraphScaffoldingOverlay {
                         throw new IllegalStateException();
                     }
                     if (!in.outgoingEdges.contains(component)) {
-                        throw new IllegalStateException(in.index + " is an incoming edge of " + component.index + " but it doesn't have that as an outgoing edge");
+                        throw new IllegalStateException(in.id + " is an incoming edge of " + component.id + " but it doesn't have that as an outgoing edge");
                     }
                     if (component.outgoingEdges.contains(in)) {
                         throw new IllegalStateException();
@@ -377,10 +376,10 @@ public class DependencyGraphScaffoldingOverlay {
                 for (long l : posToComponent.keySet()) {
                     if (!inComponents.contains(l)) {
                         System.out.println(l);
-                        System.out.println(posToComponent.get(l).index);
+                        System.out.println(posToComponent.get(l).id);
                         System.out.println(posToComponent.get(l).positions.contains(l));
                         System.out.println(posToComponent.get(l).deleted());
-                        System.out.println(components.contains(posToComponent.get(l)));
+                        System.out.println(components.containsValue(posToComponent.get(l)));
                         throw new IllegalStateException(l + " is in posToComponent but not actually in any component");
                     }
                 }
@@ -401,10 +400,12 @@ public class DependencyGraphScaffoldingOverlay {
         }
         a.sanityCheck();
         b.sanityCheck();
-        int[] aToB = new int[a.components.size()];
-        Arrays.setAll(aToB, i -> b.posToComponent.get(a.components.get(i).positions.iterator().nextLong()).index);
-        for (int i = 0; i < aToB.length; i++) {
-            int bInd = aToB[i];
+        Int2IntOpenHashMap aToB = new Int2IntOpenHashMap();
+        for (int key : a.components.keySet()) {
+            aToB.put(key, b.posToComponent.get(a.components.get(key).positions.iterator().nextLong()).id);
+        }
+        for (int i : a.components.keySet()) {
+            int bInd = aToB.get(i);
             if (!a.components.get(i).positions.equals(b.components.get(bInd).positions)) {
                 throw new IllegalStateException();
             }
@@ -418,7 +419,7 @@ public class DependencyGraphScaffoldingOverlay {
                     throw new IllegalStateException();
                 }
                 for (CollapsedDependencyGraph.CollapsedDependencyGraphComponent dst : aEdges) {
-                    if (!bEdges.contains(b.components.get(aToB[dst.index]))) {
+                    if (!bEdges.contains(b.components.get(aToB.get(dst.id)))) {
                         throw new IllegalStateException();
                     }
                 }

@@ -33,7 +33,8 @@ public enum Face {
     public final int y = toMC().getYOffset();
     public final int z = toMC().getZOffset();
     public final long offset = BetterBlockPos.toLong(x, y, z);
-    public static final Face[] VALUES = new Face[6];
+    public static final int NUM_FACES = 6;
+    public static final Face[] VALUES = new Face[NUM_FACES];
 
     static {
         for (Face face : values()) {

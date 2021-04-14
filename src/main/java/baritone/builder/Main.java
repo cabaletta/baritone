@@ -77,8 +77,8 @@ public class Main {
         {
             System.out.println(BetterBlockPos.fromLong(BetterBlockPos.toLong(150, 150, 150)));
         }
-        {
-            int[][][] test = new int[20][20][20];
+        for (int i = 0; i < 10; i++) {
+            int[][][] test = new int[64][64][64];
             int based = Block.BLOCK_STATE_IDS.get(Blocks.DIRT.getDefaultState());
             int numRealBlocks = 0;
             for (int x = 0; x < test.length; x++) {
@@ -112,7 +112,9 @@ public class Main {
             }*/
             DependencyGraphScaffoldingOverlay scaffolding = new DependencyGraphScaffoldingOverlay(graph);
             long a = System.currentTimeMillis();
-            while (numRealBlocks < scaffolding.bounds().size) {
+            int goal = numRealBlocks + 10000;
+            while (numRealBlocks < goal) {
+                //System.out.println(numRealBlocks);
                 int x = RAND.nextInt(scaffolding.bounds().sizeX);
                 int y = RAND.nextInt(scaffolding.bounds().sizeY);
                 int z = RAND.nextInt(scaffolding.bounds().sizeZ);
@@ -124,6 +126,9 @@ public class Main {
                 }
             }
             System.out.println("Done " + (System.currentTimeMillis() - a) + "ms");
+            Thread.sleep(500);
+            System.gc();
+            Thread.sleep(500);
             //scaffolding.enable(0);
         }
         System.exit(0);

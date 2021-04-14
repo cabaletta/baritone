@@ -94,10 +94,8 @@ public class TarjansAlgorithm {
 
     private void strongConnectPart2(TarjanVertexInfo info) {
         long vpos = info.pos;
-        for (Face face : Face.VALUES) {
-            if (face.index < info.facesCompleted) {
-                continue;
-            }
+        for (int fi = info.facesCompleted; fi < Face.NUM_FACES; fi++) {
+            Face face = Face.VALUES[fi];
             if (graph.outgoingEdge(vpos, face)) {
                 long wpos = face.offset(vpos);
                 TarjanVertexInfo winfo = infoMap.get(wpos);
@@ -119,7 +117,7 @@ public class TarjansAlgorithm {
                     info.lowlink = Math.min(info.lowlink, winfo.index);
                 }
             }
-            info.facesCompleted = face.index;
+            info.facesCompleted = fi + 1;
         }
         if (info.recursingInto != -1) {
             throw new IllegalStateException();
