@@ -24,6 +24,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 
 import java.util.*;
 
@@ -198,7 +199,7 @@ public class DependencyGraphScaffoldingOverlay {
                 posToComponent.put(pos, parent);
             }
             components.remove(child.id);
-            child.id = -1;
+            child.deleted = true;
             //System.out.println("Debug child contains: " + child.positions.contains(963549069314L) + " " + parent.positions.contains(963549069314L));
             return parent;
         }
@@ -212,8 +213,8 @@ public class DependencyGraphScaffoldingOverlay {
             if (srcComponent.outgoingEdges.contains(dstComponent)) { // we already know about this edge
                 return;
             }
-            List<List<CollapsedDependencyGraphComponent>> paths = pathExists(dstComponent, srcComponent);
-            if (!paths.isEmpty()) {
+            List<List<CollapsedDependencyGraphComponent>> paths = new ArrayList<>();
+            if (!srcComponent.incomingEdges.isEmpty() && pathExists(dstComponent, srcComponent, paths) > 0) {
                 CollapsedDependencyGraphComponent survivor = srcComponent;
                 for (List<CollapsedDependencyGraphComponent> path : paths) {
                     if (path.get(0) != srcComponent || path.get(path.size() - 1) != dstComponent) {
@@ -236,25 +237,28 @@ public class DependencyGraphScaffoldingOverlay {
             dstComponent.incomingEdges.add(srcComponent);
         }
 
-        private List<List<CollapsedDependencyGraphComponent>> pathExists(CollapsedDependencyGraphComponent src, CollapsedDependencyGraphComponent dst) {
+        private int pathExists(CollapsedDependencyGraphComponent src, CollapsedDependencyGraphComponent dst, List<List<CollapsedDependencyGraphComponent>> paths) {
             if (src == dst) {
-                return new ArrayList<>(Collections.singletonList(new ArrayList<>(Collections.singletonList(src))));
+                paths.add(new ArrayList<>(Collections.singletonList(src)));
+                return 1;
             }
-            if (dst.incomingEdges.isEmpty()) {
-                return Collections.emptyList(); // impossible
+            if (Main.DEBUG && dst.incomingEdges.isEmpty()) {
+                throw new IllegalStateException();
             }
             if (Main.STRICT_Y && src.y() > dst.y()) {
-                return Collections.emptyList(); // no downward edges in strict_y mode
+                return 0; // no downward edges in strict_y mode
             }
-            List<List<CollapsedDependencyGraphComponent>> ret = new ArrayList<>();
+            int numAdded = 0;
             for (CollapsedDependencyGraphComponent nxt : src.outgoingEdges) {
-                List<List<CollapsedDependencyGraphComponent>> paths = pathExists(nxt, dst);
-                for (List<CollapsedDependencyGraphComponent> path : paths) {
-                    path.add(src);
-                    ret.add(path);
+                int cnt = pathExists(nxt, dst, paths);
+                if (cnt > 0) {
+                    for (int i = 0; i < cnt; i++) {
+                        paths.get(paths.size() - 1 - i).add(src);
+                    }
+                    numAdded += cnt;
                 }
             }
-            return ret;
+            return numAdded;
         }
 
         private void incrementalUpdate(long pos) {
@@ -286,12 +290,14 @@ public class DependencyGraphScaffoldingOverlay {
 
         public class CollapsedDependencyGraphComponent {
 
-            private int id;
+            private final int id;
             private final int hash;
             private final LongOpenHashSet positions = new LongOpenHashSet();
-            private final Set<CollapsedDependencyGraphComponent> outgoingEdges = new HashSet<>();
-            private final Set<CollapsedDependencyGraphComponent> incomingEdges = new HashSet<>();
+            private final Set<CollapsedDependencyGraphComponent> outgoingEdges = new ObjectOpenHashSet<>();
+            private final Set<CollapsedDependencyGraphComponent> incomingEdges = new ObjectOpenHashSet<>();
+            // if i change ^^ that "Set" to "ObjectOpenHashSet" it actually makes the bench about 15% SLOWER?!?!?
             private int y = -1;
+            private boolean deleted;
 
             private CollapsedDependencyGraphComponent(int id) {
                 this.id = id;
@@ -317,7 +323,7 @@ public class DependencyGraphScaffoldingOverlay {
             }
 
             public boolean deleted() {
-                return id < 0;
+                return deleted;
             }
         }
 
