@@ -141,6 +141,11 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             parsed = new MapArtSchematic((IStaticSchematic) parsed);
         }
 
+        if (Baritone.settings().buildOnlySelection.value) {
+            parsed = new SelectionSchematic(parsed, origin, baritone.getSelectionManager().getSelections());
+        }
+
+
         build(name, parsed, origin);
         return true;
     }
@@ -153,7 +158,9 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                 IStaticSchematic s = schematic.get().getFirst();
                 BlockPos origin = schematic.get().getSecond();
                 ISchematic schem = Baritone.settings().mapArtMode.value ? new MapArtSchematic(s) : s;
-                schem = Baritone.settings().schematicaOnlyBuildSelection.value ? new SelectionSchematic(schem, origin, baritone.getSelectionManager().getSelections()) : schem;
+                if (Baritone.settings().buildOnlySelection.value) {
+                    schem = new SelectionSchematic(schem, origin, baritone.getSelectionManager().getSelections());
+                }
                 this.build(
                         schematic.get().getFirst().toString(),
                         schem,
