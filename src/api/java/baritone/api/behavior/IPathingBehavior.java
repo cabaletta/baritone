@@ -140,4 +140,10 @@ public interface IPathingBehavior extends IBehavior {
      * Updates @isCloseToHome
      */
     void updateIsCloseToHome();
+
+    /**
+     * Returns true when a block is close to home.
+     * @return true when a block is close to home
+     */
+    boolean isCloseToHome(int x,  int y, int z);
 }

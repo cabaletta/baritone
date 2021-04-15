@@ -895,7 +895,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                     // i'm such an idiot that i just tried to copy and paste the epic gamer moment emoji too
                     // get added to unicode when?
                 }
-                if (!hasThrowaway) {
+                if (!hasThrowaway || baritone.getPathingBehavior().isCloseToHome(x, y, z)) {
                     return COST_INF;
                 }
                 // we want it to be something that we don't have
@@ -912,8 +912,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
 
         @Override
         public double breakCostMultiplierAt(int x, int y, int z, IBlockState current) {
-//            baritone.getPathingBehavior().updateIsCloseToHome();
-            if (!allowBreak || isPossiblyProtected(x, y, z) || baritone.getPathingBehavior().isCloseToHome()) {
+            if (!allowBreak || isPossiblyProtected(x, y, z) || baritone.getPathingBehavior().isCloseToHome(x, y, z)) {
                 return COST_INF;
             }
             IBlockState sch = getSchematic(x, y, z, current);

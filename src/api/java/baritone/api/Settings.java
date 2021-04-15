@@ -1186,10 +1186,11 @@ public final class Settings {
     /**
      * Disallow block placement and breaking within a range from the home waypoint(if it exists)
      */
-    public final Setting<Double> homeProtectionRange = new Setting<>(0.0);
+    public final Setting<Integer> homeProtectionRange = new Setting<>(-1);
 
     /**
-     * Sends a chat notification to let you know when you enter or leave protected home area, can be quite annoying when you're working close to a home waypoint
+     * Sends a chat notification to let you know when you enter or leave protected home area
+     * Can be quite annoying when you're working close to a home waypoint
      */
     public final Setting<Boolean> homeProtectionChatNotification = new Setting<>(true);
 

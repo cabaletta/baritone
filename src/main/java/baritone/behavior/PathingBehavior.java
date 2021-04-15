@@ -586,27 +586,44 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
     @Override
     public void updateIsCloseToHome() {
         try {
-            IBaritone bar = BaritoneAPI.getProvider().getPrimaryBaritone();
-            EntityPlayerSP player = bar.getPlayerContext().player();
-            IWaypoint[] waypoints = ForWaypoints.getWaypointsByTag(bar, IWaypoint.Tag.HOME);
+            EntityPlayerSP player = baritone.getPlayerContext().player();
+            IWaypoint[] waypoints = ForWaypoints.getWaypointsByTag(baritone, IWaypoint.Tag.HOME);
             if (waypoints.length > 0) {
                 for (IWaypoint wp : waypoints) {
                     boolean isClose = wp.getLocation().getDistance((int) Math.round(player.posX), (int) Math.round(player.posY), (int) Math.round(player.posZ)) <= Baritone.settings().homeProtectionRange.value;
                     if (isClose) {
-//                    Helper.HELPER.logDirect("true");
                         isCloseToHome = true;
                         logProtectedHomeArea();
                         return;
                     }
                 }
             }
-//        Helper.HELPER.logDirect("false");
             isCloseToHome = false;
             logProtectedHomeArea();
             return;
         }
         catch (Exception err) {
             return;
+        }
+    }
+
+    //FIXME: The waypoint list gets refreshed every single time CalculationContext or BuilderProcess wants to check if a block is within protected home area, this is inefficient af. The question is not whether but how much it slows pathing down :/
+    @Override
+    public boolean isCloseToHome(int x, int y, int z) {
+        try {
+            IWaypoint[] waypoints = ForWaypoints.getWaypointsByTag(baritone, IWaypoint.Tag.HOME);
+            if (waypoints.length > 0) {
+                for (IWaypoint wp : waypoints) {
+                    boolean isClose = wp.getLocation().getDistance(x, y, z) <= Baritone.settings().homeProtectionRange.value;
+                    if (isClose) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+        catch (Exception err) {
+            return false;
         }
     }
 

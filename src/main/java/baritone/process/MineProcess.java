@@ -104,7 +104,6 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
                 return null;
             }
         }
-//        baritone.getPathingBehavior().updateIsCloseToHome();
         if (!Baritone.settings().allowBreak.value || baritone.getPathingBehavior().isCloseToHome()) {
             logDirect("Unable to mine when allowBreak is false or when you\'re too close to home!");
             cancel();
@@ -469,7 +468,6 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
     @Override
     public void mine(int quantity, BlockOptionalMetaLookup filter) {
         this.filter = filter;
-//        baritone.getPathingBehavior().updateIsCloseToHome();
         if (filter != null && (!Baritone.settings().allowBreak.value || baritone.getPathingBehavior().isCloseToHome())) {
             logDirect("Unable to mine when allowBreak is false or when you\'re too close to home!");
             this.mine(quantity, (BlockOptionalMetaLookup) null);

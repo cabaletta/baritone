@@ -136,9 +136,10 @@ public class CalculationContext {
     }
 
     public double costOfPlacingAt(int x, int y, int z, IBlockState current) {
-        if (!hasThrowaway || baritone.getPathingBehavior().isCloseToHome()) { /** only true if allowPlace is true, see constructor
-                                                                                * now also checks if you're not too close too home
-                                                                                */
+        /** only true if allowPlace is true, see constructor
+         * now also checks if you're not too close too home
+         */
+        if (!hasThrowaway || baritone.getPathingBehavior().isCloseToHome(x, y, z)) {
             return COST_INF;
         }
         if (isPossiblyProtected(x, y, z)) {
@@ -152,7 +153,7 @@ public class CalculationContext {
     }
 
     public double breakCostMultiplierAt(int x, int y, int z, IBlockState current) {
-        if (!allowBreak || baritone.getPathingBehavior().isCloseToHome()) {
+        if (!allowBreak || baritone.getPathingBehavior().isCloseToHome(x, y, z)) {
             return COST_INF;
         }
         if (isPossiblyProtected(x, y, z)) {
