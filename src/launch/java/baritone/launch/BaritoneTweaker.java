@@ -58,7 +58,6 @@ public class BaritoneTweaker extends SimpleTweaker {
         // its baritone.launch so i think it executes stuff here on launch???
         // aaaa idk ill do it here either way
 
-        public static final Logger baritoneLogger = LogManager.getFormatterLogger("Baritone");
         public static String[] rawr = new String[]{
             "owo",
             "uwu",
