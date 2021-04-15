@@ -25,6 +25,8 @@ import org.spongepowered.asm.mixin.MixinEnvironment;
 import org.spongepowered.asm.mixin.Mixins;
 import org.spongepowered.tools.obfuscation.mcp.ObfuscationServiceMCP;
 
+import java.util.Random; // is this how i do it
+
 import java.util.List;
 
 /**
@@ -51,5 +53,35 @@ public class BaritoneTweaker extends SimpleTweaker {
         MixinEnvironment.getDefaultEnvironment().setObfuscationContext(obfuscation);
 
         Mixins.addConfiguration("mixins.baritone.json");
+
+        // uhhhhh is this where i put it?
+        // its baritone.launch so i think it executes stuff here on launch???
+        // aaaa idk ill do it here either way
+
+        public static final Logger baritoneLogger = LogManager.getFormatterLogger("Baritone");
+        public static String[] rawr = new String[]{
+            "owo",
+            "uwu",
+            "^w^",
+            ">w<",
+            ";w;",
+            "-w-",
+            "ówò",
+            "òwó",
+            "ùwú",
+            "úwù",
+            "rawr~",
+            "nyaaaa",
+            "nyaaa~"
+            "nyaa~~",
+            "*purrs*",
+            "*purr~~*",
+            "*nuzzles*",
+            "*nuzzles and purrs~*"
+        };
+    
+        Random random = new Random();
+        System.out.println("[Bawitnyone >w<]: " + rawr[random.nextInt(rawr.length)]);
+        // i honestly have no idea what im doing here hope it works first try :thumbsup:
     }
 }
