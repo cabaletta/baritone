@@ -68,10 +68,6 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
     private boolean cancelRequested;
     private boolean calcFailedLastTick;
 
-    public boolean isCloseToHome;
-    public boolean lastIsCloseToHome;
-    public int tickCount;
-
     private volatile AbstractNodeCostSearch inProgress;
     private final Object pathCalcLock = new Object();
 
@@ -102,9 +98,6 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
 
     @Override
     public void onTick(TickEvent event) {
-        if (tickCount++ % BaritoneAPI.getSettings().homeProtectionUpdateInterval.value == 0) {
-            updateIsCloseToHome();
-        }
         dispatchEvents();
         if (event.getType() == TickEvent.Type.OUT) {
             secretInternalSegmentCancel();
@@ -578,35 +571,6 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         PathRenderer.render(event, this);
     }
 
-    @Override
-    public boolean isCloseToHome() {
-        return isCloseToHome;
-    }
-
-    @Override
-    public void updateIsCloseToHome() {
-        try {
-            EntityPlayerSP player = baritone.getPlayerContext().player();
-            IWaypoint[] waypoints = ForWaypoints.getWaypointsByTag(baritone, IWaypoint.Tag.HOME);
-            if (waypoints.length > 0) {
-                for (IWaypoint wp : waypoints) {
-                    boolean isClose = wp.getLocation().getDistance((int) Math.round(player.posX), (int) Math.round(player.posY), (int) Math.round(player.posZ)) <= Baritone.settings().homeProtectionRange.value;
-                    if (isClose) {
-                        isCloseToHome = true;
-                        logProtectedHomeArea();
-                        return;
-                    }
-                }
-            }
-            isCloseToHome = false;
-            logProtectedHomeArea();
-            return;
-        }
-        catch (Exception err) {
-            return;
-        }
-    }
-
     //FIXME: The waypoint list gets refreshed every single time CalculationContext or BuilderProcess wants to check if a block is within protected home area, this is inefficient af. The question is not whether but how much it slows pathing down :/
     @Override
     public boolean isCloseToHome(int x, int y, int z) {
@@ -624,19 +588,6 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         }
         catch (Exception err) {
             return false;
-        }
-    }
-
-    private void logProtectedHomeArea() {
-        if (isCloseToHome != lastIsCloseToHome && BaritoneAPI.getSettings().homeProtectionChatNotification.value) {
-            if (isCloseToHome) {
-                logDirect("Entered protected home area");
-                lastIsCloseToHome = isCloseToHome;
-            }
-            else {
-                logDirect("Left protected home area");
-                lastIsCloseToHome = isCloseToHome;
-            }
         }
     }
 }

@@ -1189,17 +1189,6 @@ public final class Settings {
     public final Setting<Integer> homeProtectionRange = new Setting<>(-1);
 
     /**
-     * Sends a chat notification to let you know when you enter or leave protected home area
-     * Can be quite annoying when you're working close to a home waypoint
-     */
-    public final Setting<Boolean> homeProtectionChatNotification = new Setting<>(true);
-
-    /**
-     * Disallow block placement and breaking within a range from the home waypoint(if it exists)
-     */
-    public final Setting<Integer> homeProtectionUpdateInterval = new Setting<>(5);
-
-    /**
      * A map of lowercase setting field names to their respective setting
      */
     public final Map<String, Setting<?>> byLowerName;
