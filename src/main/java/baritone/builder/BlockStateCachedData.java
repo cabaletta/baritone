@@ -64,6 +64,9 @@ public final class BlockStateCachedData {
 
 
     public boolean canBeDoneAgainstMe(BlockStatePlacementOption placement) {
+        if (Main.fakePlacementForPerformanceTesting) {
+            return Main.RAND.nextInt(10) < 8;
+        }
         // if i am a bottom slab, and the placement option is Face.DOWN, it's impossible
         // if i am a top slab, and the placement option is Face.UP, it's impossible
         // if i am a bottom slab, and the placement option is Half.TOP, it's impossible
@@ -74,10 +77,7 @@ public final class BlockStateCachedData {
         if (!canPlaceAgainstAtAll) {
             return false;
         }
-        //if (Main.DEBUG) {
-        return Main.RAND.nextInt(10) < 8;
-        //}
-        //throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException();
     }
 
     public List<BlockStatePlacementOption> placementOptions() {

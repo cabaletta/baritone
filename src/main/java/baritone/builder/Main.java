@@ -32,6 +32,8 @@ public class Main {
      */
     public static final boolean STRICT_Y = false;
 
+    public static final boolean fakePlacementForPerformanceTesting = true;
+
     public static final Random RAND = new Random(5021);
 
     public static void main() throws InterruptedException {
@@ -78,6 +80,7 @@ public class Main {
             System.out.println(BetterBlockPos.fromLong(BetterBlockPos.toLong(150, 150, 150)));
         }
         for (int i = 0; i < 10; i++) {
+            long aaa = System.currentTimeMillis();
             int[][][] test = new int[64][64][64];
             int based = Block.BLOCK_STATE_IDS.get(Blocks.DIRT.getDefaultState());
             int numRealBlocks = 0;
@@ -100,6 +103,7 @@ public class Main {
             }*/
             PackedBlockStateCuboid states = new PackedBlockStateCuboid(test);
             PlaceOrderDependencyGraph graph = new PlaceOrderDependencyGraph(states);
+            long aa = System.currentTimeMillis();
             /*DependencyGraphAnalyzer.prevalidate(graph);
             for (int i = 0; i < 1; i++) {
                 long a = System.currentTimeMillis();
@@ -125,7 +129,7 @@ public class Main {
                     numRealBlocks++;
                 }
             }
-            System.out.println("Done " + (System.currentTimeMillis() - a) + "ms");
+            System.out.println("Done " + (System.currentTimeMillis() - a) + "ms after " + (a - aa) + "ms after " + (aa - aaa) + "ms");
             Thread.sleep(500);
             System.gc();
             Thread.sleep(500);

@@ -20,10 +20,10 @@ package baritone.builder;
 import baritone.api.utils.BetterBlockPos;
 import it.unimi.dsi.fastutil.HashCommon;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMaps;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.longs.LongIterator;
-import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import it.unimi.dsi.fastutil.longs.*;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 
 import java.util.*;
@@ -68,6 +68,10 @@ public class DependencyGraphScaffoldingOverlay {
         return delegate.incomingEdge(pos, face);
     }
 
+    public boolean hypotheticalScaffoldingIncomingEdge(long pos, Face face) {
+        return delegate.incomingEdge(pos, face);
+    }
+
     public CuboidBounds bounds() {
         return delegate.bounds();
     }
@@ -106,6 +110,13 @@ public class DependencyGraphScaffoldingOverlay {
             //System.out.println("Checked equality");
             //System.out.println("Num connected components: " + collapsedGraph.components.size());
         }
+    }
+
+    /**
+     * Remember that this returns a collapsed graph that will be updated in-place as positions are enabled. It does not return a copy.
+     */
+    public CollapsedDependencyGraph getCollapsedGraph() {
+        return collapsedGraph;
     }
 
     public class CollapsedDependencyGraph {
@@ -156,6 +167,18 @@ public class DependencyGraphScaffoldingOverlay {
             }
         }
 
+        public Int2ObjectMap<CollapsedDependencyGraphComponent> getComponents() {
+            return Int2ObjectMaps.unmodifiable(components);
+        }
+
+        public Long2ObjectMap<CollapsedDependencyGraphComponent> getComponentLocations() {
+            return Long2ObjectMaps.unmodifiable(posToComponent);
+        }
+
+        public OptionalInt lastComponentID() {
+            return nextComponentID == 0 ? OptionalInt.empty() : OptionalInt.of(nextComponentID - 1);
+        }
+
         private CollapsedDependencyGraphComponent addComponent() {
             CollapsedDependencyGraphComponent component = new CollapsedDependencyGraphComponent(nextComponentID);
             components.put(component.id, component);
@@ -204,7 +227,7 @@ public class DependencyGraphScaffoldingOverlay {
             return parent;
         }
 
-        private void incrementalEdgeAddition(long src, long dst) {
+        private void incrementalEdgeAddition(long src, long dst) { // TODO put in a param here like "bias" that determines which of the two components gets to eat the other if they are of the same size? could help with the scaffolder if we could guarantee that no new components would be added without cause
             CollapsedDependencyGraphComponent srcComponent = posToComponent.get(src);
             CollapsedDependencyGraphComponent dstComponent = posToComponent.get(dst);
             if (srcComponent == dstComponent) { // already strongly connected
@@ -324,6 +347,18 @@ public class DependencyGraphScaffoldingOverlay {
 
             public boolean deleted() {
                 return deleted;
+            }
+
+            public LongSet getPositions() {
+                return LongSets.unmodifiable(positions);
+            }
+
+            public Set<CollapsedDependencyGraphComponent> getIncoming() {
+                return Collections.unmodifiableSet(incomingEdges);
+            }
+
+            public Set<CollapsedDependencyGraphComponent> getOutgoing() {
+                return Collections.unmodifiableSet(outgoingEdges);
             }
         }
 

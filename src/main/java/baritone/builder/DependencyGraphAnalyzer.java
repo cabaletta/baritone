@@ -30,6 +30,12 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
  */
 public class DependencyGraphAnalyzer {
 
+    /**
+     * Just a simple check to make sure that everything is placeable.
+     * <p>
+     * Mostly for my own testing because every Minecraft block is placeable, and if the schematic has something weird
+     * and funky, it should be caught earlier anyway.
+     */
     public static void prevalidate(PlaceOrderDependencyGraph graph) {
         graph.bounds().forEach(pos -> {
             if (graph.airTreatedAsScaffolding(pos)) {
@@ -45,6 +51,12 @@ public class DependencyGraphAnalyzer {
         });
     }
 
+    /**
+     * Search from all exterior nodes breadth-first to ensure that, theoretically, everything is reachable.
+     * <p>
+     * This is NOT a sufficient test, because later we are going to ensure that everything is scaffold-placeable which
+     * requires a single root node at the bottom.
+     */
     public static void prevalidateExternalToInteriorSearch(PlaceOrderDependencyGraph graph) {
         LongOpenHashSet reachable = new LongOpenHashSet();
         LongArrayFIFOQueue queue = new LongArrayFIFOQueue();
