@@ -93,7 +93,13 @@ public final class BetterBlockPos extends BlockPos {
     private static final long X_MASK = (1L << NUM_X_BITS) - 1L;  // X doesn't need padding as the overflow carry bit is just discarded, like a normal long (-1) + (1) = 0
     private static final long Y_MASK = (1L << NUM_Y_BITS) - 1L;
     private static final long Z_MASK = (1L << NUM_Z_BITS) - 1L;
-    public static final long POST_ADDITION_MASK = toLong(-1, -1, -1);
+    public static final long POST_ADDITION_MASK = X_MASK << X_SHIFT | Y_MASK << Y_SHIFT | Z_MASK << Z_SHIFT; // required to "manually inline" toLong(-1, -1, -1) here so that javac inserts proper ldc2_w instructions at usage points instead of getstatic
+
+    static {
+        if (POST_ADDITION_MASK != toLong(-1, -1, -1)) {
+            throw new IllegalStateException(POST_ADDITION_MASK + " " + toLong(-1, -1, -1)); // sanity check
+        }
+    }
 
     public long toLong() {
         return toLong(this.x, this.y, this.z);

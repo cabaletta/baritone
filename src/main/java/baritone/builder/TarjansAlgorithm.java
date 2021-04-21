@@ -25,7 +25,9 @@ import java.util.ArrayDeque;
 /**
  * Tarjans algorithm destructured into a coroutine-like layout with an explicit "call stack" on the heap
  * <p>
- * This is needed so as to not stack overflow on huge schematics sadly
+ * This is needed so as to not stack overflow on huge schematics sadly. My test schematic (128x128x128) creates a
+ * call stack of depth 2 million, which the JVM cannot handle on its own on the stack, but it has no trouble with an
+ * ArrayDeque of 2 million entries on the heap.
  */
 public class TarjansAlgorithm {
 
@@ -93,6 +95,9 @@ public class TarjansAlgorithm {
     }
 
     private void strongConnectPart2(TarjanVertexInfo info) {
+        if (info.doneWithMainLoop) {
+            throw new IllegalStateException();
+        }
         long vpos = info.pos;
         for (int fi = info.facesCompleted; fi < Face.NUM_FACES; fi++) {
             Face face = Face.VALUES[fi];

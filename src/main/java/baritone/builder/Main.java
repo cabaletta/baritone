@@ -18,10 +18,14 @@
 package baritone.builder;
 
 import baritone.api.utils.BetterBlockPos;
+import baritone.builder.mc.VanillaBlockStateDataProvider;
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 
 import java.util.Random;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public class Main {
 
@@ -33,6 +37,8 @@ public class Main {
     public static final boolean STRICT_Y = false;
 
     public static final boolean fakePlacementForPerformanceTesting = true;
+
+    public static final IBlockStateDataProvider DATA_PROVIDER = new VanillaBlockStateDataProvider();
 
     public static final Random RAND = new Random(5021);
 
@@ -134,6 +140,26 @@ public class Main {
             System.gc();
             Thread.sleep(500);
             //scaffolding.enable(0);
+        }
+        {
+            // stadning at 1,0,0
+            // block to be placed at 0,0,0
+            // placing against 0,0,-1
+
+            // eye is at 1, 1.62, 0
+        }
+        for (int i = 0; i < 10; i++) {
+            Stream.of(new Object())
+                    .flatMap(ignored -> IntStream.range(0, 100).boxed())
+                    .parallel()
+                    .forEach(x -> System.out.println(x + ""));
+            IntStream.range(100, 200).boxed()
+                    .parallel()
+                    .forEach(x -> System.out.println(x + ""));
+            Stream.of(new Object())
+                    .flatMap(ignored -> IntStream.range(200, 300).boxed())
+                    .collect(Collectors.toList()).parallelStream()
+                    .forEach(x -> System.out.println(x + ""));
         }
         System.exit(0);
     }

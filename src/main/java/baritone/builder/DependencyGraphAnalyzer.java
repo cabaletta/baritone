@@ -21,6 +21,9 @@ import baritone.api.utils.BetterBlockPos;
 import it.unimi.dsi.fastutil.longs.LongArrayFIFOQueue;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Some initial checks on the schematic
  * <p>
@@ -37,6 +40,7 @@ public class DependencyGraphAnalyzer {
      * and funky, it should be caught earlier anyway.
      */
     public static void prevalidate(PlaceOrderDependencyGraph graph) {
+        List<String> locs = new ArrayList<>();
         graph.bounds().forEach(pos -> {
             if (graph.airTreatedAsScaffolding(pos)) {
                 // completely fine to, for example, have an air pocket with non-place-against-able stuff all around it
@@ -47,8 +51,11 @@ public class DependencyGraphAnalyzer {
                     return;
                 }
             }
-            throw new IllegalStateException(BetterBlockPos.fromLong(pos) + " is unplaceable from any side");
+            locs.add(BetterBlockPos.fromLong(pos).toString());
         });
+        if (!locs.isEmpty()) {
+            throw new IllegalStateException("Unplaceable from any side: " + cuteTrim(locs));
+        }
     }
 
     /**
@@ -78,14 +85,27 @@ public class DependencyGraphAnalyzer {
                 }
             }
         }
+        List<String> locs = new ArrayList<>();
         graph.bounds().forEach(pos -> {
             if (graph.airTreatedAsScaffolding(pos)) {
                 // same as previous validation
                 return;
             }
             if (!reachable.contains(pos)) {
-                throw new IllegalStateException(BetterBlockPos.fromLong(pos) + " is placeable, in theory, but in practice there is no valid path from the exterior to it");
+                locs.add(BetterBlockPos.fromLong(pos).toString());
             }
         });
+        if (!locs.isEmpty()) {
+            throw new IllegalStateException("Placeable, in theory, but in practice there is no valid path from the exterior to it: " + cuteTrim(locs));
+        }
+    }
+
+    private static List<String> cuteTrim(List<String> pos) {
+        if (pos.size() <= 20) {
+            return pos;
+        }
+        pos = pos.subList(0, 20);
+        pos.set(pos.size() - 1, "...");
+        return pos;
     }
 }

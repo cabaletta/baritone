@@ -33,13 +33,16 @@ public enum Face {
     public final int y = toMC().getYOffset();
     public final int z = toMC().getZOffset();
     public final long offset = BetterBlockPos.toLong(x, y, z);
+    public final int[] vec = new int[]{x, y, z};
     public static final int NUM_FACES = 6;
     public static final Face[] VALUES = new Face[NUM_FACES];
+    public static final Face[] HORIZONTALS;
 
     static {
         for (Face face : values()) {
             VALUES[face.index] = face;
         }
+        HORIZONTALS = new Face[]{Face.SOUTH, Face.WEST, Face.NORTH, Face.EAST};
     }
 
     public final EnumFacing toMC() {

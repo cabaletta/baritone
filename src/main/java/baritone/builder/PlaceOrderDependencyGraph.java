@@ -53,7 +53,7 @@ public class PlaceOrderDependencyGraph {
             } else {
                 against = BlockStateCachedData.SCAFFOLDING;
             }
-            if (against.canBeDoneAgainstMe(option)) {
+            if (against.canBeDoneAgainstMe(option) != null) {
                 edges.set(bitIndex(pos, option.against));
             }
         }
@@ -91,7 +91,7 @@ public class PlaceOrderDependencyGraph {
     }
 
     private int bitIndex(long pos, Face face) {
-        return bounds().toIndex(pos) * 6 + face.index;
+        return bounds().toIndex(pos) * Face.NUM_FACES + face.index;
     }
 
     public boolean airTreatedAsScaffolding(long pos) {
@@ -115,7 +115,7 @@ public class PlaceOrderDependencyGraph {
     }
 
     private void sanityCheck() {
-        int[] test = new int[bounds().sizeX * bounds().sizeY * bounds().sizeZ * 6];
+        int[] test = new int[bounds().sizeX * bounds().sizeY * bounds().sizeZ * Face.NUM_FACES];
         bounds().forEach(pos -> {
             for (int face = 0; face < 6; face++) {
                 test[bitIndex(pos, Face.VALUES[face])]++;

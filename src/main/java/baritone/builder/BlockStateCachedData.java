@@ -17,14 +17,8 @@
 
 package baritone.builder;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockAir;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.init.Blocks;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import javax.annotation.Nullable;
+import java.util.*;
 
 /**
  * Information about an IBlockState
@@ -33,29 +27,106 @@ import java.util.List;
  */
 public final class BlockStateCachedData {
 
-    public boolean canWalkOn;
-    public boolean isAir;
+    private static final BlockStateCachedData[] PER_STATE = Main.DATA_PROVIDER.all();
+    public static final BlockStateCachedData SCAFFOLDING = new BlockStateCachedData(false, true, true);
 
-    public boolean canPlaceAgainstAtAll;
-
+    public final boolean canWalkOn;
+    public final boolean isAir;
+    private final boolean[] presentsTopHalfFaceForPlacement;
+    private final boolean[] presentsBottomHalfFaceForPlacement;
     private final List<BlockStatePlacementOption> options;
 
-
-    public BlockStateCachedData(IBlockState state) {
-        isAir = state.getBlock() instanceof BlockAir;
-        canPlaceAgainstAtAll = state.getBlock() == Blocks.COBBLESTONE || state.getBlock() == Blocks.DIRT;
-        canWalkOn = canPlaceAgainstAtAll;
-        this.options = Collections.unmodifiableList(calcOptions());
+    public static BlockStateCachedData get(int state) {
+        return PER_STATE[state];
     }
 
-    private List<BlockStatePlacementOption> calcOptions() {
+    public BlockStateCachedData(boolean isAir, boolean canPlaceAgainstAtAll, boolean canWalkOn) {
+        this(isAir, canPlaceAgainstAtAll, canWalkOn, Half.EITHER);
+    }
+
+    public BlockStateCachedData(boolean isAir, boolean canPlaceAgainstAtAll, boolean canWalkOn, Half half) {
+        this.isAir = isAir;
+        this.canWalkOn = canWalkOn;
+        this.options = Collections.unmodifiableList(calcOptions(canPlaceAgainstAtAll, half));
+        this.presentsTopHalfFaceForPlacement = new boolean[Face.VALUES.length];
+        this.presentsBottomHalfFaceForPlacement = new boolean[Face.VALUES.length];
+        setupFacesPresented(canPlaceAgainstAtAll, half);
+    }
+
+    private void setupFacesPresented(boolean canPlaceAgainstAtAll, Half half) {
+        if (!canPlaceAgainstAtAll) {
+            return;
+        }
+        Arrays.fill(presentsBottomHalfFaceForPlacement, true);
+        Arrays.fill(presentsTopHalfFaceForPlacement, true);
+        // TODO support case for placing against nub of stair on the one faced side
+        switch (half) {
+            case EITHER: {
+                return;
+            }
+            case TOP: {
+                // i am a top slab, or an upside down stair
+                presentsBottomHalfFaceForPlacement[Face.DOWN.index] = false;
+                presentsTopHalfFaceForPlacement[Face.DOWN.index] = false;
+                for (Face face : Face.HORIZONTALS) {
+                    presentsBottomHalfFaceForPlacement[face.index] = false; // top slab = can't place against the bottom half
+                }
+                break;
+            }
+            case BOTTOM: {
+                // i am a bottom slab, or an normal stair
+                presentsBottomHalfFaceForPlacement[Face.UP.index] = false;
+                presentsTopHalfFaceForPlacement[Face.UP.index] = false;
+                for (Face face : Face.HORIZONTALS) {
+                    presentsTopHalfFaceForPlacement[face.index] = false; // bottom slab = can't place against the top half
+                }
+                break;
+            }
+        }
+    }
+
+    @Nullable
+    private Half presentsFace(Face face, Half half) {
+        if ((face == Face.UP || face == Face.DOWN) && half != Half.EITHER) {
+            throw new IllegalStateException();
+        }
+        boolean top = presentsTopHalfFaceForPlacement[face.index] && (half == Half.EITHER || half == Half.TOP);
+        boolean bottom = presentsBottomHalfFaceForPlacement[face.index] && (half == Half.EITHER || half == Half.BOTTOM);
+        if (top && bottom) {
+            return Half.EITHER;
+        }
+        if (top) {
+            return Half.TOP;
+        }
+        if (bottom) {
+            return Half.BOTTOM;
+        }
+        return null;
+    }
+
+    private List<BlockStatePlacementOption> calcOptions(boolean canPlaceAgainstAtAll, Half half) {
         if (canPlaceAgainstAtAll) {
             List<BlockStatePlacementOption> ret = new ArrayList<>();
             for (Face face : Face.VALUES) {
                 if (Main.STRICT_Y && face == Face.UP) {
                     continue;
                 }
-                ret.add(new BlockStatePlacementOption(face));
+                Half overrideHalf = half;
+                if (face == Face.DOWN) {
+                    if (half == Half.TOP) {
+                        continue;
+                    } else {
+                        overrideHalf = Half.EITHER;
+                    }
+                }
+                if (face == Face.UP) {
+                    if (half == Half.BOTTOM) {
+                        continue;
+                    } else {
+                        overrideHalf = Half.EITHER;
+                    }
+                }
+                ret.add(BlockStatePlacementOption.get(face, overrideHalf, Optional.empty()));
             }
             return ret;
         }
@@ -63,40 +134,17 @@ public final class BlockStateCachedData {
     }
 
 
-    public boolean canBeDoneAgainstMe(BlockStatePlacementOption placement) {
+    @Nullable
+    public Half canBeDoneAgainstMe(BlockStatePlacementOption placement) {
         if (Main.fakePlacementForPerformanceTesting) {
-            return Main.RAND.nextInt(10) < 8;
+            return Main.RAND.nextInt(10) < 8 ? Half.EITHER : null;
         }
-        // if i am a bottom slab, and the placement option is Face.DOWN, it's impossible
-        // if i am a top slab, and the placement option is Face.UP, it's impossible
-        // if i am a bottom slab, and the placement option is Half.TOP, it's impossible
-        // if i am a top slab, and the placement option is Half.BOTTOM, it's impossible
 
-        // if i am a stair then in newer versions of minecraft its complicated because voxel shapes and stuff blegh
-
-        if (!canPlaceAgainstAtAll) {
-            return false;
-        }
-        throw new UnsupportedOperationException();
+        Face myFace = placement.against.opposite();
+        return presentsFace(myFace, placement.half);
     }
 
     public List<BlockStatePlacementOption> placementOptions() {
         return options;
-    }
-
-    private static final BlockStateCachedData[] PER_STATE = new BlockStateCachedData[Block.BLOCK_STATE_IDS.size()];
-    public static final BlockStateCachedData SCAFFOLDING;
-
-    static {
-        Block.BLOCK_STATE_IDS.forEach(state -> PER_STATE[Block.BLOCK_STATE_IDS.get(state)] = new BlockStateCachedData(state));
-        SCAFFOLDING = get(Blocks.COBBLESTONE.getDefaultState());
-    }
-
-    public static BlockStateCachedData get(int state) {
-        return PER_STATE[state];
-    }
-
-    public static BlockStateCachedData get(IBlockState state) {
-        return get(Block.BLOCK_STATE_IDS.get(state));
     }
 }

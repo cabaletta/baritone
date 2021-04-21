@@ -150,20 +150,6 @@ public class DependencyGraphScaffoldingOverlay {
             });
             if (Main.DEBUG) {
                 sanityCheck();
-                /*long pos = 976433971301L;
-                if (!real(pos)) {
-                    return;
-                }
-                System.out.println("Tarjan outcome");
-                System.out.println("Pos core " + posToComponent.get(pos).index);
-                for (Face face : Face.VALUES) {
-                    if (outgoingEdge(pos, face)) {
-                        System.out.println("Pos outgoing edge " + face + " goes to " + posToComponent.get(face.offset(pos)).index);
-                    }
-                    if (incomingEdge(pos, face)) {
-                        System.out.println("Pos incoming edge " + face + " comes from " + posToComponent.get(face.offset(pos)).index);
-                    }
-                }*/
             }
         }
 
@@ -321,6 +307,8 @@ public class DependencyGraphScaffoldingOverlay {
             // if i change ^^ that "Set" to "ObjectOpenHashSet" it actually makes the bench about 15% SLOWER?!?!?
             private int y = -1;
             private boolean deleted;
+            private final Set<CollapsedDependencyGraphComponent> unmodifiableOutgoing = Collections.unmodifiableSet(outgoingEdges);
+            private final Set<CollapsedDependencyGraphComponent> unmodifiableIncoming = Collections.unmodifiableSet(incomingEdges);
 
             private CollapsedDependencyGraphComponent(int id) {
                 this.id = id;
@@ -354,11 +342,11 @@ public class DependencyGraphScaffoldingOverlay {
             }
 
             public Set<CollapsedDependencyGraphComponent> getIncoming() {
-                return Collections.unmodifiableSet(incomingEdges);
+                return unmodifiableIncoming;
             }
 
             public Set<CollapsedDependencyGraphComponent> getOutgoing() {
-                return Collections.unmodifiableSet(outgoingEdges);
+                return unmodifiableOutgoing;
             }
         }
 

@@ -86,7 +86,7 @@ public class Scaffolder {
 
     }
 
-    private void walkAllDescendents(CollapsedDependencyGraphComponent root, Set<CollapsedDependencyGraphComponent> set) { // TODO this allocs due to the unmodifiable, also in practice this is like O(n^2) as the scaffolding proceeds downwards...
+    private void walkAllDescendents(CollapsedDependencyGraphComponent root, Set<CollapsedDependencyGraphComponent> set) {
         set.add(root);
         for (CollapsedDependencyGraphComponent component : root.getOutgoing()) {
             walkAllDescendents(component, set);
@@ -113,7 +113,7 @@ public class Scaffolder {
                     // sadly this can happen even at the same Y level even in Y_STRICT mode due to orientable blocks forming a loop
                     continue; // TODO does this need to be here? can I expand THROUGH an unrelated component? probably requires testing, this is quite a mind bending possibility
                 } else {
-                    return node; // all done! found a path to a component unrelated to this one, meaning we have successfully connected with scaffolding this part of the build back to the rest of it
+                    return node; // all done! found a path to a component unrelated to this one, meaning we have successfully connected this part of the build with scaffolding back to the rest of it
                 }
             }
             for (Face face : Face.VALUES) {

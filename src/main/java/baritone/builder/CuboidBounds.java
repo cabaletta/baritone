@@ -53,7 +53,7 @@ public class CuboidBounds {
     }
 
     public boolean inRange(int x, int y, int z) {
-        return (x >= 0) & (x < sizeX) & (y >= 0) & (y < sizeY) & (z >= 0) & (z < sizeZ);
+        return (x >= 0) && (x < sizeX) && (y >= 0) && (y < sizeY) && (z >= 0) && (z < sizeZ);
     }
 
     public boolean inRangeIndex(int index) {
