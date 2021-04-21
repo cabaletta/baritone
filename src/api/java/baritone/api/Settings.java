@@ -70,9 +70,9 @@ public final class Settings {
     public final Setting<Boolean> assumeExternalAutoTool = new Setting<>(false);
 
     /**
-     * If this setting is on, no auto tool will occur at all, not at calculation time nor execution time
+     * Automatically select the best available tool
      */
-    public final Setting<Boolean> disableAutoTool = new Setting<>(false);
+    public final Setting<Boolean> autoTool = new Setting<>(true);
 
     /**
      * It doesn't actually take twenty ticks to place a block, this cost is so high
