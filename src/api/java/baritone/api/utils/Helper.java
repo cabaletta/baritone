@@ -18,8 +18,6 @@
 package baritone.api.utils;
 
 import baritone.api.BaritoneAPI;
-import baritone.api.utils.gui.BaritoneToast;
-import baritone.api.utils.NotificationHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
@@ -72,7 +70,7 @@ public interface Helper {
      * @param message The message to display in the popup
      */
     default void logToast(ITextComponent title, ITextComponent message) {
-        mc.addScheduledTask(() -> BaritoneToast.addOrUpdate(mc.getToastGui(), title, message, BaritoneAPI.getSettings().toastTimer.value));
+        mc.addScheduledTask(() -> BaritoneAPI.getSettings().toaster.value.accept(title, message));
     }
 
     /**
@@ -133,7 +131,7 @@ public interface Helper {
      * @param error   Whether to log as an error
      */
     default void logNotificationDirect(String message, boolean error) {
-        NotificationHelper.notify(message, error);
+        mc.addScheduledTask(() -> BaritoneAPI.getSettings().notifier.value.accept(message, error));
     }
 
     /**
