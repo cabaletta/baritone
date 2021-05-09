@@ -19,6 +19,7 @@ package baritone.api.utils;
 
 import baritone.api.BaritoneAPI;
 import baritone.api.utils.gui.BaritoneToast;
+import baritone.api.utils.NotificationHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
@@ -91,6 +92,48 @@ public interface Helper {
      */
     default void logToast(String message) {
         logToast(Helper.getPrefix(), new TextComponentString(message));
+    }
+
+    /**
+     * Send a message as a desktop notification
+     *
+     * @param message The message to display in the notification
+     */
+    default void logNotification(String message) {
+        logNotification(message, false);
+    }
+
+    /**
+     * Send a message as a desktop notification
+     *
+     * @param message The message to display in the notification
+     * @param error   Whether to log as an error
+     */
+    default void logNotification(String message, boolean error) {
+        if (BaritoneAPI.getSettings().desktopNotifications.value) {
+            logNotificationDirect(message, error);
+        }
+    }
+
+    /**
+     * Send a message as a desktop notification regardless of desktopNotifications
+     * (should only be used for critically important messages)
+     *
+     * @param message The message to display in the notification
+     */
+    default void logNotificationDirect(String message) {
+        logNotificationDirect(message, false);
+    }
+
+    /**
+     * Send a message as a desktop notification regardless of desktopNotifications
+     * (should only be used for critically important messages)
+     *
+     * @param message The message to display in the notification
+     * @param error   Whether to log as an error
+     */
+    default void logNotificationDirect(String message, boolean error) {
+        NotificationHelper.notify(message, error);
     }
 
     /**

@@ -30,7 +30,6 @@ import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.MovementHelper;
 import baritone.utils.BaritoneProcessHelper;
 import baritone.utils.BlockStateInterface;
-import baritone.utils.NotificationHelper;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockAir;
 import net.minecraft.block.BlockFalling;
@@ -89,15 +88,15 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         if (calcFailed) {
             if (!knownOreLocations.isEmpty() && Baritone.settings().blacklistClosestOnFailure.value) {
                 logDirect("Unable to find any path to " + filter + ", blacklisting presumably unreachable closest instance...");
-                if (Baritone.settings().desktopNotifications.value && Baritone.settings().notificationOnMineFail.value) {
-                    NotificationHelper.notify("Unable to find any path to " + filter + ", blacklisting presumably unreachable closest instance...", true);
+                if (Baritone.settings().notificationOnMineFail.value) {
+                    logNotification("Unable to find any path to " + filter + ", blacklisting presumably unreachable closest instance...", true);
                 }
                 knownOreLocations.stream().min(Comparator.comparingDouble(ctx.player()::getDistanceSq)).ifPresent(blacklist::add);
                 knownOreLocations.removeIf(blacklist::contains);
             } else {
                 logDirect("Unable to find any path to " + filter + ", canceling mine");
-                if (Baritone.settings().desktopNotifications.value && Baritone.settings().notificationOnMineFail.value) {
-                    NotificationHelper.notify("Unable to find any path to " + filter + ", canceling mine", true);
+                if (Baritone.settings().notificationOnMineFail.value) {
+                    logNotification("Unable to find any path to " + filter + ", canceling mine", true);
                 }
                 cancel();
                 return null;
@@ -232,8 +231,8 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         locs.addAll(dropped);
         if (locs.isEmpty()) {
             logDirect("No locations for " + filter + " known, cancelling");
-            if (Baritone.settings().desktopNotifications.value && Baritone.settings().notificationOnMineFail.value) {
-                NotificationHelper.notify("No locations for " + filter + " known, cancelling", true);
+            if (Baritone.settings().notificationOnMineFail.value) {
+                logNotification("No locations for " + filter + " known, cancelling", true);
             }
             cancel();
             return;
