@@ -17,7 +17,10 @@
 
 package baritone.builder;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -47,7 +50,14 @@ public class BlockStatePlacementOption {
         validate(against, half, playerMustBeFacing);
     }
 
-    public Optional<Raytracer.Raytrace> computeTraceOptions(Half againstHalf, int playerSupportingX, double playerEyeY, int playerSupportingZ, PlayerVantage vantage, double blockReachDistance) {
+    /**
+     * This value must be greater than the face projections.
+     * <p>
+     * Otherwise certain stair placements would not work. This is verified in this class's sanityCheck.
+     */
+    private static final double LOOSE_CENTER_DISTANCE = 0.15;
+
+    public List<Raytracer.Raytrace> computeTraceOptions(Half againstHalf, int playerSupportingX, double playerEyeY, int playerSupportingZ, PlayerVantage vantage, double blockReachDistance) {
         if (againstHalf != half && half != Half.EITHER) { // narrowing is ok (EITHER -> TOP/BOTTOM) but widening isn't (TOP/BOTTOM -> EITHER)
             throw new IllegalStateException();
         }
@@ -55,10 +65,10 @@ public class BlockStatePlacementOption {
         Vec2d center = Vec2d.HALVED_CENTER.plus(playerSupportingX, playerSupportingZ);
         switch (vantage) {
             case LOOSE_CENTER: {
-                acceptableVantages.add(center.plus(0.15, 0));
-                acceptableVantages.add(center.plus(-0.15, 0));
-                acceptableVantages.add(center.plus(0, 0.15));
-                acceptableVantages.add(center.plus(0, -0.15));
+                acceptableVantages.add(center.plus(LOOSE_CENTER_DISTANCE, 0));
+                acceptableVantages.add(center.plus(-LOOSE_CENTER_DISTANCE, 0));
+                acceptableVantages.add(center.plus(0, LOOSE_CENTER_DISTANCE));
+                acceptableVantages.add(center.plus(0, -LOOSE_CENTER_DISTANCE));
                 // no break!
             } // FALLTHROUGH!
             case STRICT_CENTER: {
@@ -79,35 +89,59 @@ public class BlockStatePlacementOption {
         // direction from placed block to place-against block = this.against
         long blockPlacedAt = 0;
         long placeAgainstPos = against.offset(blockPlacedAt);
-        double sq = blockReachDistance * blockReachDistance;
 
-        return acceptableVantages
+        return sanityCheckTraces(acceptableVantages
                 .stream()
                 .map(playerEyeXZ -> new Vec3d(playerEyeXZ.x, playerEyeY, playerEyeXZ.z))
                 .flatMap(eye ->
                         Stream.of(FACE_PROJECTION_CACHE[against.index])
-                                .filter(hit -> eye.distSq(hit) < sq)
+                                .filter(this::hitOk)
+                                .filter(hit -> eye.distSq(hit) < blockReachDistance * blockReachDistance)
+                                .filter(hit -> directionOk(eye, hit))
                                 .<Supplier<Optional<Raytracer.Raytrace>>>map(hit -> () -> Raytracer.runTrace(eye, placeAgainstPos, against.opposite(), hit))
                 )
                 .collect(Collectors.toList())
-                .parallelStream() // wrap it like this because flatMap forces .sequential() on the interior child stream, defeating the point
+                // TODO switch back to parallelStream
+                .stream() // wrap it like this because flatMap forces .sequential() on the interior child stream, defeating the point
                 .map(Supplier::get)
                 .filter(Optional::isPresent)
                 .map(Optional::get)
-                .min(Comparator.naturalOrder());
+                .sorted()
+                .collect(Collectors.toList()));
+    }
+
+    private boolean hitOk(Vec3d hit) {
+        if (half == Half.EITHER) {
+            return true;
+        } else if (hit.y == 0.1) {
+            return half == Half.BOTTOM;
+        } else if (hit.y == 0.5) {
+            return false;
+        } else if (hit.y == 0.9) {
+            return half == Half.TOP;
+        } else {
+            throw new IllegalStateException();
+        }
+    }
+
+    private boolean directionOk(Vec3d eye, Vec3d hit) {
+        if (playerMustBeFacing.isPresent()) {
+            return eye.flatDirectionTo(hit) == playerMustBeFacing.get();
+        }
+        // TODO include the other conditions for stupid blocks like pistons
+        return true;
     }
 
     private static final Vec3d[][] FACE_PROJECTION_CACHE;
 
     static {
-        Vec2d center = new Vec2d(0.5, 0.5);
-        double[] diffs = {-0.4, 0, +0.4};
+        double[] diffs = {0.1, 0.5, 0.9};
         FACE_PROJECTION_CACHE = new Vec3d[Face.NUM_FACES][diffs.length * diffs.length];
         for (Face face : Face.VALUES) {
             int i = 0;
             for (double dx : diffs) {
                 for (double dz : diffs) {
-                    FACE_PROJECTION_CACHE[face.index][i++] = new Vec3d(project(center.plus(dx, dz).toArr(), face));
+                    FACE_PROJECTION_CACHE[face.index][i++] = new Vec3d(project(new double[]{dx, dz}, face));
                 }
             }
         }
@@ -172,5 +206,59 @@ public class BlockStatePlacementOption {
                 throw new IllegalStateException();
             }
         });
+    }
+
+    static {
+        if (Main.DEBUG) {
+            sanityCheck();
+        }
+    }
+
+    public static void sanityCheck() {
+        // standing at 1,0,0
+        // block to be placed at 0,0,0
+        // placing against 0,0,-1
+
+        // eye is at 1, 1.62, 0
+        // north or west
+
+        StringBuilder sanity = new StringBuilder();
+        for (PlayerVantage vantage : new PlayerVantage[]{PlayerVantage.STRICT_CENTER, PlayerVantage.LOOSE_CENTER}) {
+            for (Face playerFacing : new Face[]{Face.NORTH, Face.EAST, Face.WEST}) {
+                sanity.append(vantage).append(playerFacing);
+                List<Raytracer.Raytrace> traces = BlockStatePlacementOption.get(Face.NORTH, Half.BOTTOM, Optional.of(playerFacing)).computeTraceOptions(Half.BOTTOM, 1, 1.62, 0, vantage, 4);
+                sanity.append(traces.size());
+                sanity.append(" ");
+                if (!traces.isEmpty()) {
+                    for (double d : new double[]{traces.get(0).playerEye.x, traces.get(0).playerEye.z}) {
+                        double base = d > 1 ? 1.5 : 0.5;
+                        boolean a = d == base - LOOSE_CENTER_DISTANCE;
+                        boolean b = d == base;
+                        boolean c = d == base + LOOSE_CENTER_DISTANCE;
+                        if (!a && !b && !c) {
+                            throw new IllegalStateException("Wrong " + d);
+                        }
+                        sanity.append(a).append(" ").append(b).append(" ").append(c).append(" ");
+                    }
+                }
+                sanity.append(traces.stream().mapToDouble(Raytracer.Raytrace::centerDistApprox).distinct().count());
+                sanity.append(";");
+            }
+        }
+
+        String res = sanity.toString();
+        String should = "STRICT_CENTERNORTH0 0;STRICT_CENTEREAST0 0;STRICT_CENTERWEST3 false true false false true false 1;LOOSE_CENTERNORTH2 true false false false true false 1;LOOSE_CENTEREAST0 0;LOOSE_CENTERWEST13 false true false false true false 2;";
+        if (!res.equals(should)) {
+            System.out.println(res);
+            System.out.println(should);
+            throw new IllegalStateException(res);
+        }
+    }
+
+    private static List<Raytracer.Raytrace> sanityCheckTraces(List<Raytracer.Raytrace> traces) {
+        if (Main.DEBUG && traces.stream().mapToDouble(Raytracer.Raytrace::centerDistApprox).distinct().count() > 2) {
+            throw new IllegalStateException();
+        }
+        return traces;
     }
 }

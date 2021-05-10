@@ -28,10 +28,11 @@ import java.util.*;
 public final class BlockStateCachedData {
 
     private static final BlockStateCachedData[] PER_STATE = Main.DATA_PROVIDER.all();
-    public static final BlockStateCachedData SCAFFOLDING = new BlockStateCachedData(false, true, true);
+    public static final BlockStateCachedData SCAFFOLDING = new BlockStateCachedData(false, true, true, Half.EITHER, false);
 
     public final boolean canWalkOn;
     public final boolean isAir;
+    public final boolean mustSneakWhenPlacingAgainstMe;
     private final boolean[] presentsTopHalfFaceForPlacement;
     private final boolean[] presentsBottomHalfFaceForPlacement;
     private final List<BlockStatePlacementOption> options;
@@ -40,17 +41,17 @@ public final class BlockStateCachedData {
         return PER_STATE[state];
     }
 
-    public BlockStateCachedData(boolean isAir, boolean canPlaceAgainstAtAll, boolean canWalkOn) {
-        this(isAir, canPlaceAgainstAtAll, canWalkOn, Half.EITHER);
-    }
-
-    public BlockStateCachedData(boolean isAir, boolean canPlaceAgainstAtAll, boolean canWalkOn, Half half) {
+    public BlockStateCachedData(boolean isAir, boolean canPlaceAgainstAtAll, boolean canWalkOn, Half half, boolean mustSneakWhenPlacingAgainstMe) {
         this.isAir = isAir;
         this.canWalkOn = canWalkOn;
+        this.mustSneakWhenPlacingAgainstMe = mustSneakWhenPlacingAgainstMe;
         this.options = Collections.unmodifiableList(calcOptions(canPlaceAgainstAtAll, half));
         this.presentsTopHalfFaceForPlacement = new boolean[Face.VALUES.length];
         this.presentsBottomHalfFaceForPlacement = new boolean[Face.VALUES.length];
         setupFacesPresented(canPlaceAgainstAtAll, half);
+        if (mustSneakWhenPlacingAgainstMe && half != Half.EITHER) {
+            throw new IllegalArgumentException();
+        }
     }
 
     private void setupFacesPresented(boolean canPlaceAgainstAtAll, Half half) {
@@ -86,22 +87,23 @@ public final class BlockStateCachedData {
     }
 
     @Nullable
-    private Half presentsFace(Face face, Half half) {
+    private PlaceAgainstData presentsFace(Face face, Half half) {
         if ((face == Face.UP || face == Face.DOWN) && half != Half.EITHER) {
             throw new IllegalStateException();
         }
         boolean top = presentsTopHalfFaceForPlacement[face.index] && (half == Half.EITHER || half == Half.TOP);
         boolean bottom = presentsBottomHalfFaceForPlacement[face.index] && (half == Half.EITHER || half == Half.BOTTOM);
+        Half intersectedHalf; // the half that both we present, and they accept. not necessarily equal to either. slab-against-block and block-against-slab will both have this as top/bottom, not either.
         if (top && bottom) {
-            return Half.EITHER;
+            intersectedHalf = Half.EITHER;
+        } else if (top) {
+            intersectedHalf = Half.TOP;
+        } else if (bottom) {
+            intersectedHalf = Half.BOTTOM;
+        } else {
+            return null;
         }
-        if (top) {
-            return Half.TOP;
-        }
-        if (bottom) {
-            return Half.BOTTOM;
-        }
-        return null;
+        return PlaceAgainstData.get(intersectedHalf, mustSneakWhenPlacingAgainstMe);
     }
 
     private List<BlockStatePlacementOption> calcOptions(boolean canPlaceAgainstAtAll, Half half) {
@@ -135,9 +137,9 @@ public final class BlockStateCachedData {
 
 
     @Nullable
-    public Half canBeDoneAgainstMe(BlockStatePlacementOption placement) {
+    public PlaceAgainstData canBeDoneAgainstMe(BlockStatePlacementOption placement) {
         if (Main.fakePlacementForPerformanceTesting) {
-            return Main.RAND.nextInt(10) < 8 ? Half.EITHER : null;
+            return Main.RAND.nextInt(10) < 8 ? PlaceAgainstData.EITHER : null;
         }
 
         Face myFace = placement.against.opposite();

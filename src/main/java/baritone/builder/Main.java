@@ -19,6 +19,8 @@ package baritone.builder;
 
 import baritone.api.utils.BetterBlockPos;
 import baritone.builder.mc.VanillaBlockStateDataProvider;
+import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
+import it.unimi.dsi.fastutil.longs.LongArrayList;
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 
@@ -85,7 +87,7 @@ public class Main {
         {
             System.out.println(BetterBlockPos.fromLong(BetterBlockPos.toLong(150, 150, 150)));
         }
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 0; i++) {
             long aaa = System.currentTimeMillis();
             int[][][] test = new int[64][64][64];
             int based = Block.BLOCK_STATE_IDS.get(Blocks.DIRT.getDefaultState());
@@ -141,14 +143,7 @@ public class Main {
             Thread.sleep(500);
             //scaffolding.enable(0);
         }
-        {
-            // stadning at 1,0,0
-            // block to be placed at 0,0,0
-            // placing against 0,0,-1
-
-            // eye is at 1, 1.62, 0
-        }
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 0; i++) {
             Stream.of(new Object())
                     .flatMap(ignored -> IntStream.range(0, 100).boxed())
                     .parallel()
@@ -160,6 +155,89 @@ public class Main {
                     .flatMap(ignored -> IntStream.range(200, 300).boxed())
                     .collect(Collectors.toList()).parallelStream()
                     .forEach(x -> System.out.println(x + ""));
+        }
+        {
+            BlockStatePlacementOption.sanityCheck();
+        }
+        {
+            /*Raytracer.raytraceMode++;
+            Raytracer.raytraceMode %= 3;*/
+            Random rand = new Random(5021);
+            DoubleArrayList A = new DoubleArrayList();
+            DoubleArrayList B = new DoubleArrayList();
+            DoubleArrayList C = new DoubleArrayList();
+            DoubleArrayList D = new DoubleArrayList();
+            DoubleArrayList E = new DoubleArrayList();
+            DoubleArrayList F = new DoubleArrayList();
+            LongArrayList G = new LongArrayList();
+            long a = System.currentTimeMillis();
+            for (int trial = 0; trial < 10_000_000; ) {
+                Vec3d playerEye = new Vec3d(rand.nextDouble() * 5 - 2.5, rand.nextDouble() * 5, rand.nextDouble() * 5 - 2.5);
+                long eyeBlock = playerEye.getRoundedToZeroPositionUnsafeDontUse();
+                if (eyeBlock == 0) {
+                    // origin, unlucky
+                    continue;
+                }
+                Face placeToAgainst = Face.VALUES[rand.nextInt(Face.NUM_FACES)];
+                Face againstToPlace = placeToAgainst.opposite();
+                long placeAgainst = placeToAgainst.offset(0);
+                if (eyeBlock == placeAgainst) {
+                    continue;
+                }
+                double[] hitVec = new double[3];
+                for (int i = 0; i < 3; i++) {
+                    switch (placeToAgainst.vec[i]) {
+                        case -1: {
+                            hitVec[i] = 0;
+                            break;
+                        }
+                        case 0: {
+                            hitVec[i] = rand.nextDouble();
+                            break;
+                        }
+                        case 1: {
+                            hitVec[i] = 1;
+                            break;
+                        }
+                    }
+                }
+                Vec3d hit = new Vec3d(hitVec);
+                Raytracer.runTrace(playerEye, placeAgainst, againstToPlace, hit);
+                A.add(playerEye.x);
+                B.add(playerEye.y);
+                C.add(playerEye.z);
+                D.add(hit.x);
+                E.add(hit.y);
+                F.add(hit.z);
+                G.add(placeAgainst);
+                trial++;
+            }
+            long b = System.currentTimeMillis();
+            System.out.println("Nominal first run with overhead: " + (b - a) + "ms");
+            for (int it = 0; it < 20; it++) {
+                {
+                    Thread.sleep(1000);
+                    System.gc();
+                    Thread.sleep(1000);
+                    long start = System.currentTimeMillis();
+                    for (int i = 0; i < 10_000_000; i++) {
+                        Raytracer.rayTraceZoomy(A.getDouble(i), B.getDouble(i), C.getDouble(i), D.getDouble(i), E.getDouble(i), F.getDouble(i), G.getLong(i));
+                    }
+                    long end = System.currentTimeMillis();
+                    System.out.println("Branchless took " + (end - start) + "ms");
+                }
+                {
+                    Thread.sleep(1000);
+                    System.gc();
+                    Thread.sleep(1000);
+                    long start = System.currentTimeMillis();
+                    for (int i = 0; i < 10_000_000; i++) {
+                        Raytracer.rayTraceZoomyBranchy(A.getDouble(i), B.getDouble(i), C.getDouble(i), D.getDouble(i), E.getDouble(i), F.getDouble(i), G.getLong(i));
+                    }
+                    long end = System.currentTimeMillis();
+                    System.out.println("Branchy took " + (end - start) + "ms");
+                }
+            }
         }
         System.exit(0);
     }

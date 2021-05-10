@@ -245,10 +245,10 @@ public final class BetterBlockPos extends BlockPos {
     @Nonnull
     public String toString() {
         return String.format(
-                "BetterBlockPos{x=%s,y=%s,z=%s}",
-                SettingsUtil.maybeCensor(x),
-                SettingsUtil.maybeCensor(y),
-                SettingsUtil.maybeCensor(z)
+                "BetterBlockPos{x=%d,y=%d,z=%d}",
+                x,
+                y,
+                z
         );
     }
 }

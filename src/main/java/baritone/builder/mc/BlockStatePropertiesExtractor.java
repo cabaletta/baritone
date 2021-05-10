@@ -18,6 +18,7 @@
 package baritone.builder.mc;
 
 import baritone.builder.BlockStateCachedData;
+import baritone.builder.Half;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockAir;
 import net.minecraft.block.state.IBlockState;
@@ -34,9 +35,9 @@ public class BlockStatePropertiesExtractor {
         Block block = state.getBlock();
 
         if (block instanceof BlockAir) {
-            return new BlockStateCachedData(true, false, false);
+            return new BlockStateCachedData(true, false, false, Half.EITHER, false);
         }
         boolean normal = block == Blocks.COBBLESTONE || block == Blocks.DIRT;
-        return new BlockStateCachedData(false, normal, normal);
+        return new BlockStateCachedData(false, normal, normal, Half.EITHER, false);
     }
 }
