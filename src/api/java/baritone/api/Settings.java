@@ -784,7 +784,7 @@ public final class Settings {
     public final Setting<Integer> allowOnlyExposedOresDistance = new Setting<>(1);
 
     /**
-     * When GetToBlock doesn't know any locations for the desired block, explore randomly instead of giving up.
+     * When GetToBlock or Mine doesn't know any locations for the desired block, explore randomly instead of giving up.
      */
     public final Setting<Boolean> exploreForBlocks = new Setting<>(true);
 

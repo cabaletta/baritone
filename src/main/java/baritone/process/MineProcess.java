@@ -188,10 +188,10 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
             return new PathingCommand(goal, legit ? PathingCommandType.FORCE_REVALIDATE_GOAL_AND_PATH : PathingCommandType.REVALIDATE_GOAL_AND_PATH);
         }
         // we don't know any ore locations at the moment
-        if (!legit) {
+        if (!Baritone.settings().exploreForBlocks.value) {
             return null;
         }
-        // only in non-Xray mode (aka legit mode) do we do this
+        // only when we should explore for blocks we do this
         int y = Baritone.settings().legitMineYLevel.value;
         if (branchPoint == null) {
             /*if (!baritone.getPathingBehavior().isPathing() && playerFeet().y == y) {
@@ -230,7 +230,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         List<BlockPos> dropped = droppedItemsScan();
         List<BlockPos> locs = searchWorld(context, filter, ORE_LOCATIONS_COUNT, already, blacklist, dropped);
         locs.addAll(dropped);
-        if (locs.isEmpty()) {
+        if (locs.isEmpty() && !Baritone.settings().exploreForBlocks.value) {
             logDirect("No locations for " + filter + " known, cancelling");
             if (Baritone.settings().desktopNotifications.value && Baritone.settings().notificationOnMineFail.value) {
                 NotificationHelper.notify("No locations for " + filter + " known, cancelling", true);
