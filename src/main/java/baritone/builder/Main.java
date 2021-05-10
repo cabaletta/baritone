@@ -157,6 +157,9 @@ public class Main {
                     .forEach(x -> System.out.println(x + ""));
         }
         {
+            BlockStateCachedData.get(0);
+        }
+        {
             BlockStatePlacementOption.sanityCheck();
         }
         {

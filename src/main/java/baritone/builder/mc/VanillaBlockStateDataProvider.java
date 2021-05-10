@@ -17,7 +17,7 @@
 
 package baritone.builder.mc;
 
-import baritone.builder.BlockStateCachedData;
+import baritone.builder.BlockStateCachedDataBuilder;
 import baritone.builder.IBlockStateDataProvider;
 import net.minecraft.block.Block;
 
@@ -31,7 +31,7 @@ public class VanillaBlockStateDataProvider implements IBlockStateDataProvider {
     }
 
     @Override
-    public BlockStateCachedData get(int i) {
-        return Optional.ofNullable(Block.BLOCK_STATE_IDS.getByValue(i)).map(BlockStatePropertiesExtractor::getData).orElse(null);
+    public Optional<BlockStateCachedDataBuilder> getBuilder(int i) {
+        return Optional.ofNullable(Block.BLOCK_STATE_IDS.getByValue(i)).map(BlockStatePropertiesExtractor::getData);
     }
 }

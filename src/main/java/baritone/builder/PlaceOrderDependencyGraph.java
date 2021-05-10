@@ -42,7 +42,7 @@ public class PlaceOrderDependencyGraph {
     }
 
     private void compute(long pos) {
-        for (BlockStatePlacementOption option : data(pos).placementOptions()) {
+        for (BlockStatePlacementOption option : data(pos).options) {
             if (Main.STRICT_Y && option.against == Face.UP) {
                 throw new IllegalStateException();
             }
@@ -53,7 +53,7 @@ public class PlaceOrderDependencyGraph {
             } else {
                 against = BlockStateCachedData.SCAFFOLDING;
             }
-            if (against.canBeDoneAgainstMe(option) != null) {
+            if (against.tryAgainstMe(option) != null) {
                 edges.set(bitIndex(pos, option.against));
             }
         }

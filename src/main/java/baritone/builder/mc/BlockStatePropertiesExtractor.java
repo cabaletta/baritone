@@ -17,12 +17,15 @@
 
 package baritone.builder.mc;
 
-import baritone.builder.BlockStateCachedData;
-import baritone.builder.Half;
+import baritone.builder.BlockStateCachedDataBuilder;
+import baritone.builder.Face;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockAir;
+import net.minecraft.block.BlockSlab;
+import net.minecraft.block.BlockStairs;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
+import net.minecraft.util.EnumFacing;
 
 /**
  * I expect this class to get extremely complicated.
@@ -31,13 +34,27 @@ import net.minecraft.init.Blocks;
  */
 public class BlockStatePropertiesExtractor {
 
-    public static BlockStateCachedData getData(IBlockState state) {
+    public static BlockStateCachedDataBuilder getData(IBlockState state) {
         Block block = state.getBlock();
+        BlockStateCachedDataBuilder builder = new BlockStateCachedDataBuilder();
 
         if (block instanceof BlockAir) {
-            return new BlockStateCachedData(true, false, false, Half.EITHER, false);
+            return builder.air();
         }
-        boolean normal = block == Blocks.COBBLESTONE || block == Blocks.DIRT;
-        return new BlockStateCachedData(false, normal, normal, Half.EITHER, false);
+        if (block instanceof BlockStairs) {
+            boolean rightsideUp = state.getValue(BlockStairs.HALF) == BlockStairs.EnumHalf.BOTTOM; // true if normal stair, false if upside down stair
+            EnumFacing facing = state.getValue(BlockStairs.FACING);
+            return builder.stair(rightsideUp, Face.fromMC(facing));
+        }
+        if (block instanceof BlockSlab) {
+            if (((BlockSlab) block).isDouble()) {
+                return builder.normalFullBlock();
+            }
+            return builder.slab(state.getValue(BlockSlab.HALF) == BlockSlab.EnumBlockHalf.BOTTOM);
+        }
+        if (block == Blocks.COBBLESTONE || block == Blocks.DIRT) {
+            builder.normalFullBlock();
+        }
+        return builder;
     }
 }

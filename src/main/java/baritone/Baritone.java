@@ -126,6 +126,9 @@ public class Baritone implements IBaritone {
             Main.main();
         } catch (InterruptedException e) {
             e.printStackTrace();
+        } catch (Throwable th) {
+            th.printStackTrace();
+            throw th;
         }
     }
 

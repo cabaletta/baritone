@@ -57,8 +57,8 @@ public class BlockStatePlacementOption {
      */
     private static final double LOOSE_CENTER_DISTANCE = 0.15;
 
-    public List<Raytracer.Raytrace> computeTraceOptions(Half againstHalf, int playerSupportingX, double playerEyeY, int playerSupportingZ, PlayerVantage vantage, double blockReachDistance) {
-        if (againstHalf != half && half != Half.EITHER) { // narrowing is ok (EITHER -> TOP/BOTTOM) but widening isn't (TOP/BOTTOM -> EITHER)
+    public List<Raytracer.Raytrace> computeTraceOptions(PlaceAgainstData placingAgainst, int playerSupportingX, double playerEyeY, int playerSupportingZ, PlayerVantage vantage, double blockReachDistance) {
+        if (placingAgainst.half != half && half != Half.EITHER) { // narrowing is ok (EITHER -> TOP/BOTTOM) but widening isn't (TOP/BOTTOM -> EITHER)
             throw new IllegalStateException();
         }
         List<Vec2d> acceptableVantages = new ArrayList<>();
@@ -95,14 +95,13 @@ public class BlockStatePlacementOption {
                 .map(playerEyeXZ -> new Vec3d(playerEyeXZ.x, playerEyeY, playerEyeXZ.z))
                 .flatMap(eye ->
                         Stream.of(FACE_PROJECTION_CACHE[against.index])
-                                .filter(this::hitOk)
+                                .filter(hit -> hitOk(placingAgainst, hit))
                                 .filter(hit -> eye.distSq(hit) < blockReachDistance * blockReachDistance)
                                 .filter(hit -> directionOk(eye, hit))
                                 .<Supplier<Optional<Raytracer.Raytrace>>>map(hit -> () -> Raytracer.runTrace(eye, placeAgainstPos, against.opposite(), hit))
                 )
                 .collect(Collectors.toList())
-                // TODO switch back to parallelStream
-                .stream() // wrap it like this because flatMap forces .sequential() on the interior child stream, defeating the point
+                .parallelStream() // wrap it like this because flatMap forces .sequential() on the interior child stream, defeating the point
                 .map(Supplier::get)
                 .filter(Optional::isPresent)
                 .map(Optional::get)
@@ -110,15 +109,15 @@ public class BlockStatePlacementOption {
                 .collect(Collectors.toList()));
     }
 
-    private boolean hitOk(Vec3d hit) {
-        if (half == Half.EITHER) {
+    private static boolean hitOk(PlaceAgainstData placingAgainst, Vec3d hit) {
+        if (placingAgainst.half == Half.EITHER) {
             return true;
         } else if (hit.y == 0.1) {
-            return half == Half.BOTTOM;
+            return placingAgainst.half == Half.BOTTOM;
         } else if (hit.y == 0.5) {
             return false;
         } else if (hit.y == 0.9) {
-            return half == Half.TOP;
+            return placingAgainst.half == Half.TOP;
         } else {
             throw new IllegalStateException();
         }
@@ -226,7 +225,7 @@ public class BlockStatePlacementOption {
         for (PlayerVantage vantage : new PlayerVantage[]{PlayerVantage.STRICT_CENTER, PlayerVantage.LOOSE_CENTER}) {
             for (Face playerFacing : new Face[]{Face.NORTH, Face.EAST, Face.WEST}) {
                 sanity.append(vantage).append(playerFacing);
-                List<Raytracer.Raytrace> traces = BlockStatePlacementOption.get(Face.NORTH, Half.BOTTOM, Optional.of(playerFacing)).computeTraceOptions(Half.BOTTOM, 1, 1.62, 0, vantage, 4);
+                List<Raytracer.Raytrace> traces = BlockStatePlacementOption.get(Face.NORTH, Half.BOTTOM, Optional.of(playerFacing)).computeTraceOptions(PlaceAgainstData.get(Half.BOTTOM, false), 1, 1.62, 0, vantage, 4);
                 sanity.append(traces.size());
                 sanity.append(" ");
                 if (!traces.isEmpty()) {

@@ -18,16 +18,21 @@
 package baritone.builder;
 
 import java.util.Arrays;
+import java.util.Optional;
 
 public interface IBlockStateDataProvider {
 
     int numStates();
 
-    BlockStateCachedData get(int i);
+    Optional<BlockStateCachedDataBuilder> getBuilder(int i);
 
-    default BlockStateCachedData[] all() {
+    default BlockStateCachedData getNullable(int i) {
+        return getBuilder(i).map(BlockStateCachedData::new).orElse(null);
+    }
+
+    default BlockStateCachedData[] allNullable() {
         BlockStateCachedData[] ret = new BlockStateCachedData[numStates()];
-        Arrays.setAll(ret, this::get);
+        Arrays.setAll(ret, this::getNullable);
         return ret;
     }
 }
