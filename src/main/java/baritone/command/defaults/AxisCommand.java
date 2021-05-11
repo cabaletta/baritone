@@ -49,7 +49,7 @@ public class AxisCommand extends Command {
 
     @Override
     public String getShortDesc() {
-        return "Set a goal to the axes";
+        return "Set a goal to the axis";
     }
 
     @Override
