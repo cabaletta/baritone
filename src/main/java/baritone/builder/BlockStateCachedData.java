@@ -28,10 +28,13 @@ import java.util.List;
 public final class BlockStateCachedData {
 
     private static final BlockStateCachedData[] PER_STATE = Main.DATA_PROVIDER.allNullable();
-    public static final BlockStateCachedData SCAFFOLDING = new BlockStateCachedData(new BlockStateCachedDataBuilder().normalFullBlock());
+    public static final BlockStateCachedData SCAFFOLDING = new BlockStateCachedData(new BlockStateCachedDataBuilder().collidesWithPlayer(true).fullyWalkableTop().height(1).canPlaceAgainstMe());
 
     public final boolean fullyWalkableTop;
+    public final Double supportedPlayerY;
     public final boolean isAir;
+
+    public final boolean collidesWithPlayer;
 
 
     public final boolean mustSneakWhenPlacingAgainstMe;
@@ -48,6 +51,9 @@ public final class BlockStateCachedData {
         builder.sanityCheck();
         this.isAir = builder.isAir();
         this.fullyWalkableTop = builder.isFullyWalkableTop();
+        this.collidesWithPlayer = builder.isCollidesWithPlayer();
+        this.supportedPlayerY = builder.supportedPlayerY();
+
         this.mustSneakWhenPlacingAgainstMe = builder.isMustSneakWhenPlacingAgainstMe();
         this.options = builder.howCanIBePlaced();
 

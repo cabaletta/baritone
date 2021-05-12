@@ -31,6 +31,8 @@ import java.util.stream.Stream;
  * For a normal block, this will be a full face of a block. In that case, this class is no more than an EnumFacing
  * <p>
  * For a block like a slab or a stair, this will contain the information that the placement must be against the top or bottom half of the face
+ * <p>
+ * For a block like a furnace, this will contain the information that the player must be facing a specific horizontal direction in order to get the desired orientation
  */
 public class BlockStatePlacementOption {
 

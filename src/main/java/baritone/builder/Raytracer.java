@@ -194,10 +194,10 @@ public class Raytracer {
     public static int raytraceMode = 2;
 
     private static LongArrayList rayTrace(double rawStartX, double rawStartY, double rawStartZ, double endX, double endY, double endZ, long againstPos) {
-        LongArrayList slow = raytraceMode == 0 || Main.DEBUG ? rayTraceSlow(rawStartX, rawStartY, rawStartZ, endX, endY, endZ) : null;
-        LongArrayList fast = raytraceMode == 1 || Main.DEBUG ? rayTraceFast(rawStartX, rawStartY, rawStartZ, endX, endY, endZ) : null;
-        LongArrayList faster = raytraceMode == 2 || Main.DEBUG ? rayTraceZoomy(rawStartX, rawStartY, rawStartZ, endX, endY, endZ, againstPos) : null;
-        if (Main.DEBUG) {
+        LongArrayList slow = raytraceMode == 0 || Main.SLOW_DEBUG ? rayTraceSlow(rawStartX, rawStartY, rawStartZ, endX, endY, endZ) : null;
+        LongArrayList fast = raytraceMode == 1 || Main.SLOW_DEBUG ? rayTraceFast(rawStartX, rawStartY, rawStartZ, endX, endY, endZ) : null;
+        LongArrayList faster = raytraceMode == 2 || Main.SLOW_DEBUG ? rayTraceZoomy(rawStartX, rawStartY, rawStartZ, endX, endY, endZ, againstPos) : null;
+        if (Main.SLOW_DEBUG) {
             if (fast.equals(slow) && fast.equals(faster)) {
             } else {
                 System.out.println(rawStartX + " " + rawStartY + " " + rawStartZ + " " + endX + " " + endY + " " + endZ + " " + againstPos);

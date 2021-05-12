@@ -17,7 +17,7 @@
 
 package baritone.builder;
 
-public enum PlaceAgainstData {
+public enum PlaceAgainstData { // eventually, maybe, this could turn into a class that describes the presented voxel shape of the place-against?
     TOP(Half.TOP, false),
     BOTTOM(Half.BOTTOM, false),
     EITHER(Half.EITHER, false),

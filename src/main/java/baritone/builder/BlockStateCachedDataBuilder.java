@@ -25,7 +25,9 @@ public class BlockStateCachedDataBuilder {
     private boolean isAir;
     private boolean canPlaceAgainstMe;
     private boolean fullyWalkableTop;
+    private boolean collidesWithPlayer;
     private boolean mustSneakWhenPlacingAgainstMe;
+    private boolean falling;
     /**
      * Examples:
      * <p>
@@ -38,30 +40,15 @@ public class BlockStateCachedDataBuilder {
     private Half mustBePlacedAgainst = Half.EITHER;
     private boolean stair;
     private Face playerMustBeFacingInOrderToPlaceMe;
-    private double height = Double.NaN;
+    private Double height;
 
     public BlockStateCachedDataBuilder() {
-    }
-
-    public BlockStateCachedDataBuilder normalFullBlock() {
-        return fullyWalkableTop().height(1).canPlaceAgainstMe();
-    }
-
-    public BlockStateCachedDataBuilder stair(boolean rightsideUp, Face facing) {
-        stair = true;
-        playerMustBeFacingInOrderToPlaceMe = facing;
-        return slab(rightsideUp);
-    }
-
-    public BlockStateCachedDataBuilder slab(boolean bottom) {
-        mustBePlacedAgainst = bottom ? Half.BOTTOM : Half.TOP;
-        return bottom ? this : fullyWalkableTop().height(1).canPlaceAgainstMe();
     }
 
     /**
      * Really just air. This is a fully open block that won't collide with object mouse over raytrace.
      */
-    public BlockStateCachedDataBuilder air() {
+    public BlockStateCachedDataBuilder setAir() {
         isAir = true;
         mustBePlacedAgainst = null;
         return this;
@@ -84,17 +71,11 @@ public class BlockStateCachedDataBuilder {
     }
 
     public BlockStateCachedDataBuilder height(double y) {
-        if (!isFullyWalkableTop()) {
-            throw new IllegalStateException();
-        }
         height = y;
         return this;
     }
 
-    public double supportedPlayerY() { // e.g. slabs are 0.5, soul sand is 0.875, normal blocks are 1, fences are 1.5
-        if (!isFullyWalkableTop() || Double.isNaN(height)) {
-            throw new IllegalStateException(); // e.g. rightside-up stairs aren't fully supporting of the player so this doesn't count for them
-        }
+    public Double supportedPlayerY() { // e.g. slabs are 0.5, soul sand is 0.875, normal blocks are 1, fences are 1.5
         return height;
     }
 
@@ -109,6 +90,30 @@ public class BlockStateCachedDataBuilder {
 
     public BlockStateCachedDataBuilder canPlaceAgainstMe() {
         canPlaceAgainstMe = true;
+        return this;
+    }
+
+    public boolean isCollidesWithPlayer() {
+        return collidesWithPlayer;
+    }
+
+    public BlockStateCachedDataBuilder collidesWithPlayer(boolean val) {
+        collidesWithPlayer = val;
+        return this;
+    }
+
+    public BlockStateCachedDataBuilder playerMustBeFacingInOrderToPlaceMe(Face face) {
+        playerMustBeFacingInOrderToPlaceMe = face;
+        return this;
+    }
+
+    public BlockStateCachedDataBuilder mustBePlacedAgainst(Half half) {
+        mustBePlacedAgainst = half;
+        return this;
+    }
+
+    public BlockStateCachedDataBuilder falling() {
+        falling = true;
         return this;
     }
 
@@ -159,9 +164,6 @@ public class BlockStateCachedDataBuilder {
                     presentsBottomHalfFaceForPlacement[Face.DOWN.index] = false;
                     presentsTopHalfFaceForPlacement[Face.DOWN.index] = false;
                     for (Face face : Face.HORIZONTALS) {
-                        if (stair && face == playerMustBeFacingInOrderToPlaceMe) {
-                            continue; // little nub of the stair on the faced side
-                        }
                         presentsBottomHalfFaceForPlacement[face.index] = false; // top slab = can't place against the bottom half
                     }
                     break;
@@ -171,9 +173,6 @@ public class BlockStateCachedDataBuilder {
                     presentsBottomHalfFaceForPlacement[Face.UP.index] = false;
                     presentsTopHalfFaceForPlacement[Face.UP.index] = false;
                     for (Face face : Face.HORIZONTALS) {
-                        if (stair && face == playerMustBeFacingInOrderToPlaceMe) {
-                            continue; // little nub of the stair on the faced side
-                        }
                         presentsTopHalfFaceForPlacement[face.index] = false; // bottom slab = can't place against the top half
                     }
                     break;
@@ -191,8 +190,14 @@ public class BlockStateCachedDataBuilder {
             if (isFullyWalkableTop()) {
                 throw new IllegalStateException();
             }
+            if (collidesWithPlayer) {
+                throw new IllegalStateException();
+            }
         }
         if (mustBePlacedAgainst == null ^ isAir()) {
+            throw new IllegalStateException();
+        }
+        if (mustBePlacedAgainst == null ^ howCanIBePlaced().isEmpty()) {
             throw new IllegalStateException();
         }
         if (isMustSneakWhenPlacingAgainstMe() && mustBePlacedAgainst != Half.EITHER) {
@@ -201,7 +206,29 @@ public class BlockStateCachedDataBuilder {
         if (stair ^ (playerMustBeFacingInOrderToPlaceMe != null && mustBePlacedAgainst != Half.EITHER)) {
             throw new IllegalStateException();
         }
-        if (isFullyWalkableTop() == Double.isNaN(height)) {
+        if (playerMustBeFacingInOrderToPlaceMe != null && mustBePlacedAgainst == null) {
+            throw new IllegalStateException();
+        }
+        if (isFullyWalkableTop() ^ height != null) {
+            if (height > 1 && !isFullyWalkableTop()) {
+                // exception for fences, walls
+            } else {
+                throw new IllegalStateException();
+            }
+        }
+        if (height != null && height <= 0.001) {
+            throw new IllegalStateException();
+        }
+        if (fullyWalkableTop && !collidesWithPlayer) {
+            throw new IllegalStateException();
+        }
+        if (canPlaceAgainstMe && !collidesWithPlayer) {
+            throw new IllegalStateException();
+        }
+        if (playerMustBeFacingInOrderToPlaceMe == Face.UP || playerMustBeFacingInOrderToPlaceMe == Face.DOWN) {
+            throw new IllegalStateException();
+        }
+        if (Main.STRICT_Y && howCanIBePlaced().stream().anyMatch(opt -> opt.against == Face.UP)) {
             throw new IllegalStateException();
         }
     }

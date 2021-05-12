@@ -17,11 +17,10 @@
 
 package baritone.builder.mc;
 
-import baritone.builder.BlockStateCachedDataBuilder;
+import baritone.builder.BlockStateCachedData;
 import baritone.builder.IBlockStateDataProvider;
 import net.minecraft.block.Block;
-
-import java.util.Optional;
+import net.minecraft.block.state.IBlockState;
 
 public class VanillaBlockStateDataProvider implements IBlockStateDataProvider {
 
@@ -31,7 +30,15 @@ public class VanillaBlockStateDataProvider implements IBlockStateDataProvider {
     }
 
     @Override
-    public Optional<BlockStateCachedDataBuilder> getBuilder(int i) {
-        return Optional.ofNullable(Block.BLOCK_STATE_IDS.getByValue(i)).map(BlockStatePropertiesExtractor::getData);
+    public BlockStateCachedData getNullable(int i) {
+        IBlockState state = Block.BLOCK_STATE_IDS.getByValue(i);
+        if (state == null) {
+            return null;
+        }
+        try {
+            return new BlockStateCachedData(BlockStatePropertiesExtractor.getData(state));
+        } catch (Throwable th) {
+            throw new RuntimeException("Exception while extracting " + state + " ID " + i, th);
+        }
     }
 }

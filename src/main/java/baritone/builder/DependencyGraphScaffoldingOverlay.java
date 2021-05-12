@@ -104,7 +104,7 @@ public class DependencyGraphScaffoldingOverlay {
             throw new IllegalArgumentException();
         }
         collapsedGraph.incrementalUpdate(pos);
-        if (Main.DEBUG) {
+        if (Main.SLOW_DEBUG) {
             //System.out.println(collapsedGraph.posToComponent.containsKey(pos) + " " + scaffoldingAdded.contains(pos) + " " + real(pos));
             checkEquality(collapsedGraph, new CollapsedDependencyGraph(TarjansAlgorithm.run(this)));
             //System.out.println("Checked equality");
