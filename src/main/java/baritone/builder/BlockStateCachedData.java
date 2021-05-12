@@ -31,7 +31,7 @@ public final class BlockStateCachedData {
     public static final BlockStateCachedData SCAFFOLDING = new BlockStateCachedData(new BlockStateCachedDataBuilder().collidesWithPlayer(true).fullyWalkableTop().height(1).canPlaceAgainstMe());
 
     public final boolean fullyWalkableTop;
-    public final Double supportedPlayerY;
+    public final Integer supportedPlayerY;
     public final boolean isAir;
 
     public final boolean collidesWithPlayer;

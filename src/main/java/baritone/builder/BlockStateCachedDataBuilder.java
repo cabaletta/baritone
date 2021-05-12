@@ -38,9 +38,8 @@ public class BlockStateCachedDataBuilder {
      * Normal blocks must be placed against EITHER
      */
     private Half mustBePlacedAgainst = Half.EITHER;
-    private boolean stair;
     private Face playerMustBeFacingInOrderToPlaceMe;
-    private Double height;
+    private Integer height;
 
     public BlockStateCachedDataBuilder() {
     }
@@ -71,11 +70,16 @@ public class BlockStateCachedDataBuilder {
     }
 
     public BlockStateCachedDataBuilder height(double y) {
-        height = y;
-        return this;
+        for (int h = 1; h <= Blip.PER_BLOCK + Blip.HALF_BLOCK; h++) {
+            if (y == h * Blip.RATIO) {
+                height = h;
+                return this;
+            }
+        }
+        throw new IllegalStateException();
     }
 
-    public Double supportedPlayerY() { // e.g. slabs are 0.5, soul sand is 0.875, normal blocks are 1, fences are 1.5
+    public Integer supportedPlayerY() { // e.g. slabs are 0.5, soul sand is 0.875, normal blocks are 1, fences are 1.5
         return height;
     }
 
@@ -203,20 +207,17 @@ public class BlockStateCachedDataBuilder {
         if (isMustSneakWhenPlacingAgainstMe() && mustBePlacedAgainst != Half.EITHER) {
             throw new IllegalArgumentException();
         }
-        if (stair ^ (playerMustBeFacingInOrderToPlaceMe != null && mustBePlacedAgainst != Half.EITHER)) {
-            throw new IllegalStateException();
-        }
         if (playerMustBeFacingInOrderToPlaceMe != null && mustBePlacedAgainst == null) {
             throw new IllegalStateException();
         }
         if (isFullyWalkableTop() ^ height != null) {
-            if (height > 1 && !isFullyWalkableTop()) {
+            if (!isFullyWalkableTop() && height > Blip.PER_BLOCK) {
                 // exception for fences, walls
             } else {
                 throw new IllegalStateException();
             }
         }
-        if (height != null && height <= 0.001) {
+        if (height != null && height > Blip.FULL_BLOCK + Blip.HALF_BLOCK) { // playerphysics assumes this is never true
             throw new IllegalStateException();
         }
         if (fullyWalkableTop && !collidesWithPlayer) {

@@ -17,59 +17,29 @@
 
 package baritone.builder;
 
-import static baritone.builder.BlockStateCachedData.get;
-
 public class PlayerPhysics {
 
     /**
-     * previously, we assumed that playerY = Y meant that player feet would be at literally exactly Y.00
-     * but really, obviously, if we are standing on soul sand, we are at Y-0.125. if we are standing on carpet, we are at Y+0.0625
-     * <p>
-     * the crossover point is 0.7
-     * <p>
-     * examples:
-     * <p>
-     * lower = stone,     upper = air,         returns 0 (obv)
-     * lower = stone,     upper = carpet,      returns 0.0625 (thats how high carpet is)
-     * lower = farmland,  upper = air,         returns -0.0625 (because farmland is 0.9375 and this is one minus that, i.e. the player is 0.0625 "below ground level")
-     * lower = soul sand, upper = air,         returns -0.125 (because soul sand is 0.875)
-     * lower = soul sand, upper = carpet,      returns 0.0625 (because its impossible to be standing on the soul sand with the carpet there, they've got to be on the carpet)
-     * lower = stone,     upper = bottom slab, returns 0.5 (obv)
-     * lower = fence,     upper = air,         returns 0.5
-     * lower = fence,     upper = carpet,      returns 0.5 (because the fence collision box pokes through the carpet)
-     * <p>
-     * lower = anything, upper = anything taller than 0.5, returns NaN (shift up by one and try again)
-     * lower = anything shorter than 0.8, upper = air, returns NaN (shift down by one and try again
+     * the player Y is within within. i.e. the player Y is greater than or equal within and less than within+1
      */
-    public static double determinePlayerRealSupport(BlockStateCachedData lower, BlockStateCachedData upper) {
-        double realPlayerFeetY;
-        if (upper.collidesWithPlayer) {
-            if (!upper.fullyWalkableTop) {
-                throw new IllegalStateException();
-            }
-            // we MUST be standing on the upper, at a minimum
-            // at this point, we know that realPlayerFeetY >= upper.supportedPlayerY
-            // what's the exception?
-            // something like a carpet on top of a fence, sadly :(
-            if (lower.supportedPlayerY != null && lower.supportedPlayerY - 1 > upper.supportedPlayerY) {
-                if (!lower.fullyWalkableTop) {
-                    return Double.NaN; // something like a fence :(
+    public static int determinePlayerRealSupport(BlockStateCachedData underneath, BlockStateCachedData within) {
+        if (within.collidesWithPlayer) {
+            if (underneath.supportedPlayerY != null && underneath.supportedPlayerY - Blip.FULL_BLOCK > within.supportedPlayerY) { // TODO > or >=
+                if (!underneath.fullyWalkableTop) {
+                    return -1;
                 }
-                realPlayerFeetY = lower.supportedPlayerY - 1;
-            } else {
-                realPlayerFeetY = upper.supportedPlayerY; // if upper is full, it will properly trigger >0.6 dont worry
+                return underneath.supportedPlayerY - Blip.FULL_BLOCK; // this could happen if "underneath" is a fence and "within" is a carpet
             }
+            if (!within.fullyWalkableTop || within.supportedPlayerY >= Blip.FULL_BLOCK) {
+                return -1;
+            }
+            return within.supportedPlayerY;
         } else {
-            // we MUST be truly supported by only the lower
-            if (!lower.fullyWalkableTop) {
-                return Double.NaN;
+            if (!underneath.fullyWalkableTop || underneath.supportedPlayerY < Blip.FULL_BLOCK) {
+                return -1;
             }
-            realPlayerFeetY = lower.supportedPlayerY - 1; // can go negative (e.g. soul sand gives -0.125)
+            return underneath.supportedPlayerY - Blip.FULL_BLOCK;
         }
-        if (realPlayerFeetY < -0.126 || realPlayerFeetY > 0.501) {
-            return Double.NaN;
-        }
-        return realPlayerFeetY;
     }
 
     /**
@@ -77,54 +47,99 @@ public class PlayerPhysics {
      * <p>
      * Takes into account things like the automatic +0.5 from walking into a slab. Does NOT take into account jumping.
      * <p>
-     * Player is standing at X Y on top of S
+     * Player is standing at X (feet) Y (head) on top of S, intends to walk forwards into this ABCD column
      * UA
      * YB
      * XC
      * SD
-     * <p>
-     * Why do we need D? Sadly, imagine D is a fence and S is soul sand. That is a gap of 0.625 so we must detect it and return false.
-     * Why do we need A? uh idk get back to me, i was super sure about it 5 minutes ago now i've forgotten
      *
-     * @param feet must ALWAYS be equal to {@link #determinePlayerRealSupport(BlockStateCachedData, BlockStateCachedData)}  determinePlayerRealSupport(S, X)}
      */
-    public static Collision playerTravelCollides(double feet, int U, int A, int B, int C, int D) {
-        double lowerCollision = feet + 0.501; // player can autowalk up a half slab without having to jump
-        double upperCollision = feet + 1.799; // height of player
-        boolean alreadyMustBeCollidingWithU = upperCollision > 2; // if our head is already protruding into U, there is no need to check it
-        if (Main.DEBUG && (alreadyMustBeCollidingWithU && get(U).collidesWithPlayer)) {
+    public static Collision playerTravelCollides(int feet,
+                                                 BlockStateCachedData U,
+                                                 BlockStateCachedData A,
+                                                 BlockStateCachedData B,
+                                                 BlockStateCachedData C,
+                                                 BlockStateCachedData D,
+                                                 BlockStateCachedData S,
+                                                 BlockStateCachedData X) {
+        if (Main.DEBUG && (feet < 0 || feet >= Blip.FULL_BLOCK)) {
             throw new IllegalStateException();
         }
-        if (get(D).supportedPlayerY != null && get(D).supportedPlayerY - 1 > lowerCollision) {
-            // example: D is fence, S is soul sand, feet is -0.125, lowerCollision is 0.376, get(D).supportedPlayerY is 1.5
-            return Collision.BLOCKED; // D
-        }  // D does not prevent walking forward. C still could, however.
-        double betweenCandB = determinePlayerRealSupport(get(C), get(B));
-        if (!Double.isNaN(betweenCandB)) {
-            // fundamentally a step upwards, from SX to CB instead of SX to DC
-            if (lowerCollision < 1 + betweenCandB) { // can we, uh, actually make that step upwards?
-                return Collision.BLOCKED; // we would hit C or B
-            }
-            if (Main.DEBUG && (get(U).collidesWithPlayer || get(B).collidesWithPlayer || !alreadyMustBeCollidingWithU)) {
+        if (Main.DEBUG && (feet != determinePlayerRealSupport(S, X))) {
+            throw new IllegalStateException();
+        }
+        boolean alreadyWithinU = feet > Blip.TWO_BLOCKS - Blip.PLAYER_HEIGHT; // > and not >= because the player height is a slight overestimate
+        if (Main.DEBUG && (alreadyWithinU && U.collidesWithPlayer)) {
+            throw new IllegalStateException();
+        }
+        if (alreadyWithinU && A.collidesWithPlayer) {
+            return Collision.BLOCKED; // we are too tall. bonk!
+        }
+        int couldStepUpTo = feet + Blip.HALF_BLOCK;
+        // D cannot prevent us from doing anything because it cant be higher than 1.5. therefore, makes sense to check CB before DC.
+        int stepUp = determinePlayerRealSupport(C, B);
+        if (stepUp >= 0) {
+            // fundamentally a step upwards, from X to B instead of X to C
+            // too high?
+            int heightRelativeToStartVoxel = stepUp + Blip.FULL_BLOCK;
+            if (heightRelativeToStartVoxel > couldStepUpTo) {
+                return Collision.BLOCKED;
+            } // else this is possible!
+            if (Main.DEBUG && (U.collidesWithPlayer || B.collidesWithPlayer || A.collidesWithPlayer || !alreadyWithinU)) {
+                // must already be colliding with U because in order for this step to be even possible, feet must be at least HALF_BLOCK
+                // TODO maybe it is possible for B.collidesWithPlayer here? like imagine X is soul sand and C is full block and B is carpet? grrrrrrrr
                 throw new IllegalStateException();
             }
-            // imagine: X is a bottom slab, C is a full block, B is air. feet is 0.5, lowerCollision is 1.001 (meaning just barely out of C and into the bottom of B), betweenCandB is zero
-            if (get(A).collidesWithPlayer) {
+            return Collision.VOXEL_UP; // A is already checked, so that's it!
+        }
+        // betweenCandB is impossible. pessimistically, this means B is colliding. optimistically, this means B and C are air.
+        int stayLevel = determinePlayerRealSupport(D, C);
+        if (stayLevel >= 0) {
+            // fundamentally staying within the same vertical voxel, X -> C
+            if (stayLevel > couldStepUpTo) {
                 return Collision.BLOCKED;
             }
-            return Collision.VOXEL_UP;
+            if (stayLevel > Blip.TWO_BLOCKS - Blip.PLAYER_HEIGHT && !alreadyWithinU) { // step up, combined with our height, protrudes into U and A, AND we didn't already
+                if (U.collidesWithPlayer) { // stayLevel could even be LESS than feet
+                    return Collision.BLOCKED;
+                }
+                if (A.collidesWithPlayer) {
+                    return Collision.BLOCKED;
+                }
+            }
+            if (B.collidesWithPlayer) {
+                return Collision.BLOCKED; // obv, our head will go into B
+            }
+            return Collision.VOXEL_LEVEL;
         }
-        // betweenCandB is NaN. pessimistically, this means B is colliding. optimistically, this means B and C are air.
-        double betweenDandC = determinePlayerRealSupport(get(D), get(C));
+        if (B.collidesWithPlayer || C.collidesWithPlayer) {
+            return Collision.BLOCKED;
+        }
+        if (!D.collidesWithPlayer) {
+            return Collision.FALL;
+        }
+        if (Main.DEBUG && D.supportedPlayerY == null) {
+            throw new IllegalStateException();
+        }
+        if (Main.DEBUG && D.supportedPlayerY >= Blip.FULL_BLOCK && D.fullyWalkableTop) {
+            throw new IllegalStateException();
+        }
+        if (D.supportedPlayerY < Blip.FULL_BLOCK + feet) {
+            return Collision.FALL;
+        } else {
+            return Collision.BLOCKED;
+        }
+    }
 
-
-        // if feet=0.5 then we want real support between C and B, not D and C
-        //double resultingFeet = determinePlayerRealSupport(D, C);
+    static {
+        if (Blip.PLAYER_HEIGHT > Blip.TWO_BLOCKS || Blip.PLAYER_HEIGHT + Blip.HALF_BLOCK <= Blip.TWO_BLOCKS) {
+            throw new IllegalStateException("Assumptions made in playerTravelCollides");
+        }
     }
 
     public enum Collision {
         BLOCKED, // if you hit W, you would not travel (example: walking into wall)
-        VOXEL_UP, // if you hit W, you will end up at a position that's a bit higher, such that you'd determineRealPlayerSupport up by one (this is pretty much JUST for walking from bottom slab to something taller such as a full block, or soul sand or something higher than 0.5 I guess)
+        VOXEL_UP, // if you hit W, you will end up at a position that's a bit higher, such that you'd determineRealPlayerSupport up by one (example: walking from a partial block to a full block or higher, e.g. half slab to full block, or soul sand to full block, or soul sand to full block+carpet on top)
         VOXEL_LEVEL, // if you hit W, you will end up at a similar position, such that you'd determineRealPlayerSupport at the same integer grid location (example: walking forward on level ground)
         FALL // if you hit W, you will not immediately collide with anything, at all, to the front or to the bottom (example: walking off a cliff)
     }

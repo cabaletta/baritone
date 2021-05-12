@@ -110,7 +110,7 @@ public class BlockStatePropertiesExtractor {
 
             // unchanged
             if (block instanceof BlockChest
-                    || block instanceof BlockSkull // TODO is this right?? skull can be any facing?
+                // it is not right || block instanceof BlockSkull // TODO is this right?? skull can be any facing?
             ) { // TODO fence gate and lever
                 builder.playerMustBeFacingInOrderToPlaceMe(Face.fromMC(state.getValue(BlockHorizontal.FACING)));
             }
