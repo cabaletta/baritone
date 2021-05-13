@@ -23,7 +23,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * A plane against which this block state can be placed
@@ -59,8 +58,11 @@ public class BlockStatePlacementOption {
      */
     private static final double LOOSE_CENTER_DISTANCE = 0.15;
 
-    public List<Raytracer.Raytrace> computeTraceOptions(PlaceAgainstData placingAgainst, int playerSupportingX, double playerEyeY, int playerSupportingZ, PlayerVantage vantage, double blockReachDistance) {
-        if (placingAgainst.half != half && half != Half.EITHER) { // narrowing is ok (EITHER -> TOP/BOTTOM) but widening isn't (TOP/BOTTOM -> EITHER)
+    public List<Raytracer.Raytrace> computeTraceOptions(PlaceAgainstData placingAgainst, int playerSupportingX, int playerFeetBlips, int playerSupportingZ, PlayerVantage vantage, double blockReachDistance) {
+        if (!BlockStateCachedData.possible(this, placingAgainst)) {
+            throw new IllegalStateException();
+        }
+        if (Main.DEBUG && placingAgainst.stream().noneMatch(hit -> hitOk(half, hit))) {
             throw new IllegalStateException();
         }
         List<Vec2d> acceptableVantages = new ArrayList<>();
@@ -94,10 +96,10 @@ public class BlockStatePlacementOption {
 
         return sanityCheckTraces(acceptableVantages
                 .stream()
-                .map(playerEyeXZ -> new Vec3d(playerEyeXZ.x, playerEyeY, playerEyeXZ.z))
+                .map(playerEyeXZ -> new Vec3d(playerEyeXZ.x, Blip.playerEyeFromFeetBlips(playerFeetBlips, placingAgainst.mustSneak), playerEyeXZ.z))
                 .flatMap(eye ->
-                        Stream.of(FACE_PROJECTION_CACHE[against.index])
-                                .filter(hit -> hitOk(placingAgainst, hit))
+                        placingAgainst.stream()
+                                .filter(hit -> hitOk(half, hit))
                                 .filter(hit -> eye.distSq(hit) < blockReachDistance * blockReachDistance)
                                 .filter(hit -> directionOk(eye, hit))
                                 .<Supplier<Optional<Raytracer.Raytrace>>>map(hit -> () -> Raytracer.runTrace(eye, placeAgainstPos, against.opposite(), hit))
@@ -111,15 +113,15 @@ public class BlockStatePlacementOption {
                 .collect(Collectors.toList()));
     }
 
-    private static boolean hitOk(PlaceAgainstData placingAgainst, Vec3d hit) {
-        if (placingAgainst.half == Half.EITHER) {
+    public static boolean hitOk(Half half, Vec3d hit) {
+        if (half == Half.EITHER) {
             return true;
         } else if (hit.y == 0.1) {
-            return placingAgainst.half == Half.BOTTOM;
+            return half == Half.BOTTOM;
         } else if (hit.y == 0.5) {
             return false;
         } else if (hit.y == 0.9) {
-            return placingAgainst.half == Half.TOP;
+            return half == Half.TOP;
         } else {
             throw new IllegalStateException();
         }
@@ -133,35 +135,6 @@ public class BlockStatePlacementOption {
         return true;
     }
 
-    private static final Vec3d[][] FACE_PROJECTION_CACHE;
-
-    static {
-        double[] diffs = {0.1, 0.5, 0.9};
-        FACE_PROJECTION_CACHE = new Vec3d[Face.NUM_FACES][diffs.length * diffs.length];
-        for (Face face : Face.VALUES) {
-            int i = 0;
-            for (double dx : diffs) {
-                for (double dz : diffs) {
-                    FACE_PROJECTION_CACHE[face.index][i++] = new Vec3d(project(new double[]{dx, dz}, face));
-                }
-            }
-        }
-    }
-
-    private static double[] project(double[] faceHit, Face ontoFace) {
-        double[] ret = new double[3];
-        int j = 0;
-        for (int i = 0; i < 3; i++) {
-            if (ontoFace.vec[i] == 0) {
-                ret[i] = faceHit[j++];
-            } else {
-                if (ontoFace.vec[i] == 1) {
-                    ret[i] = 1;
-                } // else leave it as zero
-            }
-        }
-        return ret;
-    }
 
     public static BlockStatePlacementOption get(Face against, Half half, Optional<Face> playerMustBeFacing) {
         BlockStatePlacementOption ret = PLACEMENT_OPTION_SINGLETON_CACHE[against.index][half.ordinal()][playerMustBeFacing.map(face -> face.index).orElse(Face.NUM_FACES)];
@@ -193,14 +166,14 @@ public class BlockStatePlacementOption {
     }
 
     private void validate(Face against, Half half, Optional<Face> playerMustBeFacing) {
-        if ((against == Face.DOWN || against == Face.UP) && half != Half.EITHER) {
+        if (against.vertical && half != Half.EITHER) {
             throw new IllegalArgumentException();
         }
         if (Main.STRICT_Y && against == Face.UP) {
             throw new IllegalStateException();
         }
         playerMustBeFacing.ifPresent(face -> {
-            if (face == Face.DOWN || face == Face.UP) {
+            if (face.vertical) {
                 throw new IllegalArgumentException();
             }
             if (face == against.opposite()) {
@@ -227,7 +200,7 @@ public class BlockStatePlacementOption {
         for (PlayerVantage vantage : new PlayerVantage[]{PlayerVantage.STRICT_CENTER, PlayerVantage.LOOSE_CENTER}) {
             for (Face playerFacing : new Face[]{Face.NORTH, Face.EAST, Face.WEST}) {
                 sanity.append(vantage).append(playerFacing);
-                List<Raytracer.Raytrace> traces = BlockStatePlacementOption.get(Face.NORTH, Half.BOTTOM, Optional.of(playerFacing)).computeTraceOptions(PlaceAgainstData.get(Half.BOTTOM, false), 1, 1.62, 0, vantage, 4);
+                List<Raytracer.Raytrace> traces = BlockStatePlacementOption.get(Face.NORTH, Half.BOTTOM, Optional.of(playerFacing)).computeTraceOptions(new PlaceAgainstData(Face.SOUTH, Half.EITHER, false), 1, 0, 0, vantage, 4);
                 sanity.append(traces.size());
                 sanity.append(" ");
                 if (!traces.isEmpty()) {

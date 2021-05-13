@@ -53,7 +53,7 @@ public class PlaceOrderDependencyGraph {
             } else {
                 against = BlockStateCachedData.SCAFFOLDING;
             }
-            if (against.tryAgainstMe(option) != null) {
+            if (against.possibleAgainstMe(option)) {
                 edges.set(bitIndex(pos, option.against));
             }
         }

@@ -28,12 +28,13 @@ import net.minecraft.util.EnumFacing;
 public enum Face {
     DOWN, UP, NORTH, SOUTH, WEST, EAST;
     public final int index = ordinal();
-    public final int oppositeIndex = toMC().getOpposite().getIndex();
+    public final int oppositeIndex = index ^ 1;
     public final int x = toMC().getXOffset();
     public final int y = toMC().getYOffset();
     public final int z = toMC().getZOffset();
     public final long offset = BetterBlockPos.toLong(x, y, z);
     public final int[] vec = new int[]{x, y, z};
+    public final boolean vertical = y != 0;
     public static final int NUM_FACES = 6;
     public static final Face[] VALUES = new Face[NUM_FACES];
     public static final Face[] HORIZONTALS;

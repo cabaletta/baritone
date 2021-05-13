@@ -17,7 +17,10 @@
 
 package baritone.builder;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 public class BlockStateCachedDataBuilder {
 
@@ -153,37 +156,25 @@ public class BlockStateCachedDataBuilder {
         return Collections.unmodifiableList(ret);
     }
 
-    public boolean[][] facesIPresentForPlacementAgainst() {
-        boolean[] presentsBottomHalfFaceForPlacement = new boolean[Face.VALUES.length];
-        boolean[] presentsTopHalfFaceForPlacement = new boolean[Face.VALUES.length];
-        if (canPlaceAgainstMe) {
-            Arrays.fill(presentsBottomHalfFaceForPlacement, true);
-            Arrays.fill(presentsTopHalfFaceForPlacement, true);
-            switch (mustBePlacedAgainst) {
-                case EITHER: {
-                    break;
-                }
-                case TOP: {
-                    // i am a top slab, or an upside down stair
-                    presentsBottomHalfFaceForPlacement[Face.DOWN.index] = false;
-                    presentsTopHalfFaceForPlacement[Face.DOWN.index] = false;
-                    for (Face face : Face.HORIZONTALS) {
-                        presentsBottomHalfFaceForPlacement[face.index] = false; // top slab = can't place against the bottom half
-                    }
-                    break;
-                }
-                case BOTTOM: {
-                    // i am a bottom slab, or an normal stair
-                    presentsBottomHalfFaceForPlacement[Face.UP.index] = false;
-                    presentsTopHalfFaceForPlacement[Face.UP.index] = false;
-                    for (Face face : Face.HORIZONTALS) {
-                        presentsTopHalfFaceForPlacement[face.index] = false; // bottom slab = can't place against the top half
-                    }
-                    break;
-                }
-            }
+    public PlaceAgainstData[] placeAgainstMe() {
+        PlaceAgainstData[] data = new PlaceAgainstData[Face.NUM_FACES];
+        if (!canPlaceAgainstMe) {
+            return data;
         }
-        return new boolean[][]{presentsBottomHalfFaceForPlacement, presentsTopHalfFaceForPlacement};
+        for (int i = 0; i < Face.NUM_FACES; i++) {
+            data[i] = placeAgainstFace(Face.VALUES[i]);
+        }
+        return data;
+    }
+
+    protected PlaceAgainstData placeAgainstFace(Face face) {
+        if (mustBePlacedAgainst == Half.TOP && face == Face.DOWN) {
+            return null;
+        }
+        if (mustBePlacedAgainst == Half.BOTTOM && face == Face.UP) {
+            return null;
+        }
+        return new PlaceAgainstData(face, face.vertical ? Half.EITHER : mustBePlacedAgainst, mustSneakWhenPlacingAgainstMe);
     }
 
     public void sanityCheck() {
@@ -226,11 +217,20 @@ public class BlockStateCachedDataBuilder {
         if (canPlaceAgainstMe && !collidesWithPlayer) {
             throw new IllegalStateException();
         }
-        if (playerMustBeFacingInOrderToPlaceMe == Face.UP || playerMustBeFacingInOrderToPlaceMe == Face.DOWN) {
+        if (playerMustBeFacingInOrderToPlaceMe.vertical) {
             throw new IllegalStateException();
         }
         if (Main.STRICT_Y && howCanIBePlaced().stream().anyMatch(opt -> opt.against == Face.UP)) {
             throw new IllegalStateException();
+        }
+        PlaceAgainstData[] data = placeAgainstMe();
+        if (data.length != Face.NUM_FACES) {
+            throw new IllegalStateException();
+        }
+        for (int i = 0; i < Face.NUM_FACES; i++) {
+            if (data[i] != null && data[i].against != Face.VALUES[i]) {
+                throw new IllegalStateException();
+            }
         }
     }
 

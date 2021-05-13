@@ -17,7 +17,6 @@
 
 package baritone.builder;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
 /**
@@ -38,10 +37,10 @@ public final class BlockStateCachedData {
 
 
     public final boolean mustSneakWhenPlacingAgainstMe;
-    private final boolean[] presentsTopHalfFaceForPlacement;
-    private final boolean[] presentsBottomHalfFaceForPlacement;
 
     public final List<BlockStatePlacementOption> options;
+
+    private final PlaceAgainstData[] againstMe;
 
     public static BlockStateCachedData get(int state) {
         return PER_STATE[state];
@@ -57,34 +56,26 @@ public final class BlockStateCachedData {
         this.mustSneakWhenPlacingAgainstMe = builder.isMustSneakWhenPlacingAgainstMe();
         this.options = builder.howCanIBePlaced();
 
-        boolean[][] presented = builder.facesIPresentForPlacementAgainst();
-        this.presentsTopHalfFaceForPlacement = presented[1];
-        this.presentsBottomHalfFaceForPlacement = presented[0];
+        this.againstMe = builder.placeAgainstMe();
     }
 
-    @Nullable
-    public PlaceAgainstData tryAgainstMe(BlockStatePlacementOption placement) {
+    public boolean possibleAgainstMe(BlockStatePlacementOption placement) {
         if (Main.fakePlacementForPerformanceTesting) {
-            return Main.RAND.nextInt(10) < 8 ? PlaceAgainstData.EITHER : null;
+            return Main.RAND.nextInt(10) < 8;
         }
+        PlaceAgainstData against = againstMe[placement.against.oppositeIndex];
+        if (against == null) {
+            return false;
+        }
+        return possible(placement, against);
+    }
 
-        Face myFace = placement.against.opposite();
-        Half theirHalf = placement.half;
-        if ((myFace == Face.UP || myFace == Face.DOWN) && theirHalf != Half.EITHER) {
-            throw new IllegalStateException();
+    public static boolean possible(BlockStatePlacementOption placement, PlaceAgainstData against) {
+        if (placement.against != against.against.opposite()) {
+            throw new IllegalArgumentException();
         }
-        boolean top = presentsTopHalfFaceForPlacement[myFace.index] && (theirHalf == Half.EITHER || theirHalf == Half.TOP);
-        boolean bottom = presentsBottomHalfFaceForPlacement[myFace.index] && (theirHalf == Half.EITHER || theirHalf == Half.BOTTOM);
-        Half intersectedHalf; // the half that both we present, and they accept. not necessarily equal to either. slab-against-block and block-against-slab will both have this as top/bottom, not either.
-        if (top && bottom) {
-            intersectedHalf = Half.EITHER;
-        } else if (top) {
-            intersectedHalf = Half.TOP;
-        } else if (bottom) {
-            intersectedHalf = Half.BOTTOM;
-        } else {
-            return null;
-        }
-        return PlaceAgainstData.get(intersectedHalf, mustSneakWhenPlacingAgainstMe);
+        return
+                (against.presentsAnOptionStrictlyInTheBottomHalfOfTheStandardVoxelPlane() && placement.half != Half.TOP) ||
+                        (against.presentsAnOptionStrictlyInTheTopHalfOfTheStandardVoxelPlane() && placement.half != Half.BOTTOM);
     }
 }

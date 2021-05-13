@@ -17,6 +17,8 @@
 
 package baritone.builder;
 
+import baritone.api.utils.IPlayerContext;
+
 /**
  * 1/16th of a block
  * <p>
@@ -34,4 +36,8 @@ public class Blip {
     public static final int HALF_BLOCK = 8;
     public static final int PLAYER_HEIGHT = 29;
     public static final int TWO_BLOCKS = 2 * FULL_BLOCK;
+
+    public static double playerEyeFromFeetBlips(int feetBlips, boolean sneaking) {
+        return feetBlips * RATIO + IPlayerContext.eyeHeight(sneaking);
+    }
 }

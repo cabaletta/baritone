@@ -48,10 +48,12 @@ public class BlockStatePropertiesExtractor {
                 Face facing = Face.fromMC(state.getValue(BlockStairs.FACING));
                 BlockStateCachedDataBuilder stairBuilder = new BlockStateCachedDataBuilder() {
                     @Override
-                    public boolean[][] facesIPresentForPlacementAgainst() {
-                        boolean[][] ret = super.facesIPresentForPlacementAgainst(); // little nub of the stair on the faced side
-                        ret[rightsideUp ? 1 : 0][facing.index] = true; // rightside up stair allows only that one face for top placement, etc
-                        return ret;
+                    protected PlaceAgainstData placeAgainstFace(Face face) {
+                        if (face == facing) {
+                            // this is "the back" of the stair, which is a full face that you can place against just fine
+                            return new PlaceAgainstData(face, Half.EITHER, isMustSneakWhenPlacingAgainstMe());
+                        }
+                        return super.placeAgainstFace(face);
                     }
                 };
                 if (!rightsideUp) {
@@ -165,7 +167,7 @@ public class BlockStatePropertiesExtractor {
         boolean fullyUnderstood = false; // set this flag to true for any state for which we have fully and completely described it
 
 
-        if (state.isBlockNormalCube() || state.isFullBlock() || block == Blocks.GLASS || block == Blocks.STAINED_GLASS) {
+        if (state.isBlockNormalCube() || state.isFullBlock() || block instanceof BlockGlass || block instanceof BlockStainedGlass) {
             builder.canPlaceAgainstMe();
             fullyUnderstood = true;
         }
