@@ -217,7 +217,7 @@ public class BlockStateCachedDataBuilder {
         if (canPlaceAgainstMe && !collidesWithPlayer) {
             throw new IllegalStateException();
         }
-        if (playerMustBeFacingInOrderToPlaceMe.vertical) {
+        if (playerMustBeFacingInOrderToPlaceMe != null && playerMustBeFacingInOrderToPlaceMe.vertical) {
             throw new IllegalStateException();
         }
         if (Main.STRICT_Y && howCanIBePlaced().stream().anyMatch(opt -> opt.against == Face.UP)) {

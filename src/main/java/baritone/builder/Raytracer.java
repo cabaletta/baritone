@@ -210,11 +210,11 @@ public class Raytracer {
         return fast == null ? slow == null ? faster : slow : fast;
     }
 
-    private static void print(LongArrayList trace) {
+    public static void print(LongArrayList trace) {
         System.out.println(trace.stream().map(BetterBlockPos::fromLong).collect(Collectors.toList()));
     }
 
-    private static LongArrayList rayTraceFast(double rawStartX, double rawStartY, double rawStartZ, double endX, double endY, double endZ) {
+    public static LongArrayList rayTraceFast(double rawStartX, double rawStartY, double rawStartZ, double endX, double endY, double endZ) {
         if (willFlipSign(rawStartX) || willFlipSign(rawStartY) || willFlipSign(rawStartZ) || willFlipSign(endX) || willFlipSign(endY) || willFlipSign(endZ)) {
             throw new IllegalStateException("I suppose this could happen if you set the block reach distance absurdly high? Don't do that.");
         }
@@ -347,13 +347,13 @@ public class Raytracer {
             nextIntegerZ = voxelInZ + ((voxelInZ - voxelEndZ) >>> 31); // therefore, this increments nextInteger iff EndX>inX, otherwise it leaves it alone
             // remember: don't have to worry about the case when voxelEnd == voxelIn, because nextInteger value wont be used
 
-            double fracIfSkipX = 100;
-            double fracIfSkipY = 100;
-            double fracIfSkipZ = 100;
+            double fracIfSkipX = 2; // just has to be strictly greater than 1, might as well just go up to the next int
+            double fracIfSkipY = 2;
+            double fracIfSkipZ = 2;
             double distanceFromStartToEndX = endX - startX;
             double distanceFromStartToEndY = endY - startY;
             double distanceFromStartToEndZ = endZ - startZ;
-            if (voxelEndX != voxelInX) {
+            if (voxelEndX != voxelInX) { // reminder to future self: don't "branchlessify" this, it's MUCH slower (pretty obviously, floating point div is much worse than a branch mispredict, but integer increment (like the other two removed branches) are cheap enough to be worth doing either way)
                 fracIfSkipX = (nextIntegerX - startX) / distanceFromStartToEndX;
             }
             if (voxelEndY != voxelInY) {
@@ -362,32 +362,35 @@ public class Raytracer {
             if (voxelEndZ != voxelInZ) {
                 fracIfSkipZ = (nextIntegerZ - startZ) / distanceFromStartToEndZ;
             }
-            int dx = 0;
-            int dy = 0;
-            int dz = 0;
             if (fracIfSkipX < fracIfSkipY && fracIfSkipX < fracIfSkipZ) {
                 // note: voxelEndX == voxelInX is impossible because allowSkip would be set to false in that case, meaning that the elapsed distance would stay at default
-                dx = (voxelEndX - voxelInX) >>> 31; // TODO should i set this "dx" way up top at the same time as i set nextIntegerX?
                 startX = nextIntegerX;
                 startY += distanceFromStartToEndY * fracIfSkipX;
                 startZ += distanceFromStartToEndZ * fracIfSkipX;
+                voxelInX = ((int) startX) - ((voxelEndX - voxelInX) >>> 31); // tested: faster to paste this 3 times with only one of the subtractions in each
+                voxelInY = ((int) startY);
+                voxelInZ = ((int) startZ);
             } else if (fracIfSkipY < fracIfSkipZ) {
-                dy = (voxelEndY - voxelInY) >>> 31; // we want dy=1 when endY < inY
                 startX += distanceFromStartToEndX * fracIfSkipY;
                 startY = nextIntegerY;
                 startZ += distanceFromStartToEndZ * fracIfSkipY;
+                voxelInX = ((int) startX);
+                voxelInY = ((int) startY) - ((voxelEndY - voxelInY) >>> 31);
+                voxelInZ = ((int) startZ);
             } else {
-                dz = (voxelEndZ - voxelInZ) >>> 31;
                 startX += distanceFromStartToEndX * fracIfSkipZ;
                 startY += distanceFromStartToEndY * fracIfSkipZ;
                 startZ = nextIntegerZ;
+                voxelInX = ((int) startX);
+                voxelInY = ((int) startY);
+                voxelInZ = ((int) startZ) - ((voxelEndZ - voxelInZ) >>> 31);
             }
-
-            voxelInX = ((int) startX) - dx; // TODO is it faster to paste this block of 3 lines into each of the 3 if branches? we know 2/3 subtracts will be zero, so it would save two subtracts, but is that worth the longer bytecode?
-            voxelInY = ((int) startY) - dy;
-            voxelInZ = ((int) startZ) - dz;
         }
         print(voxelsIntersected);
         throw new IllegalStateException();
+    }
+
+    public static LongArrayList rayTraceZoomyAlternate(double startX, double startY, double startZ, double endX, double endY, double endZ, long againstPos) {
+        return rayTraceZoomy(startX, startY, startZ, endX, endY, endZ, againstPos);
     }
 }

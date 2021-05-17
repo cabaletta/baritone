@@ -23,6 +23,7 @@ import baritone.utils.BlockStateInterface;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 
@@ -265,6 +266,25 @@ public class Testing {
         public IBlockState getOverridden(long coord) {
             return null;
         }*/
+    }
+
+    public static class BlockStateLookupHelper {
+
+        private static Reference2IntOpenHashMap<IBlockState> states = new Reference2IntOpenHashMap<>();
+
+        static {
+            states.defaultReturnValue(-1); // normal default is 0
+        }
+
+        public static int lookupBlockState(IBlockState state) {
+            int stateMaybe = states.getInt(state);
+            if (stateMaybe > 0) {
+                return stateMaybe;
+            }
+            int realState = Block.BLOCK_STATE_IDS.get(state); // uses slow REAL hashcode that walks through the Map of properties, gross
+            states.put(state, realState);
+            return realState;
+        }
     }
 
 

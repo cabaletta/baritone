@@ -29,13 +29,21 @@ public class CuboidBounds {
     public final int sizeX;
     public final int sizeY;
     public final int sizeZ;
+    private final int sizeXMinusOne;
+    private final int sizeYMinusOne;
+    private final int sizeZMinusOne;
     public final int size;
+    private final int sizeMinusOne;
 
     public CuboidBounds(int sizeX, int sizeY, int sizeZ) {
         this.sizeX = sizeX;
         this.sizeY = sizeY;
         this.sizeZ = sizeZ;
+        this.sizeXMinusOne = sizeX - 1;
+        this.sizeYMinusOne = sizeY - 1;
+        this.sizeZMinusOne = sizeZ - 1;
         this.size = sizeX * sizeY * sizeZ;
+        this.sizeMinusOne = size - 1;
         if (Main.DEBUG) {
             sanityCheck();
         }
@@ -53,11 +61,19 @@ public class CuboidBounds {
     }
 
     public boolean inRange(int x, int y, int z) {
+        throw new UnsupportedOperationException("ugh benchmark this tomorrow when im less tired");
+    }
+
+    public boolean inRangeBranchy(int x, int y, int z) {
         return (x >= 0) && (x < sizeX) && (y >= 0) && (y < sizeY) && (z >= 0) && (z < sizeZ);
     }
 
+    public boolean inRangeBranchless(int x, int y, int z) {
+        return (x | y | z | (sizeXMinusOne - x) | (sizeYMinusOne - y) | (sizeZMinusOne - z)) >= 0;
+    }
+
     public boolean inRangeIndex(int index) {
-        return (index >= 0) & (index < size);
+        return (index | (sizeMinusOne - index)) >= 0;
     }
 
     public boolean inRangePos(long pos) {
@@ -124,6 +140,9 @@ public class CuboidBounds {
         for (int x = 0; x < sizeX; x++) {
             for (int y = 0; y < sizeY; y++) {
                 for (int z = 0; z < sizeZ; z++) {
+                    if (!inRange(x, y, z)) {
+                        throw new IllegalStateException();
+                    }
                     if (toIndex(x, y, z) != index) {
                         throw new IllegalStateException();
                     }
@@ -132,6 +151,12 @@ public class CuboidBounds {
             }
         }
         if (index != size) {
+            throw new IllegalStateException();
+        }
+        if (inRange(-1, 0, 0) || inRange(0, -1, 0) || inRange(0, 0, -1)) {
+            throw new IllegalStateException();
+        }
+        if (inRange(sizeX, 0, 0) || inRange(0, sizeY, 0) || inRange(0, 0, sizeZ)) {
             throw new IllegalStateException();
         }
     }

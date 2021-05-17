@@ -218,6 +218,25 @@ public class Main {
             }
             long b = System.currentTimeMillis();
             System.out.println("Nominal first run with overhead: " + (b - a) + "ms");
+            boolean checkAgainst = true;
+            for (int i = 0; i < 10_000_000; i++) {
+                if (i % 1000 == 0 && checkAgainst) {
+                    System.out.println(i);
+                }
+                LongArrayList normal = Raytracer.rayTraceZoomy(A.getDouble(i), B.getDouble(i), C.getDouble(i), D.getDouble(i), E.getDouble(i), F.getDouble(i), G.getLong(i));
+                LongArrayList alternate = Raytracer.rayTraceZoomyAlternate(A.getDouble(i), B.getDouble(i), C.getDouble(i), D.getDouble(i), E.getDouble(i), F.getDouble(i), G.getLong(i));
+                if (!normal.equals(alternate)) {
+                    throw new IllegalStateException();
+                }
+                if (checkAgainst) {
+                    LongArrayList superSlow = Raytracer.rayTraceFast(A.getDouble(i), B.getDouble(i), C.getDouble(i), D.getDouble(i), E.getDouble(i), F.getDouble(i));
+                    if (!normal.equals(superSlow)) {
+                        Raytracer.print(normal);
+                        Raytracer.print(superSlow);
+                        checkAgainst = false;
+                    }
+                }
+            }
             for (int it = 0; it < 20; it++) {
                 {
                     Thread.sleep(1000);
@@ -228,7 +247,7 @@ public class Main {
                         Raytracer.rayTraceZoomy(A.getDouble(i), B.getDouble(i), C.getDouble(i), D.getDouble(i), E.getDouble(i), F.getDouble(i), G.getLong(i));
                     }
                     long end = System.currentTimeMillis();
-                    System.out.println("Branchless took " + (end - start) + "ms");
+                    System.out.println("Normal took " + (end - start) + "ms");
                 }
                 {
                     Thread.sleep(1000);
@@ -236,10 +255,10 @@ public class Main {
                     Thread.sleep(1000);
                     long start = System.currentTimeMillis();
                     for (int i = 0; i < 10_000_000; i++) {
-                        Raytracer.rayTraceZoomyBranchy(A.getDouble(i), B.getDouble(i), C.getDouble(i), D.getDouble(i), E.getDouble(i), F.getDouble(i), G.getLong(i));
+                        Raytracer.rayTraceZoomyAlternate(A.getDouble(i), B.getDouble(i), C.getDouble(i), D.getDouble(i), E.getDouble(i), F.getDouble(i), G.getLong(i));
                     }
                     long end = System.currentTimeMillis();
-                    System.out.println("Branchy took " + (end - start) + "ms");
+                    System.out.println("Alternate took " + (end - start) + "ms");
                 }
             }
         }
