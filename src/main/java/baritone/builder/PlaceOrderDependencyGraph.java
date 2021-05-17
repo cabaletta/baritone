@@ -59,7 +59,7 @@ public class PlaceOrderDependencyGraph {
         }
     }
 
-    private BlockStateCachedData data(long pos) {
+    public BlockStateCachedData data(long pos) {
         int state = state(pos);
         if (treatAsScaffolding(state)) {
             return BlockStateCachedData.SCAFFOLDING;

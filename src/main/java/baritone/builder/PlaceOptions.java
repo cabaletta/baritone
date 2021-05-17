@@ -17,12 +17,42 @@
 
 package baritone.builder;
 
+import baritone.api.utils.BetterBlockPos;
+
 public class PlaceOptions {
 
-    IReachabilityProvider provider;
+    double blockReachDistance = 4;
     DependencyGraphScaffoldingOverlay overlay;
+    IReachabilityProvider provider = IReachabilityProvider.get(overlay, new PlayerReachSphere(blockReachDistance));
 
-    public void go(int playerX, int playerFeetBlips, int playerZ) {
-
+    public void whatCouldIDo(int playerX, int playerFeetBlips, int playerZ) {
+        int playerEyeBlips = playerFeetBlips + Blip.FEET_TO_EYE_APPROX;
+        // TODO ugh how tf to deal with sneaking UGH. maybe like if (playerEyeBlips % 16 < 2) { also run all candidates from one voxel lower down because if we snuck our eye would be in there}
+        int voxelY = playerEyeBlips / Blip.FULL_BLOCK;
+        long pos = BetterBlockPos.toLong(playerX, voxelY, playerZ);
+        for (long blockPos : provider.candidates(pos)) {
+            BlockStateCachedData placingAgainst = overlay.data(blockPos);
+            outer:
+            for (Face againstToPlace : Face.VALUES) {
+                Face placeToAgainst = againstToPlace.opposite();
+                if (overlay.outgoingEdge(blockPos, againstToPlace)) {
+                    long placingBlockAt = againstToPlace.offset(blockPos);
+                    BlockStateCachedData blockBeingPlaced = overlay.data(placingBlockAt);
+                    for (BlockStatePlacementOption option : blockBeingPlaced.options) {
+                        if (option.against == placeToAgainst) {
+                            PlaceAgainstData againstData = placingAgainst.againstMe(option);
+                            int relativeX = playerX - BetterBlockPos.XfromLong(placingBlockAt);
+                            int relativeY = playerFeetBlips - Blip.FULL_BLOCK * BetterBlockPos.YfromLong(placingBlockAt);
+                            int relativeZ = playerZ - BetterBlockPos.ZfromLong(placingBlockAt);
+                            for (Raytracer.Raytrace trace : option.computeTraceOptions(againstData, relativeX, relativeY, relativeZ, PlayerVantage.LOOSE_CENTER, blockReachDistance)) {
+                                // yay, gold star
+                            }
+                            continue outer;
+                        }
+                    }
+                    throw new IllegalStateException();
+                }
+            }
+        }
     }
 }

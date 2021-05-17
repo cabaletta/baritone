@@ -36,6 +36,7 @@ public class Blip {
     public static final int HALF_BLOCK = 8;
     public static final int PLAYER_HEIGHT = 29;
     public static final int TWO_BLOCKS = 2 * FULL_BLOCK;
+    public static final int FEET_TO_EYE_APPROX = (int) (IPlayerContext.eyeHeight(false) / RATIO);
 
     public static double playerEyeFromFeetBlips(int feetBlips, boolean sneaking) {
         return feetBlips * RATIO + IPlayerContext.eyeHeight(sneaking);

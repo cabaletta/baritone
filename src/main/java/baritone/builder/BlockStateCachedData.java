@@ -64,10 +64,11 @@ public final class BlockStateCachedData {
             return Main.RAND.nextInt(10) < 8;
         }
         PlaceAgainstData against = againstMe[placement.against.oppositeIndex];
-        if (against == null) {
-            return false;
-        }
-        return possible(placement, against);
+        return against != null && possible(placement, against);
+    }
+
+    public PlaceAgainstData againstMe(BlockStatePlacementOption placement) {
+        return againstMe[placement.against.oppositeIndex];
     }
 
     public static boolean possible(BlockStatePlacementOption placement, PlaceAgainstData against) {

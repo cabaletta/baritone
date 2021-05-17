@@ -112,6 +112,13 @@ public class DependencyGraphScaffoldingOverlay {
         }
     }
 
+    public BlockStateCachedData data(long pos) {
+        if (Main.DEBUG && !real(pos)) {
+            throw new IllegalStateException();
+        }
+        return delegate.data(pos);
+    }
+
     /**
      * Remember that this returns a collapsed graph that will be updated in-place as positions are enabled. It does not return a copy.
      */

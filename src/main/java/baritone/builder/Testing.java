@@ -278,7 +278,7 @@ public class Testing {
 
         public static int lookupBlockState(IBlockState state) {
             int stateMaybe = states.getInt(state);
-            if (stateMaybe > 0) {
+            if (stateMaybe >= 0) {
                 return stateMaybe;
             }
             int realState = Block.BLOCK_STATE_IDS.get(state); // uses slow REAL hashcode that walks through the Map of properties, gross
