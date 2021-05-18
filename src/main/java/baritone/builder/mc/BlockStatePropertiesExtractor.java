@@ -20,10 +20,9 @@ package baritone.builder.mc;
 import baritone.builder.*;
 import net.minecraft.block.*;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.init.Blocks;
+import net.minecraft.util.EnumFacing;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -38,9 +37,12 @@ public class BlockStatePropertiesExtractor {
         Block block = state.getBlock();
         BlockStateCachedDataBuilder builder = new BlockStateCachedDataBuilder();
 
+        // returns null only if we don't know how to walk on / walk around / place against this block
+        // if we don't know how to place the block, get everything else but add .placementLogicNotImplementedYe
+
         // special cases
         {
-            if (block instanceof BlockAir) {
+            if (block instanceof BlockAir || block instanceof BlockStructureVoid) {
                 return builder.setAir();
             }
             if (block instanceof BlockStairs) {
@@ -58,30 +60,23 @@ public class BlockStatePropertiesExtractor {
                 };
                 if (!rightsideUp) {
                     stairBuilder.fullyWalkableTop();
-                    stairBuilder.height(1);
+                    stairBuilder.collisionHeight(1);
                 }
                 return stairBuilder.mustBePlacedAgainst(rightsideUp ? Half.BOTTOM : Half.TOP)
                         .collidesWithPlayer(true)
                         .canPlaceAgainstMe()
-                        .playerMustBeFacingInOrderToPlaceMe(facing);
+                        .playerMustBeHorizontalFacingInOrderToPlaceMe(facing);
             }
             if (block instanceof BlockSlab) {
-                double height;
-                Half mustBePlacedAgainst;
                 if (((BlockSlab) block).isDouble()) {
-                    height = 1;
-                    mustBePlacedAgainst = Half.EITHER;
+                    builder.placementLogicNotImplementedYet().collisionHeight(1);
                 } else if (state.getValue(BlockSlab.HALF) == BlockSlab.EnumBlockHalf.BOTTOM) {
-                    height = 0.5;
-                    mustBePlacedAgainst = Half.BOTTOM;
+                    builder.mustBePlacedAgainst(Half.BOTTOM).collisionHeight(0.5);
                 } else {
-                    height = 1;
-                    mustBePlacedAgainst = Half.TOP;
+                    builder.mustBePlacedAgainst(Half.TOP).collisionHeight(1);
                 }
                 return builder
-                        .mustBePlacedAgainst(mustBePlacedAgainst)
                         .fullyWalkableTop()
-                        .height(height)
                         .canPlaceAgainstMe()
                         .collidesWithPlayer(true);
             }
@@ -93,12 +88,52 @@ public class BlockStatePropertiesExtractor {
                     public List<BlockStatePlacementOption> howCanIBePlaced() {
                         List<BlockStatePlacementOption> ret = new ArrayList<>();
                         if (!(Main.STRICT_Y && !bottom)) {
-                            ret.add(BlockStatePlacementOption.get(bottom ? Face.DOWN : Face.UP, Half.EITHER, Optional.ofNullable(facing.opposite())));
+                            ret.add(BlockStatePlacementOption.get(bottom ? Face.DOWN : Face.UP, Half.EITHER, Optional.ofNullable(facing.opposite()), Optional.empty()));
                         }
-                        ret.add(BlockStatePlacementOption.get(facing.opposite(), bottom ? Half.BOTTOM : Half.TOP, Optional.empty()));
-                        return Collections.unmodifiableList(ret);
+                        ret.add(BlockStatePlacementOption.get(facing.opposite(), bottom ? Half.BOTTOM : Half.TOP, Optional.empty(), Optional.empty()));
+                        return ret;
                     }
-                }.collidesWithPlayer(true); // TODO allow walking on top of closed top-half trapdoor? lol
+                }.collidesWithPlayer(true); // dont allow walking on top of closed top-half trapdoor because redstone activation is scary and im not gonna predict it
+            }
+            if (block instanceof BlockLog) {
+                BlockLog.EnumAxis axis = state.getValue(BlockLog.LOG_AXIS);
+                BlockStateCachedDataBuilder logBuilder = new BlockStateCachedDataBuilder() {
+                    @Override
+                    public List<BlockStatePlacementOption> howCanIBePlaced() {
+                        List<BlockStatePlacementOption> ret = super.howCanIBePlaced();
+                        ret.removeIf(place -> BlockLog.EnumAxis.fromFacingAxis(place.against.toMC().getAxis()) != axis);
+                        return ret;
+                    }
+                };
+                if (axis == BlockLog.EnumAxis.NONE) {
+                    logBuilder.placementLogicNotImplementedYet(); // ugh
+                }
+                return logBuilder
+                        .fullyWalkableTop()
+                        .collisionHeight(1)
+                        .canPlaceAgainstMe()
+                        .collidesWithPlayer(true);
+            }
+            if (block instanceof BlockRotatedPillar) { // hay block, bone block
+                // even though blocklog inherits from blockrotatedpillar it uses its own stupid enum, ugh
+                // this is annoying because this is pretty much identical
+                EnumFacing.Axis axis = state.getValue(BlockRotatedPillar.AXIS);
+                BlockStateCachedDataBuilder rotatedPillarBuilder = new BlockStateCachedDataBuilder() {
+                    @Override
+                    public List<BlockStatePlacementOption> howCanIBePlaced() {
+                        List<BlockStatePlacementOption> ret = super.howCanIBePlaced();
+                        ret.removeIf(place -> place.against.toMC().getAxis() != axis);
+                        return ret;
+                    }
+                };
+                return rotatedPillarBuilder
+                        .fullyWalkableTop()
+                        .collisionHeight(1)
+                        .canPlaceAgainstMe()
+                        .collidesWithPlayer(true);
+            }
+            if (block instanceof BlockStructure) {
+                return null; // truly an error to encounter this
             }
         }
 
@@ -107,14 +142,14 @@ public class BlockStatePropertiesExtractor {
 
             // rotated clockwise about the Y axis
             if (block instanceof BlockAnvil) {
-                builder.playerMustBeFacingInOrderToPlaceMe(Face.fromMC(state.getValue(BlockAnvil.FACING).rotateYCCW()));
+                builder.playerMustBeHorizontalFacingInOrderToPlaceMe(Face.fromMC(state.getValue(BlockAnvil.FACING).rotateYCCW()));
             }
 
             // unchanged
             if (block instanceof BlockChest
                 // it is not right || block instanceof BlockSkull // TODO is this right?? skull can be any facing?
             ) { // TODO fence gate and lever
-                builder.playerMustBeFacingInOrderToPlaceMe(Face.fromMC(state.getValue(BlockHorizontal.FACING)));
+                builder.playerMustBeHorizontalFacingInOrderToPlaceMe(Face.fromMC(state.getValue(BlockHorizontal.FACING)));
             }
 
             // opposite
@@ -126,11 +161,26 @@ public class BlockStatePropertiesExtractor {
                     || block instanceof BlockPumpkin
                     || block instanceof BlockRedstoneDiode // both repeater and comparator
             ) {
-                builder.playerMustBeFacingInOrderToPlaceMe(Face.fromMC(state.getValue(BlockHorizontal.FACING)).opposite());
+                builder.playerMustBeHorizontalFacingInOrderToPlaceMe(Face.fromMC(state.getValue(BlockHorizontal.FACING)).opposite());
             }
         }
-        // getStateForPlacement.against is the against face. placing a torch will have it as UP. placing a bottom slab will have it as UP. placing a top slab will have it as DOWN.
         // ladder
+
+        {
+            if (block instanceof BlockContainer || block instanceof BlockWorkbench) {
+                builder.mustSneakWhenPlacingAgainstMe();
+            }
+        }
+
+        if (block instanceof BlockCommandBlock
+                || block instanceof BlockDispenser // dropper extends from dispenser
+                || block instanceof BlockPistonBase) {
+            builder.playerMustBeEntityFacingInOrderToPlaceMe(Face.fromMC(state.getValue(BlockDirectional.FACING)));
+        }
+
+        if (block instanceof BlockObserver) {
+            builder.playerMustBeEntityFacingInOrderToPlaceMe(Face.fromMC(state.getValue(BlockDirectional.FACING)).opposite());
+        }
 
         // fully passable blocks
         {
@@ -159,39 +209,75 @@ public class BlockStatePropertiesExtractor {
             }
         }
 
-        // TODO getDirectionFromEntityLiving
+        if (block instanceof BlockFalling) {
+            builder.falling();
+        }
+
 
         // TODO multiblocks like door and bed and double plant
 
 
         boolean fullyUnderstood = false; // set this flag to true for any state for which we have fully and completely described it
 
+        // getStateForPlacement.against is the against face. placing a torch will have it as UP. placing a bottom slab will have it as UP. placing a top slab will have it as DOWN.
 
+        if (block instanceof BlockTorch) { // includes redstone torch
+            builder.canOnlyPlaceAgainst(Face.fromMC(state.getValue(BlockTorch.FACING)).opposite());
+            fullyUnderstood = true;
+        }
+
+        if (block instanceof BlockShulkerBox) {
+            builder.canOnlyPlaceAgainst(Face.fromMC(state.getValue(BlockShulkerBox.FACING)).opposite());
+            fullyUnderstood = true;
+        }
+
+        if (block instanceof BlockFenceGate // because if we place it we need to think about hypothetically walking through it
+                || block instanceof BlockLever
+                || block instanceof BlockButton
+                || block instanceof BlockBanner) {
+            builder.placementLogicNotImplementedYet();
+            fullyUnderstood = true;
+        }
+
+        if (block instanceof BlockSapling
+                || block instanceof BlockRedstoneWire
+                || block instanceof BlockRailBase
+                || block instanceof BlockFlower
+                || block instanceof BlockDeadBush
+        ) {
+            fullyUnderstood = true;
+        }
+
+        //isBlockNormalCube=true implies isFullCube=true
         if (state.isBlockNormalCube() || state.isFullBlock() || block instanceof BlockGlass || block instanceof BlockStainedGlass) {
             builder.canPlaceAgainstMe();
             fullyUnderstood = true;
         }
 
-        if (state.isBlockNormalCube()) {
-            builder.fullyWalkableTop().height(1);
+        if ((state.isBlockNormalCube() || block instanceof BlockGlass || block instanceof BlockStainedGlass) && !(block instanceof BlockMagma || block instanceof BlockSlime)) {
+            builder.fullyWalkableTop().collisionHeight(1);
             fullyUnderstood = true;
         }
 
         if (block instanceof BlockSnow) {
             fullyUnderstood = true;
             if (state.getValue(BlockSnow.LAYERS) > 1) { // collidesWithPlayer false from earlier
-                builder.fullyWalkableTop().height(0.125 * (state.getValue(BlockSnow.LAYERS) - 1));
+                builder.fullyWalkableTop().collisionHeight(0.125 * (state.getValue(BlockSnow.LAYERS) - 1));
                 // funny - if you have snow layers packed 8 high, it only supports the player to a height of 0.875, but it still counts as "isTopSolid" for placing stuff like torches on it
             }
         }
 
         if (block instanceof BlockSoulSand) {
-            builder.height(0.875);
+            builder.collisionHeight(0.875).fakeLessThanFullHeight();
+            fullyUnderstood = true;
         }
 
 
         // TODO fully walkable top and height
-
-        return builder;
+        if (fullyUnderstood) {
+            return builder;
+        } else {
+            return null;
+        }
     }
 }

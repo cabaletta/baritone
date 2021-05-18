@@ -20,6 +20,11 @@ package baritone.builder;
 import baritone.api.utils.BetterBlockPos;
 import net.minecraft.util.EnumFacing;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+
 /**
  * I hate porting things to new versions of Minecraft
  * <p>
@@ -38,11 +43,16 @@ public enum Face {
     public static final int NUM_FACES = 6;
     public static final Face[] VALUES = new Face[NUM_FACES];
     public static final Face[] HORIZONTALS;
+    public static final List<Optional<Face>> OPTS;
 
     static {
+        List<Optional<Face>> lst = new ArrayList<>();
         for (Face face : values()) {
             VALUES[face.index] = face;
+            lst.add(Optional.of(face));
         }
+        lst.add(Optional.empty());
+        OPTS = Collections.unmodifiableList(lst);
         HORIZONTALS = new Face[]{Face.SOUTH, Face.WEST, Face.NORTH, Face.EAST};
     }
 

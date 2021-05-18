@@ -38,6 +38,14 @@ public class Vec3d {
         }
     }
 
+    public boolean inOriginUnitVoxel() {
+        return x >= 0 && x <= 1 && y >= 0 && y <= 1 && z >= 0 && z <= 1;
+    }
+
+    public Vec3d plus(double x, double y, double z) {
+        return new Vec3d(this.x + x, this.y + y, this.z + z);
+    }
+
     public long getRoundedToZeroPositionUnsafeDontUse() {
         return BetterBlockPos.toLong((int) x, (int) y, (int) z);
     }

@@ -32,6 +32,8 @@ import java.util.stream.Collectors;
  * For a block like a slab or a stair, this will contain the information that the placement must be against the top or bottom half of the face
  * <p>
  * For a block like a furnace, this will contain the information that the player must be facing a specific horizontal direction in order to get the desired orientation
+ * <p>
+ * For a block like a piston, dispenser, or observer, this will contain the information that be player must pass a combination of: specific relative eye coordinate, specific relative X Z, and specific horizontal facing
  */
 public class BlockStatePlacementOption {
 
@@ -40,15 +42,20 @@ public class BlockStatePlacementOption {
      */
     public final Face against;
     public final Half half;
-    public final Optional<Face> playerMustBeFacing;
+    public final Optional<Face> playerMustBeHorizontalFacing; // getHorizontalFacing
+    /**
+     * IMPORTANT this is the RAW getDirectionFromEntityLiving meaning that it is the OPPOSITE of getHorizontalFacing (when in the horizontal plane)
+     */
+    public final Optional<Face> playerMustBeEntityFacing; // EnumFacing.getDirectionFromEntityLiving, used by piston, dispenser, observer
 
-    private BlockStatePlacementOption(Face against, Half half, Optional<Face> playerMustBeFacing) {
+    private BlockStatePlacementOption(Face against, Half half, Optional<Face> playerMustBeHorizontalFacing, Optional<Face> playerMustBeEntityFacing) {
         Objects.requireNonNull(against);
         Objects.requireNonNull(half);
         this.against = against;
         this.half = half;
-        this.playerMustBeFacing = playerMustBeFacing;
-        validate(against, half, playerMustBeFacing);
+        this.playerMustBeHorizontalFacing = playerMustBeHorizontalFacing;
+        this.playerMustBeEntityFacing = playerMustBeEntityFacing;
+        validate(against, half, playerMustBeHorizontalFacing, playerMustBeEntityFacing);
     }
 
     /**
@@ -62,7 +69,7 @@ public class BlockStatePlacementOption {
         if (!BlockStateCachedData.possible(this, placingAgainst)) {
             throw new IllegalStateException();
         }
-        if (Main.DEBUG && placingAgainst.stream().noneMatch(hit -> hitOk(half, hit))) {
+        if (Main.DEBUG && placingAgainst.streamRelativeToPlace().noneMatch(hit -> hitOk(half, hit))) {
             throw new IllegalStateException();
         }
         List<Vec2d> acceptableVantages = new ArrayList<>();
@@ -98,7 +105,7 @@ public class BlockStatePlacementOption {
                 .stream()
                 .map(playerEyeXZ -> new Vec3d(playerEyeXZ.x, Blip.playerEyeFromFeetBlips(playerFeetBlips, placingAgainst.mustSneak), playerEyeXZ.z))
                 .flatMap(eye ->
-                        placingAgainst.stream()
+                        placingAgainst.streamRelativeToPlace()
                                 .filter(hit -> hitOk(half, hit))
                                 .filter(hit -> eye.distSq(hit) < blockReachDistance * blockReachDistance)
                                 .filter(hit -> directionOk(eye, hit))
@@ -128,55 +135,97 @@ public class BlockStatePlacementOption {
     }
 
     private boolean directionOk(Vec3d eye, Vec3d hit) {
-        if (playerMustBeFacing.isPresent()) {
-            return eye.flatDirectionTo(hit) == playerMustBeFacing.get();
+        if (playerMustBeHorizontalFacing.isPresent()) {
+            return eye.flatDirectionTo(hit) == playerMustBeHorizontalFacing.get();
         }
-        // TODO include the other conditions for stupid blocks like pistons
+        if (playerMustBeEntityFacing.isPresent()) { // handle piston, dispenser, observer
+            if (!hit.inOriginUnitVoxel()) {
+                throw new IllegalStateException();
+            }
+            Face entFace = playerMustBeEntityFacing.get();
+            // see EnumFacing.getDirectionFromEntityLiving
+            double dx = Math.abs(eye.x - 0.5);
+            double dz = Math.abs(eye.z - 0.5);
+            if (dx < 1.99 && dz < 1.99) {
+                // both within 2 = normal
+                if (eye.y < 0) {
+                    return entFace == Face.DOWN;
+                }
+                if (eye.y > 2) {
+                    return entFace == Face.UP;
+                }
+            } else if (!(dx > 2.01 || dz > 2.01)) {
+                // ambiguous case
+                // UP/DOWN are impossible (caught by flat check), and anything that could cause up/down instead of horizontal is also not allowed sadly
+                if (eye.y < 0 || eye.y > 2) {
+                    return false;
+                }
+            } // else either is above 2.01, putting us in simple horizontal mode, so fallthrough to flat condition is correct, yay
+            return eye.flatDirectionTo(hit) == entFace.opposite();
+        }
         return true;
     }
 
 
-    public static BlockStatePlacementOption get(Face against, Half half, Optional<Face> playerMustBeFacing) {
-        BlockStatePlacementOption ret = PLACEMENT_OPTION_SINGLETON_CACHE[against.index][half.ordinal()][playerMustBeFacing.map(face -> face.index).orElse(Face.NUM_FACES)];
+    public static BlockStatePlacementOption get(Face against, Half half, Optional<Face> playerMustBeHorizontalFacing, Optional<Face> playerMustBeEntityFacing) {
+        BlockStatePlacementOption ret = PLACEMENT_OPTION_SINGLETON_CACHE[against.index][half.ordinal()][Face.OPTS.indexOf(playerMustBeHorizontalFacing)][Face.OPTS.indexOf(playerMustBeEntityFacing)];
         if (ret == null) {
-            throw new IllegalStateException(against + " " + half + " " + playerMustBeFacing);
+            throw new IllegalStateException(against + " " + half + " " + playerMustBeHorizontalFacing + " " + playerMustBeEntityFacing);
         }
         return ret;
     }
 
-    private static final BlockStatePlacementOption[][][] PLACEMENT_OPTION_SINGLETON_CACHE;
+    private static final BlockStatePlacementOption[][][][] PLACEMENT_OPTION_SINGLETON_CACHE;
 
     static {
-        PLACEMENT_OPTION_SINGLETON_CACHE = new BlockStatePlacementOption[Face.NUM_FACES][Half.values().length][Face.NUM_FACES + 1];
+        PLACEMENT_OPTION_SINGLETON_CACHE = new BlockStatePlacementOption[Face.NUM_FACES][Half.values().length][Face.OPTS.size()][Face.OPTS.size()];
         for (Face against : Face.VALUES) {
             for (Half half : Half.values()) {
-                BlockStatePlacementOption[] saveInto = PLACEMENT_OPTION_SINGLETON_CACHE[against.index][half.ordinal()];
-                for (Face player : Face.VALUES) {
-                    try {
-                        saveInto[player.index] = new BlockStatePlacementOption(against, half, Optional.of(player));
-                    } catch (RuntimeException ex) {
+                for (Optional<Face> horizontalFacing : Face.OPTS) {
+                    for (Optional<Face> entityFacing : Face.OPTS) {
+                        try {
+                            PLACEMENT_OPTION_SINGLETON_CACHE[against.index][half.ordinal()][Face.OPTS.indexOf(horizontalFacing)][Face.OPTS.indexOf(entityFacing)] = new BlockStatePlacementOption(against, half, horizontalFacing, entityFacing);
+                        } catch (RuntimeException ex) {}
                     }
-                }
-                try {
-                    saveInto[Face.NUM_FACES] = new BlockStatePlacementOption(against, half, Optional.empty());
-                } catch (RuntimeException ex) {
                 }
             }
         }
     }
 
-    private void validate(Face against, Half half, Optional<Face> playerMustBeFacing) {
+    static {
+        for (int i = 0; i < Face.OPTS.size(); i++) {
+            if (Face.OPTS.indexOf(Face.OPTS.get(i)) != i) {
+                throw new IllegalStateException();
+            }
+            if (Face.OPTS.get(i).map(face -> face.index).orElse(Face.NUM_FACES) != i) {
+                throw new IllegalStateException();
+            }
+        }
+    }
+
+    private void validate(Face against, Half half, Optional<Face> playerMustBeHorizontalFacing, Optional<Face> playerMustBeEntityFacing) {
+        if (playerMustBeEntityFacing.isPresent() && playerMustBeHorizontalFacing.isPresent()) {
+            throw new IllegalStateException();
+        }
         if (against.vertical && half != Half.EITHER) {
             throw new IllegalArgumentException();
         }
         if (Main.STRICT_Y && against == Face.UP) {
             throw new IllegalStateException();
         }
-        playerMustBeFacing.ifPresent(face -> {
+        playerMustBeHorizontalFacing.ifPresent(face -> {
             if (face.vertical) {
                 throw new IllegalArgumentException();
             }
             if (face == against.opposite()) {
+                throw new IllegalStateException();
+            }
+        });
+        playerMustBeEntityFacing.ifPresent(face -> {
+            if (half != Half.EITHER) {
+                throw new IllegalStateException();
+            }
+            if (against == face) { // impossible because EnumFacing inverts the horizontal facing AND because the down and up require the eye to be <0 and >2 respectively
                 throw new IllegalStateException();
             }
         });
@@ -200,7 +249,7 @@ public class BlockStatePlacementOption {
         for (PlayerVantage vantage : new PlayerVantage[]{PlayerVantage.STRICT_CENTER, PlayerVantage.LOOSE_CENTER}) {
             for (Face playerFacing : new Face[]{Face.NORTH, Face.EAST, Face.WEST}) {
                 sanity.append(vantage).append(playerFacing);
-                List<Raytracer.Raytrace> traces = BlockStatePlacementOption.get(Face.NORTH, Half.BOTTOM, Optional.of(playerFacing)).computeTraceOptions(new PlaceAgainstData(Face.SOUTH, Half.EITHER, false), 1, 0, 0, vantage, 4);
+                List<Raytracer.Raytrace> traces = BlockStatePlacementOption.get(Face.NORTH, Half.BOTTOM, Optional.of(playerFacing), Optional.empty()).computeTraceOptions(new PlaceAgainstData(Face.SOUTH, Half.EITHER, false), 1, 0, 0, vantage, 4);
                 sanity.append(traces.size());
                 sanity.append(" ");
                 if (!traces.isEmpty()) {

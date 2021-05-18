@@ -41,8 +41,12 @@ public class BlockStateCachedDataBuilder {
      * Normal blocks must be placed against EITHER
      */
     private Half mustBePlacedAgainst = Half.EITHER;
-    private Face playerMustBeFacingInOrderToPlaceMe;
-    private Integer height;
+    private Face playerMustBeHorizontalFacingInOrderToPlaceMe;
+    private Integer collisionHeightBlips;
+    private Face canOnlyPlaceAgainst;
+    private boolean fakeLessThanFullHeight; // snow layers and soul sand
+    private boolean placementLogicNotImplementedYet;
+    private Face playerMustBeEntityFacingInOrderToPlaceMe;
 
     public BlockStateCachedDataBuilder() {
     }
@@ -72,18 +76,18 @@ public class BlockStateCachedDataBuilder {
         return fullyWalkableTop;
     }
 
-    public BlockStateCachedDataBuilder height(double y) {
+    public BlockStateCachedDataBuilder collisionHeight(double y) {
         for (int h = 1; h <= Blip.PER_BLOCK + Blip.HALF_BLOCK; h++) {
             if (y == h * Blip.RATIO) {
-                height = h;
+                collisionHeightBlips = h;
                 return this;
             }
         }
         throw new IllegalStateException();
     }
 
-    public Integer supportedPlayerY() { // e.g. slabs are 0.5, soul sand is 0.875, normal blocks are 1, fences are 1.5
-        return height;
+    public Integer collisionHeightBlips() { // e.g. slabs are 0.5, soul sand is 0.875, normal blocks are 1, fences are 1.5
+        return collisionHeightBlips;
     }
 
     public BlockStateCachedDataBuilder mustSneakWhenPlacingAgainstMe() {
@@ -109,12 +113,20 @@ public class BlockStateCachedDataBuilder {
         return this;
     }
 
-    public BlockStateCachedDataBuilder playerMustBeFacingInOrderToPlaceMe(Face face) {
-        playerMustBeFacingInOrderToPlaceMe = face;
+    public BlockStateCachedDataBuilder playerMustBeHorizontalFacingInOrderToPlaceMe(Face face) {
+        playerMustBeHorizontalFacingInOrderToPlaceMe = face;
+        return this;
+    }
+
+    public BlockStateCachedDataBuilder playerMustBeEntityFacingInOrderToPlaceMe(Face face) {
+        playerMustBeEntityFacingInOrderToPlaceMe = face;
         return this;
     }
 
     public BlockStateCachedDataBuilder mustBePlacedAgainst(Half half) {
+        if (half == null) {
+            throw new IllegalArgumentException();
+        }
         mustBePlacedAgainst = half;
         return this;
     }
@@ -124,16 +136,40 @@ public class BlockStateCachedDataBuilder {
         return this;
     }
 
+    public BlockStateCachedDataBuilder canOnlyPlaceAgainst(Face face) {
+        canOnlyPlaceAgainst = face;
+        return this;
+    }
+
+    public BlockStateCachedDataBuilder placementLogicNotImplementedYet() {
+        placementLogicNotImplementedYet = true;
+        return this;
+    }
+
+    public BlockStateCachedDataBuilder fakeLessThanFullHeight() {
+        fakeLessThanFullHeight = true;
+        return this;
+    }
+
     public List<BlockStatePlacementOption> howCanIBePlaced() {
-        if (mustBePlacedAgainst == null) {
+        if (mustBePlacedAgainst == null || placementLogicNotImplementedYet) {
             return Collections.emptyList();
         }
         List<BlockStatePlacementOption> ret = new ArrayList<>();
         for (Face face : Face.VALUES) {
             if (Main.STRICT_Y && face == Face.UP) {
+                continue; // TODO don't do this...
+            }
+            if (playerMustBeHorizontalFacingInOrderToPlaceMe == face.opposite()) { // obv, this won't happen if playerMustBeHorizontalFacing is null
                 continue;
             }
-            if (playerMustBeFacingInOrderToPlaceMe == face.opposite()) { // obv, this won't happen if playerMustBeFacing is null
+            if (playerMustBeEntityFacingInOrderToPlaceMe == face) {
+                continue;
+            }
+            if (falling && face != Face.DOWN) {
+                continue;
+            }
+            if (canOnlyPlaceAgainst != null && face != canOnlyPlaceAgainst) {
                 continue;
             }
             Half overrideHalf = mustBePlacedAgainst;
@@ -151,9 +187,9 @@ public class BlockStateCachedDataBuilder {
                     overrideHalf = Half.EITHER;
                 }
             }
-            ret.add(BlockStatePlacementOption.get(face, overrideHalf, Optional.ofNullable(playerMustBeFacingInOrderToPlaceMe)));
+            ret.add(BlockStatePlacementOption.get(face, overrideHalf, Optional.ofNullable(playerMustBeHorizontalFacingInOrderToPlaceMe), Optional.ofNullable(playerMustBeEntityFacingInOrderToPlaceMe)));
         }
-        return Collections.unmodifiableList(ret);
+        return ret;
     }
 
     public PlaceAgainstData[] placeAgainstMe() {
@@ -168,6 +204,7 @@ public class BlockStateCachedDataBuilder {
     }
 
     protected PlaceAgainstData placeAgainstFace(Face face) {
+        // TODO this makes the stair/slab assumption that the same half is the mustBePlacedAgainst as the faces offered for placement... counterexample is daylight sensor
         if (mustBePlacedAgainst == Half.TOP && face == Face.DOWN) {
             return null;
         }
@@ -192,23 +229,31 @@ public class BlockStateCachedDataBuilder {
         if (mustBePlacedAgainst == null ^ isAir()) {
             throw new IllegalStateException();
         }
-        if (mustBePlacedAgainst == null ^ howCanIBePlaced().isEmpty()) {
-            throw new IllegalStateException();
+        if (howCanIBePlaced().isEmpty()) {
+            if (mustBePlacedAgainst != null && !placementLogicNotImplementedYet) {
+                throw new IllegalStateException();
+            }
+            if (playerMustBeHorizontalFacingInOrderToPlaceMe != null || playerMustBeEntityFacingInOrderToPlaceMe != null) {
+                throw new IllegalStateException();
+            }
+            if (canOnlyPlaceAgainst != null) {
+                throw new IllegalStateException();
+            }
         }
         if (isMustSneakWhenPlacingAgainstMe() && mustBePlacedAgainst != Half.EITHER) {
             throw new IllegalArgumentException();
         }
-        if (playerMustBeFacingInOrderToPlaceMe != null && mustBePlacedAgainst == null) {
+        if ((playerMustBeHorizontalFacingInOrderToPlaceMe != null || playerMustBeEntityFacingInOrderToPlaceMe != null) && mustBePlacedAgainst == null) {
             throw new IllegalStateException();
         }
-        if (isFullyWalkableTop() ^ height != null) {
-            if (!isFullyWalkableTop() && height > Blip.PER_BLOCK) {
+        if (isFullyWalkableTop() ^ collisionHeightBlips != null) {
+            if (!isFullyWalkableTop() && collisionHeightBlips > Blip.PER_BLOCK) {
                 // exception for fences, walls
             } else {
                 throw new IllegalStateException();
             }
         }
-        if (height != null && height > Blip.FULL_BLOCK + Blip.HALF_BLOCK) { // playerphysics assumes this is never true
+        if (collisionHeightBlips != null && (collisionHeightBlips > Blip.FULL_BLOCK + Blip.HALF_BLOCK || collisionHeightBlips <= 0)) { // playerphysics assumes this is never true
             throw new IllegalStateException();
         }
         if (fullyWalkableTop && !collidesWithPlayer) {
@@ -217,7 +262,7 @@ public class BlockStateCachedDataBuilder {
         if (canPlaceAgainstMe && !collidesWithPlayer) {
             throw new IllegalStateException();
         }
-        if (playerMustBeFacingInOrderToPlaceMe != null && playerMustBeFacingInOrderToPlaceMe.vertical) {
+        if (playerMustBeHorizontalFacingInOrderToPlaceMe != null && playerMustBeHorizontalFacingInOrderToPlaceMe.vertical) {
             throw new IllegalStateException();
         }
         if (Main.STRICT_Y && howCanIBePlaced().stream().anyMatch(opt -> opt.against == Face.UP)) {
@@ -227,9 +272,31 @@ public class BlockStateCachedDataBuilder {
         if (data.length != Face.NUM_FACES) {
             throw new IllegalStateException();
         }
+        boolean any = false;
         for (int i = 0; i < Face.NUM_FACES; i++) {
-            if (data[i] != null && data[i].against != Face.VALUES[i]) {
-                throw new IllegalStateException();
+            if (data[i] != null) {
+                if (data[i].against != Face.VALUES[i]) {
+                    throw new IllegalStateException();
+                }
+                if (!canPlaceAgainstMe) {
+                    throw new IllegalStateException();
+                }
+                any = true;
+            }
+        }
+        if (canPlaceAgainstMe && !any) {
+            throw new IllegalStateException();
+        }
+        if (collisionHeightBlips != null && !fakeLessThanFullHeight) {
+            for (PlaceAgainstData d : data) {
+                if (d == null) {
+                    continue;
+                }
+                d.streamRelativeToMyself().forEach(hit -> {
+                    if (hit.y > collisionHeightBlips * Blip.RATIO) {
+                        throw new IllegalStateException(d.against + " " + hit.y + " " + collisionHeightBlips * Blip.RATIO);
+                    }
+                });
             }
         }
     }

@@ -17,6 +17,7 @@
 
 package baritone.builder;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -27,10 +28,10 @@ import java.util.List;
 public final class BlockStateCachedData {
 
     private static final BlockStateCachedData[] PER_STATE = Main.DATA_PROVIDER.allNullable();
-    public static final BlockStateCachedData SCAFFOLDING = new BlockStateCachedData(new BlockStateCachedDataBuilder().collidesWithPlayer(true).fullyWalkableTop().height(1).canPlaceAgainstMe());
+    public static final BlockStateCachedData SCAFFOLDING = new BlockStateCachedData(new BlockStateCachedDataBuilder().collidesWithPlayer(true).fullyWalkableTop().collisionHeight(1).canPlaceAgainstMe());
 
     public final boolean fullyWalkableTop;
-    public final Integer supportedPlayerY;
+    public final Integer collisionHeightBlips;
     public final boolean isAir;
 
     public final boolean collidesWithPlayer;
@@ -40,7 +41,7 @@ public final class BlockStateCachedData {
 
     public final List<BlockStatePlacementOption> options;
 
-    private final PlaceAgainstData[] againstMe;
+    public final PlaceAgainstData[] againstMe;
 
     public static BlockStateCachedData get(int state) {
         return PER_STATE[state];
@@ -51,10 +52,10 @@ public final class BlockStateCachedData {
         this.isAir = builder.isAir();
         this.fullyWalkableTop = builder.isFullyWalkableTop();
         this.collidesWithPlayer = builder.isCollidesWithPlayer();
-        this.supportedPlayerY = builder.supportedPlayerY();
+        this.collisionHeightBlips = builder.collisionHeightBlips();
 
         this.mustSneakWhenPlacingAgainstMe = builder.isMustSneakWhenPlacingAgainstMe();
-        this.options = builder.howCanIBePlaced();
+        this.options = Collections.unmodifiableList(builder.howCanIBePlaced());
 
         this.againstMe = builder.placeAgainstMe();
     }

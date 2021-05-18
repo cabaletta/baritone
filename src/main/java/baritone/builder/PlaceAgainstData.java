@@ -27,7 +27,7 @@ public class PlaceAgainstData {
 
     public final Face against;
     public final boolean mustSneak; // like if its a crafting table
-    public final Vec3d[] hits;
+    private final Vec3d[] hits;
     private final boolean top;
     private final boolean bottom;
 
@@ -61,8 +61,12 @@ public class PlaceAgainstData {
         }
     }
 
-    public Stream<Vec3d> stream() {
+    public Stream<Vec3d> streamRelativeToPlace() {
         return Stream.of(hits);
+    }
+
+    public Stream<Vec3d> streamRelativeToMyself() {
+        return streamRelativeToPlace().map(v -> v.plus(against.x, against.y, against.z));
     }
 
     private boolean validatePossibleHit(Vec3d hit) {
@@ -92,7 +96,7 @@ public class PlaceAgainstData {
         return true;
     }
 
-    // TODO for playerMustBeFacing, do i need something like andThatOptionExtendsTheFullHorizontalSpaceOfTheVoxel()?
+    // TODO for playerMustBeHorizontalFacing, do i need something like andThatOptionExtendsTheFullHorizontalSpaceOfTheVoxel()?
 
     public boolean presentsAnOptionStrictlyInTheTopHalfOfTheStandardVoxelPlane() {
         if (Main.DEBUG && against.vertical) {

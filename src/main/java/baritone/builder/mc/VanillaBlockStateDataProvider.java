@@ -18,6 +18,7 @@
 package baritone.builder.mc;
 
 import baritone.builder.BlockStateCachedData;
+import baritone.builder.BlockStateCachedDataBuilder;
 import baritone.builder.IBlockStateDataProvider;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -36,7 +37,12 @@ public class VanillaBlockStateDataProvider implements IBlockStateDataProvider {
             return null;
         }
         try {
-            return new BlockStateCachedData(BlockStatePropertiesExtractor.getData(state));
+            BlockStateCachedDataBuilder builder = BlockStatePropertiesExtractor.getData(state);
+            if (builder == null) {
+                return null;
+            } else {
+                return new BlockStateCachedData(builder);
+            }
         } catch (Throwable th) {
             throw new RuntimeException("Exception while extracting " + state + " ID " + i, th);
         }

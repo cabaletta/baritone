@@ -24,21 +24,21 @@ public class PlayerPhysics {
      */
     public static int determinePlayerRealSupport(BlockStateCachedData underneath, BlockStateCachedData within) {
         if (within.collidesWithPlayer) {
-            if (underneath.supportedPlayerY != null && underneath.supportedPlayerY - Blip.FULL_BLOCK > within.supportedPlayerY) { // TODO > or >=
+            if (underneath.collisionHeightBlips != null && underneath.collisionHeightBlips - Blip.FULL_BLOCK > within.collisionHeightBlips) { // TODO > or >=
                 if (!underneath.fullyWalkableTop) {
                     return -1;
                 }
-                return underneath.supportedPlayerY - Blip.FULL_BLOCK; // this could happen if "underneath" is a fence and "within" is a carpet
+                return underneath.collisionHeightBlips - Blip.FULL_BLOCK; // this could happen if "underneath" is a fence and "within" is a carpet
             }
-            if (!within.fullyWalkableTop || within.supportedPlayerY >= Blip.FULL_BLOCK) {
+            if (!within.fullyWalkableTop || within.collisionHeightBlips >= Blip.FULL_BLOCK) {
                 return -1;
             }
-            return within.supportedPlayerY;
+            return within.collisionHeightBlips;
         } else {
-            if (!underneath.fullyWalkableTop || underneath.supportedPlayerY < Blip.FULL_BLOCK) {
+            if (!underneath.fullyWalkableTop || underneath.collisionHeightBlips < Blip.FULL_BLOCK) {
                 return -1;
             }
-            return underneath.supportedPlayerY - Blip.FULL_BLOCK;
+            return underneath.collisionHeightBlips - Blip.FULL_BLOCK;
         }
     }
 
@@ -118,13 +118,13 @@ public class PlayerPhysics {
         if (!D.collidesWithPlayer) {
             return Collision.FALL;
         }
-        if (Main.DEBUG && D.supportedPlayerY == null) {
+        if (Main.DEBUG && D.collisionHeightBlips == null) {
             throw new IllegalStateException();
         }
-        if (Main.DEBUG && D.supportedPlayerY >= Blip.FULL_BLOCK && D.fullyWalkableTop) {
+        if (Main.DEBUG && D.collisionHeightBlips >= Blip.FULL_BLOCK && D.fullyWalkableTop) {
             throw new IllegalStateException();
         }
-        if (D.supportedPlayerY < Blip.FULL_BLOCK + feet) {
+        if (D.collisionHeightBlips < Blip.FULL_BLOCK + feet) {
             return Collision.FALL;
         } else {
             return Collision.BLOCKED;

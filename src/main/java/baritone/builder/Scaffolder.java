@@ -94,8 +94,9 @@ public class Scaffolder {
     }
 
     private ScaffoldingSearchNode dijkstra(CollapsedDependencyGraphComponent root) {
-        Set<CollapsedDependencyGraphComponent> descendents = new ObjectOpenHashSet<>();
-        walkAllDescendents(root, descendents);
+        Set<CollapsedDependencyGraphComponent> exclusiveDescendents = new ObjectOpenHashSet<>();
+        walkAllDescendents(root, exclusiveDescendents);
+        exclusiveDescendents.remove(root);
         PriorityQueue<ScaffoldingSearchNode> openSet = new PriorityQueue<>(Comparator.comparingInt(node -> node.costSoFar));
         Long2ObjectOpenHashMap<ScaffoldingSearchNode> nodeMap = new Long2ObjectOpenHashMap<>();
         LongIterator it = root.getPositions().iterator();
@@ -108,12 +109,15 @@ public class Scaffolder {
             ScaffoldingSearchNode node = openSet.poll();
             CollapsedDependencyGraphComponent tentativeComponent = componentLocations.get(node.pos);
             if (tentativeComponent != null) {
-                if (descendents.contains(tentativeComponent)) {
+                if (exclusiveDescendents.contains(tentativeComponent)) {
                     // have gone back onto a descendent of this node
                     // sadly this can happen even at the same Y level even in Y_STRICT mode due to orientable blocks forming a loop
                     continue; // TODO does this need to be here? can I expand THROUGH an unrelated component? probably requires testing, this is quite a mind bending possibility
                 } else {
-                    return node; // all done! found a path to a component unrelated to this one, meaning we have successfully connected this part of the build with scaffolding back to the rest of it
+                    // found a path to a component that isn't a descendent of the root
+                    if (tentativeComponent != root) { // but if it IS the root, then we're just on our first loop iteration, we are far from done
+                        return node; // all done! found a path to a component unrelated to this one, meaning we have successfully connected this part of the build with scaffolding back to the rest of it
+                    }
                 }
             }
             for (Face face : Face.VALUES) {
@@ -127,7 +131,7 @@ public class Scaffolder {
                         // we can accomplish this and kill two birds with one stone by skipping all nodes already in the node map
                         // any position in the initial frontier is clearly in the node map, but also any node that has already been considered
                         // this prevents useless cycling of equivalent paths
-                        // this is okay because our search has no heuristic so this is a uniform cost search
+                        // this is okay because all paths are equivalent, so there is no possible way to find a better path (because currently it's a fixed value for horizontal / vertical movements)
                         if (existingNode.costSoFar < newCost) {
                             throw new IllegalStateException();
                         }
@@ -157,7 +161,7 @@ public class Scaffolder {
         return 2;
     }
 
-    private class ScaffoldingSearchNode {
+    private static class ScaffoldingSearchNode {
 
         private final long pos;
         private int costSoFar;

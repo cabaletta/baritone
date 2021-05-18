@@ -18,6 +18,7 @@
 package baritone.builder;
 
 import baritone.api.utils.BetterBlockPos;
+import baritone.builder.mc.DebugStates;
 import baritone.builder.mc.VanillaBlockStateDataProvider;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
@@ -163,7 +164,7 @@ public class Main {
         {
             BlockStatePlacementOption.sanityCheck();
         }
-        {
+        for (int aaaa = 0; aaaa < 0; aaaa++) {
             /*Raytracer.raytraceMode++;
             Raytracer.raytraceMode %= 3;*/
             Random rand = new Random(5021);
@@ -261,6 +262,9 @@ public class Main {
                     System.out.println("Alternate took " + (end - start) + "ms");
                 }
             }
+        }
+        {
+            DebugStates.debug();
         }
         System.exit(0);
     }
