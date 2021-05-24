@@ -21,6 +21,8 @@ public class PlayerPhysics {
 
     /**
      * the player Y is within within. i.e. the player Y is greater than or equal within and less than within+1
+     * <p>
+     * returns a negative value if impossible. returns a >=0 value if possible.
      */
     public static int determinePlayerRealSupport(BlockStateCachedData underneath, BlockStateCachedData within) {
         if (within.collidesWithPlayer) {
@@ -52,7 +54,6 @@ public class PlayerPhysics {
      * YB
      * XC
      * SD
-     *
      */
     public static Collision playerTravelCollides(int feet,
                                                  BlockStateCachedData U,
@@ -68,7 +69,7 @@ public class PlayerPhysics {
         if (Main.DEBUG && (feet != determinePlayerRealSupport(S, X))) {
             throw new IllegalStateException();
         }
-        boolean alreadyWithinU = feet > Blip.TWO_BLOCKS - Blip.PLAYER_HEIGHT; // > and not >= because the player height is a slight overestimate
+        boolean alreadyWithinU = feet > Blip.TWO_BLOCKS - Blip.PLAYER_HEIGHT_SLIGHT_OVERESTIMATE; // > and not >= because the player height is a slight overestimate
         if (Main.DEBUG && (alreadyWithinU && U.collidesWithPlayer)) {
             throw new IllegalStateException();
         }
@@ -92,27 +93,27 @@ public class PlayerPhysics {
             }
             return Collision.VOXEL_UP; // A is already checked, so that's it!
         }
-        // betweenCandB is impossible. pessimistically, this means B is colliding. optimistically, this means B and C are air.
+        // stepUp is impossible. pessimistically, this means B is colliding. optimistically, this means B and C are air.
+        if (B.collidesWithPlayer) { // we have ruled out stepping on top of B, so now if B is still colliding there is no way forward
+            return Collision.BLOCKED;
+        }
         int stayLevel = determinePlayerRealSupport(D, C);
         if (stayLevel >= 0) {
             // fundamentally staying within the same vertical voxel, X -> C
             if (stayLevel > couldStepUpTo) {
                 return Collision.BLOCKED;
             }
-            if (stayLevel > Blip.TWO_BLOCKS - Blip.PLAYER_HEIGHT && !alreadyWithinU) { // step up, combined with our height, protrudes into U and A, AND we didn't already
+            if (stayLevel > Blip.TWO_BLOCKS - Blip.PLAYER_HEIGHT_SLIGHT_OVERESTIMATE && !alreadyWithinU) { // step up, combined with our height, protrudes into U and A, AND we didn't already
                 if (U.collidesWithPlayer) { // stayLevel could even be LESS than feet
                     return Collision.BLOCKED;
                 }
-                if (A.collidesWithPlayer) {
+                if (A.collidesWithPlayer) { // already checked (alreadyWithinU && A.collidesWithPlayer) earlier
                     return Collision.BLOCKED;
                 }
             }
-            if (B.collidesWithPlayer) {
-                return Collision.BLOCKED; // obv, our head will go into B
-            }
             return Collision.VOXEL_LEVEL;
         }
-        if (B.collidesWithPlayer || C.collidesWithPlayer) {
+        if (C.collidesWithPlayer) {
             return Collision.BLOCKED;
         }
         if (!D.collidesWithPlayer) {
@@ -132,7 +133,7 @@ public class PlayerPhysics {
     }
 
     static {
-        if (Blip.PLAYER_HEIGHT > Blip.TWO_BLOCKS || Blip.PLAYER_HEIGHT + Blip.HALF_BLOCK <= Blip.TWO_BLOCKS) {
+        if (Blip.PLAYER_HEIGHT_SLIGHT_OVERESTIMATE >= Blip.TWO_BLOCKS || Blip.PLAYER_HEIGHT_SLIGHT_OVERESTIMATE + Blip.HALF_BLOCK <= Blip.TWO_BLOCKS) {
             throw new IllegalStateException("Assumptions made in playerTravelCollides");
         }
     }

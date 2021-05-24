@@ -134,6 +134,15 @@ public class BlockStatePlacementOption {
         }
     }
 
+    /**
+     * In EnumFacing.getDirectionFromEntityLiving, it checks if the player feet is within 2 blocks of the center of the block to be placed.
+     * Normally, this is a nonissue, but a problem arises because we are considering hypothetical placements where the player stands at the exact +0.5,+0.5 center of a block.
+     * In that case, it's possible for our hypothetical to have the player at precisely 2 blocks away, i.e. precisely on the edge of this condition being true or false.
+     * For that reason, we treat those exact cases as "ambiguous". So, if the distance is within this tolerance of 2 (so, 1.99 to 2.01), we treat it as a "could go either way",
+     * because when we really get there in-game, floating point inaccuracy could indeed actually make it go either way.
+     */
+    private static final double ENTITY_FACING_TOLERANCE = 0.01;
+
     private boolean directionOk(Vec3d eye, Vec3d hit) {
         if (playerMustBeHorizontalFacing.isPresent()) {
             return eye.flatDirectionTo(hit) == playerMustBeHorizontalFacing.get();
@@ -146,26 +155,24 @@ public class BlockStatePlacementOption {
             // see EnumFacing.getDirectionFromEntityLiving
             double dx = Math.abs(eye.x - 0.5);
             double dz = Math.abs(eye.z - 0.5);
-            if (dx < 1.99 && dz < 1.99) {
-                // both within 2 = normal
-                if (eye.y < 0) {
+            if (dx < 2 - ENTITY_FACING_TOLERANCE && dz < 2 - ENTITY_FACING_TOLERANCE) { // < 1.99
+                if (eye.y < 0) { // eye below placement level = it will be facing down, so this is only okay if we wantthat
                     return entFace == Face.DOWN;
                 }
-                if (eye.y > 2) {
+                if (eye.y > 2) { // same for up, if y>2 then it will be facing up
                     return entFace == Face.UP;
                 }
-            } else if (!(dx > 2.01 || dz > 2.01)) {
-                // ambiguous case
-                // UP/DOWN are impossible (caught by flat check), and anything that could cause up/down instead of horizontal is also not allowed sadly
+            } else if (!(dx > 2 + ENTITY_FACING_TOLERANCE || dz > 2 + ENTITY_FACING_TOLERANCE)) { // > 2.01
+                // this is the ambiguous case, because we are neither unambiguously both-within-2 (previous case), nor unambiguously either-above-two (this elseif condition).
+                // UP/DOWN are impossible, but that's caught by flat check
                 if (eye.y < 0 || eye.y > 2) {
-                    return false;
+                    return false; // anything that could cause up/down instead of horizontal is also not allowed sadly
                 }
-            } // else either is above 2.01, putting us in simple horizontal mode, so fallthrough to flat condition is correct, yay
+            } // else we are in unambiguous either-above-two, putting us in simple horizontal mode, so fallthrough to flat condition is correct, yay
             return eye.flatDirectionTo(hit) == entFace.opposite();
         }
         return true;
     }
-
 
     public static BlockStatePlacementOption get(Face against, Half half, Optional<Face> playerMustBeHorizontalFacing, Optional<Face> playerMustBeEntityFacing) {
         BlockStatePlacementOption ret = PLACEMENT_OPTION_SINGLETON_CACHE[against.index][half.ordinal()][Face.OPTS.indexOf(playerMustBeHorizontalFacing)][Face.OPTS.indexOf(playerMustBeEntityFacing)];

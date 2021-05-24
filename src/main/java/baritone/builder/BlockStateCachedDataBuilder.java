@@ -256,6 +256,9 @@ public class BlockStateCachedDataBuilder {
         if (collisionHeightBlips != null && (collisionHeightBlips > Blip.FULL_BLOCK + Blip.HALF_BLOCK || collisionHeightBlips <= 0)) { // playerphysics assumes this is never true
             throw new IllegalStateException();
         }
+        if (collidesWithPlayer && collisionHeightBlips == null) {
+            throw new IllegalStateException();
+        }
         if (fullyWalkableTop && !collidesWithPlayer) {
             throw new IllegalStateException();
         }
