@@ -124,7 +124,7 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             }
         } else if (argc.hasExactlyOne()) {
             for (Settings.Setting setting : settings.allSettings) {
-                if (setting.getName().equals("logger")) {
+                if (SettingsUtil.javaOnlySetting(setting)) {
                     continue;
                 }
                 if (setting.getName().equalsIgnoreCase(pair.getFirst())) {

@@ -50,6 +50,7 @@ public class SettingsUtil {
 
     private static final Path SETTINGS_PATH = getMinecraft().gameDir.toPath().resolve("baritone").resolve("settings.txt");
     private static final Pattern SETTING_PATTERN = Pattern.compile("^(?<setting>[^ ]+) +(?<value>.+)"); // key and value split by the first space
+    private static final String[] JAVA_ONLY_SETTINGS = {"logger", "notifier", "toaster"};
 
     private static boolean isComment(String line) {
         return line.startsWith("#") || line.startsWith("//");
@@ -111,7 +112,7 @@ public class SettingsUtil {
                 System.out.println("NULL SETTING?" + setting.getName());
                 continue;
             }
-            if (setting.getName().equals("logger")) {
+            if (javaOnlySetting(setting)) {
                 continue; // NO
             }
             if (setting.value == setting.defaultValue) {
@@ -165,11 +166,26 @@ public class SettingsUtil {
     }
 
     public static String settingToString(Settings.Setting setting) throws IllegalStateException {
-        if (setting.getName().equals("logger")) {
-            return "logger";
+        if (javaOnlySetting(setting)) {
+            return setting.getName();
         }
 
         return setting.getName() + " " + settingValueToString(setting);
+    }
+
+    /**
+     * This should always be the same as whether the setting can be parsed from or serialized to a string
+     *
+     * @param the setting
+     * @return true if the setting can not be set or read by the user
+     */
+    public static boolean javaOnlySetting(Settings.Setting setting) {
+        for (String name : JAVA_ONLY_SETTINGS) { // no JAVA_ONLY_SETTINGS.contains(...) because that would be case sensitive
+            if (setting.getName().equalsIgnoreCase(name)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static void parseAndApply(Settings settings, String settingName, String settingValue) throws IllegalStateException, NumberFormatException {
