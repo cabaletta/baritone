@@ -249,9 +249,9 @@ public final class PathRenderer implements IRenderer {
                         goalPos.getX() - renderPosX,
                         -renderPosY,
                         goalPos.getZ() - renderPosZ,
-                        partialTicks,
+                        settings.renderGoalAnimated.value ? partialTicks : 0,
                         1.0,
-                        player.world.getTotalWorldTime(),
+                        settings.renderGoalAnimated.value ? player.world.getTotalWorldTime() : 0,
                         0,
                         256,
                         color.getColorComponents(null)
