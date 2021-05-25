@@ -207,8 +207,13 @@ public final class PathRenderer implements IRenderer {
         double minX, maxX;
         double minZ, maxZ;
         double minY, maxY;
-        double y1, y2;
-        double y = MathHelper.cos((float) (((float) ((System.nanoTime() / 100000L) % 20000L)) / 20000F * Math.PI * 2));
+        double y, y1, y2;
+        if (settings.renderGoalAsBox.value) {
+            y = 1;
+        }
+        else {
+            y = MathHelper.cos((float) (((float) ((System.nanoTime() / 100000L) % 20000L)) / 20000F * Math.PI * 2));
+        }
         if (goal instanceof IGoalRenderPos) {
             BlockPos goalPos = ((IGoalRenderPos) goal).getGoalPos();
             minX = goalPos.getX() + 0.002 - renderPosX;
