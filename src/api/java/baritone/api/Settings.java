@@ -598,7 +598,7 @@ public final class Settings {
     /**
      * Render the goal as just a box instead of sick animated thingy
      */
-    public final Setting<Boolean> renderGoalAsBox = new Setting<>(false);
+    public final Setting<Boolean> renderGoalAnimated = new Setting<>(true);
 
     /**
      * Render selection boxes

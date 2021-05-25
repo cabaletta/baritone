@@ -208,7 +208,7 @@ public final class PathRenderer implements IRenderer {
         double minZ, maxZ;
         double minY, maxY;
         double y, y1, y2;
-        if (settings.renderGoalAsBox.value) {
+        if (!settings.renderGoalAnimated.value) {
             // y = 1 causes rendering issues when the player is at the same y as the top of a block for some reason
             y = .999F;
         }
