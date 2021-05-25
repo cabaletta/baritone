@@ -210,7 +210,7 @@ public final class PathRenderer implements IRenderer {
         double y, y1, y2;
         if (!settings.renderGoalAnimated.value) {
             // y = 1 causes rendering issues when the player is at the same y as the top of a block for some reason
-            y = .999F;
+            y = 0.999F;
         }
         else {
             y = MathHelper.cos((float) (((float) ((System.nanoTime() / 100000L) % 20000L)) / 20000F * Math.PI * 2));
