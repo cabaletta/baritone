@@ -30,7 +30,7 @@ public class BlockStateCachedDataBuilder {
     private boolean fullyWalkableTop;
     private boolean collidesWithPlayer;
     private boolean mustSneakWhenPlacingAgainstMe;
-    private boolean falling;
+    private boolean mustBePlacedBottomToTop;
     /**
      * Examples:
      * <p>
@@ -76,6 +76,15 @@ public class BlockStateCachedDataBuilder {
         return fullyWalkableTop;
     }
 
+    /**
+     * The highest collision extension of this block possible
+     * <p>
+     * For example, should be 1 for stairs, even though part of the top face is really 0.5
+     * <p>
+     * Should be 1 for top slabs
+     * <p>
+     * Should be 1 for trapdoors because when they're open, they touch the top face of the voxel
+     */
     public BlockStateCachedDataBuilder collisionHeight(double y) {
         for (int h = 1; h <= Blip.PER_BLOCK + Blip.HALF_BLOCK; h++) {
             if (y == h * Blip.RATIO) {
@@ -131,8 +140,8 @@ public class BlockStateCachedDataBuilder {
         return this;
     }
 
-    public BlockStateCachedDataBuilder falling() {
-        falling = true;
+    public BlockStateCachedDataBuilder mustBePlacedBottomToTop() {
+        mustBePlacedBottomToTop = true;
         return this;
     }
 
@@ -166,7 +175,7 @@ public class BlockStateCachedDataBuilder {
             if (playerMustBeEntityFacingInOrderToPlaceMe == face) {
                 continue;
             }
-            if (falling && face != Face.DOWN) {
+            if (mustBePlacedBottomToTop && face != Face.DOWN) {
                 continue;
             }
             if (canOnlyPlaceAgainst != null && face != canOnlyPlaceAgainst) {
@@ -214,6 +223,14 @@ public class BlockStateCachedDataBuilder {
         return new PlaceAgainstData(face, face.vertical ? Half.EITHER : mustBePlacedAgainst, mustSneakWhenPlacingAgainstMe);
     }
 
+    /**
+     * The idea here is that I codify all my assumptions in one place instead of having ad hoc checks absolutely everywhere
+     * <p>
+     * Example: in PlayerPhysics, I made an assumption that a block will never have a collision block taller than 1.5 blocks (e.g. like a fence)
+     * When I wrote the code that assumed that, I also added a check here to make sure every block is like that.
+     * If, in some future update to Minecraft, mojang adds a block that's even taller than a fence, it will be caught here immediately, with a comment saying "playerphysics assumes this is never true"
+     * This way, I'll know immediately, instead of pathing randomly trying to do something impossible with that new block and it being really confusing and annoying.
+     */
     public void sanityCheck() {
         if (isAir()) {
             if (!howCanIBePlaced().isEmpty()) {
@@ -246,17 +263,10 @@ public class BlockStateCachedDataBuilder {
         if ((playerMustBeHorizontalFacingInOrderToPlaceMe != null || playerMustBeEntityFacingInOrderToPlaceMe != null) && mustBePlacedAgainst == null) {
             throw new IllegalStateException();
         }
-        if (isFullyWalkableTop() ^ collisionHeightBlips != null) {
-            if (!isFullyWalkableTop() && collisionHeightBlips > Blip.PER_BLOCK) {
-                // exception for fences, walls
-            } else {
-                throw new IllegalStateException();
-            }
-        }
         if (collisionHeightBlips != null && (collisionHeightBlips > Blip.FULL_BLOCK + Blip.HALF_BLOCK || collisionHeightBlips <= 0)) { // playerphysics assumes this is never true
             throw new IllegalStateException();
         }
-        if (collidesWithPlayer && collisionHeightBlips == null) {
+        if (collidesWithPlayer ^ collisionHeightBlips != null) {
             throw new IllegalStateException();
         }
         if (fullyWalkableTop && !collidesWithPlayer) {

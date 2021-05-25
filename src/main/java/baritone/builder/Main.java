@@ -266,6 +266,133 @@ public class Main {
         {
             DebugStates.debug();
         }
+        {
+            Random rand = new Random(5021);
+            int trials = 10_000_000;
+            int[] X = new int[trials];
+            int[] Y = new int[trials];
+            int[] Z = new int[trials];
+            int sz = 10;
+            CuboidBounds bounds = new CuboidBounds(sz, sz, sz);
+            for (int i = 0; i < trials; i++) {
+                for (int[] toAdd : new int[][]{X, Y, Z}) {
+                    toAdd[i] = rand.nextBoolean() ? rand.nextInt(sz) : rand.nextBoolean() ? -1 : sz;
+                }
+            }
+            boolean[] a = new boolean[trials];
+            boolean[] b = new boolean[trials];
+            boolean[] c = new boolean[trials];
+            boolean[] d = new boolean[trials];
+            boolean[] e = new boolean[trials];
+            for (int it = 0; it < 20; it++) {
+
+                {
+                    Thread.sleep(1000);
+                    System.gc();
+                    Thread.sleep(1000);
+                    long start = System.currentTimeMillis();
+                    for (int i = 0; i < trials; i++) {
+                        a[i] = bounds.inRangeBranchy(X[i], Y[i], Z[i]);
+                    }
+                    long end = System.currentTimeMillis();
+                    System.out.println("Branchy took " + (end - start) + "ms");
+                }
+                {
+                    Thread.sleep(1000);
+                    System.gc();
+                    Thread.sleep(1000);
+                    long start = System.currentTimeMillis();
+                    for (int i = 0; i < trials; i++) {
+                        b[i] = bounds.inRangeBranchless(X[i], Y[i], Z[i]);
+                    }
+                    long end = System.currentTimeMillis();
+                    System.out.println("Branchless took " + (end - start) + "ms");
+                }
+                {
+                    Thread.sleep(1000);
+                    System.gc();
+                    Thread.sleep(1000);
+                    long start = System.currentTimeMillis();
+                    for (int i = 0; i < trials; i++) {
+                        c[i] = bounds.inRangeBranchless2(X[i], Y[i], Z[i]);
+                    }
+                    long end = System.currentTimeMillis();
+                    System.out.println("Branchless2 took " + (end - start) + "ms");
+                }
+                {
+                    Thread.sleep(1000);
+                    System.gc();
+                    Thread.sleep(1000);
+                    long start = System.currentTimeMillis();
+                    for (int i = 0; i < trials; i++) {
+                        d[i] = bounds.inRangeBranchless3(X[i], Y[i], Z[i]);
+                    }
+                    long end = System.currentTimeMillis();
+                    System.out.println("Branchless3 took " + (end - start) + "ms");
+                }
+                {
+                    Thread.sleep(1000);
+                    System.gc();
+                    Thread.sleep(1000);
+                    long start = System.currentTimeMillis();
+                    for (int i = 0; i < trials; i++) {
+                        e[i] = bounds.inRangeBranchless4(X[i], Y[i], Z[i]);
+                    }
+                    long end = System.currentTimeMillis();
+                    System.out.println("Branchless4 took " + (end - start) + "ms");
+                }
+                /*
+Branchless2 took 55ms
+Branchless3 took 53ms
+Branchless4 took 47ms
+Branchy took 137ms
+Branchless took 35ms
+Branchless2 took 36ms
+Branchless3 took 35ms
+Branchless4 took 41ms
+Branchy took 118ms
+Branchless took 33ms
+Branchless2 took 39ms
+Branchless3 took 36ms
+Branchless4 took 42ms
+Branchy took 125ms
+Branchless took 41ms
+Branchless2 took 45ms
+Branchless3 took 41ms
+Branchless4 took 45ms
+Branchy took 123ms
+Branchless took 38ms
+Branchless2 took 43ms
+Branchless3 took 35ms
+Branchless4 took 43ms
+Branchy took 117ms
+Branchless took 37ms
+Branchless2 took 42ms
+Branchless3 took 41ms
+Branchless4 took 45ms
+Branchy took 123ms
+Branchless took 35ms
+Branchless2 took 42ms
+Branchless3 took 38ms
+Branchless4 took 46ms
+Branchy took 126ms
+Branchless took 34ms
+Branchless2 took 47ms
+Branchless3 took 40ms
+Branchless4 took 47ms
+Branchy took 124ms
+                 */
+
+                // 3 is better than 2 and 4 because of data dependency
+                // the L1 cache fetch for this.sizeX can happen at the same time as "x+1" (which is an increment of an argument)
+                // in other words: in options 2 and 4, the "+1" or "-1" has a data dependency on the RAM fetch for this.sizeX, but in option 3 alone, the +1 happens upon the argument x, which is likely in a register, meaning it can be pipelined in parallel with the L1 cache fetch for this.sizeX
+
+            }
+        }
+        /*{ // proguard test
+            PlayerPhysics.determinePlayerRealSupport(BlockStateCachedData.get(69), BlockStateCachedData.get(420));
+            PlayerPhysics.determinePlayerRealSupport(BlockStateCachedData.get(420), BlockStateCachedData.get(69));
+        }*/
         System.exit(0);
     }
 }

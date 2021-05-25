@@ -60,10 +60,10 @@ public class BlockStatePropertiesExtractor {
                 };
                 if (!rightsideUp) {
                     stairBuilder.fullyWalkableTop();
-                    stairBuilder.collisionHeight(1);
                 }
                 return stairBuilder.mustBePlacedAgainst(rightsideUp ? Half.BOTTOM : Half.TOP)
                         .collidesWithPlayer(true)
+                        .collisionHeight(1)
                         .canPlaceAgainstMe()
                         .playerMustBeHorizontalFacingInOrderToPlaceMe(facing);
             }
@@ -93,7 +93,9 @@ public class BlockStatePropertiesExtractor {
                         ret.add(BlockStatePlacementOption.get(facing.opposite(), bottom ? Half.BOTTOM : Half.TOP, Optional.empty(), Optional.empty()));
                         return ret;
                     }
-                }.collidesWithPlayer(true); // dont allow walking on top of closed top-half trapdoor because redstone activation is scary and im not gonna predict it
+                }
+                        .collisionHeight(1) // sometimes it can be 1, and for collision height we err on the side of max
+                        .collidesWithPlayer(true); // dont allow walking on top of closed top-half trapdoor because redstone activation is scary and im not gonna predict it
             }
             if (block instanceof BlockLog) {
                 BlockLog.EnumAxis axis = state.getValue(BlockLog.LOG_AXIS);
@@ -168,6 +170,7 @@ public class BlockStatePropertiesExtractor {
 
         {
             if (block instanceof BlockContainer || block instanceof BlockWorkbench) {
+                // TODO way more blocks have a right click action, e.g. redstone repeater, daylight sensor
                 builder.mustSneakWhenPlacingAgainstMe();
             }
         }
@@ -210,7 +213,7 @@ public class BlockStatePropertiesExtractor {
         }
 
         if (block instanceof BlockFalling) {
-            builder.falling();
+            builder.mustBePlacedBottomToTop();
         }
 
 
@@ -221,6 +224,11 @@ public class BlockStatePropertiesExtractor {
 
         // getStateForPlacement.against is the against face. placing a torch will have it as UP. placing a bottom slab will have it as UP. placing a top slab will have it as DOWN.
 
+        if (block instanceof BlockFence || (block instanceof BlockFenceGate && !state.getValue(BlockFenceGate.OPEN)) || block instanceof BlockWall) {
+            builder.collisionHeight(1.5);
+            fullyUnderstood = true;
+        }
+
         if (block instanceof BlockTorch) { // includes redstone torch
             builder.canOnlyPlaceAgainst(Face.fromMC(state.getValue(BlockTorch.FACING)).opposite());
             fullyUnderstood = true;
@@ -228,6 +236,7 @@ public class BlockStatePropertiesExtractor {
 
         if (block instanceof BlockShulkerBox) {
             builder.canOnlyPlaceAgainst(Face.fromMC(state.getValue(BlockShulkerBox.FACING)).opposite());
+            builder.collisionHeight(1); // TODO should this be 1.5 because sometimes the shulker is open?
             fullyUnderstood = true;
         }
 
@@ -244,7 +253,9 @@ public class BlockStatePropertiesExtractor {
                 || block instanceof BlockRailBase
                 || block instanceof BlockFlower
                 || block instanceof BlockDeadBush
+                || block instanceof BlockMushroom
         ) {
+            builder.mustBePlacedBottomToTop();
             fullyUnderstood = true;
         }
 
@@ -254,8 +265,11 @@ public class BlockStatePropertiesExtractor {
             fullyUnderstood = true;
         }
 
-        if ((state.isBlockNormalCube() || block instanceof BlockGlass || block instanceof BlockStainedGlass) && !(block instanceof BlockMagma || block instanceof BlockSlime)) {
-            builder.fullyWalkableTop().collisionHeight(1);
+        if (state.isBlockNormalCube() || block instanceof BlockGlass || block instanceof BlockStainedGlass) {
+            builder.collisionHeight(1);
+            if (!(block instanceof BlockMagma || block instanceof BlockSlime)) {
+                builder.fullyWalkableTop();
+            }
             fullyUnderstood = true;
         }
 
@@ -269,6 +283,11 @@ public class BlockStatePropertiesExtractor {
 
         if (block instanceof BlockSoulSand) {
             builder.collisionHeight(0.875).fakeLessThanFullHeight();
+            fullyUnderstood = true;
+        }
+
+        if (block instanceof BlockGrassPath || block instanceof BlockFarmland) {
+            builder.collisionHeight(0.9375);
             fullyUnderstood = true;
         }
 

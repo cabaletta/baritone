@@ -31,7 +31,7 @@ public final class BlockStateCachedData {
     public static final BlockStateCachedData SCAFFOLDING = new BlockStateCachedData(new BlockStateCachedDataBuilder().collidesWithPlayer(true).fullyWalkableTop().collisionHeight(1).canPlaceAgainstMe());
 
     public final boolean fullyWalkableTop;
-    public final Integer collisionHeightBlips;
+    private final int collisionHeightBlips;
     public final boolean isAir;
 
     public final boolean collidesWithPlayer;
@@ -52,12 +52,23 @@ public final class BlockStateCachedData {
         this.isAir = builder.isAir();
         this.fullyWalkableTop = builder.isFullyWalkableTop();
         this.collidesWithPlayer = builder.isCollidesWithPlayer();
-        this.collisionHeightBlips = builder.collisionHeightBlips();
+        if (collidesWithPlayer) {
+            this.collisionHeightBlips = builder.collisionHeightBlips();
+        } else {
+            this.collisionHeightBlips = -1;
+        }
 
         this.mustSneakWhenPlacingAgainstMe = builder.isMustSneakWhenPlacingAgainstMe();
         this.options = Collections.unmodifiableList(builder.howCanIBePlaced());
 
         this.againstMe = builder.placeAgainstMe();
+    }
+
+    public int collisionHeightBlips() {
+        if (Main.DEBUG && !collidesWithPlayer) { // confirmed and tested: when DEBUG is false, proguard removes this if in the first pass, then inlines the calls in the second pass, making this just as good as a field access in release builds
+            throw new IllegalStateException();
+        }
+        return collisionHeightBlips;
     }
 
     public boolean possibleAgainstMe(BlockStatePlacementOption placement) {

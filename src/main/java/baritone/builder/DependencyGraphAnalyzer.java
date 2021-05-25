@@ -56,6 +56,7 @@ public class DependencyGraphAnalyzer {
         if (!locs.isEmpty()) {
             throw new IllegalStateException("Unplaceable from any side: " + cuteTrim(locs));
         }
+        // TODO instead of cuteTrim have a like SpecificBlockPositionsImpossibleException that this throws, and then later, an enclosing function can give the option to reset those locations to air
     }
 
     /**

@@ -61,8 +61,10 @@ public class Vec3d {
         return new Vec3d(dst.x - x, dst.y - y, dst.z - z).flatDirection();
     }
 
+    private static final double AMBIGUITY_TOLERANCE = 0.01;
+
     public Face flatDirection() {
-        if (Math.abs(x) == Math.abs(z)) {
+        if (Math.abs(Math.abs(x) - Math.abs(z)) < AMBIGUITY_TOLERANCE) {
             throw new IllegalStateException("ambiguous");
         }
         if (Math.abs(x) > Math.abs(z)) {

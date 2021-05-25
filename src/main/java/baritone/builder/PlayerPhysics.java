@@ -26,21 +26,21 @@ public class PlayerPhysics {
      */
     public static int determinePlayerRealSupport(BlockStateCachedData underneath, BlockStateCachedData within) {
         if (within.collidesWithPlayer) {
-            if (underneath.collisionHeightBlips != null && underneath.collisionHeightBlips - Blip.FULL_BLOCK > within.collisionHeightBlips) { // TODO > or >=
+            if (underneath.collidesWithPlayer && underneath.collisionHeightBlips() - Blip.FULL_BLOCK > within.collisionHeightBlips()) { // > because imagine something like slab on top of fence, we can walk on the slab even though the fence is equivalent height
                 if (!underneath.fullyWalkableTop) {
                     return -1;
                 }
-                return underneath.collisionHeightBlips - Blip.FULL_BLOCK; // this could happen if "underneath" is a fence and "within" is a carpet
+                return underneath.collisionHeightBlips() - Blip.FULL_BLOCK; // this could happen if "underneath" is a fence and "within" is a carpet
             }
-            if (!within.fullyWalkableTop || within.collisionHeightBlips >= Blip.FULL_BLOCK) {
+            if (!within.fullyWalkableTop || within.collisionHeightBlips() >= Blip.FULL_BLOCK) {
                 return -1;
             }
-            return within.collisionHeightBlips;
+            return within.collisionHeightBlips();
         } else {
-            if (!underneath.fullyWalkableTop || underneath.collisionHeightBlips < Blip.FULL_BLOCK) {
+            if (!underneath.fullyWalkableTop || underneath.collisionHeightBlips() < Blip.FULL_BLOCK) { // short circuit only calls collisionHeightBlips when fullyWalkableTop is true, so this is safe
                 return -1;
             }
-            return underneath.collisionHeightBlips - Blip.FULL_BLOCK;
+            return underneath.collisionHeightBlips() - Blip.FULL_BLOCK;
         }
     }
 
@@ -119,13 +119,10 @@ public class PlayerPhysics {
         if (!D.collidesWithPlayer) {
             return Collision.FALL;
         }
-        if (Main.DEBUG && D.collisionHeightBlips == null) {
+        if (Main.DEBUG && D.collisionHeightBlips() >= Blip.FULL_BLOCK && D.fullyWalkableTop) {
             throw new IllegalStateException();
         }
-        if (Main.DEBUG && D.collisionHeightBlips >= Blip.FULL_BLOCK && D.fullyWalkableTop) {
-            throw new IllegalStateException();
-        }
-        if (D.collisionHeightBlips < Blip.FULL_BLOCK + feet) {
+        if (D.collisionHeightBlips() < Blip.FULL_BLOCK + feet) {
             return Collision.FALL;
         } else {
             return Collision.BLOCKED;
@@ -143,5 +140,6 @@ public class PlayerPhysics {
         VOXEL_UP, // if you hit W, you will end up at a position that's a bit higher, such that you'd determineRealPlayerSupport up by one (example: walking from a partial block to a full block or higher, e.g. half slab to full block, or soul sand to full block, or soul sand to full block+carpet on top)
         VOXEL_LEVEL, // if you hit W, you will end up at a similar position, such that you'd determineRealPlayerSupport at the same integer grid location (example: walking forward on level ground)
         FALL // if you hit W, you will not immediately collide with anything, at all, to the front or to the bottom (example: walking off a cliff)
+        // TODO maybe we need another option that is like "you could do it, but you shouldn't". like, "if you hit W, you would walk forward, but you wouldn't like the outcome" such as cactus or lava or something
     }
 }

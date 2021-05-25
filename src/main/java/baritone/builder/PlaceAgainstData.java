@@ -52,6 +52,12 @@ public class PlaceAgainstData {
         this.top = top;
         this.bottom = bottom;
         this.hits = hits;
+        if (!streamRelativeToMyself().allMatch(Vec3d::inOriginUnitVoxel)) {
+            throw new IllegalStateException();
+        }
+        if (!streamRelativeToPlace().allMatch(Vec3d::inOriginUnitVoxel)) {
+            throw new IllegalStateException();
+        }
     }
 
     public PlaceAgainstData(Face against, Half half, boolean mustSneak) {

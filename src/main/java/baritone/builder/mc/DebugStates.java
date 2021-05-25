@@ -103,6 +103,8 @@ public class DebugStates {
         props.put("placeme", "" + data.options.size());
         props.put("sneak", "" + data.mustSneakWhenPlacingAgainstMe);
         props.put("againstme", "" + Stream.of(data.againstMe).filter(Objects::nonNull).count());
-        props.put("y", "" + data.collisionHeightBlips);
+        if (data.collidesWithPlayer) {
+            props.put("y", "" + data.collisionHeightBlips());
+        }
     }
 }

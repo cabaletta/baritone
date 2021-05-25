@@ -52,9 +52,13 @@ public class Scaffolder {
         this.components = collapsedGraph.getComponents();
         this.componentLocations = collapsedGraph.getComponentLocations();
 
+        this.rootComponents = calcRoots();
+    }
+
+    private List<CollapsedDependencyGraphComponent> calcRoots() {
         // since the components form a DAG (because all strongly connected components, and therefore all cycles, have been collapsed)
         // we can locate all root components by simply finding the ones with no incoming edges
-        this.rootComponents = components
+        return components
                 .values()
                 .stream()
                 .filter(component -> component.getIncoming().isEmpty())
@@ -62,6 +66,7 @@ public class Scaffolder {
     }
 
     private void loop() {
+        int cid = collapsedGraph.lastComponentID().getAsInt();
         CollapsedDependencyGraphComponent root = rootComponents.remove(rootComponents.size() - 1);
         if (!root.getIncoming().isEmpty()) {
             throw new IllegalStateException();
@@ -80,6 +85,24 @@ public class Scaffolder {
         }
         for (int i = 1; i < path.size() - 1; i++) {
             if (componentLocations.containsKey(path.get(i).pos)) {
+                throw new IllegalStateException();
+            }
+        }
+
+        for (int i = 1; i < path.size() - 1; i++) {
+            overlayGraph.enable(path.get(i).pos);
+        }
+
+        int newCID = collapsedGraph.lastComponentID().getAsInt();
+        for (int i = cid + 1; i <= newCID; i++) {
+            if (components.get(i) != null && components.get(i).getIncoming().isEmpty()) {
+                rootComponents.add(components.get(i));
+            }
+        }
+        // this works because as we add new components and connect them up, we can say that
+        rootComponents.removeIf(CollapsedDependencyGraphComponent::deleted);
+        if (Main.DEBUG) {
+            if (!rootComponents.equals(calcRoots())) {
                 throw new IllegalStateException();
             }
         }

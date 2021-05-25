@@ -147,7 +147,7 @@ public class BlockStatePlacementOption {
         if (playerMustBeHorizontalFacing.isPresent()) {
             return eye.flatDirectionTo(hit) == playerMustBeHorizontalFacing.get();
         }
-        if (playerMustBeEntityFacing.isPresent()) { // handle piston, dispenser, observer
+        if (playerMustBeEntityFacing.isPresent()) { // handle piston, dispenser, dropper, observer
             if (!hit.inOriginUnitVoxel()) {
                 throw new IllegalStateException();
             }
@@ -156,7 +156,7 @@ public class BlockStatePlacementOption {
             double dx = Math.abs(eye.x - 0.5);
             double dz = Math.abs(eye.z - 0.5);
             if (dx < 2 - ENTITY_FACING_TOLERANCE && dz < 2 - ENTITY_FACING_TOLERANCE) { // < 1.99
-                if (eye.y < 0) { // eye below placement level = it will be facing down, so this is only okay if we wantthat
+                if (eye.y < 0) { // eye below placement level = it will be facing down, so this is only okay if we want that
                     return entFace == Face.DOWN;
                 }
                 if (eye.y > 2) { // same for up, if y>2 then it will be facing up
@@ -165,7 +165,7 @@ public class BlockStatePlacementOption {
             } else if (!(dx > 2 + ENTITY_FACING_TOLERANCE || dz > 2 + ENTITY_FACING_TOLERANCE)) { // > 2.01
                 // this is the ambiguous case, because we are neither unambiguously both-within-2 (previous case), nor unambiguously either-above-two (this elseif condition).
                 // UP/DOWN are impossible, but that's caught by flat check
-                if (eye.y < 0 || eye.y > 2) {
+                if (eye.y < 0 || eye.y > 2) { // this check is okay because player eye height is not an even multiple of blips, therefore there's no way for it to == 0 or == 2, so using > and < is safe
                     return false; // anything that could cause up/down instead of horizontal is also not allowed sadly
                 }
             } // else we are in unambiguous either-above-two, putting us in simple horizontal mode, so fallthrough to flat condition is correct, yay

@@ -17,8 +17,6 @@
 
 package baritone.builder;
 
-import java.util.Arrays;
-
 public interface IBlockStateDataProvider {
 
     int numStates();
@@ -27,7 +25,20 @@ public interface IBlockStateDataProvider {
 
     default BlockStateCachedData[] allNullable() {
         BlockStateCachedData[] ret = new BlockStateCachedData[numStates()];
-        Arrays.setAll(ret, this::getNullable);
+        RuntimeException ex = null;
+        for (int i = 0; i < ret.length; i++) {
+            try {
+                ret[i] = getNullable(i);
+            } catch (RuntimeException e) {
+                if (ex != null) {
+                    ex.printStackTrace(); // printstacktrace all but the one that we throw
+                }
+                ex = e;
+            }
+        }
+        if (ex != null) {
+            throw ex; // throw the last one
+        }
         return ret;
     }
 }
