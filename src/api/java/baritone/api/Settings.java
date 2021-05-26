@@ -596,6 +596,12 @@ public final class Settings {
     public final Setting<Boolean> renderGoal = new Setting<>(true);
 
     /**
+     * Render the goal as a sick animated thingy instead of just a box
+     * (also controls animation of GoalXZ if {@link #renderGoalXZBeacon} is enabled)
+     */
+    public final Setting<Boolean> renderGoalAnimated = new Setting<>(true);
+
+    /**
      * Render selection boxes
      */
     public final Setting<Boolean> renderSelectionBoxes = new Setting<>(true);
