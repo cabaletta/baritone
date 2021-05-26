@@ -124,7 +124,7 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             }
         } else if (argc.hasExactlyOne()) {
             for (Settings.Setting setting : settings.allSettings) {
-                if (setting.getName().equals("logger")) {
+                if (SettingsUtil.javaOnlySetting(setting)) {
                     continue;
                 }
                 if (setting.getName().equalsIgnoreCase(pair.getFirst())) {
@@ -177,7 +177,7 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
                             .stream();
                 }
                 Settings.Setting setting = settings.byLowerName.get(argc.getString().toLowerCase(Locale.US));
-                if (setting != null) {
+                if (setting != null && !SettingsUtil.javaOnlySetting(setting)) {
                     if (setting.getValueClass() == Boolean.class) {
                         TabCompleteHelper helper = new TabCompleteHelper();
                         if ((Boolean) setting.value) {
