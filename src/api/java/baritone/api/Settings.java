@@ -1212,6 +1212,11 @@ public final class Settings {
     public final Setting<Boolean> notificationOnMineFail = new Setting<>(true);
 
     /**
+     * Creates a waypoint where you die
+     */
+    public final Setting<Boolean> waypointOnDeath = new Setting<>(true);
+
+    /**
      * A map of lowercase setting field names to their respective setting
      */
     public final Map<String, Setting<?>> byLowerName;

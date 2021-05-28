@@ -174,25 +174,43 @@ public final class MemoryBehavior extends Behavior {
 
     @Override
     public void onPlayerDeath() {
-        Waypoint deathWaypoint = new Waypoint("death", Waypoint.Tag.DEATH, ctx.playerFeet());
-        baritone.getWorldProvider().getCurrentWorld().getWaypoints().addWaypoint(deathWaypoint);
-        ITextComponent component = new TextComponentString("Death position saved.");
-        component.getStyle()
-                .setColor(TextFormatting.WHITE)
-                .setHoverEvent(new HoverEvent(
-                        HoverEvent.Action.SHOW_TEXT,
-                        new TextComponentString("Click to goto death")
-                ))
-                .setClickEvent(new ClickEvent(
-                        ClickEvent.Action.RUN_COMMAND,
-                        String.format(
-                                "%s%s goto %s @ %d",
-                                FORCE_COMMAND_PREFIX,
-                                "wp",
-                                deathWaypoint.getTag().getName(),
-                                deathWaypoint.getCreationTimestamp()
-                        )
-                ));
+        ITextComponent component;
+        if (Baritone.settings().waypointOnDeath.value) {
+            Waypoint deathWaypoint = new Waypoint("death", Waypoint.Tag.DEATH, ctx.playerFeet());
+            baritone.getWorldProvider().getCurrentWorld().getWaypoints().addWaypoint(deathWaypoint);
+            component = new TextComponentString("Death position saved.");
+            component.getStyle()
+                    .setColor(TextFormatting.WHITE)
+                    .setHoverEvent(new HoverEvent(
+                            HoverEvent.Action.SHOW_TEXT,
+                            new TextComponentString("Click to goto death")
+                    ))
+                    .setClickEvent(new ClickEvent(
+                            ClickEvent.Action.RUN_COMMAND,
+                            String.format(
+                                    "%s%s goto %s @ %d",
+                                    FORCE_COMMAND_PREFIX,
+                                    "wp",
+                                    deathWaypoint.getTag().getName(),
+                                    deathWaypoint.getCreationTimestamp()
+                            )
+                    ));
+        } else {
+            component = new TextComponentString("No death position saved.");
+            component.getStyle()
+                    .setColor(TextFormatting.WHITE)
+                    .setHoverEvent(new HoverEvent(
+                            HoverEvent.Action.SHOW_TEXT,
+                            new TextComponentString("Enable waypointOnDeath")
+                    ))
+                    .setClickEvent(new ClickEvent(
+                            ClickEvent.Action.RUN_COMMAND,
+                            String.format(
+                                    "%swaypointOnDeath true",
+                                    FORCE_COMMAND_PREFIX
+                            )
+                    ));
+        }
         Helper.HELPER.logDirect(component);
     }
 
