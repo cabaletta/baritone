@@ -41,9 +41,9 @@ import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
 import baritone.utils.BaritoneProcessHelper;
 import baritone.utils.BlockStateInterface;
-import baritone.utils.NotificationHelper;
 import baritone.utils.PathingCommandContext;
 import baritone.utils.schematic.MapArtSchematic;
+import baritone.utils.schematic.SelectionSchematic;
 import baritone.utils.schematic.SchematicSystem;
 import baritone.utils.schematic.schematica.SchematicaHelper;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
@@ -141,6 +141,11 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             parsed = new MapArtSchematic((IStaticSchematic) parsed);
         }
 
+        if (Baritone.settings().buildOnlySelection.value) {
+            parsed = new SelectionSchematic(parsed, origin, baritone.getSelectionManager().getSelections());
+        }
+
+
         build(name, parsed, origin);
         return true;
     }
@@ -151,10 +156,15 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             Optional<Tuple<IStaticSchematic, BlockPos>> schematic = SchematicaHelper.getOpenSchematic();
             if (schematic.isPresent()) {
                 IStaticSchematic s = schematic.get().getFirst();
+                BlockPos origin = schematic.get().getSecond();
+                ISchematic schem = Baritone.settings().mapArtMode.value ? new MapArtSchematic(s) : s;
+                if (Baritone.settings().buildOnlySelection.value) {
+                    schem = new SelectionSchematic(schem, origin, baritone.getSelectionManager().getSelections());
+                }
                 this.build(
                         schematic.get().getFirst().toString(),
-                        Baritone.settings().mapArtMode.value ? new MapArtSchematic(s) : s,
-                        schematic.get().getSecond()
+                        schem,
+                        origin
                 );
             } else {
                 logDirect("No schematic currently open");
@@ -425,8 +435,8 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             numRepeats++;
             if (repeat.equals(new Vec3i(0, 0, 0)) || (max != -1 && numRepeats >= max)) {
                 logDirect("Done building");
-                if (Baritone.settings().desktopNotifications.value && Baritone.settings().notificationOnBuildFinished.value) {
-                    NotificationHelper.notify("Done building", false);
+                if (Baritone.settings().notificationOnBuildFinished.value) {
+                    logNotification("Done building", false);
                 }
                 onLostControl();
                 return null;

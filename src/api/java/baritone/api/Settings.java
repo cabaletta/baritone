@@ -17,8 +17,10 @@
 
 package baritone.api;
 
+import baritone.api.utils.NotificationHelper;
 import baritone.api.utils.SettingsUtil;
 import baritone.api.utils.TypeUtils;
+import baritone.api.utils.gui.BaritoneToast;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.init.Blocks;
@@ -33,6 +35,7 @@ import java.lang.reflect.Type;
 import java.util.List;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 
 /**
  * Baritone's settings. Settings apply to all Baritone instances.
@@ -70,9 +73,9 @@ public final class Settings {
     public final Setting<Boolean> assumeExternalAutoTool = new Setting<>(false);
 
     /**
-     * If this setting is on, no auto tool will occur at all, not at calculation time nor execution time
+     * Automatically select the best available tool
      */
-    public final Setting<Boolean> disableAutoTool = new Setting<>(false);
+    public final Setting<Boolean> autoTool = new Setting<>(true);
 
     /**
      * It doesn't actually take twenty ticks to place a block, this cost is so high
@@ -596,6 +599,12 @@ public final class Settings {
     public final Setting<Boolean> renderGoal = new Setting<>(true);
 
     /**
+     * Render the goal as a sick animated thingy instead of just a box
+     * (also controls animation of GoalXZ if {@link #renderGoalXZBeacon} is enabled)
+     */
+    public final Setting<Boolean> renderGoalAnimated = new Setting<>(true);
+
+    /**
      * Render selection boxes
      */
     public final Setting<Boolean> renderSelectionBoxes = new Setting<>(true);
@@ -848,6 +857,11 @@ public final class Settings {
     public final Setting<Boolean> skipFailedLayers = new Setting<>(false);
 
     /**
+     * Only build the selected part of schematics
+     */
+     public final Setting<Boolean> buildOnlySelection = new Setting<>(false);
+
+    /**
      * How far to move before repeating the build. 0 to disable repeating on a certain axis, 0,0,0 to disable entirely
      */
     public final Setting<Vec3i> buildRepeat = new Setting<>(new Vec3i(0, 0, 0));
@@ -1057,6 +1071,20 @@ public final class Settings {
      * {@link Setting#value};
      */
     public final Setting<Consumer<ITextComponent>> logger = new Setting<>(Minecraft.getMinecraft().ingameGUI.getChatGUI()::printChatMessage);
+
+    /**
+     * The function that is called when Baritone will send a desktop notification. This function can be added to
+     * via {@link Consumer#andThen(Consumer)} or it can completely be overriden via setting
+     * {@link Setting#value};
+     */
+    public final Setting<BiConsumer<String, Boolean>> notifier = new Setting<>(NotificationHelper::notify);
+
+    /**
+     * The function that is called when Baritone will show a toast. This function can be added to
+     * via {@link Consumer#andThen(Consumer)} or it can completely be overriden via setting
+     * {@link Setting#value};
+     */
+    public final Setting<BiConsumer<ITextComponent, ITextComponent>> toaster = new Setting<>(BaritoneToast::addOrUpdate);
 
     /**
      * The size of the box that is rendered when the current goal is a GoalYLevel
