@@ -793,7 +793,7 @@ public final class Settings {
     public final Setting<Integer> allowOnlyExposedOresDistance = new Setting<>(1);
 
     /**
-     * When GetToBlock doesn't know any locations for the desired block, explore randomly instead of giving up.
+     * When GetToBlock or non-legit Mine doesn't know any locations for the desired block, explore randomly instead of giving up.
      */
     public final Setting<Boolean> exploreForBlocks = new Setting<>(true);
 
@@ -986,6 +986,7 @@ public final class Settings {
      * Disallow MineBehavior from using X-Ray to see where the ores are. Turn this option on to force it to mine "legit"
      * where it will only mine an ore once it can actually see it, so it won't do or know anything that a normal player
      * couldn't. If you don't want it to look like you're X-Raying, turn this on
+     * This will always explore, regardless of exploreForBlocks
      */
     public final Setting<Boolean> legitMine = new Setting<>(false);
 
