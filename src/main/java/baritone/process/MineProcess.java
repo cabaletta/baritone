@@ -188,10 +188,10 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
             return new PathingCommand(goal, legit ? PathingCommandType.FORCE_REVALIDATE_GOAL_AND_PATH : PathingCommandType.REVALIDATE_GOAL_AND_PATH);
         }
         // we don't know any ore locations at the moment
-        if (!Baritone.settings().exploreForBlocks.value) {
+        if (!legit && !Baritone.settings().exploreForBlocks.value) {
             return null;
         }
-        // only when we should explore for blocks we do this
+        // only when we should explore for blocks or are in legit mode we do this
         int y = Baritone.settings().legitMineYLevel.value;
         if (branchPoint == null) {
             /*if (!baritone.getPathingBehavior().isPathing() && playerFeet().y == y) {
