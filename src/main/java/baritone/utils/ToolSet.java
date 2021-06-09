@@ -129,7 +129,7 @@ public class ToolSet {
                 continue;
             }
           
-            if (Baritone.settings().itemSaver.value && itemStack.getItemDamage() >= itemStack.getMaxDamage() && itemStack.getMaxDamage() > 1) {
+            if (Baritone.settings().itemSaver.value && (itemStack.getItemDamage() + Baritone.settings().itemSaverThreshold.value) >= itemStack.getMaxDamage() && itemStack.getMaxDamage() > 1) {
                 continue;
             }
             double speed = calculateSpeedVsBlock(itemStack, blockState);
