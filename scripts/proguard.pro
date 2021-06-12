@@ -382,4 +382,4 @@
     public java.lang.String substring(int,int);
 }
 
--printmapping mapping.txt
+-printmapping ../../../dist/mapping.txt
