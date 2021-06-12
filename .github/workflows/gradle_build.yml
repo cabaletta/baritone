@@ -36,4 +36,4 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: Mappings
-        path: dist/mapping.txt
+        path: build/tmp/proguard/mapping.txt
