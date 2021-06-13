@@ -23,6 +23,7 @@ import baritone.api.IBaritone;
 import baritone.api.command.Command;
 import baritone.api.command.argument.IArgConsumer;
 import baritone.api.command.exception.CommandException;
+import baritone.api.command.helpers.TabCompleteHelper;
 import baritone.api.utils.SettingsUtil;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
@@ -30,6 +31,7 @@ import net.minecraft.util.text.event.ClickEvent;
 import net.minecraft.util.text.event.HoverEvent;
 
 import java.awt.*;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -69,16 +71,28 @@ public class SettingProfileCommand extends Command {
 
     @Override
     public Stream<String> tabComplete(String label, IArgConsumer args) throws CommandException {
-        return null;
+        if (args.getArgs().size() > 1) {
+            return Stream.empty();
+        }
+        List<String> possibleCommands = SettingsUtil.getProfiles();
+        possibleCommands.add("create");
+        return possibleCommands.stream();
     }
 
     @Override
     public String getShortDesc() {
-        return null;
+        return "Manage your setting profiles";
     }
 
     @Override
     public List<String> getLongDesc() {
-        return null;
+        return Arrays.asList(
+                "Manage your setting profiles",
+                "",
+                "Usage",
+                "> settingProfile - list setting profiles",
+                "> settingProfile <profile> - switch to another profile",
+                "> settingProfile create <profileName> - creates a new profile based on current settings"
+        );
     }
 }
