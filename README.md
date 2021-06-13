@@ -1,6 +1,5 @@
 # Baritone
 <p align="center">
-  <a href="http://hits.dwyl.com/cabaletta/baritone/"><img src="http://hits.dwyl.com/cabaletta/baritone.svg" alt="HitCount"/></a>
   <a href="https://github.com/cabaletta/baritone/releases/"><img src="https://img.shields.io/github/downloads/cabaletta/baritone/total.svg" alt="GitHub All Releases"/></a>
 </p>
 
