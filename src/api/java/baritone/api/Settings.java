@@ -734,6 +734,11 @@ public final class Settings {
     public final Setting<Boolean> itemSaver = new Setting<>(false);
 
     /**
+     * Durability to leave on the tool when using itemSaver
+     */
+    public final Setting<Integer> itemSaverThreshold = new Setting<>(10);
+
+    /**
      * Always prefer silk touch tools over regular tools. This will not sacrifice speed, but it will always prefer silk
      * touch tools over other tools of the same speed. This includes always choosing ANY silk touch tool over your hand.
      */
