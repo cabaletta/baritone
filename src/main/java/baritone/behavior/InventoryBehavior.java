@@ -153,7 +153,7 @@ public final class InventoryBehavior extends Behavior {
     }
 
     public boolean throwaway(boolean select, Predicate<? super ItemStack> desired) {
-        return throwaway(select, desired, BaritoneAPI.getSettings().allowInventory.value);
+        return throwaway(select, desired, Baritone.settings().allowInventory.value);
     }
 
     public boolean throwaway(boolean select, Predicate<? super ItemStack> desired, boolean allowInventory) {
