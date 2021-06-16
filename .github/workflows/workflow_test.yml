@@ -1,5 +1,4 @@
-
-name: Tests
+name: Test
 
 on:
   push:
@@ -17,9 +16,9 @@ jobs:
       with:
         java-version: '8'
         distribution: 'adopt'
-        
+
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
       
-    - name: Executing tests
+    - name: Executing test
       run: ./gradlew test
