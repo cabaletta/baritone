@@ -12,6 +12,6 @@ COPY . /code
 
 WORKDIR /code
 
-RUN ./gradlew build
+RUN ./gradlew build -Ploom.forge=true
 RUN ./gradlew build -Pbaritone.forge_build
-RUN ./gradlew build -Pbaritone.fabric_build
+RUN ./gradlew build -Pbaritone.fabric_build -Ploom.forge=true
