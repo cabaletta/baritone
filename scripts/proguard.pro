@@ -3,6 +3,7 @@
 
 -optimizationpasses 5
 -verbose
+-ignorewarnings #until https://github.com/wvengen/proguard-maven-plugin/pull/76
 
 -allowaccessmodification # anything not kept can be changed from public to private and inlined etc
 -overloadaggressively
