@@ -124,7 +124,7 @@ public class MovementParkour extends Movement {
                 return;
             }
             IBlockState landingOn = context.bsi.get0(destX, y - 1, destZ);
-            // farmland needs to be canwalkon otherwise farm can never work at all, but we want to specifically disallow ending a jumy on farmland haha
+            // farmland needs to be canWalkOn otherwise farm can never work at all, but we want to specifically disallow ending a jump on farmland haha
             if (landingOn.getBlock() != Blocks.FARMLAND && MovementHelper.canWalkOn(context.bsi, destX, y - 1, destZ, landingOn)) {
                 if (checkOvershootSafety(context.bsi, destX + xDiff, y, destZ + zDiff)) {
                     res.x = destX;
@@ -138,39 +138,39 @@ public class MovementParkour extends Movement {
                 return;
             }
         }
-        if (maxJump != 4) {
-            return;
-        }
+        // parkour place starts here
         if (!context.allowParkourPlace) {
             return;
         }
-        // time 2 pop off with that dank skynet parkour place
-        int destX = x + 4 * xDiff;
-        int destZ = z + 4 * zDiff;
-        IBlockState toReplace = context.get(destX, y - 1, destZ);
-        double placeCost = context.costOfPlacingAt(destX, y - 1, destZ, toReplace);
-        if (placeCost >= COST_INF) {
-            return;
-        }
-        if (!MovementHelper.isReplaceable(destX, y - 1, destZ, toReplace, context.bsi)) {
-            return;
-        }
-        if (!checkOvershootSafety(context.bsi, destX + xDiff, y, destZ + zDiff)) {
-            return;
-        }
-        for (int i = 0; i < 5; i++) {
-            int againstX = destX + HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP[i].getXOffset();
-            int againstY = y - 1 + HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP[i].getYOffset();
-            int againstZ = destZ + HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP[i].getZOffset();
-            if (againstX == x + xDiff * 3 && againstZ == z + zDiff * 3) { // we can't turn around that fast
-                continue;
+        // check parkour jumps from largest to smallest
+        for (int i = maxJump; i > 1; i--) {
+            int destX = x + i * xDiff;
+            int destZ = z + i * zDiff;
+            IBlockState toReplace = context.get(destX, y - 1, destZ);
+            double placeCost = context.costOfPlacingAt(destX, y - 1, destZ, toReplace);
+            if (placeCost >= COST_INF) {
+            	continue;
             }
-            if (MovementHelper.canPlaceAgainst(context.bsi, againstX, againstY, againstZ)) {
-                res.x = destX;
-                res.y = y;
-                res.z = destZ;
-                res.cost = costFromJumpDistance(4) + placeCost + context.jumpPenalty;
-                return;
+            if (!MovementHelper.isReplaceable(destX, y - 1, destZ, toReplace, context.bsi)) {
+            	continue;
+            }
+            if (!checkOvershootSafety(context.bsi, destX + xDiff, y, destZ + zDiff)) {
+            	continue;
+            }
+            for (int j = 0; j < 5; j++) {
+                int againstX = destX + HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP[j].getXOffset();
+                int againstY = y - 1 + HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP[j].getYOffset();
+                int againstZ = destZ + HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP[j].getZOffset();
+                if (againstX == x + xDiff * 3 && againstZ == z + zDiff * 3) { // we can't turn around that fast
+                    continue;
+                }
+                if (MovementHelper.canPlaceAgainst(context.bsi, againstX, againstY, againstZ)) {
+                    res.x = destX;
+                    res.y = y;
+                    res.z = destZ;
+                    res.cost = costFromJumpDistance(i) + placeCost + context.jumpPenalty;
+                    return;
+                }
             }
         }
     }
