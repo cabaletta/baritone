@@ -108,10 +108,12 @@ public class MovementParkour extends Movement {
             int destX = x + xDiff * i;
             int destZ = z + zDiff * i;
             if (!MovementHelper.fullyPassable(context, destX, y + 1, destZ)) {
-                return;
+                maxJump = i - 1;
+                break;
             }
             if (!MovementHelper.fullyPassable(context, destX, y + 2, destZ)) {
-                return;
+                maxJump = i - 1;
+                break;
             }
             IBlockState destInto = context.bsi.get0(destX, y, destZ);
             if (!MovementHelper.fullyPassable(context.bsi.access, context.bsi.isPassableBlockPos.setPos(destX, y, destZ), destInto)) {
@@ -120,8 +122,10 @@ public class MovementParkour extends Movement {
                     res.y = y + 1;
                     res.z = destZ;
                     res.cost = i * SPRINT_ONE_BLOCK_COST + context.jumpPenalty;
+                    return;
                 }
-                return;
+                maxJump = i - 1;
+                break;
             }
             IBlockState landingOn = context.bsi.get0(destX, y - 1, destZ);
             // farmland needs to be canWalkOn otherwise farm can never work at all, but we want to specifically disallow ending a jump on farmland haha
@@ -131,11 +135,14 @@ public class MovementParkour extends Movement {
                     res.y = y;
                     res.z = destZ;
                     res.cost = costFromJumpDistance(i) + context.jumpPenalty;
+                    return;
                 }
-                return;
+                maxJump = i - 1;
+                break;
             }
             if (!MovementHelper.fullyPassable(context, destX, y + 3, destZ)) {
-                return;
+                maxJump = i - 1;
+                break;
             }
         }
         // parkour place starts here
