@@ -23,9 +23,9 @@ import baritone.api.event.events.TickEvent;
 import baritone.api.event.events.WorldEvent;
 import baritone.api.event.events.type.EventState;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.player.ClientPlayerEntity;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.world.ClientWorld;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.player.LocalPlayer;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -44,9 +44,9 @@ import java.util.function.BiFunction;
 public class MixinMinecraft {
 
     @Shadow
-    public ClientPlayerEntity player;
+    public LocalPlayer player;
     @Shadow
-    public ClientWorld world;
+    public ClientLevel world;
 
     @Inject(
             method = "<init>",
@@ -86,7 +86,7 @@ public class MixinMinecraft {
             method = "loadWorld(Lnet/minecraft/client/world/ClientWorld;)V",
             at = @At("HEAD")
     )
-    private void preLoadWorld(ClientWorld world, CallbackInfo ci) {
+    private void preLoadWorld(ClientLevel world, CallbackInfo ci) {
         // If we're unloading the world but one doesn't exist, ignore it
         if (this.world == null && world == null) {
             return;
@@ -106,7 +106,7 @@ public class MixinMinecraft {
             method = "loadWorld(Lnet/minecraft/client/world/ClientWorld;)V",
             at = @At("RETURN")
     )
-    private void postLoadWorld(ClientWorld world, CallbackInfo ci) {
+    private void postLoadWorld(ClientLevel world, CallbackInfo ci) {
         // still fire event for both null, as that means we've just finished exiting a world
 
         // mc.world changing is only the primary baritone

@@ -18,8 +18,8 @@
 package baritone.utils.pathing;
 
 import baritone.api.utils.BetterBlockPos;
-import net.minecraft.util.Direction;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -51,24 +51,24 @@ public class BetterBlockPosTest {
         BlockPos pos = new BlockPos(1, 2, 3);
         BetterBlockPos better = new BetterBlockPos(1, 2, 3);
         assertEquals(pos, better);
-        assertEquals(pos.up(), better.up());
-        assertEquals(pos.down(), better.down());
+        assertEquals(pos.above(), better.up());
+        assertEquals(pos.below(), better.down());
         assertEquals(pos.north(), better.north());
         assertEquals(pos.south(), better.south());
         assertEquals(pos.east(), better.east());
         assertEquals(pos.west(), better.west());
         for (Direction dir : Direction.values()) {
-            assertEquals(pos.offset(dir), better.offset(dir));
-            assertEquals(pos.offset(dir, 0), pos);
+            assertEquals(pos.relative(dir), better.offset(dir));
+            assertEquals(pos.relative(dir, 0), pos);
             assertEquals(better.offset(dir, 0), better);
             for (int i = -10; i < 10; i++) {
-                assertEquals(pos.offset(dir, i), better.offset(dir, i));
+                assertEquals(pos.relative(dir, i), better.offset(dir, i));
             }
             assertTrue(better.offset(dir, 0) == better);
         }
         for (int i = -10; i < 10; i++) {
-            assertEquals(pos.up(i), better.up(i));
-            assertEquals(pos.down(i), better.down(i));
+            assertEquals(pos.above(i), better.up(i));
+            assertEquals(pos.below(i), better.down(i));
             assertEquals(pos.north(i), better.north(i));
             assertEquals(pos.south(i), better.south(i));
             assertEquals(pos.east(i), better.east(i));
@@ -87,7 +87,7 @@ public class BetterBlockPosTest {
         }
         long before1 = System.nanoTime() / 1000000L;
         for (int i = 0; i < 1000000; i++) {
-            pos.up();
+            pos.above();
         }
         long after1 = System.nanoTime() / 1000000L;
         try {
@@ -113,11 +113,11 @@ public class BetterBlockPosTest {
         }
         long before1 = System.nanoTime() / 1000000L;
         for (int i = 0; i < 1000000; i++) {
-            pos.up(0);
-            pos.up(1);
-            pos.up(2);
-            pos.up(3);
-            pos.up(4);
+            pos.above(0);
+            pos.above(1);
+            pos.above(2);
+            pos.above(3);
+            pos.above(4);
         }
         long after1 = System.nanoTime() / 1000000L;
         try {

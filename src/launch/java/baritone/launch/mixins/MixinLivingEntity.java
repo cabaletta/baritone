@@ -20,11 +20,11 @@ package baritone.launch.mixins;
 import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.event.events.RotationMoveEvent;
-import net.minecraft.client.entity.player.ClientPlayerEntity;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.world.World;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -45,7 +45,7 @@ public abstract class MixinLivingEntity extends Entity {
      */
     private RotationMoveEvent jumpRotationEvent;
 
-    public MixinLivingEntity(EntityType<?> entityTypeIn, World worldIn) {
+    public MixinLivingEntity(EntityType<?> entityTypeIn, Level worldIn) {
         super(entityTypeIn, worldIn);
     }
 
@@ -55,10 +55,10 @@ public abstract class MixinLivingEntity extends Entity {
     )
     private void preMoveRelative(CallbackInfo ci) {
         // noinspection ConstantConditions
-        if (ClientPlayerEntity.class.isInstance(this)) {
-            IBaritone baritone = BaritoneAPI.getProvider().getBaritoneForPlayer((ClientPlayerEntity) (Object) this);
+        if (LocalPlayer.class.isInstance(this)) {
+            IBaritone baritone = BaritoneAPI.getProvider().getBaritoneForPlayer((LocalPlayer) (Object) this);
             if (baritone != null) {
-                this.jumpRotationEvent = new RotationMoveEvent(RotationMoveEvent.Type.JUMP, this.rotationYaw);
+                this.jumpRotationEvent = new RotationMoveEvent(RotationMoveEvent.Type.JUMP, this.yRot);
                 baritone.getGameEventHandler().onPlayerRotationMove(this.jumpRotationEvent);
             }
         }
@@ -73,10 +73,10 @@ public abstract class MixinLivingEntity extends Entity {
             )
     )
     private float overrideYaw(LivingEntity self) {
-        if (self instanceof ClientPlayerEntity && BaritoneAPI.getProvider().getBaritoneForPlayer((ClientPlayerEntity) (Object) this) != null) {
+        if (self instanceof LocalPlayer && BaritoneAPI.getProvider().getBaritoneForPlayer((LocalPlayer) (Object) this) != null) {
             return this.jumpRotationEvent.getYaw();
         }
-        return self.rotationYaw;
+        return self.yRot;
     }
 
 

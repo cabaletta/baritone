@@ -24,11 +24,10 @@ import baritone.api.command.exception.CommandException;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalBlock;
 import baritone.api.utils.BetterBlockPos;
-import net.minecraft.block.AirBlock;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
+import net.minecraft.world.level.block.AirBlock;
 
 public class SurfaceCommand extends Command {
 

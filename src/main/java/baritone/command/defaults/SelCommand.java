@@ -37,16 +37,14 @@ import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.BlockOptionalMeta;
 import baritone.api.utils.BlockOptionalMetaLookup;
 import baritone.utils.IRenderer;
-import net.minecraft.block.Blocks;
-import net.minecraft.util.Direction;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.vector.Vector3i;
-
 import java.awt.*;
-import java.util.List;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Stream;
+import net.minecraft.core.Direction;
+import net.minecraft.core.Vec3i;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.phys.AABB;
 
 public class SelCommand extends Command {
 
@@ -66,7 +64,7 @@ public class SelCommand extends Command {
                 float lineWidth = Baritone.settings().selectionLineWidth.value;
                 boolean ignoreDepth = Baritone.settings().renderSelectionIgnoreDepth.value;
                 IRenderer.startLines(color, opacity, lineWidth, ignoreDepth);
-                IRenderer.drawAABB(event.getModelViewStack(), new AxisAlignedBB(pos1, pos1.add(1, 1, 1)));
+                IRenderer.drawAABB(event.getModelViewStack(), new AABB(pos1, pos1.add(1, 1, 1)));
                 IRenderer.endLines(ignoreDepth);
             }
         });
@@ -143,7 +141,7 @@ public class SelCommand extends Command {
                 );
             }
             for (ISelection selection : selections) {
-                Vector3i size = selection.size();
+                Vec3i size = selection.size();
                 BetterBlockPos min = selection.min();
                 ISchematic schematic = new FillSchematic(size.getX(), size.getY(), size.getZ(), type);
                 if (action == Action.WALLS) {

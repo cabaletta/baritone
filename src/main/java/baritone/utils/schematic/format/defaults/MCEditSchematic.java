@@ -18,12 +18,12 @@
 package baritone.utils.schematic.format.defaults;
 
 import baritone.utils.schematic.StaticSchematic;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.datafix.fixes.ItemIntIDToString;
-import net.minecraft.util.registry.Registry;
+import net.minecraft.core.Registry;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.datafix.fixes.ItemIdFix;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
 
 /**
  * @author Brady
@@ -31,7 +31,7 @@ import net.minecraft.util.registry.Registry;
  */
 public final class MCEditSchematic extends StaticSchematic {
 
-    public MCEditSchematic(CompoundNBT schematic) {
+    public MCEditSchematic(CompoundTag schematic) {
         String type = schematic.getString("Materials");
         if (!type.equals("Alpha")) {
             throw new IllegalStateException("bad schematic " + type);
@@ -62,10 +62,10 @@ public final class MCEditSchematic extends StaticSchematic {
                         // additional is 0 through 15 inclusive since it's & 0xF above
                         blockID |= additional[blockInd] << 8;
                     }
-                    Block block = Registry.BLOCK.getOrDefault(ResourceLocation.tryCreate(ItemIntIDToString.getItem(blockID)));
+                    Block block = Registry.BLOCK.get(ResourceLocation.tryParse(ItemIdFix.getItem(blockID)));
 //                    int meta = metadata[blockInd] & 0xFF;
 //                    this.states[x][z][y] = block.getStateFromMeta(meta);
-                    this.states[x][z][y] = block.getDefaultState();
+                    this.states[x][z][y] = block.defaultBlockState();
                 }
             }
         }

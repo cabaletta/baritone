@@ -17,6 +17,7 @@
 
 package baritone.process;
 
+import Goal;
 import baritone.Baritone;
 import baritone.api.pathing.goals.*;
 import baritone.api.process.IGetToBlockProcess;
@@ -30,12 +31,11 @@ import baritone.api.utils.input.Input;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.MovementHelper;
 import baritone.utils.BaritoneProcessHelper;
-import net.minecraft.block.Block;
-import net.minecraft.block.Blocks;
-import net.minecraft.inventory.container.PlayerContainer;
-import net.minecraft.util.math.BlockPos;
-
 import java.util.*;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.inventory.InventoryMenu;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 
 public final class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBlockProcess {
 
@@ -183,8 +183,8 @@ public final class GetToBlockProcess extends BaritoneProcessHelper implements IG
         if (walkIntoInsteadOfAdjacent(gettingTo.getBlock())) {
             return new GoalTwoBlocks(pos);
         }
-        if (blockOnTopMustBeRemoved(gettingTo.getBlock()) && MovementHelper.isBlockNormalCube(baritone.bsi.get0(pos.up()))) { // TODO this should be the check for chest openability
-            return new GoalBlock(pos.up());
+        if (blockOnTopMustBeRemoved(gettingTo.getBlock()) && MovementHelper.isBlockNormalCube(baritone.bsi.get0(pos.above()))) { // TODO this should be the check for chest openability
+            return new GoalBlock(pos.above());
         }
         return new GoalGetToBlock(pos);
     }
@@ -197,7 +197,7 @@ public final class GetToBlockProcess extends BaritoneProcessHelper implements IG
                 if (knownLocations.contains(ctx.getSelectedBlock().orElse(null))) {
                     baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true); // TODO find some way to right click even if we're in an ESC menu
                     System.out.println(ctx.player().openContainer);
-                    if (!(ctx.player().openContainer instanceof PlayerContainer)) {
+                    if (!(ctx.player().openContainer instanceof InventoryMenu)) {
                         return true;
                     }
                 }

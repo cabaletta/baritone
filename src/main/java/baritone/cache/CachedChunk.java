@@ -21,17 +21,16 @@ import baritone.api.utils.BlockUtils;
 import baritone.utils.pathing.PathingBlockType;
 import com.google.common.collect.ImmutableSet;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.util.RegistryKey;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
 import java.util.Map;
+import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 
 /**
  * @author Brady
@@ -180,7 +179,7 @@ public final class CachedChunk {
         }
     }
 
-    public final BlockState getBlock(int x, int y, int z, RegistryKey<World> dimension) {
+    public final BlockState getBlock(int x, int y, int z, ResourceKey<Level> dimension) {
         int index = getPositionIndex(x, y, z);
         PathingBlockType type = getType(index);
         int internalPos = z << 4 | x;
@@ -202,15 +201,15 @@ public final class CachedChunk {
         }
 
         if (type == PathingBlockType.SOLID) {
-            if (y == 127 && dimension == World.THE_NETHER) {
+            if (y == 127 && dimension == Level.NETHER) {
                 // nether roof is always unbreakable
-                return Blocks.BEDROCK.getDefaultState();
+                return Blocks.BEDROCK.defaultBlockState();
             }
-            if (y < 5 && dimension == World.OVERWORLD) {
+            if (y < 5 && dimension == Level.OVERWORLD) {
                 // solid blocks below 5 are commonly bedrock
                 // however, returning bedrock always would be a little yikes
                 // discourage paths that include breaking blocks below 5 a little more heavily just so that it takes paths breaking what's known to be stone (at 5 or above) instead of what could maybe be bedrock (below 5)
-                return Blocks.OBSIDIAN.getDefaultState();
+                return Blocks.OBSIDIAN.defaultBlockState();
             }
         }
         return ChunkPacker.pathingTypeToBlock(type, dimension);

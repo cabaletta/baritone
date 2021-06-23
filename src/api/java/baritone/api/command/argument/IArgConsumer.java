@@ -27,11 +27,10 @@ import baritone.api.command.exception.CommandInvalidTypeException;
 import baritone.api.command.exception.CommandNotEnoughArgumentsException;
 import baritone.api.command.exception.CommandTooManyArgumentsException;
 import baritone.api.utils.Helper;
-import net.minecraft.util.Direction;
-
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.stream.Stream;
+import net.minecraft.core.Direction;
 
 /**
  * The {@link IArgConsumer} is how {@link ICommand}s read the arguments passed to them. This class has many benefits:

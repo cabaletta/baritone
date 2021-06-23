@@ -20,8 +20,6 @@ package baritone.launch.mixins;
 import baritone.utils.accessor.IChunkArray;
 import baritone.utils.accessor.IClientChunkProvider;
 import baritone.utils.accessor.ISodiumChunkArray;
-import net.minecraft.client.multiplayer.ClientChunkProvider;
-import net.minecraft.client.world.ClientWorld;
 import org.spongepowered.asm.mixin.*;
 
 import java.lang.reflect.Constructor;
@@ -29,6 +27,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.concurrent.locks.StampedLock;
+import net.minecraft.client.multiplayer.ClientChunkCache;
+import net.minecraft.client.multiplayer.ClientLevel;
 
 @Pseudo
 @Mixin(targets = "me.jellysquid.mods.sodium.client.world.SodiumChunkManager", remap = false)
@@ -40,7 +40,7 @@ public class MixinSodiumChunkProvider implements IClientChunkProvider {
     
     @Shadow
     @Final
-    private ClientWorld world;
+    private ClientLevel world;
     
     @Shadow
     private int radius;
@@ -52,16 +52,16 @@ public class MixinSodiumChunkProvider implements IClientChunkProvider {
     private static Field chunkArrayField = null;
     
     @Override
-    public ClientChunkProvider createThreadSafeCopy() {
+    public ClientChunkCache createThreadSafeCopy() {
         // similar operation to https://github.com/jellysquid3/sodium-fabric/blob/d3528521d48a130322c910c6f0725cf365ebae6f/src/main/java/me/jellysquid/mods/sodium/client/world/SodiumChunkManager.java#L139
         long stamp = this.lock.writeLock();
         
         try {
             ISodiumChunkArray refArray = extractReferenceArray();
             if (thisConstructor == null) {
-                thisConstructor = this.getClass().getConstructor(ClientWorld.class, int.class);
+                thisConstructor = this.getClass().getConstructor(ClientLevel.class, int.class);
             }
-            ClientChunkProvider result = (ClientChunkProvider) thisConstructor.newInstance(world, radius - 3); // -3 because it adds 3 for no reason here too lmao
+            ClientChunkCache result = (ClientChunkCache) thisConstructor.newInstance(world, radius - 3); // -3 because it adds 3 for no reason here too lmao
             IChunkArray copyArr = ((IClientChunkProvider) result).extractReferenceArray();
             copyArr.copyFrom(refArray);
             return result;

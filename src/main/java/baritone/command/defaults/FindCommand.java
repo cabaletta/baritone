@@ -23,13 +23,12 @@ import baritone.api.command.argument.IArgConsumer;
 import baritone.api.command.datatypes.BlockById;
 import baritone.api.command.exception.CommandException;
 import baritone.api.utils.BetterBlockPos;
-import net.minecraft.block.Block;
-import net.minecraft.util.registry.Registry;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
+import net.minecraft.core.Registry;
+import net.minecraft.world.level.block.Block;
 
 public class FindCommand extends Command {
 

@@ -20,18 +20,18 @@ package baritone.utils.player;
 import baritone.api.utils.Helper;
 import baritone.api.utils.IPlayerController;
 import baritone.utils.accessor.IPlayerControllerMP;
-import net.minecraft.client.entity.player.ClientPlayerEntity;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.container.ClickType;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.Direction;
-import net.minecraft.util.Hand;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.BlockRayTraceResult;
-import net.minecraft.world.GameType;
-import net.minecraft.world.World;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.BlockHitResult;
 
 
 /**
@@ -65,7 +65,7 @@ public enum PrimaryPlayerController implements IPlayerController, Helper {
     }
 
     @Override
-    public ItemStack windowClick(int windowId, int slotId, int mouseButton, ClickType type, PlayerEntity player) {
+    public ItemStack windowClick(int windowId, int slotId, int mouseButton, ClickType type, Player player) {
         return mc.playerController.windowClick(windowId, slotId, mouseButton, type, player);
     }
 
@@ -75,13 +75,13 @@ public enum PrimaryPlayerController implements IPlayerController, Helper {
     }
 
     @Override
-    public ActionResultType processRightClickBlock(ClientPlayerEntity player, World world, Hand hand, BlockRayTraceResult result) {
+    public InteractionResult processRightClickBlock(LocalPlayer player, Level world, InteractionHand hand, BlockHitResult result) {
         // primaryplayercontroller is always in a ClientWorld so this is ok
-        return mc.playerController.func_217292_a(player, (ClientWorld) world, hand, result);
+        return mc.playerController.func_217292_a(player, (ClientLevel) world, hand, result);
     }
 
     @Override
-    public ActionResultType processRightClick(ClientPlayerEntity player, World world, Hand hand) {
+    public InteractionResult processRightClick(LocalPlayer player, Level world, InteractionHand hand) {
         return mc.playerController.processRightClick(player, world, hand);
     }
 

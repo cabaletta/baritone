@@ -19,18 +19,16 @@ package baritone.api;
 
 import baritone.api.utils.SettingsUtil;
 import baritone.api.utils.TypeUtils;
-import net.minecraft.block.Block;
-import net.minecraft.block.Blocks;
 import net.minecraft.client.Minecraft;
-import net.minecraft.item.Item;
-import net.minecraft.util.math.vector.Vector3i;
-import net.minecraft.util.text.ITextComponent;
-
+import net.minecraft.core.Vec3i;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import java.awt.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.List;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -824,7 +822,7 @@ public final class Settings {
     /**
      * How far to move before repeating the build. 0 to disable repeating on a certain axis, 0,0,0 to disable entirely
      */
-    public final Setting<Vector3i> buildRepeat = new Setting<>(new Vector3i(0, 0, 0));
+    public final Setting<Vec3i> buildRepeat = new Setting<>(new Vec3i(0, 0, 0));
 
     /**
      * How many times to buildrepeat. -1 for infinite.
@@ -1023,7 +1021,7 @@ public final class Settings {
      * via {@link Consumer#andThen(Consumer)} or it can completely be overriden via setting
      * {@link Setting#value};
      */
-    public final Setting<Consumer<ITextComponent>> logger = new Setting<>(Minecraft.getInstance().ingameGUI.getChatGUI()::printChatMessage);
+    public final Setting<Consumer<Component>> logger = new Setting<>(Minecraft.getInstance().gui.getChat()::addMessage);
 
     /**
      * Print out ALL command exceptions as a stack trace to stdout, even simple syntax errors

@@ -20,18 +20,29 @@ package baritone.api.utils;
 import baritone.api.utils.accessor.IItemStack;
 import com.google.common.collect.ImmutableSet;
 import io.netty.util.concurrent.ThreadPerTaskExecutor;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
+import net.minecraft.core.BlockPos;
 import net.minecraft.loot.*;
 import net.minecraft.resources.*;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.packs.PackResources;
+import net.minecraft.server.packs.PackType;
+import net.minecraft.server.packs.repository.Pack;
+import net.minecraft.server.packs.repository.PackRepository;
+import net.minecraft.server.packs.repository.ServerPacksSource;
+import net.minecraft.server.packs.resources.ReloadableResourceManager;
+import net.minecraft.server.packs.resources.SimpleReloadableResourceManager;
 import net.minecraft.util.Unit;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.world.server.ServerWorld;
-
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.loot.BuiltInLootTables;
+import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.LootTables;
+import net.minecraft.world.level.storage.loot.PredicateManager;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
+import net.minecraft.world.phys.Vec3;
 import javax.annotation.Nonnull;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -46,8 +57,8 @@ public final class BlockOptionalMeta {
     private final ImmutableSet<Integer> stateHashes;
     private final ImmutableSet<Integer> stackHashes;
     private static final Pattern pattern = Pattern.compile("^(.+?)(?::(\\d+))?$");
-    private static LootTableManager manager;
-    private static LootPredicateManager predicate = new LootPredicateManager();
+    private static LootTables manager;
+    private static PredicateManager predicate = new PredicateManager();
     private static Map<Block, List<Item>> drops = new HashMap<>();
 
     public BlockOptionalMeta(@Nonnull Block block) {
@@ -73,7 +84,7 @@ public final class BlockOptionalMeta {
     }
 
     private static Set<BlockState> getStates(@Nonnull Block block) {
-        return new HashSet<>(block.getStateContainer().getValidStates());
+        return new HashSet<>(block.getStateDefinition().getPossibleStates());
     }
 
     private static ImmutableSet<Integer> getStateHashes(Set<BlockState> blockstates) {
@@ -114,7 +125,7 @@ public final class BlockOptionalMeta {
         //noinspection ConstantConditions
         int hash = ((IItemStack) (Object) stack).getBaritoneHash();
 
-        hash -= stack.getDamage();
+        hash -= stack.getDamageValue();
 
         return stackHashes.contains(hash);
     }
@@ -132,16 +143,16 @@ public final class BlockOptionalMeta {
         return null;
     }
 
-    public static LootTableManager getManager() {
+    public static LootTables getManager() {
         if (manager == null) {
-            ResourcePackList rpl = new ResourcePackList(ResourcePackInfo::new, new ServerPackFinder());
-            rpl.reloadPacksFromFinders();
-            IResourcePack thePack = rpl.getAllPacks().iterator().next().getResourcePack();
-            IReloadableResourceManager resourceManager = new SimpleReloadableResourceManager(ResourcePackType.SERVER_DATA);
-            manager = new LootTableManager(predicate);
-            resourceManager.addReloadListener(manager);
+            PackRepository rpl = new PackRepository(Pack::new, new ServerPacksSource());
+            rpl.reload();
+            PackResources thePack = rpl.getAvailablePacks().iterator().next().open();
+            ReloadableResourceManager resourceManager = new SimpleReloadableResourceManager(PackType.SERVER_DATA);
+            manager = new LootTables(predicate);
+            resourceManager.registerReloadListener(manager);
             try {
-                resourceManager.reloadResourcesAndThen(new ThreadPerTaskExecutor(Thread::new), new ThreadPerTaskExecutor(Thread::new), Collections.singletonList(thePack), CompletableFuture.completedFuture(Unit.INSTANCE)).get();
+                resourceManager.reload(new ThreadPerTaskExecutor(Thread::new), new ThreadPerTaskExecutor(Thread::new), Collections.singletonList(thePack), CompletableFuture.completedFuture(Unit.INSTANCE)).get();
             } catch (Exception exception) {
                 throw new RuntimeException(exception);
             }
@@ -149,27 +160,27 @@ public final class BlockOptionalMeta {
         return manager;
     }
 
-    public static LootPredicateManager getPredicateManager() {
+    public static PredicateManager getPredicateManager() {
         return predicate;
     }
 
     private static synchronized List<Item> drops(Block b) {
         return drops.computeIfAbsent(b, block -> {
             ResourceLocation lootTableLocation = block.getLootTable();
-            if (lootTableLocation == LootTables.EMPTY) {
+            if (lootTableLocation == BuiltInLootTables.EMPTY) {
                 return Collections.emptyList();
             } else {
                 List<Item> items = new ArrayList<>();
 
                 // the other overload for generate doesnt work in forge because forge adds code that requires a non null world
-                getManager().getLootTableFromLocation(lootTableLocation).generate(
-                        new LootContext.Builder((ServerWorld) null)
+                getManager().get(lootTableLocation).getRandomItems(
+                        new LootContext.Builder((ServerLevel) null)
                                 .withRandom(new Random())
-                                .withParameter(LootParameters.field_237457_g_, Vector3d.copy(BlockPos.NULL_VECTOR))
-                                .withParameter(LootParameters.TOOL, ItemStack.EMPTY)
-                                .withNullableParameter(LootParameters.BLOCK_ENTITY, null)
-                                .withParameter(LootParameters.BLOCK_STATE, block.getDefaultState())
-                                .build(LootParameterSets.BLOCK),
+                                .withParameter(LootContextParams.ORIGIN, Vec3.atLowerCornerOf(BlockPos.ZERO))
+                                .withParameter(LootContextParams.TOOL, ItemStack.EMPTY)
+                                .withOptionalParameter(LootContextParams.BLOCK_ENTITY, null)
+                                .withParameter(LootContextParams.BLOCK_STATE, block.defaultBlockState())
+                                .create(LootContextParamSets.BLOCK),
                         stack -> items.add(stack.getItem())
                 );
                 return items;

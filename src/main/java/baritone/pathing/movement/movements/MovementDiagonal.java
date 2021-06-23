@@ -29,16 +29,15 @@ import baritone.pathing.movement.MovementState;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.pathing.MutableMoveResult;
 import com.google.common.collect.ImmutableSet;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.client.entity.player.ClientPlayerEntity;
-import net.minecraft.util.Direction;
-import net.minecraft.util.math.BlockPos;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 
 public class MovementDiagonal extends Movement {
 
@@ -61,11 +60,11 @@ public class MovementDiagonal extends Movement {
     protected boolean safeToCancel(MovementState state) {
         //too simple. backfill does not work after cornering with this
         //return MovementHelper.canWalkOn(ctx, ctx.playerFeet().down());
-        ClientPlayerEntity player = ctx.player();
+        LocalPlayer player = ctx.player();
         double offset = 0.25;
-        double x = player.getPositionVec().x;
-        double y = player.getPositionVec().y - 1;
-        double z = player.getPositionVec().z;
+        double x = player.position().x;
+        double y = player.position().y - 1;
+        double z = player.position().z;
         //standard
         if (ctx.playerFeet().equals(src)) {
             return true;

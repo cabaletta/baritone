@@ -22,11 +22,10 @@ import baritone.api.cache.ICachedWorld;
 import baritone.api.cache.IContainerMemory;
 import baritone.api.cache.IWaypointCollection;
 import baritone.api.cache.IWorldData;
-import net.minecraft.util.RegistryKey;
-import net.minecraft.world.World;
-
 import java.io.IOException;
 import java.nio.file.Path;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.Level;
 
 /**
  * Data about a world, from baritone's point of view. Includes cached chunks, waypoints, and map data.
@@ -40,9 +39,9 @@ public class WorldData implements IWorldData {
     private final ContainerMemory containerMemory;
     //public final MapData map;
     public final Path directory;
-    public final RegistryKey<World> dimension;
+    public final ResourceKey<Level> dimension;
 
-    WorldData(Path directory, RegistryKey<World> dimension) {
+    WorldData(Path directory, ResourceKey<Level> dimension) {
         this.directory = directory;
         this.cache = new CachedWorld(directory.resolve("cache"), dimension);
         this.waypoints = new WaypointCollection(directory.resolve("waypoints"));

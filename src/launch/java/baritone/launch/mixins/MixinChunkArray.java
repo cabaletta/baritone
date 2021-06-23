@@ -18,17 +18,17 @@
 package baritone.launch.mixins;
 
 import baritone.utils.accessor.IChunkArray;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.chunk.Chunk;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
 import java.util.concurrent.atomic.AtomicReferenceArray;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.chunk.LevelChunk;
 
 @Mixin(targets = "net.minecraft.client.multiplayer.ClientChunkProvider$ChunkArray")
 public abstract class MixinChunkArray implements IChunkArray {
     @Shadow
-    private AtomicReferenceArray<Chunk> chunks;
+    private AtomicReferenceArray<LevelChunk> chunks;
     @Shadow
     private int viewDistance;
     @Shadow
@@ -47,7 +47,7 @@ public abstract class MixinChunkArray implements IChunkArray {
     protected abstract int getIndex(int x, int z);
 
     @Shadow
-    protected abstract void replace(int index, Chunk chunk);
+    protected abstract void replace(int index, LevelChunk chunk);
 
     @Override
     public int centerX() {
@@ -65,7 +65,7 @@ public abstract class MixinChunkArray implements IChunkArray {
     }
 
     @Override
-    public AtomicReferenceArray<Chunk> getChunks() {
+    public AtomicReferenceArray<LevelChunk> getChunks() {
         return chunks;
     }
 
@@ -74,9 +74,9 @@ public abstract class MixinChunkArray implements IChunkArray {
         centerX = other.centerX();
         centerZ = other.centerZ();
 
-        AtomicReferenceArray<Chunk> copyingFrom = other.getChunks();
+        AtomicReferenceArray<LevelChunk> copyingFrom = other.getChunks();
         for (int k = 0; k < copyingFrom.length(); ++k) {
-            Chunk chunk = copyingFrom.get(k);
+            LevelChunk chunk = copyingFrom.get(k);
             if (chunk != null) {
                 ChunkPos chunkpos = chunk.getPos();
                 if (inView(chunkpos.x, chunkpos.z)) {

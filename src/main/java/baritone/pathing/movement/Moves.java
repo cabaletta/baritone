@@ -20,7 +20,7 @@ package baritone.pathing.movement;
 import baritone.api.utils.BetterBlockPos;
 import baritone.pathing.movement.movements.*;
 import baritone.utils.pathing.MutableMoveResult;
-import net.minecraft.util.Direction;
+import net.minecraft.core.Direction;
 
 /**
  * An enum of all possible movements attached to all possible directions they could be taken in

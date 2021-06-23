@@ -23,9 +23,6 @@ import baritone.api.event.events.BlockInteractEvent;
 import baritone.api.utils.BetterBlockPos;
 import baritone.cache.ContainerMemory;
 import baritone.utils.BlockStateInterface;
-import net.minecraft.block.BedBlock;
-import net.minecraft.item.ItemStack;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -33,6 +30,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.BedBlock;
 
 
 /**

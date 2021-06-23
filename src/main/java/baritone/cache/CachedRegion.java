@@ -20,11 +20,6 @@ package baritone.cache;
 import baritone.Baritone;
 import baritone.api.cache.ICachedRegion;
 import baritone.api.utils.BlockUtils;
-import net.minecraft.block.BlockState;
-import net.minecraft.util.RegistryKey;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -32,6 +27,10 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
+import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 
 /**
  * @author Brady
@@ -62,14 +61,14 @@ public final class CachedRegion implements ICachedRegion {
      */
     private final int z;
 
-    private final RegistryKey<World> dimension;
+    private final ResourceKey<Level> dimension;
 
     /**
      * Has this region been modified since its most recent load or save
      */
     private boolean hasUnsavedChanges;
 
-    CachedRegion(int x, int z, RegistryKey<World> dimension) {
+    CachedRegion(int x, int z, ResourceKey<Level> dimension) {
         this.x = x;
         this.z = z;
         this.hasUnsavedChanges = false;

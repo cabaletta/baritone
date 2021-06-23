@@ -32,14 +32,15 @@ import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.movements.*;
 import baritone.utils.BlockStateInterface;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Vec3i;
 import net.minecraft.util.Tuple;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.math.vector.Vector3i;
-
+import net.minecraft.world.phys.Vec3;
 import java.util.*;
 
 import static baritone.api.pathing.movement.MovementStatus.*;
+
+import IPlayerContext;
 
 /**
  * Behavior to execute a precomputed path
@@ -423,7 +424,7 @@ public class PathExecutor implements IPathExecutor, Helper {
             }
         }
         if (current instanceof MovementFall) {
-            Tuple<Vector3d, BlockPos> data = overrideFall((MovementFall) current);
+            Tuple<Vec3, BlockPos> data = overrideFall((MovementFall) current);
             if (data != null) {
                 BetterBlockPos fallDest = new BetterBlockPos(data.getB());
                 if (!path.positions().contains(fallDest)) {
@@ -444,15 +445,15 @@ public class PathExecutor implements IPathExecutor, Helper {
         return false;
     }
 
-    private Tuple<Vector3d, BlockPos> overrideFall(MovementFall movement) {
-        Vector3i dir = movement.getDirection();
+    private Tuple<Vec3, BlockPos> overrideFall(MovementFall movement) {
+        Vec3i dir = movement.getDirection();
         if (dir.getY() < -3) {
             return null;
         }
         if (!movement.toBreakCached.isEmpty()) {
             return null; // it's breaking
         }
-        Vector3i flatDir = new Vector3i(dir.getX(), 0, dir.getZ());
+        Vec3i flatDir = new Vec3i(dir.getX(), 0, dir.getZ());
         int i;
         outer:
         for (i = pathPosition + 1; i < path.length() - 1 && i < pathPosition + 3; i++) {
@@ -479,7 +480,7 @@ public class PathExecutor implements IPathExecutor, Helper {
         }
         double len = i - pathPosition - 0.4;
         return new Tuple<>(
-                new Vector3d(flatDir.getX() * len + movement.getDest().x + 0.5, movement.getDest().y, flatDir.getZ() * len + movement.getDest().z + 0.5),
+                new Vec3(flatDir.getX() * len + movement.getDest().x + 0.5, movement.getDest().y, flatDir.getZ() * len + movement.getDest().z + 0.5),
                 movement.getDest().add(flatDir.getX() * (i - pathPosition), 0, flatDir.getZ() * (i - pathPosition)));
     }
 
@@ -502,7 +503,7 @@ public class PathExecutor implements IPathExecutor, Helper {
         if (!Baritone.settings().sprintAscends.value) {
             return false;
         }
-        if (!current.getDirection().equals(next.getDirection().down())) {
+        if (!current.getDirection().equals(next.getDirection().below())) {
             return false;
         }
         if (nextnext.getDirection().getX() != next.getDirection().getX() || nextnext.getDirection().getZ() != next.getDirection().getZ()) {
@@ -521,7 +522,7 @@ public class PathExecutor implements IPathExecutor, Helper {
             for (int y = 0; y < 3; y++) {
                 BlockPos chk = current.getSrc().up(y);
                 if (x == 1) {
-                    chk = chk.add(current.getDirection());
+                    chk = chk.offset(current.getDirection());
                 }
                 if (!MovementHelper.fullyPassable(ctx, chk)) {
                     return false;

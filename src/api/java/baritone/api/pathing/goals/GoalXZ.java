@@ -20,8 +20,8 @@ package baritone.api.pathing.goals;
 import baritone.api.BaritoneAPI;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.SettingsUtil;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.util.Mth;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * Useful for long-range goals that don't have a specific Y level.
@@ -94,11 +94,11 @@ public class GoalXZ implements Goal {
         return (diagonal + straight) * BaritoneAPI.getSettings().costHeuristic.value; // big TODO tune
     }
 
-    public static GoalXZ fromDirection(Vector3d origin, float yaw, double distance) {
+    public static GoalXZ fromDirection(Vec3 origin, float yaw, double distance) {
         float theta = (float) Math.toRadians(yaw);
-        double x = origin.x - MathHelper.sin(theta) * distance;
-        double z = origin.z + MathHelper.cos(theta) * distance;
-        return new GoalXZ(MathHelper.floor(x), MathHelper.floor(z));
+        double x = origin.x - Mth.sin(theta) * distance;
+        double z = origin.z + Mth.cos(theta) * distance;
+        return new GoalXZ(Mth.floor(x), Mth.floor(z));
     }
 
     public int getX() {

@@ -23,9 +23,9 @@ import baritone.api.utils.Helper;
 import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.IPlayerController;
 import baritone.api.utils.RayTraceUtils;
-import net.minecraft.client.entity.player.ClientPlayerEntity;
-import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.world.World;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.HitResult;
 
 /**
  * Implementation of {@link IPlayerContext} that provides information about the primary player.
@@ -38,7 +38,7 @@ public enum PrimaryPlayerContext implements IPlayerContext, Helper {
     INSTANCE;
 
     @Override
-    public ClientPlayerEntity player() {
+    public LocalPlayer player() {
         return mc.player;
     }
 
@@ -48,7 +48,7 @@ public enum PrimaryPlayerContext implements IPlayerContext, Helper {
     }
 
     @Override
-    public World world() {
+    public Level world() {
         return mc.world;
     }
 
@@ -58,7 +58,7 @@ public enum PrimaryPlayerContext implements IPlayerContext, Helper {
     }
 
     @Override
-    public RayTraceResult objectMouseOver() {
+    public HitResult objectMouseOver() {
         return RayTraceUtils.rayTraceTowards(player(), playerRotations(), playerController().getBlockReachDistance());
     }
 }

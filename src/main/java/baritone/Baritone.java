@@ -56,7 +56,7 @@ public class Baritone implements IBaritone {
     static {
         threadPool = new ThreadPoolExecutor(4, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<>());
 
-        dir = new File(Minecraft.getInstance().gameDir, "baritone");
+        dir = new File(Minecraft.getInstance().gameDirectory, "baritone");
         if (!Files.exists(dir.toPath())) {
             try {
                 Files.createDirectories(dir.toPath());
