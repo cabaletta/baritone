@@ -25,23 +25,23 @@ import java.util.concurrent.atomic.AtomicReferenceArray;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.LevelChunk;
 
-@Mixin(targets = "net.minecraft.client.multiplayer.ClientChunkProvider$ChunkArray")
+@Mixin(targets = "net.minecraft.client.multiplayer.ClientChunkCache$Storage")
 public abstract class MixinChunkArray implements IChunkArray {
     @Shadow
     private AtomicReferenceArray<LevelChunk> chunks;
     @Shadow
-    private int viewDistance;
+    private int chunkRadius;
     @Shadow
-    private int sideLength;
+    private int viewRange;
     @Shadow
-    private int centerX;
+    private int viewCenterX;
     @Shadow
-    private int centerZ;
+    private int viewCenterZ;
     @Shadow
-    private int loaded;
+    private int chunkCount;
 
     @Shadow
-    protected abstract boolean inView(int x, int z);
+    protected abstract boolean inRange(int x, int z);
 
     @Shadow
     protected abstract int getIndex(int x, int z);
@@ -51,17 +51,17 @@ public abstract class MixinChunkArray implements IChunkArray {
 
     @Override
     public int centerX() {
-        return centerX;
+        return viewCenterX;
     }
 
     @Override
     public int centerZ() {
-        return centerZ;
+        return viewCenterZ;
     }
 
     @Override
     public int viewDistance() {
-        return viewDistance;
+        return chunkRadius;
     }
 
     @Override
@@ -71,15 +71,15 @@ public abstract class MixinChunkArray implements IChunkArray {
 
     @Override
     public void copyFrom(IChunkArray other) {
-        centerX = other.centerX();
-        centerZ = other.centerZ();
+        viewCenterX = other.centerX();
+        viewCenterZ = other.centerZ();
 
         AtomicReferenceArray<LevelChunk> copyingFrom = other.getChunks();
         for (int k = 0; k < copyingFrom.length(); ++k) {
             LevelChunk chunk = copyingFrom.get(k);
             if (chunk != null) {
                 ChunkPos chunkpos = chunk.getPos();
-                if (inView(chunkpos.x, chunkpos.z)) {
+                if (inRange(chunkpos.x, chunkpos.z)) {
                     int index = getIndex(chunkpos.x, chunkpos.z);
                     if (chunks.get(index) != null) {
                         throw new IllegalStateException("Doing this would mutate the client's REAL loaded chunks?!");

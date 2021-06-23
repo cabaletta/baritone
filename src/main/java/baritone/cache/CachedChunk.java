@@ -196,7 +196,7 @@ public final class CachedChunk {
         if (special != null) {
             String str = special.get(index);
             if (str != null) {
-                return BlockUtils.stringToBlockRequired(str).getDefaultState();
+                return BlockUtils.stringToBlockRequired(str).defaultBlockState();
             }
         }
 

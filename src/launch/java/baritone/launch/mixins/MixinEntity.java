@@ -31,7 +31,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class MixinEntity {
 
     @Shadow
-    private float rotationYaw;
+    private float yRot;
 
     float yawRestore;
 
@@ -40,14 +40,14 @@ public class MixinEntity {
             at = @At("HEAD")
     )
     private void moveRelativeHead(CallbackInfo info) {
-        this.yawRestore = this.rotationYaw;
+        this.yawRestore = this.yRot;
         // noinspection ConstantConditions
         if (!LocalPlayer.class.isInstance(this) || BaritoneAPI.getProvider().getBaritoneForPlayer((LocalPlayer) (Object) this) == null) {
             return;
         }
-        RotationMoveEvent motionUpdateRotationEvent = new RotationMoveEvent(RotationMoveEvent.Type.MOTION_UPDATE, this.rotationYaw);
+        RotationMoveEvent motionUpdateRotationEvent = new RotationMoveEvent(RotationMoveEvent.Type.MOTION_UPDATE, this.yRot);
         BaritoneAPI.getProvider().getBaritoneForPlayer((LocalPlayer) (Object) this).getGameEventHandler().onPlayerRotationMove(motionUpdateRotationEvent);
-        this.rotationYaw = motionUpdateRotationEvent.getYaw();
+        this.yRot = motionUpdateRotationEvent.getYaw();
     }
 
     @Inject(
@@ -55,6 +55,6 @@ public class MixinEntity {
             at = @At("RETURN")
     )
     private void moveRelativeReturn(CallbackInfo info) {
-        this.rotationYaw = this.yawRestore;
+        this.yRot = this.yawRestore;
     }
 }

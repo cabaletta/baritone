@@ -17,7 +17,6 @@
 
 package baritone.process;
 
-import Goal;
 import baritone.Baritone;
 import baritone.api.pathing.goals.*;
 import baritone.api.process.IGetToBlockProcess;
@@ -124,7 +123,7 @@ public final class GetToBlockProcess extends BaritoneProcessHelper implements IG
     // blacklist the closest block and its adjacent blocks
     public synchronized boolean blacklistClosest() {
         List<BlockPos> newBlacklist = new ArrayList<>();
-        knownLocations.stream().min(Comparator.comparingDouble(ctx.playerFeet()::distanceSq)).ifPresent(newBlacklist::add);
+        knownLocations.stream().min(Comparator.comparingDouble(ctx.playerFeet()::distSqr)).ifPresent(newBlacklist::add);
         outer:
         while (true) {
             for (BlockPos known : knownLocations) {
@@ -196,8 +195,8 @@ public final class GetToBlockProcess extends BaritoneProcessHelper implements IG
                 baritone.getLookBehavior().updateTarget(reachable.get(), true);
                 if (knownLocations.contains(ctx.getSelectedBlock().orElse(null))) {
                     baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true); // TODO find some way to right click even if we're in an ESC menu
-                    System.out.println(ctx.player().openContainer);
-                    if (!(ctx.player().openContainer instanceof InventoryMenu)) {
+                    System.out.println(ctx.player().containerMenu);
+                    if (!(ctx.player().containerMenu instanceof InventoryMenu)) {
                         return true;
                     }
                 }

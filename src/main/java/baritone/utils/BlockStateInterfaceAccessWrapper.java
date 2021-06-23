@@ -53,4 +53,15 @@ public final class BlockStateInterfaceAccessWrapper implements BlockGetter {
     public FluidState getFluidState(BlockPos blockPos) {
         return getBlockState(blockPos).getFluidState();
     }
+
+    @Override
+    public int getHeight() {
+        return 255;
+    }
+
+    @Override
+    public int getMinBuildHeight() {
+        return 0;
+    }
+
 }

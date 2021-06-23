@@ -176,7 +176,7 @@ public class ContainerMemory implements IContainerMemory {
 
         public void updateFromOpenWindow(IPlayerContext ctx) {
             items.clear();
-            items.addAll(ctx.player().openContainer.getInventory().subList(0, size));
+            items.addAll(ctx.player().containerMenu.getItems().subList(0, size));
         }
     }
 }

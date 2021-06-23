@@ -86,7 +86,7 @@ public interface IPlayerContext {
     }
 
     default Rotation playerRotations() {
-        return new Rotation(player().yRot, player().xRot);
+        return new Rotation(player().getYRot(), player().getXRot());
     }
 
     static double eyeHeight(boolean ifSneaking) {

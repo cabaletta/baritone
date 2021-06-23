@@ -40,7 +40,7 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 public class MixinWorldRenderer {
 
     @Inject(
-            method = "updateCameraAndRender",
+            method = "renderLevel",
             at = @At("RETURN"),
             locals = LocalCapture.CAPTURE_FAILSOFT
     )

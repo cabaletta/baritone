@@ -28,7 +28,6 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ClickType;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.BlockHitResult;
@@ -46,52 +45,52 @@ public enum PrimaryPlayerController implements IPlayerController, Helper {
 
     @Override
     public void syncHeldItem() {
-        ((IPlayerControllerMP) mc.playerController).callSyncCurrentPlayItem();
+        ((IPlayerControllerMP) mc.gameMode).callSyncCurrentPlayItem();
     }
 
     @Override
     public boolean hasBrokenBlock() {
-        return ((IPlayerControllerMP) mc.playerController).getCurrentBlock().getY() == -1;
+        return ((IPlayerControllerMP) mc.gameMode).getCurrentBlock().getY() == -1;
     }
 
     @Override
     public boolean onPlayerDamageBlock(BlockPos pos, Direction side) {
-        return mc.playerController.onPlayerDamageBlock(pos, side);
+        return mc.gameMode.continueDestroyBlock(pos, side);
     }
 
     @Override
     public void resetBlockRemoving() {
-        mc.playerController.resetBlockRemoving();
+        mc.gameMode.stopDestroyBlock();
     }
 
     @Override
-    public ItemStack windowClick(int windowId, int slotId, int mouseButton, ClickType type, Player player) {
-        return mc.playerController.windowClick(windowId, slotId, mouseButton, type, player);
+    public void windowClick(int windowId, int slotId, int mouseButton, ClickType type, Player player) {
+        mc.gameMode.handleInventoryMouseClick(windowId, slotId, mouseButton, type, player);
     }
 
     @Override
     public GameType getGameType() {
-        return mc.playerController.getCurrentGameType();
+        return mc.gameMode.getPlayerMode();
     }
 
     @Override
     public InteractionResult processRightClickBlock(LocalPlayer player, Level world, InteractionHand hand, BlockHitResult result) {
         // primaryplayercontroller is always in a ClientWorld so this is ok
-        return mc.playerController.func_217292_a(player, (ClientLevel) world, hand, result);
+        return mc.gameMode.useItemOn(player, (ClientLevel) world, hand, result);
     }
 
     @Override
     public InteractionResult processRightClick(LocalPlayer player, Level world, InteractionHand hand) {
-        return mc.playerController.processRightClick(player, world, hand);
+        return mc.gameMode.useItem(player, world, hand);
     }
 
     @Override
     public boolean clickBlock(BlockPos loc, Direction face) {
-        return mc.playerController.clickBlock(loc, face);
+        return mc.gameMode.startDestroyBlock(loc, face);
     }
 
     @Override
     public void setHittingBlock(boolean hittingBlock) {
-        ((IPlayerControllerMP) mc.playerController).setIsHittingBlock(hittingBlock);
+        ((IPlayerControllerMP) mc.gameMode).setIsHittingBlock(hittingBlock);
     }
 }

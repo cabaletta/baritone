@@ -242,7 +242,7 @@ public final class CachedRegion implements ICachedRegion {
                     for (int z = 0; z < 32; z++) {
                         if (present[x][z]) {
                             for (int i = 0; i < 256; i++) {
-                                overview[x][z][i] = BlockUtils.stringToBlockRequired(in.readUTF()).getDefaultState();
+                                overview[x][z][i] = BlockUtils.stringToBlockRequired(in.readUTF()).defaultBlockState();
                             }
                         }
                     }

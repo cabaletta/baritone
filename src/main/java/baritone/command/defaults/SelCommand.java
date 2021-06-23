@@ -39,6 +39,7 @@ import baritone.api.utils.BlockOptionalMetaLookup;
 import baritone.utils.IRenderer;
 import java.awt.*;
 import java.util.*;
+import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Stream;
 import net.minecraft.core.Direction;
@@ -64,7 +65,7 @@ public class SelCommand extends Command {
                 float lineWidth = Baritone.settings().selectionLineWidth.value;
                 boolean ignoreDepth = Baritone.settings().renderSelectionIgnoreDepth.value;
                 IRenderer.startLines(color, opacity, lineWidth, ignoreDepth);
-                IRenderer.drawAABB(event.getModelViewStack(), new AABB(pos1, pos1.add(1, 1, 1)));
+                IRenderer.drawAABB(event.getModelViewStack(), new AABB(pos1, pos1.offset(1, 1, 1)));
                 IRenderer.endLines(ignoreDepth);
             }
         });
@@ -80,7 +81,7 @@ public class SelCommand extends Command {
             if (action == Action.POS2 && pos1 == null) {
                 throw new CommandInvalidStateException("Set pos1 first before using pos2");
             }
-            BetterBlockPos playerPos = mc.getRenderViewEntity() != null ? BetterBlockPos.from(mc.getRenderViewEntity().getPosition()) : ctx.playerFeet();
+            BetterBlockPos playerPos = mc.getCameraEntity() != null ? BetterBlockPos.from(mc.getCameraEntity().blockPosition()) : ctx.playerFeet();
             BetterBlockPos pos = args.hasAny() ? args.getDatatypePost(RelativeBlockPos.INSTANCE, playerPos) : playerPos;
             args.requireMax(0);
             if (action == Action.POS1) {

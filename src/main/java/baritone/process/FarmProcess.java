@@ -32,7 +32,6 @@ import baritone.cache.WorldScanner;
 import baritone.pathing.movement.MovementHelper;
 import baritone.utils.BaritoneProcessHelper;
 import baritone.utils.NotificationHelper;
-import net.minecraft.block.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.Entity;
@@ -230,7 +229,7 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
             }
             if (state.getBlock() instanceof BonemealableBlock) {
                 BonemealableBlock ig = (BonemealableBlock) state.getBlock();
-                if (ig.isValidBonemealTarget(ctx.world(), pos, state, true) && ig.isBonemealSuccess(ctx.world(), ctx.world().rand, pos, state)) {
+                if (ig.isValidBonemealTarget(ctx.world(), pos, state, true) && ig.isBonemealSuccess(ctx.world(), ctx.world().random, pos, state)) {
                     bonemealable.add(pos);
                 }
             }

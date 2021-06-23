@@ -77,23 +77,23 @@ public class SetCommand extends Command {
                                     : String.format("All %ssettings:", viewModified ? "modified " : "")
                     ),
                     setting -> {
-                        TextComponent typeComponent = new StringTextComponent(String.format(
+                        TextComponent typeComponent = new TextComponent(String.format(
                                 " (%s)",
                                 settingTypeToString(setting)
                         ));
-                        typeComponent.setStyle(typeComponent.getStyle().setFormatting(TextFormatting.DARK_GRAY));
-                        TextComponent hoverComponent = new StringTextComponent("");
-                        hoverComponent.setStyle(hoverComponent.getStyle().setFormatting(TextFormatting.GRAY));
-                        hoverComponent.appendString(setting.getName());
-                        hoverComponent.appendString(String.format("\nType: %s", settingTypeToString(setting)));
-                        hoverComponent.appendString(String.format("\n\nValue:\n%s", settingValueToString(setting)));
+                        typeComponent.setStyle(typeComponent.getStyle().withColor(ChatFormatting.DARK_GRAY));
+                        TextComponent hoverComponent = new TextComponent("");
+                        hoverComponent.setStyle(hoverComponent.getStyle().withColor(ChatFormatting.GRAY));
+                        hoverComponent.append(setting.getName());
+                        hoverComponent.append(String.format("\nType: %s", settingTypeToString(setting)));
+                        hoverComponent.append(String.format("\n\nValue:\n%s", settingValueToString(setting)));
                         String commandSuggestion = Baritone.settings().prefix.value + String.format("set %s ", setting.getName());
-                        TextComponent component = new StringTextComponent(setting.getName());
-                        component.setStyle(component.getStyle().setFormatting(TextFormatting.GRAY));
+                        TextComponent component = new TextComponent(setting.getName());
+                        component.setStyle(component.getStyle().withColor(ChatFormatting.GRAY));
                         component.append(typeComponent);
                         component.setStyle(component.getStyle()
-                                .setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverComponent))
-                                .setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, commandSuggestion)));
+                                .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverComponent))
+                                .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, commandSuggestion)));
                         return component;
                     },
                     FORCE_COMMAND_PREFIX + "set " + arg + " " + search

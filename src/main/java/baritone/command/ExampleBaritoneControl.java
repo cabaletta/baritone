@@ -99,7 +99,7 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             return false;
         } else if (msg.trim().equalsIgnoreCase("orderpizza")) {
             try {
-                ((IGuiScreen) mc.currentScreen).openLinkInvoker(new URI("https://www.dominos.com/en/pages/order/"));
+                ((IGuiScreen) mc.screen).openLinkInvoker(new URI("https://www.dominos.com/en/pages/order/"));
             } catch (NullPointerException | URISyntaxException ignored) {}
             return false;
         }

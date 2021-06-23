@@ -25,12 +25,7 @@ import baritone.api.event.events.type.EventState;
 import baritone.cache.CachedChunk;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.network.play.server.*;
-import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;
-import net.minecraft.network.protocol.game.ClientboundForgetLevelChunkPacket;
-import net.minecraft.network.protocol.game.ClientboundLevelChunkPacket;
-import net.minecraft.network.protocol.game.ClientboundPlayerCombatPacket;
-import net.minecraft.network.protocol.game.ClientboundSectionBlocksUpdatePacket;
+import net.minecraft.network.protocol.game.*;
 import net.minecraft.world.level.ChunkPos;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -69,7 +64,7 @@ public class MixinClientPlayNetHandler {
     }*/
 
     @Inject(
-            method = "handleChunkData",
+            method = "handleLevelChunk",
             at = @At("RETURN")
     )
     private void postHandleChunkData(ClientboundLevelChunkPacket packetIn, CallbackInfo ci) {
@@ -79,7 +74,7 @@ public class MixinClientPlayNetHandler {
                 ibaritone.getGameEventHandler().onChunkEvent(
                         new ChunkEvent(
                                 EventState.POST,
-                                packetIn.isFullChunk() ? ChunkEvent.Type.POPULATE_FULL : ChunkEvent.Type.POPULATE_PARTIAL,
+                                !packetIn.isSkippable() ? ChunkEvent.Type.POPULATE_FULL : ChunkEvent.Type.POPULATE_PARTIAL,
                                 packetIn.getX(),
                                 packetIn.getZ()
                         )
@@ -89,7 +84,7 @@ public class MixinClientPlayNetHandler {
     }
 
     @Inject(
-            method = "processChunkUnload",
+            method = "handleForgetLevelChunk",
             at = @At("HEAD")
     )
     private void preChunkUnload(ClientboundForgetLevelChunkPacket packet, CallbackInfo ci) {
@@ -104,7 +99,7 @@ public class MixinClientPlayNetHandler {
     }
 
     @Inject(
-            method = "processChunkUnload",
+            method = "handleForgetLevelChunk",
             at = @At("RETURN")
     )
     private void postChunkUnload(ClientboundForgetLevelChunkPacket packet, CallbackInfo ci) {
@@ -119,7 +114,7 @@ public class MixinClientPlayNetHandler {
     }
 
     @Inject(
-            method = "handleBlockChange",
+            method = "handleBlockUpdate",
             at = @At("RETURN")
     )
     private void postHandleBlockChange(ClientboundBlockUpdatePacket packetIn, CallbackInfo ci) {
@@ -145,7 +140,7 @@ public class MixinClientPlayNetHandler {
     }
 
     @Inject(
-            method = "handleMultiBlockChange",
+            method = "handleChunkBlocksUpdate",
             at = @At("RETURN")
     )
     private void postHandleMultiBlockChange(ClientboundSectionBlocksUpdatePacket packetIn, CallbackInfo ci) {
@@ -177,13 +172,13 @@ public class MixinClientPlayNetHandler {
     }
 
     @Inject(
-            method = "handleCombatEvent",
+            method = "handlePlayerCombatKill",
             at = @At(
                     value = "INVOKE",
-                    target = "net/minecraft/client/Minecraft.displayGuiScreen(Lnet/minecraft/client/gui/screen/Screen;)V"
+                    target = "net/minecraft/client/Minecraft.setScreen(Lnet/minecraft/client/gui/screen/Screen;)V"
             )
     )
-    private void onPlayerDeath(ClientboundPlayerCombatPacket packetIn, CallbackInfo ci) {
+    private void onPlayerDeath(ClientboundPlayerCombatKillPacket packetIn, CallbackInfo ci) {
         for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
             LocalPlayer player = ibaritone.getPlayerContext().player();
             if (player != null && player.connection == (ClientPacketListener) (Object) this) {

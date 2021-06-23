@@ -22,10 +22,7 @@ import baritone.api.Settings;
 import baritone.api.utils.Helper;
 import baritone.utils.accessor.IEntityRenderManager;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.*;
 import com.mojang.math.Matrix4f;
 import java.awt.*;
 import net.minecraft.world.phys.AABB;
@@ -36,12 +33,13 @@ public interface IRenderer {
 
     Tesselator tessellator = Tesselator.getInstance();
     BufferBuilder buffer = tessellator.getBuilder();
-    IEntityRenderManager renderManager = (IEntityRenderManager) Helper.mc.getRenderManager();
+    IEntityRenderManager renderManager = (IEntityRenderManager) Helper.mc.getEntityRenderDispatcher();
     Settings settings = BaritoneAPI.getSettings();
 
     static void glColor(Color color, float alpha) {
         float[] colorComponents = color.getColorComponents(null);
-        RenderSystem.color4f(colorComponents[0], colorComponents[1], colorComponents[2], alpha);
+        //TODO: fix
+        //RenderSystem.color4f(colorComponents[0], colorComponents[1], colorComponents[2], alpha);
     }
 
     static void startLines(Color color, float alpha, float lineWidth, boolean ignoreDepth) {
@@ -75,7 +73,8 @@ public interface IRenderer {
         AABB toDraw = aabb.move(-renderManager.renderPosX(), -renderManager.renderPosY(), -renderManager.renderPosZ());
 
         Matrix4f matrix4f = stack.last().pose();
-        buffer.begin(GL_LINES, DefaultVertexFormat.POSITION);
+        //TODO: check
+        buffer.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION);
         // bottom
         buffer.vertex(matrix4f, (float) toDraw.minX, (float) toDraw.minY, (float) toDraw.minZ).endVertex();
         buffer.vertex(matrix4f, (float) toDraw.maxX, (float) toDraw.minY, (float) toDraw.minZ).endVertex();

@@ -29,6 +29,7 @@ import baritone.pathing.path.PathExecutor;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.math.Matrix4f;
 import java.awt.*;
 import java.util.Collection;
@@ -73,19 +74,19 @@ public final class PathRenderer implements IRenderer, Helper {
     public static void render(RenderEvent event, PathingBehavior behavior) {
         float partialTicks = event.getPartialTicks();
         Goal goal = behavior.getGoal();
-        if (Helper.mc.currentScreen instanceof GuiClick) {
-            ((GuiClick) Helper.mc.currentScreen).onRender(event.getModelViewStack(), event.getProjectionMatrix());
+        if (Helper.mc.screen instanceof GuiClick) {
+            ((GuiClick) Helper.mc.screen).onRender(event.getModelViewStack(), event.getProjectionMatrix());
         }
 
-        DimensionType thisPlayerDimension = behavior.baritone.getPlayerContext().world().getDimensionType();
-        DimensionType currentRenderViewDimension = BaritoneAPI.getProvider().getPrimaryBaritone().getPlayerContext().world().getDimensionType();
+        DimensionType thisPlayerDimension = behavior.baritone.getPlayerContext().world().dimensionType();
+        DimensionType currentRenderViewDimension = BaritoneAPI.getProvider().getPrimaryBaritone().getPlayerContext().world().dimensionType();
 
         if (thisPlayerDimension != currentRenderViewDimension) {
             // this is a path for a bot in a different dimension, don't render it
             return;
         }
 
-        Entity renderView = Helper.mc.getRenderViewEntity();
+        Entity renderView = Helper.mc.getCameraEntity();
 
         if (renderView.level != BaritoneAPI.getProvider().getPrimaryBaritone().getPlayerContext().world()) {
             System.out.println("I have no idea what's going on");
@@ -188,7 +189,8 @@ public final class PathRenderer implements IRenderer, Helper {
         double vpZ = posZ();
         boolean renderPathAsFrickinThingy = !settings.renderPathAsLine.value;
 
-        buffer.begin(renderPathAsFrickinThingy ? GL_LINE_STRIP : GL_LINES, DefaultVertexFormat.POSITION);
+        //TODO: check
+        buffer.begin(renderPathAsFrickinThingy ? VertexFormat.Mode.DEBUG_LINE_STRIP : VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION);
         buffer.vertex(matrix4f, (float) (x1 + 0.5D - vpX), (float) (y1 + 0.5D - vpY), (float) (z1 + 0.5D - vpZ)).endVertex();
         buffer.vertex(matrix4f, (float) (x2 + 0.5D - vpX), (float) (y2 + 0.5D - vpY), (float) (z2 + 0.5D - vpZ)).endVertex();
 
@@ -249,7 +251,8 @@ public final class PathRenderer implements IRenderer, Helper {
             if (settings.renderGoalXZBeacon.value) {
                 glPushAttrib(GL_LIGHTING_BIT);
 
-                Helper.mc.getTextureManager().bindTexture(TEXTURE_BEACON_BEAM);
+                //TODO: fix
+                Helper.mc.getTextureManager().bindForSetup(TEXTURE_BEACON_BEAM);
                 if (settings.renderGoalIgnoreDepth.value) {
                     RenderSystem.disableDepthTest();
                 }
@@ -257,9 +260,10 @@ public final class PathRenderer implements IRenderer, Helper {
                 stack.pushPose(); // push
                 stack.translate(goalPos.getX() - renderPosX, -renderPosY, goalPos.getZ() - renderPosZ); // translate
 
+                //TODO: check
                 BeaconRenderer.renderBeaconBeam(
                         stack,
-                        mc.getRenderTypeBuffers().getBufferSource(),
+                        mc.renderBuffers().bufferSource(),
                         TEXTURE_BEACON_BEAM,
                         partialTicks,
                         1.0F,
@@ -320,7 +324,7 @@ public final class PathRenderer implements IRenderer, Helper {
         renderHorizontalQuad(stack, minX, maxX, minZ, maxZ, y2);
 
         Matrix4f matrix4f = stack.last().pose();
-        buffer.begin(GL_LINES, DefaultVertexFormat.POSITION);
+        buffer.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION);
         buffer.vertex(matrix4f, (float) minX, (float) minY, (float) minZ).endVertex();
         buffer.vertex(matrix4f, (float) minX, (float) maxY, (float) minZ).endVertex();
         buffer.vertex(matrix4f, (float) maxX, (float) minY, (float) minZ).endVertex();
@@ -337,11 +341,13 @@ public final class PathRenderer implements IRenderer, Helper {
     private static void renderHorizontalQuad(PoseStack stack, double minX, double maxX, double minZ, double maxZ, double y) {
         if (y != 0) {
             Matrix4f matrix4f = stack.last().pose();
-            buffer.begin(GL_LINE_LOOP, DefaultVertexFormat.POSITION);
+            //TODO: check
+            buffer.begin(VertexFormat.Mode.DEBUG_LINE_STRIP, DefaultVertexFormat.POSITION);
             buffer.vertex(matrix4f, (float) minX, (float) y, (float) minZ).endVertex();
             buffer.vertex(matrix4f, (float) maxX, (float) y, (float) minZ).endVertex();
             buffer.vertex(matrix4f, (float) maxX, (float) y, (float) maxZ).endVertex();
             buffer.vertex(matrix4f, (float) minX, (float) y, (float) maxZ).endVertex();
+            buffer.vertex(matrix4f, (float) minX, (float) y, (float) minZ).endVertex();
             tessellator.end();
         }
     }

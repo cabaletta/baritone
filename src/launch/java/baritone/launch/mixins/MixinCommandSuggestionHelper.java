@@ -45,23 +45,23 @@ public class MixinCommandSuggestionHelper {
 
     @Shadow
     @Final
-    private EditBox inputField;
+    EditBox input;
 
     @Shadow
     @Final
-    private List<String> exceptionList;
+    private List<String> commandUsage;
 
     @Shadow
-    private CompletableFuture<Suggestions> suggestionsFuture;
+    private CompletableFuture<Suggestions> pendingSuggestions;
 
     @Inject(
-            method = "init",
+            method = "updateCommandInfo",
             at = @At("HEAD"),
             cancellable = true
     )
     private void preUpdateSuggestion(CallbackInfo ci) {
         // Anything that is present in the input text before the cursor position
-        String prefix = this.inputField.getValue().substring(0, Math.min(this.inputField.getValue().length(), this.inputField.getCursorPosition()));
+        String prefix = this.input.getValue().substring(0, Math.min(this.input.getValue().length(), this.input.getCursorPosition()));
 
         TabCompleteEvent event = new TabCompleteEvent(prefix);
         BaritoneAPI.getProvider().getPrimaryBaritone().getGameEventHandler().onPreTabComplete(event);
@@ -75,14 +75,14 @@ public class MixinCommandSuggestionHelper {
             ci.cancel();
 
             // TODO: Support populating the command usage
-            this.exceptionList.clear();
+            this.commandUsage.clear();
 
             if (event.completions.length == 0) {
-                this.suggestionsFuture = Suggestions.empty();
+                this.pendingSuggestions = Suggestions.empty();
             } else {
-                int offset = this.inputField.getValue().endsWith(" ")
-                        ? this.inputField.getCursorPosition()
-                        : this.inputField.getValue().lastIndexOf(" ") + 1; // If there is no space this is still 0 haha yes
+                int offset = this.input.getValue().endsWith(" ")
+                        ? this.input.getCursorPosition()
+                        : this.input.getValue().lastIndexOf(" ") + 1; // If there is no space this is still 0 haha yes
 
                 List<Suggestion> suggestionList = Stream.of(event.completions)
                         .map(s -> new Suggestion(StringRange.between(offset, offset + s.length()), s))
@@ -92,8 +92,8 @@ public class MixinCommandSuggestionHelper {
                         StringRange.between(offset, offset + suggestionList.stream().mapToInt(s -> s.getText().length()).max().orElse(0)),
                         suggestionList);
 
-                this.suggestionsFuture = new CompletableFuture<>();
-                this.suggestionsFuture.complete(suggestions);
+                this.pendingSuggestions = new CompletableFuture<>();
+                this.pendingSuggestions.complete(suggestions);
             }
         }
     }

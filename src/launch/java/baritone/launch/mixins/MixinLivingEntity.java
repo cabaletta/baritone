@@ -50,7 +50,7 @@ public abstract class MixinLivingEntity extends Entity {
     }
 
     @Inject(
-            method = "jump",
+            method = "jumpFromGround",
             at = @At("HEAD")
     )
     private void preMoveRelative(CallbackInfo ci) {
@@ -58,25 +58,24 @@ public abstract class MixinLivingEntity extends Entity {
         if (LocalPlayer.class.isInstance(this)) {
             IBaritone baritone = BaritoneAPI.getProvider().getBaritoneForPlayer((LocalPlayer) (Object) this);
             if (baritone != null) {
-                this.jumpRotationEvent = new RotationMoveEvent(RotationMoveEvent.Type.JUMP, this.yRot);
+                this.jumpRotationEvent = new RotationMoveEvent(RotationMoveEvent.Type.JUMP, this.getYRot());
                 baritone.getGameEventHandler().onPlayerRotationMove(this.jumpRotationEvent);
             }
         }
     }
 
     @Redirect(
-            method = "jump",
+            method = "jumpFromGround",
             at = @At(
-                    value = "FIELD",
-                    opcode = GETFIELD,
-                    target = "net/minecraft/entity/LivingEntity.rotationYaw:F"
+                    value = "INVOKE",
+                    target = "net/minecraft/world/entity/LivingEntity.getYRot()F"
             )
     )
     private float overrideYaw(LivingEntity self) {
         if (self instanceof LocalPlayer && BaritoneAPI.getProvider().getBaritoneForPlayer((LocalPlayer) (Object) this) != null) {
             return this.jumpRotationEvent.getYaw();
         }
-        return self.yRot;
+        return self.getYRot();
     }
 
 

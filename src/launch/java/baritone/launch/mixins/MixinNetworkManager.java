@@ -47,35 +47,35 @@ public class MixinNetworkManager {
 
     @Shadow
     @Final
-    private PacketFlow direction;
+    private PacketFlow receiving;
 
     @Inject(
-            method = "dispatchPacket",
+            method = "sendPacket",
             at = @At("HEAD")
     )
     private void preDispatchPacket(Packet<?> inPacket, final GenericFutureListener<? extends Future<? super Void>> futureListeners, CallbackInfo ci) {
-        if (this.direction != PacketFlow.CLIENTBOUND) {
+        if (this.receiving != PacketFlow.CLIENTBOUND) {
             return;
         }
 
         for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
-            if (ibaritone.getPlayerContext().player() != null && ibaritone.getPlayerContext().player().connection.getNetworkManager() == (Connection) (Object) this) {
+            if (ibaritone.getPlayerContext().player() != null && ibaritone.getPlayerContext().player().connection.getConnection() == (Connection) (Object) this) {
                 ibaritone.getGameEventHandler().onSendPacket(new PacketEvent((Connection) (Object) this, EventState.PRE, inPacket));
             }
         }
     }
 
     @Inject(
-            method = "dispatchPacket",
+            method = "sendPacket",
             at = @At("RETURN")
     )
     private void postDispatchPacket(Packet<?> inPacket, final GenericFutureListener<? extends Future<? super Void>> futureListeners, CallbackInfo ci) {
-        if (this.direction != PacketFlow.CLIENTBOUND) {
+        if (this.receiving != PacketFlow.CLIENTBOUND) {
             return;
         }
 
         for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
-            if (ibaritone.getPlayerContext().player() != null && ibaritone.getPlayerContext().player().connection.getNetworkManager() == (Connection) (Object) this) {
+            if (ibaritone.getPlayerContext().player() != null && ibaritone.getPlayerContext().player().connection.getConnection() == (Connection) (Object) this) {
                 ibaritone.getGameEventHandler().onSendPacket(new PacketEvent((Connection) (Object) this, EventState.POST, inPacket));
             }
         }
@@ -85,15 +85,15 @@ public class MixinNetworkManager {
             method = "channelRead0",
             at = @At(
                     value = "INVOKE",
-                    target = "net/minecraft/network/NetworkManager.processPacket(Lnet/minecraft/network/IPacket;Lnet/minecraft/network/INetHandler;)V"
+                    target = "net/minecraft/network/Connection.genericsFtw(Lnet/minecraft/network/protocol/Packet;Lnet/minecraft/network/PacketListener;)V"
             )
     )
     private void preProcessPacket(ChannelHandlerContext context, Packet<?> packet, CallbackInfo ci) {
-        if (this.direction != PacketFlow.CLIENTBOUND) {
+        if (this.receiving != PacketFlow.CLIENTBOUND) {
             return;
         }
         for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
-            if (ibaritone.getPlayerContext().player() != null && ibaritone.getPlayerContext().player().connection.getNetworkManager() == (Connection) (Object) this) {
+            if (ibaritone.getPlayerContext().player() != null && ibaritone.getPlayerContext().player().connection.getConnection() == (Connection) (Object) this) {
                 ibaritone.getGameEventHandler().onReceivePacket(new PacketEvent((Connection) (Object) this, EventState.PRE, packet));
             }
         }
@@ -104,11 +104,11 @@ public class MixinNetworkManager {
             at = @At("RETURN")
     )
     private void postProcessPacket(ChannelHandlerContext context, Packet<?> packet, CallbackInfo ci) {
-        if (!this.channel.isOpen() || this.direction != PacketFlow.CLIENTBOUND) {
+        if (!this.channel.isOpen() || this.receiving != PacketFlow.CLIENTBOUND) {
             return;
         }
         for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
-            if (ibaritone.getPlayerContext().player() != null && ibaritone.getPlayerContext().player().connection.getNetworkManager() == (Connection) (Object) this) {
+            if (ibaritone.getPlayerContext().player() != null && ibaritone.getPlayerContext().player().connection.getConnection() == (Connection) (Object) this) {
                 ibaritone.getGameEventHandler().onReceivePacket(new PacketEvent((Connection) (Object) this, EventState.POST, packet));
             }
         }

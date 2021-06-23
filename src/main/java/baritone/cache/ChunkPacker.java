@@ -20,7 +20,6 @@ package baritone.cache;
 import baritone.api.utils.BlockUtils;
 import baritone.pathing.movement.MovementHelper;
 import baritone.utils.pathing.PathingBlockType;
-import net.minecraft.block.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;

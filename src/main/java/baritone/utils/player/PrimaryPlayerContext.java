@@ -49,7 +49,7 @@ public enum PrimaryPlayerContext implements IPlayerContext, Helper {
 
     @Override
     public Level world() {
-        return mc.world;
+        return mc.level;
     }
 
     @Override

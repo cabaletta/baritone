@@ -27,10 +27,8 @@ import baritone.api.utils.input.Input;
 import baritone.pathing.movement.MovementState.MovementTarget;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.ToolSet;
-import net.minecraft.block.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.fluid.*;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.AbstractSkullBlock;
 import net.minecraft.world.level.block.AirBlock;
@@ -334,7 +332,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         if (block == Blocks.LADDER || (block == Blocks.VINE && Baritone.settings().allowVines.value)) { // TODO reconsider this
             return true;
         }
-        if (block == Blocks.FARMLAND || block == Blocks.GRASS_PATH) {
+        if (block == Blocks.FARMLAND || block == Blocks.DIRT_PATH) {
             return true;
         }
         if (block == Blocks.ENDER_CHEST || block == Blocks.CHEST || block == Blocks.TRAPPED_CHEST) {
@@ -465,7 +463,7 @@ public interface MovementHelper extends ActionCosts, Helper {
      */
     static void switchToBestToolFor(IPlayerContext ctx, BlockState b, ToolSet ts, boolean preferSilkTouch) {
         if (!Baritone.settings().disableAutoTool.value && !Baritone.settings().assumeExternalAutoTool.value) {
-            ctx.player().inventory.currentItem = ts.getBestSlot(b.getBlock(), preferSilkTouch);
+            ctx.player().getInventory().selected = ts.getBestSlot(b.getBlock(), preferSilkTouch);
         }
     }
 
@@ -473,7 +471,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         state.setTarget(new MovementTarget(
                 new Rotation(RotationUtils.calcRotationFromVec3d(ctx.playerHead(),
                         VecUtils.getBlockPosCenter(pos),
-                        ctx.playerRotations()).getYaw(), ctx.player().rotationPitch),
+                        ctx.playerRotations()).getYaw(), ctx.player().getXRot()),
                 false
         )).setInput(Input.MOVE_FORWARD, true);
     }

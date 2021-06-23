@@ -46,7 +46,7 @@ public class MixinMinecraft {
     @Shadow
     public LocalPlayer player;
     @Shadow
-    public ClientLevel world;
+    public ClientLevel level;
 
     @Inject(
             method = "<init>",
@@ -83,12 +83,12 @@ public class MixinMinecraft {
     }
 
     @Inject(
-            method = "loadWorld(Lnet/minecraft/client/world/ClientWorld;)V",
+            method = "setLevel",
             at = @At("HEAD")
     )
     private void preLoadWorld(ClientLevel world, CallbackInfo ci) {
         // If we're unloading the world but one doesn't exist, ignore it
-        if (this.world == null && world == null) {
+        if (this.level == null && world == null) {
             return;
         }
 
@@ -103,7 +103,7 @@ public class MixinMinecraft {
     }
 
     @Inject(
-            method = "loadWorld(Lnet/minecraft/client/world/ClientWorld;)V",
+            method = "setLevel",
             at = @At("RETURN")
     )
     private void postLoadWorld(ClientLevel world, CallbackInfo ci) {
@@ -123,7 +123,7 @@ public class MixinMinecraft {
             at = @At(
                     value = "FIELD",
                     opcode = Opcodes.GETFIELD,
-                    target = "net/minecraft/client/gui/screen/Screen.passEvents:Z"
+                    target = "net/minecraft/client/gui/screens/Screen.passEvents:Z"
             )
     )
     private boolean passEvents(Screen screen) {

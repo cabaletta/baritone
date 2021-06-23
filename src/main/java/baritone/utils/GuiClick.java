@@ -33,7 +33,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.BaseComponent;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.TextComponent;
-import net.minecraft.util.math.*;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.AABB;
@@ -64,12 +63,12 @@ public class GuiClick extends Screen implements Helper {
 
     @Override
     public void render(PoseStack stack, int mouseX, int mouseY, float partialTicks) {
-        double mx = mc.mouseHelper.getMouseX();
-        double my = mc.mouseHelper.getMouseY();
+        double mx = mc.mouseHandler.xpos();
+        double my = mc.mouseHandler.ypos();
 
-        my = mc.getMainWindow().getHeight() - my;
-        my *= mc.getMainWindow().getFramebufferHeight() / (double) mc.getMainWindow().getHeight();
-        mx *= mc.getMainWindow().getFramebufferWidth() / (double) mc.getMainWindow().getWidth();
+        my = mc.getWindow().getScreenHeight() - my;
+        my *= mc.getWindow().getHeight() / (double) mc.getWindow().getScreenHeight();
+        mx *= mc.getWindow().getWidth() / (double) mc.getWindow().getScreenWidth();
         Vec3 near = toWorld(mx, my, 0);
         Vec3 far = toWorld(mx, my, 1); // "Use 0.945 that's what stack overflow says" - leijurv
 
@@ -123,13 +122,14 @@ public class GuiClick extends Screen implements Helper {
         this.projectionViewMatrix.invert();
 
         if (currentMouseOver != null) {
-            Entity e = mc.getRenderViewEntity();
+            Entity e = mc.getCameraEntity();
             // drawSingleSelectionBox WHEN?
             PathRenderer.drawManySelectionBoxes(modelViewStack, e, Collections.singletonList(currentMouseOver), Color.CYAN);
             if (clickStart != null && !clickStart.equals(currentMouseOver)) {
                 RenderSystem.enableBlend();
                 RenderSystem.blendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
-                RenderSystem.color4f(Color.RED.getColorComponents(null)[0], Color.RED.getColorComponents(null)[1], Color.RED.getColorComponents(null)[2], 0.4F);
+                //TODO: fix
+                //RenderSystem.color4f(Color.RED.getColorComponents(null)[0], Color.RED.getColorComponents(null)[1], Color.RED.getColorComponents(null)[2], 0.4F);
                 RenderSystem.lineWidth(Baritone.settings().pathRenderLineWidthPixels.value);
                 RenderSystem.disableTexture();
                 RenderSystem.depthMask(false);
@@ -151,8 +151,8 @@ public class GuiClick extends Screen implements Helper {
             return null;
         }
 
-        x /= mc.getMainWindow().getFramebufferWidth();
-        y /= mc.getMainWindow().getFramebufferHeight();
+        x /= mc.getWindow().getWidth();
+        y /= mc.getWindow().getHeight();
         x = x * 2 - 1;
         y = y * 2 - 1;
 

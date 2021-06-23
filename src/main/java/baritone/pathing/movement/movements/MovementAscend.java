@@ -39,7 +39,7 @@ public class MovementAscend extends Movement {
     private int ticksWithoutPlacement = 0;
 
     public MovementAscend(IBaritone baritone, BetterBlockPos src, BetterBlockPos dest) {
-        super(baritone, src, dest, new BetterBlockPos[]{dest, src.up(2), dest.up()}, dest.down());
+        super(baritone, src, dest, new BetterBlockPos[]{dest, src.above(2), dest.above()}, dest.below());
     }
 
     @Override
@@ -55,12 +55,12 @@ public class MovementAscend extends Movement {
 
     @Override
     protected Set<BetterBlockPos> calculateValidPositions() {
-        BetterBlockPos prior = new BetterBlockPos(src.subtract(getDirection()).up()); // sometimes we back up to place the block, also sprint ascends, also skip descend to straight ascend
+        BetterBlockPos prior = new BetterBlockPos(src.subtract(getDirection()).above()); // sometimes we back up to place the block, also sprint ascends, also skip descend to straight ascend
         return ImmutableSet.of(src,
-                src.up(),
+                src.above(),
                 dest,
                 prior,
-                prior.up()
+                prior.above()
         );
     }
 
@@ -167,14 +167,14 @@ public class MovementAscend extends Movement {
             return state;
         }
 
-        if (ctx.playerFeet().equals(dest) || ctx.playerFeet().equals(dest.add(getDirection().below()))) {
+        if (ctx.playerFeet().equals(dest) || ctx.playerFeet().equals(dest.offset(getDirection().below()))) {
             return state.setStatus(MovementStatus.SUCCESS);
         }
 
         BlockState jumpingOnto = BlockStateInterface.get(ctx, positionToPlace);
         if (!MovementHelper.canWalkOn(ctx, positionToPlace, jumpingOnto)) {
             ticksWithoutPlacement++;
-            if (MovementHelper.attemptToPlaceABlock(state, baritone, dest.down(), false, true) == PlaceResult.READY_TO_PLACE) {
+            if (MovementHelper.attemptToPlaceABlock(state, baritone, dest.below(), false, true) == PlaceResult.READY_TO_PLACE) {
                 state.setInput(Input.SNEAK, true);
                 if (ctx.player().isCrouching()) {
                     state.setInput(Input.CLICK_RIGHT, true);
@@ -188,21 +188,21 @@ public class MovementAscend extends Movement {
             return state;
         }
         MovementHelper.moveTowards(ctx, state, dest);
-        if (MovementHelper.isBottomSlab(jumpingOnto) && !MovementHelper.isBottomSlab(BlockStateInterface.get(ctx, src.down()))) {
+        if (MovementHelper.isBottomSlab(jumpingOnto) && !MovementHelper.isBottomSlab(BlockStateInterface.get(ctx, src.below()))) {
             return state; // don't jump while walking from a non double slab into a bottom slab
         }
 
-        if (Baritone.settings().assumeStep.value || ctx.playerFeet().equals(src.up())) {
+        if (Baritone.settings().assumeStep.value || ctx.playerFeet().equals(src.above())) {
             // no need to hit space if we're already jumping
             return state;
         }
 
         int xAxis = Math.abs(src.getX() - dest.getX()); // either 0 or 1
         int zAxis = Math.abs(src.getZ() - dest.getZ()); // either 0 or 1
-        double flatDistToNext = xAxis * Math.abs((dest.getX() + 0.5D) - ctx.player().getPositionVec().x) + zAxis * Math.abs((dest.getZ() + 0.5D) - ctx.player().getPositionVec().z);
-        double sideDist = zAxis * Math.abs((dest.getX() + 0.5D) - ctx.player().getPositionVec().x) + xAxis * Math.abs((dest.getZ() + 0.5D) - ctx.player().getPositionVec().z);
+        double flatDistToNext = xAxis * Math.abs((dest.getX() + 0.5D) - ctx.player().position().x) + zAxis * Math.abs((dest.getZ() + 0.5D) - ctx.player().position().z);
+        double sideDist = zAxis * Math.abs((dest.getX() + 0.5D) - ctx.player().position().x) + xAxis * Math.abs((dest.getZ() + 0.5D) - ctx.player().position().z);
 
-        double lateralMotion = xAxis * ctx.player().getMotion().z + zAxis * ctx.player().getMotion().x;
+        double lateralMotion = xAxis * ctx.player().getDeltaMovement().z + zAxis * ctx.player().getDeltaMovement().x;
         if (Math.abs(lateralMotion) > 0.1) {
             return state;
         }
@@ -222,9 +222,9 @@ public class MovementAscend extends Movement {
     }
 
     public boolean headBonkClear() {
-        BetterBlockPos startUp = src.up(2);
+        BetterBlockPos startUp = src.above(2);
         for (int i = 0; i < 4; i++) {
-            BetterBlockPos check = startUp.offset(Direction.from2DDataValue(i));
+            BetterBlockPos check = startUp.relative(Direction.from2DDataValue(i));
             if (!MovementHelper.canWalkThrough(ctx, check)) {
                 // We might bonk our head
                 return false;

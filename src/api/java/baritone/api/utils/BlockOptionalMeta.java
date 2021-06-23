@@ -21,7 +21,6 @@ import baritone.api.utils.accessor.IItemStack;
 import com.google.common.collect.ImmutableSet;
 import io.netty.util.concurrent.ThreadPerTaskExecutor;
 import net.minecraft.core.BlockPos;
-import net.minecraft.loot.*;
 import net.minecraft.resources.*;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.packs.PackResources;
@@ -145,7 +144,7 @@ public final class BlockOptionalMeta {
 
     public static LootTables getManager() {
         if (manager == null) {
-            PackRepository rpl = new PackRepository(Pack::new, new ServerPacksSource());
+            PackRepository rpl = new PackRepository(PackType.SERVER_DATA, new ServerPacksSource());
             rpl.reload();
             PackResources thePack = rpl.getAvailablePacks().iterator().next().open();
             ReloadableResourceManager resourceManager = new SimpleReloadableResourceManager(PackType.SERVER_DATA);

@@ -81,9 +81,9 @@ repositories {
 
 dependencies {
     if (compileType.equals("FORGE")) {
-        forge "net.minecraftforge:forge:1.16.5-36.1.0"
+        //forge "net.minecraftforge:forge:1.16.5-36.1.0"
     }
-    minecraft "com.mojang:minecraft:1.16.5"
+    minecraft "com.mojang:minecraft:1.17"
     mappings minecraft.officialMojangMappings()
     if (!compileType.equals("FORGE")) {
         modImplementation "net.fabricmc:fabric-loader:0.9.1+build.205"

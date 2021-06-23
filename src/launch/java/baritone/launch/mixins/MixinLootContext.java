@@ -31,10 +31,10 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 public class MixinLootContext {
 
     @Redirect(
-            method = "build",
+            method = "create",
             at = @At(
                     value = "INVOKE",
-                    target = "net/minecraft/world/server/ServerWorld.getServer()Lnet/minecraft/server/MinecraftServer;"
+                    target = "net/minecraft/server/level/ServerLevel.getServer()Lnet/minecraft/server/MinecraftServer;"
             )
     )
     private MinecraftServer getServer(ServerLevel world) {
@@ -45,7 +45,7 @@ public class MixinLootContext {
     }
 
     @Redirect(
-            method = "build",
+            method = "create",
             at = @At(
                     value = "INVOKE",
                     target = "net/minecraft/server/MinecraftServer.getLootTableManager()Lnet/minecraft/loot/LootTableManager;"
@@ -59,7 +59,7 @@ public class MixinLootContext {
     }
 
     @Redirect(
-            method = "build",
+            method = "create",
             at = @At(
                     value = "INVOKE",
                     target = "net/minecraft/server/MinecraftServer.func_229736_aP_()Lnet/minecraft/loot/LootPredicateManager;"

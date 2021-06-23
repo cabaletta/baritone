@@ -46,7 +46,7 @@ public enum WorldScanner implements IWorldScanner {
         if (filter.blocks().isEmpty()) {
             return res;
         }
-        ClientChunkCache chunkProvider = (ClientChunkCache) ctx.world().getChunkProvider();
+        ClientChunkCache chunkProvider = (ClientChunkCache) ctx.world().getChunkSource();
 
         int maxSearchRadiusSq = maxSearchRadius * maxSearchRadius;
         int playerChunkX = ctx.playerFeet().getX() >> 4;
@@ -96,7 +96,7 @@ public enum WorldScanner implements IWorldScanner {
             return Collections.emptyList();
         }
 
-        ClientChunkCache chunkProvider = (ClientChunkCache) ctx.world().getChunkProvider();
+        ClientChunkCache chunkProvider = (ClientChunkCache) ctx.world().getChunkSource();
         LevelChunk chunk = chunkProvider.getChunk(pos.x, pos.z, null, false);
         int playerY = ctx.playerFeet().getY();
 
@@ -116,7 +116,7 @@ public enum WorldScanner implements IWorldScanner {
 
     @Override
     public int repack(IPlayerContext ctx, int range) {
-        ChunkSource chunkProvider = ctx.world().getChunkProvider();
+        ChunkSource chunkProvider = ctx.world().getChunkSource();
         ICachedWorld cachedWorld = ctx.worldData().getCachedWorld();
 
         BetterBlockPos playerPos = ctx.playerFeet();

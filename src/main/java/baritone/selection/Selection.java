@@ -37,7 +37,7 @@ public class Selection implements ISelection {
                 max.z - min.z + 1
         );
 
-        this.aabb = new AABB(this.min, this.max.add(1, 1, 1));
+        this.aabb = new AABB(this.min, this.max.offset(1, 1, 1));
     }
 
     @Override
@@ -108,23 +108,23 @@ public class Selection implements ISelection {
     @Override
     public ISelection expand(Direction direction, int blocks) {
         if (isPos2(direction)) {
-            return new Selection(pos1, pos2.offset(direction, blocks));
+            return new Selection(pos1, pos2.relative(direction, blocks));
         } else {
-            return new Selection(pos1.offset(direction, blocks), pos2);
+            return new Selection(pos1.relative(direction, blocks), pos2);
         }
     }
 
     @Override
     public ISelection contract(Direction direction, int blocks) {
         if (isPos2(direction)) {
-            return new Selection(pos1.offset(direction, blocks), pos2);
+            return new Selection(pos1.relative(direction, blocks), pos2);
         } else {
-            return new Selection(pos1, pos2.offset(direction, blocks));
+            return new Selection(pos1, pos2.relative(direction, blocks));
         }
     }
 
     @Override
     public ISelection shift(Direction direction, int blocks) {
-        return new Selection(pos1.offset(direction, blocks), pos2.offset(direction, blocks));
+        return new Selection(pos1.relative(direction, blocks), pos2.relative(direction, blocks));
     }
 }

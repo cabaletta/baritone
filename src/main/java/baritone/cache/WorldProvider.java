@@ -60,14 +60,14 @@ public class WorldProvider implements IWorldProvider, Helper {
         File directory;
         File readme;
 
-        IntegratedServer integratedServer = mc.getIntegratedServer();
+        IntegratedServer integratedServer = mc.getSingleplayerServer();
 
         // If there is an integrated server running (Aka Singleplayer) then do magic to find the world save file
-        if (mc.isSingleplayer()) {
+        if (mc.hasSingleplayerServer()) {
             directory = DimensionType.getStorageFolder(world, integratedServer.getWorldPath(LevelResource.ROOT).toFile());
 
             // Gets the "depth" of this directory relative the the game's run directory, 2 is the location of the world
-            if (directory.toPath().relativize(mc.gameDir.toPath()).getNameCount() != 2) {
+            if (directory.toPath().relativize(mc.gameDirectory.toPath()).getNameCount() != 2) {
                 // subdirectory of the main save directory for this world
                 directory = directory.getParentFile();
             }
@@ -75,7 +75,7 @@ public class WorldProvider implements IWorldProvider, Helper {
             directory = new File(directory, "baritone");
             readme = directory;
         } else { // Otherwise, the server must be remote...
-            String folderName = mc.isConnectedToRealms() ? "realms" : mc.getCurrentServerData().serverIP;
+            String folderName = mc.isConnectedToRealms() ? "realms" : mc.getCurrentServer().ip;
             if (SystemUtils.IS_OS_WINDOWS) {
                 folderName = folderName.replace(":", "_");
             }

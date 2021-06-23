@@ -41,7 +41,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class MixinClientPlayerEntity {
 
     @Inject(
-            method = "sendChatMessage",
+            method = "chat",
             at = @At("HEAD"),
             cancellable = true
     )
@@ -61,7 +61,7 @@ public class MixinClientPlayerEntity {
             method = "tick",
             at = @At(
                     value = "INVOKE",
-                    target = "net/minecraft/client/entity/player/ClientPlayerEntity.isPassenger()Z",
+                    target = "net/minecraft/client/player/LocalPlayer.isPassenger()Z",
                     shift = At.Shift.BY,
                     by = -3
             )
@@ -77,7 +77,7 @@ public class MixinClientPlayerEntity {
             method = "tick",
             at = @At(
                     value = "INVOKE",
-                    target = "net/minecraft/client/entity/player/ClientPlayerEntity.onUpdateWalkingPlayer()V",
+                    target = "net/minecraft/client/player/LocalPlayer.sendPosition()V",
                     shift = At.Shift.BY,
                     by = 2
             )
@@ -90,10 +90,10 @@ public class MixinClientPlayerEntity {
     }
 
     @Redirect(
-            method = "livingTick",
+            method = "aiStep",
             at = @At(
                     value = "FIELD",
-                    target = "net/minecraft/entity/player/PlayerAbilities.allowFlying:Z"
+                    target = "net/minecraft/world/entity/player/Abilities.mayfly:Z"
             )
     )
     private boolean isAllowFlying(Abilities capabilities) {
@@ -105,10 +105,10 @@ public class MixinClientPlayerEntity {
     }
 
     @Redirect(
-            method = "livingTick",
+            method = "aiStep",
             at = @At(
                     value = "INVOKE",
-                    target = "net/minecraft/client/settings/KeyBinding.isKeyDown()Z"
+                    target = "net/minecraft/client/KeyMapping.isDown()Z"
             )
     )
     private boolean isKeyDown(KeyMapping keyBinding) {
@@ -129,7 +129,7 @@ public class MixinClientPlayerEntity {
     }
 
     @Inject(
-            method = "updateRidden",
+            method = "rideTick",
             at = @At(
                     value = "HEAD"
             )

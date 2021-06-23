@@ -31,7 +31,7 @@ public enum Moves {
     DOWNWARD(0, -1, 0) {
         @Override
         public Movement apply0(CalculationContext context, BetterBlockPos src) {
-            return new MovementDownward(context.getBaritone(), src, src.down());
+            return new MovementDownward(context.getBaritone(), src, src.below());
         }
 
         @Override
@@ -43,7 +43,7 @@ public enum Moves {
     PILLAR(0, +1, 0) {
         @Override
         public Movement apply0(CalculationContext context, BetterBlockPos src) {
-            return new MovementPillar(context.getBaritone(), src, src.up());
+            return new MovementPillar(context.getBaritone(), src, src.above());
         }
 
         @Override

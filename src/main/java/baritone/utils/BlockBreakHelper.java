@@ -56,12 +56,12 @@ public final class BlockBreakHelper implements Helper {
             if (!didBreakLastTick) {
                 ctx.playerController().syncHeldItem();
                 ctx.playerController().clickBlock(((BlockHitResult) trace).getBlockPos(), ((BlockHitResult) trace).getDirection());
-                ctx.player().swingArm(InteractionHand.MAIN_HAND);
+                ctx.player().swing(InteractionHand.MAIN_HAND);
             }
 
             // Attempt to break the block
             if (ctx.playerController().onPlayerDamageBlock(((BlockHitResult) trace).getBlockPos(), ((BlockHitResult) trace).getDirection())) {
-                ctx.player().swingArm(InteractionHand.MAIN_HAND);
+                ctx.player().swing(InteractionHand.MAIN_HAND);
             }
 
             ctx.playerController().setHittingBlock(false);

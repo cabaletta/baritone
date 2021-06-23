@@ -19,6 +19,7 @@ package baritone.launch.mixins;
 
 import baritone.utils.accessor.IChunkArray;
 import baritone.utils.accessor.IClientChunkProvider;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
@@ -30,13 +31,14 @@ import net.minecraft.client.multiplayer.ClientLevel;
 @Mixin(ClientChunkCache.class)
 public class MixinClientChunkProvider implements IClientChunkProvider {
 
+    @Final
     @Shadow
-    private ClientLevel world;
+    ClientLevel level;
 
     @Override
     public ClientChunkCache createThreadSafeCopy() {
         IChunkArray arr = extractReferenceArray();
-        ClientChunkCache result = new ClientChunkCache(world, arr.viewDistance() - 3); // -3 because its adds 3 for no reason lmao
+        ClientChunkCache result = new ClientChunkCache(level, arr.viewDistance() - 3); // -3 because its adds 3 for no reason lmao
         IChunkArray copyArr = ((IClientChunkProvider) result).extractReferenceArray();
         copyArr.copyFrom(arr);
         if (copyArr.viewDistance() != arr.viewDistance()) {
