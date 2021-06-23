@@ -22,28 +22,15 @@ import org.apache.commons.io.IOUtils;
 import org.gradle.api.plugins.JavaPluginConvention;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.TaskAction;
-import org.gradle.api.JavaVersion;
-import org.gradle.api.NamedDomainObjectContainer;
-import org.gradle.api.artifacts.Configuration;
-import org.gradle.api.artifacts.Dependency;
-import org.gradle.api.internal.file.IdentityFileResolver;
-import org.gradle.api.internal.plugins.DefaultConvention;
-import org.gradle.api.tasks.Input;
-import org.gradle.api.tasks.TaskAction;
 import org.gradle.api.tasks.TaskCollection;
 import org.gradle.api.tasks.compile.ForkOptions;
 import org.gradle.api.tasks.compile.JavaCompile;
-import org.gradle.internal.Pair;
 import org.gradle.internal.jvm.Jvm;
-import org.gradle.internal.jvm.inspection.DefaultJvmVersionDetector;
-import org.gradle.process.internal.DefaultExecActionFactory;
 
 import java.io.*;
 import java.net.URL;
-import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
@@ -61,11 +48,23 @@ public class ProguardTask extends BaritoneGradleTask {
     @Input
     private String url;
 
+    public String getUrl() {
+        return url;
+    }
+
     @Input
     private String extract;
 
+    public String getExtract() {
+        return extract;
+    }
+
     @Input
     private String compType;
+
+    public String getCompType() {
+        return compType;
+    }
 
     private final File copyMcTargetDir = new File("./build/createMcIntermediaryJar").getAbsoluteFile();
     private final File copyMcTargetJar = new File(copyMcTargetDir, "client.jar");
@@ -216,15 +215,16 @@ public class ProguardTask extends BaritoneGradleTask {
     }
 
     private boolean validateJavaVersion(String java) {
-        final JavaVersion javaVersion = new DefaultJvmVersionDetector(new DefaultExecActionFactory(new IdentityFileResolver())).getJavaVersion(java);
-
-        if (!javaVersion.getMajorVersion().equals("8")) {
-            System.out.println("Failed to validate Java version " + javaVersion.toString() + " [" + java + "] for ProGuard libraryjars");
-            // throw new RuntimeException("Java version incorrect: " + javaVersion.getMajorVersion() + " for " + java);
-            return false;
-        }
-
-        System.out.println("Validated Java version " + javaVersion.toString() + " [" + java + "] for ProGuard libraryjars");
+        //TODO: fix for j16
+//        final JavaVersion javaVersion = new DefaultJvmVersionDetector(new DefaultExecActionFactory(new IdentityFileResolver())).getJavaVersion(java);
+//
+//        if (!javaVersion.getMajorVersion().equals("8")) {
+//            System.out.println("Failed to validate Java version " + javaVersion.toString() + " [" + java + "] for ProGuard libraryjars");
+//            // throw new RuntimeException("Java version incorrect: " + javaVersion.getMajorVersion() + " for " + java);
+//            return false;
+//        }
+//
+//        System.out.println("Validated Java version " + javaVersion.toString() + " [" + java + "] for ProGuard libraryjars");
         return true;
     }
 
