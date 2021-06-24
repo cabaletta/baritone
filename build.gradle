@@ -86,12 +86,13 @@ dependencies {
     minecraft "com.mojang:minecraft:1.17"
     mappings minecraft.officialMojangMappings()
     if (!compileType.equals("FORGE")) {
-        modImplementation "net.fabricmc:fabric-loader:0.9.1+build.205"
+        modImplementation "net.fabricmc:fabric-loader:0.11.6"
     }
     // this makes it compile with the forge tweak stuff
     implementation 'com.github.ImpactDevelopment:SimpleTweaker:1.2'
     implementation('net.minecraft:launchwrapper:1.12') {
         exclude module: 'lwjgl'
+        exclude module: 'asm-debug-all'
     }
 
     implementation 'com.google.code.findbugs:jsr305:3.0.2'
