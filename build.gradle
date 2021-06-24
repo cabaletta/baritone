@@ -30,10 +30,9 @@ import baritone.gradle.task.ProguardTask
 
 def compileType = project.hasProperty("baritone.fabric_build") ? "FABRIC" : project.hasProperty("baritone.forge_build") ? "FORGE" : "OFFICIAL"
 
-sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
+sourceCompatibility = targetCompatibility = JavaVersion.VERSION_16
 
 compileJava {
-    sourceCompatibility = targetCompatibility = '1.8'
     options.encoding = "UTF-8" // allow emoji in comments :^)
 }
 
@@ -119,7 +118,7 @@ tasks.withType(JavaCompile).configureEach {
     // The Minecraft launcher currently installs Java 8 for users, so your mod probably wants to target Java 8 too
     // JDK 9 introduced a new way of specifying this that will make sure no newer classes or methods are used.
     // We'll use that if it's available, but otherwise we'll use the older option.
-    def targetVersion = 8
+    def targetVersion = 16
     if (JavaVersion.current().isJava9Compatible()) {
         it.options.release = targetVersion
     }
