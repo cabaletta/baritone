@@ -190,14 +190,14 @@ public final class PathRenderer implements IRenderer, Helper {
         boolean renderPathAsFrickinThingy = !settings.renderPathAsLine.value;
 
         //TODO: check
-        buffer.begin(renderPathAsFrickinThingy ? VertexFormat.Mode.DEBUG_LINE_STRIP : VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION);
-        buffer.vertex(matrix4f, (float) (x1 + 0.5D - vpX), (float) (y1 + 0.5D - vpY), (float) (z1 + 0.5D - vpZ)).endVertex();
-        buffer.vertex(matrix4f, (float) (x2 + 0.5D - vpX), (float) (y2 + 0.5D - vpY), (float) (z2 + 0.5D - vpZ)).endVertex();
+        buffer.begin(renderPathAsFrickinThingy ? VertexFormat.Mode.DEBUG_LINE_STRIP : VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
+        buffer.vertex(matrix4f, (float) (x1 + 0.5D - vpX), (float) (y1 + 0.5D - vpY), (float) (z1 + 0.5D - vpZ)).color(color[0], color[1], color[2], color[3]).endVertex();
+        buffer.vertex(matrix4f, (float) (x2 + 0.5D - vpX), (float) (y2 + 0.5D - vpY), (float) (z2 + 0.5D - vpZ)).color(color[0], color[1], color[2], color[3]).endVertex();
 
         if (renderPathAsFrickinThingy) {
-            buffer.vertex(matrix4f, (float) (x2 + 0.5D - vpX), (float) (y2 + 0.53D - vpY), (float) (z2 + 0.5D - vpZ)).endVertex();
-            buffer.vertex(matrix4f, (float) (x1 + 0.5D - vpX), (float) (y1 + 0.53D - vpY), (float) (z1 + 0.5D - vpZ)).endVertex();
-            buffer.vertex(matrix4f, (float) (x1 + 0.5D - vpX), (float) (y1 + 0.5D - vpY), (float) (z1 + 0.5D - vpZ)).endVertex();
+            buffer.vertex(matrix4f, (float) (x2 + 0.5D - vpX), (float) (y2 + 0.53D - vpY), (float) (z2 + 0.5D - vpZ)).color(color[0], color[1], color[2], color[3]).endVertex();
+            buffer.vertex(matrix4f, (float) (x1 + 0.5D - vpX), (float) (y1 + 0.53D - vpY), (float) (z1 + 0.5D - vpZ)).color(color[0], color[1], color[2], color[3]).endVertex();
+            buffer.vertex(matrix4f, (float) (x1 + 0.5D - vpX), (float) (y1 + 0.5D - vpY), (float) (z1 + 0.5D - vpZ)).color(color[0], color[1], color[2], color[3]).endVertex();
         }
     }
 
@@ -251,7 +251,7 @@ public final class PathRenderer implements IRenderer, Helper {
             if (settings.renderGoalXZBeacon.value) {
                 glPushAttrib(GL_LIGHTING_BIT);
 
-                //TODO: fix
+                //TODO: check
                 Helper.mc.getTextureManager().bindForSetup(TEXTURE_BEACON_BEAM);
                 if (settings.renderGoalIgnoreDepth.value) {
                     RenderSystem.disableDepthTest();
@@ -324,15 +324,15 @@ public final class PathRenderer implements IRenderer, Helper {
         renderHorizontalQuad(stack, minX, maxX, minZ, maxZ, y2);
 
         Matrix4f matrix4f = stack.last().pose();
-        buffer.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION);
-        buffer.vertex(matrix4f, (float) minX, (float) minY, (float) minZ).endVertex();
-        buffer.vertex(matrix4f, (float) minX, (float) maxY, (float) minZ).endVertex();
-        buffer.vertex(matrix4f, (float) maxX, (float) minY, (float) minZ).endVertex();
-        buffer.vertex(matrix4f, (float) maxX, (float) maxY, (float) minZ).endVertex();
-        buffer.vertex(matrix4f, (float) maxX, (float) minY, (float) maxZ).endVertex();
-        buffer.vertex(matrix4f, (float) maxX, (float) maxY, (float) maxZ).endVertex();
-        buffer.vertex(matrix4f, (float) minX, (float) minY, (float) maxZ).endVertex();
-        buffer.vertex(matrix4f, (float) minX, (float) maxY, (float) maxZ).endVertex();
+        buffer.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
+        buffer.vertex(matrix4f, (float) minX, (float) minY, (float) minZ).color(IRenderer.color[0], IRenderer.color[1], IRenderer.color[2], IRenderer.color[3]).endVertex();
+        buffer.vertex(matrix4f, (float) minX, (float) maxY, (float) minZ).color(IRenderer.color[0], IRenderer.color[1], IRenderer.color[2], IRenderer.color[3]).endVertex();
+        buffer.vertex(matrix4f, (float) maxX, (float) minY, (float) minZ).color(IRenderer.color[0], IRenderer.color[1], IRenderer.color[2], IRenderer.color[3]).endVertex();
+        buffer.vertex(matrix4f, (float) maxX, (float) maxY, (float) minZ).color(IRenderer.color[0], IRenderer.color[1], IRenderer.color[2], IRenderer.color[3]).endVertex();
+        buffer.vertex(matrix4f, (float) maxX, (float) minY, (float) maxZ).color(IRenderer.color[0], IRenderer.color[1], IRenderer.color[2], IRenderer.color[3]).endVertex();
+        buffer.vertex(matrix4f, (float) maxX, (float) maxY, (float) maxZ).color(IRenderer.color[0], IRenderer.color[1], IRenderer.color[2], IRenderer.color[3]).endVertex();
+        buffer.vertex(matrix4f, (float) minX, (float) minY, (float) maxZ).color(IRenderer.color[0], IRenderer.color[1], IRenderer.color[2], IRenderer.color[3]).endVertex();
+        buffer.vertex(matrix4f, (float) minX, (float) maxY, (float) maxZ).color(IRenderer.color[0], IRenderer.color[1], IRenderer.color[2], IRenderer.color[3]).endVertex();
         tessellator.end();
 
         IRenderer.endLines(settings.renderGoalIgnoreDepth.value);
@@ -342,12 +342,12 @@ public final class PathRenderer implements IRenderer, Helper {
         if (y != 0) {
             Matrix4f matrix4f = stack.last().pose();
             //TODO: check
-            buffer.begin(VertexFormat.Mode.DEBUG_LINE_STRIP, DefaultVertexFormat.POSITION);
-            buffer.vertex(matrix4f, (float) minX, (float) y, (float) minZ).endVertex();
-            buffer.vertex(matrix4f, (float) maxX, (float) y, (float) minZ).endVertex();
-            buffer.vertex(matrix4f, (float) maxX, (float) y, (float) maxZ).endVertex();
-            buffer.vertex(matrix4f, (float) minX, (float) y, (float) maxZ).endVertex();
-            buffer.vertex(matrix4f, (float) minX, (float) y, (float) minZ).endVertex();
+            buffer.begin(VertexFormat.Mode.DEBUG_LINE_STRIP, DefaultVertexFormat.POSITION_COLOR);
+            buffer.vertex(matrix4f, (float) minX, (float) y, (float) minZ).color(color[0], color[1], color[2], color[3]).endVertex();
+            buffer.vertex(matrix4f, (float) maxX, (float) y, (float) minZ).color(color[0], color[1], color[2], color[3]).endVertex();
+            buffer.vertex(matrix4f, (float) maxX, (float) y, (float) maxZ).color(color[0], color[1], color[2], color[3]).endVertex();
+            buffer.vertex(matrix4f, (float) minX, (float) y, (float) maxZ).color(color[0], color[1], color[2], color[3]).endVertex();
+            buffer.vertex(matrix4f, (float) minX, (float) y, (float) minZ).color(color[0], color[1], color[2], color[3]).endVertex();
             tessellator.end();
         }
     }

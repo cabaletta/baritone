@@ -44,7 +44,7 @@ public class BaritoneToast implements Toast {
         }
 
 
-        //TODO: fix
+        //TODO: check
         toastGui.getMinecraft().getTextureManager().bindForSetup(new ResourceLocation("textures/gui/toasts.png"));
         //GlStateManager._color4f(1.0F, 1.0F, 1.0F, 255.0F);
         toastGui.blit(matrixStack, 0, 0, 0, 32, 160, 32);

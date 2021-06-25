@@ -59,14 +59,7 @@ public class MixinMinecraft {
 
     @Inject(
             method = "runTick",
-            at = @At(
-                    value = "FIELD",
-                    opcode = Opcodes.GETFIELD,
-                    target = "net/minecraft/client/Minecraft.currentScreen:Lnet/minecraft/client/gui/screen/Screen;",
-                    ordinal = 5,
-                    shift = At.Shift.BY,
-                    by = -3
-            )
+            at = @At("HEAD")
     )
     private void runTick(CallbackInfo ci) {
         final BiFunction<EventState, TickEvent.Type, TickEvent> tickProvider = TickEvent.createNextProvider();
@@ -119,11 +112,11 @@ public class MixinMinecraft {
     }
 
     @Redirect(
-            method = "runTick",
+            method = "tick",
             at = @At(
                     value = "FIELD",
                     opcode = Opcodes.GETFIELD,
-                    target = "net/minecraft/client/gui/screens/Screen.passEvents:Z"
+                    target = "Lnet/minecraft/client/gui/screens/Screen;passEvents:Z"
             )
     )
     private boolean passEvents(Screen screen) {

@@ -128,8 +128,8 @@ public class GuiClick extends Screen implements Helper {
             if (clickStart != null && !clickStart.equals(currentMouseOver)) {
                 RenderSystem.enableBlend();
                 RenderSystem.blendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
-                //TODO: fix
-                //RenderSystem.color4f(Color.RED.getColorComponents(null)[0], Color.RED.getColorComponents(null)[1], Color.RED.getColorComponents(null)[2], 0.4F);
+                //TODO: check
+                IRenderer.glColor(Color.RED, 0.4F);
                 RenderSystem.lineWidth(Baritone.settings().pathRenderLineWidthPixels.value);
                 RenderSystem.disableTexture();
                 RenderSystem.depthMask(false);

@@ -48,7 +48,7 @@ public class MixinLootContext {
             method = "create",
             at = @At(
                     value = "INVOKE",
-                    target = "net/minecraft/server/MinecraftServer.getLootTableManager()Lnet/minecraft/loot/LootTableManager;"
+                    target = "Lnet/minecraft/server/MinecraftServer;getLootTables()Lnet/minecraft/world/level/storage/loot/LootTables;"
             )
     )
     private LootTables getLootTableManager(MinecraftServer server) {
@@ -62,7 +62,7 @@ public class MixinLootContext {
             method = "create",
             at = @At(
                     value = "INVOKE",
-                    target = "net/minecraft/server/MinecraftServer.func_229736_aP_()Lnet/minecraft/loot/LootPredicateManager;"
+                    target = "Lnet/minecraft/server/MinecraftServer;getPredicateManager()Lnet/minecraft/world/level/storage/loot/PredicateManager;"
             )
     )
     private PredicateManager getLootPredicateManager(MinecraftServer server) {
