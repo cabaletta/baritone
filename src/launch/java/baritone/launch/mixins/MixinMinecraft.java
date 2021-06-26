@@ -58,8 +58,15 @@ public class MixinMinecraft {
 
 
     @Inject(
-            method = "runTick",
-            at = @At("HEAD")
+            method = "tick",
+            at = @At(
+            value = "FIELD",
+            opcode = Opcodes.GETFIELD,
+            target = "Lnet/minecraft/client/Minecraft;screen:Lnet/minecraft/client/gui/screens/Screen;",
+            ordinal = 5,
+            shift  = At.Shift.BY,
+            by = -3
+            )
     )
     private void runTick(CallbackInfo ci) {
         final BiFunction<EventState, TickEvent.Type, TickEvent> tickProvider = TickEvent.createNextProvider();
