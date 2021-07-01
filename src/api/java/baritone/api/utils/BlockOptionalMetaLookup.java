@@ -29,6 +29,10 @@ public class BlockOptionalMetaLookup {
 
     private final BlockOptionalMeta[] boms;
 
+    public BlockOptionalMetaLookup() {
+        this.boms = new BlockOptionalMeta[0];
+    }
+
     public BlockOptionalMetaLookup(BlockOptionalMeta... boms) {
         this.boms = boms;
     }
