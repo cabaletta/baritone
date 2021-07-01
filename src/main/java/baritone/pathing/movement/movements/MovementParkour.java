@@ -156,19 +156,19 @@ public class MovementParkour extends Movement {
             IBlockState toReplace = context.get(destX, y - 1, destZ);
             double placeCost = context.costOfPlacingAt(destX, y - 1, destZ, toReplace);
             if (placeCost >= COST_INF) {
-            	continue;
+                continue;
             }
             if (!MovementHelper.isReplaceable(destX, y - 1, destZ, toReplace, context.bsi)) {
-            	continue;
+                continue;
             }
             if (!checkOvershootSafety(context.bsi, destX + xDiff, y, destZ + zDiff)) {
-            	continue;
+                continue;
             }
             for (int j = 0; j < 5; j++) {
                 int againstX = destX + HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP[j].getXOffset();
                 int againstY = y - 1 + HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP[j].getYOffset();
                 int againstZ = destZ + HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP[j].getZOffset();
-                if (againstX == x + xDiff * 3 && againstZ == z + zDiff * 3) { // we can't turn around that fast
+                if (againstX == destX - xDiff && againstZ == destZ - zDiff) { // we can't turn around that fast
                     continue;
                 }
                 if (MovementHelper.canPlaceAgainst(context.bsi, againstX, againstY, againstZ)) {
