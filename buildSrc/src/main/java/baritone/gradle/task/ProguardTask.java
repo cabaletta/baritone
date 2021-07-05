@@ -236,10 +236,8 @@ public class ProguardTask extends BaritoneGradleTask {
         template.add(0, "-injars " + this.artifactPath.toString());
         template.add(1, "-outjars " + this.getTemporaryFile(PROGUARD_EXPORT_PATH));
 
-        // Acquire the RT jar using "java -verbose". This doesn't work on Java 9+
-        Process p = new ProcessBuilder(this.getJavaBinPathForProguard(), "-verbose").start();
-        String out = IOUtils.toString(p.getInputStream(), "UTF-8").split("\n")[0].split("Opened ")[1].replace("]", "");
-        template.add(2, "-libraryjars '" + out + "'(!META-INF/versions/**)");
+        template.add(2, "-libraryjars  <java.home>/jmods/java.base.jmod(!**.jar;!module-info.class)");
+        template.add(3, "-libraryjars  <java.home>/jmods/java.desktop.jmod(!**.jar;!module-info.class)");
 
         {
             final Stream<File> libraries;
