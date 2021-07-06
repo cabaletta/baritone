@@ -112,12 +112,12 @@ repositories {
 }
 
 dependencies {
-    if (project.hasProperty("loom.forge")) {
+    if (compileType.equals("FORGE")) {
         forge "net.minecraftforge:forge:1.16.5-36.1.0"
     }
     minecraft "com.mojang:minecraft:1.16.5"
     mappings "de.oceanlabs.mcp:mcp_snapshot:20201028-1.16.3"
-    if (!project.hasProperty("loom.forge")) {
+    if (!compileType.equals("FORGE")) {
         modImplementation "net.fabricmc:fabric-loader:0.9.1+build.205"
     }
     // this makes it compile with the forge tweak stuff
