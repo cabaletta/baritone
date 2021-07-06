@@ -89,7 +89,6 @@ public class ProguardTask extends BaritoneGradleTask {
     private void copyMcJar() throws IOException {
         File mcClientJar = this.getProject().getConvention().getPlugin(JavaPluginConvention.class).getSourceSets().findByName("launch").getRuntimeClasspath().getFiles()
             .stream()
-            //this line will change when using official mappings in 1.17
             .filter(f -> f.getName().startsWith("minecraft-"))
             .map(f -> {
                 switch (compType) {
@@ -104,6 +103,7 @@ public class ProguardTask extends BaritoneGradleTask {
                 })
             .findFirst()
             .get();
+        if (!mcClientJar.exists()) throw new IOException("Failed to find minecraft! " + mcClientJar.getAbsolutePath());
         if (!copyMcTargetDir.exists() && !copyMcTargetDir.mkdirs()) throw new IOException("Failed to create target for copyMcJar");
         Files.copy(mcClientJar.toPath(), copyMcTargetJar.toPath(), REPLACE_EXISTING);
     }
