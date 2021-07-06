@@ -82,7 +82,7 @@ dependencies {
     if (compileType.equals("FORGE")) {
         //forge "net.minecraftforge:forge:1.16.5-36.1.0"
     }
-    minecraft "com.mojang:minecraft:1.17"
+    minecraft "com.mojang:minecraft:1.17.1"
     mappings minecraft.officialMojangMappings()
     if (!compileType.equals("FORGE")) {
         modImplementation "net.fabricmc:fabric-loader:0.11.6"
