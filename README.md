@@ -25,8 +25,8 @@ Baritone has been used in popular utility clients such as [Impact Client](https:
 
 - [This repository](https://github.com/cabaletta/baritone/releases/)
 - [Impact Client](https://impactclient.net/)
-- [Meteor Client](https://aristois.net/)
-- [Aristois]()
+- [Meteor Client](https://meteorclient.com/)
+- [Aristois](https://aristois.net/)
 - Note: Many utility clients offer Baritone, but sometimes utility clients can come with **malware**,
 use your best judgement and be careful of what you download.
 
