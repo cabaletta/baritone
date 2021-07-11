@@ -23,6 +23,7 @@ import baritone.api.IBaritone;
 import baritone.api.pathing.movement.ActionCosts;
 import baritone.api.pathing.movement.MovementStatus;
 import baritone.api.utils.*;
+import baritone.api.utils.Rotation;
 import baritone.api.utils.input.Input;
 import baritone.pathing.movement.MovementState.MovementTarget;
 import baritone.utils.BlockStateInterface;
@@ -30,28 +31,7 @@ import baritone.utils.ToolSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.block.AbstractSkullBlock;
-import net.minecraft.world.level.block.AirBlock;
-import net.minecraft.world.level.block.BambooBlock;
-import net.minecraft.world.level.block.BaseFireBlock;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.DoorBlock;
-import net.minecraft.world.level.block.EndPortalBlock;
-import net.minecraft.world.level.block.FallingBlock;
-import net.minecraft.world.level.block.FenceGateBlock;
-import net.minecraft.world.level.block.HorizontalDirectionalBlock;
-import net.minecraft.world.level.block.InfestedBlock;
-import net.minecraft.world.level.block.ScaffoldingBlock;
-import net.minecraft.world.level.block.ShulkerBoxBlock;
-import net.minecraft.world.level.block.SkullBlock;
-import net.minecraft.world.level.block.SlabBlock;
-import net.minecraft.world.level.block.SnowLayerBlock;
-import net.minecraft.world.level.block.StainedGlassBlock;
-import net.minecraft.world.level.block.StairBlock;
-import net.minecraft.world.level.block.TrapDoorBlock;
-import net.minecraft.world.level.block.WaterlilyBlock;
-import net.minecraft.world.level.block.WoolCarpetBlock;
+import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.piston.MovingPistonBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
@@ -117,7 +97,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         if (block instanceof AirBlock) { // early return for most common case
             return true;
         }
-        if (block instanceof BaseFireBlock || block == Blocks.TRIPWIRE || block == Blocks.COBWEB || block == Blocks.END_PORTAL || block == Blocks.COCOA || block instanceof AbstractSkullBlock || block == Blocks.BUBBLE_COLUMN || block instanceof ShulkerBoxBlock || block instanceof SlabBlock || block instanceof TrapDoorBlock || block == Blocks.HONEY_BLOCK || block == Blocks.END_ROD) {
+        if (block instanceof BaseFireBlock || block == Blocks.TRIPWIRE || block == Blocks.COBWEB || block == Blocks.END_PORTAL || block == Blocks.COCOA || block instanceof AbstractSkullBlock || block == Blocks.BUBBLE_COLUMN || block instanceof ShulkerBoxBlock || block instanceof SlabBlock || block instanceof TrapDoorBlock || block == Blocks.HONEY_BLOCK || block == Blocks.END_ROD || block == Blocks.POINTED_DRIPSTONE || block == Blocks.AMETHYST_CLUSTER) {
             return false;
         }
         if (Baritone.settings().blocksToAvoid.value.contains(block)) {
@@ -148,6 +128,7 @@ public interface MovementHelper extends ActionCosts, Helper {
             // ok, it's low enough we could walk through it, but is it supported?
             return canWalkOn(bsi, x, y - 1, z);
         }
+
         if (isFlowing(x, y, z, state, bsi)) {
             return false; // Don't walk through flowing liquids
         }
@@ -545,7 +526,9 @@ public interface MovementHelper extends ActionCosts, Helper {
         if (block instanceof BambooBlock
                 || block instanceof MovingPistonBlock
                 || block instanceof ScaffoldingBlock
-                || block instanceof ShulkerBoxBlock) {
+                || block instanceof ShulkerBoxBlock
+                || block instanceof PointedDripstoneBlock
+                || block instanceof AmethystClusterBlock) {
             return false;
         }
         return Block.isShapeFullBlock(state.getCollisionShape(null, null));
