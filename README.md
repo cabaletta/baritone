@@ -100,6 +100,8 @@ More information about the LGPLv3 license can be found [here](https://www.gnu.or
 
 Join the [Baritone Discord Server](https://discord.com/invite/s6fRBAUpmr) to be notified of future releases.
 
+***
+
 *Is using Baritone cheating?*
 
 No, Baritone is a utility mod intended to automate certain game mechanics.
