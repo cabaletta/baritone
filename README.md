@@ -1,6 +1,12 @@
-# Baritone
+
+<center> <h1>Baritone</h1> </center>
+
 <p align="center">
   <a href="https://github.com/cabaletta/baritone/releases/"><img src="https://img.shields.io/github/downloads/cabaletta/baritone/total.svg" alt="GitHub All Releases"/></a>
+</p>
+
+<p align="center">
+<a href="https://github.com/cabaletta/baritone/releases/"><img src="https://img.shields.io/github/release/cabaletta/baritone.svg" alt="Release"/></a>
 </p>
 
 <p align="center">
@@ -11,83 +17,51 @@
   <img src="https://img.shields.io/badge/MC-1.16.5-brightgreen.svg" alt="Minecraft"/>
 </p>
 
-<p align="center">
-  <a href="https://travis-ci.com/cabaletta/baritone/"><img src="https://travis-ci.com/cabaletta/baritone.svg?branch=master" alt="Build Status"/></a>
-  <a href="https://github.com/cabaletta/baritone/releases/"><img src="https://img.shields.io/github/release/cabaletta/baritone.svg" alt="Release"/></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-LGPL--3.0%20with%20anime%20exception-green.svg" alt="License"/></a>
-  <a href="https://www.codacy.com/app/leijurv/baritone?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=cabaletta/baritone&amp;utm_campaign=Badge_Grade"><img src="https://api.codacy.com/project/badge/Grade/a73d037823b64a5faf597a18d71e3400" alt="Codacy Badge"/></a>
-  <a href="https://github.com/cabaletta/baritone/blob/master/CODE_OF_CONDUCT.md"><img src="https://img.shields.io/badge/%E2%9D%A4-code%20of%20conduct-blue.svg?style=flat" alt="Code of Conduct"/></a>
-  <a href="https://snyk.io/test/github/cabaletta/baritone?targetFile=build.gradle"><img src="https://snyk.io/test/github/cabaletta/baritone/badge.svg?targetFile=build.gradle" alt="Known Vulnerabilities"/></a>
-  <a href="https://github.com/cabaletta/baritone/issues/"><img src="https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat" alt="Contributions welcome"/></a>
-  <a href="https://github.com/cabaletta/baritone/issues/"><img src="https://img.shields.io/github/issues/cabaletta/baritone.svg" alt="Issues"/></a>
-  <a href="https://github.com/cabaletta/baritone/issues?q=is%3Aissue+is%3Aclosed"><img src="https://img.shields.io/github/issues-closed/cabaletta/baritone.svg" alt="GitHub issues-closed"/></a>
-  <a href="https://github.com/cabaletta/baritone/pulls/"><img src="https://img.shields.io/github/issues-pr/cabaletta/baritone.svg" alt="Pull Requests"/></a>
-  <a href="https://github.com/cabaletta/baritone/graphs/contributors/"><img src="https://img.shields.io/github/contributors/cabaletta/baritone.svg" alt="GitHub contributors"/></a>
-  <a href="https://github.com/cabaletta/baritone/commit/"><img src="https://img.shields.io/github/commits-since/cabaletta/baritone/v1.0.0.svg" alt="GitHub commits"/></a>
-  <img src="https://img.shields.io/github/languages/code-size/cabaletta/baritone.svg" alt="Code size"/>
-  <img src="https://img.shields.io/github/repo-size/cabaletta/baritone.svg" alt="GitHub repo size"/>
-  <img src="https://tokei.rs/b1/github/cabaletta/baritone?category=code" alt="Lines of Code"/>
-</p>
+#### Baritone is a Minecraft [pathfinding](https://en.wikipedia.org/wiki/Pathfinding) bot.
 
-<p align="center">
-  <a href="https://impactclient.net/"><img src="https://img.shields.io/badge/Impact%20integration-v1.2.14%20/%20v1.3.8%20/%20v1.4.6%20/%20v1.5.3%20/%20v1.6.3-brightgreen.svg" alt="Impact integration"/></a>
-  <a href="https://github.com/kami-blue/client"><img src="https://img.shields.io/badge/KAMI%20Blue%20integration-v1.2.14--master-green" alt="KAMI Blue integration"/></a>
-  <a href="https://github.com/fr1kin/ForgeHax/"><img src="https://img.shields.io/badge/ForgeHax%20%22integration%22-scuffed-yellow.svg" alt="ForgeHax integration"/></a>
-  <a href="https://aristois.net/"><img src="https://img.shields.io/badge/Aristois%20add--on%20integration-v1.6.3-green.svg" alt="Aristois add-on integration"/></a>
-  <a href="https://rootnet.dev/"><img src="https://img.shields.io/badge/rootNET%20integration-v1.2.14-green.svg" alt="rootNET integration"/></a>
-  <a href="https://futureclient.net/"><img src="https://img.shields.io/badge/Future%20integration-v1.2.12%20%2F%20v1.3.6%20%2F%20v1.4.4-red" alt="Future integration"/></a>
-  <a href="https://rusherhack.org/"><img src="https://img.shields.io/badge/RusherHack%20integration-v1.2.14-green" alt="RusherHack integration"/></a>
-</p>
+#### Baritone currently supports Minecraft versions 1.12.2 - 1.16.5
 
-<p align="center">
-  <a href="http://forthebadge.com/"><img src="https://forthebadge.com/images/badges/built-with-swag.svg" alt="forthebadge"/></a>
-  <a href="http://forthebadge.com/"><img src="https://forthebadge.com/images/badges/mom-made-pizza-rolls.svg" alt="forthebadge"/></a>
-</p>
+Baritone has been used in popular utility clients such as [Impact Client](https://impactclient.net/),
+[Meteor Client](https://meteorclient.com/), and [Aristois](https://aristois.net/).
 
-A Minecraft pathfinder bot.
+#### You can install Baritone from the following locations:
 
-[**Baritone Discord Server**](http://discord.gg/s6fRBAUpmr)
+- [This repository](https://github.com/cabaletta/baritone/releases/)
+- [Impact Client](https://impactclient.net/)
+- [Meteor Client](https://meteorclient.com/)
+- [Aristois](https://aristois.net/)
+  
+- Note: Many utility clients offer Baritone, but sometimes utility clients can come with **malware**,
+use your best judgement and be careful of what you download.
 
-Baritone is the pathfinding system used in [Impact](https://impactclient.net/) since 4.4. There's a [showcase video](https://youtu.be/CZkLXWo4Fg4) made by @Adovin#0730 on Baritone which I recommend. [Here's](https://www.youtube.com/watch?v=StquF69-_wI) a (very old!) video I made showing off what it can do. [Tutorial playlist](https://www.youtube.com/playlist?list=PLnwnJ1qsS7CoQl9Si-RTluuzCo_4Oulpa)
+Installing a utility client with Baritone support is an easy way to get started with Baritone
+as most utility clients include a GUI to navigate Baritone's commands.
 
-The easiest way to install Baritone is to install [Impact](https://impactclient.net/), which comes with Baritone. The second easiest way (for 1.12.2 only) is to install the v1.2.* `api-forge` jar from [releases](https://github.com/cabaletta/baritone/releases). **For 1.12.2 Forge, just click [here](https://github.com/cabaletta/baritone/releases/download/v1.2.15/baritone-api-forge-1.2.15.jar)**. Otherwise, see [Installation & setup](SETUP.md). Once Baritone is installed, look [here](USAGE.md) for instructions on how to use it.
+The safest way to install Baritone is to install a release .jar from this repository 
+and place it in your .minecraft\mods\ folder.
 
-For 1.15.2, [click here](https://www.youtube.com/watch?v=j1qKtCZFURM) and see description. If you need Forge 1.15.2, look [here](https://github.com/cabaletta/baritone/releases/tag/v1.5.3), follow the instructions, and get the `api-forge` jar.
+The most recent version of Minecraft that Baritone currently supports is *1.16.5* ,
+Baritone will be updated to 1.17.~ soon.
 
-For 1.16.5, [click here](https://www.youtube.com/watch?v=_4eVJ9Qz2J8) and see description. If you need Forge or Fabric 1.16.5, look [here](https://github.com/cabaletta/baritone/releases/tag/v1.6.3) and get the `api-forge` or `api-fabric` jar. **For 1.16.5 Fabric, just click [here](https://github.com/cabaletta/baritone/releases/download/v1.6.3/baritone-api-fabric-1.6.3.jar)**.
+## Getting Started
 
-This project is an updated version of [MineBot](https://github.com/leijurv/MineBot/),
-the original version of the bot for Minecraft 1.8.9, rebuilt for 1.12.2 through 1.16.5. Baritone focuses on reliability and particularly performance (it's over [30x faster](https://github.com/cabaletta/baritone/pull/180#issuecomment-423822928) than MineBot at calculating paths).
+- #### [Features](FEATURES.md)
 
-Have committed at least once a day from Aug 1, 2018, to Aug 1, 2019.
+- #### [Installation & setup](SETUP.md)
 
-1Leijurv3DWTrGAfmmiTphjhXLvQiHg7K2
+- #### [API Javadocs](https://baritone.leijurv.com/)
 
-# Getting Started
+- #### [Settings](https://baritone.leijurv.com/baritone/api/Settings.html#field.detail)
 
-Here are some links to help to get started:
+- #### [Usage (chat control)](USAGE.md)
 
-- [Features](FEATURES.md)
+## Baritone API
 
-- [Installation & setup](SETUP.md)
+There is extensive documentation for the Baritone API,
+[JavaDocs](https://baritone.leijurv.com/).
+Please note that usage of anything located outside the ``baritone.api`` package is unsupported by the API release jar.
 
-- [API Javadocs](https://baritone.leijurv.com/)
-
-- [Settings](https://baritone.leijurv.com/baritone/api/Settings.html#field.detail)
-
-- [Usage (chat control)](USAGE.md)
-
-## Stars over time
-
-[![Stargazers over time](https://starchart.cc/cabaletta/baritone.svg)](https://starchart.cc/cabaletta/baritone)
-
-# API
-
-The API is heavily documented, you can find the Javadocs for the latest release [here](https://baritone.leijurv.com/).
-Please note that usage of anything located outside of the ``baritone.api`` package is not supported by the API release
-jar.
-
-Below is an example of basic usage for changing some settings, and then pathing to an X/Z goal.
+Below is an example of changing settings, and then pathing to an X/Z goal.
 
 ```
 BaritoneAPI.getSettings().allowSprint.value = true;
@@ -96,26 +70,74 @@ BaritoneAPI.getSettings().primaryTimeoutMS.value = 2000L;
 BaritoneAPI.getProvider().getPrimaryBaritone().getCustomGoalProcess().setGoalAndPath(new GoalXZ(10000, 20000));
 ```
 
-# FAQ
+## FAQ
 
-## Can I use Baritone as a library in my custom utility client?
+## What inspired Baritone?
 
-That's what it's for, sure! (As long as usage complies with the LGPL 3.0 License)
+Baritone is an updated version of [MineBot](https://github.com/leijurv/MineBot/),
+the original version of the bot for Minecraft 1.8.9, rebuilt for 1.12.2
+through 1.16.5. Baritone focuses on reliability and particularly performance 
+(it's over[30x faster](https://github.com/cabaletta/baritone/pull/180#issuecomment-423822928) than
+MineBot at calculating paths).
 
-## How is it so fast?
+*How can I support Baritone?*
 
-Magic. (Hours of [leijurv](https://github.com/leijurv/) enduring excruciating pain)
+You can help support Baritone by contributing or by donating to **1Leijurv3DWTrGAfmmiTphjhXLvQiHg7K2**
 
-### Additional Special Thanks To:
+*Can I use Baritone in my utility client?*
+
+Absolutely, as long as your usage is compliant
+with Baritone's [LGPLv3 license](https://github.com/cabaletta/baritone/blob/master/LICENSE).
+
+More information about the LGPLv3 license can be found [here](https://www.gnu.org/licenses/lgpl-3.0.en.html).
+
+*When will support for Minecraft 1.17.~ be released?*
+
+Join the [Baritone Discord Server](https://discord.com/invite/s6fRBAUpmr) to be notified of future releases.
+
+*Is using Baritone cheating?*
+
+No, Baritone is a utility mod intended to automate certain game mechanics.
+
+Do **NOT** use Baritone on public servers which explicitly ban utility clients and other mods which may give
+you an unfair advantage over other players.
+
+*How do I use Baritone?*
+
+Read [Usage.md](USAGE.md) or 
+watch [Impact Client's YouTube playlist.](https://www.youtube.com/playlist?list=PLnwnJ1qsS7CoQl9Si-RTluuzCo_4Oulpa)
+
+*How does Baritone work and how is it so fast?*
+
+~~Read the source code / documentation~~. 
+
+**Magic** (Over 2 years of [leijurv](https://github.com/leijurv/) enduring excruciating pain)
+
+*Why is this project named "Baritone?"*
+
+Read: [Baritone](https://en.wikipedia.org/wiki/Baritone)
+
+Named for [FitMC's](https://www.youtube.com/user/SonOfShoop) deep, sultry voice.
+
+### Special Thanks To:
 
 ![YourKit-Logo](https://www.yourkit.com/images/yklogo.png)
 
 YourKit supports open source projects with innovative and intelligent tools for monitoring and profiling Java and .NET applications.
 
-YourKit is the creator of the [YourKit Java Profiler](https://www.yourkit.com/java/profiler/), [YourKit .NET Profiler](https://www.yourkit.com/.net/profiler/), and [YourKit YouMonitor](https://www.yourkit.com/youmonitor/).
+YourKit is the creator of the [YourKit Java Profiler](https://www.yourkit.com/java/profiler/),
+[YourKit .NET Profiler](https://www.yourkit.com/.net/profiler/)
+and [YourKit YouMonitor](https://www.yourkit.com/youmonitor/).
 
-We thank them for granting Baritone an OSS license so that we can make our software the best it can be.
+We thank them for granting Baritone an OSS license so that we can ensure our software is the best it can be.
 
-## Why is it called Baritone?
+### Extras
 
-It's named for FitMC's deep sultry voice.
+There was at least 1 commit per day from August 2018 - August 2019
+
+### Stars over time
+
+The exponential increase in stars can be attributed to the namesake of this project,
+[FitMC](https://www.youtube.com/user/SonOfShoop) who posted 2 videos about Baritone on August 2019 - September 2019.
+
+[![Stargazers over time](https://starchart.cc/cabaletta/baritone.svg)](https://starchart.cc/cabaletta/baritone)
