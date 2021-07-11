@@ -1,5 +1,6 @@
-
-<center> <h1>Baritone</h1> </center>
+<p align="center">
+Baritone
+</p>
 
 <p align="center">
   <a href="https://github.com/cabaletta/baritone/releases/"><img src="https://img.shields.io/github/downloads/cabaletta/baritone/total.svg" alt="GitHub All Releases"/></a>
@@ -17,9 +18,11 @@
   <img src="https://img.shields.io/badge/MC-1.16.5-brightgreen.svg" alt="Minecraft"/>
 </p>
 
+<p align="center">
 #### Baritone is a Minecraft [pathfinding](https://en.wikipedia.org/wiki/Pathfinding) bot.
 
 #### Baritone currently supports Minecraft versions 1.12.2 - 1.16.5
+</p>
 
 Baritone has been used in popular utility clients such as [Impact Client](https://impactclient.net/),
 [Meteor Client](https://meteorclient.com/), and [Aristois](https://aristois.net/).
