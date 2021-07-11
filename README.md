@@ -148,7 +148,12 @@ We thank them for granting Baritone an OSS license so that we can ensure our sof
 
 ### Extras
 
-There was at least 1 commit per day from August 2018 - August 2019
+There was at least 1 commit per day from August 2018 - August 2019 (More hours of [leijurv](https://github.com/leijurv/) enduring excruciating pain)
+
+<p align="center">
+  <a href="http://forthebadge.com/"><img src="https://forthebadge.com/images/badges/built-with-swag.svg" alt="forthebadge"/></a>
+  <a href="http://forthebadge.com/"><img src="https://forthebadge.com/images/badges/mom-made-pizza-rolls.svg" alt="forthebadge"/></a>
+</p>
 
 ### Stars over time
 
