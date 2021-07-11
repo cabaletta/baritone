@@ -71,7 +71,7 @@ BaritoneAPI.getProvider().getPrimaryBaritone().getCustomGoalProcess().setGoalAnd
 
 ## FAQ
 
-## What inspired Baritone?
+*What inspired Baritone?*
 
 Baritone is an updated version of [MineBot](https://github.com/leijurv/MineBot/),
 the original version of the bot for Minecraft 1.8.9, rebuilt for 1.12.2
@@ -79,9 +79,13 @@ through 1.16.5. Baritone focuses on reliability and particularly performance
 (it's over[30x faster](https://github.com/cabaletta/baritone/pull/180#issuecomment-423822928) than
 MineBot at calculating paths).
 
+***
+
 *How can I support Baritone?*
 
 You can help support Baritone by contributing or by donating to **1Leijurv3DWTrGAfmmiTphjhXLvQiHg7K2**
+
+***
 
 *Can I use Baritone in my utility client?*
 
@@ -89,6 +93,8 @@ Absolutely, as long as your usage is compliant
 with Baritone's [LGPLv3 license](https://github.com/cabaletta/baritone/blob/master/LICENSE).
 
 More information about the LGPLv3 license can be found [here](https://www.gnu.org/licenses/lgpl-3.0.en.html).
+
+***
 
 *When will support for Minecraft 1.17.~ be released?*
 
@@ -101,10 +107,14 @@ No, Baritone is a utility mod intended to automate certain game mechanics.
 Do **NOT** use Baritone on public servers which explicitly ban utility clients and other mods which may give
 you an unfair advantage over other players.
 
+***
+
 *How do I use Baritone?*
 
 Read [Usage.md](USAGE.md) or 
 watch [Impact Client's YouTube playlist.](https://www.youtube.com/playlist?list=PLnwnJ1qsS7CoQl9Si-RTluuzCo_4Oulpa)
+
+***
 
 *How does Baritone work and how is it so fast?*
 
@@ -112,11 +122,15 @@ watch [Impact Client's YouTube playlist.](https://www.youtube.com/playlist?list=
 
 **Magic** (Over 2 years of [leijurv](https://github.com/leijurv/) enduring excruciating pain)
 
+***
+
 *Why is this project named "Baritone?"*
 
 Read: [Baritone](https://en.wikipedia.org/wiki/Baritone)
 
 Named for [FitMC's](https://www.youtube.com/user/SonOfShoop) deep, sultry voice.
+
+***
 
 ### Special Thanks To:
 
