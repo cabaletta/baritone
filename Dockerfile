@@ -1,11 +1,11 @@
-FROM debian:stretch
+FROM ubuntu:focal
 
 ENV DEBIAN_FRONTEND noninteractive
 
 RUN apt update -y
 
 RUN apt install \
-          openjdk-8-jdk \
+          openjdk-16-jdk \
           --assume-yes
 
 COPY . /code
