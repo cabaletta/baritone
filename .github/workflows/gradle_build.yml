@@ -25,6 +25,9 @@ jobs:
       
     - name: Build with Gradle
       run: ./gradlew build
+
+    - name: Build (fabric) with Gradle
+      run: ./gradlew build -Pbaritone.fabric_build
       
     - name: Archive Artifacts
       uses: actions/upload-artifact@v2
