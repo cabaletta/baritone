@@ -104,17 +104,23 @@ public class MovementParkour extends Movement {
                 maxJump = 3;
             }
         }
+        
+        // check parkour jumps from smallest to largest for obstacles/walls and landing positions
+        int verifiedMaxJump = -1;
         for (int i = 2; i <= maxJump; i++) {
+        	verifiedMaxJump = i - 1;
             int destX = x + xDiff * i;
             int destZ = z + zDiff * i;
+            
+            // check head/feet
             if (!MovementHelper.fullyPassable(context, destX, y + 1, destZ)) {
-                maxJump = i - 1;
                 break;
             }
             if (!MovementHelper.fullyPassable(context, destX, y + 2, destZ)) {
-                maxJump = i - 1;
                 break;
             }
+            
+            // check for ascend landing position
             IBlockState destInto = context.bsi.get0(destX, y, destZ);
             if (!MovementHelper.fullyPassable(context.bsi.access, context.bsi.isPassableBlockPos.setPos(destX, y, destZ), destInto)) {
                 if (i <= 3 && context.allowParkourAscend && context.canSprint && MovementHelper.canWalkOn(context.bsi, destX, y, destZ, destInto) && checkOvershootSafety(context.bsi, destX + xDiff, y + 1, destZ + zDiff)) {
@@ -124,9 +130,10 @@ public class MovementParkour extends Movement {
                     res.cost = i * SPRINT_ONE_BLOCK_COST + context.jumpPenalty;
                     return;
                 }
-                maxJump = i - 1;
                 break;
             }
+            
+            // check for flat landing position
             IBlockState landingOn = context.bsi.get0(destX, y - 1, destZ);
             // farmland needs to be canWalkOn otherwise farm can never work at all, but we want to specifically disallow ending a jump on farmland haha
             if (landingOn.getBlock() != Blocks.FARMLAND && MovementHelper.canWalkOn(context.bsi, destX, y - 1, destZ, landingOn)) {
@@ -137,20 +144,23 @@ public class MovementParkour extends Movement {
                     res.cost = costFromJumpDistance(i) + context.jumpPenalty;
                     return;
                 }
-                maxJump = i - 1;
                 break;
             }
+            
             if (!MovementHelper.fullyPassable(context, destX, y + 3, destZ)) {
-                maxJump = i - 1;
                 break;
             }
+            
+            // reset verifiedMaxJump so that if we exit out of the for loop here it is not changed
+            verifiedMaxJump = maxJump;
         }
+        
         // parkour place starts here
         if (!context.allowParkourPlace) {
             return;
         }
-        // check parkour jumps from largest to smallest
-        for (int i = maxJump; i > 1; i--) {
+        // check parkour jumps from largest to smallest for positions to place blocks
+        for (int i = verifiedMaxJump; i > 1; i--) {
             int destX = x + i * xDiff;
             int destZ = z + i * zDiff;
             IBlockState toReplace = context.get(destX, y - 1, destZ);
