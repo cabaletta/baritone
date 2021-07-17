@@ -106,9 +106,8 @@ public class MovementParkour extends Movement {
         }
         
         // check parkour jumps from smallest to largest for obstacles/walls and landing positions
-        int verifiedMaxJump = -1;
+        int verifiedMaxJump = 1; // i - 1 (when i = 2)
         for (int i = 2; i <= maxJump; i++) {
-        	verifiedMaxJump = i - 1;
             int destX = x + xDiff * i;
             int destZ = z + zDiff * i;
             
@@ -151,8 +150,7 @@ public class MovementParkour extends Movement {
                 break;
             }
             
-            // reset verifiedMaxJump so that if we exit out of the for loop here it is not changed
-            verifiedMaxJump = maxJump;
+            verifiedMaxJump = i;
         }
         
         // parkour place starts here
