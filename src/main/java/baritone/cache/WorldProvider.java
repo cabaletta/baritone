@@ -77,7 +77,14 @@ public class WorldProvider implements IWorldProvider, Helper {
             directory = new File(directory, "baritone");
             readme = directory;
         } else { // Otherwise, the server must be remote...
-            String folderName = mc.getCurrentServerData().serverIP;
+            String folderName;
+            if (mc.getCurrentServerData() != null) {
+                folderName = mc.getCurrentServerData().serverIP;
+            } else {
+                //replaymod causes null currentServerData and false singleplayer.
+                currentWorld = null;
+                return;
+            }
             if (SystemUtils.IS_OS_WINDOWS) {
                 folderName = folderName.replace(":", "_");
             }
