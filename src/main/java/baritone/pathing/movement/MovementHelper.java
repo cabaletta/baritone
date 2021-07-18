@@ -89,7 +89,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         if (block == Blocks.AIR) { // early return for most common case
             return true;
         }
-        if (block == Blocks.FIRE || block == Blocks.TRIPWIRE || block == Blocks.WEB || block == Blocks.END_PORTAL || block == Blocks.COCOA || block instanceof BlockSkull || block instanceof BlockTrapDoor || block == Blocks.END_ROD) {
+        if (block instanceof BlockSkull || block instanceof BlockTrapDoor) {
             return false;
         }
         if (Baritone.settings().blocksToAvoid.value.contains(block)) {
@@ -97,7 +97,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         }
         if (block instanceof BlockDoor || block instanceof BlockFenceGate) {
             // Because there's no nice method in vanilla to check if a door is openable or not, we just have to assume
-            // that anything that isn't an iron door isn't openable, ignoring that some doors introduced in mods can't
+            // that anything that isn't an iron door is openable; ignoring that some doors introduced in mods can't
             // be opened by just interacting.
             return block != Blocks.IRON_DOOR;
         }
@@ -299,10 +299,9 @@ public interface MovementHelper extends ActionCosts, Helper {
         if (block == Blocks.LADDER || (block == Blocks.VINE && Baritone.settings().allowVines.value)) { // TODO reconsider this
             return true;
         }
-        if (block == Blocks.FARMLAND || block == Blocks.GRASS_PATH) {
-            return true;
-        }
-        if (block == Blocks.ENDER_CHEST || block == Blocks.CHEST || block == Blocks.TRAPPED_CHEST) {
+        if (block == Blocks.FARMLAND || block == Blocks.GRASS_PATH ||
+            block == Blocks.ENDER_CHEST || block == Blocks.CHEST || block == Blocks.TRAPPED_CHEST ||
+            block == Blocks.END_PORTAL_FRAME || block == Blocks.ENCHANTING_TABLE) {
             return true;
         }
         if (isWater(block)) {
