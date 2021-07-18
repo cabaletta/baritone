@@ -27,16 +27,15 @@ import net.minecraft.util.math.Vec3i;
 import java.awt.*;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -47,10 +46,54 @@ import java.util.stream.Stream;
 import static net.minecraft.client.Minecraft.getMinecraft;
 
 public class SettingsUtil {
-
-    private static final Path SETTINGS_PATH = getMinecraft().gameDir.toPath().resolve("baritone").resolve("settings.txt");
+    
+    private static String profileName = "";
     private static final Pattern SETTING_PATTERN = Pattern.compile("^(?<setting>[^ ]+) +(?<value>.+)"); // key and value split by the first space
     private static final String[] JAVA_ONLY_SETTINGS = {"logger", "notifier", "toaster"};
+    
+    
+    private static Path getSettingsPath() {
+        String saveName = profileName.equals("") ? "settings" : "settings-" + profileName;
+        return getMinecraft().gameDir.toPath().resolve("baritone").resolve(saveName + ".txt");
+    }
+    
+    public static boolean applyProfile(String newProfile, Settings settings) {
+        String originalProfile = profileName;
+
+        save(settings); // Make sure to save current settings
+
+        profileName = newProfile;
+
+        if (!readAndApply(settings)) {
+            profileName = originalProfile;
+            readAndApply(settings); // Make sure to fully reset.
+            return false; // Failed to read file
+        }
+        return true;
+    }
+
+    public static void createProfile(String newProfileName, Settings settings) {
+        save(settings);
+
+        profileName = newProfileName;
+
+        save(settings); // make sure to immediately save to a file.
+    }
+
+    public static List<String> getProfiles() {
+        Pattern pattern = Pattern.compile("settings-(?<name>.*)\\.txt");
+        File settingsDir = new File(getMinecraft().gameDir.toPath().resolve("baritone").toUri());
+        List<String> files = Arrays.stream(settingsDir.list())
+                .filter(file -> pattern.matcher(file).find())
+                .map(file -> {
+                    Matcher matcher = pattern.matcher(file);
+                    matcher.find();
+                    return matcher.group("name");
+    })
+                .collect(Collectors.toList());
+        files.add("default");
+        return files;
+    }
 
     private static boolean isComment(String line) {
         return line.startsWith("#") || line.startsWith("//");
@@ -68,9 +111,9 @@ public class SettingsUtil {
         }
     }
 
-    public static void readAndApply(Settings settings) {
+    public static boolean readAndApply(Settings settings) {
         try {
-            forEachLine(SETTINGS_PATH, line -> {
+            forEachLine(getSettingsPath(), line -> {
                 Matcher matcher = SETTING_PATTERN.matcher(line);
                 if (!matcher.matches()) {
                     System.out.println("Invalid syntax in setting file: " + line);
@@ -88,14 +131,17 @@ public class SettingsUtil {
             });
         } catch (NoSuchFileException ignored) {
             System.out.println("Baritone settings file not found, resetting.");
+            return false;
         } catch (Exception ex) {
             System.out.println("Exception while reading Baritone settings, some settings may be reset to default values!");
             ex.printStackTrace();
+            return false;
         }
+        return true;
     }
 
     public static synchronized void save(Settings settings) {
-        try (BufferedWriter out = Files.newBufferedWriter(SETTINGS_PATH)) {
+        try (BufferedWriter out = Files.newBufferedWriter(getSettingsPath())) {
             for (Settings.Setting setting : modifiedSettings(settings)) {
                 out.write(settingToString(setting) + "\n");
             }
@@ -176,7 +222,7 @@ public class SettingsUtil {
     /**
      * This should always be the same as whether the setting can be parsed from or serialized to a string
      *
-     * @param the setting
+     * @param  setting The setting
      * @return true if the setting can not be set or read by the user
      */
     public static boolean javaOnlySetting(Settings.Setting setting) {
