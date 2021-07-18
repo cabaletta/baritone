@@ -24,13 +24,13 @@ import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.world.World;
+import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import static org.spongepowered.asm.lib.Opcodes.GETFIELD;
 
 /**
  * @author Brady
@@ -68,7 +68,7 @@ public abstract class MixinEntityLivingBase extends Entity {
             method = "jump",
             at = @At(
                     value = "FIELD",
-                    opcode = GETFIELD,
+                    opcode = Opcodes.GETFIELD,
                     target = "net/minecraft/entity/EntityLivingBase.rotationYaw:F"
             )
     )
