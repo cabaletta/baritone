@@ -148,6 +148,11 @@ public final class GameEventHandler implements IEventBus, Helper {
 
     @Override
     public void onPlayerDeath() {
+        if (Baritone.settings().stopOnDeath.value) {
+            Baritone.getPathingBehavior().cancelEverything();
+            Baritone.getWorldProvider().logDirect("stopOnDeath is set, cancelling all tasks due to death");
+        }
+
         listeners.forEach(IGameEventListener::onPlayerDeath);
     }
 
