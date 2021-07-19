@@ -25,12 +25,6 @@ import baritone.api.cache.IWorldData;
 import baritone.api.utils.Helper;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
-import net.minecraft.util.RegistryKey;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.World;
-import net.minecraft.world.chunk.Chunk;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -39,6 +33,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
+import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.chunk.LevelChunk;
 
 /**
  * @author Brady
@@ -71,11 +70,11 @@ public final class CachedWorld implements ICachedWorld, Helper {
      * All chunk positions pending packing. This map will be updated in-place if a new update to the chunk occurs
      * while waiting in the queue for the packer thread to get to it.
      */
-    private final Map<ChunkPos, Chunk> toPackMap = new ConcurrentHashMap<>();
+    private final Map<ChunkPos, LevelChunk> toPackMap = new ConcurrentHashMap<>();
 
-    private final RegistryKey<World> dimension;
+    private final ResourceKey<Level> dimension;
 
-    CachedWorld(Path directory, RegistryKey<World> dimension) {
+    CachedWorld(Path directory, ResourceKey<Level> dimension) {
         if (!Files.exists(directory)) {
             try {
                 Files.createDirectories(directory);
@@ -103,7 +102,7 @@ public final class CachedWorld implements ICachedWorld, Helper {
     }
 
     @Override
-    public final void queueForPacking(Chunk chunk) {
+    public final void queueForPacking(LevelChunk chunk) {
         if (toPackMap.put(chunk.getPos(), chunk) == null) {
             toPackQueue.add(chunk.getPos());
         }
@@ -308,7 +307,7 @@ public final class CachedWorld implements ICachedWorld, Helper {
             while (true) {
                 try {
                     ChunkPos pos = toPackQueue.take();
-                    Chunk chunk = toPackMap.remove(pos);
+                    LevelChunk chunk = toPackMap.remove(pos);
                     CachedChunk cached = ChunkPacker.pack(chunk);
                     CachedWorld.this.updateCachedChunk(cached);
                     //System.out.println("Processed chunk at " + chunk.x + "," + chunk.z);

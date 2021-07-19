@@ -18,11 +18,11 @@
 package baritone.launch.mixins;
 
 import baritone.api.utils.BlockOptionalMeta;
-import net.minecraft.loot.LootContext;
-import net.minecraft.loot.LootPredicateManager;
-import net.minecraft.loot.LootTableManager;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.LootTables;
+import net.minecraft.world.level.storage.loot.PredicateManager;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -31,13 +31,13 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 public class MixinLootContext {
 
     @Redirect(
-            method = "build",
+            method = "create",
             at = @At(
                     value = "INVOKE",
-                    target = "net/minecraft/world/server/ServerWorld.getServer()Lnet/minecraft/server/MinecraftServer;"
+                    target = "net/minecraft/server/level/ServerLevel.getServer()Lnet/minecraft/server/MinecraftServer;"
             )
     )
-    private MinecraftServer getServer(ServerWorld world) {
+    private MinecraftServer getServer(ServerLevel world) {
         if (world == null) {
             return null;
         }
@@ -45,30 +45,30 @@ public class MixinLootContext {
     }
 
     @Redirect(
-            method = "build",
+            method = "create",
             at = @At(
                     value = "INVOKE",
-                    target = "net/minecraft/server/MinecraftServer.getLootTableManager()Lnet/minecraft/loot/LootTableManager;"
+                    target = "Lnet/minecraft/server/MinecraftServer;getLootTables()Lnet/minecraft/world/level/storage/loot/LootTables;"
             )
     )
-    private LootTableManager getLootTableManager(MinecraftServer server) {
+    private LootTables getLootTableManager(MinecraftServer server) {
         if (server == null) {
             return BlockOptionalMeta.getManager();
         }
-        return server.getLootTableManager();
+        return server.getLootTables();
     }
 
     @Redirect(
-            method = "build",
+            method = "create",
             at = @At(
                     value = "INVOKE",
-                    target = "net/minecraft/server/MinecraftServer.func_229736_aP_()Lnet/minecraft/loot/LootPredicateManager;"
+                    target = "Lnet/minecraft/server/MinecraftServer;getPredicateManager()Lnet/minecraft/world/level/storage/loot/PredicateManager;"
             )
     )
-    private LootPredicateManager getLootPredicateManager(MinecraftServer server) {
+    private PredicateManager getLootPredicateManager(MinecraftServer server) {
         if (server == null) {
             return BlockOptionalMeta.getPredicateManager();
         }
-        return server.func_229736_aP_();
+        return server.getPredicateManager();
     }
 }

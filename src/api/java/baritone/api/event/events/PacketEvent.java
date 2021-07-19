@@ -18,8 +18,8 @@
 package baritone.api.event.events;
 
 import baritone.api.event.events.type.EventState;
-import net.minecraft.network.IPacket;
-import net.minecraft.network.NetworkManager;
+import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.Packet;
 
 /**
  * @author Brady
@@ -27,19 +27,19 @@ import net.minecraft.network.NetworkManager;
  */
 public final class PacketEvent {
 
-    private final NetworkManager networkManager;
+    private final Connection networkManager;
 
     private final EventState state;
 
-    private final IPacket<?> packet;
+    private final Packet<?> packet;
 
-    public PacketEvent(NetworkManager networkManager, EventState state, IPacket<?> packet) {
+    public PacketEvent(Connection networkManager, EventState state, Packet<?> packet) {
         this.networkManager = networkManager;
         this.state = state;
         this.packet = packet;
     }
 
-    public final NetworkManager getNetworkManager() {
+    public final Connection getNetworkManager() {
         return this.networkManager;
     }
 
@@ -47,12 +47,12 @@ public final class PacketEvent {
         return this.state;
     }
 
-    public final IPacket<?> getPacket() {
+    public final Packet<?> getPacket() {
         return this.packet;
     }
 
     @SuppressWarnings("unchecked")
-    public final <T extends IPacket<?>> T cast() {
+    public final <T extends Packet<?>> T cast() {
         return (T) this.packet;
     }
 }

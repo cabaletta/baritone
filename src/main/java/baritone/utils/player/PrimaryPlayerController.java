@@ -20,18 +20,17 @@ package baritone.utils.player;
 import baritone.api.utils.Helper;
 import baritone.api.utils.IPlayerController;
 import baritone.utils.accessor.IPlayerControllerMP;
-import net.minecraft.client.entity.player.ClientPlayerEntity;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.container.ClickType;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.Direction;
-import net.minecraft.util.Hand;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.BlockRayTraceResult;
-import net.minecraft.world.GameType;
-import net.minecraft.world.World;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.BlockHitResult;
 
 
 /**
@@ -46,52 +45,52 @@ public enum PrimaryPlayerController implements IPlayerController, Helper {
 
     @Override
     public void syncHeldItem() {
-        ((IPlayerControllerMP) mc.playerController).callSyncCurrentPlayItem();
+        ((IPlayerControllerMP) mc.gameMode).callSyncCurrentPlayItem();
     }
 
     @Override
     public boolean hasBrokenBlock() {
-        return ((IPlayerControllerMP) mc.playerController).getCurrentBlock().getY() == -1;
+        return ((IPlayerControllerMP) mc.gameMode).getCurrentBlock().getY() == -1;
     }
 
     @Override
     public boolean onPlayerDamageBlock(BlockPos pos, Direction side) {
-        return mc.playerController.onPlayerDamageBlock(pos, side);
+        return mc.gameMode.continueDestroyBlock(pos, side);
     }
 
     @Override
     public void resetBlockRemoving() {
-        mc.playerController.resetBlockRemoving();
+        mc.gameMode.stopDestroyBlock();
     }
 
     @Override
-    public ItemStack windowClick(int windowId, int slotId, int mouseButton, ClickType type, PlayerEntity player) {
-        return mc.playerController.windowClick(windowId, slotId, mouseButton, type, player);
+    public void windowClick(int windowId, int slotId, int mouseButton, ClickType type, Player player) {
+        mc.gameMode.handleInventoryMouseClick(windowId, slotId, mouseButton, type, player);
     }
 
     @Override
     public GameType getGameType() {
-        return mc.playerController.getCurrentGameType();
+        return mc.gameMode.getPlayerMode();
     }
 
     @Override
-    public ActionResultType processRightClickBlock(ClientPlayerEntity player, World world, Hand hand, BlockRayTraceResult result) {
+    public InteractionResult processRightClickBlock(LocalPlayer player, Level world, InteractionHand hand, BlockHitResult result) {
         // primaryplayercontroller is always in a ClientWorld so this is ok
-        return mc.playerController.func_217292_a(player, (ClientWorld) world, hand, result);
+        return mc.gameMode.useItemOn(player, (ClientLevel) world, hand, result);
     }
 
     @Override
-    public ActionResultType processRightClick(ClientPlayerEntity player, World world, Hand hand) {
-        return mc.playerController.processRightClick(player, world, hand);
+    public InteractionResult processRightClick(LocalPlayer player, Level world, InteractionHand hand) {
+        return mc.gameMode.useItem(player, world, hand);
     }
 
     @Override
     public boolean clickBlock(BlockPos loc, Direction face) {
-        return mc.playerController.clickBlock(loc, face);
+        return mc.gameMode.startDestroyBlock(loc, face);
     }
 
     @Override
     public void setHittingBlock(boolean hittingBlock) {
-        ((IPlayerControllerMP) mc.playerController).setIsHittingBlock(hittingBlock);
+        ((IPlayerControllerMP) mc.gameMode).setIsHittingBlock(hittingBlock);
     }
 }

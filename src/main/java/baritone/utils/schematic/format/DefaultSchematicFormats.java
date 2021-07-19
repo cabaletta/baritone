@@ -21,13 +21,13 @@ import baritone.api.schematic.IStaticSchematic;
 import baritone.api.schematic.format.ISchematicFormat;
 import baritone.utils.schematic.format.defaults.MCEditSchematic;
 import baritone.utils.schematic.format.defaults.SpongeSchematic;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.CompressedStreamTools;
 import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtIo;
 
 /**
  * Default implementations of {@link ISchematicFormat}
@@ -43,7 +43,7 @@ public enum DefaultSchematicFormats implements ISchematicFormat {
     MCEDIT("schematic") {
         @Override
         public IStaticSchematic parse(InputStream input) throws IOException {
-            return new MCEditSchematic(CompressedStreamTools.readCompressed(input));
+            return new MCEditSchematic(NbtIo.readCompressed(input));
         }
     },
 
@@ -55,7 +55,7 @@ public enum DefaultSchematicFormats implements ISchematicFormat {
     SPONGE("schem") {
         @Override
         public IStaticSchematic parse(InputStream input) throws IOException {
-            CompoundNBT nbt = CompressedStreamTools.readCompressed(input);
+            CompoundTag nbt = NbtIo.readCompressed(input);
             int version = nbt.getInt("Version");
             switch (version) {
                 case 1:

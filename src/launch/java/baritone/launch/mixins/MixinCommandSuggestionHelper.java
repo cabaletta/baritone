@@ -22,8 +22,6 @@ import baritone.api.event.events.TabCompleteEvent;
 import com.mojang.brigadier.context.StringRange;
 import com.mojang.brigadier.suggestion.Suggestion;
 import com.mojang.brigadier.suggestion.Suggestions;
-import net.minecraft.client.gui.CommandSuggestionHelper;
-import net.minecraft.client.gui.widget.TextFieldWidget;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -35,33 +33,35 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import net.minecraft.client.gui.components.CommandSuggestions;
+import net.minecraft.client.gui.components.EditBox;
 
 /**
  * @author Brady
  * @since 10/9/2019
  */
-@Mixin(CommandSuggestionHelper.class)
+@Mixin(CommandSuggestions.class)
 public class MixinCommandSuggestionHelper {
 
     @Shadow
     @Final
-    private TextFieldWidget inputField;
+    EditBox input;
 
     @Shadow
     @Final
-    private List<String> exceptionList;
+    private List<String> commandUsage;
 
     @Shadow
-    private CompletableFuture<Suggestions> suggestionsFuture;
+    private CompletableFuture<Suggestions> pendingSuggestions;
 
     @Inject(
-            method = "init",
+            method = "updateCommandInfo",
             at = @At("HEAD"),
             cancellable = true
     )
     private void preUpdateSuggestion(CallbackInfo ci) {
         // Anything that is present in the input text before the cursor position
-        String prefix = this.inputField.getText().substring(0, Math.min(this.inputField.getText().length(), this.inputField.getCursorPosition()));
+        String prefix = this.input.getValue().substring(0, Math.min(this.input.getValue().length(), this.input.getCursorPosition()));
 
         TabCompleteEvent event = new TabCompleteEvent(prefix);
         BaritoneAPI.getProvider().getPrimaryBaritone().getGameEventHandler().onPreTabComplete(event);
@@ -75,14 +75,14 @@ public class MixinCommandSuggestionHelper {
             ci.cancel();
 
             // TODO: Support populating the command usage
-            this.exceptionList.clear();
+            this.commandUsage.clear();
 
             if (event.completions.length == 0) {
-                this.suggestionsFuture = Suggestions.empty();
+                this.pendingSuggestions = Suggestions.empty();
             } else {
-                int offset = this.inputField.getText().endsWith(" ")
-                        ? this.inputField.getCursorPosition()
-                        : this.inputField.getText().lastIndexOf(" ") + 1; // If there is no space this is still 0 haha yes
+                int offset = this.input.getValue().endsWith(" ")
+                        ? this.input.getCursorPosition()
+                        : this.input.getValue().lastIndexOf(" ") + 1; // If there is no space this is still 0 haha yes
 
                 List<Suggestion> suggestionList = Stream.of(event.completions)
                         .map(s -> new Suggestion(StringRange.between(offset, offset + s.length()), s))
@@ -92,8 +92,8 @@ public class MixinCommandSuggestionHelper {
                         StringRange.between(offset, offset + suggestionList.stream().mapToInt(s -> s.getText().length()).max().orElse(0)),
                         suggestionList);
 
-                this.suggestionsFuture = new CompletableFuture<>();
-                this.suggestionsFuture.complete(suggestions);
+                this.pendingSuggestions = new CompletableFuture<>();
+                this.pendingSuggestions.complete(suggestions);
             }
         }
     }

@@ -18,12 +18,12 @@
 package baritone.pathing.goals;
 
 import baritone.api.pathing.goals.GoalGetToBlock;
-import net.minecraft.util.math.BlockPos;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import net.minecraft.core.BlockPos;
 
 import static org.junit.Assert.assertTrue;
 

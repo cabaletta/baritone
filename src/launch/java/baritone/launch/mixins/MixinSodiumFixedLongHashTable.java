@@ -21,12 +21,12 @@ import baritone.utils.accessor.IChunkArray;
 import baritone.utils.accessor.ISodiumChunkArray;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
-import net.minecraft.world.chunk.Chunk;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Pseudo;
 import org.spongepowered.asm.mixin.Shadow;
 
 import java.util.concurrent.atomic.AtomicReferenceArray;
+import net.minecraft.world.level.chunk.LevelChunk;
 
 @Pseudo
 @Mixin(targets = "me.jellysquid.mods.sodium.client.util.collections.FixedLongHashTable", remap = false)
@@ -58,7 +58,7 @@ public abstract class MixinSodiumFixedLongHashTable implements ISodiumChunkArray
     
     //these are useless here...
     @Override
-    public AtomicReferenceArray<Chunk> getChunks() {
+    public AtomicReferenceArray<LevelChunk> getChunks() {
         return null;
     }
     

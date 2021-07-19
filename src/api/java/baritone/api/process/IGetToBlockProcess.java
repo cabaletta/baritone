@@ -18,7 +18,7 @@
 package baritone.api.process;
 
 import baritone.api.utils.BlockOptionalMeta;
-import net.minecraft.block.Block;
+import net.minecraft.world.level.block.Block;
 
 /**
  * but it rescans the world every once in a while so it doesn't get fooled by its cache

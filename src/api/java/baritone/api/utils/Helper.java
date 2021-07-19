@@ -19,12 +19,11 @@ package baritone.api.utils;
 
 import baritone.api.BaritoneAPI;
 import baritone.api.utils.gui.BaritoneToast;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextComponent;
-import net.minecraft.util.text.TextFormatting;
-
+import net.minecraft.network.chat.BaseComponent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.stream.Stream;
@@ -48,19 +47,19 @@ public interface Helper {
      */
     Minecraft mc = Minecraft.getInstance();
 
-    static ITextComponent getPrefix() {
+    static Component getPrefix() {
         // Inner text component
         final Calendar now = Calendar.getInstance();
         final boolean xd = now.get(Calendar.MONTH) == Calendar.APRIL && now.get(Calendar.DAY_OF_MONTH) <= 3;
-        TextComponent baritone = new StringTextComponent(xd ? "Baritoe" : BaritoneAPI.getSettings().shortBaritonePrefix.value ? "B" : "Baritone");
-        baritone.setStyle(baritone.getStyle().setFormatting(TextFormatting.LIGHT_PURPLE));
+        BaseComponent baritone = new TextComponent(xd ? "Baritoe" : BaritoneAPI.getSettings().shortBaritonePrefix.value ? "B" : "Baritone");
+        baritone.setStyle(baritone.getStyle().withColor(ChatFormatting.LIGHT_PURPLE));
 
         // Outer brackets
-        TextComponent prefix = new StringTextComponent("");
-        prefix.setStyle(baritone.getStyle().setFormatting(TextFormatting.DARK_PURPLE));
-        prefix.appendString("[");
+        BaseComponent prefix = new TextComponent("");
+        prefix.setStyle(baritone.getStyle().withColor(ChatFormatting.DARK_PURPLE));
+        prefix.append("[");
         prefix.append(baritone);
-        prefix.appendString("]");
+        prefix.append("]");
 
         return prefix;
     }
@@ -71,8 +70,8 @@ public interface Helper {
      * @param title   The title to display in the popup
      * @param message The message to display in the popup
      */
-    default void logToast(ITextComponent title, ITextComponent message) {
-        mc.execute(() -> BaritoneToast.addOrUpdate(mc.getToastGui(), title, message, BaritoneAPI.getSettings().toastTimer.value));
+    default void logToast(Component title, Component message) {
+        mc.execute(() -> BaritoneToast.addOrUpdate(mc.getToasts(), title, message, BaritoneAPI.getSettings().toastTimer.value));
     }
 
     /**
@@ -82,7 +81,7 @@ public interface Helper {
      * @param message The message to display in the popup
      */
     default void logToast(String title, String message) {
-        logToast(new StringTextComponent(title), new StringTextComponent(message));
+        logToast(new TextComponent(title), new TextComponent(message));
     }
 
     /**
@@ -91,7 +90,7 @@ public interface Helper {
      * @param message The message to display in the popup
      */
     default void logToast(String message) {
-        logToast(Helper.getPrefix(), new StringTextComponent(message));
+        logToast(Helper.getPrefix(), new TextComponent(message));
     }
 
     /**
@@ -116,10 +115,10 @@ public interface Helper {
      * @param logAsToast Whether to log as a toast notification
      * @param components The components to send
      */
-    default void logDirect(boolean logAsToast, ITextComponent... components) {
-        TextComponent component = new StringTextComponent("");
+    default void logDirect(boolean logAsToast, Component... components) {
+        BaseComponent component = new TextComponent("");
         component.append(getPrefix());
-        component.append(new StringTextComponent(" "));
+        component.append(new TextComponent(" "));
         Arrays.asList(components).forEach(component::append);
         if (logAsToast) {
             logToast(getPrefix(), component);
@@ -133,7 +132,7 @@ public interface Helper {
      *
      * @param components The components to send
      */
-    default void logDirect(ITextComponent... components) {
+    default void logDirect(Component... components) {
         logDirect(BaritoneAPI.getSettings().logAsToast.value, components);
     }
 
@@ -145,10 +144,10 @@ public interface Helper {
      * @param color      The color to print that message in
      * @param logAsToast Whether to log as a toast notification
      */
-    default void logDirect(String message, TextFormatting color, boolean logAsToast) {
+    default void logDirect(String message, ChatFormatting color, boolean logAsToast) {
         Stream.of(message.split("\n")).forEach(line -> {
-            TextComponent component = new StringTextComponent(line.replace("\t", "    "));
-            component.setStyle(component.getStyle().setFormatting(color));
+            BaseComponent component = new TextComponent(line.replace("\t", "    "));
+            component.setStyle(component.getStyle().withColor(color));
             logDirect(logAsToast, component);
         });
     }
@@ -160,7 +159,7 @@ public interface Helper {
      * @param message The message to display in chat
      * @param color   The color to print that message in
      */
-    default void logDirect(String message, TextFormatting color) {
+    default void logDirect(String message, ChatFormatting color) {
         logDirect(message, color, BaritoneAPI.getSettings().logAsToast.value);
     }
 
@@ -172,7 +171,7 @@ public interface Helper {
      * @param logAsToast Whether to log as a toast notification
      */
     default void logDirect(String message, boolean logAsToast) {
-        logDirect(message, TextFormatting.GRAY, logAsToast);
+        logDirect(message, ChatFormatting.GRAY, logAsToast);
     }
 
     /**

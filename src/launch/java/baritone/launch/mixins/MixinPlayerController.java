@@ -18,24 +18,24 @@
 package baritone.launch.mixins;
 
 import baritone.utils.accessor.IPlayerControllerMP;
-import net.minecraft.client.multiplayer.PlayerController;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.client.multiplayer.MultiPlayerGameMode;
+import net.minecraft.core.BlockPos;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 import org.spongepowered.asm.mixin.gen.Invoker;
 
-@Mixin(PlayerController.class)
+@Mixin(MultiPlayerGameMode.class)
 public abstract class MixinPlayerController implements IPlayerControllerMP {
 
-    @Accessor
+    @Accessor("isDestroying")
     @Override
     public abstract void setIsHittingBlock(boolean isHittingBlock);
 
-    @Accessor
+    @Accessor("destroyBlockPos")
     @Override
     public abstract BlockPos getCurrentBlock();
 
-    @Invoker
+    @Invoker("ensureHasSentCarriedItem")
     @Override
     public abstract void callSyncCurrentPlayItem();
 }

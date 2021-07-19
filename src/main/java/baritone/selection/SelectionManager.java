@@ -4,10 +4,9 @@ import baritone.Baritone;
 import baritone.api.selection.ISelection;
 import baritone.api.selection.ISelectionManager;
 import baritone.api.utils.BetterBlockPos;
-import net.minecraft.util.Direction;
-
 import java.util.LinkedList;
 import java.util.ListIterator;
+import net.minecraft.core.Direction;
 
 public class SelectionManager implements ISelectionManager {
 

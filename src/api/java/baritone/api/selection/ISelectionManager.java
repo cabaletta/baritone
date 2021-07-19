@@ -18,7 +18,7 @@
 package baritone.api.selection;
 
 import baritone.api.utils.BetterBlockPos;
-import net.minecraft.util.Direction;
+import net.minecraft.core.Direction;
 
 /**
  * The selection manager handles setting Baritone's selections. You can set the selection here, as well as retrieving

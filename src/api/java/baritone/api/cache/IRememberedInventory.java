@@ -17,9 +17,8 @@
 
 package baritone.api.cache;
 
-import net.minecraft.item.ItemStack;
-
 import java.util.List;
+import net.minecraft.world.item.ItemStack;
 
 /**
  * @author Brady

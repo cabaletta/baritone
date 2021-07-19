@@ -17,10 +17,9 @@
 
 package baritone.api.process;
 
-import net.minecraft.entity.Entity;
-
 import java.util.List;
 import java.util.function.Predicate;
+import net.minecraft.world.entity.Entity;
 
 /**
  * @author Brady

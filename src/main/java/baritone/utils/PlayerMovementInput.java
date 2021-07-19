@@ -18,9 +18,8 @@
 package baritone.utils;
 
 import baritone.api.utils.input.Input;
-import net.minecraft.util.MovementInput;
 
-public class PlayerMovementInput extends MovementInput {
+public class PlayerMovementInput extends net.minecraft.client.player.Input {
 
     private final InputOverrideHandler handler;
 
@@ -29,31 +28,31 @@ public class PlayerMovementInput extends MovementInput {
     }
 
     @Override
-    public void tickMovement(boolean p_225607_1_) {
-        this.moveStrafe = 0.0F;
-        this.moveForward = 0.0F;
+    public void tick(boolean p_225607_1_) {
+        this.leftImpulse = 0.0F;
+        this.forwardImpulse = 0.0F;
 
-        this.jump = handler.isInputForcedDown(Input.JUMP); // oppa gangnam style
+        this.jumping = handler.isInputForcedDown(Input.JUMP); // oppa gangnam style
 
-        if (this.forwardKeyDown = handler.isInputForcedDown(Input.MOVE_FORWARD)) {
-            this.moveForward++;
+        if (this.up = handler.isInputForcedDown(Input.MOVE_FORWARD)) {
+            this.forwardImpulse++;
         }
 
-        if (this.backKeyDown = handler.isInputForcedDown(Input.MOVE_BACK)) {
-            this.moveForward--;
+        if (this.down = handler.isInputForcedDown(Input.MOVE_BACK)) {
+            this.forwardImpulse--;
         }
 
-        if (this.leftKeyDown = handler.isInputForcedDown(Input.MOVE_LEFT)) {
-            this.moveStrafe++;
+        if (this.left = handler.isInputForcedDown(Input.MOVE_LEFT)) {
+            this.leftImpulse++;
         }
 
-        if (this.rightKeyDown = handler.isInputForcedDown(Input.MOVE_RIGHT)) {
-            this.moveStrafe--;
+        if (this.right = handler.isInputForcedDown(Input.MOVE_RIGHT)) {
+            this.leftImpulse--;
         }
 
-        if (this.sneaking = handler.isInputForcedDown(Input.SNEAK)) {
-            this.moveStrafe *= 0.3D;
-            this.moveForward *= 0.3D;
+        if (this.shiftKeyDown = handler.isInputForcedDown(Input.SNEAK)) {
+            this.leftImpulse *= 0.3D;
+            this.forwardImpulse *= 0.3D;
         }
     }
 }

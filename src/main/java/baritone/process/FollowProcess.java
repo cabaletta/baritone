@@ -26,12 +26,11 @@ import baritone.api.process.IFollowProcess;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
 import baritone.utils.BaritoneProcessHelper;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.math.BlockPos;
-
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.Entity;
 
 /**
  * Follow an entity
@@ -57,10 +56,10 @@ public final class FollowProcess extends BaritoneProcessHelper implements IFollo
     private Goal towards(Entity following) {
         BlockPos pos;
         if (Baritone.settings().followOffsetDistance.value == 0) {
-            pos = following.getPosition();
+            pos = following.blockPosition();
         } else {
-            GoalXZ g = GoalXZ.fromDirection(following.getPositionVec(), Baritone.settings().followOffsetDirection.value, Baritone.settings().followOffsetDistance.value);
-            pos = new BlockPos(g.getX(), following.getPositionVec().y, g.getZ());
+            GoalXZ g = GoalXZ.fromDirection(following.position(), Baritone.settings().followOffsetDirection.value, Baritone.settings().followOffsetDistance.value);
+            pos = new BlockPos(g.getX(), following.position().y, g.getZ());
         }
         return new GoalNear(pos, Baritone.settings().followRadius.value);
     }
