@@ -367,7 +367,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
     public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel, int recursions) {
 
         if (recursions > 1000) { // onTick calls itself, don't crash
-            return new PathingCommand(null, PathingCommandType.SET_GOAL_AND_PATH);
+            return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
         }
         approxPlaceable = approxPlaceable(36);
         if (baritone.getInputOverrideHandler().isInputForcedDown(Input.CLICK_LEFT)) {
@@ -401,7 +401,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                     //left to right
                     if (Baritone.settings().layerOrder.value) {
                         minXInclusive = realSchematic.widthX() - layer * Baritone.settings().layerHeight.value;
-                        maxXInclusive = realSchematic.widthX() -1;
+                        maxXInclusive = realSchematic.widthX() - 1;
                     }
                     else
                     {
@@ -417,7 +417,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
 
                     if (Baritone.settings().layerOrder.value) {
                         minZInclusive = realSchematic.widthX() - layer * Baritone.settings().layerHeight.value;
-                        maxZInclusive = realSchematic.widthX() -1;
+                        maxZInclusive = realSchematic.widthX() - 1;
                     }
                     else
                     {
@@ -476,30 +476,30 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         }
         BuilderCalculationContext bcc = new BuilderCalculationContext();
         if (!recalc(bcc)) {
+            boolean shouldIncreaseLayer = false;
             if (Baritone.settings().buildInLayers.value) {
                 if(!Baritone.settings().buildInLayersSideways.value) {
-                    if (layer * Baritone.settings().layerHeight.value < realSchematic.heightY()) {
-                        logDirect("Starting layer " + layer);
-                        layer++;
-                    }
+                    if (layer * Baritone.settings().layerHeight.value < realSchematic.heightY())
+                        shouldIncreaseLayer = true;
                 }
                 else
                 {
                     if(Baritone.settings().buildInLayersSidewaysXAxis.value) {
-                        if (layer * Baritone.settings().layerHeight.value < realSchematic.widthX()) {
-                            logDirect("Starting layer " + layer);
-                            layer++;
-                        }
+                        if (layer * Baritone.settings().layerHeight.value < realSchematic.widthX())
+                            shouldIncreaseLayer = true;
                     }
                     else
                     {
-                        if (layer * Baritone.settings().layerHeight.value < realSchematic.lengthZ()) {
-                            logDirect("Starting layer " + layer);
-                            layer++;
-                        }
+                        if (layer * Baritone.settings().layerHeight.value < realSchematic.lengthZ())
+                            shouldIncreaseLayer = true;
                     }
                 }
-                return onTick(calcFailed, isSafeToCancel, recursions + 1);
+                if(shouldIncreaseLayer)
+                {
+                    logDirect("Starting layer " + layer);
+                    layer++;
+                    return onTick(calcFailed, isSafeToCancel, recursions + 1);
+                }
 
             }
             Vec3i repeat = Baritone.settings().buildRepeat.value;
@@ -587,25 +587,32 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         if (goal == null) {
             goal = assemble(bcc, approxPlaceable, true); // we're far away, so assume that we have our whole inventory to recalculate placeable properly
             if (goal == null) {
+                    if (Baritone.settings().skipFailedLayers.value && Baritone.settings().buildInLayers.value) {
+                        boolean shouldSkip = false;
+                        if(Baritone.settings().buildInLayersSideways.value) {
+                            if(Baritone.settings().buildInLayersSidewaysXAxis.value) {
+                                if(layer * Baritone.settings().layerHeight.value < realSchematic.widthX())
+                                    shouldSkip = true;
+                                else if(layer * Baritone.settings().layerHeight.value < realSchematic.lengthZ())
+                                    shouldSkip = true;
+                            }
+                        }
+                        else {
+                            if(layer * Baritone.settings().layerHeight.value < realSchematic.heightY())
+                                shouldSkip = true;
+                        }
 
-                if (Baritone.settings().skipFailedLayers.value && Baritone.settings().buildInLayers.value) {
-                    if(!Baritone.settings().buildInLayersSideways.value && layer * Baritone.settings().layerHeight.value < realSchematic.heightY() ||
-                            Baritone.settings().buildInLayersSideways.value &&
-                            (Baritone.settings().buildInLayersSidewaysXAxis.value &&
-                                    layer * Baritone.settings().layerHeight.value < realSchematic.widthX() ||
-                                    !Baritone.settings().buildInLayersSidewaysXAxis.value &&
-                                            layer * Baritone.settings().layerHeight.value < realSchematic.lengthZ()))
-                    {
-                        logDirect("Skipping layer that I cannot construct! Layer #" + layer);
-                        layer++;
-                        return onTick(calcFailed, isSafeToCancel, recursions + 1);
+                        if(shouldSkip) {
+                            logDirect("Skipping layer that I cannot construct! Layer #" + layer);
+                            layer++;
+                            return onTick(calcFailed, isSafeToCancel, recursions + 1);
+                        }
                     }
                 }
                 logDirect("Unable to do it. Pausing. resume to resume, cancel to cancel");
                 paused = true;
                 return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
             }
-        }
         return new PathingCommandContext(goal, PathingCommandType.FORCE_REVALIDATE_GOAL_AND_PATH, bcc);
     }
 
