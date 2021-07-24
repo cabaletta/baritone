@@ -45,6 +45,28 @@ import java.util.function.BiConsumer;
 public final class Settings {
 
     /**
+     * will prioritize blocks with a y level smaller
+     */
+    public final Setting<Boolean> prioritizeBottomBlocks = new Setting<>(true);
+    /**
+     * this option is in direct connection with prioritizeBottomBlocks, the bigger you set this to be, the more baritone will try it's best to place as low as possible
+     */
+    public final Setting<Double> costPerLevel = new Setting<>(1.0);
+
+    /**
+    *if this is false, it will layer on y(default behaviour) if this is on, it will build on the axis you choose at buildInLayersSidewaysXAxis*/
+    public final Setting<Boolean> buildInLayersSideways = new Setting<>(false);
+    /**
+     * if this is false, it will layer on z
+     */
+    public final Setting<Boolean> buildInLayersSidewaysXAxis = new Setting<>(true);
+    /**
+     * there is a pesky bug with placing carpets and I can't fix it without breaking something else, until I get myself used to baritone and minecraft's code, place carpets, cowebs, etc by yourself
+     * spoiler alert it doesn't work
+     */
+
+    public final Setting<Boolean> dontPlaceBlocksThatAreNotFull = new Setting<>(false);
+    /**
      * Allow Baritone to break blocks
      */
     public final Setting<Boolean> allowBreak = new Setting<>(true);

@@ -46,6 +46,7 @@ import baritone.utils.schematic.SelectionSchematic;
 import baritone.utils.schematic.SchematicSystem;
 import baritone.utils.schematic.schematica.SchematicaHelper;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockAir;
 import net.minecraft.block.BlockLiquid;
 import net.minecraft.block.state.IBlockState;
@@ -55,10 +56,12 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.Tuple;
 import net.minecraft.util.math.*;
-
+import net.minecraft.block.BlockWeb;
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import static baritone.api.pathing.movement.ActionCosts.COST_INF;
@@ -357,10 +360,12 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
 
     @Override
     public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
+
         return onTick(calcFailed, isSafeToCancel, 0);
     }
 
     public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel, int recursions) {
+
         if (recursions > 1000) { // onTick calls itself, don't crash
             return new PathingCommand(null, PathingCommandType.SET_GOAL_AND_PATH);
         }
@@ -374,21 +379,68 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         if (paused) {
             return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
         }
-        if (Baritone.settings().buildInLayers.value) {
+        if (Baritone.settings().buildInLayers.value)
+        {
             if (realSchematic == null) {
                 realSchematic = schematic;
             }
-            ISchematic realSchematic = this.realSchematic; // wrap this properly, dont just have the inner class refer to the builderprocess.this
+            ISchematic realSchematic = this.realSchematic;
+            int minXInclusive;
+            int maxXInclusive;
+            int minZInclusive;
+            int maxZInclusive;
             int minYInclusive;
             int maxYInclusive;
-            // layer = 0 should be nothing
-            // layer = realSchematic.heightY() should be everything
-            if (Baritone.settings().layerOrder.value) { // top to bottom
-                maxYInclusive = realSchematic.heightY() - 1;
-                minYInclusive = realSchematic.heightY() - layer * Baritone.settings().layerHeight.value;
-            } else {
-                maxYInclusive = layer * Baritone.settings().layerHeight.value - 1;
+            if(Baritone.settings().buildInLayersSideways.value)
+            {
+                maxYInclusive = realSchematic.heightY()-1;
                 minYInclusive = 0;
+                if(Baritone.settings().buildInLayersSidewaysXAxis.value) {
+                    minZInclusive = 0;
+                    maxZInclusive = realSchematic.lengthZ()-1;
+                    //left to right
+                    if (Baritone.settings().layerOrder.value) {
+                        minXInclusive = realSchematic.widthX() - layer * Baritone.settings().layerHeight.value;
+                        maxXInclusive = realSchematic.widthX() -1;
+                    }
+                    else
+                    {
+                        minXInclusive = 0;
+                        maxXInclusive = layer * Baritone.settings().layerHeight.value;
+                    }
+
+                }
+                else
+                {
+                    minXInclusive = 0;
+                    maxXInclusive = realSchematic.widthX()-1;
+
+                    if (Baritone.settings().layerOrder.value) {
+                        minZInclusive = realSchematic.widthX() - layer * Baritone.settings().layerHeight.value;
+                        maxZInclusive = realSchematic.widthX() -1;
+                    }
+                    else
+                    {
+                        minZInclusive = 0;
+                        maxZInclusive = layer * Baritone.settings().layerHeight.value;
+                    }
+                }
+            }
+            else {
+                // layer = 0 should be nothing
+                // layer = realSchematic.heightY() should be everything
+                minZInclusive = 0;
+                maxZInclusive = realSchematic.lengthZ()-1;
+                minXInclusive = 0;
+                maxXInclusive = realSchematic.widthX()-1;
+
+                if (Baritone.settings().layerOrder.value) { // top to bottom
+                    maxYInclusive = realSchematic.heightY() - 1;
+                    minYInclusive = realSchematic.heightY() - layer * Baritone.settings().layerHeight.value;
+                } else {
+                    maxYInclusive = layer * Baritone.settings().layerHeight.value - 1;
+                    minYInclusive = 0;
+                }
             }
             schematic = new ISchematic() {
                 @Override
@@ -398,7 +450,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
 
                 @Override
                 public boolean inSchematic(int x, int y, int z, IBlockState currentState) {
-                    return ISchematic.super.inSchematic(x, y, z, currentState) && y >= minYInclusive && y <= maxYInclusive && realSchematic.inSchematic(x, y, z, currentState);
+                    return ISchematic.super.inSchematic(x, y, z, currentState) && z >= minZInclusive && z <= maxZInclusive  &&  x >= minXInclusive && x <= maxXInclusive && y >= minYInclusive && y <= maxYInclusive && realSchematic.inSchematic(x, y, z, currentState);
                 }
 
                 @Override
@@ -424,10 +476,31 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         }
         BuilderCalculationContext bcc = new BuilderCalculationContext();
         if (!recalc(bcc)) {
-            if (Baritone.settings().buildInLayers.value && layer * Baritone.settings().layerHeight.value < realSchematic.heightY()) {
-                logDirect("Starting layer " + layer);
-                layer++;
+            if (Baritone.settings().buildInLayers.value) {
+                if(!Baritone.settings().buildInLayersSideways.value) {
+                    if (layer * Baritone.settings().layerHeight.value < realSchematic.heightY()) {
+                        logDirect("Starting layer " + layer);
+                        layer++;
+                    }
+                }
+                else
+                {
+                    if(Baritone.settings().buildInLayersSidewaysXAxis.value) {
+                        if (layer * Baritone.settings().layerHeight.value < realSchematic.widthX()) {
+                            logDirect("Starting layer " + layer);
+                            layer++;
+                        }
+                    }
+                    else
+                    {
+                        if (layer * Baritone.settings().layerHeight.value < realSchematic.lengthZ()) {
+                            logDirect("Starting layer " + layer);
+                            layer++;
+                        }
+                    }
+                }
                 return onTick(calcFailed, isSafeToCancel, recursions + 1);
+
             }
             Vec3i repeat = Baritone.settings().buildRepeat.value;
             int max = Baritone.settings().buildRepeatCount.value;
@@ -514,10 +587,19 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         if (goal == null) {
             goal = assemble(bcc, approxPlaceable, true); // we're far away, so assume that we have our whole inventory to recalculate placeable properly
             if (goal == null) {
-                if (Baritone.settings().skipFailedLayers.value && Baritone.settings().buildInLayers.value && layer * Baritone.settings().layerHeight.value < realSchematic.heightY()) {
-                    logDirect("Skipping layer that I cannot construct! Layer #" + layer);
-                    layer++;
-                    return onTick(calcFailed, isSafeToCancel, recursions + 1);
+
+                if (Baritone.settings().skipFailedLayers.value && Baritone.settings().buildInLayers.value) {
+                    if(!Baritone.settings().buildInLayersSideways.value && layer * Baritone.settings().layerHeight.value < realSchematic.heightY() ||
+                            Baritone.settings().buildInLayersSideways.value &&
+                            (Baritone.settings().buildInLayersSidewaysXAxis.value &&
+                                    layer * Baritone.settings().layerHeight.value < realSchematic.widthX() ||
+                                    !Baritone.settings().buildInLayersSidewaysXAxis.value &&
+                                            layer * Baritone.settings().layerHeight.value < realSchematic.lengthZ()))
+                    {
+                        logDirect("Skipping layer that I cannot construct! Layer #" + layer);
+                        layer++;
+                        return onTick(calcFailed, isSafeToCancel, recursions + 1);
+                    }
                 }
                 logDirect("Unable to do it. Pausing. resume to resume, cancel to cancel");
                 paused = true;
@@ -560,8 +642,9 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                     int y = center.y + dy;
                     int z = center.z + dz;
                     IBlockState desired = bcc.getSchematic(x, y, z, bcc.bsi.get0(x, y, z));
-                    if (desired != null) {
+                    if (desired != null ) {
                         // we care about this position
+
                         BetterBlockPos pos = new BetterBlockPos(x, y, z);
                         if (valid(bcc.bsi.get0(x, y, z), desired, false)) {
                             incorrectPositions.remove(pos);
@@ -590,7 +673,8 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                     }
                     if (bcc.bsi.worldContainsLoadedChunk(blockX, blockZ)) { // check if its in render distance, not if its in cache
                         // we can directly observe this block, it is in render distance
-                        if (valid(bcc.bsi.get0(blockX, blockY, blockZ), schematic.desiredState(x, y, z, current, this.approxPlaceable), false)) {
+                        IBlockState desired = schematic.desiredState(x, y, z, current, this.approxPlaceable);
+                        if (valid(bcc.bsi.get0(blockX, blockY, blockZ), desired, false)) {
                             observedCompleted.add(BetterBlockPos.longHash(blockX, blockY, blockZ));
                         } else {
                             incorrectPositions.add(new BetterBlockPos(blockX, blockY, blockZ));
@@ -626,26 +710,34 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         List<BetterBlockPos> sourceLiquids = new ArrayList<>();
         List<BetterBlockPos> flowingLiquids = new ArrayList<>();
         Map<IBlockState, Integer> missing = new HashMap<>();
+        //looking through all blocks that aren't what they are supposed to be
         incorrectPositions.forEach(pos -> {
+            //getting the current block
             IBlockState state = bcc.bsi.get0(pos);
+            //if it's air we place
             if (state.getBlock() instanceof BlockAir) {
-                if (approxPlaceable.contains(bcc.getSchematic(pos.x, pos.y, pos.z, state))) {
+
+                IBlockState desired = bcc.getSchematic(pos.x, pos.y, pos.z, state);
+                if (approxPlaceable.contains(desired))
+                {
                     placeable.add(pos);
                 } else {
-                    IBlockState desired = bcc.getSchematic(pos.x, pos.y, pos.z, state);
                     missing.put(desired, 1 + missing.getOrDefault(desired, 0));
                 }
             } else {
+                //if liquid we still replace with a throw away
                 if (state.getBlock() instanceof BlockLiquid) {
                     // if the block itself is JUST a liquid (i.e. not just a waterlogged block), we CANNOT break it
                     // TODO for 1.13 make sure that this only matches pure water, not waterlogged blocks
                     if (!MovementHelper.possiblyFlowing(state)) {
-                        // if it's a source block then we want to replace it with a throwaway
+                        // if it's a source block then we want to replace it to source
                         sourceLiquids.add(pos);
                     } else {
+                        // if it's a flowing block then we add it to the list
                         flowingLiquids.add(pos);
                     }
                 } else {
+                    //we break if incorrect
                     breakable.add(pos);
                 }
             }
@@ -836,6 +928,11 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         if (desired == null) {
             return true;
         }
+        if(Baritone.settings().mapArtMode.value && current.getMapColor(null, null) == desired.getMapColor(null, null)) //made to solve looping with blocks that change from player interaction
+            return true;
+        if(!desired.isFullBlock() && Baritone.settings().dontPlaceBlocksThatAreNotFull.value && !(desired.getBlock() instanceof BlockAir)  && !itemVerify)
+            return true;
+
         if (current.getBlock() instanceof BlockLiquid && Baritone.settings().okIfWater.value) {
             return true;
         }
@@ -890,16 +987,20 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             if (isPossiblyProtected(x, y, z) || !worldBorder.canPlaceAt(x, z)) { // make calculation fail properly if we can't build
                 return COST_INF;
             }
-            IBlockState sch = getSchematic(x, y, z, current);
+            IBlockState sch  = getSchematic(x, y, z, current);
+
+            double actualCost = placeBlockCost;
             if (sch != null && !Baritone.settings().buildSkipBlocks.value.contains(sch.getBlock())) {
                 // TODO this can return true even when allowPlace is off.... is that an issue?
                 if (sch.getBlock() == Blocks.AIR) {
                     // we want this to be air, but they're asking if they can place here
                     // this won't be a schematic block, this will be a throwaway
-                    return placeBlockCost * 2; // we're going to have to break it eventually
+                    return actualCost * 2; // we're going to have to break it eventually
                 }
                 if (placeable.contains(sch)) {
-                    return 0; // thats right we gonna make it FREE to place a block where it should go in a structure
+                    if(Baritone.settings().prioritizeBottomBlocks.value)
+                        return y*Baritone.settings().costPerLevel.value; // thats right we gonna make it FREE to place a block where it should go in a structure
+                    return 0;
                     // no place block penalty at all 😎
                     // i'm such an idiot that i just tried to copy and paste the epic gamer moment emoji too
                     // get added to unicode when?
@@ -909,10 +1010,10 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                 }
                 // we want it to be something that we don't have
                 // even more of a pain to place something wrong
-                return placeBlockCost * 3;
+                return actualCost * 3;
             } else {
                 if (hasThrowaway) {
-                    return placeBlockCost;
+                    return actualCost;
                 } else {
                     return COST_INF;
                 }

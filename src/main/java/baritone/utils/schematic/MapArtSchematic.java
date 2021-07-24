@@ -20,6 +20,7 @@ package baritone.utils.schematic;
 import baritone.api.schematic.IStaticSchematic;
 import baritone.api.schematic.MaskSchematic;
 import net.minecraft.block.BlockAir;
+import net.minecraft.block.BlockCarpet;
 import net.minecraft.block.state.IBlockState;
 
 import java.util.OptionalInt;
@@ -35,36 +36,38 @@ public class MapArtSchematic extends MaskSchematic {
     }
 
     @Override
-    protected boolean partOfMask(int x, int y, int z, IBlockState currentState) {
-        return y >= this.heightMap[x][z];
+    protected boolean partOfMask(int x, int y, int z, IBlockState currentState)
+    {
+        return y >= heightMap[x][z];
     }
 
-    private static int[][] generateHeightMap(IStaticSchematic schematic) {
+    private static int[][] generateHeightMap(IStaticSchematic schematic)
+    {
+        //int[][] heightMap = new int[schematic.widthX()][schematic.lengthZ()];
         int[][] heightMap = new int[schematic.widthX()][schematic.lengthZ()];
 
         for (int x = 0; x < schematic.widthX(); x++) {
             for (int z = 0; z < schematic.lengthZ(); z++) {
                 IBlockState[] column = schematic.getColumn(x, z);
 
-                OptionalInt lowestBlockY = lastIndexMatching(column, state -> !(state.getBlock() instanceof BlockAir));
-                if (lowestBlockY.isPresent()) {
-                    heightMap[x][z] = lowestBlockY.getAsInt();
-                } else {
-                    System.out.println("Column " + x + "," + z + " has no blocks, but it's apparently map art? wtf");
-                    System.out.println("Letting it be whatever");
-                    heightMap[x][z] = 256;
-                }
+                heightMap[x][z] = firstNonAir(column);
             }
         }
         return heightMap;
     }
 
-    private static <T> OptionalInt lastIndexMatching(T[] arr, Predicate<? super T> predicate) {
-        for (int y = arr.length - 1; y >= 0; y--) {
-            if (predicate.test(arr[y])) {
-                return OptionalInt.of(y);
-            }
+    /*
+     * Old MapArtSchematic only cared about the above blocks, but if a block needed an adjacent block(carpets for instance) then we would have an issue,
+     * so I changed it to care from the first non air block to the top
+     */
+    private static int firstNonAir(IBlockState[] arr)
+    {
+        for(int i = 0; i < arr.length; ++i)
+        {
+            if(!(arr[i].getBlock() instanceof BlockAir))
+                return i;
         }
-        return OptionalInt.empty();
+
+        return 256;
     }
 }
