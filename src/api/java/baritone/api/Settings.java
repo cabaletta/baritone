@@ -851,6 +851,11 @@ public final class Settings {
     public final Setting<Boolean> layerOrder = new Setting<>(false);
 
     /**
+     * How high should the individual layers be?
+     */
+    public final Setting<Integer> layerHeight = new Setting<>(1);
+
+    /**
      * Start building the schematic at a specific layer.
      * Can help on larger builds when schematic wants to break things its already built
      */
