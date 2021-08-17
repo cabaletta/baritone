@@ -115,7 +115,7 @@ public class PlaceOrderDependencyGraph {
     }
 
     private void sanityCheck() {
-        int[] test = new int[bounds().sizeX * bounds().sizeY * bounds().sizeZ * Face.NUM_FACES];
+        int[] test = new int[bounds().size * Face.NUM_FACES];
         bounds().forEach(pos -> {
             for (int face = 0; face < 6; face++) {
                 test[bitIndex(pos, Face.VALUES[face])]++;

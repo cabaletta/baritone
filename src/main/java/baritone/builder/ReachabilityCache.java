@@ -30,7 +30,7 @@ public class ReachabilityCache implements IReachabilityProvider {
         playerPositionToBlock = new Long2ObjectOpenHashMap<>();
         int maxReasonableCacheSize = overlay.bounds().size;
         int[] cnt = {0};
-        overlay.forEachReal(blockPos -> { // by only iterating through real blocks, this will be a much faster and better option for sparse schematics (e.g. map art)
+        overlay.forEachReal(blockPos -> { // by only iterating through real blocks, this will be a much faster and better option for sparse schematics (e.g. staircased map art)
             for (long offset : sphere.positions) {
                 long playerEyeVoxel = (blockPos + offset) & BetterBlockPos.POST_ADDITION_MASK;
                 if (overlay.bounds().inRangePos(playerEyeVoxel)) {
