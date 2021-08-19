@@ -123,6 +123,8 @@ public class ToolSet {
         int lowestCost = Integer.MIN_VALUE;
         boolean bestSilkTouch = false;
         IBlockState blockState = b.getDefaultState();
+        boolean doesBlockRequireSilkTouch = Baritone.settings().preferSilkTouchForBlocks.value.contains(b);
+
         for (int i = 0; i < 9; i++) {
             ItemStack itemStack = player.inventory.getStackInSlot(i);
             if (!Baritone.settings().useSwordToMine.value && itemStack.getItem() instanceof ItemSword) {
@@ -132,8 +134,15 @@ public class ToolSet {
             if (Baritone.settings().itemSaver.value && (itemStack.getItemDamage() + Baritone.settings().itemSaverThreshold.value) >= itemStack.getMaxDamage() && itemStack.getMaxDamage() > 1) {
                 continue;
             }
+
             double speed = calculateSpeedVsBlock(itemStack, blockState);
             boolean silkTouch = hasSilkTouch(itemStack);
+
+            if(doesBlockRequireSilkTouch && !silkTouch)
+            {
+                continue;
+            }
+
             if (speed > highestSpeed) {
                 highestSpeed = speed;
                 best = i;

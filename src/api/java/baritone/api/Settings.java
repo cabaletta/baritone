@@ -201,6 +201,14 @@ public final class Settings {
     )));
 
     /**
+     * Blocks that Baritone should prefer breaking with silk touch
+     */
+
+    public final Setting<List<Block>> preferSilkTouchForBlocks = new Setting<>(new ArrayList<>(Arrays.asList(
+
+    )));
+
+    /**
      * A list of blocks to be treated as if they're air.
      * <p>
      * If a schematic asks for air at a certain position, and that position currently contains a block on this list, it will be treated as correct.
