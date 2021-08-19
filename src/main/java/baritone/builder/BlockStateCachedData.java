@@ -29,6 +29,13 @@ public final class BlockStateCachedData {
 
     private static final BlockStateCachedData[] PER_STATE = Main.DATA_PROVIDER.allNullable();
     public static final BlockStateCachedData SCAFFOLDING = new BlockStateCachedData(new BlockStateCachedDataBuilder().collidesWithPlayer(true).fullyWalkableTop().collisionHeight(1).canPlaceAgainstMe());
+    public static final BlockStateCachedData AIR = PER_STATE[0];
+
+    static {
+        if (!AIR.isAir) {
+            throw new IllegalStateException();
+        }
+    }
 
     public final boolean fullyWalkableTop;
     private final int collisionHeightBlips;

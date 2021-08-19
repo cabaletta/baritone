@@ -125,14 +125,19 @@ public final class BetterBlockPos extends BlockPos {
         return ((long) x & X_MASK) << X_SHIFT | ((long) y & Y_MASK) << Y_SHIFT | ((long) z & Z_MASK) << Z_SHIFT;
     }
 
-    private static final long MURMUR_MASK = murmur64(BetterBlockPos.class.hashCode());
+    public static final long HASHCODE_MURMUR_MASK = murmur64(-1);
+    public static final long ZOBRIST_MURMUR_MASK = murmur64(-2);
 
     public static long longHash(int x, int y, int z) {
         return longHash(toLong(x, y, z));
     }
 
     public static long longHash(long packed) {
-        return murmur64(MURMUR_MASK ^ packed);
+        return murmur64(HASHCODE_MURMUR_MASK ^ packed);
+    }
+
+    public static long zobrist(long packed) {
+        return murmur64(ZOBRIST_MURMUR_MASK ^ packed);
     }
 
     public static long murmur64(long h) {

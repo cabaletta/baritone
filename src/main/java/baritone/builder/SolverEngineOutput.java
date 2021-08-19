@@ -51,7 +51,7 @@ public class SolverEngineOutput {
     private static void sanityCheckMovement(long from, long to) {
         int dx = BetterBlockPos.XfromLong(from) - BetterBlockPos.XfromLong(to);
         int dz = BetterBlockPos.ZfromLong(from) - BetterBlockPos.ZfromLong(to);
-        if (Math.abs(dx) > 1 || Math.abs(dz) > 1) {
+        if (Math.abs(dx) + Math.abs(dz) > 1) {
             throw new IllegalStateException();
         }
     }

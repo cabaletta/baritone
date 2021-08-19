@@ -20,6 +20,7 @@ package baritone.builder;
 import baritone.api.utils.BetterBlockPos;
 import baritone.pathing.calc.openset.BinaryHeapOpenSet;
 import baritone.utils.BlockStateInterface;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
@@ -285,7 +286,14 @@ public class Testing {
             states.put(state, realState);
             return realState;
         }
+
+        static {
+            IntOpenHashSet taken = new IntOpenHashSet();
+            for (IBlockState state : Block.BLOCK_STATE_IDS) {
+                if (!taken.add(System.identityHashCode(state))) {
+                    throw new IllegalStateException("Duplicate hashcode among IBlockStates");
+                }
+            }
+        }
     }
-
-
 }
