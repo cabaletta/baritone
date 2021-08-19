@@ -35,3 +35,13 @@ Things about old Baritone builder that are stupid and that I will do better:
 * The thing I mentioned above about left and right clicking
 * Complete nonunderstanding of orientable blocks. It has no idea that in order to place a stair / a torch it has to go walk around and look at the block from the other side.
 * Instead of just placing blocks normally, it sneaks before EVERY right click. This makes it look unnatural, stupid, and jittery, for no reason.
+
+The area shall be combined with the schematic in the following way:
+* The entire buildable area is considered to be "part of the schematic"
+* The working space will be that area. The pathfinder's universe ends at the border of that area.
+* The current status is therefore defineable as the schematic, the set of block positions that are "intended scaffolding", and the set of block positions that have been placed (air is interpreted as scaffolding whether intended or not)
+  * Needed because the scaffolder is not magic, it's possible that the solver needs to place additional scaffolding in order to reach something
+  * There are no further possible options beyond those (want air have air, want scaffolding have air, want air have scaffolding, want block have air, want block have block)
+  * Blocks that are desired to be not-air that are currently a different block are disallowed (for the time being) (because that would require breaking blocks)
+  * Not yet decided if the schematic itself is allowed to have throwaways. Probably should be allowed, it would be indicative of bad design if it weren't allowed.
+

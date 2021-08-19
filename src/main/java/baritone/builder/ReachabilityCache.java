@@ -28,7 +28,7 @@ public class ReachabilityCache implements IReachabilityProvider {
 
     public ReachabilityCache(DependencyGraphScaffoldingOverlay overlay, PlayerReachSphere sphere) throws SchematicIsTooDenseForThisToMakeSenseException {
         playerPositionToBlock = new Long2ObjectOpenHashMap<>();
-        int maxReasonableCacheSize = overlay.bounds().size;
+        int maxReasonableCacheSize = overlay.bounds().volume();
         int[] cnt = {0};
         overlay.forEachReal(blockPos -> { // by only iterating through real blocks, this will be a much faster and better option for sparse schematics (e.g. staircased map art)
             for (long offset : sphere.positions) {

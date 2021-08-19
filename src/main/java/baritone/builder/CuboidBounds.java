@@ -24,7 +24,7 @@ import baritone.api.utils.BetterBlockPos;
  * <p>
  * Basically just a lot of helper util methods lol
  */
-public class CuboidBounds {
+public class CuboidBounds implements Bounds {
 
     public final int sizeX;
     public final int sizeY;
@@ -49,10 +49,7 @@ public class CuboidBounds {
         }
     }
 
-    public int toIndex(long pos) {
-        return toIndex(BetterBlockPos.XfromLong(pos), BetterBlockPos.YfromLong(pos), BetterBlockPos.ZfromLong(pos));
-    }
-
+    @Override
     public int toIndex(int x, int y, int z) {
         if (Main.DEBUG && !inRange(x, y, z)) {
             throw new IllegalStateException();
@@ -60,8 +57,14 @@ public class CuboidBounds {
         return (x * sizeY + y) * sizeZ + z;
     }
 
+    @Override
     public boolean inRange(int x, int y, int z) {
         return inRangeBranchless(x, y, z);
+    }
+
+    @Override
+    public int volume() {
+        return size;
     }
 
     @Deprecated
@@ -89,29 +92,9 @@ public class CuboidBounds {
         return (index | (sizeMinusOne - index)) >= 0;
     }
 
-    public boolean inRangePos(long pos) {
-        return inRange(BetterBlockPos.XfromLong(pos), BetterBlockPos.YfromLong(pos), BetterBlockPos.ZfromLong(pos));
-    }
 
-    @FunctionalInterface
-    public interface CuboidCoordConsumer {
-
-        void consume(int x, int y, int z);
-    }
-
-    @FunctionalInterface
-    public interface CuboidIndexConsumer {
-
-        void consume(long index);
-    }
-
-    @FunctionalInterface
-    public interface CuboidCoordAndIndexConsumer {
-
-        void consume(int x, int y, int z, long index);
-    }
-
-    public void forEach(CuboidCoordConsumer consumer) {
+    @Override
+    public void forEach(BoundsIntsConsumer consumer) {
         for (int x = 0; x < sizeX; x++) {
             for (int y = 0; y < sizeY; y++) {
                 for (int z = 0; z < sizeZ; z++) {
@@ -121,7 +104,8 @@ public class CuboidBounds {
         }
     }
 
-    public void forEach(CuboidIndexConsumer consumer) {
+    @Override
+    public void forEach(BoundsLongConsumer consumer) {
         for (int x = 0; x < sizeX; x++) {
             for (int y = 0; y < sizeY; y++) {
                 for (int z = 0; z < sizeZ; z++) {
@@ -131,7 +115,8 @@ public class CuboidBounds {
         }
     }
 
-    public void forEach(CuboidCoordAndIndexConsumer consumer) {
+    @Override
+    public void forEach(BoundsIntAndLongConsumer consumer) {
         for (int x = 0; x < sizeX; x++) {
             for (int y = 0; y < sizeY; y++) {
                 for (int z = 0; z < sizeZ; z++) {
@@ -172,5 +157,6 @@ public class CuboidBounds {
         if (inRange(sizeX, 0, 0) || inRange(0, sizeY, 0) || inRange(0, 0, sizeZ)) {
             throw new IllegalStateException();
         }
+        Bounds.sanityCheckConnectedness(this);
     }
 }

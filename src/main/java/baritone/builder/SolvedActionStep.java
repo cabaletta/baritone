@@ -17,18 +17,27 @@
 
 package baritone.builder;
 
-public class PackedBlockStateCuboid {
+import java.util.OptionalLong;
 
-    public final Bounds bounds;
-    private final int[] states;
+public class SolvedActionStep {
 
-    public PackedBlockStateCuboid(int[][][] blockStates) {
-        this.bounds = new CuboidBounds(blockStates.length, blockStates[0].length, blockStates[0][0].length);
-        this.states = new int[bounds.volume()];
-        bounds.forEach((x, y, z) -> states[bounds.toIndex(x, y, z)] = blockStates[x][y][z]);
+    private final long placePosition;
+    private final long playerEndPosition;
+
+    public SolvedActionStep(long playerMovesTo) {
+        this(playerMovesTo, -1);
     }
 
-    public int get(int index) {
-        return states[index];
+    public SolvedActionStep(long playerMovesTo, long blockPlacedAt) {
+        this.playerEndPosition = playerMovesTo;
+        this.placePosition = blockPlacedAt;
+    }
+
+    public OptionalLong placeAt() {
+        return placePosition == -1 ? OptionalLong.empty() : OptionalLong.of(placePosition);
+    }
+
+    public long playerMovesTo() {
+        return playerEndPosition;
     }
 }

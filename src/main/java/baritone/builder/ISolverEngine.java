@@ -17,18 +17,7 @@
 
 package baritone.builder;
 
-public class PackedBlockStateCuboid {
+public interface ISolverEngine {
 
-    public final Bounds bounds;
-    private final int[] states;
-
-    public PackedBlockStateCuboid(int[][][] blockStates) {
-        this.bounds = new CuboidBounds(blockStates.length, blockStates[0].length, blockStates[0][0].length);
-        this.states = new int[bounds.volume()];
-        bounds.forEach((x, y, z) -> states[bounds.toIndex(x, y, z)] = blockStates[x][y][z]);
-    }
-
-    public int get(int index) {
-        return states[index];
-    }
+    SolverEngineOutput solve(SolverEngineInput in);
 }

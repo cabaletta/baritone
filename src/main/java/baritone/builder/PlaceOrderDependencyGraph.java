@@ -17,8 +17,6 @@
 
 package baritone.builder;
 
-import java.util.BitSet;
-
 /**
  * An immutable graph representing block placement dependency order
  * <p>
@@ -29,19 +27,17 @@ import java.util.BitSet;
 public class PlaceOrderDependencyGraph {
 
     private final PackedBlockStateCuboid states;
-    private final BitSet edges;
+    private final byte[] edges;
 
     public PlaceOrderDependencyGraph(PackedBlockStateCuboid states) {
         this.states = states;
+        this.edges = new byte[states.bounds.volume()];
 
-        this.edges = new BitSet();
-        if (Main.DEBUG) {
-            sanityCheck();
-        }
         bounds().forEach(this::compute);
     }
 
     private void compute(long pos) {
+        byte val = 0;
         for (BlockStatePlacementOption option : data(pos).options) {
             if (Main.STRICT_Y && option.against == Face.UP) {
                 throw new IllegalStateException();
@@ -54,9 +50,10 @@ public class PlaceOrderDependencyGraph {
                 against = BlockStateCachedData.SCAFFOLDING;
             }
             if (against.possibleAgainstMe(option)) {
-                edges.set(bitIndex(pos, option.against));
+                val |= 1 << option.against.index;
             }
         }
+        edges[states.bounds.toIndex(pos)] = val;
     }
 
     public BlockStateCachedData data(long pos) {
@@ -87,11 +84,7 @@ public class PlaceOrderDependencyGraph {
         if (!inRange(pos)) {
             return false;
         }
-        return edges.get(bitIndex(pos, face));
-    }
-
-    private int bitIndex(long pos, Face face) {
-        return bounds().toIndex(pos) * Face.NUM_FACES + face.index;
+        return (edges[bounds().toIndex(pos)] & 1 << face.index) != 0;
     }
 
     public boolean airTreatedAsScaffolding(long pos) {
@@ -106,25 +99,11 @@ public class PlaceOrderDependencyGraph {
         return bounds().inRangePos(pos);
     }
 
-    public CuboidBounds bounds() {
+    public Bounds bounds() {
         return states.bounds;
     }
 
     private boolean treatAsScaffolding(int state) {
         return BlockStateCachedData.get(state).isAir;
-    }
-
-    private void sanityCheck() {
-        int[] test = new int[bounds().size * Face.NUM_FACES];
-        bounds().forEach(pos -> {
-            for (int face = 0; face < 6; face++) {
-                test[bitIndex(pos, Face.VALUES[face])]++;
-            }
-        });
-        for (int i = 0; i < test.length; i++) {
-            if (test[i] != 1) {
-                throw new IllegalStateException();
-            }
-        }
     }
 }

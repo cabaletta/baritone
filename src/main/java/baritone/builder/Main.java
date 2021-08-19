@@ -129,9 +129,9 @@ public class Main {
             int goal = numRealBlocks + 10000;
             while (numRealBlocks < goal) {
                 //System.out.println(numRealBlocks);
-                int x = RAND.nextInt(scaffolding.bounds().sizeX);
-                int y = RAND.nextInt(scaffolding.bounds().sizeY);
-                int z = RAND.nextInt(scaffolding.bounds().sizeZ);
+                int x = RAND.nextInt(((CuboidBounds) scaffolding.bounds()).sizeX);
+                int y = RAND.nextInt(((CuboidBounds) scaffolding.bounds()).sizeY);
+                int z = RAND.nextInt(((CuboidBounds) scaffolding.bounds()).sizeZ);
                 long pos = BetterBlockPos.toLong(x, y, z);
                 if (scaffolding.air(pos)) {
                     //System.out.println("Setting to scaffolding " + BetterBlockPos.fromLong(pos) + " " + pos);

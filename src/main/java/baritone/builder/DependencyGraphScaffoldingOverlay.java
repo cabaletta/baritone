@@ -72,7 +72,7 @@ public class DependencyGraphScaffoldingOverlay {
         return delegate.incomingEdge(pos, face);
     }
 
-    public CuboidBounds bounds() {
+    public Bounds bounds() {
         return delegate.bounds();
     }
 
@@ -84,7 +84,7 @@ public class DependencyGraphScaffoldingOverlay {
         return !air(pos);
     }
 
-    public void forEachReal(CuboidBounds.CuboidIndexConsumer consumer) {
+    public void forEachReal(Bounds.BoundsLongConsumer consumer) {
         bounds().forEach(pos -> {
             if (real(pos)) {
                 consumer.consume(pos);
