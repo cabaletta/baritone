@@ -138,8 +138,12 @@ public class ToolSet {
             double speed = calculateSpeedVsBlock(itemStack, blockState);
             boolean silkTouch = hasSilkTouch(itemStack);
 
-            if(doesBlockRequireSilkTouch && silkTouch) {
-                speed *= 1.2;
+            if(silkTouch) {
+                if(doesBlockRequireSilkTouch) {
+                    speed *= 1.2;
+                } else {
+                    speed *= 0.8;
+                }
             }
 
             if (speed > highestSpeed) {
