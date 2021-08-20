@@ -19,28 +19,67 @@ package baritone.builder;
 
 public class PlayerPhysics {
 
+    public static int determinePlayerRealSupportLevel(BlockStateCachedData underneath, BlockStateCachedData within) {
+        switch (canPlayerStand(underneath, within)) {
+            case STANDARD_WITHIN_SUPPORT:
+                return within.collisionHeightBlips();
+            case UNDERNEATH_PROTRUDES_AT_OR_ABOVE_FULL_BLOCK:
+                return underneath.collisionHeightBlips() - Blip.FULL_BLOCK;
+            default:
+                return -1;
+        }
+    }
+
     /**
      * the player Y is within within. i.e. the player Y is greater than or equal within and less than within+1
      * <p>
-     * returns a negative value if impossible. returns a >=0 value if possible.
+     * underneath is the block underneath that, which we annoyingly also have to check due to fences and other blocks that are taller than a block
      */
-    public static int determinePlayerRealSupport(BlockStateCachedData underneath, BlockStateCachedData within) {
+    public static VoxelResidency canPlayerStand(BlockStateCachedData underneath, BlockStateCachedData within) {
         if (within.collidesWithPlayer) {
             if (underneath.collidesWithPlayer && underneath.collisionHeightBlips() - Blip.FULL_BLOCK > within.collisionHeightBlips()) { // > because imagine something like slab on top of fence, we can walk on the slab even though the fence is equivalent height
                 if (!underneath.fullyWalkableTop) {
-                    return -1;
+                    return VoxelResidency.PREVENTED_BY_UNDERNEATH;
                 }
-                return underneath.collisionHeightBlips() - Blip.FULL_BLOCK; // this could happen if "underneath" is a fence and "within" is a carpet
+                return VoxelResidency.UNDERNEATH_PROTRUDES_AT_OR_ABOVE_FULL_BLOCK; // this could happen if "underneath" is a fence and "within" is a carpet
             }
-            if (!within.fullyWalkableTop || within.collisionHeightBlips() >= Blip.FULL_BLOCK) {
-                return -1;
+            if (!within.fullyWalkableTop) {
+                return VoxelResidency.PREVENTED_BY_WITHIN;
             }
-            return within.collisionHeightBlips();
+            if (within.collisionHeightBlips() >= Blip.FULL_BLOCK) {
+                return VoxelResidency.IMPOSSIBLE_WITHOUT_SUFFOCATING;
+            }
+            return VoxelResidency.STANDARD_WITHIN_SUPPORT;
         } else {
-            if (!underneath.fullyWalkableTop || underneath.collisionHeightBlips() < Blip.FULL_BLOCK) { // short circuit only calls collisionHeightBlips when fullyWalkableTop is true, so this is safe
-                return -1;
+            if (!underneath.fullyWalkableTop) {
+                return VoxelResidency.PREVENTED_BY_UNDERNEATH;
             }
-            return underneath.collisionHeightBlips() - Blip.FULL_BLOCK;
+            if (underneath.collisionHeightBlips() < Blip.FULL_BLOCK) { // short circuit only calls collisionHeightBlips when fullyWalkableTop is true, so this is safe
+                return VoxelResidency.FLOATING;
+            }
+            return VoxelResidency.UNDERNEATH_PROTRUDES_AT_OR_ABOVE_FULL_BLOCK;
+        }
+    }
+
+    public enum VoxelResidency {
+        UNDERNEATH_PROTRUDES_AT_OR_ABOVE_FULL_BLOCK, // i fucking hate notch for adding fences to the game. anyway this means that the height is underneath.collisionHeightBlips minus a full block.
+        STANDARD_WITHIN_SUPPORT, // :innocent: emoji, the height is simply the collisionHeightBlips of the within
+
+        IMPOSSIBLE_WITHOUT_SUFFOCATING, // aka: um we are literally underground
+        FLOATING, // aka: um we are literally floating in midair
+
+        PREVENTED_BY_UNDERNEATH, // fences :woozy_face:
+        PREVENTED_BY_WITHIN, // what are you even thinking?
+    }
+
+    public static boolean valid(VoxelResidency res) {
+        // FWIW this is equivalent to "return determinePlayerRealSupportLevel > 0"
+        switch (res) {
+            case UNDERNEATH_PROTRUDES_AT_OR_ABOVE_FULL_BLOCK:
+            case STANDARD_WITHIN_SUPPORT:
+                return true;
+            default:
+                return false;
         }
     }
 
@@ -66,7 +105,7 @@ public class PlayerPhysics {
         if (Main.DEBUG && (feet < 0 || feet >= Blip.FULL_BLOCK)) {
             throw new IllegalStateException();
         }
-        if (Main.DEBUG && (feet != determinePlayerRealSupport(S, X))) {
+        if (Main.DEBUG && (feet != determinePlayerRealSupportLevel(S, X))) {
             throw new IllegalStateException();
         }
         boolean alreadyWithinU = feet > Blip.TWO_BLOCKS - Blip.PLAYER_HEIGHT_SLIGHT_OVERESTIMATE; // > and not >= because the player height is a slight overestimate
@@ -78,7 +117,7 @@ public class PlayerPhysics {
         }
         int couldStepUpTo = feet + Blip.HALF_BLOCK;
         // D cannot prevent us from doing anything because it cant be higher than 1.5. therefore, makes sense to check CB before DC.
-        int stepUp = determinePlayerRealSupport(C, B);
+        int stepUp = determinePlayerRealSupportLevel(C, B);
         if (stepUp >= 0) {
             // fundamentally a step upwards, from X to B instead of X to C
             // too high?
@@ -97,7 +136,7 @@ public class PlayerPhysics {
         if (B.collidesWithPlayer) { // we have ruled out stepping on top of B, so now if B is still colliding there is no way forward
             return Collision.BLOCKED;
         }
-        int stayLevel = determinePlayerRealSupport(D, C);
+        int stayLevel = determinePlayerRealSupportLevel(D, C);
         if (stayLevel >= 0) {
             // fundamentally staying within the same vertical voxel, X -> C
             if (stayLevel > couldStepUpTo) {
