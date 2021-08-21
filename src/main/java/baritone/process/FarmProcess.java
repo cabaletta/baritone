@@ -59,7 +59,9 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
 
     private List<BlockPos> locations;
     private int tickCount;
-
+    private boolean original_break;
+    private boolean original_place;
+    private boolean original_safeFarm;
     private int range;
     private BlockPos center;
 
@@ -108,6 +110,13 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
         this.range = range;
         active = true;
         locations = null;
+        original_break = Baritone.settings().allowBreak.value;
+        original_place = Baritone.settings().allowPlace.value;
+        original_safeFarm = Baritone.settings().safeFarming.value;
+        if(Baritone.settings().safeFarming.value) {
+            Baritone.settings().allowBreak.value = false;
+            Baritone.settings().allowPlace.value = false;
+        }
     }
 
     private enum Harvest {
@@ -177,6 +186,7 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
 
     @Override
     public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
+
         ArrayList<Block> scan = new ArrayList<>();
         for (Harvest harvest : Harvest.values()) {
             scan.add(harvest.block);
@@ -270,6 +280,7 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
         }
 
         if (calcFailed) {
+
             logDirect("Farm failed");
             if (Baritone.settings().notificationOnFarmFail.value) {
                 logNotification("Farm failed", true);
@@ -312,6 +323,11 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
     @Override
     public void onLostControl() {
         active = false;
+        if(original_safeFarm)
+        {
+            Baritone.settings().allowBreak.value = original_break;
+            Baritone.settings().allowPlace.value = original_place;
+        }
     }
 
     @Override

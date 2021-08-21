@@ -42,4 +42,11 @@ public interface IWorldData {
      * @see IContainerMemory
      */
     IContainerMemory getContainerMemory();
+
+    /**
+     * @return The {@link ICachedHomeAreas} instance
+     */
+    ICachedHomeAreas getCachedHomeAreas();
+
+
 }

@@ -18,7 +18,10 @@
 package baritone.cache;
 
 import baritone.Baritone;
+import baritone.api.IBaritone;
 import baritone.api.cache.IWorldProvider;
+import baritone.api.selection.ISelection;
+import baritone.api.selection.ISelectionManager;
 import baritone.api.utils.Helper;
 import baritone.utils.accessor.IAnvilChunkLoader;
 import baritone.utils.accessor.IChunkProviderServer;
@@ -44,6 +47,12 @@ public class WorldProvider implements IWorldProvider, Helper {
     private static final Map<Path, WorldData> worldCache = new HashMap<>(); // this is how the bots have the same cached world
 
     private WorldData currentWorld;
+    IBaritone baritone;
+
+    public WorldProvider(IBaritone baritone)
+    {
+        this.baritone = baritone;
+    }
 
     @Override
     public final WorldData getCurrentWorld() {
@@ -101,7 +110,7 @@ public class WorldProvider implements IWorldProvider, Helper {
 
         System.out.println("Baritone world data dir: " + dir);
         synchronized (worldCache) {
-            this.currentWorld = worldCache.computeIfAbsent(dir, d -> new WorldData(d, dimension));
+            (this.currentWorld = worldCache.computeIfAbsent(dir, d -> new WorldData(d, dimension))).getCachedHomeAreas().load(this.baritone.getHomeAreaSelectionManager());
         }
     }
 

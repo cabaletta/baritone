@@ -19,6 +19,8 @@ package baritone.api.selection;
 
 import baritone.api.utils.BetterBlockPos;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 
 /**
  * The selection manager handles setting Baritone's selections. You can set the selection here, as well as retrieving
@@ -113,4 +115,15 @@ public interface ISelectionManager {
      * @return The new selection, shifted as specified.
      */
     ISelection shift(ISelection selection, EnumFacing direction, int blocks);
+
+    /**
+    * If this returns true then this is a home area selection manager
+     */
+    boolean isHomeAreaManager();
+
+    /**
+    *Checks if any intersection contains point, good to check if block is inside
+
+     */
+    boolean selectionContainsPoint(BlockPos vector);
 }

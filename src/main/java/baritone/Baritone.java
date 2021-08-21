@@ -53,6 +53,7 @@ public class Baritone implements IBaritone {
     private static ThreadPoolExecutor threadPool;
     private static File dir;
 
+
     static {
         threadPool = new ThreadPoolExecutor(4, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<>());
 
@@ -83,6 +84,7 @@ public class Baritone implements IBaritone {
 
     private PathingControlManager pathingControlManager;
     private SelectionManager selectionManager;
+    private SelectionManager homeSelectionManager;
     private CommandManager commandManager;
 
     private IPlayerContext playerContext;
@@ -117,8 +119,10 @@ public class Baritone implements IBaritone {
             this.pathingControlManager.registerProcess(farmProcess = new FarmProcess(this));
         }
 
-        this.worldProvider = new WorldProvider();
-        this.selectionManager = new SelectionManager(this);
+        this.worldProvider = new WorldProvider(this);
+        this.selectionManager = new SelectionManager(this, false);
+        this.homeSelectionManager = new SelectionManager(this, true);
+
         this.commandManager = new CommandManager(this);
     }
 
@@ -196,6 +200,9 @@ public class Baritone implements IBaritone {
     public SelectionManager getSelectionManager() {
         return selectionManager;
     }
+
+    @Override
+    public SelectionManager getHomeAreaSelectionManager() {return this.homeSelectionManager; }
 
     @Override
     public WorldProvider getWorldProvider() {

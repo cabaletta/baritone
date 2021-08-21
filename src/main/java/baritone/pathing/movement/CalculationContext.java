@@ -139,6 +139,10 @@ public class CalculationContext {
         if (!hasThrowaway) { // only true if allowPlace is true, see constructor
             return COST_INF;
         }
+
+        if(baritone.getHomeAreaSelectionManager().selectionContainsPoint(new BlockPos(x, y, z)))
+            return COST_INF;
+
         if (isPossiblyProtected(x, y, z)) {
             return COST_INF;
         }
@@ -153,6 +157,9 @@ public class CalculationContext {
         if (!allowBreak) {
             return COST_INF;
         }
+        if(baritone.getHomeAreaSelectionManager().selectionContainsPoint(new BlockPos(x, y, z)))
+            return COST_INF;
+
         if (isPossiblyProtected(x, y, z)) {
             return COST_INF;
         }

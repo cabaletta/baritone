@@ -1,10 +1,15 @@
 package baritone.selection;
 
 import baritone.Baritone;
+import baritone.api.IBaritone;
 import baritone.api.selection.ISelection;
 import baritone.api.selection.ISelectionManager;
 import baritone.api.utils.BetterBlockPos;
+import baritone.cache.WorldData;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 
 import java.util.LinkedList;
 import java.util.ListIterator;
@@ -13,19 +18,28 @@ public class SelectionManager implements ISelectionManager {
 
     private final LinkedList<ISelection> selections = new LinkedList<>();
     private ISelection[] selectionsArr = new ISelection[0];
+    private boolean isHomeArea;
+    IBaritone baritone;
 
-    public SelectionManager(Baritone baritone) {
+    public SelectionManager(Baritone baritone, boolean homeAreaManager) {
         new SelectionRenderer(baritone, this);
+        isHomeArea = homeAreaManager;
+        this.baritone = baritone;
     }
 
     private void resetSelectionsArr() {
         selectionsArr = selections.toArray(new ISelection[0]);
+        if(isHomeArea)
+            baritone.getWorldProvider().getCurrentWorld().getCachedHomeAreas().save(this);
     }
+
+
 
     @Override
     public synchronized ISelection addSelection(ISelection selection) {
         selections.add(selection);
         resetSelectionsArr();
+
         return selection;
     }
 
@@ -114,5 +128,20 @@ public class SelectionManager implements ISelectionManager {
         }
 
         return null;
+    }
+
+    @Override
+    public boolean isHomeAreaManager()
+    {
+        return this.isHomeArea;
+    }
+
+    @Override
+    public boolean selectionContainsPoint(BlockPos vector) {
+        for (int i = 0; selectionsArr.length != i; ++i)
+            if(selectionsArr[i].aabb().intersects(new AxisAlignedBB(vector)))
+                return true;
+
+        return false;
     }
 }

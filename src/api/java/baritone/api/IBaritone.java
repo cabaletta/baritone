@@ -128,6 +128,12 @@ public interface IBaritone {
     ISelectionManager getSelectionManager();
 
     /**
+     * @return The {@link ISelectionManager} instance
+     * @see ISelectionManager
+     */
+    ISelectionManager getHomeAreaSelectionManager();
+
+    /**
      * @return The {@link ICommandManager} instance
      * @see ICommandManager
      */

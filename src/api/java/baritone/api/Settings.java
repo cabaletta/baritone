@@ -45,6 +45,10 @@ import java.util.function.BiConsumer;
 public final class Settings {
 
     /**
+     * will not place or break any block
+     */
+    public final Setting<Boolean> safeFarming = new Setting<>(false);
+    /**
      * will prioritize blocks with a y level smaller
      */
     public final Setting<Boolean> prioritizeBottomBlocks = new Setting<>(true);
@@ -1190,9 +1194,34 @@ public final class Settings {
     public final Setting<Float> selectionOpacity = new Setting<>(.5f);
 
     /**
+     * The color of all selections
+     */
+    public final Setting<Color> colorHomeAreaSelection = new Setting<>(Color.RED);
+
+    /**
+     * The color of the selection pos 1
+     */
+    public final Setting<Color> colorHomeAreaSelectionPos1 = new Setting<>(Color.DARK_GRAY);
+
+    /**
+     * The color of the selection pos 2
+     */
+    public final Setting<Color> colorHomeAreaSelectionPos2 = new Setting<>(Color.LIGHT_GRAY);
+
+    /**
+     * The opacity of the home area selection. 0 is completely transparent, 1 is completely opaque
+     */
+    public final Setting<Float> selectionHomeAreaOpacity = new Setting<>(.5f);
+
+    /**
      * Line width of the goal when rendered, in pixels
      */
     public final Setting<Float> selectionLineWidth = new Setting<>(2F);
+
+    /**
+     * Line width of the goal when rendered, in pixels
+     */
+    public final Setting<Float> selectionHomeAreaLineWidth = new Setting<>(2F);
 
     /**
      * Render selections
@@ -1200,14 +1229,29 @@ public final class Settings {
     public final Setting<Boolean> renderSelection = new Setting<>(true);
 
     /**
+     * Render selections
+     */
+    public final Setting<Boolean> renderHomeAreaSelection = new Setting<>(true);
+
+    /**
      * Ignore depth when rendering selections
      */
     public final Setting<Boolean> renderSelectionIgnoreDepth = new Setting<>(true);
 
     /**
+     * Ignore depth when rendering home area selections
+     */
+    public final Setting<Boolean> renderHomeAreaSelectionIgnoreDepth = new Setting<>(true);
+
+    /**
      * Render selection corners
      */
     public final Setting<Boolean> renderSelectionCorners = new Setting<>(true);
+
+    /**
+     * Render selection corners
+     */
+    public final Setting<Boolean> renderHomeAreaSelectionCorners = new Setting<>(true);
 
     /**
      * Use sword to mine.
