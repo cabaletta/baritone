@@ -40,9 +40,9 @@ import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
 import baritone.utils.BaritoneProcessHelper;
 import baritone.utils.BlockStateInterface;
-import baritone.utils.NotificationHelper;
 import baritone.utils.PathingCommandContext;
 import baritone.utils.schematic.MapArtSchematic;
+import baritone.utils.schematic.SelectionSchematic;
 import baritone.utils.schematic.SchematicSystem;
 import baritone.utils.schematic.schematica.SchematicaHelper;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
@@ -140,6 +140,11 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             parsed = new MapArtSchematic((IStaticSchematic) parsed);
         }
 
+        if (Baritone.settings().buildOnlySelection.value) {
+            parsed = new SelectionSchematic(parsed, origin, baritone.getSelectionManager().getSelections());
+        }
+
+
         build(name, parsed, origin);
         return true;
     }
@@ -150,10 +155,15 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             Optional<Tuple<IStaticSchematic, BlockPos>> schematic = SchematicaHelper.getOpenSchematic();
             if (schematic.isPresent()) {
                 IStaticSchematic s = schematic.get().getFirst();
+                BlockPos origin = schematic.get().getSecond();
+                ISchematic schem = Baritone.settings().mapArtMode.value ? new MapArtSchematic(s) : s;
+                if (Baritone.settings().buildOnlySelection.value) {
+                    schem = new SelectionSchematic(schem, origin, baritone.getSelectionManager().getSelections());
+                }
                 this.build(
                         schematic.get().getFirst().toString(),
-                        Baritone.settings().mapArtMode.value ? new MapArtSchematic(s) : s,
-                        schematic.get().getSecond()
+                        schem,
+                        origin
                 );
             } else {
                 logDirect("No schematic currently open");
@@ -375,9 +385,9 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             // layer = realSchematic.heightY() should be everything
             if (Baritone.settings().layerOrder.value) { // top to bottom
                 maxYInclusive = realSchematic.heightY() - 1;
-                minYInclusive = realSchematic.heightY() - layer;
+                minYInclusive = realSchematic.heightY() - layer * Baritone.settings().layerHeight.value;
             } else {
-                maxYInclusive = layer - 1;
+                maxYInclusive = layer * Baritone.settings().layerHeight.value - 1;
                 minYInclusive = 0;
             }
             schematic = new ISchematic() {
@@ -414,7 +424,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         }
         BuilderCalculationContext bcc = new BuilderCalculationContext();
         if (!recalc(bcc)) {
-            if (Baritone.settings().buildInLayers.value && layer < realSchematic.heightY()) {
+            if (Baritone.settings().buildInLayers.value && layer * Baritone.settings().layerHeight.value < realSchematic.heightY()) {
                 logDirect("Starting layer " + layer);
                 layer++;
                 return onTick(calcFailed, isSafeToCancel, recursions + 1);
@@ -424,8 +434,8 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             numRepeats++;
             if (repeat.equals(new Vec3i(0, 0, 0)) || (max != -1 && numRepeats >= max)) {
                 logDirect("Done building");
-                if (Baritone.settings().desktopNotifications.value && Baritone.settings().notificationOnBuildFinished.value) {
-                    NotificationHelper.notify("Done building", false);
+                if (Baritone.settings().notificationOnBuildFinished.value) {
+                    logNotification("Done building", false);
                 }
                 onLostControl();
                 return null;
@@ -504,7 +514,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         if (goal == null) {
             goal = assemble(bcc, approxPlaceable, true); // we're far away, so assume that we have our whole inventory to recalculate placeable properly
             if (goal == null) {
-                if (Baritone.settings().skipFailedLayers.value && Baritone.settings().buildInLayers.value && layer < realSchematic.heightY()) {
+                if (Baritone.settings().skipFailedLayers.value && Baritone.settings().buildInLayers.value && layer * Baritone.settings().layerHeight.value < realSchematic.heightY()) {
                     logDirect("Skipping layer that I cannot construct! Layer #" + layer);
                     layer++;
                     return onTick(calcFailed, isSafeToCancel, recursions + 1);

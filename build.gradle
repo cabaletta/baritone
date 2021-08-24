@@ -16,7 +16,7 @@
  */
 
 group 'baritone'
-version '1.2.14'
+version '1.2.15'
 
 buildscript {
     repositories {
@@ -42,6 +42,7 @@ import baritone.gradle.task.CreateDistTask
 import baritone.gradle.task.ProguardTask
 
 apply plugin: 'java'
+apply plugin: 'maven'
 apply plugin: 'net.minecraftforge.gradle.tweaker-client'
 apply plugin: 'org.spongepowered.mixin'
 
@@ -144,3 +145,25 @@ task proguard(type: ProguardTask) {
 task createDist(type: CreateDistTask, dependsOn: proguard)
 
 build.finalizedBy(createDist)
+
+install {
+    def jarApiName = String.format("%s-api-%s", rootProject.name, version.toString())
+    def jarApiForgeName = String.format("%s-api-forge-%s", rootProject.name, version.toString())
+    def jarSAName = String.format("%s-standalone-%s", rootProject.name, version.toString())
+    def jarSAForgeName = String.format("%s-standalone-forge-%s", rootProject.name, version.toString())
+
+    artifacts {
+        archives file("$buildDir/libs/"+jarApiName+".jar")
+        archives file("$buildDir/libs/"+jarApiForgeName+".jar")
+        archives file("$buildDir/libs/"+jarSAName+".jar")
+        archives file("$buildDir/libs/"+jarSAForgeName+".jar")
+    }
+    repositories.mavenInstaller {
+		addFilter('api') { artifact, file -> artifact.name == "baritone-api" }
+		addFilter('api-forge') { artifact, file -> artifact.name == "baritone-api-forge" }
+		addFilter('standalone') { artifact, file -> artifact.name == "baritone-standalone" }
+		addFilter('standalone-forge') { artifact, file -> artifact.name == "baritone-standalone-forge" }
+    }
+}
+
+install.dependsOn(build)
