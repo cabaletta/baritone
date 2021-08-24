@@ -64,4 +64,11 @@ public class SolverEngineInput {
             }
         }
     }
+
+    public boolean desiredToBePlaced(long pos) {
+        if (Main.DEBUG && !graph.bounds().inRangePos(pos)) {
+            throw new IllegalStateException();
+        }
+        return !graph.data(pos).isAir || intendedScaffolding.contains(pos);
+    }
 }

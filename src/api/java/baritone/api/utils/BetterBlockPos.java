@@ -125,6 +125,10 @@ public final class BetterBlockPos extends BlockPos {
         return ((long) x & X_MASK) << X_SHIFT | ((long) y & Y_MASK) << Y_SHIFT | ((long) z & Z_MASK) << Z_SHIFT;
     }
 
+    public static long offsetBy(long pos, int x, int y, int z) {
+        return (pos + toLong(x, y, z)) & BetterBlockPos.POST_ADDITION_MASK;
+    }
+
     public static final long HASHCODE_MURMUR_MASK = murmur64(-1);
     public static final long ZOBRIST_MURMUR_MASK = murmur64(-2);
 

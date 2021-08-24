@@ -38,13 +38,13 @@ public class Node {
     // int unrealizedState; // no longer needed now that world state is binarized with scaffolding/build versus air
     // long unrealizedZobristParentHash; // no longer needed since we can compute it backwards with XOR
 
-    public Node(int x, int y, int z, long zobristState, long unrealizedBlockPlacement, GreedySolver solver) {
+    public Node(int x, int y, int z, long zobristState, long unrealizedBlockPlacement, GreedySolver solver, int heuristic) {
         this.x = x;
         this.y = y;
         this.z = z;
         this.heapPosition = -1;
         this.cost = Integer.MAX_VALUE;
-        this.heuristic = calcHeuristic();
+        this.heuristic = heuristic;
         this.worldStateZobristHash = zobristState;
         this.packedUnrealizedCoordinate = unrealizedBlockPlacement;
         if (Main.DEBUG && (solver.zobristWorldStateCache.containsKey(worldStateZobristHash) ^ (unrealizedBlockPlacement == -1))) {
@@ -68,15 +68,15 @@ public class Node {
         return myState;
     }
 
-    public int calcHeuristic() {
-        throw new UnsupportedOperationException();
-    }
-
     public long pos() {
         return BetterBlockPos.toLong(x, y, z);
     }
 
     public long nodeMapKey() {
         return pos() ^ worldStateZobristHash;
+    }
+
+    public boolean inHeap() {
+        return heapPosition != -1;
     }
 }
