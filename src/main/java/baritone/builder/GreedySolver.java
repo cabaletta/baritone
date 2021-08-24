@@ -115,7 +115,11 @@ public class GreedySolver {
     }
 
     private void updateNeighbor(Node node, WorldState worldState, long newPlayerPosition, long blockPlacement, int edgeCost) {
-        updateNeighbor(node, getNode(newPlayerPosition, node, worldState, blockPlacement), edgeCost);
+        Node neighbor = getNode(newPlayerPosition, node, worldState, blockPlacement);
+        if (Main.SLOW_DEBUG && blockPlacement != -1 && !neighbor.coalesceState(this).blockExists(blockPlacement)) { // only in slow_debug because this force-allocates a WorldState for every neighbor of every node!
+            throw new IllegalStateException();
+        }
+        updateNeighbor(node, neighbor, edgeCost);
     }
 
     private void updateNeighbor(Node node, Node neighbor, int edgeCost) {
@@ -127,6 +131,9 @@ public class GreedySolver {
         neighbor.previous = node;
         neighbor.cost = offeredCost;
         neighbor.combinedCost = offeredCost + neighbor.heuristic;
+        if (Main.DEBUG && neighbor.combinedCost < Integer.MIN_VALUE / 2) { // simple attempt to catch obvious overflow
+            throw new IllegalStateException();
+        }
         if (neighbor.inHeap()) {
             heap.update(neighbor);
         } else {
