@@ -69,7 +69,7 @@ public class TarjansAlgorithm {
     }
 
     private void strongConnect(long vpos) {
-        if (!graph.real(vpos)) {
+        if (Main.DEBUG && !graph.real(vpos)) {
             throw new IllegalStateException();
         }
         TarjanVertexInfo info = infoMap.get(vpos);

@@ -20,9 +20,7 @@ package baritone.builder;
 import baritone.builder.DependencyGraphScaffoldingOverlay.CollapsedDependencyGraph;
 import baritone.builder.DependencyGraphScaffoldingOverlay.CollapsedDependencyGraph.CollapsedDependencyGraphComponent;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
-import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.longs.LongIterator;
+import it.unimi.dsi.fastutil.longs.*;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 
 import java.util.*;
@@ -55,6 +53,14 @@ public class Scaffolder {
         this.rootComponents = calcRoots();
     }
 
+    public static Scaffolder run(DependencyGraphScaffoldingOverlay overlayGraph) {
+        Scaffolder scaffolder = new Scaffolder(overlayGraph);
+        while (scaffolder.rootComponents.size() > 1) {
+            scaffolder.loop();
+        }
+        return scaffolder;
+    }
+
     private List<CollapsedDependencyGraphComponent> calcRoots() {
         // since the components form a DAG (because all strongly connected components, and therefore all cycles, have been collapsed)
         // we can locate all root components by simply finding the ones with no incoming edges
@@ -66,7 +72,9 @@ public class Scaffolder {
     }
 
     private void loop() {
-        int cid = collapsedGraph.lastComponentID().getAsInt();
+        if (rootComponents.size() <= 1) {
+            throw new IllegalStateException();
+        }
         CollapsedDependencyGraphComponent root = rootComponents.remove(rootComponents.size() - 1);
         if (!root.getIncoming().isEmpty()) {
             throw new IllegalStateException();
@@ -83,15 +91,23 @@ public class Scaffolder {
         if (!componentLocations.containsKey(path.get(0).pos)) {
             throw new IllegalStateException();
         }
-        for (int i = 1; i < path.size() - 1; i++) {
-            if (componentLocations.containsKey(path.get(i).pos)) {
+        LongList toEnable = path
+                .subList(1, path.size() - 1)
+                .stream()
+                .map(node -> node.pos)
+                .collect(Collectors.toCollection(LongArrayList::new));
+        enable(toEnable);
+    }
+
+    private void enable(LongList positions) {
+        positions.forEach(pos -> {
+            if (componentLocations.containsKey(pos)) {
                 throw new IllegalStateException();
             }
-        }
+        });
+        int cid = collapsedGraph.lastComponentID().getAsInt();
 
-        for (int i = 1; i < path.size() - 1; i++) {
-            overlayGraph.enable(path.get(i).pos);
-        }
+        positions.forEach(overlayGraph::enable);
 
         int newCID = collapsedGraph.lastComponentID().getAsInt();
         for (int i = cid + 1; i <= newCID; i++) {
@@ -106,7 +122,23 @@ public class Scaffolder {
                 throw new IllegalStateException();
             }
         }
+    }
 
+    public void enableAncillaryScaffoldingAndRecomputeRoot(LongList positions) {
+        getRoot();
+        enable(positions);
+        getRoot();
+    }
+
+    public CollapsedDependencyGraphComponent getRoot() {
+        if (rootComponents.size() != 1) {
+            throw new IllegalStateException(); // this is okay because this can only possibly be called after Scaffolder.run is completed
+        }
+        CollapsedDependencyGraphComponent root = rootComponents.get(0);
+        if (!root.getIncoming().isEmpty()) {
+            throw new IllegalStateException();
+        }
+        return root;
     }
 
     private void walkAllDescendents(CollapsedDependencyGraphComponent root, Set<CollapsedDependencyGraphComponent> set) {
@@ -155,7 +187,7 @@ public class Scaffolder {
                         // any position in the initial frontier is clearly in the node map, but also any node that has already been considered
                         // this prevents useless cycling of equivalent paths
                         // this is okay because all paths are equivalent, so there is no possible way to find a better path (because currently it's a fixed value for horizontal / vertical movements)
-                        if (existingNode.costSoFar < newCost) {
+                        if (existingNode.costSoFar != newCost) {
                             throw new IllegalStateException();
                         }
                         continue; // nothing to do - we already have an equal-or-better path to this location
@@ -193,24 +225,5 @@ public class Scaffolder {
         private ScaffoldingSearchNode(long pos) {
             this.pos = pos;
         }
-    }
-
-    private void sanityCheck() {
-        // we will trust DependencyGraphScaffoldingOverlay that there are no cycles of any kind in the components - they form a DAG
-        //
-    }
-
-    private void enableBlock(long pos) {
-        // first, before everything gets destroyed by updating the overlay graph, let's chill out our subgraphs
-        // i really would rather not write a whole new thing for incrementally recomputing an overlay graph!
-
-    }
-
-    public static void run(DependencyGraphScaffoldingOverlay overlay) {
-
-
-        CollapsedDependencyGraph collapsed = overlay.getCollapsedGraph();
-        Map<Integer, CollapsedDependencyGraphComponent> components = collapsed.getComponents();
-
     }
 }

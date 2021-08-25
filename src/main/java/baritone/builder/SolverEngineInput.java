@@ -17,16 +17,21 @@
 
 package baritone.builder;
 
+import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSets;
+
+import java.util.Collection;
+import java.util.List;
 
 public class SolverEngineInput {
 
     public final PlaceOrderDependencyGraph graph;
     public final LongSet intendedScaffolding;
     public final LongSet alreadyPlaced;
-    private final LongOpenHashSet toPlaceNow;
+    public final LongSet allToPlaceNow;
+    private final List<LongOpenHashSet> toPlaceNow;
     public final long player;
 
     /**
@@ -36,12 +41,13 @@ public class SolverEngineInput {
      * @param toPlaceNow          Locations that are currently top of mind and must be placed. For example, to place the rest of the graph, this would be intendedScaffolding|(graph.allNonAir&~alreadyPlaced)
      * @param player              Last but not least, where is the player standing?
      */
-    public SolverEngineInput(PlaceOrderDependencyGraph graph, LongOpenHashSet intendedScaffolding, LongOpenHashSet alreadyPlaced, LongOpenHashSet toPlaceNow, long player) {
+    public SolverEngineInput(PlaceOrderDependencyGraph graph, LongSets.UnmodifiableSet intendedScaffolding, LongOpenHashSet alreadyPlaced, List<LongOpenHashSet> toPlaceNow, long player) {
         this.graph = graph;
-        this.intendedScaffolding = LongSets.unmodifiable(intendedScaffolding);
+        this.intendedScaffolding = intendedScaffolding;
         this.alreadyPlaced = LongSets.unmodifiable(alreadyPlaced);
         this.toPlaceNow = toPlaceNow;
         this.player = player;
+        this.allToPlaceNow = combine(toPlaceNow);
         if (Main.DEBUG) {
             sanityCheck();
         }
@@ -51,24 +57,68 @@ public class SolverEngineInput {
         if (!graph.bounds().inRangePos(player)) {
             throw new IllegalStateException();
         }
-        for (LongSet toVerify : new LongSet[]{intendedScaffolding, alreadyPlaced, toPlaceNow}) {
+        for (LongSet toVerify : new LongSet[]{intendedScaffolding, alreadyPlaced}) {
             for (long pos : toVerify) {
                 if (!graph.bounds().inRangePos(pos)) {
                     throw new IllegalStateException();
                 }
             }
         }
-        for (long pos : toPlaceNow) {
-            if (alreadyPlaced.contains(pos)) {
-                throw new IllegalStateException();
+        for (LongSet toPlace : toPlaceNow) {
+            for (long pos : toPlace) {
+                if (alreadyPlaced.contains(pos)) {
+                    throw new IllegalStateException();
+                }
+                if (!graph.bounds().inRangePos(pos)) {
+                    throw new IllegalStateException();
+                }
+                if (intendedScaffolding.contains(pos) ^ graph.airTreatedAsScaffolding(pos)) {
+                    throw new IllegalStateException();
+                }
             }
         }
     }
 
-    public boolean desiredToBePlaced(long pos) {
+    public PlacementDesire desiredToBePlaced(long pos) {
         if (Main.DEBUG && !graph.bounds().inRangePos(pos)) {
             throw new IllegalStateException();
         }
-        return !graph.data(pos).isAir || intendedScaffolding.contains(pos);
+        if (allToPlaceNow.contains(pos)) {
+            if (graph.airTreatedAsScaffolding(pos)) {
+                return PlacementDesire.SCAFFOLDING_OF_CURRENT_GOAL;
+            } else {
+                return PlacementDesire.PART_OF_CURRENT_GOAL;
+            }
+        } else {
+            // for positions NOT in allToPlaceNow, intendedScaffolding is not guaranteed to be equivalent to airTreatedAsScaffolding
+            if (graph.airTreatedAsScaffolding(pos)) {
+                if (intendedScaffolding.contains(pos)) {
+                    return PlacementDesire.SCAFFOLDING_OF_FUTURE_GOAL;
+                } else {
+                    return PlacementDesire.ANCILLARY;
+                }
+            } else {
+                return PlacementDesire.PART_OF_FUTURE_GOAL;
+            }
+        }
+    }
+
+    public enum PlacementDesire {
+        PART_OF_CURRENT_GOAL,
+        PART_OF_FUTURE_GOAL,
+        SCAFFOLDING_OF_CURRENT_GOAL,
+        SCAFFOLDING_OF_FUTURE_GOAL,
+        ANCILLARY
+    }
+
+    private static LongOpenHashSet combine(List<LongOpenHashSet> entries) {
+        LongOpenHashSet ret = new LongOpenHashSet(entries.stream().mapToInt(Collection::size).sum());
+        for (LongOpenHashSet set : entries) {
+            LongIterator it = set.iterator();
+            while (it.hasNext()) {
+                ret.add(it.nextLong());
+            }
+        }
+        return ret;
     }
 }

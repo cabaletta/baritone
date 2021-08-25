@@ -23,27 +23,28 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 public class GreedySolver {
 
     SolverEngineInput engineInput;
-
-    public GreedySolver(SolverEngineInput input) {
-        this.engineInput = input;
-
-    }
-
     NodeBinaryHeap heap = new NodeBinaryHeap();
     Long2ObjectOpenHashMap<Node> nodes = new Long2ObjectOpenHashMap<>();
     Long2ObjectOpenHashMap<WorldState> zobristWorldStateCache = new Long2ObjectOpenHashMap<>();
 
-    synchronized SolverEngineOutput search() {
-        while (!heap.isEmpty()) {
-            Node node = heap.removeLowest();
+    public GreedySolver(SolverEngineInput input) {
+        this.engineInput = input;
+    }
 
+    synchronized SolverEngineOutput search() {
+        Node root = new Node(engineInput.player, 0L, -1L, this, 0);
+        nodes.put(root.nodeMapKey(), root);
+        heap.insert(root);
+        zobristWorldStateCache.put(0L, new WorldState.WorldStateWrappedSubstrate(engineInput));
+        while (!heap.isEmpty()) {
+            expandNode(heap.removeLowest());
         }
         throw new UnsupportedOperationException();
     }
 
     private void expandNode(Node node) {
         WorldState worldState = node.coalesceState(this);
-        long pos = node.pos();
+        long pos = node.pos;
         BlockStateCachedData above = at(BetterBlockPos.offsetBy(pos, 0, 2, 0), worldState);
         BlockStateCachedData head = at(Face.UP.offset(pos), worldState);
         if (Main.DEBUG && head.collidesWithPlayer) {
@@ -56,7 +57,7 @@ public class GreedySolver {
             throw new IllegalStateException();
         }
         boolean stickingUpIntoThirdBlock = blipsWithinBlock > Blip.TWO_BLOCKS - Blip.PLAYER_HEIGHT_SLIGHT_OVERESTIMATE; // exactly equal means not sticking up, since overestimate means overestimate
-        int blips = node.y * Blip.PER_BLOCK + blipsWithinBlock;
+        int blips = BetterBlockPos.YfromLong(pos) * Blip.PER_BLOCK + blipsWithinBlock;
 
         mid:
         for (Face travel : Face.HORIZONTALS) {
@@ -141,25 +142,46 @@ public class GreedySolver {
         }
     }
 
-    int calculateHeuristicModifier(WorldState previous, long blockPlacedAt) {
+    private int calculateHeuristicModifier(WorldState previous, long blockPlacedAt) {
         if (Main.DEBUG && previous.blockExists(blockPlacedAt)) {
             throw new IllegalStateException();
         }
-        if (engineInput.desiredToBePlaced(blockPlacedAt)) {
-            return -100;
+        if (true) {
+            throw new UnsupportedOperationException("tune the values first lol");
         }
-        return 0;
+        switch (engineInput.desiredToBePlaced(blockPlacedAt)) {
+            case PART_OF_CURRENT_GOAL:
+            case SCAFFOLDING_OF_CURRENT_GOAL:
+                return -100; // keep kitten on task
+            case PART_OF_FUTURE_GOAL:
+                return -10; // smaller kitten treat for working ahead
+            case SCAFFOLDING_OF_FUTURE_GOAL:
+                return -5; // smallest kitten treat for working ahead on scaffolding
+            case ANCILLARY:
+                return 0; // no kitten treat for placing a random extra block
+            default:
+                throw new IllegalStateException();
+        }
     }
 
-    Node getNode(long playerPosition, Node prev, WorldState prevWorld, long blockPlacement) {
-        long worldStateZobristHash = blockPlacement == -1 ? prev.worldStateZobristHash : WorldState.updateZobrist(prev.worldStateZobristHash, blockPlacement);
+    private Node getNode(long playerPosition, Node prev, WorldState prevWorld, long blockPlacement) {
+        if (Main.DEBUG && blockPlacement != -1 && prev.coalesceState(this).blockExists(blockPlacement)) {
+            throw new IllegalStateException();
+        }
+        long worldStateZobristHash = prev.worldStateZobristHash;
+        if (blockPlacement != -1) {
+            worldStateZobristHash = WorldState.updateZobrist(worldStateZobristHash, blockPlacement);
+        }
         long code = playerPosition ^ worldStateZobristHash;
         Node existing = nodes.get(code);
         if (existing != null) {
             return existing;
         }
-        int newHeuristic = prev.heuristic + blockPlacement == -1 ? 0 : calculateHeuristicModifier(prevWorld, blockPlacement);
-        Node node = new Node(BetterBlockPos.XfromLong(playerPosition), BetterBlockPos.YfromLong(playerPosition), BetterBlockPos.ZfromLong(playerPosition), worldStateZobristHash, blockPlacement, this, newHeuristic);
+        int newHeuristic = prev.heuristic;
+        if (blockPlacement != -1) {
+            newHeuristic += calculateHeuristicModifier(prevWorld, blockPlacement);
+        }
+        Node node = new Node(playerPosition, worldStateZobristHash, blockPlacement, this, newHeuristic);
         if (Main.DEBUG && node.nodeMapKey() != code) {
             throw new IllegalStateException();
         }

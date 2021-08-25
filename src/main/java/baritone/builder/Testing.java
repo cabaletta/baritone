@@ -18,9 +18,7 @@
 package baritone.builder;
 
 import baritone.api.utils.BetterBlockPos;
-import baritone.pathing.calc.openset.BinaryHeapOpenSet;
 import baritone.utils.BlockStateInterface;
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
@@ -39,75 +37,10 @@ public class Testing {
 
     public static class AbstractNodeCostSearch {
 
-        Long2ObjectOpenHashMap<PathNode> nodeMap;
-        BinaryHeapOpenSet openSet;
-        Long2ObjectOpenHashMap<BlockStateInterfaceAbstractWrapper> zobristMap;
-
         long[] KEYS_CACHE = new long[MAX_LEAF_LEVEL];
         int[] VALS_CACHE = new int[MAX_LEAF_LEVEL];
-
-        protected void search() {
-            while (!openSet.isEmpty()) {
-                PathNode node = null;
-                BlockStateInterfaceAbstractWrapper bsi = node.get(this);
-
-                // consider actions:
-                // traverse
-                // pillar
-                // place blocks beneath feet
-            }
-        }
-
-        /*protected PathNode getNodeAtPosition(int x, int y, int z, long hashCode) {
-            baritone.pathing.calc.PathNode node = map.get(hashCode);
-            if (node == null) {
-                node = new baritone.pathing.calc.PathNode(x, y, z, goal);
-                map.put(hashCode, node);
-            }
-            return node;
-        }*/
     }
 
-
-    public static final class PathNode {
-
-        public int x;
-        public int y;
-        public int z;
-
-        public long zobristBlocks;
-
-        public int heuristic;
-        public int cost;
-        public int combinedCost;
-        public PathNode previous;
-        public int heapPosition;
-
-        boolean unrealizedZobristBlockChange;
-        long packedUnrealizedCoordinate;
-        int unrealizedState;
-        long unrealizedZobristParentHash;
-
-        public long nodeMapKey() {
-            return BetterBlockPos.longHash(x, y, z) ^ zobristBlocks;
-        }
-
-        public BlockStateInterfaceAbstractWrapper get(AbstractNodeCostSearch ref) {
-            BlockStateInterfaceAbstractWrapper alr = ref.zobristMap.get(zobristBlocks);
-            if (alr != null) {
-                return alr;
-            }
-            if (!unrealizedZobristBlockChange || (BetterBlockPos.murmur64(BetterBlockPos.longHash(packedUnrealizedCoordinate) ^ unrealizedState) ^ zobristBlocks) != unrealizedZobristParentHash) {
-                throw new IllegalStateException();
-            }
-            alr = ref.zobristMap.get(unrealizedZobristParentHash).with(packedUnrealizedCoordinate, unrealizedState, ref);
-            if (alr.zobrist != zobristBlocks) {
-                throw new IllegalStateException();
-            }
-            ref.zobristMap.put(zobristBlocks, alr);
-            return alr;
-        }
-    }
 
     public static abstract class BlockStateInterfaceAbstractWrapper {
 
@@ -196,7 +129,7 @@ public class Testing {
                 }
             }
             BlockStateInterfaceMappedDiff coalesced = new BlockStateInterfaceMappedDiff(ancestor, keys, vals, startIdx, zobrist);
-            ref.zobristMap.put(zobrist, coalesced);
+            //ref.zobristMap.put(zobrist, coalesced);
             return coalesced;
         }
     }
@@ -271,6 +204,8 @@ public class Testing {
 
     public static class BlockStateLookupHelper {
 
+        // this falls back from System.identityHashCode to == so it's safe even in the case of a 32-bit collision
+        // but that would never have happened anyway: https://www.wolframalpha.com/input/?i=%28%282%5E32-1%29%2F%282%5E32%29%29%5E2000
         private static Reference2IntOpenHashMap<IBlockState> states = new Reference2IntOpenHashMap<>();
 
         static {
@@ -285,15 +220,6 @@ public class Testing {
             int realState = Block.BLOCK_STATE_IDS.get(state); // uses slow REAL hashcode that walks through the Map of properties, gross
             states.put(state, realState);
             return realState;
-        }
-
-        static {
-            IntOpenHashSet taken = new IntOpenHashSet();
-            for (IBlockState state : Block.BLOCK_STATE_IDS) {
-                if (!taken.add(System.identityHashCode(state))) {
-                    throw new IllegalStateException("Duplicate hashcode among IBlockStates");
-                }
-            }
         }
     }
 }

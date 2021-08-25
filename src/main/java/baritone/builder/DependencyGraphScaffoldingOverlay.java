@@ -112,6 +112,10 @@ public class DependencyGraphScaffoldingOverlay {
         }
     }
 
+    public LongSets.UnmodifiableSet scaffolding() {
+        return (LongSets.UnmodifiableSet) LongSets.unmodifiable(scaffoldingAdded);
+    }
+
     public BlockStateCachedData data(long pos) {
         if (Main.DEBUG && !real(pos)) {
             throw new IllegalStateException();

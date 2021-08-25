@@ -63,6 +63,7 @@ public interface Bounds {
 
     int volume();
 
+    // this must be implemented EXTREMELY efficiently. no integer division allowed! even a hashmap lookup is borderline.
     int toIndex(int x, int y, int z); // easy to implement for cuboid, harder for more complicated shapes
 
     default int toIndex(long pos) {

@@ -19,6 +19,7 @@ package baritone.builder;
 
 import baritone.api.utils.BetterBlockPos;
 
+import java.util.Collections;
 import java.util.List;
 
 public class SolverEngineOutput {
@@ -46,6 +47,10 @@ public class SolverEngineOutput {
             sanityCheckMovement(prev, curr);
             prev = curr;
         }
+    }
+
+    public List<SolvedActionStep> getSteps() {
+        return Collections.unmodifiableList(steps);
     }
 
     private static void sanityCheckMovement(long from, long to) {
