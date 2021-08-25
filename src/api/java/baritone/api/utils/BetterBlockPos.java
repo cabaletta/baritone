@@ -93,7 +93,37 @@ public final class BetterBlockPos extends BlockPos {
     private static final long X_MASK = (1L << NUM_X_BITS) - 1L;  // X doesn't need padding as the overflow carry bit is just discarded, like a normal long (-1) + (1) = 0
     private static final long Y_MASK = (1L << NUM_Y_BITS) - 1L;
     private static final long Z_MASK = (1L << NUM_Z_BITS) - 1L;
+
     public static final long POST_ADDITION_MASK = X_MASK << X_SHIFT | Y_MASK << Y_SHIFT | Z_MASK << Z_SHIFT; // required to "manually inline" toLong(-1, -1, -1) here so that javac inserts proper ldc2_w instructions at usage points instead of getstatic
+    // what's this ^ mask for?
+    // it allows for efficient offsetting and manipulation of a long packed coordinate
+    // if we had three ints, x y z, it would be easy to do "y += 1" or "x -= 1"
+    // but how do you do those things if you have a long with x y and z all stuffed into one primitive?
+    // adding together two long coordinates actually works perfectly if both sides have X, Y, and Z as all positive, no issues at all
+    // but when Y or Z is negative, we run into an issue. consider 8 bits: negative one is 11111111 and one is 00000001
+    // adding them together gives 00000000, zero, **but only because there isn't a 9th bit to carry into**
+    // if we had, instead, 00000000 11111111 + 00000000 00000001 we would rightly get 00000001 00000000 with the 1 being carried into the 9th position there
+    // this is exactly what happens. "toLong(0, 1, 0) + toLong(0, -1, 0)" ends up equaling toLong(1, 0, 0) while we'd rather it equal toLong(0, 0, 0)
+    // so, we simply mask out the unwanted result of the carry by inserting 1 bit of padding space (as added above) between each
+    // it used to be 000XXXXXXXXXXXXXXXXXXXXXXXXXXYYYYYYYYYZZZZZZZZZZZZZZZZZZZZZZZZZZ
+    // and now it is 0XXXXXXXXXXXXXXXXXXXXXXXXXX0YYYYYYYYY0ZZZZZZZZZZZZZZZZZZZZZZZZZZ
+    // we simply place the X Y and Z in slightly different sections of the long, putting a bit of space between each
+    // the mask ^ is 0111111111111111111111111110111111111011111111111111111111111111
+    // using that example of (0,1,0) + (0,-1,0), here's what happens
+    //   0000000000000000000000000000000000001000000000000000000000000000 (this is X=0 Y=1 Z=0)
+    // + 0000000000000000000000000000111111111000000000000000000000000000 (this is X=0 Y=-1 Z=0)
+    // = 0000000000000000000000000001000000000000000000000000000000000000
+    // the unwanted carry bit here  ^ is no longer corrupting the least significant bit of X and making it 1!
+    // now it's just turning on the unused padding bit that we don't care about
+    // using the mask and bitwise and, we can easily and branchlessly turn off the padding bits just in case something overflow carried into them!
+    //   0000000000000000000000000001000000000000000000000000000000000000 (the result of the addition from earlier)
+    // & 0111111111111111111111111110111111111011111111111111111111111111 (this is POST_ADDITION_MASK)
+    // = 0000000000000000000000000000000000000000000000000000000000000000
+    // POST_ADDITION_MASK retains the bits that actually form X, Y, and Z, but intentionally turns off the padding bits
+    // so, we can simply do "(toLong(0, 1, 0) + toLong(0, -1, 0)) & POST_ADDITION_MASK" and correctly get toLong(0, 0, 0)
+    // which is incredibly fast and efficient, an add then a bitwise AND against a constant
+    // and it doesn't require us to pull out X, Y, and Z, modify one of them, and put them all back into the long
+    // that's what the point of the mask is
 
     static {
         if (POST_ADDITION_MASK != toLong(-1, -1, -1)) {
