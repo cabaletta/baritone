@@ -87,8 +87,8 @@ public class GoalBlock implements Goal, IGoalRenderPos {
     public static double calculate(double xDiff, int yDiff, double zDiff) {
         double heuristic = 0;
 
-        // if yDiff is 1 that means that pos.getY()-this.y==1 which means that we're 1 block above where we should be
-        // therefore going from 0,pos.getY()-this.y,0 to a GoalYLevel of 0 is accurate
+        // if yDiff is 1 that means that currentY-goalY==1 which means that we're 1 block above where we should be
+        // therefore going from 0,yDiff,0 to a GoalYLevel of 0 is accurate
         heuristic += GoalYLevel.calculate(0, yDiff);
 
         //use the pythagorean and manhattan mixture from GoalXZ
