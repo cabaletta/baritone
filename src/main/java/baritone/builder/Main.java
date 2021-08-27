@@ -17,6 +17,7 @@
 
 package baritone.builder;
 
+import baritone.api.pathing.movement.ActionCosts;
 import baritone.api.utils.BetterBlockPos;
 import baritone.builder.mc.DebugStates;
 import baritone.builder.mc.VanillaBlockStateDataProvider;
@@ -47,6 +48,7 @@ public class Main {
     public static final Random RAND = new Random(5021);
 
     public static void main() throws InterruptedException {
+        System.out.println("Those costs are " + (ActionCosts.FALL_N_BLOCKS_COST[2] / 2) + " and " + ActionCosts.JUMP_ONE_BLOCK_COST + " and " + ActionCosts.FALL_N_BLOCKS_COST[1]);
         for (Face face : Face.VALUES) {
             System.out.println(face);
             System.out.println(face.x);

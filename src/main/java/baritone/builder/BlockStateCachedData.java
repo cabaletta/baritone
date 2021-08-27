@@ -37,6 +37,14 @@ public final class BlockStateCachedData {
         }
     }
 
+    private static final BlockStateCachedData[] PER_STATE_WITH_SCAFFOLDING = new BlockStateCachedData[PER_STATE.length];
+
+    static {
+        for (int i = 0; i < PER_STATE.length; i++) {
+            PER_STATE_WITH_SCAFFOLDING[i] = PER_STATE[i] != null && PlaceOrderDependencyGraph.treatAsScaffolding(PER_STATE[i]) ? SCAFFOLDING : PER_STATE[i];
+        }
+    }
+
     public final boolean fullyWalkableTop;
     private final int collisionHeightBlips;
     public final boolean isAir;
@@ -52,6 +60,10 @@ public final class BlockStateCachedData {
 
     public static BlockStateCachedData get(int state) {
         return PER_STATE[state];
+    }
+
+    public static BlockStateCachedData getScaffoldingVariant(int state) {
+        return PER_STATE_WITH_SCAFFOLDING[state];
     }
 
     public BlockStateCachedData(BlockStateCachedDataBuilder builder) {

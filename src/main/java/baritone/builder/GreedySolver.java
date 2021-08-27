@@ -47,7 +47,7 @@ public class GreedySolver {
         long pos = node.pos;
         BlockStateCachedData above = at(BetterBlockPos.offsetBy(pos, 0, 2, 0), worldState);
         BlockStateCachedData head = at(Face.UP.offset(pos), worldState);
-        if (Main.DEBUG && head.collidesWithPlayer) {
+        if (Main.DEBUG && head.collidesWithPlayer) { // needed because PlayerPhysics doesn't get this
             throw new IllegalStateException();
         }
         BlockStateCachedData feet = at(pos, worldState);

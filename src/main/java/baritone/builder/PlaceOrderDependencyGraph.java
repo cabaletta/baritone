@@ -57,13 +57,7 @@ public class PlaceOrderDependencyGraph {
     }
 
     public BlockStateCachedData data(long pos) {
-        int state = state(pos);
-        BlockStateCachedData data = BlockStateCachedData.get(state);
-        if (treatAsScaffolding(data)) {
-            return BlockStateCachedData.SCAFFOLDING;
-        } else {
-            return data;
-        }
+        return BlockStateCachedData.getScaffoldingVariant(state(pos));
     }
 
     // example: dirt at 0,0,0 torch at 0,1,0. outgoingEdge(0,0,0,UP) returns true, incomingEdge(0,1,0,DOWN) returns true
@@ -90,6 +84,7 @@ public class PlaceOrderDependencyGraph {
     }
 
     public boolean airTreatedAsScaffolding(long pos) {
+        // alternatively, could be return BlockStateCachedData.getScaffoldingVariant(state(pos)) == BlockStateCachedData.SCAFFOLDING
         return treatAsScaffolding(BlockStateCachedData.get(state(pos)));
     }
 
@@ -105,7 +100,7 @@ public class PlaceOrderDependencyGraph {
         return states.bounds;
     }
 
-    private boolean treatAsScaffolding(BlockStateCachedData state) {
+    public static boolean treatAsScaffolding(BlockStateCachedData state) {
         return state.isAir;
     }
 }
