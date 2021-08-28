@@ -45,6 +45,7 @@ public class GreedySolver {
     private void expandNode(Node node) {
         WorldState worldState = node.coalesceState(this);
         long pos = node.pos;
+        BlockStateCachedData aboveAbove = at(BetterBlockPos.offsetBy(pos, 0, 3, 0), worldState);
         BlockStateCachedData above = at(BetterBlockPos.offsetBy(pos, 0, 2, 0), worldState);
         BlockStateCachedData head = at(Face.UP.offset(pos), worldState);
         if (Main.DEBUG && head.collidesWithPlayer) { // needed because PlayerPhysics doesn't get this
@@ -56,19 +57,17 @@ public class GreedySolver {
         if (blipsWithinBlock < 0) {
             throw new IllegalStateException();
         }
-        boolean stickingUpIntoThirdBlock = blipsWithinBlock > Blip.TWO_BLOCKS - Blip.PLAYER_HEIGHT_SLIGHT_OVERESTIMATE; // exactly equal means not sticking up, since overestimate means overestimate
-        int blips = BetterBlockPos.YfromLong(pos) * Blip.PER_BLOCK + blipsWithinBlock;
 
-        mid:
+        cardinals:
         for (Face travel : Face.HORIZONTALS) {
             long newPos = travel.offset(pos);
+            BlockStateCachedData newAboveAbove = at(BetterBlockPos.offsetBy(newPos, 0, 3, 0), worldState);
             BlockStateCachedData newAbove = at(BetterBlockPos.offsetBy(newPos, 0, 2, 0), worldState);
             BlockStateCachedData newHead = at(Face.UP.offset(newPos), worldState);
             BlockStateCachedData newFeet = at(newPos, worldState);
             BlockStateCachedData newUnderneath = at(Face.DOWN.offset(newPos), worldState);
-            switch (PlayerPhysics.playerTravelCollides(blipsWithinBlock, above, newAbove, newHead, newFeet, newUnderneath, underneath, feet)) {
+            switch (PlayerPhysics.playerTravelCollides(blipsWithinBlock, above, newAbove, newHead, newFeet, newUnderneath, underneath, feet, aboveAbove, newAboveAbove)) {
                 case BLOCKED: {
-                    // TODO ascend
                     continue;
                 }
                 case FALL: {
@@ -77,45 +76,73 @@ public class GreedySolver {
                     for (int descent = 0; ; descent++) {
                         // NOTE: you cannot do (descent*Face.DOWN.offset)&BetterBlockPos.POST_ADDITION_MASK because Y is serialized into the center of the long. but I suppose you could do it with X. hm maybe Y should be moved to the most significant bits purely to allow this :^)
                         long support = BetterBlockPos.offsetBy(newPos, 0, -descent, 0);
-                        BlockStateCachedData data = at(support, worldState);
-                        BlockStateCachedData under = at(Face.DOWN.offset(support), worldState);
-                        PlayerPhysics.VoxelResidency res = PlayerPhysics.canPlayerStand(under, data);
+                        long under = Face.DOWN.offset(support);
+                        if (Main.DEBUG && !engineInput.graph.bounds().inRangePos(under)) {
+                            throw new IllegalStateException(); // should be caught by PREVENTED_BY_UNDERNEATH
+                        }
+                        PlayerPhysics.VoxelResidency res = PlayerPhysics.canPlayerStand(at(under, worldState), at(support, worldState));
+                        if (Main.DEBUG && descent == 0 && res != PlayerPhysics.VoxelResidency.FLOATING) {
+                            throw new IllegalStateException(); // CD shouldn't collide, it should be D and the one beneath...
+                        }
                         switch (res) {
                             case FLOATING:
                                 continue; // as expected
                             case PREVENTED_BY_UNDERNEATH:
                             case PREVENTED_BY_WITHIN:
-                                continue mid; // no safe landing
+                                continue cardinals; // no safe landing
                             case IMPOSSIBLE_WITHOUT_SUFFOCATING:
                                 throw new IllegalStateException();
                             case UNDERNEATH_PROTRUDES_AT_OR_ABOVE_FULL_BLOCK:
                             case STANDARD_WITHIN_SUPPORT:
                                 // found our landing spot
-                                // TODO
+                                upsertEdge(node, worldState, support, -1, fallCost(descent));
                             default:
                                 throw new IllegalStateException();
                         }
                     }
-                    // descent, with a possible fallthrough to VOXEL_LEVEL if it's just a troll
-
-                    // no break, fallthrouh instead!
-                } // FALLTHROUGH!
-                case VOXEL_LEVEL: { // ^ POSSIBLE FALLTHROUGH ^
-
+                }
+                case VOXEL_LEVEL: {
+                    upsertEdge(node, worldState, newPos, -1, flatCost());
+                    break;
+                }
+                case JUMP_TO_VOXEL_LEVEL: {
+                    upsertEdge(node, worldState, newPos, -1, jumpCost());
+                    break;
                 }
                 case VOXEL_UP: {
-
+                    upsertEdge(node, worldState, Face.UP.offset(newPos), -1, flatCost());
+                    break;
                 }
+                case JUMP_TO_VOXEL_UP: {
+                    upsertEdge(node, worldState, Face.UP.offset(newPos), -1, jumpCost());
+                    break;
+                }
+                case JUMP_TO_VOXEL_TWO_UP: {
+                    upsertEdge(node, worldState, BetterBlockPos.offsetBy(newPos, 0, 2, 0), -1, jumpCost());
+                    break;
+                }
+                default:
+                    throw new IllegalStateException();
             }
         }
-
-        // consider actions:
-        // traverse
-        // pillar
-        // place blocks beneath feet
     }
 
-    private void updateNeighbor(Node node, WorldState worldState, long newPlayerPosition, long blockPlacement, int edgeCost) {
+    private int fallCost(int blocks) {
+        if (blocks < 1) {
+            throw new IllegalStateException();
+        }
+        throw new UnsupportedOperationException();
+    }
+
+    private int flatCost() {
+        throw new UnsupportedOperationException();
+    }
+
+    private int jumpCost() {
+        throw new UnsupportedOperationException();
+    }
+
+    private void upsertEdge(Node node, WorldState worldState, long newPlayerPosition, long blockPlacement, int edgeCost) {
         Node neighbor = getNode(newPlayerPosition, node, worldState, blockPlacement);
         if (Main.SLOW_DEBUG && blockPlacement != -1 && !neighbor.coalesceState(this).blockExists(blockPlacement)) { // only in slow_debug because this force-allocates a WorldState for every neighbor of every node!
             throw new IllegalStateException();
