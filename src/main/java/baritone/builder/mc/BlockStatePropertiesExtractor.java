@@ -195,7 +195,6 @@ public class BlockStatePropertiesExtractor {
             if (block instanceof BlockBush // includes crops
                     || block instanceof BlockReed
                     || block instanceof BlockTorch
-                    || (block instanceof BlockSnow && state.getValue(BlockSnow.LAYERS) == 1)
                     //|| block instanceof BlockSign
                     || block instanceof BlockRedstoneWire
                     || block instanceof BlockRailBase
@@ -275,10 +274,8 @@ public class BlockStatePropertiesExtractor {
 
         if (block instanceof BlockSnow) {
             fullyUnderstood = true;
-            if (state.getValue(BlockSnow.LAYERS) > 1) { // collidesWithPlayer false from earlier
-                builder.fullyWalkableTop().collisionHeight(0.125 * (state.getValue(BlockSnow.LAYERS) - 1));
-                // funny - if you have snow layers packed 8 high, it only supports the player to a height of 0.875, but it still counts as "isTopSolid" for placing stuff like torches on it
-            }
+            builder.fullyWalkableTop().collisionHeight(0.125 * (state.getValue(BlockSnow.LAYERS) - 1));
+            // funny - if you have snow layers packed 8 high, it only supports the player to a height of 0.875, but it still counts as "isTopSolid" for placing stuff like torches on it
         }
 
         if (block instanceof BlockSoulSand) {

@@ -263,7 +263,7 @@ public class BlockStateCachedDataBuilder {
         if ((playerMustBeHorizontalFacingInOrderToPlaceMe != null || playerMustBeEntityFacingInOrderToPlaceMe != null) && mustBePlacedAgainst == null) {
             throw new IllegalStateException();
         }
-        if (collisionHeightBlips != null && (collisionHeightBlips > Blip.FULL_BLOCK + Blip.HALF_BLOCK || collisionHeightBlips <= 0)) { // playerphysics assumes this is never true
+        if (collisionHeightBlips != null && (collisionHeightBlips > Blip.FULL_BLOCK + Blip.HALF_BLOCK || collisionHeightBlips < 0)) { // playerphysics assumes this is never true
             throw new IllegalStateException();
         }
         if (collidesWithPlayer ^ collisionHeightBlips != null) {
