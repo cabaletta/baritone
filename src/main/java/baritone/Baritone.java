@@ -24,7 +24,7 @@ import baritone.api.event.listener.IEventBus;
 import baritone.api.utils.Helper;
 import baritone.api.utils.IPlayerContext;
 import baritone.behavior.*;
-import baritone.cache.ChunkLoader;
+import baritone.cache.RegionLoader;
 import baritone.cache.WorldProvider;
 import baritone.command.manager.CommandManager;
 import baritone.event.GameEventHandler;
@@ -122,7 +122,7 @@ public class Baritone implements IBaritone {
         this.selectionManager = new SelectionManager(this);
         this.commandManager = new CommandManager(this);
 
-        ChunkLoader chunkLoader = new ChunkLoader(this, 2); // load 3 by 3 area of chunks around the player.
+        RegionLoader chunkLoader = new RegionLoader(this, 2); // load 3 by 3 area of chunks around the player.
         this.gameEventHandler.registerEventListener(chunkLoader);
     }
 
