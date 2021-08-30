@@ -30,7 +30,6 @@ import static baritone.api.utils.Helper.mc;
 
 /**
  * Loads an area around the player and renderViewEntity to the cache.
- * The
  */
 public class ChunkLoader implements AbstractGameEventListener {
 
