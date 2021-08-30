@@ -79,7 +79,6 @@ public class RegionLoader implements AbstractGameEventListener {
         CachedWorld cachedWorld = (CachedWorld) this.worldProvider.getCurrentWorld().getCachedWorld();
         // If the radius is zero do nothing.
         if (this.radius == 0) return;
-        World mcWorld = this.baritone.getPlayerContext().world();
         // Load the regions.
         for (int xOffset = -(this.radius - 1); xOffset < this.radius; xOffset++) {
             for (int zOffset = -(this.radius - 1); zOffset < this.radius; zOffset++) {
