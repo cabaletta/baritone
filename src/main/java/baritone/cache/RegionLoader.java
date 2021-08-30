@@ -41,6 +41,9 @@ public class RegionLoader implements AbstractGameEventListener {
      */
     private final int radius;
 
+    private int lastRegionX;
+    private int lastRegionZ;
+
     public RegionLoader(Baritone baritone, int radius) {
         this.baritone = baritone;
         this.worldProvider = baritone.getWorldProvider();
@@ -64,7 +67,12 @@ public class RegionLoader implements AbstractGameEventListener {
 
         int playerRegionX = player.chunkCoordX >> 5;
         int playerRegionZ = player.chunkCoordZ >> 5;
-        loadAroundRegion(playerRegionX, playerRegionZ);
+        // Only load if the player has moved.
+        if (playerRegionX != this.lastRegionX || playerRegionZ != this.lastRegionZ) {
+            loadAroundRegion(playerRegionX, playerRegionZ);
+            this.lastRegionX = playerRegionX;
+            this.lastRegionZ = playerRegionZ;
+        }
 
         // Only load around the renderViewEntity if it's in a different region.
         int renderViewEntityRegionX = renderViewEntity.chunkCoordX >> 5;
