@@ -18,6 +18,7 @@
 package baritone.utils;
 
 import baritone.Baritone;
+import baritone.api.utils.ToolPriorityType;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.entity.EntityPlayerSP;
@@ -32,6 +33,8 @@ import net.minecraft.item.ItemTool;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
+
+import static baritone.api.utils.ToolPriorityType.*;
 
 /**
  * A cached list of the best tools on the hotbar for any block
@@ -118,51 +121,203 @@ public class ToolSet {
             return player.inventory.currentItem;
         }
 
-        int best = 0;
-        double highestSpeed = Double.NEGATIVE_INFINITY;
-        int lowestCost = Integer.MIN_VALUE;
-        boolean bestSilkTouch = false;
-        IBlockState blockState = b.getDefaultState();
-        boolean doesBlockRequireSilkTouch = Baritone.settings().preferSilkTouchForBlocks.value.contains(b);
-
+        Map<Integer, ItemStack> bestItems = new HashMap<>();
         for (int i = 0; i < 9; i++) {
             ItemStack itemStack = player.inventory.getStackInSlot(i);
+
             if (!Baritone.settings().useSwordToMine.value && itemStack.getItem() instanceof ItemSword) {
                 continue;
             }
-          
+
             if (Baritone.settings().itemSaver.value && (itemStack.getItemDamage() + Baritone.settings().itemSaverThreshold.value) >= itemStack.getMaxDamage() && itemStack.getMaxDamage() > 1) {
                 continue;
             }
 
-            double speed = calculateSpeedVsBlock(itemStack, blockState);
-            boolean silkTouch = hasSilkTouch(itemStack);
+            bestItems.put(i, itemStack);
+        }
 
-            if(silkTouch) {
-                if(doesBlockRequireSilkTouch) {
-                    speed *= 1.2;
-                } else {
-                    speed *= 0.8;
+        if (bestItems.isEmpty()) {
+            return player.inventory.currentItem;
+        }
+
+        IBlockState blockState = b.getDefaultState();
+
+        int bestItem = player.inventory.currentItem;
+        for (ToolPriorityType tpt : Baritone.settings().toolPriority.value) {
+            switch (tpt) {
+                case DEFAULT: {
+                    double highestSpeed = Double.NEGATIVE_INFINITY;
+                    int lowestCost = Integer.MIN_VALUE;
+                    boolean bestSilkTouch = false;
+
+                    for (Map.Entry<Integer, ItemStack> entry : bestItems.entrySet()) {
+                        int i = entry.getKey();
+                        ItemStack item = entry.getValue();
+
+                        double speed = calculateSpeedVsBlock(item, blockState);
+                        boolean silkTouch = hasSilkTouch(item);
+
+                        if (speed > highestSpeed) {
+                            highestSpeed = speed;
+                            bestItem = i;
+                            lowestCost = getMaterialCost(item);
+                            bestSilkTouch = silkTouch;
+                        } else if (speed == highestSpeed) {
+                            int cost = getMaterialCost(item);
+                            if ((cost < lowestCost && (silkTouch || !bestSilkTouch)) ||
+                                    (preferSilkTouch && !bestSilkTouch && silkTouch)) {
+                                highestSpeed = speed;
+                                bestItem = i;
+                                lowestCost = cost;
+                                bestSilkTouch = silkTouch;
+                            }
+                        }
+                    }
+                    return bestItem;
                 }
-            }
+                case CAN_BREAK_BLOCK: {
+                    Map<Integer, ItemStack> validItems = new HashMap<>(bestItems);
+                    for (Map.Entry<Integer, ItemStack> entry : bestItems.entrySet()) {
+                        int i = entry.getKey();
+                        ItemStack item = entry.getValue();
 
-            if (speed > highestSpeed) {
-                highestSpeed = speed;
-                best = i;
-                lowestCost = getMaterialCost(itemStack);
-                bestSilkTouch = silkTouch;
-            } else if (speed == highestSpeed) {
-                int cost = getMaterialCost(itemStack);
-                if ((cost < lowestCost && (silkTouch || !bestSilkTouch)) ||
-                        (preferSilkTouch && !bestSilkTouch && silkTouch)) {
-                    highestSpeed = speed;
-                    best = i;
-                    lowestCost = cost;
-                    bestSilkTouch = silkTouch;
+                        if (!item.canHarvestBlock(blockState)) {
+                            validItems.remove(i);
+                        }
+                    }
+                    bestItems = new HashMap<>(validItems);
+                    break;
+                }
+                case BEST_SILKTOUCH_FOR_BLOCK: {
+                    Map<Integer, ItemStack> validItems = new HashMap<>(bestItems);
+                    for (Map.Entry<Integer, ItemStack> entry : bestItems.entrySet()) {
+                        int i = entry.getKey();
+                        ItemStack item = entry.getValue();
+
+                        if (Baritone.settings().preferSilkTouchForBlocks.value.contains(b) != hasSilkTouch(item)) {
+                            validItems.remove(i);
+                        }
+                    }
+                    bestItems = new HashMap<>(validItems);
+                    break;
+                }
+                case FASTEST: {
+                    double bestSpeed = Double.NEGATIVE_INFINITY;
+                    Map<Integer, ItemStack> validItems = new HashMap<>(bestItems);
+                    for (Map.Entry<Integer, ItemStack> entry : bestItems.entrySet()) {
+                        int i = entry.getKey();
+                        ItemStack item = entry.getValue();
+
+                        double speed = calculateSpeedVsBlock(item, blockState);
+
+                        if (speed >= bestSpeed) {
+                            bestSpeed = speed;
+                        } else {
+                            validItems.remove(i);
+                        }
+                    }
+
+                    for (Map.Entry<Integer, ItemStack> entry : bestItems.entrySet()) {
+                        int i = entry.getKey();
+                        ItemStack item = entry.getValue();
+
+                        if (calculateSpeedVsBlock(item, blockState) < bestSpeed) {
+                            validItems.remove(i);
+                        }
+                    }
+                    bestItems = new HashMap<>(validItems);
+                    break;
+                }
+                case ENCHANTED:
+                case NOT_ENCHANTED: {
+                    Map<Integer, ItemStack> validItems = new HashMap<>(bestItems);
+                    for (Map.Entry<Integer, ItemStack> entry : bestItems.entrySet()) {
+                        int i = entry.getKey();
+                        ItemStack item = entry.getValue();
+
+                        if (item.isItemEnchanted() != tpt.equals(ENCHANTED)) {
+                            validItems.remove(i);
+                        }
+                    }
+                    bestItems = new HashMap<>(validItems);
+                    break;
+                }
+                case EXPENSIVE:
+                case CHEAP: {
+                    int bestCost = tpt.equals(EXPENSIVE) ? -1 : 4;
+                    Map<Integer, ItemStack> validItems = new HashMap<>(bestItems);
+                    for (Map.Entry<Integer, ItemStack> entry : bestItems.entrySet()) {
+                        int i = entry.getKey();
+                        ItemStack item = entry.getValue();
+
+                        int materialCost = getMaterialCost(item);
+
+                        if (materialCost > bestCost == tpt.equals(EXPENSIVE)) {
+                            bestCost = materialCost;
+                        } else {
+                            if (materialCost != bestCost) {
+                                validItems.remove(i);
+                            }
+                        }
+                    }
+
+                    for (Map.Entry<Integer, ItemStack> entry : bestItems.entrySet()) {
+                        int i = entry.getKey();
+                        ItemStack item = entry.getValue();
+
+                        if ((getMaterialCost(item) < bestCost && tpt.equals(EXPENSIVE)) || (getMaterialCost(item) > bestCost && tpt.equals(CHEAP))) {
+                            validItems.remove(i);
+                        }
+                    }
+                    bestItems = new HashMap<>(validItems);
+                    break;
+                }
+                case LEAST_DURABLE: {
+                    int bestDurability = Integer.MAX_VALUE;
+                    Map<Integer, ItemStack> validItems = new HashMap<>(bestItems);
+                    for (Map.Entry<Integer, ItemStack> entry : bestItems.entrySet()) {
+                        int i = entry.getKey();
+                        ItemStack item = entry.getValue();
+
+                        int durability = item.getMaxDamage() - item.getItemDamage();
+
+                        if (durability < bestDurability) {
+                            bestDurability = durability;
+                        } else {
+                            validItems.remove(i);
+                        }
+                    }
+
+                    for (Map.Entry<Integer, ItemStack> entry : bestItems.entrySet()) {
+                        int i = entry.getKey();
+                        ItemStack item = entry.getValue();
+
+                        if (item.getMaxDamage() - item.getItemDamage() > bestDurability) {
+                            validItems.remove(i);
+                        }
+                    }
+                    bestItems = new HashMap<>(validItems);
+                    break;
                 }
             }
         }
-        return best;
+
+        if (bestItems.isEmpty()) {
+            return player.inventory.currentItem;
+        } else {
+            bestItem = Integer.MAX_VALUE;
+        }
+
+        double bestItemSpeed = Double.NEGATIVE_INFINITY;
+
+        for (Map.Entry<Integer, ItemStack> entry : bestItems.entrySet()) {
+            double speed = calculateSpeedVsBlock(entry.getValue(), blockState);
+            if (speed > bestItemSpeed) {
+                bestItemSpeed = speed;
+                bestItem = entry.getKey();
+            }
+        }
+        return bestItem;
     }
 
     /**
