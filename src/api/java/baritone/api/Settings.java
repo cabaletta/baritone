@@ -19,6 +19,7 @@ package baritone.api;
 
 import baritone.api.utils.NotificationHelper;
 import baritone.api.utils.SettingsUtil;
+import baritone.api.utils.ToolPriorityType;
 import baritone.api.utils.TypeUtils;
 import baritone.api.utils.gui.BaritoneToast;
 import net.minecraft.block.Block;
@@ -34,8 +35,8 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.*;
-import java.util.function.Consumer;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 /**
  * Baritone's settings. Settings apply to all Baritone instances.
@@ -206,6 +207,14 @@ public final class Settings {
 
     public final Setting<List<Block>> preferSilkTouchForBlocks = new Setting<>(new ArrayList<>(Arrays.asList(
 
+    )));
+
+    /**
+     * Tool selection priority list
+     */
+
+    public final Setting<List<ToolPriorityType>> toolPriority = new Setting<>(new ArrayList<>(Arrays.asList(
+            ToolPriorityType.DEFAULT
     )));
 
     /**

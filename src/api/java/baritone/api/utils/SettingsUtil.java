@@ -233,6 +233,10 @@ public class SettingsUtil {
         LONG(Long.class, Long::parseLong),
         STRING(String.class, String::new),
         ENUMFACING(EnumFacing.class, EnumFacing::byName),
+        TOOL_PRIORITY_TYPE(ToolPriorityType.class,
+                ToolPriorityType::fromString,
+                ToolPriorityType::getName
+        ),
         COLOR(
                 Color.class,
                 str -> new Color(Integer.parseInt(str.split(",")[0]), Integer.parseInt(str.split(",")[1]), Integer.parseInt(str.split(",")[2])),
