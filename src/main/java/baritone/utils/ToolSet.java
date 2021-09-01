@@ -143,7 +143,7 @@ public class ToolSet {
         IBlockState blockState = b.getDefaultState();
 
         int bestItem = player.inventory.currentItem;
-        for (ToolPriorityType tpt : Baritone.settings().toolPriority.value) {
+        for (ToolPriorityType tpt : Baritone.settings().autoToolPriority.value) {
             switch (tpt) {
                 case DEFAULT: {
                     double highestSpeed = Double.NEGATIVE_INFINITY;

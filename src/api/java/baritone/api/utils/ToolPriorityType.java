@@ -44,6 +44,6 @@ public enum ToolPriorityType {
                 return tpt;
             }
         }
-        return DEFAULT;
+        throw new IllegalArgumentException(String.format("Unknown ToolPriorityType %s", text));
     }
 }

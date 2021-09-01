@@ -213,7 +213,7 @@ public final class Settings {
      * Tool selection priority list
      */
 
-    public final Setting<List<ToolPriorityType>> toolPriority = new Setting<>(new ArrayList<>(Arrays.asList(
+    public final Setting<List<ToolPriorityType>> autoToolPriority = new Setting<>(new ArrayList<>(Arrays.asList(
             ToolPriorityType.DEFAULT
     )));
 
