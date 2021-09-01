@@ -17,9 +17,11 @@
 
 package baritone.builder;
 
+import baritone.api.utils.BetterBlockPos;
+
 public class Node {
 
-    public final long pos;
+    private final long posAndSneak;
     public final long worldStateZobristHash;
 
     public final int heuristic;
@@ -67,8 +69,29 @@ public class Node {
         return myState;
     }
 
+    public static long encode(long pos, int sneak) {
+        if (Main.DEBUG && (sneak < 0 || sneak > 3)) {
+            throw new IllegalStateException();
+        }
+        if (Main.DEBUG && ((pos & BetterBlockPos.POST_ADDITION_MASK) != pos)) {
+            throw new IllegalStateException();
+        }
+        long ret = pos
+                | (sneak & 0x1L) << 26 // snugly and cozily fit into the two bits left between X and Y and between Y and Z
+                | (sneak & 0x2L) << 35
+                | 1L << 63; // and turn on the top bit as a signal
+        if (Main.DEBUG && ((ret & BetterBlockPos.POST_ADDITION_MASK) != pos)) {
+            throw new IllegalStateException();
+        }
+        return ret;
+    }
+
+    public long pos() {
+        return posAndSneak & BetterBlockPos.POST_ADDITION_MASK;
+    }
+
     public long nodeMapKey() {
-        return pos ^ worldStateZobristHash;
+        return posAndSneak ^ worldStateZobristHash;
     }
 
     public boolean inHeap() {

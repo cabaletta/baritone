@@ -53,13 +53,25 @@ public class PlayerReachSphere {
     /**
      * Bring closer to 0 by one if not already zero
      */
-    private static int lower(int v) {
+    private static int lowerBranchy(int v) {
         if (v > 0) {
             return v - 1;
         } else if (v < 0) {
             return v + 1;
         } else {
             return v;
+        }
+    }
+
+    private static int lower(int v) {
+        return v + (v >>> 31) - ((-v) >>> 31);
+    }
+
+    static {
+        for (int i = -10; i <= 10; i++) {
+            if (lowerBranchy(i) != lower(i)) {
+                throw new IllegalStateException();
+            }
         }
     }
 }

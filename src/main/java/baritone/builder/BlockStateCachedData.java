@@ -30,6 +30,7 @@ public final class BlockStateCachedData {
     private static final BlockStateCachedData[] PER_STATE = Main.DATA_PROVIDER.allNullable();
     public static final BlockStateCachedData SCAFFOLDING = new BlockStateCachedData(new BlockStateCachedDataBuilder().collidesWithPlayer(true).fullyWalkableTop().collisionHeight(1).canPlaceAgainstMe());
     public static final BlockStateCachedData AIR = PER_STATE[0];
+    public static final BlockStateCachedData OUT_OF_BOUNDS = new BlockStateCachedData(new BlockStateCachedDataBuilder().collidesWithPlayer(true).collisionHeight(1));
 
     static {
         if (!AIR.isAir) {

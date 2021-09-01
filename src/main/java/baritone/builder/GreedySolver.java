@@ -22,13 +22,15 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 
 public class GreedySolver {
 
-    SolverEngineInput engineInput;
-    NodeBinaryHeap heap = new NodeBinaryHeap();
-    Long2ObjectOpenHashMap<Node> nodes = new Long2ObjectOpenHashMap<>();
-    Long2ObjectOpenHashMap<WorldState> zobristWorldStateCache = new Long2ObjectOpenHashMap<>();
+    private final SolverEngineInput engineInput;
+    private final NodeBinaryHeap heap = new NodeBinaryHeap();
+    private final Long2ObjectOpenHashMap<Node> nodes = new Long2ObjectOpenHashMap<>();
+    final Long2ObjectOpenHashMap<WorldState> zobristWorldStateCache = new Long2ObjectOpenHashMap<>();
+    private final Bounds bounds;
 
     public GreedySolver(SolverEngineInput input) {
         this.engineInput = input;
+        this.bounds = engineInput.graph.bounds();
     }
 
     synchronized SolverEngineOutput search() {
@@ -44,7 +46,7 @@ public class GreedySolver {
 
     private void expandNode(Node node) {
         WorldState worldState = node.coalesceState(this);
-        long pos = node.pos;
+        long pos = node.pos();
         BlockStateCachedData aboveAbove = at(BetterBlockPos.offsetBy(pos, 0, 3, 0), worldState);
         BlockStateCachedData above = at(BetterBlockPos.offsetBy(pos, 0, 2, 0), worldState);
         BlockStateCachedData head = at(Face.UP.offset(pos), worldState);
@@ -53,53 +55,46 @@ public class GreedySolver {
         }
         BlockStateCachedData feet = at(pos, worldState);
         BlockStateCachedData underneath = at(Face.DOWN.offset(pos), worldState);
-        int blipsWithinBlock = PlayerPhysics.determinePlayerRealSupportLevel(underneath, feet);
+
+        PlayerPhysics.VoxelResidency residency = PlayerPhysics.canPlayerStand(underneath, feet);
+        if (!PlayerPhysics.valid(residency)) {
+            throw new UnsupportedOperationException("sneaking off the edge of a block is not yet supported");
+        }
+        boolean standingWithinCollidableVoxel = residency == PlayerPhysics.VoxelResidency.STANDARD_WITHIN_SUPPORT;
+        long playerIsActuallySupportedBy = standingWithinCollidableVoxel ? pos : Face.DOWN.offset(pos);
+        int blipsWithinBlock = standingWithinCollidableVoxel ? feet.collisionHeightBlips() : underneath.collisionHeightBlips() - Blip.FULL_BLOCK;
         if (blipsWithinBlock < 0) {
             throw new IllegalStateException();
         }
 
-        cardinals:
+        // pillar up
+        {
+            long maybePlaceAt = Face.UP.offset(playerIsActuallySupportedBy);
+            if (!worldState.blockExists(maybePlaceAt)) {
+                engineInput.graph.data(maybePlaceAt);
+            } else {
+                if (Main.DEBUG && at(maybePlaceAt, worldState).collidesWithPlayer) {
+                    throw new IllegalStateException();
+                }
+            }
+        }
+
+        // walk sideways and either stay level, ascend, or descend
         for (Face travel : Face.HORIZONTALS) {
             long newPos = travel.offset(pos);
-            BlockStateCachedData newAboveAbove = at(BetterBlockPos.offsetBy(newPos, 0, 3, 0), worldState);
-            BlockStateCachedData newAbove = at(BetterBlockPos.offsetBy(newPos, 0, 2, 0), worldState);
-            BlockStateCachedData newHead = at(Face.UP.offset(newPos), worldState);
-            BlockStateCachedData newFeet = at(newPos, worldState);
-            BlockStateCachedData newUnderneath = at(Face.DOWN.offset(newPos), worldState);
-            switch (PlayerPhysics.playerTravelCollides(blipsWithinBlock, above, newAbove, newHead, newFeet, newUnderneath, underneath, feet, aboveAbove, newAboveAbove)) {
+            switch (PlayerPhysics.playerTravelCollides(blipsWithinBlock, underneath, feet, above, aboveAbove, newPos, worldState, engineInput)) {
                 case BLOCKED: {
                     continue;
                 }
                 case FALL: {
-                    // this means that there is nothing preventing us from walking forward and falling
-                    // iterate downwards to see what we would hit
-                    for (int descent = 0; ; descent++) {
-                        // NOTE: you cannot do (descent*Face.DOWN.offset)&BetterBlockPos.POST_ADDITION_MASK because Y is serialized into the center of the long. but I suppose you could do it with X. hm maybe Y should be moved to the most significant bits purely to allow this :^)
-                        long support = BetterBlockPos.offsetBy(newPos, 0, -descent, 0);
-                        long under = Face.DOWN.offset(support);
-                        if (Main.DEBUG && !engineInput.graph.bounds().inRangePos(under)) {
-                            throw new IllegalStateException(); // should be caught by PREVENTED_BY_UNDERNEATH
+                    int descendBy = PlayerPhysics.playerFalls(newPos, worldState, engineInput);
+                    if (descendBy != -1) {
+                        if (Main.DEBUG && descendBy <= 0) {
+                            throw new IllegalStateException();
                         }
-                        PlayerPhysics.VoxelResidency res = PlayerPhysics.canPlayerStand(at(under, worldState), at(support, worldState));
-                        if (Main.DEBUG && descent == 0 && res != PlayerPhysics.VoxelResidency.FLOATING) {
-                            throw new IllegalStateException(); // CD shouldn't collide, it should be D and the one beneath...
-                        }
-                        switch (res) {
-                            case FLOATING:
-                                continue; // as expected
-                            case PREVENTED_BY_UNDERNEATH:
-                            case PREVENTED_BY_WITHIN:
-                                continue cardinals; // no safe landing
-                            case IMPOSSIBLE_WITHOUT_SUFFOCATING:
-                                throw new IllegalStateException();
-                            case UNDERNEATH_PROTRUDES_AT_OR_ABOVE_FULL_BLOCK:
-                            case STANDARD_WITHIN_SUPPORT:
-                                // found our landing spot
-                                upsertEdge(node, worldState, support, -1, fallCost(descent));
-                            default:
-                                throw new IllegalStateException();
-                        }
+                        upsertEdge(node, worldState, BetterBlockPos.offsetBy(newPos, 0, -descendBy, 0), -1, fallCost(descendBy));
                     }
+                    break;
                 }
                 case VOXEL_LEVEL: {
                     upsertEdge(node, worldState, newPos, -1, flatCost());
@@ -143,6 +138,9 @@ public class GreedySolver {
     }
 
     private void upsertEdge(Node node, WorldState worldState, long newPlayerPosition, long blockPlacement, int edgeCost) {
+        if (Main.DEBUG && blockPlacement == -1 && PlayerPhysics.determinePlayerRealSupportLevel(at(Face.DOWN.offset(newPlayerPosition), worldState), at(newPlayerPosition, worldState)) < 0) {
+            throw new IllegalStateException();
+        }
         Node neighbor = getNode(newPlayerPosition, node, worldState, blockPlacement);
         if (Main.SLOW_DEBUG && blockPlacement != -1 && !neighbor.coalesceState(this).blockExists(blockPlacement)) { // only in slow_debug because this force-allocates a WorldState for every neighbor of every node!
             throw new IllegalStateException();
@@ -217,6 +215,6 @@ public class GreedySolver {
     }
 
     public BlockStateCachedData at(long pos, WorldState inWorldState) {
-        return inWorldState.blockExists(pos) ? engineInput.graph.data(pos) : BlockStateCachedData.AIR;
+        return engineInput.at(pos, inWorldState);
     }
 }

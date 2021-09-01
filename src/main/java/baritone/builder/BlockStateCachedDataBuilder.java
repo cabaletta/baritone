@@ -86,7 +86,7 @@ public class BlockStateCachedDataBuilder {
      * Should be 1 for trapdoors because when they're open, they touch the top face of the voxel
      */
     public BlockStateCachedDataBuilder collisionHeight(double y) {
-        for (int h = 1; h <= Blip.PER_BLOCK + Blip.HALF_BLOCK; h++) {
+        for (int h = 0; h <= Blip.PER_BLOCK + Blip.HALF_BLOCK; h++) {
             if (y == h * Blip.RATIO) {
                 collisionHeightBlips = h;
                 return this;

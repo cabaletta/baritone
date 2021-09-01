@@ -17,6 +17,8 @@
 
 package baritone.builder;
 
+import baritone.api.utils.BetterBlockPos;
+
 public class PlayerPhysics {
 
     public static int determinePlayerRealSupportLevel(BlockStateCachedData underneath, BlockStateCachedData within) {
@@ -86,6 +88,24 @@ public class PlayerPhysics {
         }
     }
 
+    public static Collision playerTravelCollides(int feetBlips,
+                                                 BlockStateCachedData underneath,
+                                                 BlockStateCachedData feet,
+                                                 BlockStateCachedData above,
+                                                 BlockStateCachedData aboveAbove,
+                                                 long newPos, WorldState worldState, SolverEngineInput engineInput) {
+        return playerTravelCollides(feetBlips,
+                above,
+                engineInput.at(BetterBlockPos.offsetBy(newPos, 0, 2, 0), worldState),
+                engineInput.at(Face.UP.offset(newPos), worldState),
+                engineInput.at(newPos, worldState),
+                engineInput.at(Face.DOWN.offset(newPos), worldState),
+                underneath,
+                feet,
+                aboveAbove,
+                engineInput.at(BetterBlockPos.offsetBy(newPos, 0, 3, 0), worldState));
+    }
+
     /**
      * "Can the player walk forwards without needing to break anything?"
      * <p>
@@ -98,7 +118,7 @@ public class PlayerPhysics {
      * XC
      * SD
      */
-    public static Collision playerTravelCollides(int feet,
+    public static Collision playerTravelCollides(int feetBlips,
                                                  BlockStateCachedData U,
                                                  BlockStateCachedData A,
                                                  BlockStateCachedData B,
@@ -108,24 +128,24 @@ public class PlayerPhysics {
                                                  BlockStateCachedData X,
                                                  BlockStateCachedData E,
                                                  BlockStateCachedData F) {
-        if (Main.DEBUG && (feet < 0 || feet >= Blip.FULL_BLOCK)) {
+        if (Main.DEBUG && (feetBlips < 0 || feetBlips >= Blip.FULL_BLOCK)) {
             throw new IllegalStateException();
         }
-        if (Main.DEBUG && (feet != determinePlayerRealSupportLevel(S, X))) {
+        if (Main.DEBUG && (feetBlips != determinePlayerRealSupportLevel(S, X))) {
             throw new IllegalStateException();
         }
-        boolean alreadyWithinU = feet > Blip.TWO_BLOCKS - Blip.PLAYER_HEIGHT_SLIGHT_OVERESTIMATE; // > and not >= because the player height is a slight overestimate
+        boolean alreadyWithinU = protrudesIntoThirdBlock(feetBlips);
         if (Main.DEBUG && (alreadyWithinU && U.collidesWithPlayer)) {
             throw new IllegalStateException();
         }
-        int couldJumpUpTo = feet + Blip.JUMP;
-        int couldStepUpTo = feet + Blip.HALF_BLOCK;
+        int couldJumpUpTo = feetBlips + Blip.JUMP;
+        int couldStepUpTo = feetBlips + Blip.HALF_BLOCK;
         if (couldJumpUpTo >= Blip.TWO_BLOCKS && !E.collidesWithPlayer && !F.collidesWithPlayer) {
             // probably blocked, but maybe could we stand on A?
             // imagine X is soul sand, A is carpet. that jump is possible
             int jumpUpTwo = determinePlayerRealSupportLevel(B, A);
             if (jumpUpTwo >= 0 && jumpUpTwo <= couldJumpUpTo - Blip.TWO_BLOCKS) {
-                if (Main.DEBUG && (!alreadyWithinU || jumpUpTwo > Blip.TWO_BLOCKS - Blip.PLAYER_HEIGHT_SLIGHT_OVERESTIMATE)) {
+                if (Main.DEBUG && (!alreadyWithinU || protrudesIntoThirdBlock(jumpUpTwo))) {
                     throw new IllegalStateException(); // numeric impossibilities
                 }
                 return Collision.JUMP_TO_VOXEL_TWO_UP;
@@ -139,7 +159,7 @@ public class PlayerPhysics {
         if (voxelUp >= 0) {
             // fundamentally a step upwards, from X to B instead of X to C
             // too high?
-            if (voxelUp > Blip.TWO_BLOCKS - Blip.PLAYER_HEIGHT_SLIGHT_OVERESTIMATE && (E.collidesWithPlayer || F.collidesWithPlayer)) {
+            if (protrudesIntoThirdBlock(voxelUp) && (E.collidesWithPlayer || F.collidesWithPlayer)) {
                 return Collision.BLOCKED;
             }
             int heightRelativeToStartVoxel = voxelUp + Blip.FULL_BLOCK;
@@ -164,7 +184,7 @@ public class PlayerPhysics {
         int stayLevel = determinePlayerRealSupportLevel(D, C);
         if (stayLevel >= 0) {
             // fundamentally staying within the same vertical voxel, X -> C
-            if (stayLevel > Blip.TWO_BLOCKS - Blip.PLAYER_HEIGHT_SLIGHT_OVERESTIMATE && !alreadyWithinU) { // step up, combined with our height, protrudes into U and A, AND we didn't already
+            if (protrudesIntoThirdBlock(stayLevel) && !alreadyWithinU) { // step up, combined with our height, protrudes into U and A, AND we didn't already
                 if (U.collidesWithPlayer) { // stayLevel could even be LESS than feet
                     return Collision.BLOCKED;
                 }
@@ -172,7 +192,7 @@ public class PlayerPhysics {
                     return Collision.BLOCKED;
                 }
             }
-            if (stayLevel > couldStepUpTo) {
+            if (stayLevel > couldStepUpTo) { // staying within the same voxel means that a jump will always succeed
                 return Collision.JUMP_TO_VOXEL_LEVEL;
             }
             return Collision.VOXEL_LEVEL;
@@ -186,11 +206,15 @@ public class PlayerPhysics {
         if (Main.DEBUG && D.collisionHeightBlips() >= Blip.FULL_BLOCK && D.fullyWalkableTop) {
             throw new IllegalStateException();
         }
-        if (D.collisionHeightBlips() < Blip.FULL_BLOCK + feet) {
+        if (D.collisionHeightBlips() < Blip.FULL_BLOCK + feetBlips) {
             return Collision.FALL;
         } else {
             return Collision.BLOCKED;
         }
+    }
+
+    public static boolean protrudesIntoThirdBlock(int feet) {
+        return feet > Blip.TWO_BLOCKS - Blip.PLAYER_HEIGHT_SLIGHT_OVERESTIMATE; // > and not >= because the player height is a slight overestimate
     }
 
     static {
@@ -200,7 +224,7 @@ public class PlayerPhysics {
         int maxFeet = Blip.FULL_BLOCK - 1;
         int couldJumpUpTo = maxFeet + Blip.JUMP;
         int maxWithinAB = couldJumpUpTo - Blip.TWO_BLOCKS;
-        if (maxWithinAB > Blip.TWO_BLOCKS - Blip.PLAYER_HEIGHT_SLIGHT_OVERESTIMATE) {
+        if (protrudesIntoThirdBlock(maxWithinAB)) {
             throw new IllegalStateException("Oh no, if this is true then playerTravelCollides needs to check another layer above EF");
         }
     }
@@ -214,5 +238,35 @@ public class PlayerPhysics {
         VOXEL_LEVEL, // if you hit W, you will end up at a similar position, such that you'd determineRealPlayerSupport at the same integer grid location (example: walking forward on level ground)
         FALL // if you hit W, you will not immediately collide with anything, at all, to the front or to the bottom (example: walking off a cliff)
         // TODO maybe we need another option that is like "you could do it, but you shouldn't". like, "if you hit W, you would walk forward, but you wouldn't like the outcome" such as cactus or lava or something
+    }
+
+    public static int playerFalls(long newPos, WorldState worldState, SolverEngineInput engineInput) {
+        // this means that there is nothing preventing us from walking forward and falling
+        // iterate downwards to see what we would hit
+        for (int descent = 0; ; descent++) {
+            // NOTE: you cannot do (descent*Face.DOWN.offset)&BetterBlockPos.POST_ADDITION_MASK because Y is serialized into the center of the long. but I suppose you could do it with X. hm maybe Y should be moved to the most significant bits purely to allow this :^)
+            long support = BetterBlockPos.offsetBy(newPos, 0, -descent, 0);
+            long under = Face.DOWN.offset(support);
+            if (Main.DEBUG && !engineInput.bounds.inRangePos(under)) {
+                throw new IllegalStateException(); // should be caught by PREVENTED_BY_UNDERNEATH
+            }
+            VoxelResidency res = canPlayerStand(engineInput.at(under, worldState), engineInput.at(support, worldState));
+            if (Main.DEBUG && descent == 0 && res != VoxelResidency.FLOATING) {
+                throw new IllegalStateException(); // CD shouldn't collide, it should be D and the one beneath...
+            }
+            switch (res) {
+                case FLOATING:
+                    continue; // as expected
+                case PREVENTED_BY_UNDERNEATH:
+                case PREVENTED_BY_WITHIN:
+                    return -1; // no safe landing
+                case UNDERNEATH_PROTRUDES_AT_OR_ABOVE_FULL_BLOCK:
+                case STANDARD_WITHIN_SUPPORT:
+                    // found our landing spot
+                    return descent;
+                default:
+                    throw new IllegalStateException();
+            }
+        }
     }
 }

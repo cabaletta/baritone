@@ -33,7 +33,7 @@ import java.util.Optional;
 public enum Face {
     DOWN, UP, NORTH, SOUTH, WEST, EAST;
     public final int index = ordinal();
-    public final int oppositeIndex = index ^ 1;
+    public final int oppositeIndex = opposite(index);
     public final int x = toMC().getXOffset();
     public final int y = toMC().getYOffset();
     public final int z = toMC().getZOffset();
@@ -44,11 +44,13 @@ public enum Face {
     public static final Face[] VALUES = new Face[NUM_FACES];
     public static final Face[] HORIZONTALS;
     public static final List<Optional<Face>> OPTS;
+    public static final long[] OFFSETS = new long[NUM_FACES];
 
     static {
         List<Optional<Face>> lst = new ArrayList<>();
         for (Face face : values()) {
             VALUES[face.index] = face;
+            OFFSETS[face.index] = face.offset;
             lst.add(Optional.of(face));
         }
         lst.add(Optional.empty());
@@ -70,5 +72,13 @@ public enum Face {
 
     public final long offset(long pos) {
         return (pos + offset) & BetterBlockPos.POST_ADDITION_MASK;
+    }
+
+    public static long offset(long pos, int face) {
+        return (pos + OFFSETS[face]) & BetterBlockPos.POST_ADDITION_MASK;
+    }
+
+    public static int opposite(int face) {
+        return face ^ 1;
     }
 }

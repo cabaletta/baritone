@@ -32,6 +32,7 @@ public class SolverEngineInput {
     public final LongSet alreadyPlaced;
     public final LongSet allToPlaceNow;
     private final List<LongOpenHashSet> toPlaceNow;
+    public final Bounds bounds;
     public final long player;
 
     /**
@@ -48,18 +49,19 @@ public class SolverEngineInput {
         this.toPlaceNow = toPlaceNow;
         this.player = player;
         this.allToPlaceNow = combine(toPlaceNow);
+        this.bounds = graph.bounds();
         if (Main.DEBUG) {
             sanityCheck();
         }
     }
 
     private void sanityCheck() {
-        if (!graph.bounds().inRangePos(player)) {
+        if (!bounds.inRangePos(player)) {
             throw new IllegalStateException();
         }
         for (LongSet toVerify : new LongSet[]{intendedScaffolding, alreadyPlaced}) {
             for (long pos : toVerify) {
-                if (!graph.bounds().inRangePos(pos)) {
+                if (!bounds.inRangePos(pos)) {
                     throw new IllegalStateException();
                 }
             }
@@ -69,7 +71,7 @@ public class SolverEngineInput {
                 if (alreadyPlaced.contains(pos)) {
                     throw new IllegalStateException();
                 }
-                if (!graph.bounds().inRangePos(pos)) {
+                if (!bounds.inRangePos(pos)) {
                     throw new IllegalStateException();
                 }
                 if (intendedScaffolding.contains(pos) ^ graph.airTreatedAsScaffolding(pos)) {
@@ -120,5 +122,17 @@ public class SolverEngineInput {
             }
         }
         return ret;
+    }
+
+    public BlockStateCachedData at(long pos, WorldState inWorldState) {
+        if (bounds.inRangePos(pos)) {
+            if (inWorldState.blockExists(pos)) {
+                return graph.data(pos);
+            } else {
+                return BlockStateCachedData.AIR;
+            }
+        } else {
+            return BlockStateCachedData.OUT_OF_BOUNDS;
+        }
     }
 }
