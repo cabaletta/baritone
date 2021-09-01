@@ -80,19 +80,19 @@ public final class BetterBlockPos extends BlockPos {
         return longHash(pos.x, pos.y, pos.z);
     }
 
-    private static final int NUM_X_BITS = 26;
-    private static final int NUM_Z_BITS = NUM_X_BITS;
-    private static final int NUM_Y_BITS = 9; // note: even though Y goes from 0 to 255, that doesn't mean 8 bits will "just work" because the deserializer assumes signed. i could change it for just Y to assume unsigned and leave X and Z as signed, however, we know that in 1.17 they plan to add negative Y. for that reason, the better approach is to give the extra bits to Y and leave it as signed.
+    public static final int NUM_X_BITS = 26;
+    public static final int NUM_Z_BITS = NUM_X_BITS;
+    public static final int NUM_Y_BITS = 9; // note: even though Y goes from 0 to 255, that doesn't mean 8 bits will "just work" because the deserializer assumes signed. i could change it for just Y to assume unsigned and leave X and Z as signed, however, we know that in 1.17 they plan to add negative Y. for that reason, the better approach is to give the extra bits to Y and leave it as signed.
     // also, if 1.17 sticks with the current plan which is -64 to +320, we could have 9 bits for Y and a constant offset of -64 to change it to -128 to +256.
     // that would result in the packed long representation of any valid coordinate still being a positive integer
     // i like that property, so i will keep num_y_bits at 9 and plan for an offset in 1.17
     // it also gives 1 bit of wiggle room in case anything else happens in the future, so we are only using 63 out of 64 bits at the moment
-    private static final int Z_SHIFT = 0;
-    private static final int Y_SHIFT = Z_SHIFT + NUM_Z_BITS + 1; // 1 padding bit to make twos complement not overflow
-    private static final int X_SHIFT = Y_SHIFT + NUM_Y_BITS + 1; // and also here too
-    private static final long X_MASK = (1L << NUM_X_BITS) - 1L;  // X doesn't need padding as the overflow carry bit is just discarded, like a normal long (-1) + (1) = 0
-    private static final long Y_MASK = (1L << NUM_Y_BITS) - 1L;
-    private static final long Z_MASK = (1L << NUM_Z_BITS) - 1L;
+    public static final int Z_SHIFT = 0;
+    public static final int Y_SHIFT = Z_SHIFT + NUM_Z_BITS + 1; // 1 padding bit to make twos complement not overflow
+    public static final int X_SHIFT = Y_SHIFT + NUM_Y_BITS + 1; // and also here too
+    public static final long X_MASK = (1L << NUM_X_BITS) - 1L;  // X doesn't need padding as the overflow carry bit is just discarded, like a normal long (-1) + (1) = 0
+    public static final long Y_MASK = (1L << NUM_Y_BITS) - 1L;
+    public static final long Z_MASK = (1L << NUM_Z_BITS) - 1L;
 
     public static final long POST_ADDITION_MASK = X_MASK << X_SHIFT | Y_MASK << Y_SHIFT | Z_MASK << Z_SHIFT; // required to "manually inline" toLong(-1, -1, -1) here so that javac inserts proper ldc2_w instructions at usage points instead of getstatic
     // what's this ^ mask for?

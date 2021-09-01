@@ -40,9 +40,10 @@ public enum Face {
     public final long offset = BetterBlockPos.toLong(x, y, z);
     public final int[] vec = new int[]{x, y, z};
     public final boolean vertical = y != 0;
+    public final int horizontalIndex = x & 1 | (x | z) & 2;
     public static final int NUM_FACES = 6;
     public static final Face[] VALUES = new Face[NUM_FACES];
-    public static final Face[] HORIZONTALS;
+    public static final Face[] HORIZONTALS = new Face[4];
     public static final List<Optional<Face>> OPTS;
     public static final long[] OFFSETS = new long[NUM_FACES];
 
@@ -52,10 +53,10 @@ public enum Face {
             VALUES[face.index] = face;
             OFFSETS[face.index] = face.offset;
             lst.add(Optional.of(face));
+            HORIZONTALS[face.horizontalIndex] = face;
         }
         lst.add(Optional.empty());
         OPTS = Collections.unmodifiableList(lst);
-        HORIZONTALS = new Face[]{Face.SOUTH, Face.WEST, Face.NORTH, Face.EAST};
     }
 
     public final EnumFacing toMC() {
@@ -80,5 +81,9 @@ public enum Face {
 
     public static int opposite(int face) {
         return face ^ 1;
+    }
+
+    public static int oppositeHorizontal(int horizontalIndex) {
+        return horizontalIndex ^ 2;
     }
 }

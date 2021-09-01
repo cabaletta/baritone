@@ -21,8 +21,8 @@ import baritone.api.utils.BetterBlockPos;
 
 public class PlayerPhysics {
 
-    public static int determinePlayerRealSupportLevel(BlockStateCachedData underneath, BlockStateCachedData within) {
-        switch (canPlayerStand(underneath, within)) {
+    public static int determinePlayerRealSupportLevel(BlockStateCachedData underneath, BlockStateCachedData within, VoxelResidency residency) {
+        switch (residency) {
             case STANDARD_WITHIN_SUPPORT:
                 return within.collisionHeightBlips();
             case UNDERNEATH_PROTRUDES_AT_OR_ABOVE_FULL_BLOCK:
@@ -30,6 +30,10 @@ public class PlayerPhysics {
             default:
                 return -1;
         }
+    }
+
+    public static int determinePlayerRealSupportLevel(BlockStateCachedData underneath, BlockStateCachedData within) {
+        return determinePlayerRealSupportLevel(underneath, within, canPlayerStand(underneath, within));
     }
 
     /**
@@ -88,22 +92,17 @@ public class PlayerPhysics {
         }
     }
 
-    public static Collision playerTravelCollides(int feetBlips,
-                                                 BlockStateCachedData underneath,
-                                                 BlockStateCachedData feet,
-                                                 BlockStateCachedData above,
-                                                 BlockStateCachedData aboveAbove,
-                                                 long newPos, WorldState worldState, SolverEngineInput engineInput) {
-        return playerTravelCollides(feetBlips,
-                above,
-                engineInput.at(BetterBlockPos.offsetBy(newPos, 0, 2, 0), worldState),
-                engineInput.at(Face.UP.offset(newPos), worldState),
-                engineInput.at(newPos, worldState),
-                engineInput.at(Face.DOWN.offset(newPos), worldState),
-                underneath,
-                feet,
-                aboveAbove,
-                engineInput.at(BetterBlockPos.offsetBy(newPos, 0, 3, 0), worldState));
+    public static Collision playerTravelCollides(Column within, Column into) {
+        return playerTravelCollides(within.feetBlips,
+                within.above,
+                into.above,
+                into.head,
+                into.feet,
+                into.underneath,
+                within.underneath,
+                within.feet,
+                within.aboveAbove,
+                into.aboveAbove);
     }
 
     /**
@@ -230,14 +229,44 @@ public class PlayerPhysics {
     }
 
     public enum Collision {
+        // TODO maybe we need another option that is like "you could do it, but you shouldn't". like, "if you hit W, you would walk forward, but you wouldn't like the outcome" such as cactus or lava or something
+
         BLOCKED, // if you hit W, you would not travel (example: walking into wall)
         JUMP_TO_VOXEL_LEVEL, // blocked, BUT, if you jumped, you would end up at voxel level. this one is rare, it could only happen if you jump onto a block that is between 0.5 and 1.0 blocks high, such as 7-high snow layers
         JUMP_TO_VOXEL_UP, // blocked, BUT, if you jumped, you would end up at one voxel higher. this is the common case for jumping.
         JUMP_TO_VOXEL_TWO_UP, // blocked, BUT, if you jumped, you would end up two voxels higher. this can only happen for weird blocks like jumping out of soul sand and up one
         VOXEL_UP, // if you hit W, you will end up at a position that's a bit higher, such that you'd determineRealPlayerSupport up by one (example: walking from a partial block to a full block or higher, e.g. half slab to full block, or soul sand to full block, or soul sand to full block+carpet on top)
         VOXEL_LEVEL, // if you hit W, you will end up at a similar position, such that you'd determineRealPlayerSupport at the same integer grid location (example: walking forward on level ground)
-        FALL // if you hit W, you will not immediately collide with anything, at all, to the front or to the bottom (example: walking off a cliff)
-        // TODO maybe we need another option that is like "you could do it, but you shouldn't". like, "if you hit W, you would walk forward, but you wouldn't like the outcome" such as cactus or lava or something
+        FALL; // if you hit W, you will not immediately collide with anything, at all, to the front or to the bottom (example: walking off a cliff)
+
+        public int voxelVerticalOffset() {
+            switch (this) {
+                case VOXEL_LEVEL:
+                case JUMP_TO_VOXEL_LEVEL:
+                    return 0;
+                case VOXEL_UP:
+                case JUMP_TO_VOXEL_UP:
+                    return 1;
+                case JUMP_TO_VOXEL_TWO_UP:
+                    return 2;
+                default:
+                    throw new IllegalStateException();
+            }
+        }
+
+        public boolean requiresJump() {
+            switch (this) {
+                case VOXEL_LEVEL:
+                case VOXEL_UP:
+                    return false;
+                case JUMP_TO_VOXEL_LEVEL:
+                case JUMP_TO_VOXEL_UP:
+                case JUMP_TO_VOXEL_TWO_UP:
+                    return true;
+                default:
+                    throw new IllegalStateException();
+            }
+        }
     }
 
     public static int playerFalls(long newPos, WorldState worldState, SolverEngineInput engineInput) {
@@ -263,10 +292,25 @@ public class PlayerPhysics {
                 case UNDERNEATH_PROTRUDES_AT_OR_ABOVE_FULL_BLOCK:
                 case STANDARD_WITHIN_SUPPORT:
                     // found our landing spot
+                    if (Main.DEBUG && descent <= 0) {
+                        throw new IllegalStateException();
+                    }
                     return descent;
                 default:
                     throw new IllegalStateException();
             }
         }
+    }
+
+    /**
+     * If the player feet is greater than the return from this function, the player can sneak out at that altitude without colliding with this column
+     * <p>
+     * If there is no collision possible this will return a negative number (which should fit in fine with the above ^ use case)
+     */
+    public static int highestCollision(BlockStateCachedData underneath, BlockStateCachedData within) {
+        return Math.max(
+                underneath.collidesWithPlayer ? underneath.collisionHeightBlips() - Blip.FULL_BLOCK : -1,
+                within.collidesWithPlayer ? within.collisionHeightBlips() : -1
+        );
     }
 }

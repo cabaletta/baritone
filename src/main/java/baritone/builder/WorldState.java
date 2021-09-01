@@ -24,6 +24,9 @@ import java.util.BitSet;
 
 public abstract class WorldState {
 
+    /**
+     * https://en.wikipedia.org/wiki/Zobrist_hashing
+     */
     public final long zobristHash;
 
     protected WorldState(long zobristHash) {

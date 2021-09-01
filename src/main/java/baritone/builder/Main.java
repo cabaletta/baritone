@@ -57,6 +57,7 @@ public class Main {
             System.out.println(face.index);
             System.out.println(face.offset);
             System.out.println(face.oppositeIndex);
+            System.out.println("Horizontal " + face.horizontalIndex);
         }
         {
             System.out.println("Without");
@@ -268,7 +269,7 @@ public class Main {
         {
             DebugStates.debug();
         }
-        {
+        for (int aaaa = 0; aaaa < 0; aaaa++) {
             Random rand = new Random(5021);
             int trials = 10_000_000;
             int[] X = new int[trials];
@@ -395,6 +396,16 @@ Branchy took 124ms
             PlayerPhysics.determinePlayerRealSupport(BlockStateCachedData.get(69), BlockStateCachedData.get(420));
             PlayerPhysics.determinePlayerRealSupport(BlockStateCachedData.get(420), BlockStateCachedData.get(69));
         }*/
+        {
+            for (int sneak = 0; sneak < 4; sneak++) {
+                System.out.println("meow");
+                System.out.println(sneak);
+                System.out.println(Node.encode(0, sneak));
+                System.out.println(Node.encode(BetterBlockPos.POST_ADDITION_MASK, sneak));
+                System.out.println(Node.decode(Node.encode(0, sneak)));
+                System.out.println(Node.decode(Node.encode(BetterBlockPos.POST_ADDITION_MASK, sneak)));
+            }
+        }
         System.exit(0);
     }
 }

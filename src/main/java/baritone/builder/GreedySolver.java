@@ -27,6 +27,9 @@ public class GreedySolver {
     private final Long2ObjectOpenHashMap<Node> nodes = new Long2ObjectOpenHashMap<>();
     final Long2ObjectOpenHashMap<WorldState> zobristWorldStateCache = new Long2ObjectOpenHashMap<>();
     private final Bounds bounds;
+    private Column scratchpadExpandNode1 = new Column();
+    private Column scratchpadExpandNode2 = new Column();
+    private Column scratchpadExpandNode3 = new Column();
 
     public GreedySolver(SolverEngineInput input) {
         this.engineInput = input;
@@ -34,7 +37,7 @@ public class GreedySolver {
     }
 
     synchronized SolverEngineOutput search() {
-        Node root = new Node(engineInput.player, 0L, -1L, this, 0);
+        Node root = new Node(engineInput.player, null, 0L, -1L, this, 0);
         nodes.put(root.nodeMapKey(), root);
         heap.insert(root);
         zobristWorldStateCache.put(0L, new WorldState.WorldStateWrappedSubstrate(engineInput));
@@ -44,80 +47,120 @@ public class GreedySolver {
         throw new UnsupportedOperationException();
     }
 
+    private boolean wantToPlaceAt(long blockGoesAt, Node vantage, int blipsWithinVoxel, WorldState worldState) {
+        if (worldState.blockExists(blockGoesAt)) {
+            return false;
+        }
+        long vpos = vantage.pos();
+        int relativeX = BetterBlockPos.XfromLong(vpos) - BetterBlockPos.XfromLong(blockGoesAt);
+        int relativeY = blipsWithinVoxel + Blip.FULL_BLOCK * (BetterBlockPos.YfromLong(vpos) - BetterBlockPos.YfromLong(blockGoesAt));
+        int relativeZ = BetterBlockPos.ZfromLong(vpos) - BetterBlockPos.ZfromLong(blockGoesAt);
+        BlockStateCachedData blockBeingPlaced = engineInput.graph.data(blockGoesAt);
+        for (BlockStatePlacementOption option : blockBeingPlaced.options) {
+            long maybePlaceAgainst = option.against.offset(blockGoesAt);
+            if (!bounds.inRangePos(maybePlaceAgainst)) {
+                continue;
+            }
+            if (!worldState.blockExists(maybePlaceAgainst)) {
+                continue;
+            }
+            BlockStateCachedData placingAgainst = engineInput.graph.data(maybePlaceAgainst);
+            PlaceAgainstData againstData = placingAgainst.againstMe(option);
+            traces:
+            for (Raytracer.Raytrace trace : option.computeTraceOptions(againstData, relativeX, relativeY, relativeZ, PlayerVantage.LOOSE_CENTER, blockReachDistance())) {
+                for (long l : trace.passedThrough) {
+                    if (worldState.blockExists(l)) {
+                        continue traces;
+                    }
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+
     private void expandNode(Node node) {
         WorldState worldState = node.coalesceState(this);
         long pos = node.pos();
-        BlockStateCachedData aboveAbove = at(BetterBlockPos.offsetBy(pos, 0, 3, 0), worldState);
-        BlockStateCachedData above = at(BetterBlockPos.offsetBy(pos, 0, 2, 0), worldState);
-        BlockStateCachedData head = at(Face.UP.offset(pos), worldState);
-        if (Main.DEBUG && head.collidesWithPlayer) { // needed because PlayerPhysics doesn't get this
-            throw new IllegalStateException();
-        }
-        BlockStateCachedData feet = at(pos, worldState);
-        BlockStateCachedData underneath = at(Face.DOWN.offset(pos), worldState);
+        Column within = scratchpadExpandNode1;
+        within.initFrom(pos, worldState, engineInput);
 
-        PlayerPhysics.VoxelResidency residency = PlayerPhysics.canPlayerStand(underneath, feet);
-        if (!PlayerPhysics.valid(residency)) {
-            throw new UnsupportedOperationException("sneaking off the edge of a block is not yet supported");
-        }
-        boolean standingWithinCollidableVoxel = residency == PlayerPhysics.VoxelResidency.STANDARD_WITHIN_SUPPORT;
-        long playerIsActuallySupportedBy = standingWithinCollidableVoxel ? pos : Face.DOWN.offset(pos);
-        int blipsWithinBlock = standingWithinCollidableVoxel ? feet.collisionHeightBlips() : underneath.collisionHeightBlips() - Blip.FULL_BLOCK;
-        if (blipsWithinBlock < 0) {
-            throw new IllegalStateException();
+        Column supportedBy;
+        boolean sneaking = node.sneaking();
+        if (sneaking) {
+            supportedBy = scratchpadExpandNode3;
+            long supportedFeetVoxel = node.sneakDirectionFromPlayerToSupportingBlock().offset(pos);
+            supportedBy.initFrom(supportedFeetVoxel, worldState, engineInput);
+            if (Main.DEBUG && !within.okToSneakIntoHereAtHeight(supportedBy.feetBlips)) {
+                throw new IllegalStateException();
+            }
+        } else {
+            supportedBy = within;
         }
 
-        // pillar up
+        int playerFeet = supportedBy.feetBlips;
+        if (Main.DEBUG && !supportedBy.playerCanExistAtFootBlip(playerFeet)) {
+            throw new IllegalStateException();
+        }
+
+        // -------------------------------------------------------------------------------------------------------------
+        // place block beneath feet voxel
+        block_beneath_feet:
         {
-            long maybePlaceAt = Face.UP.offset(playerIsActuallySupportedBy);
-            if (!worldState.blockExists(maybePlaceAt)) {
-                engineInput.graph.data(maybePlaceAt);
-            } else {
-                if (Main.DEBUG && at(maybePlaceAt, worldState).collidesWithPlayer) {
-                    throw new IllegalStateException();
+            // this is the common case for sneak bridging with full blocks
+            long maybePlaceAt = Face.DOWN.offset(pos);
+            BlockStateCachedData wouldBePlaced = engineInput.graph.data(maybePlaceAt);
+            int cost = 0;
+            int playerFeetWouldBeAt = playerFeet;
+            if (wouldBePlaced.collidesWithPlayer) {
+                int heightRelativeToCurrentVoxel = wouldBePlaced.collisionHeightBlips() - Blip.FULL_BLOCK;
+                if (heightRelativeToCurrentVoxel > playerFeet) {
+                    // we would need to jump in order to do this
+                    cost += jumpCost();
+                    playerFeetWouldBeAt = heightRelativeToCurrentVoxel; // because we'd have to jump, and could only place the block once we had cleared the collision box for it
+                    if (!within.playerCanExistAtFootBlip(heightRelativeToCurrentVoxel) || !supportedBy.playerCanExistAtFootBlip(heightRelativeToCurrentVoxel)) {
+                        break block_beneath_feet;
+                    }
                 }
+            }
+            if (wantToPlaceAt(maybePlaceAt, node, playerFeetWouldBeAt, worldState)) {
+                upsertEdge(node, worldState, pos, null, maybePlaceAt, cost);
             }
         }
 
+        // -------------------------------------------------------------------------------------------------------------
+        if (sneaking) {
+            // we can walk back to where we were
+            upsertEdge(node, worldState, supportedBy.pos, null, -1, flatCost());
+            // this will probably rarely be used. i can only imagine rare scenarios such as needing the extra perspective in order to place a block a bit more efficiently. like, this could avoid unnecessary ancillary scaffolding i suppose.
+            // ----
+            // also let's try just letting ourselves fall off the edge of the block
+            int descendBy = PlayerPhysics.playerFalls(pos, worldState, engineInput);
+            if (descendBy != -1) {
+                upsertEdge(node, worldState, BetterBlockPos.offsetBy(pos, 0, -descendBy, 0), null, -1, fallCost(descendBy));
+            }
+            return;
+        }
+        // -------------------------------------------------------------------------------------------------------------
         // walk sideways and either stay level, ascend, or descend
+        Column into = scratchpadExpandNode2;
         for (Face travel : Face.HORIZONTALS) {
             long newPos = travel.offset(pos);
-            switch (PlayerPhysics.playerTravelCollides(blipsWithinBlock, underneath, feet, above, aboveAbove, newPos, worldState, engineInput)) {
+            into.initFrom(newPos, worldState, engineInput);
+            PlayerPhysics.Collision collision = PlayerPhysics.playerTravelCollides(within, into);
+            switch (collision) {
                 case BLOCKED: {
                     continue;
                 }
                 case FALL: {
-                    int descendBy = PlayerPhysics.playerFalls(newPos, worldState, engineInput);
-                    if (descendBy != -1) {
-                        if (Main.DEBUG && descendBy <= 0) {
-                            throw new IllegalStateException();
-                        }
-                        upsertEdge(node, worldState, BetterBlockPos.offsetBy(newPos, 0, -descendBy, 0), -1, fallCost(descendBy));
-                    }
+                    upsertEdge(node, worldState, newPos, travel, -1, flatCost()); // sneak off edge of block
                     break;
                 }
-                case VOXEL_LEVEL: {
-                    upsertEdge(node, worldState, newPos, -1, flatCost());
+                default: {
+                    long realNewPos = BetterBlockPos.offsetBy(newPos, 0, collision.voxelVerticalOffset(), 0);
+                    upsertEdge(node, worldState, realNewPos, null, -1, collision.requiresJump() ? jumpCost() : flatCost());
                     break;
                 }
-                case JUMP_TO_VOXEL_LEVEL: {
-                    upsertEdge(node, worldState, newPos, -1, jumpCost());
-                    break;
-                }
-                case VOXEL_UP: {
-                    upsertEdge(node, worldState, Face.UP.offset(newPos), -1, flatCost());
-                    break;
-                }
-                case JUMP_TO_VOXEL_UP: {
-                    upsertEdge(node, worldState, Face.UP.offset(newPos), -1, jumpCost());
-                    break;
-                }
-                case JUMP_TO_VOXEL_TWO_UP: {
-                    upsertEdge(node, worldState, BetterBlockPos.offsetBy(newPos, 0, 2, 0), -1, jumpCost());
-                    break;
-                }
-                default:
-                    throw new IllegalStateException();
             }
         }
     }
@@ -137,11 +180,12 @@ public class GreedySolver {
         throw new UnsupportedOperationException();
     }
 
-    private void upsertEdge(Node node, WorldState worldState, long newPlayerPosition, long blockPlacement, int edgeCost) {
-        if (Main.DEBUG && blockPlacement == -1 && PlayerPhysics.determinePlayerRealSupportLevel(at(Face.DOWN.offset(newPlayerPosition), worldState), at(newPlayerPosition, worldState)) < 0) {
-            throw new IllegalStateException();
-        }
-        Node neighbor = getNode(newPlayerPosition, node, worldState, blockPlacement);
+    private double blockReachDistance() {
+        throw new UnsupportedOperationException();
+    }
+
+    private void upsertEdge(Node node, WorldState worldState, long newPlayerPosition, Face sneakingTowards, long blockPlacement, int edgeCost) {
+        Node neighbor = getNode(newPlayerPosition, sneakingTowards, node, worldState, blockPlacement);
         if (Main.SLOW_DEBUG && blockPlacement != -1 && !neighbor.coalesceState(this).blockExists(blockPlacement)) { // only in slow_debug because this force-allocates a WorldState for every neighbor of every node!
             throw new IllegalStateException();
         }
@@ -189,15 +233,15 @@ public class GreedySolver {
         }
     }
 
-    private Node getNode(long playerPosition, Node prev, WorldState prevWorld, long blockPlacement) {
-        if (Main.DEBUG && blockPlacement != -1 && prev.coalesceState(this).blockExists(blockPlacement)) {
+    private Node getNode(long playerPosition, Face sneakingTowards, Node prev, WorldState prevWorld, long blockPlacement) {
+        if (Main.DEBUG && blockPlacement != -1 && prevWorld.blockExists(blockPlacement)) {
             throw new IllegalStateException();
         }
         long worldStateZobristHash = prev.worldStateZobristHash;
         if (blockPlacement != -1) {
             worldStateZobristHash = WorldState.updateZobrist(worldStateZobristHash, blockPlacement);
         }
-        long code = playerPosition ^ worldStateZobristHash;
+        long code = Node.encode(playerPosition, sneakingTowards) ^ worldStateZobristHash;
         Node existing = nodes.get(code);
         if (existing != null) {
             return existing;
@@ -206,7 +250,7 @@ public class GreedySolver {
         if (blockPlacement != -1) {
             newHeuristic += calculateHeuristicModifier(prevWorld, blockPlacement);
         }
-        Node node = new Node(playerPosition, worldStateZobristHash, blockPlacement, this, newHeuristic);
+        Node node = new Node(playerPosition, null, worldStateZobristHash, blockPlacement, this, newHeuristic);
         if (Main.DEBUG && node.nodeMapKey() != code) {
             throw new IllegalStateException();
         }
