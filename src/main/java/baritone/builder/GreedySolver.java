@@ -20,12 +20,16 @@ package baritone.builder;
 import baritone.api.utils.BetterBlockPos;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+
 public class GreedySolver {
 
     private final SolverEngineInput engineInput;
     private final NodeBinaryHeap heap = new NodeBinaryHeap();
     private final Long2ObjectOpenHashMap<Node> nodes = new Long2ObjectOpenHashMap<>();
-    final Long2ObjectOpenHashMap<WorldState> zobristWorldStateCache = new Long2ObjectOpenHashMap<>();
+    private final ZobristWorldStateCache zobristCache;
+    private final long allCompleted;
     private final Bounds bounds;
     private Column scratchpadExpandNode1 = new Column();
     private Column scratchpadExpandNode2 = new Column();
@@ -34,17 +38,39 @@ public class GreedySolver {
     public GreedySolver(SolverEngineInput input) {
         this.engineInput = input;
         this.bounds = engineInput.graph.bounds();
+        this.zobristCache = new ZobristWorldStateCache(new WorldState.WorldStateWrappedSubstrate(engineInput));
+        Node root = new Node(engineInput.player, null, 0L, -1L, 0);
+        nodes.put(root.nodeMapKey(), root);
+        heap.insert(root);
+        this.allCompleted = WorldState.predetermineGoalZobrist(engineInput.allToPlaceNow);
     }
 
     synchronized SolverEngineOutput search() {
-        Node root = new Node(engineInput.player, null, 0L, -1L, this, 0);
-        nodes.put(root.nodeMapKey(), root);
-        heap.insert(root);
-        zobristWorldStateCache.put(0L, new WorldState.WorldStateWrappedSubstrate(engineInput));
         while (!heap.isEmpty()) {
-            expandNode(heap.removeLowest());
+            Node node = heap.removeLowest();
+            if (!node.sneaking() && node.worldStateZobristHash == allCompleted) {
+                return backwards(node);
+            }
+            expandNode(node);
         }
         throw new UnsupportedOperationException();
+    }
+
+    private SolverEngineOutput backwards(Node node) {
+        ArrayDeque<SolvedActionStep> steps = new ArrayDeque<>();
+        while (node.previous != null) {
+            steps.addFirst(step(node, node.previous));
+            node = node.previous;
+        }
+        return new SolverEngineOutput(new ArrayList<>(steps));
+    }
+
+    private SolvedActionStep step(Node next, Node prev) {
+        if (next.worldStateZobristHash == prev.worldStateZobristHash) {
+            return new SolvedActionStep(next.pos());
+        } else {
+            return new SolvedActionStep(next.pos(), WorldState.unzobrist(prev.worldStateZobristHash ^ next.worldStateZobristHash));
+        }
     }
 
     private boolean wantToPlaceAt(long blockGoesAt, Node vantage, int blipsWithinVoxel, WorldState worldState) {
@@ -80,7 +106,7 @@ public class GreedySolver {
     }
 
     private void expandNode(Node node) {
-        WorldState worldState = node.coalesceState(this);
+        WorldState worldState = zobristCache.coalesceState(node);
         long pos = node.pos();
         Column within = scratchpadExpandNode1;
         within.initFrom(pos, worldState, engineInput);
@@ -186,7 +212,10 @@ public class GreedySolver {
 
     private void upsertEdge(Node node, WorldState worldState, long newPlayerPosition, Face sneakingTowards, long blockPlacement, int edgeCost) {
         Node neighbor = getNode(newPlayerPosition, sneakingTowards, node, worldState, blockPlacement);
-        if (Main.SLOW_DEBUG && blockPlacement != -1 && !neighbor.coalesceState(this).blockExists(blockPlacement)) { // only in slow_debug because this force-allocates a WorldState for every neighbor of every node!
+        if (Main.SLOW_DEBUG && blockPlacement != -1 && !zobristCache.coalesceState(neighbor).blockExists(blockPlacement)) { // only in slow_debug because this force-allocates a WorldState for every neighbor of every node!
+            throw new IllegalStateException();
+        }
+        if (Main.DEBUG && node == neighbor) {
             throw new IllegalStateException();
         }
         updateNeighbor(node, neighbor, edgeCost);
@@ -250,7 +279,7 @@ public class GreedySolver {
         if (blockPlacement != -1) {
             newHeuristic += calculateHeuristicModifier(prevWorld, blockPlacement);
         }
-        Node node = new Node(playerPosition, null, worldStateZobristHash, blockPlacement, this, newHeuristic);
+        Node node = new Node(playerPosition, null, worldStateZobristHash, blockPlacement, newHeuristic);
         if (Main.DEBUG && node.nodeMapKey() != code) {
             throw new IllegalStateException();
         }

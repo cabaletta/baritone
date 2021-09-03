@@ -28,45 +28,20 @@ public class Node {
     public int cost;
     public int combinedCost;
     public Node previous;
-    public int heapPosition;
+    int heapPosition;
 
     // boolean unrealizedZobristBlockChange; // no longer needed since presence in the overall GreedySolver zobristWorldStateCache indicates if this is a yet-unrealized branch of the zobrist space
-    private long packedUnrealizedCoordinate;
+    long packedUnrealizedCoordinate;
     // int unrealizedState; // no longer needed now that world state is binarized with scaffolding/build versus air
     // long unrealizedZobristParentHash; // no longer needed since we can compute it backwards with XOR
 
-    public Node(long pos, Face sneakingTowards, long zobristState, long unrealizedBlockPlacement, GreedySolver solver, int heuristic) {
+    public Node(long pos, Face sneakingTowards, long zobristState, long unrealizedBlockPlacement, int heuristic) {
         this.posAndSneak = encode(pos, sneakingTowards);
         this.heapPosition = -1;
         this.cost = Integer.MAX_VALUE;
         this.heuristic = heuristic;
         this.worldStateZobristHash = zobristState;
         this.packedUnrealizedCoordinate = unrealizedBlockPlacement;
-        if (Main.DEBUG && (solver.zobristWorldStateCache.containsKey(worldStateZobristHash) ^ (unrealizedBlockPlacement == -1))) {
-            throw new IllegalStateException();
-        }
-    }
-
-    public WorldState coalesceState(GreedySolver solver) {
-        WorldState alr = solver.zobristWorldStateCache.get(worldStateZobristHash);
-        if (alr != null) {
-            if (Main.DEBUG && alr.zobristHash != worldStateZobristHash) {
-                throw new IllegalStateException();
-            }
-            // don't check packedUnrealizedCoordinate here because it could exist (not -1) if a different route was taken to a zobrist-equivalent node (such as at a different player position) which was then expanded and coalesced
-            return alr;
-        }
-        if (Main.DEBUG && packedUnrealizedCoordinate == -1) {
-            throw new IllegalStateException();
-        }
-        long parent = WorldState.updateZobrist(worldStateZobristHash, packedUnrealizedCoordinate); // updateZobrist is symmetric because XOR, so the same operation can do child->parent as parent->child
-        WorldState myState = solver.zobristWorldStateCache.get(parent).withChild(packedUnrealizedCoordinate);
-        if (Main.DEBUG && myState.zobristHash != worldStateZobristHash) {
-            throw new IllegalStateException();
-        }
-        solver.zobristWorldStateCache.put(worldStateZobristHash, myState);
-        packedUnrealizedCoordinate = -1;
-        return myState;
     }
 
     public static long encode(long pos, Face sneakingTowards) {

@@ -170,10 +170,6 @@ public final class BetterBlockPos extends BlockPos {
         return murmur64(HASHCODE_MURMUR_MASK ^ packed);
     }
 
-    public static long zobrist(long packed) {
-        return murmur64(ZOBRIST_MURMUR_MASK ^ packed);
-    }
-
     public static long murmur64(long h) {
         return HashCommon.murmurHash3(h);
     }

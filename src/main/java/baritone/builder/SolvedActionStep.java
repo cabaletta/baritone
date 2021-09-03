@@ -31,6 +31,9 @@ public class SolvedActionStep {
     public SolvedActionStep(long playerMovesTo, long blockPlacedAt) {
         this.playerEndPosition = playerMovesTo;
         this.placePosition = blockPlacedAt;
+        if (Main.DEBUG && blockPlacedAt < -1) {
+            throw new IllegalStateException();
+        }
     }
 
     public OptionalLong placeAt() {

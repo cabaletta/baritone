@@ -18,6 +18,8 @@
 package baritone.builder;
 
 import baritone.api.utils.BetterBlockPos;
+import it.unimi.dsi.fastutil.HashCommon;
+import it.unimi.dsi.fastutil.longs.LongCollection;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 
 import java.util.BitSet;
@@ -40,7 +42,24 @@ public abstract class WorldState {
     }
 
     public static long updateZobrist(long worldStateZobristHash, long changedPosition) {
-        return BetterBlockPos.zobrist(changedPosition) ^ worldStateZobristHash;
+        return zobrist(changedPosition) ^ worldStateZobristHash;
+    }
+
+    public static long predetermineGoalZobrist(LongCollection goal) {
+        LongIterator it = goal.iterator();
+        long ret = 0;
+        while (it.hasNext()) {
+            ret ^= zobrist(it.nextLong());
+        }
+        return ret;
+    }
+
+    public static long zobrist(long packed) {
+        return HashCommon.mix(BetterBlockPos.ZOBRIST_MURMUR_MASK ^ packed);
+    }
+
+    public static long unzobrist(long zobrist) {
+        return BetterBlockPos.ZOBRIST_MURMUR_MASK ^ HashCommon.invMix(zobrist);
     }
 
     public static class WorldStateWrappedSubstrate extends WorldState {
