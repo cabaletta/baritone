@@ -17,20 +17,24 @@
 
 package baritone.builder;
 
+import baritone.api.utils.BetterBlockPos;
+
 import java.util.OptionalLong;
 
 public class SolvedActionStep {
 
     private final long placePosition;
     private final long playerEndPosition;
+    private final Face towardsSneakSupport;
 
-    public SolvedActionStep(long playerMovesTo) {
-        this(playerMovesTo, -1);
+    public SolvedActionStep(long posAndSneak) {
+        this(posAndSneak, -1);
     }
 
-    public SolvedActionStep(long playerMovesTo, long blockPlacedAt) {
-        this.playerEndPosition = playerMovesTo;
+    public SolvedActionStep(long posAndSneak, long blockPlacedAt) {
+        this.playerEndPosition = posAndSneak & BetterBlockPos.POST_ADDITION_MASK;
         this.placePosition = blockPlacedAt;
+        this.towardsSneakSupport = SneakPosition.sneakDirectionFromPlayerToSupportingBlock(posAndSneak);
         if (Main.DEBUG && blockPlacedAt < -1) {
             throw new IllegalStateException();
         }
@@ -42,5 +46,13 @@ public class SolvedActionStep {
 
     public long playerMovesTo() {
         return playerEndPosition;
+    }
+
+    public Face towardsSupport() {
+        return towardsSneakSupport;
+    }
+
+    public boolean sneaking() {
+        return towardsSneakSupport != null;
     }
 }

@@ -47,6 +47,9 @@ public class SolverEngineOutput {
             sanityCheckMovement(prev, curr);
             prev = curr;
         }
+        if (steps.get(steps.size() - 1).sneaking()) {
+            throw new IllegalStateException();
+        }
     }
 
     public List<SolvedActionStep> getSteps() {

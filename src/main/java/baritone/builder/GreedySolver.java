@@ -115,7 +115,7 @@ public class GreedySolver {
         boolean sneaking = node.sneaking();
         if (sneaking) {
             supportedBy = scratchpadExpandNode3;
-            long supportedFeetVoxel = node.sneakDirectionFromPlayerToSupportingBlock().offset(pos);
+            long supportedFeetVoxel = SneakPosition.sneakDirectionFromPlayerToSupportingBlock(node.sneakingPosition()).offset(pos);
             supportedBy.initFrom(supportedFeetVoxel, worldState, engineInput);
             if (Main.DEBUG && !within.okToSneakIntoHereAtHeight(supportedBy.feetBlips)) {
                 throw new IllegalStateException();
@@ -270,7 +270,7 @@ public class GreedySolver {
         if (blockPlacement != -1) {
             worldStateZobristHash = WorldState.updateZobrist(worldStateZobristHash, blockPlacement);
         }
-        long code = Node.encode(playerPosition, sneakingTowards) ^ worldStateZobristHash;
+        long code = SneakPosition.encode(playerPosition, sneakingTowards) ^ worldStateZobristHash;
         Node existing = nodes.get(code);
         if (existing != null) {
             return existing;

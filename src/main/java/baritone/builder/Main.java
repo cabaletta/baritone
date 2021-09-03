@@ -400,10 +400,10 @@ Branchy took 124ms
             for (int sneak = 0; sneak < 4; sneak++) {
                 System.out.println("meow");
                 System.out.println(sneak);
-                System.out.println(Node.encode(0, sneak));
-                System.out.println(Node.encode(BetterBlockPos.POST_ADDITION_MASK, sneak));
-                System.out.println(Node.decode(Node.encode(0, sneak)));
-                System.out.println(Node.decode(Node.encode(BetterBlockPos.POST_ADDITION_MASK, sneak)));
+                System.out.println(SneakPosition.encode(0, sneak));
+                System.out.println(SneakPosition.encode(BetterBlockPos.POST_ADDITION_MASK, sneak));
+                System.out.println(SneakPosition.decode(SneakPosition.encode(0, sneak)));
+                System.out.println(SneakPosition.decode(SneakPosition.encode(BetterBlockPos.POST_ADDITION_MASK, sneak)));
             }
         }
         System.exit(0);
