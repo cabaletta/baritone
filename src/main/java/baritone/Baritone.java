@@ -122,8 +122,8 @@ public class Baritone implements IBaritone {
         this.selectionManager = new SelectionManager(this);
         this.commandManager = new CommandManager(this);
 
-        RegionLoader chunkLoader = new RegionLoader(this, 2); // load 3 by 3 area of chunks around the player.
-        this.gameEventHandler.registerEventListener(chunkLoader);
+        RegionLoader regionLoader = new RegionLoader(this, 2); // load 3 by 3 area of chunks around the player.
+        this.gameEventHandler.registerEventListener(regionLoader);
     }
 
     @Override
