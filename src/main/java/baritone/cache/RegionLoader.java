@@ -91,7 +91,6 @@ public class RegionLoader implements AbstractGameEventListener {
     }
 
     private void loadAroundRegion(int regionX, int regionZ) {
-        System.out.println("loading around region x: " + regionX + " z: " + regionZ);
         CachedWorld cachedWorld = (CachedWorld) this.worldProvider.getCurrentWorld().getCachedWorld();
         // If the radius is zero do nothing.
         if (this.radius == 0) {
