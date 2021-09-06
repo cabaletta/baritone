@@ -51,19 +51,27 @@ public class RegionLoader implements AbstractGameEventListener {
     }
 
     @Override
-    public void onTick(TickEvent event) {this.loadRegions();}
+    public void onTick(TickEvent event) {
+        this.loadRegions();
+    }
 
     @Override
-    public void onRenderPass(RenderEvent event) {this.loadRegions();}
+    public void onRenderPass(RenderEvent event) {
+        this.loadRegions();
+    }
 
     private void loadRegions() {
         EntityPlayerSP player = mc.player;
         Entity renderViewEntity = mc.getRenderViewEntity();
         // Don't do anything before the player is loaded.
-        if (player == null || renderViewEntity == null) return;
+        if (player == null || renderViewEntity == null) {
+            return;
+        }
         WorldData worldData = this.worldProvider.getCurrentWorld();
         // Don't do anything if the world doesn't exist. Like in the main menu.
-        if (worldData == null) return;
+        if (worldData == null) {
+            return;
+        }
 
         int playerRegionX = player.chunkCoordX >> 5;
         int playerRegionZ = player.chunkCoordZ >> 5;
@@ -86,7 +94,9 @@ public class RegionLoader implements AbstractGameEventListener {
         System.out.println("loading around region x: " + regionX + " z: " + regionZ);
         CachedWorld cachedWorld = (CachedWorld) this.worldProvider.getCurrentWorld().getCachedWorld();
         // If the radius is zero do nothing.
-        if (this.radius == 0) return;
+        if (this.radius == 0) {
+            return;
+        }
         // Load the regions.
         for (int xOffset = -(this.radius - 1); xOffset < this.radius; xOffset++) {
             for (int zOffset = -(this.radius - 1); zOffset < this.radius; zOffset++) {
