@@ -54,7 +54,7 @@ public class HelpCommand extends Command {
                                     .filter(command -> !command.hiddenFromHelp())
                                     .collect(Collectors.toList())
                     ),
-                    () -> logDirect("All Baritone commands (clickable):"),
+                    () -> logDirect("All Baritoe commands (clickable):"),
                     command -> {
                         String names = String.join("/", command.getNames());
                         String name = command.getNames().get(0);
@@ -66,7 +66,7 @@ public class HelpCommand extends Command {
                         hoverComponent.getStyle().setColor(TextFormatting.GRAY);
                         hoverComponent.appendSibling(namesComponent);
                         hoverComponent.appendText("\n" + command.getShortDesc());
-                        hoverComponent.appendText("\n\nClick to view full help");
+                        hoverComponent.appendText("\n\nClick to view full help for baritone");
                         String clickCommand = FORCE_COMMAND_PREFIX + String.format("%s %s", label, command.getNames().get(0));
                         ITextComponent component = new TextComponentString(name);
                         component.getStyle().setColor(TextFormatting.GRAY);
