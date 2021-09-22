@@ -38,6 +38,3 @@ pluginManagement {
         mavenCentral()
     }
 }
-
-
-rootProject.name = 'baritone'

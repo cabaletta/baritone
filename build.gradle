@@ -17,13 +17,14 @@
 
 plugins {
     id 'java'
-    id 'dev.architectury.loom' version '0.8.0-SNAPSHOT'
+    id 'dev.architectury.loom' version '0.10.0-SNAPSHOT'
     id 'maven-publish'
 }
 
 
-group 'baritone'
-version '1.7.0'
+archivesBaseName  = project.archives_base_name
+version = project.mod_version
+group = project.maven_group
 
 import baritone.gradle.task.CreateDistTask
 import baritone.gradle.task.ProguardTask
@@ -60,12 +61,15 @@ sourceSets {
 }
 
 loom {
-    mixinConfig 'mixins.baritone.json'
+    if (compileType.equals("FORGE")) {
+        forge {
+            mixinConfig 'mixins.baritone.json'
+        }
+    }
+    mixin.defaultRefmapName = "mixins.baritone.refmap.json"
 }
 
-minecraft {}
 
-minecraft.refmapName = "mixins.baritone.refmap.json"
 
 repositories {
     maven {
@@ -80,12 +84,12 @@ repositories {
 
 dependencies {
     if (compileType.equals("FORGE")) {
-        //forge "net.minecraftforge:forge:1.16.5-36.1.0"
+        forge "net.minecraftforge:forge:${project.forge_version}"
     }
-    minecraft "com.mojang:minecraft:1.17.1"
-    mappings minecraft.officialMojangMappings()
+    mappings loom.officialMojangMappings()
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
     if (!compileType.equals("FORGE")) {
-        modImplementation "net.fabricmc:fabric-loader:0.11.6"
+        modImplementation "net.fabricmc:fabric-loader:${project.fabric_version}"
     }
     // this makes it compile with the forge tweak stuff
     implementation 'com.github.ImpactDevelopment:SimpleTweaker:1.2'
