@@ -85,10 +85,14 @@ public class ProguardTask extends BaritoneGradleTask {
         cleanup();
     }
 
+    private boolean isMcJar(File f) {
+        return f.getName().startsWith(compType.equals("FORGE") ? "forge-" : "minecraft-") && f.getName().contains("minecraft-mapped");
+    }
+
     private void copyMcJar() throws IOException {
         File mcClientJar = this.getProject().getConvention().getPlugin(JavaPluginConvention.class).getSourceSets().findByName("launch").getRuntimeClasspath().getFiles()
             .stream()
-            .filter(f -> f.getName().startsWith("minecraft-"))
+            .filter(this::isMcJar)
             .map(f -> {
                 switch (compType) {
                     case "OFFICIAL":
@@ -245,12 +249,10 @@ public class ProguardTask extends BaritoneGradleTask {
                 // Discover all of the libraries that we will need to acquire from gradle
                 final Stream<File> dependencies = acquireDependencies()
                     // remove MCP mapped jar, and nashorn
-                    .filter(f -> !f.toString().endsWith("-recomp.jar") && !f.getName().startsWith("nashorn") && !f.getName().startsWith("coremods"))
-                    // go from the extra to the original downloaded client
-                    .map(f -> f.toString().endsWith("client-extra.jar") ? new File(f.getParentFile(), "client.jar") : f);
+                    .filter(f -> !f.toString().endsWith("-recomp.jar") && !f.getName().startsWith("nashorn") && !f.getName().startsWith("coremods"));
 
                 libraries = dependencies
-                    .map(f -> f.getName().startsWith("minecraft-") ? copyMcTargetJar : f);
+                    .map(f -> isMcJar(f) ? copyMcTargetJar : f);
             }
             libraries.forEach(f -> {
                 template.add(2, "-libraryjars '" + f + "'");
