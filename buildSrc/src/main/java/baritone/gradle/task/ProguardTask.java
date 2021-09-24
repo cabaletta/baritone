@@ -92,11 +92,11 @@ public class ProguardTask extends BaritoneGradleTask {
             .map(f -> {
                 switch (compType) {
                     case "OFFICIAL":
-                        return new File(f.getParentFile().getParentFile(), f.getName().toString().split("mapped")[0] + "merged.jar");
+                        return new File(f.getParentFile().getParentFile(), "minecraft-merged.jar");
                     case "FABRIC":
-                        return new File(f.getParentFile().getParentFile(), f.getName().toString().replace("mapped", "intermediary"));
+                        return new File(f.getParentFile(), "minecraft-intermediary.jar");
                     case "FORGE":
-                        return new File(f.getParentFile().getParentFile(), f.getName().toString().replace("mapped", "srg"));
+                        return new File(f.getParentFile(), "minecraft-srg.jar");
                 }
                 return null;
                 })
