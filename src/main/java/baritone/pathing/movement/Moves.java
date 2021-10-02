@@ -276,6 +276,102 @@ public enum Moves {
         }
     },
 
+    KNIGHT_NORTH_EAST(+1, 0, -2) {
+        @Override
+        public Movement apply0(CalculationContext context, BetterBlockPos src) {
+            return new MovementKnight(context.getBaritone(), src, EnumFacing.NORTH, EnumFacing.EAST);
+        }
+
+        @Override
+        public void apply(CalculationContext context, int x, int y, int z, MutableMoveResult result) {
+            MovementKnight.cost(context, x, y, z, x + xOffset, z + zOffset, result);
+        }
+    },
+
+    KNIGHT_NORTH_WEST(-1, 0, -2) {
+        @Override
+        public Movement apply0(CalculationContext context, BetterBlockPos src) {
+            return new MovementKnight(context.getBaritone(), src, EnumFacing.NORTH, EnumFacing.WEST);
+        }
+
+        @Override
+        public void apply(CalculationContext context, int x, int y, int z, MutableMoveResult result) {
+            MovementKnight.cost(context, x, y, z, x + xOffset, z + zOffset, result);
+        }
+    },
+
+    KNIGHT_SOUTH_EAST(+1, 0, +2) {
+        @Override
+        public Movement apply0(CalculationContext context, BetterBlockPos src) {
+            return new MovementKnight(context.getBaritone(), src, EnumFacing.SOUTH, EnumFacing.EAST);
+        }
+
+        @Override
+        public void apply(CalculationContext context, int x, int y, int z, MutableMoveResult result) {
+            MovementKnight.cost(context, x, y, z, x + xOffset, z + zOffset, result);
+        }
+    },
+
+    KNIGHT_SOUTH_WEST(-1, 0, +2) {
+        @Override
+        public Movement apply0(CalculationContext context, BetterBlockPos src) {
+            return new MovementKnight(context.getBaritone(), src, EnumFacing.SOUTH, EnumFacing.WEST);
+        }
+
+        @Override
+        public void apply(CalculationContext context, int x, int y, int z, MutableMoveResult result) {
+            MovementKnight.cost(context, x, y, z, x + xOffset, z + zOffset, result);
+        }
+    },
+
+    KNIGHT_EAST_NORTH(+2, 0, -1) {
+        @Override
+        public Movement apply0(CalculationContext context, BetterBlockPos src) {
+            return new MovementKnight(context.getBaritone(), src, EnumFacing.EAST, EnumFacing.NORTH);
+        }
+
+        @Override
+        public void apply(CalculationContext context, int x, int y, int z, MutableMoveResult result) {
+            MovementKnight.cost(context, x, y, z, x + xOffset, z + zOffset, result);
+        }
+    },
+
+    KNIGHT_WEST_NORTH(-2, 0, -1) {
+        @Override
+        public Movement apply0(CalculationContext context, BetterBlockPos src) {
+            return new MovementKnight(context.getBaritone(), src, EnumFacing.WEST, EnumFacing.NORTH);
+        }
+
+        @Override
+        public void apply(CalculationContext context, int x, int y, int z, MutableMoveResult result) {
+            MovementKnight.cost(context, x, y, z, x + xOffset, z + zOffset, result);
+        }
+    },
+
+    KNIGHT_EAST_SOUTH(+2, 0, +1) {
+        @Override
+        public Movement apply0(CalculationContext context, BetterBlockPos src) {
+            return new MovementKnight(context.getBaritone(), src, EnumFacing.EAST, EnumFacing.SOUTH);
+        }
+
+        @Override
+        public void apply(CalculationContext context, int x, int y, int z, MutableMoveResult result) {
+            MovementKnight.cost(context, x, y, z, x + xOffset, z + zOffset, result);
+        }
+    },
+
+    KNIGHT_WEST_SOUTH(-2, 0, +1) {
+        @Override
+        public Movement apply0(CalculationContext context, BetterBlockPos src) {
+            return new MovementKnight(context.getBaritone(), src, EnumFacing.WEST, EnumFacing.SOUTH);
+        }
+
+        @Override
+        public void apply(CalculationContext context, int x, int y, int z, MutableMoveResult result) {
+            MovementKnight.cost(context, x, y, z, x + xOffset, z + zOffset, result);
+        }
+    },
+
     PARKOUR_NORTH(0, 0, -4, true, true) {
         @Override
         public Movement apply0(CalculationContext context, BetterBlockPos src) {
