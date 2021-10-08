@@ -20,15 +20,12 @@ package baritone.command.defaults;
 import baritone.KeepName;
 import baritone.api.IBaritone;
 import baritone.api.command.Command;
-import baritone.api.command.ICommand;
 import baritone.api.command.argument.IArgConsumer;
-import baritone.api.command.argument.ICommandArgument;
 import baritone.api.command.datatypes.EntityClassById;
 import baritone.api.command.datatypes.IDatatypeFor;
 import baritone.api.command.datatypes.NearbyPlayer;
 import baritone.api.command.exception.CommandErrorMessageException;
 import baritone.api.command.exception.CommandException;
-import baritone.api.command.exception.CommandInvalidArgumentException;
 import baritone.api.command.helpers.TabCompleteHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
@@ -165,7 +162,7 @@ public class FollowCommand extends Command {
     public static class NoEntitiesException extends CommandErrorMessageException {
 
         protected NoEntitiesException() {
-            super("no valid entites in range!");
+            super("No valid entities in range!");
         }
 
     }
