@@ -20,11 +20,15 @@ package baritone.command.defaults;
 import baritone.KeepName;
 import baritone.api.IBaritone;
 import baritone.api.command.Command;
+import baritone.api.command.ICommand;
 import baritone.api.command.argument.IArgConsumer;
+import baritone.api.command.argument.ICommandArgument;
 import baritone.api.command.datatypes.EntityClassById;
 import baritone.api.command.datatypes.IDatatypeFor;
 import baritone.api.command.datatypes.NearbyPlayer;
+import baritone.api.command.exception.CommandErrorMessageException;
 import baritone.api.command.exception.CommandException;
+import baritone.api.command.exception.CommandInvalidArgumentException;
 import baritone.api.command.helpers.TabCompleteHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
@@ -60,7 +64,7 @@ public class FollowCommand extends Command {
                 if (gotten instanceof Class) {
                     //noinspection unchecked
                     classes.add((Class<? extends Entity>) gotten);
-                } else {
+                } else if (gotten != null) {
                     entities.add((Entity) gotten);
                 }
             }
@@ -73,12 +77,14 @@ public class FollowCommand extends Command {
         if (group != null) {
             logDirect(String.format("Following all %s", group.name().toLowerCase(Locale.US)));
         } else {
-            logDirect("Following these types of entities:");
             if (classes.isEmpty()) {
+                if (entities.isEmpty()) throw new NoEntitiesException();
+                logDirect("Following these entities:");
                 entities.stream()
                         .map(Entity::toString)
                         .forEach(this::logDirect);
             } else {
+                logDirect("Following these types of entities:");
                 classes.stream()
                         .map(EntityList::getKey)
                         .map(Objects::requireNonNull)
@@ -154,5 +160,13 @@ public class FollowCommand extends Command {
         FollowList(IDatatypeFor datatype) {
             this.datatype = datatype;
         }
+    }
+
+    public static class NoEntitiesException extends CommandErrorMessageException {
+
+        protected NoEntitiesException() {
+            super("no valid entites in range!");
+        }
+
     }
 }
