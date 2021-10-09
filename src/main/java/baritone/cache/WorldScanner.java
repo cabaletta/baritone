@@ -37,8 +37,6 @@ public enum WorldScanner implements IWorldScanner {
 
     INSTANCE;
 
-    private static final int[] DEFAULT_COORDINATE_ITERATION_ORDER = IntStream.range(0, 16).toArray();
-
     @Override
     public List<BlockPos> scanChunkRadius(IPlayerContext ctx, BlockOptionalMetaLookup filter, int max, int yLevelThreshold, int maxSearchRadius) {
         ArrayList<BlockPos> res = new ArrayList<>();
@@ -51,10 +49,10 @@ public enum WorldScanner implements IWorldScanner {
         int maxSearchRadiusSq = maxSearchRadius * maxSearchRadius;
         int playerChunkX = ctx.playerFeet().getX() >> 4;
         int playerChunkZ = ctx.playerFeet().getZ() >> 4;
-        int playerY = ctx.playerFeet().getY();
+        int playerY = ctx.playerFeet().getY() - ctx.world().dimensionType().minY();
 
         int playerYBlockStateContainerIndex = playerY >> 4;
-        int[] coordinateIterationOrder = IntStream.range(0, 16).boxed().sorted(Comparator.comparingInt(y -> Math.abs(y - playerYBlockStateContainerIndex))).mapToInt(x -> x).toArray();
+        int[] coordinateIterationOrder = IntStream.range(0, ctx.world().dimensionType().height() / 16).boxed().sorted(Comparator.comparingInt(y -> Math.abs(y - playerYBlockStateContainerIndex))).mapToInt(x -> x).toArray();
 
         int searchRadiusSq = 0;
         boolean foundWithinY = false;
@@ -75,7 +73,7 @@ public enum WorldScanner implements IWorldScanner {
                         continue;
                     }
                     allUnloaded = false;
-                    if (scanChunkInto(chunkX << 4, chunkZ << 4, chunk, filter, res, max, yLevelThreshold, playerY, coordinateIterationOrder)) {
+                    if (scanChunkInto(chunkX << 4, chunkZ << 4, ctx.world().dimensionType().minY(), chunk, filter, res, max, yLevelThreshold, playerY, coordinateIterationOrder)) {
                         foundWithinY = true;
                     }
                 }
@@ -105,7 +103,7 @@ public enum WorldScanner implements IWorldScanner {
         }
 
         ArrayList<BlockPos> res = new ArrayList<>();
-        scanChunkInto(pos.x << 4, pos.z << 4, chunk, filter, res, max, yLevelThreshold, playerY, DEFAULT_COORDINATE_ITERATION_ORDER);
+        scanChunkInto(pos.x << 4, pos.z << 4, ctx.world().dimensionType().minY(), chunk, filter, res, max, yLevelThreshold, playerY, IntStream.range(0, ctx.world().dimensionType().height() / 16).toArray());
         return res;
     }
 
@@ -144,11 +142,10 @@ public enum WorldScanner implements IWorldScanner {
         return queued;
     }
 
-    private boolean scanChunkInto(int chunkX, int chunkZ, LevelChunk chunk, BlockOptionalMetaLookup filter, Collection<BlockPos> result, int max, int yLevelThreshold, int playerY, int[] coordinateIterationOrder) {
+    private boolean scanChunkInto(int chunkX, int chunkZ, int minY, LevelChunk chunk, BlockOptionalMetaLookup filter, Collection<BlockPos> result, int max, int yLevelThreshold, int playerY, int[] coordinateIterationOrder) {
         LevelChunkSection[] chunkInternalStorageArray = chunk.getSections();
         boolean foundWithinY = false;
-        for (int yIndex = 0; yIndex < 16; yIndex++) {
-            int y0 = coordinateIterationOrder[yIndex];
+        for (int y0 : coordinateIterationOrder) {
             LevelChunkSection section = chunkInternalStorageArray[y0];
             if (section == null || LevelChunkSection.isEmpty(section)) {
                 continue;
@@ -172,7 +169,7 @@ public enum WorldScanner implements IWorldScanner {
                                     }
                                 }
                             }
-                            result.add(new BlockPos(chunkX | x, y, chunkZ | z));
+                            result.add(new BlockPos(chunkX | x, y + minY, chunkZ | z));
                         }
                     }
                 }

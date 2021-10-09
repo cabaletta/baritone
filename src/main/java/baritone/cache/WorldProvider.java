@@ -56,7 +56,7 @@ public class WorldProvider implements IWorldProvider, Helper {
      *
      * @param world The world's Registry Data
      */
-    public final void initWorld(ResourceKey<Level> world) {
+    public final void initWorld(ResourceKey<Level> worldKey, DimensionType world) {
         File directory;
         File readme;
 
@@ -64,7 +64,7 @@ public class WorldProvider implements IWorldProvider, Helper {
 
         // If there is an integrated server running (Aka Singleplayer) then do magic to find the world save file
         if (mc.hasSingleplayerServer()) {
-            directory = DimensionType.getStorageFolder(world, integratedServer.getWorldPath(LevelResource.ROOT).toFile());
+            directory = DimensionType.getStorageFolder(worldKey, integratedServer.getWorldPath(LevelResource.ROOT).toFile());
 
             // Gets the "depth" of this directory relative the the game's run directory, 2 is the location of the world
             if (directory.toPath().relativize(mc.gameDirectory.toPath()).getNameCount() != 2) {
@@ -90,7 +90,7 @@ public class WorldProvider implements IWorldProvider, Helper {
         } catch (IOException ignored) {}
 
         // We will actually store the world data in a subfolder: "DIM<id>"
-        Path dir = DimensionType.getStorageFolder(world, directory).toPath();
+        Path dir = getDimDir(worldKey, world.logicalHeight(), directory);
         if (!Files.exists(dir)) {
             try {
                 Files.createDirectories(dir);
@@ -101,6 +101,10 @@ public class WorldProvider implements IWorldProvider, Helper {
         synchronized (worldCache) {
             this.currentWorld = worldCache.computeIfAbsent(dir, d -> new WorldData(d, world));
         }
+    }
+
+    public final Path getDimDir(ResourceKey<Level> level, int height, File directory) {
+        return directory.toPath().resolve(level.location().getNamespace()).resolve(level.location().getPath() + "_" + height);
     }
 
     public final void closeWorld() {

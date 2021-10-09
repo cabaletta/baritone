@@ -38,6 +38,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.dimension.DimensionType;
 
 /**
  * @author Brady
@@ -72,9 +73,9 @@ public final class CachedWorld implements ICachedWorld, Helper {
      */
     private final Map<ChunkPos, LevelChunk> toPackMap = new ConcurrentHashMap<>();
 
-    private final ResourceKey<Level> dimension;
+    private final DimensionType dimension;
 
-    CachedWorld(Path directory, ResourceKey<Level> dimension) {
+    CachedWorld(Path directory, DimensionType dimension) {
         if (!Files.exists(directory)) {
             try {
                 Files.createDirectories(directory);

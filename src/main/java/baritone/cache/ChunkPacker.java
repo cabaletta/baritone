@@ -21,8 +21,6 @@ import baritone.api.utils.BlockUtils;
 import baritone.pathing.movement.MovementHelper;
 import baritone.utils.pathing.PathingBlockType;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.AirBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -33,6 +31,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.level.chunk.PalettedContainer;
+import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.phys.Vec3;
 import java.util.*;
 
@@ -50,10 +49,11 @@ public final class ChunkPacker {
         //long start = System.nanoTime() / 1000000L;
 
         Map<String, List<BlockPos>> specialBlocks = new HashMap<>();
-        BitSet bitSet = new BitSet(CachedChunk.SIZE);
+        final int height = chunk.getLevel().dimensionType().height();
+        BitSet bitSet = new BitSet(CachedChunk.size(height));
         try {
             LevelChunkSection[] chunkInternalStorageArray = chunk.getSections();
-            for (int y0 = 0; y0 < 16; y0++) {
+            for (int y0 = 0; y0 < height / 16; y0++) {
                 LevelChunkSection extendedblockstorage = chunkInternalStorageArray[y0];
                 if (extendedblockstorage == null) {
                     // any 16x16x16 area that's all air will have null storage
@@ -95,11 +95,12 @@ public final class ChunkPacker {
         //System.out.println("Chunk packing took " + (end - start) + "ms for " + chunk.x + "," + chunk.z);
         BlockState[] blocks = new BlockState[256];
 
+        // get top block in columns
         // @formatter:off
         for (int z = 0; z < 16; z++) {
             https://www.ibm.com/developerworks/library/j-perry-writing-good-java-code/index.html
             for (int x = 0; x < 16; x++) {
-                for (int y = 255; y >= 0; y--) {
+                for (int y = height - 1; y >= 0; y--) {
                     int index = CachedChunk.getPositionIndex(x, y, z);
                     if (bitSet.get(index) || bitSet.get(index + 1)) {
                         blocks[z << 4 | x] = getFromChunk(chunk, x, y, z);
@@ -110,7 +111,7 @@ public final class ChunkPacker {
             }
         }
         // @formatter:on
-        return new CachedChunk(chunk.getPos().x, chunk.getPos().z, bitSet, blocks, specialBlocks, System.currentTimeMillis());
+        return new CachedChunk(chunk.getPos().x, chunk.getPos().z, height, bitSet, blocks, specialBlocks, System.currentTimeMillis());
     }
 
     private static PathingBlockType getPathingBlockType(BlockState state, LevelChunk chunk, int x, int y, int z) {
@@ -153,7 +154,7 @@ public final class ChunkPacker {
         return PathingBlockType.SOLID;
     }
 
-    public static BlockState pathingTypeToBlock(PathingBlockType type, ResourceKey<Level> dimension) {
+    public static BlockState pathingTypeToBlock(PathingBlockType type, DimensionType dimension) {
         switch (type) {
             case AIR:
                 return Blocks.AIR.defaultBlockState();
@@ -163,13 +164,13 @@ public final class ChunkPacker {
                 return Blocks.LAVA.defaultBlockState();
             case SOLID:
                 // Dimension solid types
-                if (dimension == Level.OVERWORLD) {
+                if (dimension.natural()) {
                     return Blocks.STONE.defaultBlockState();
                 }
-                if (dimension == Level.NETHER) {
+                if (dimension.ultraWarm()) {
                     return Blocks.NETHERRACK.defaultBlockState();
                 }
-                if (dimension == Level.END) {
+                if (dimension.createDragonFight()) {
                     return Blocks.END_STONE.defaultBlockState();
                 }
             default:

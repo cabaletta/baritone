@@ -28,9 +28,8 @@ import java.util.*;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.dimension.DimensionType;
 
 /**
  * @author Brady
@@ -61,14 +60,14 @@ public final class CachedRegion implements ICachedRegion {
      */
     private final int z;
 
-    private final ResourceKey<Level> dimension;
+    private final DimensionType dimension;
 
     /**
      * Has this region been modified since its most recent load or save
      */
     private boolean hasUnsavedChanges;
 
-    CachedRegion(int x, int z, ResourceKey<Level> dimension) {
+    CachedRegion(int x, int z, DimensionType dimension) {
         this.x = x;
         this.z = z;
         this.hasUnsavedChanges = false;
@@ -77,9 +76,10 @@ public final class CachedRegion implements ICachedRegion {
 
     @Override
     public final BlockState getBlock(int x, int y, int z) {
+        int adjY = y - dimension.minY();
         CachedChunk chunk = chunks[x >> 4][z >> 4];
         if (chunk != null) {
-            return chunk.getBlock(x & 15, y, z & 15, dimension);
+            return chunk.getBlock(x & 15, adjY, z & 15, dimension);
         }
         return null;
     }
@@ -143,7 +143,7 @@ public final class CachedRegion implements ICachedRegion {
                             byte[] chunkBytes = chunk.toByteArray();
                             out.write(chunkBytes);
                             // Messy, but fills the empty 0s that should be trailing to fill up the space.
-                            out.write(new byte[CachedChunk.SIZE_IN_BYTES - chunkBytes.length]);
+                            out.write(new byte[chunk.sizeInBytes - chunkBytes.length]);
                         }
                     }
                 }
@@ -224,10 +224,11 @@ public final class CachedRegion implements ICachedRegion {
                         int isChunkPresent = in.read();
                         switch (isChunkPresent) {
                             case CHUNK_PRESENT:
-                                byte[] bytes = new byte[CachedChunk.SIZE_IN_BYTES];
+                                byte[] bytes = new byte[CachedChunk.sizeInBytes(CachedChunk.size(dimension.height()))];
                                 in.readFully(bytes);
                                 bitSets[x][z] = BitSet.valueOf(bytes);
                                 location[x][z] = new HashMap<>();
+                                //this is top block in columns
                                 overview[x][z] = new BlockState[256];
                                 present[x][z] = true;
                                 break;
@@ -291,7 +292,7 @@ public final class CachedRegion implements ICachedRegion {
                             int regionZ = this.z;
                             int chunkX = x + 32 * regionX;
                             int chunkZ = z + 32 * regionZ;
-                            this.chunks[x][z] = new CachedChunk(chunkX, chunkZ, bitSets[x][z], overview[x][z], location[x][z], cacheTimestamp[x][z]);
+                            this.chunks[x][z] = new CachedChunk(chunkX, chunkZ, dimension.height(), bitSets[x][z], overview[x][z], location[x][z], cacheTimestamp[x][z]);
                         }
                     }
                 }

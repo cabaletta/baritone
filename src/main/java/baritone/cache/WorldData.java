@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.dimension.DimensionType;
 
 /**
  * Data about a world, from baritone's point of view. Includes cached chunks, waypoints, and map data.
@@ -39,9 +40,9 @@ public class WorldData implements IWorldData {
     private final ContainerMemory containerMemory;
     //public final MapData map;
     public final Path directory;
-    public final ResourceKey<Level> dimension;
+    public final DimensionType dimension;
 
-    WorldData(Path directory, ResourceKey<Level> dimension) {
+    WorldData(Path directory, DimensionType dimension) {
         this.directory = directory;
         this.cache = new CachedWorld(directory.resolve("cache"), dimension);
         this.waypoints = new WaypointCollection(directory.resolve("waypoints"));
