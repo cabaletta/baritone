@@ -97,9 +97,9 @@ public class BlockStateInterface {
     }
 
     public BlockState get0(int x, int y, int z) { // Mickey resigned
-
+        y -= worldData.dimension.minY();
         // Invalid vertical position
-        if (y < 0 || y >= 256) {
+        if (y < 0 || y >= worldData.dimension.height()) {
             return AIR;
         }
 
