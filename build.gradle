@@ -70,14 +70,14 @@ loom {
 }
 
 
-
 repositories {
     maven {
         name = 'impactdevelopment-repo'
         url = 'https://impactdevelopment.github.io/maven/'
     }
     maven {
-        url = 'https://www.dogforce-games.com/maven/'
+        name = "ldtteam"
+        url = "https://maven.parchmentmc.net/"
     }
     mavenCentral()
 }
@@ -86,7 +86,11 @@ dependencies {
     if (compileType.equals("FORGE")) {
         forge "net.minecraftforge:forge:${project.forge_version}"
     }
-    mappings loom.officialMojangMappings()
+    mappings loom.layered() {
+        officialMojangMappings()
+        //technically optional, but really helpful in dev:
+        parchment("org.parchmentmc.data:parchment-1.17.1:BLEEDING-SNAPSHOT@zip" as String)
+    }
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
     if (!compileType.equals("FORGE")) {
         modImplementation "net.fabricmc:fabric-loader:${project.fabric_version}"
