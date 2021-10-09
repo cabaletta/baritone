@@ -179,7 +179,7 @@ public class MovementFall extends Movement {
         BetterBlockPos[] toBreak;
         int diffX = src.getX() - dest.getX();
         int diffZ = src.getZ() - dest.getZ();
-        int diffY = src.getY() - dest.getY();
+        int diffY = Math.abs(src.getY() - dest.getY());
         toBreak = new BetterBlockPos[diffY + 2];
         for (int i = 0; i < toBreak.length; i++) {
             toBreak[i] = new BetterBlockPos(src.getX() - diffX, src.getY() + 1 - i, src.getZ() - diffZ);

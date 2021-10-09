@@ -63,6 +63,8 @@ public abstract class MixinItemStack implements IItemStack {
 
     @Override
     public int getBaritoneHash() {
+        // TODO: figure out why <init> mixin not working, was 0 for some reason
+        if (baritoneHash == 0) recalculateHash();
         return baritoneHash;
     }
 }
