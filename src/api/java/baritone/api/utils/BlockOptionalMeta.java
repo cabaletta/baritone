@@ -30,6 +30,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Unit;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.world.server.ServerWorld;
 
 import javax.annotation.Nonnull;
 import java.util.*;
@@ -162,7 +163,7 @@ public final class BlockOptionalMeta {
 
                 // the other overload for generate doesnt work in forge because forge adds code that requires a non null world
                 getManager().getLootTableFromLocation(lootTableLocation).generate(
-                        new LootContext.Builder(null)
+                        new LootContext.Builder((ServerWorld) null)
                                 .withRandom(new Random())
                                 .withParameter(LootParameters.field_237457_g_, Vector3d.copy(BlockPos.NULL_VECTOR))
                                 .withParameter(LootParameters.TOOL, ItemStack.EMPTY)

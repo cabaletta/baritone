@@ -19,21 +19,14 @@ package baritone.gradle.task;
 
 import baritone.gradle.util.Determinizer;
 import org.apache.commons.io.IOUtils;
-import org.gradle.api.plugins.JavaPluginConvention;
-import org.gradle.api.tasks.Input;
-import org.gradle.api.tasks.TaskAction;
 import org.gradle.api.JavaVersion;
-import org.gradle.api.NamedDomainObjectContainer;
-import org.gradle.api.artifacts.Configuration;
-import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.internal.file.IdentityFileResolver;
-import org.gradle.api.internal.plugins.DefaultConvention;
+import org.gradle.api.plugins.JavaPluginConvention;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.api.tasks.TaskCollection;
 import org.gradle.api.tasks.compile.ForkOptions;
 import org.gradle.api.tasks.compile.JavaCompile;
-import org.gradle.internal.Pair;
 import org.gradle.internal.jvm.Jvm;
 import org.gradle.internal.jvm.inspection.DefaultJvmVersionDetector;
 import org.gradle.process.internal.DefaultExecActionFactory;
@@ -62,9 +55,17 @@ public class ProguardTask extends BaritoneGradleTask {
     @Input
     private String extract;
 
+    @Input
+    private String compType;
+
+    private final File copyMcTargetDir = new File("./build/createMcIntermediaryJar").getAbsoluteFile();
+    private final File copyMcTargetJar = new File(copyMcTargetDir, "client.jar");
+
     @TaskAction
     protected void exec() throws Exception {
         super.verifyArtifacts();
+
+        copyMcJar();
 
         // "Haha brady why don't you make separate tasks"
         processArtifact();
@@ -74,6 +75,28 @@ public class ProguardTask extends BaritoneGradleTask {
         proguardApi();
         proguardStandalone();
         cleanup();
+    }
+
+    private void copyMcJar() throws IOException {
+        File mcClientJar = this.getProject().getConvention().getPlugin(JavaPluginConvention.class).getSourceSets().findByName("launch").getRuntimeClasspath().getFiles()
+            .stream()
+            .filter(f -> f.getName().startsWith("minecraft-"))
+            .map(f -> {
+                switch (compType) {
+                    case "OFFICIAL":
+                        return new File(f.getParentFile().getParentFile(), f.getName().toString().split("mapped")[0] + "merged.jar");
+                    case "FABRIC":
+                        return new File(f.getParentFile().getParentFile(), f.getName().toString().replace("mapped", "intermediary"));
+                    case "FORGE":
+                        return new File(f.getParentFile().getParentFile(), f.getName().toString().replace("mapped", "srg"));
+                }
+                return null;
+                })
+            .findFirst()
+            .get();
+        if (!mcClientJar.exists()) throw new IOException("Failed to find minecraft! " + mcClientJar.getAbsolutePath());
+        if (!copyMcTargetDir.exists() && !copyMcTargetDir.mkdirs()) throw new IOException("Failed to create target for copyMcJar");
+        Files.copy(mcClientJar.toPath(), copyMcTargetJar.toPath(), REPLACE_EXISTING);
     }
 
     private void processArtifact() throws Exception {
@@ -207,27 +230,20 @@ public class ProguardTask extends BaritoneGradleTask {
         // Acquire the RT jar using "java -verbose". This doesn't work on Java 9+
         Process p = new ProcessBuilder(this.getJavaBinPathForProguard(), "-verbose").start();
         String out = IOUtils.toString(p.getInputStream(), "UTF-8").split("\n")[0].split("Opened ")[1].replace("]", "");
-        template.add(2, "-libraryjars '" + out + "'");
+        template.add(2, "-libraryjars '" + out + "'(!META-INF/versions/**)");
 
         {
             final Stream<File> libraries;
             {
                 // Discover all of the libraries that we will need to acquire from gradle
                 final Stream<File> dependencies = acquireDependencies()
-                    // remove MCP mapped jar
-                    .filter(f -> !f.toString().endsWith("-recomp.jar"))
+                    // remove MCP mapped jar, and nashorn
+                    .filter(f -> !f.toString().endsWith("-recomp.jar") && !f.getName().startsWith("nashorn") && !f.getName().startsWith("coremods"))
                     // go from the extra to the original downloaded client
                     .map(f -> f.toString().endsWith("client-extra.jar") ? new File(f.getParentFile(), "client.jar") : f);
 
-                if (getProject().hasProperty("baritone.forge_build")) {
-                    libraries = dependencies
-                        .map(f -> f.toString().endsWith("client.jar") ? getSrgMcJar() : f);
-                } else if (getProject().hasProperty("baritone.fabric_build")) {
-                    libraries = dependencies
-                        .map(f -> f.getName().endsWith("-v2.jar") && f.getName().startsWith("minecraft-") ? getSrgMcJar() : f);
-                } else {
-                    libraries = dependencies;
-                }
+                libraries = dependencies
+                    .map(f -> f.getName().startsWith("minecraft-") ? copyMcTargetJar : f);
             }
             libraries.forEach(f -> {
                 template.add(2, "-libraryjars '" + f + "'");
@@ -275,6 +291,10 @@ public class ProguardTask extends BaritoneGradleTask {
 
     public void setExtract(String extract) {
         this.extract = extract;
+    }
+
+    public void setCompType(String compType) {
+        this.compType = compType;
     }
 
     private void runProguard(Path config) throws Exception {
