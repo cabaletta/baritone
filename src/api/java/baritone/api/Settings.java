@@ -201,9 +201,16 @@ public final class Settings {
     )));
 
     /**
-     * make {@link #blocksToAvoidBreaking} mean the block is never broken instead of just <i>strongly</i> discouraging it.
+     * blocks that baritone shouldn't break, but can if it needs to.
      */
-    public final Setting<Boolean> avoidBreakingMeansNever = new Setting(false);
+    public final  Setting<List<Block>> blocksToDiscourageBreaking = new Setting<>(new ArrayList<>(Arrays.asList(
+
+    )));
+
+    /**
+     * this multiplies the break speed, if set above 1 it's "encourage breaking" instead
+     */
+    public final Setting<Double> discourageBreakingMultiplier = new Setting<>(.1);
 
     /**
      * A list of blocks to be treated as if they're air.
