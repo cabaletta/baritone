@@ -201,6 +201,11 @@ public final class Settings {
     )));
 
     /**
+     * make {@link #blocksToAvoidBreaking} mean the block is never broken instead of just <i>strongly</i> discouraging it.
+     */
+    public final Setting<Boolean> avoidBreakingMeansNever = new Setting(false);
+
+    /**
      * A list of blocks to be treated as if they're air.
      * <p>
      * If a schematic asks for air at a certain position, and that position currently contains a block on this list, it will be treated as correct.
