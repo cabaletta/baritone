@@ -28,6 +28,7 @@ import net.minecraft.util.ResourceLocation;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -280,6 +281,60 @@ public class TabCompleteHelper {
     public TabCompleteHelper addToggleableSettings() {
         return append(
                 BaritoneAPI.getSettings().getAllValuesByType(Boolean.class).stream()
+                        .map(Settings.Setting::getName)
+                        .sorted(String.CASE_INSENSITIVE_ORDER)
+        );
+    }
+
+    /**
+     * Appends every {@link Map} setting in the {@link Settings} to this {@link TabCompleteHelper}
+     *
+     * @return This {@link TabCompleteHelper}
+     */
+    public TabCompleteHelper addMapSettings() {
+        return append(
+                BaritoneAPI.getSettings().getAllValuesByType(Map.class).stream()
+                        .map(Settings.Setting::getName)
+                        .sorted(String.CASE_INSENSITIVE_ORDER)
+        );
+    }
+
+    /**
+     * Appends every {@link List} setting in the {@link Settings} to this {@link TabCompleteHelper}
+     *
+     * @return This {@link TabCompleteHelper}
+     */
+    public TabCompleteHelper addListSettings() {
+        return append(
+                BaritoneAPI.getSettings().getAllValuesByType(List.class).stream()
+                        .map(Settings.Setting::getName)
+                        .sorted(String.CASE_INSENSITIVE_ORDER)
+        );
+    }
+
+    /**
+     * Appends every non-empty {@link Map} setting in the {@link Settings} to this {@link TabCompleteHelper}
+     *
+     * @return This {@link TabCompleteHelper}
+     */
+    public TabCompleteHelper addNonemptyMapSettings() {
+        return append(
+                BaritoneAPI.getSettings().getAllValuesByType(Map.class).stream()
+                        .filter(setting -> !setting.value.isEmpty())
+                        .map(Settings.Setting::getName)
+                        .sorted(String.CASE_INSENSITIVE_ORDER)
+        );
+    }
+
+    /**
+     * Appends every non-empty {@link List} setting in the {@link Settings} to this {@link TabCompleteHelper}
+     *
+     * @return This {@link TabCompleteHelper}
+     */
+    public TabCompleteHelper addNonemptyListSettings() {
+        return append(
+                BaritoneAPI.getSettings().getAllValuesByType(List.class).stream()
+                        .filter(setting -> !setting.value.isEmpty())
                         .map(Settings.Setting::getName)
                         .sorted(String.CASE_INSENSITIVE_ORDER)
         );

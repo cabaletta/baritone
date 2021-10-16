@@ -36,6 +36,9 @@ import net.minecraft.util.text.event.HoverEvent;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Locale;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -102,11 +105,14 @@ public class SetCommand extends Command {
             );
             return;
         }
-        args.requireMax(1);
         boolean resetting = arg.equalsIgnoreCase("reset");
         boolean toggling = arg.equalsIgnoreCase("toggle");
-        boolean doingSomething = resetting || toggling;
+        boolean adding = arg.equalsIgnoreCase("add");
+        boolean removing = arg.equalsIgnoreCase("remove");
+        boolean clearing = arg.equalsIgnoreCase("clear");
+        boolean doingSomething = resetting || toggling || adding || removing || clearing;
         if (resetting) {
+            args.requireMax(1);
             if (!args.hasAny()) {
                 logDirect("Please specify 'all' as an argument to reset to confirm you'd really like to do this");
                 logDirect("ALL settings will be reset. Use the 'set modified' or 'modified' commands to see what will be reset.");
@@ -118,8 +124,11 @@ public class SetCommand extends Command {
                 return;
             }
         }
-        if (toggling) {
-            args.requireMin(1);
+        if (toggling || clearing) {
+            args.requireExactly(1);
+        }
+        if (adding || removing) {
+            args.requireExactly(2);
         }
         String settingName = doingSomething ? args.getString() : arg;
         Settings.Setting<?> setting = Baritone.settings().allSettings.stream()
@@ -153,6 +162,38 @@ public class SetCommand extends Command {
                         setting.getName(),
                         Boolean.toString((Boolean) setting.value)
                 ));
+            } else if (adding || removing) {
+                boolean list = setting.getValueClass() == List.class;
+                boolean map = setting.getValueClass() == Map.class;
+                if (!list && !map) {
+                    throw new CommandInvalidTypeException(args.consumed(), "a List or Map setting", "some other setting");
+                }
+                String valueString = args.getString();
+                try {
+                    if (adding) {
+                        SettingsUtil.parseAndAdd(Baritone.settings(), settingName.toLowerCase(), valueString);
+                    } else {
+                        SettingsUtil.parseAndRemove(Baritone.settings(), settingName.toLowerCase(), valueString);
+                    }
+                } catch (Throwable t) {
+                    t.printStackTrace();
+                    throw new CommandInvalidTypeException(args.consumed(), "a valid value", t);
+                }
+                logDirect(String.format(
+                        "Successfully %s %s %s %s",
+                        adding ? "added" : "removed",
+                        valueString,
+                        adding ? "to" : "from",
+                        settingName
+                ));
+            } else if (clearing) {
+                if (setting.getValueClass() == List.class) {
+                    ((Settings.Setting<List>) setting).value = Collections.emptyList();
+                } else if (setting.getValueClass() == Map.class) {
+                    ((Settings.Setting<Map>) setting).value = Collections.emptyMap();
+                } else {
+                    throw new CommandInvalidTypeException(args.consumed(), "a List or Map setting", "some other setting");
+                }
             } else {
                 String newValue = args.getString();
                 try {
@@ -162,10 +203,10 @@ public class SetCommand extends Command {
                     throw new CommandInvalidTypeException(args.consumed(), "a valid value", t);
                 }
             }
-            if (!toggling) {
+            if (!toggling && !adding && !removing) {
                 logDirect(String.format(
                         "Successfully %s %s to %s",
-                        resetting ? "reset" : "set",
+                        resetting ? "reset" : clearing ? "cleared" : "set",
                         setting.getName(),
                         settingValueToString(setting)
                 ));
@@ -208,6 +249,24 @@ public class SetCommand extends Command {
                             .addToggleableSettings()
                             .filterPrefix(args.getString())
                             .stream();
+                } else if (arg.equalsIgnoreCase("add")) {
+                    return new TabCompleteHelper()
+                            .addMapSettings()
+                            .addListSettings()
+                            .filterPrefix(args.getString())
+                            .stream();
+                } else if (arg.equalsIgnoreCase("remove")) {
+                    return new TabCompleteHelper()
+                            .addNonemptyMapSettings()
+                            .addNonemptyListSettings()
+                            .filterPrefix(args.getString())
+                            .stream();
+                } else if (arg.equalsIgnoreCase("clear")) {
+                    return new TabCompleteHelper()
+                            .addNonemptyMapSettings()
+                            .addNonemptyListSettings()
+                            .filterPrefix(args.getString())
+                            .stream();
                 }
                 Settings.Setting setting = Baritone.settings().byLowerName.get(arg.toLowerCase(Locale.US));
                 if (setting != null) {
@@ -223,11 +282,21 @@ public class SetCommand extends Command {
                         return Stream.of(settingValueToString(setting));
                     }
                 }
+            } else if (args.hasExactly(2) && !Arrays.asList("s", "save").contains(args.peekString().toLowerCase(Locale.US))) {
+                if (arg.equalsIgnoreCase("remove")) {
+                    Settings.Setting setting = Baritone.settings().byLowerName.get(args.getString().toLowerCase(Locale.US));
+                    if (setting != null) {
+                        if (setting.getValueClass() == List.class || setting.getValueClass() == Map.class) {
+                            String regex = setting.getValueClass() == List.class ? "," : ",(?=[^,]*->)"; // regexes used by the parsers to split entries
+                            return Stream.of(settingValueToString(setting).split(regex));
+                        }
+                    }
+                }
             } else if (!args.hasAny()) {
                 return new TabCompleteHelper()
                         .addSettings()
                         .sortAlphabetically()
-                        .prepend("list", "modified", "reset", "toggle", "save")
+                        .prepend("list", "modified", "reset", "toggle", "add", "remove", "clear", "save")
                         .filterPrefix(arg)
                         .stream();
             }
@@ -254,6 +323,9 @@ public class SetCommand extends Command {
                 "> set reset all - Reset ALL SETTINGS to their defaults",
                 "> set reset <setting> - Reset a setting to its default",
                 "> set toggle <setting> - Toggle a boolean setting",
+                "> set add <setting> <value> - Add an element to a list setting",
+                "> set remove <setting> <value> - Remove a single element from a list setting",
+                "> set clear <setting> - Remove all elements from a list setting",
                 "> set save - Save all settings (this is automatic tho)"
         );
     }
