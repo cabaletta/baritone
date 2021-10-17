@@ -18,6 +18,7 @@
 package baritone.behavior;
 
 import baritone.Baritone;
+import baritone.api.cache.IWaypoint;
 import baritone.api.cache.Waypoint;
 import baritone.api.event.events.BlockInteractEvent;
 import baritone.api.event.events.PacketEvent;
@@ -30,6 +31,7 @@ import baritone.cache.ContainerMemory;
 import baritone.utils.BlockStateInterface;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockBed;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.Packet;
@@ -167,8 +169,19 @@ public final class MemoryBehavior extends Behavior {
 
     @Override
     public void onBlockInteract(BlockInteractEvent event) {
-        if (event.getType() == BlockInteractEvent.Type.USE && BlockStateInterface.getBlock(ctx, event.getPos()) instanceof BlockBed) {
-            baritone.getWorldProvider().getCurrentWorld().getWaypoints().addWaypoint(new Waypoint("bed", Waypoint.Tag.BED, BetterBlockPos.from(event.getPos())));
+        if (event.getType() == BlockInteractEvent.Type.USE) {
+            BetterBlockPos pos = BetterBlockPos.from(event.getPos());
+            IBlockState state = BlockStateInterface.get(ctx, pos);
+            if (state.getBlock() instanceof BlockBed) {
+                if (state.getValue(BlockBed.PART) == BlockBed.EnumPartType.FOOT) {
+                    pos = pos.offset(state.getValue(BlockBed.FACING));
+                }
+                Set<IWaypoint> waypoints = baritone.getWorldProvider().getCurrentWorld().getWaypoints().getByTag(IWaypoint.Tag.BED);
+                boolean exists = waypoints.stream().map(IWaypoint::getLocation).filter(pos::equals).findFirst().isPresent();
+                if (!exists) {
+                    baritone.getWorldProvider().getCurrentWorld().getWaypoints().addWaypoint(new Waypoint("bed", Waypoint.Tag.BED, pos));
+                }
+            }
         }
     }
 
