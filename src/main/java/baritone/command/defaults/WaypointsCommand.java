@@ -129,7 +129,7 @@ public class WaypointsCommand extends Command {
             if (tag == null) {
                 throw new CommandInvalidStateException(String.format("'%s' is not a tag ", args.consumedString()));
             }
-            String name = args.hasAny() ? args.getString() : "";
+            String name = (args.hasExactlyOne() || args.hasExactly(4)) ? args.getString() : "";
             BetterBlockPos pos = args.hasAny()
                     ? args.getDatatypePost(RelativeBlockPos.INSTANCE, ctx.playerFeet())
                     : ctx.playerFeet();
@@ -292,6 +292,7 @@ public class WaypointsCommand extends Command {
                 "Usage:",
                 "> wp [l/list] - List all waypoints.",
                 "> wp <s/save> <tag> - Save your current position as an unnamed waypoint with the specified tag.",
+                "> wp <s/save> <tag> <pos> - Save an unnamed waypoint with the specified tag and position.",
                 "> wp <s/save> <tag> <name> - Save the waypoint with the specified name.",
                 "> wp <s/save> <tag> <name> <pos> - Save the waypoint with the specified name and position.",
                 "> wp <i/info/show> <tag> - Show info on a waypoint by tag.",
