@@ -291,14 +291,16 @@ public class WaypointsCommand extends Command {
                 "",
                 "Usage:",
                 "> wp [l/list] - List all waypoints.",
+                "> wp <l/list> <tag> - List all waypoints by tag.",
                 "> wp <s/save> <tag> - Save your current position as an unnamed waypoint with the specified tag.",
                 "> wp <s/save> <tag> <pos> - Save an unnamed waypoint with the specified tag and position.",
                 "> wp <s/save> <tag> <name> - Save the waypoint with the specified name.",
                 "> wp <s/save> <tag> <name> <pos> - Save the waypoint with the specified name and position.",
-                "> wp <i/info/show> <tag> - Show info on a waypoint by tag.",
-                "> wp <d/delete> <tag> - Delete a waypoint by tag.",
-                "> wp <g/goal> <tag> - Set a goal to a waypoint by tag.",
-                "> wp <goto> <tag> - Set a goal to a waypoint by tag and start pathing."
+                "> wp <i/info/show> <tag/name> - Show info on a waypoint by tag or name.",
+                "> wp <d/delete> <tag/name> - Delete a waypoint by tag or name.",
+                "> wp <c/clear> <tag> - Delete all waypoints with the specified tag.",
+                "> wp <g/goal> <tag/name> - Set a goal to a waypoint by tag or name.",
+                "> wp <goto> <tag/name> - Set a goal to a waypoint by tag or name and start pathing."
         );
     }
 
