@@ -125,9 +125,11 @@ public class WaypointsCommand extends Command {
                 );
             }
         } else if (action == Action.SAVE) {
-            IWaypoint.Tag tag = IWaypoint.Tag.getByName(args.getString());
+            IWaypoint.Tag tag = args.hasAny() ? IWaypoint.Tag.getByName(args.peekString()) : null;
             if (tag == null) {
-                throw new CommandInvalidStateException(String.format("'%s' is not a tag ", args.consumedString()));
+                tag = IWaypoint.Tag.USER;
+            } else {
+                args.get();
             }
             String name = (args.hasExactlyOne() || args.hasExactly(4)) ? args.getString() : "";
             BetterBlockPos pos = args.hasAny()
@@ -289,13 +291,13 @@ public class WaypointsCommand extends Command {
                 "",
                 "Note that the info, delete, and goal commands let you specify a waypoint by tag. If there is more than one waypoint with a certain tag, then they will let you select which waypoint you mean.",
                 "",
+                "Missing arguments for the save command use the USER tag, creating an unnamed waypoint and your current position as defaults.",
+                "",
                 "Usage:",
                 "> wp [l/list] - List all waypoints.",
                 "> wp <l/list> <tag> - List all waypoints by tag.",
-                "> wp <s/save> <tag> - Save your current position as an unnamed waypoint with the specified tag.",
-                "> wp <s/save> <tag> <pos> - Save an unnamed waypoint with the specified tag and position.",
-                "> wp <s/save> <tag> <name> - Save the waypoint with the specified name.",
-                "> wp <s/save> <tag> <name> <pos> - Save the waypoint with the specified name and position.",
+                "> wp <s/save> - Save an unnamed USER waypoint at your current position",
+                "> wp <s/save> [tag] [name] [pos] - Save a waypoint with the specified tag, name and position.",
                 "> wp <i/info/show> <tag/name> - Show info on a waypoint by tag or name.",
                 "> wp <d/delete> <tag/name> - Delete a waypoint by tag or name.",
                 "> wp <c/clear> <tag> - Delete all waypoints with the specified tag.",
