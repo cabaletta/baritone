@@ -17,6 +17,7 @@
 
 package baritone.command.defaults;
 
+import baritone.Baritone;
 import baritone.api.IBaritone;
 import baritone.api.cache.IWaypoint;
 import baritone.api.cache.Waypoint;
@@ -218,6 +219,20 @@ public class WaypointsCommand extends Command {
                                     waypoint.getCreationTimestamp()
                             )
                     ));
+                    ITextComponent recreateComponent = new TextComponentString("Click to show a command to recreate this waypoint");
+                    recreateComponent.getStyle().setClickEvent(new ClickEvent(
+                            ClickEvent.Action.SUGGEST_COMMAND,
+                            String.format(
+                                    "%s%s save %s %s %s %s %s",
+                                    Baritone.settings().prefix.value, // This uses the normal prefix because it is run by the user.
+                                    label,
+                                    waypoint.getTag().getName(),
+                                    waypoint.getName(),
+                                    waypoint.getLocation().x,
+                                    waypoint.getLocation().y,
+                                    waypoint.getLocation().z
+                            )
+                    ));
                     ITextComponent backComponent = new TextComponentString("Click to return to the waypoints list");
                     backComponent.getStyle().setClickEvent(new ClickEvent(
                             ClickEvent.Action.RUN_COMMAND,
@@ -229,6 +244,7 @@ public class WaypointsCommand extends Command {
                     ));
                     logDirect(deleteComponent);
                     logDirect(goalComponent);
+                    logDirect(recreateComponent);
                     logDirect(backComponent);
                 } else if (action == Action.DELETE) {
                     ForWaypoints.waypoints(this.baritone).removeWaypoint(waypoint);
