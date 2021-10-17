@@ -48,14 +48,13 @@ public class BuildCommand extends Command {
         if (FilenameUtils.getExtension(file.getAbsolutePath()).isEmpty()) {
             file = new File(file.getAbsolutePath() + "." + Baritone.settings().schematicFallbackExtension.value);
         }
-        BetterBlockPos origin = ctx.playerFeet();
         BetterBlockPos buildOrigin;
         if (args.hasAny()) {
             args.requireMax(3);
-            buildOrigin = args.getDatatypePost(RelativeBlockPos.INSTANCE, origin);
+            buildOrigin = args.getDatatypePost(RelativeBlockPos.INSTANCE, ctx.playerView());
         } else {
             args.requireMax(0);
-            buildOrigin = origin;
+            buildOrigin = ctx.playerView();
         }
         boolean success = baritone.getBuilderProcess().build(file.getName(), file, buildOrigin);
         if (!success) {

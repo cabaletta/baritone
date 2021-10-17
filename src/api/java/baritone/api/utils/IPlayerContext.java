@@ -18,6 +18,7 @@
 package baritone.api.utils;
 
 import baritone.api.cache.IWorldData;
+import baritone.api.utils.Helper;
 import net.minecraft.block.BlockSlab;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.util.math.BlockPos;
@@ -70,6 +71,10 @@ public interface IPlayerContext {
 
     default Vec3d playerHead() {
         return new Vec3d(player().posX, player().posY + player().getEyeHeight(), player().posZ);
+    }
+
+    default BetterBlockPos playerView() {
+        return Helper.mc.getRenderViewEntity() != null ? BetterBlockPos.from(new BlockPos(Helper.mc.getRenderViewEntity())) : playerFeet();
     }
 
     default Rotation playerRotations() {
