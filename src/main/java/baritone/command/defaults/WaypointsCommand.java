@@ -42,11 +42,14 @@ import net.minecraft.util.text.event.HoverEvent;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static baritone.api.command.IBaritoneChatControl.FORCE_COMMAND_PREFIX;
 
 public class WaypointsCommand extends Command {
+
+    private List<IWaypoint> deletedWaypoints = new ArrayList<>();
 
     public WaypointsCommand(IBaritone baritone) {
         super(baritone, "waypoints", "waypoint", "wp");
@@ -150,7 +153,41 @@ public class WaypointsCommand extends Command {
             for (IWaypoint waypoint : waypoints) {
                 ForWaypoints.waypoints(this.baritone).removeWaypoint(waypoint);
             }
-            logDirect(String.format("Cleared %d waypoints", waypoints.length));
+            deletedWaypoints.addAll(Arrays.<IWaypoint>asList(waypoints));
+            ITextComponent textComponent = new TextComponentString(String.format("Cleared %d waypoints, click to restore them", waypoints.length));
+            textComponent.getStyle().setClickEvent(new ClickEvent(
+                    ClickEvent.Action.RUN_COMMAND,
+                    String.format(
+                            "%s%s restore @ %s",
+                            FORCE_COMMAND_PREFIX,
+                            label,
+                            Stream.of(waypoints).map(wp -> Long.toString(wp.getCreationTimestamp())).collect(Collectors.joining(" "))
+                    )
+            ));
+            logDirect(textComponent);
+        } else if (action == Action.RESTORE) {
+            List<IWaypoint> waypoints = new ArrayList<>();
+            if (args.peekString().equals("@")) {
+                args.get();
+                // no args.requireMin(1) because if the user clears an empty tag there is nothing to restore
+                while (args.hasAny()) {
+                    long timestamp = args.getAs(Long.class);
+                    for (IWaypoint waypoint : deletedWaypoints) {
+                        if (waypoint.getCreationTimestamp() == timestamp) {
+                            waypoints.add(waypoint);
+                            break;
+                        }
+                    }
+                }
+            } else {
+                args.requireExactly(1);
+                int size = deletedWaypoints.size();
+                int amount = Math.min(size, args.getAs(Integer.class));
+                waypoints = new ArrayList<>(deletedWaypoints.subList(size - amount, size));
+            }
+            waypoints.forEach(ForWaypoints.waypoints(this.baritone)::addWaypoint);
+            deletedWaypoints.removeIf(waypoints::contains);
+            logDirect(String.format("Restored %d waypoints", waypoints.size()));
         } else {
             IWaypoint[] waypoints = args.getDatatypeFor(ForWaypoints.INSTANCE);
             IWaypoint waypoint = null;
@@ -248,7 +285,18 @@ public class WaypointsCommand extends Command {
                     logDirect(backComponent);
                 } else if (action == Action.DELETE) {
                     ForWaypoints.waypoints(this.baritone).removeWaypoint(waypoint);
-                    logDirect("That waypoint has successfully been deleted");
+                    deletedWaypoints.add(waypoint);
+                    ITextComponent textComponent = new TextComponentString("That waypoint has successfully been deleted, click to restore it");
+                    textComponent.getStyle().setClickEvent(new ClickEvent(
+                            ClickEvent.Action.RUN_COMMAND,
+                            String.format(
+                                    "%s%s restore @ %s",
+                                    FORCE_COMMAND_PREFIX,
+                                    label,
+                                    waypoint.getCreationTimestamp()
+                            )
+                    ));
+                    logDirect(textComponent);
                 } else if (action == Action.GOAL) {
                     Goal goal = new GoalBlock(waypoint.getLocation());
                     baritone.getCustomGoalProcess().setGoal(goal);
@@ -280,6 +328,8 @@ public class WaypointsCommand extends Command {
                                 .sortAlphabetically()
                                 .filterPrefix(args.getString())
                                 .stream();
+                    } else if (action == Action.RESTORE) {
+                        return Stream.empty();
                     } else {
                         return args.tabCompleteDatatype(ForWaypoints.INSTANCE);
                     }
@@ -316,6 +366,7 @@ public class WaypointsCommand extends Command {
                 "> wp <s/save> [tag] [name] [pos] - Save a waypoint with the specified tag, name and position.",
                 "> wp <i/info/show> <tag/name> - Show info on a waypoint by tag or name.",
                 "> wp <d/delete> <tag/name> - Delete a waypoint by tag or name.",
+                "> wp <restore> <n> - Restore the last n deleted waypoints.",
                 "> wp <c/clear> <tag> - Delete all waypoints with the specified tag.",
                 "> wp <g/goal> <tag/name> - Set a goal to a waypoint by tag or name.",
                 "> wp <goto> <tag/name> - Set a goal to a waypoint by tag or name and start pathing."
@@ -328,6 +379,7 @@ public class WaypointsCommand extends Command {
         SAVE("save", "s"),
         INFO("info", "show", "i"),
         DELETE("delete", "d"),
+        RESTORE("restore"),
         GOAL("goal", "g"),
         GOTO("goto");
         private final String[] names;
