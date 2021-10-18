@@ -21,6 +21,7 @@ import baritone.Baritone;
 import baritone.api.IBaritone;
 import baritone.api.cache.IWaypoint;
 import baritone.api.cache.Waypoint;
+import baritone.api.cache.IWorldData;
 import baritone.api.command.Command;
 import baritone.api.command.argument.IArgConsumer;
 import baritone.api.command.datatypes.ForWaypoints;
@@ -49,7 +50,7 @@ import static baritone.api.command.IBaritoneChatControl.FORCE_COMMAND_PREFIX;
 
 public class WaypointsCommand extends Command {
 
-    private List<IWaypoint> deletedWaypoints = new ArrayList<>();
+    private Map<IWorldData,List<IWaypoint>> deletedWaypoints = new HashMap<>();
 
     public WaypointsCommand(IBaritone baritone) {
         super(baritone, "waypoints", "waypoint", "wp");
@@ -153,7 +154,7 @@ public class WaypointsCommand extends Command {
             for (IWaypoint waypoint : waypoints) {
                 ForWaypoints.waypoints(this.baritone).removeWaypoint(waypoint);
             }
-            deletedWaypoints.addAll(Arrays.<IWaypoint>asList(waypoints));
+            deletedWaypoints.computeIfAbsent(baritone.getWorldProvider().getCurrentWorld(), k -> new ArrayList<>()).addAll(Arrays.<IWaypoint>asList(waypoints));
             ITextComponent textComponent = new TextComponentString(String.format("Cleared %d waypoints, click to restore them", waypoints.length));
             textComponent.getStyle().setClickEvent(new ClickEvent(
                     ClickEvent.Action.RUN_COMMAND,
@@ -167,6 +168,7 @@ public class WaypointsCommand extends Command {
             logDirect(textComponent);
         } else if (action == Action.RESTORE) {
             List<IWaypoint> waypoints = new ArrayList<>();
+            List<IWaypoint> deletedWaypoints = this.deletedWaypoints.getOrDefault(baritone.getWorldProvider().getCurrentWorld(), Collections.emptyList());
             if (args.peekString().equals("@")) {
                 args.get();
                 // no args.requireMin(1) because if the user clears an empty tag there is nothing to restore
@@ -285,7 +287,7 @@ public class WaypointsCommand extends Command {
                     logDirect(backComponent);
                 } else if (action == Action.DELETE) {
                     ForWaypoints.waypoints(this.baritone).removeWaypoint(waypoint);
-                    deletedWaypoints.add(waypoint);
+                    deletedWaypoints.computeIfAbsent(baritone.getWorldProvider().getCurrentWorld(), k -> new ArrayList<>()).add(waypoint);
                     ITextComponent textComponent = new TextComponentString("That waypoint has successfully been deleted, click to restore it");
                     textComponent.getStyle().setClickEvent(new ClickEvent(
                             ClickEvent.Action.RUN_COMMAND,
