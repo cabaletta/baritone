@@ -38,6 +38,7 @@ public final class DefaultCommands {
                 new GotoCommand(baritone),
                 new PathCommand(baritone),
                 new ProcCommand(baritone),
+                new ETACommand(baritone),
                 new VersionCommand(baritone),
                 new RepackCommand(baritone),
                 new BuildCommand(baritone),

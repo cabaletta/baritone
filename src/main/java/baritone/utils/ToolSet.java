@@ -25,6 +25,7 @@ import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.init.Enchantments;
 import net.minecraft.init.MobEffects;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemSword;
 import net.minecraft.item.ItemTool;
 
 import java.util.HashMap;
@@ -106,7 +107,7 @@ public class ToolSet {
         If we actually want know what efficiency our held item has instead of the best one
         possible, this lets us make pathing depend on the actual tool to be used (if auto tool is disabled)
         */
-        if (Baritone.settings().disableAutoTool.value && pathingCalculation) {
+        if (!Baritone.settings().autoTool.value && pathingCalculation) {
             return player.inventory.currentItem;
         }
 
@@ -117,6 +118,13 @@ public class ToolSet {
         IBlockState blockState = b.getDefaultState();
         for (int i = 0; i < 9; i++) {
             ItemStack itemStack = player.inventory.getStackInSlot(i);
+            if (!Baritone.settings().useSwordToMine.value && itemStack.getItem() instanceof ItemSword) {
+                continue;
+            }
+          
+            if (Baritone.settings().itemSaver.value && (itemStack.getDamage() + Baritone.settings().itemSaverThreshold.value) >= itemStack.getMaxDamage() && itemStack.getMaxDamage() > 1) {
+                continue;
+            }
             double speed = calculateSpeedVsBlock(itemStack, blockState);
             boolean silkTouch = hasSilkTouch(itemStack);
             if (speed > highestSpeed) {

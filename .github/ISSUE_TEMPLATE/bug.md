@@ -11,7 +11,7 @@ Operating system:
 Java version:
 Minecraft version:
 Baritone version:
-Forge mods (if used): 
+Other mods (if used): 
 
 ## Exception, error or logs
 Please find your `latest.log` or `debug.log` in this folder and attach it to the issue

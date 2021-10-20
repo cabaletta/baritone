@@ -19,7 +19,6 @@ package baritone.api.schematic;
 
 import baritone.api.utils.BlockOptionalMeta;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.init.Blocks;
 
 import java.util.List;
 
@@ -44,8 +43,6 @@ public class FillSchematic extends AbstractSchematic {
     public IBlockState desiredState(int x, int y, int z, IBlockState current, List<IBlockState> approxPlaceable) {
         if (bom.matches(current)) {
             return current;
-        } else if (current.getBlock() != Blocks.AIR) {
-            return Blocks.AIR.getDefaultState();
         }
         for (IBlockState placeable : approxPlaceable) {
             if (bom.matches(placeable)) {

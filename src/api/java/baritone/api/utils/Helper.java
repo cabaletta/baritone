@@ -18,7 +18,6 @@
 package baritone.api.utils;
 
 import baritone.api.BaritoneAPI;
-import baritone.api.utils.gui.BaritoneToast;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
@@ -71,7 +70,7 @@ public interface Helper {
      * @param message The message to display in the popup
      */
     default void logToast(ITextComponent title, ITextComponent message) {
-        mc.addScheduledTask(() -> BaritoneToast.addOrUpdate(mc.getToastGui(), title, message, BaritoneAPI.getSettings().toastTimer.value));
+        mc.addScheduledTask(() -> BaritoneAPI.getSettings().toaster.value.accept(title, message));
     }
 
     /**
@@ -91,6 +90,48 @@ public interface Helper {
      */
     default void logToast(String message) {
         logToast(Helper.getPrefix(), new TextComponentString(message));
+    }
+
+    /**
+     * Send a message as a desktop notification
+     *
+     * @param message The message to display in the notification
+     */
+    default void logNotification(String message) {
+        logNotification(message, false);
+    }
+
+    /**
+     * Send a message as a desktop notification
+     *
+     * @param message The message to display in the notification
+     * @param error   Whether to log as an error
+     */
+    default void logNotification(String message, boolean error) {
+        if (BaritoneAPI.getSettings().desktopNotifications.value) {
+            logNotificationDirect(message, error);
+        }
+    }
+
+    /**
+     * Send a message as a desktop notification regardless of desktopNotifications
+     * (should only be used for critically important messages)
+     *
+     * @param message The message to display in the notification
+     */
+    default void logNotificationDirect(String message) {
+        logNotificationDirect(message, false);
+    }
+
+    /**
+     * Send a message as a desktop notification regardless of desktopNotifications
+     * (should only be used for critically important messages)
+     *
+     * @param message The message to display in the notification
+     * @param error   Whether to log as an error
+     */
+    default void logNotificationDirect(String message, boolean error) {
+        mc.addScheduledTask(() -> BaritoneAPI.getSettings().notifier.value.accept(message, error));
     }
 
     /**
