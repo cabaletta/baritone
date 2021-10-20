@@ -18,24 +18,39 @@
 package baritone.command.defaults;
 
 import baritone.api.IBaritone;
+import baritone.api.pathing.calc.IPathingControlManager;
+import baritone.api.process.IBaritoneProcess;
+import baritone.api.behavior.IPathingBehavior;
 import baritone.api.command.Command;
-import baritone.api.command.argument.IArgConsumer;
 import baritone.api.command.exception.CommandException;
+import baritone.api.command.exception.CommandInvalidStateException;
+import baritone.api.command.argument.IArgConsumer;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
-public class SchematicaCommand extends Command {
+public class ETACommand extends Command {
 
-    public SchematicaCommand(IBaritone baritone) {
-        super(baritone, "schematica");
+    public ETACommand(IBaritone baritone) {
+        super(baritone, "eta");
     }
 
     @Override
     public void execute(String label, IArgConsumer args) throws CommandException {
         args.requireMax(0);
-        baritone.getBuilderProcess().buildOpenSchematic();
+        IPathingControlManager pathingControlManager = baritone.getPathingControlManager();
+        IBaritoneProcess process = pathingControlManager.mostRecentInControl().orElse(null);
+        if (process == null) {
+            throw new CommandInvalidStateException("No process in control");
+        }
+        IPathingBehavior pathingBehavior = baritone.getPathingBehavior();
+        logDirect(String.format(
+                "Next segment: %.2f\n" +
+                "Goal: %.2f",
+                pathingBehavior.ticksRemainingInSegment().orElse(-1.0),
+                pathingBehavior.estimatedTicksToGoal().orElse(-1.0)
+        ));
     }
 
     @Override
@@ -45,16 +60,19 @@ public class SchematicaCommand extends Command {
 
     @Override
     public String getShortDesc() {
-        return "Builds the loaded schematic";
+        return "View the current ETA";
     }
 
     @Override
     public List<String> getLongDesc() {
         return Arrays.asList(
-                "Builds the schematic currently open in Schematica.",
+                "The ETA command provides information about the estimated time until the next segment.",
+                "and the goal",
+                "",
+                "Be aware that the ETA to your goal is really unprecise",
                 "",
                 "Usage:",
-                "> schematica"
+                "> eta - View ETA, if present"
         );
     }
 }
