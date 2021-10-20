@@ -46,6 +46,11 @@ public class GoalInverted implements Goal {
     }
 
     @Override
+    public double heuristic() {
+        return Double.NEGATIVE_INFINITY;
+    }
+
+    @Override
     public String toString() {
         return String.format("GoalInverted{%s}", origin.toString());
     }

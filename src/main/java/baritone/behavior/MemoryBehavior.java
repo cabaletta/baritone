@@ -21,10 +21,16 @@ import baritone.Baritone;
 import baritone.api.cache.Waypoint;
 import baritone.api.event.events.BlockInteractEvent;
 import baritone.api.utils.BetterBlockPos;
+import baritone.api.utils.Helper;
 import baritone.cache.ContainerMemory;
 import baritone.utils.BlockStateInterface;
 import net.minecraft.block.BedBlock;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.util.text.TextFormatting;
+import net.minecraft.util.text.event.ClickEvent;
+import net.minecraft.util.text.event.HoverEvent;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -34,6 +40,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+
+import static baritone.api.command.IBaritoneChatControl.FORCE_COMMAND_PREFIX;
 
 /**
  * doesn't work for horse inventories :^)
@@ -56,7 +64,26 @@ public final class MemoryBehavior extends Behavior {
 
     @Override
     public void onPlayerDeath() {
-        baritone.getWorldProvider().getCurrentWorld().getWaypoints().addWaypoint(new Waypoint("death", Waypoint.Tag.DEATH, ctx.playerFeet()));
+        Waypoint deathWaypoint = new Waypoint("death", Waypoint.Tag.DEATH, ctx.playerFeet());
+        baritone.getWorldProvider().getCurrentWorld().getWaypoints().addWaypoint(deathWaypoint);
+        ITextComponent component = new StringTextComponent("Death position saved.");
+        component.getStyle()
+                .setColor(TextFormatting.WHITE)
+                .setHoverEvent(new HoverEvent(
+                        HoverEvent.Action.SHOW_TEXT,
+                        new StringTextComponent("Click to goto death")
+                ))
+                .setClickEvent(new ClickEvent(
+                        ClickEvent.Action.RUN_COMMAND,
+                        String.format(
+                                "%s%s goto %s @ %d",
+                                FORCE_COMMAND_PREFIX,
+                                "wp",
+                                deathWaypoint.getTag().getName(),
+                                deathWaypoint.getCreationTimestamp()
+                        )
+                ));
+        Helper.HELPER.logDirect(component);
     }
 
     public EnderChestMemory getCurrent() {

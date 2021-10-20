@@ -59,6 +59,15 @@ public interface IPathingBehavior extends IBehavior {
     }
 
     /**
+     * Returns the estimated remaining ticks to the current goal.
+     * Given that the return type is an optional, {@link Optional#empty()}
+     * will be returned in the case that there is no current goal.
+     *
+     * @return The estimated remaining ticks to the current goal.
+     */
+    Optional<Double> estimatedTicksToGoal();
+
+    /**
      * @return The current pathing goal
      */
     Goal getGoal();
