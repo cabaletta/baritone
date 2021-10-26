@@ -203,7 +203,7 @@ public final class Settings {
     /**
      * blocks that baritone shouldn't break, but can if it needs to.
      */
-    public final  Setting<List<Block>> blocksToDiscourageBreaking = new Setting<>(new ArrayList<>(Arrays.asList(
+    public final Setting<List<Block>> blocksToDiscourageBreaking = new Setting<>(new ArrayList<>(Arrays.asList(
     )));
 
     /**
