@@ -198,13 +198,13 @@ public final class Settings {
      * blocks that baritone shouldn't break, but can if it needs to.
      */
     public final Setting<List<Block>> blocksToAvoidBreaking = new Setting<>(new ArrayList<>(Arrays.asList( // TODO can this be a HashSet or ImmutableSet?
-        Blocks.CRAFTING_TABLE,
-        Blocks.FURNACE,
-        Blocks.LIT_FURNACE,
-        Blocks.CHEST,
-        Blocks.TRAPPED_CHEST,
-        Blocks.STANDING_SIGN,
-        Blocks.WALL_SIGN
+            Blocks.CRAFTING_TABLE,
+            Blocks.FURNACE,
+            Blocks.LIT_FURNACE,
+            Blocks.CHEST,
+            Blocks.TRAPPED_CHEST,
+            Blocks.STANDING_SIGN,
+            Blocks.WALL_SIGN
     )));
 
     /**
