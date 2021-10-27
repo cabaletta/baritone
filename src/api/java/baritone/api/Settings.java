@@ -190,6 +190,13 @@ public final class Settings {
     /**
      * Blocks that Baritone is not allowed to break
      */
+    public final Setting<List<Block>> blocksToDisallowBreaking = new Setting<>(new ArrayList<>(
+        // Leave Empty by Default
+    ));
+
+    /**
+     * blocks that baritone shouldn't break, but can if it needs to.
+     */
     public final Setting<List<Block>> blocksToAvoidBreaking = new Setting<>(new ArrayList<>(Arrays.asList( // TODO can this be a HashSet or ImmutableSet?
             Blocks.CRAFTING_TABLE,
             Blocks.FURNACE,
@@ -199,6 +206,11 @@ public final class Settings {
             Blocks.STANDING_SIGN,
             Blocks.WALL_SIGN
     )));
+
+    /**
+     * this multiplies the break speed, if set above 1 it's "encourage breaking" instead
+     */
+    public final Setting<Double> avoidBreakingMultiplier = new Setting<>(.1);
 
     /**
      * A list of blocks to be treated as if they're air.
