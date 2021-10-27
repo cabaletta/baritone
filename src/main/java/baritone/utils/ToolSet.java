@@ -165,7 +165,7 @@ public class ToolSet {
     }
 
     private double avoidanceMultiplier(Block b) {
-        return Baritone.settings().blocksToDiscourageBreaking.value.contains(b) ? Baritone.settings().discourageBreakingMultiplier.value : 1;
+        return Baritone.settings().blocksToAvoidBreaking.value.contains(b) ? Baritone.settings().avoidBreakingMultiplier.value : 1;
     }
 
     /**

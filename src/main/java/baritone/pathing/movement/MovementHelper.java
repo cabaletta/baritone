@@ -50,7 +50,7 @@ public interface MovementHelper extends ActionCosts, Helper {
 
     static boolean avoidBreaking(BlockStateInterface bsi, int x, int y, int z, IBlockState state) {
         Block b = state.getBlock();
-        return Baritone.settings().blocksToAvoidBreaking.value.contains(b)
+        return Baritone.settings().blocksToDisallowBreaking.value.contains(b)
                 || b == Blocks.ICE // ice becomes water, and water can mess up the path
                 || b instanceof BlockSilverfish // obvious reasons
                 // call context.get directly with x,y,z. no need to make 5 new BlockPos for no reason
