@@ -89,7 +89,7 @@ dependencies {
     mappings loom.layered() {
         officialMojangMappings()
         //technically optional, but really helpful in dev:
-        parchment("org.parchmentmc.data:parchment-1.17.1:BLEEDING-SNAPSHOT@zip" as String)
+        parchment("org.parchmentmc.data:parchment-1.17.1:2021.10.24@zip" as String)
     }
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
     if (!compileType.equals("FORGE")) {
