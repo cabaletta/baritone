@@ -93,7 +93,7 @@ public class GreedySolver {
             BlockStateCachedData placingAgainst = engineInput.graph.data(maybePlaceAgainst);
             PlaceAgainstData againstData = placingAgainst.againstMe(option);
             traces:
-            for (Raytracer.Raytrace trace : option.computeTraceOptions(againstData, relativeX, relativeY, relativeZ, PlayerVantage.LOOSE_CENTER, blockReachDistance())) {
+            for (Raytracer.Raytrace trace : option.computeTraceOptions(againstData, relativeX, relativeY, relativeZ, PlayerVantage.LOOSE_CENTER, blockReachDistance())) { // TODO or only take the best one
                 for (long l : trace.passedThrough) {
                     if (worldState.blockExists(l)) {
                         continue traces;
@@ -130,28 +130,27 @@ public class GreedySolver {
         }
 
         // -------------------------------------------------------------------------------------------------------------
-        // place block beneath feet voxel
-        block_beneath_feet:
-        {
+        // place block beneath or within feet voxel
+        for (int dy = -1; dy <= 0; dy++) {
             // this is the common case for sneak bridging with full blocks
-            long maybePlaceAt = Face.DOWN.offset(pos);
+            long maybePlaceAt = BetterBlockPos.offsetBy(pos, 0, dy, 0);
             BlockStateCachedData wouldBePlaced = engineInput.graph.data(maybePlaceAt);
-            int cost = 0;
+            int cost = blockPlaceCost();
             int playerFeetWouldBeAt = playerFeet;
-            if (wouldBePlaced.collidesWithPlayer) {
-                int heightRelativeToCurrentVoxel = wouldBePlaced.collisionHeightBlips() - Blip.FULL_BLOCK;
+            /*if (wouldBePlaced.collidesWithPlayer) {
+                int heightRelativeToCurrentVoxel = wouldBePlaced.collisionHeightBlips() + dy * Blip.FULL_BLOCK;
                 if (heightRelativeToCurrentVoxel > playerFeet) {
                     // we would need to jump in order to do this
                     cost += jumpCost();
                     playerFeetWouldBeAt = heightRelativeToCurrentVoxel; // because we'd have to jump, and could only place the block once we had cleared the collision box for it
                     if (!within.playerCanExistAtFootBlip(heightRelativeToCurrentVoxel) || !supportedBy.playerCanExistAtFootBlip(heightRelativeToCurrentVoxel)) {
-                        break block_beneath_feet;
+                        continue;
                     }
                 }
             }
             if (wantToPlaceAt(maybePlaceAt, node, playerFeetWouldBeAt, worldState)) {
                 upsertEdge(node, worldState, pos, null, maybePlaceAt, cost);
-            }
+            }*/
         }
 
         // -------------------------------------------------------------------------------------------------------------
@@ -167,6 +166,7 @@ public class GreedySolver {
             }
             return;
         }
+        // not sneaking! sneaking returned ^^
         // -------------------------------------------------------------------------------------------------------------
         // walk sideways and either stay level, ascend, or descend
         Column into = scratchpadExpandNode2;
@@ -260,6 +260,11 @@ public class GreedySolver {
             default:
                 throw new IllegalStateException();
         }
+    }
+
+    private int blockPlaceCost() {
+        // maybe like... ten?
+        throw new UnsupportedOperationException();
     }
 
     private Node getNode(long playerPosition, Face sneakingTowards, Node prev, WorldState prevWorld, long blockPlacement) {

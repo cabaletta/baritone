@@ -73,6 +73,9 @@ public interface Bounds {
     static void sanityCheckConnectedness(Bounds bounds) {
         LongOpenHashSet all = new LongOpenHashSet();
         bounds.forEach(all::add);
+        if (all.size() != bounds.volume()) {
+            throw new IllegalStateException();
+        }
         long any = all.iterator().nextLong();
         LongOpenHashSet reachable = new LongOpenHashSet();
         LongArrayFIFOQueue queue = new LongArrayFIFOQueue();
