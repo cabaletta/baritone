@@ -64,10 +64,10 @@ public class MixinClientPlayNetHandler {
     }*/
 
     @Inject(
-            method = "handleLevelChunk",
+            method = "handleLevelChunkWithLight",
             at = @At("RETURN")
     )
-    private void postHandleChunkData(ClientboundLevelChunkPacket packetIn, CallbackInfo ci) {
+    private void postHandleChunkData(ClientboundLevelChunkWithLightPacket packetIn, CallbackInfo ci) {
         for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
             LocalPlayer player = ibaritone.getPlayerContext().player();
             if (player != null && player.connection == (ClientPacketListener) (Object) this) {
