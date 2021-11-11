@@ -17,7 +17,8 @@
 
 plugins {
     id 'java'
-    id 'dev.architectury.loom' version '0.10.0-SNAPSHOT'
+    id 'fabric-loom' version '0.10-SNAPSHOT'
+    //id 'dev.architectury.loom' version '0.10.0-SNAPSHOT'
     id 'maven-publish'
 }
 
@@ -166,7 +167,7 @@ jar {
 
 if (compileType.equals("OFFICIAL")) {
     remapJar {
-        toM.set "official"
+//        toM.set "official"
     }
 }
 
