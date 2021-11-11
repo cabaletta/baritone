@@ -63,7 +63,7 @@ public class MixinMinecraft {
             value = "FIELD",
             opcode = Opcodes.GETFIELD,
             target = "Lnet/minecraft/client/Minecraft;screen:Lnet/minecraft/client/gui/screens/Screen;",
-            ordinal = 5,
+            ordinal = 4,
             shift  = At.Shift.BY,
             by = -3
             )
