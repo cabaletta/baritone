@@ -23,14 +23,14 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
       
-    - name: Build with Gradle
-      run: ./gradlew build
+#    - name: Build with Gradle
+#      run: ./gradlew build
 
     - name: Build (fabric) with Gradle
       run: ./gradlew build -Pbaritone.fabric_build
 
-    - name: Build (forge) with Gradle
-      run: ./gradlew build -Pbaritone.forge_build -Ploom.platform=forge
+#    - name: Build (forge) with Gradle
+#      run: ./gradlew build -Pbaritone.forge_build -Ploom.platform=forge
       
     - name: Archive Artifacts
       uses: actions/upload-artifact@v2
