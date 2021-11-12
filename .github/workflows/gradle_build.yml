@@ -1,0 +1,45 @@
+# This workflow will build a Java project with Gradle
+# For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-gradle
+
+name: Java CI with Gradle
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up JDK 16
+      uses: actions/setup-java@v2
+      with:
+        java-version: '16'
+        distribution: 'adopt'
+        
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+      
+    - name: Build with Gradle
+      run: ./gradlew build
+
+    - name: Build (fabric) with Gradle
+      run: ./gradlew build -Pbaritone.fabric_build
+
+    - name: Build (forge) with Gradle
+      run: ./gradlew build -Pbaritone.forge_build -Ploom.platform=forge
+      
+    - name: Archive Artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: Artifacts
+        path: dist/
+        
+    - name: Archive mapping.txt
+      uses: actions/upload-artifact@v2
+      with:
+        name: Mappings
+        path: build/tmp/proguard/mapping.txt

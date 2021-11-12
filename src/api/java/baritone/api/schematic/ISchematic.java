@@ -17,10 +17,9 @@
 
 package baritone.api.schematic;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.util.Direction;
-
 import java.util.List;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.block.state.BlockState;
 
 /**
  * Basic representation of a schematic. Provides the dimensions and the desired state for a given position relative to

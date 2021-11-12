@@ -18,7 +18,7 @@
 package baritone.api.schematic;
 
 import baritone.api.utils.BlockOptionalMetaLookup;
-import net.minecraft.block.BlockState;
+import net.minecraft.world.level.block.state.BlockState;
 
 public class ReplaceSchematic extends MaskSchematic {
 

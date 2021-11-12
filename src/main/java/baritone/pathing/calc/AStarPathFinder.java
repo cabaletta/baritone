@@ -49,6 +49,8 @@ public final class AStarPathFinder extends AbstractNodeCostSearch {
 
     @Override
     protected Optional<IPath> calculate0(long primaryTimeout, long failureTimeout) {
+        int minY = calcContext.world.dimensionType().minY();
+        int height = calcContext.world.dimensionType().height();
         startNode = getNodeAtPosition(startX, startY, startZ, BetterBlockPos.longHash(startX, startY, startZ));
         startNode.cost = 0;
         startNode.combinedCost = startNode.estimatedCostToGoal;
@@ -109,7 +111,7 @@ public final class AStarPathFinder extends AbstractNodeCostSearch {
                 if (!moves.dynamicXZ && !worldBorder.entirelyContains(newX, newZ)) {
                     continue;
                 }
-                if (currentNode.y + moves.yOffset > 256 || currentNode.y + moves.yOffset < 0) {
+                if (currentNode.y + moves.yOffset > height || currentNode.y + moves.yOffset < minY) {
                     continue;
                 }
                 res.reset();

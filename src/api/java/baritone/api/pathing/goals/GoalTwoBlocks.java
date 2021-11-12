@@ -19,7 +19,7 @@ package baritone.api.pathing.goals;
 
 import baritone.api.utils.SettingsUtil;
 import baritone.api.utils.interfaces.IGoalRenderPos;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
 
 /**
  * Useful if the goal is just to mine a block. This goal will be satisfied if the specified

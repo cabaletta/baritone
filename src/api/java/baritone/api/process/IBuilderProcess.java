@@ -18,11 +18,10 @@
 package baritone.api.process;
 
 import baritone.api.schematic.ISchematic;
-import net.minecraft.block.BlockState;
 import net.minecraft.client.Minecraft;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.Vector3i;
-
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Vec3i;
+import net.minecraft.world.level.block.state.BlockState;
 import java.io.File;
 import java.util.List;
 
@@ -39,7 +38,7 @@ public interface IBuilderProcess extends IBaritoneProcess {
      * @param schematic The object representation of the schematic
      * @param origin    The origin position of the schematic being built
      */
-    void build(String name, ISchematic schematic, Vector3i origin);
+    void build(String name, ISchematic schematic, Vec3i origin);
 
     /**
      * Requests a build for the specified schematic, labeled as specified, with the specified origin.
@@ -49,10 +48,10 @@ public interface IBuilderProcess extends IBaritoneProcess {
      * @param origin    The origin position of the schematic being built
      * @return Whether or not the schematic was able to load from file
      */
-    boolean build(String name, File schematic, Vector3i origin);
+    boolean build(String name, File schematic, Vec3i origin);
 
     default boolean build(String schematicFile, BlockPos origin) {
-        File file = new File(new File(Minecraft.getInstance().gameDir, "schematics"), schematicFile);
+        File file = new File(new File(Minecraft.getInstance().gameDirectory, "schematics"), schematicFile);
         return build(schematicFile, file, origin);
     }
 

@@ -18,8 +18,8 @@
 package baritone.utils.pathing;
 
 import baritone.api.utils.BetterBlockPos;
-import net.minecraft.util.Direction;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -51,30 +51,30 @@ public class BetterBlockPosTest {
         BlockPos pos = new BlockPos(1, 2, 3);
         BetterBlockPos better = new BetterBlockPos(1, 2, 3);
         assertEquals(pos, better);
-        assertEquals(pos.up(), better.up());
-        assertEquals(pos.down(), better.down());
+        assertEquals(pos.above(), better.above());
+        assertEquals(pos.below(), better.below());
         assertEquals(pos.north(), better.north());
         assertEquals(pos.south(), better.south());
         assertEquals(pos.east(), better.east());
         assertEquals(pos.west(), better.west());
         for (Direction dir : Direction.values()) {
-            assertEquals(pos.offset(dir), better.offset(dir));
-            assertEquals(pos.offset(dir, 0), pos);
-            assertEquals(better.offset(dir, 0), better);
+            assertEquals(pos.relative(dir), better.relative(dir));
+            assertEquals(pos.relative(dir, 0), pos);
+            assertEquals(better.relative(dir, 0), better);
             for (int i = -10; i < 10; i++) {
-                assertEquals(pos.offset(dir, i), better.offset(dir, i));
+                assertEquals(pos.relative(dir, i), better.relative(dir, i));
             }
-            assertTrue(better.offset(dir, 0) == better);
+            assertTrue(better.relative(dir, 0) == better);
         }
         for (int i = -10; i < 10; i++) {
-            assertEquals(pos.up(i), better.up(i));
-            assertEquals(pos.down(i), better.down(i));
+            assertEquals(pos.above(i), better.above(i));
+            assertEquals(pos.below(i), better.below(i));
             assertEquals(pos.north(i), better.north(i));
             assertEquals(pos.south(i), better.south(i));
             assertEquals(pos.east(i), better.east(i));
             assertEquals(pos.west(i), better.west(i));
         }
-        assertTrue(better.offset(null, 0) == better);
+        assertTrue(better.relative((Direction) null, 0) == better);
     }
 
     public void benchOne() {
@@ -87,7 +87,7 @@ public class BetterBlockPosTest {
         }
         long before1 = System.nanoTime() / 1000000L;
         for (int i = 0; i < 1000000; i++) {
-            pos.up();
+            pos.above();
         }
         long after1 = System.nanoTime() / 1000000L;
         try {
@@ -97,7 +97,7 @@ public class BetterBlockPosTest {
         }
         long before2 = System.nanoTime() / 1000000L;
         for (int i = 0; i < 1000000; i++) {
-            pos2.up();
+            pos2.above();
         }
         long after2 = System.nanoTime() / 1000000L;
         System.out.println((after1 - before1) + " " + (after2 - before2));
@@ -113,11 +113,11 @@ public class BetterBlockPosTest {
         }
         long before1 = System.nanoTime() / 1000000L;
         for (int i = 0; i < 1000000; i++) {
-            pos.up(0);
-            pos.up(1);
-            pos.up(2);
-            pos.up(3);
-            pos.up(4);
+            pos.above(0);
+            pos.above(1);
+            pos.above(2);
+            pos.above(3);
+            pos.above(4);
         }
         long after1 = System.nanoTime() / 1000000L;
         try {
@@ -127,11 +127,11 @@ public class BetterBlockPosTest {
         }
         long before2 = System.nanoTime() / 1000000L;
         for (int i = 0; i < 1000000; i++) {
-            pos2.up(0);
-            pos2.up(1);
-            pos2.up(2);
-            pos2.up(3);
-            pos2.up(4);
+            pos2.above(0);
+            pos2.above(1);
+            pos2.above(2);
+            pos2.above(3);
+            pos2.above(4);
         }
         long after2 = System.nanoTime() / 1000000L;
         System.out.println((after1 - before1) + " " + (after2 - before2));

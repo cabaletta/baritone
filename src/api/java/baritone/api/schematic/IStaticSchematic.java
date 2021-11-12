@@ -17,7 +17,7 @@
 
 package baritone.api.schematic;
 
-import net.minecraft.block.BlockState;
+import net.minecraft.world.level.block.state.BlockState;
 
 /**
  * A static schematic is capable of providing the desired state at a given position without

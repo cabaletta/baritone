@@ -20,11 +20,6 @@ package baritone.cache;
 import baritone.Baritone;
 import baritone.api.cache.IWorldProvider;
 import baritone.api.utils.Helper;
-import net.minecraft.server.integrated.IntegratedServer;
-import net.minecraft.util.RegistryKey;
-import net.minecraft.world.DimensionType;
-import net.minecraft.world.World;
-import net.minecraft.world.storage.FolderName;
 import org.apache.commons.lang3.SystemUtils;
 
 import java.io.File;
@@ -35,6 +30,11 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
+import net.minecraft.client.server.IntegratedServer;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.dimension.DimensionType;
+import net.minecraft.world.level.storage.LevelResource;
 
 /**
  * @author Brady
@@ -56,18 +56,18 @@ public class WorldProvider implements IWorldProvider, Helper {
      *
      * @param world The world's Registry Data
      */
-    public final void initWorld(RegistryKey<World> world) {
+    public final void initWorld(ResourceKey<Level> worldKey, DimensionType world) {
         File directory;
         File readme;
 
-        IntegratedServer integratedServer = mc.getIntegratedServer();
+        IntegratedServer integratedServer = mc.getSingleplayerServer();
 
         // If there is an integrated server running (Aka Singleplayer) then do magic to find the world save file
-        if (mc.isSingleplayer()) {
-            directory = DimensionType.getDimensionFolder(world, integratedServer.func_240776_a_(FolderName.DOT).toFile());
+        if (mc.hasSingleplayerServer()) {
+            directory = DimensionType.getStorageFolder(worldKey, integratedServer.getWorldPath(LevelResource.ROOT).toFile());
 
             // Gets the "depth" of this directory relative the the game's run directory, 2 is the location of the world
-            if (directory.toPath().relativize(mc.gameDir.toPath()).getNameCount() != 2) {
+            if (directory.toPath().relativize(mc.gameDirectory.toPath()).getNameCount() != 2) {
                 // subdirectory of the main save directory for this world
                 directory = directory.getParentFile();
             }
@@ -75,7 +75,7 @@ public class WorldProvider implements IWorldProvider, Helper {
             directory = new File(directory, "baritone");
             readme = directory;
         } else { // Otherwise, the server must be remote...
-            String folderName = mc.isConnectedToRealms() ? "realms" : mc.getCurrentServerData().serverIP;
+            String folderName = mc.isConnectedToRealms() ? "realms" : mc.getCurrentServer().ip;
             if (SystemUtils.IS_OS_WINDOWS) {
                 folderName = folderName.replace(":", "_");
             }
@@ -90,7 +90,7 @@ public class WorldProvider implements IWorldProvider, Helper {
         } catch (IOException ignored) {}
 
         // We will actually store the world data in a subfolder: "DIM<id>"
-        Path dir = DimensionType.getDimensionFolder(world, directory).toPath();
+        Path dir = getDimDir(worldKey, world.logicalHeight(), directory);
         if (!Files.exists(dir)) {
             try {
                 Files.createDirectories(dir);
@@ -101,6 +101,10 @@ public class WorldProvider implements IWorldProvider, Helper {
         synchronized (worldCache) {
             this.currentWorld = worldCache.computeIfAbsent(dir, d -> new WorldData(d, world));
         }
+    }
+
+    public final Path getDimDir(ResourceKey<Level> level, int height, File directory) {
+        return directory.toPath().resolve(level.location().getNamespace()).resolve(level.location().getPath() + "_" + height);
     }
 
     public final void closeWorld() {

@@ -17,12 +17,11 @@
 
 package baritone.api.utils;
 
-import net.minecraft.util.Direction;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.vector.Vector3i;
-
 import javax.annotation.Nonnull;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.Vec3i;
+import net.minecraft.util.Mth;
 
 /**
  * A better BlockPos that has fewer hash collisions (and slightly more performant offsets)
@@ -49,7 +48,7 @@ public final class BetterBlockPos extends BlockPos {
     }
 
     public BetterBlockPos(double x, double y, double z) {
-        this(MathHelper.floor(x), MathHelper.floor(y), MathHelper.floor(z));
+        this(Mth.floor(x), Mth.floor(y), Mth.floor(z));
     }
 
     public BetterBlockPos(BlockPos pos) {
@@ -116,7 +115,7 @@ public final class BetterBlockPos extends BlockPos {
     }
 
     @Override
-    public BetterBlockPos up() {
+    public BetterBlockPos above() {
         // this is unimaginably faster than blockpos.up
         // that literally calls
         // this.up(1)
@@ -130,35 +129,35 @@ public final class BetterBlockPos extends BlockPos {
     }
 
     @Override
-    public BetterBlockPos up(int amt) {
+    public BetterBlockPos above(int amt) {
         // see comment in up()
         return amt == 0 ? this : new BetterBlockPos(x, y + amt, z);
     }
 
     @Override
-    public BetterBlockPos down() {
+    public BetterBlockPos below() {
         // see comment in up()
         return new BetterBlockPos(x, y - 1, z);
     }
 
     @Override
-    public BetterBlockPos down(int amt) {
+    public BetterBlockPos below(int amt) {
         // see comment in up()
         return amt == 0 ? this : new BetterBlockPos(x, y - amt, z);
     }
 
     @Override
-    public BetterBlockPos offset(Direction dir) {
-        Vector3i vec = dir.getDirectionVec();
+    public BetterBlockPos relative(Direction dir) {
+        Vec3i vec = dir.getNormal();
         return new BetterBlockPos(x + vec.getX(), y + vec.getY(), z + vec.getZ());
     }
 
     @Override
-    public BetterBlockPos offset(Direction dir, int dist) {
+    public BetterBlockPos relative(Direction dir, int dist) {
         if (dist == 0) {
             return this;
         }
-        Vector3i vec = dir.getDirectionVec();
+        Vec3i vec = dir.getNormal();
         return new BetterBlockPos(x + vec.getX() * dist, y + vec.getY() * dist, z + vec.getZ() * dist);
     }
 

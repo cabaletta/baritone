@@ -19,24 +19,26 @@ package baritone.launch.mixins;
 
 import baritone.utils.accessor.IChunkArray;
 import baritone.utils.accessor.IClientChunkProvider;
-import net.minecraft.client.multiplayer.ClientChunkProvider;
-import net.minecraft.client.world.ClientWorld;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
+import net.minecraft.client.multiplayer.ClientChunkCache;
+import net.minecraft.client.multiplayer.ClientLevel;
 
-@Mixin(ClientChunkProvider.class)
+@Mixin(ClientChunkCache.class)
 public class MixinClientChunkProvider implements IClientChunkProvider {
 
+    @Final
     @Shadow
-    private ClientWorld world;
+    ClientLevel level;
 
     @Override
-    public ClientChunkProvider createThreadSafeCopy() {
+    public ClientChunkCache createThreadSafeCopy() {
         IChunkArray arr = extractReferenceArray();
-        ClientChunkProvider result = new ClientChunkProvider(world, arr.viewDistance() - 3); // -3 because its adds 3 for no reason lmao
+        ClientChunkCache result = new ClientChunkCache(level, arr.viewDistance() - 3); // -3 because its adds 3 for no reason lmao
         IChunkArray copyArr = ((IClientChunkProvider) result).extractReferenceArray();
         copyArr.copyFrom(arr);
         if (copyArr.viewDistance() != arr.viewDistance()) {
@@ -47,7 +49,7 @@ public class MixinClientChunkProvider implements IClientChunkProvider {
 
     @Override
     public IChunkArray extractReferenceArray() {
-        for (Field f : ClientChunkProvider.class.getDeclaredFields()) {
+        for (Field f : ClientChunkCache.class.getDeclaredFields()) {
             if (IChunkArray.class.isAssignableFrom(f.getType())) {
                 try {
                     return (IChunkArray) f.get(this);
@@ -56,6 +58,6 @@ public class MixinClientChunkProvider implements IClientChunkProvider {
                 }
             }
         }
-        throw new RuntimeException(Arrays.toString(ClientChunkProvider.class.getDeclaredFields()));
+        throw new RuntimeException(Arrays.toString(ClientChunkCache.class.getDeclaredFields()));
     }
 }
