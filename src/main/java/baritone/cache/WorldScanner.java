@@ -17,6 +17,7 @@
 
 package baritone.cache;
 
+import baritone.api.IBaritoneProvider;
 import baritone.api.cache.ICachedWorld;
 import baritone.api.cache.IWorldScanner;
 import baritone.api.utils.BetterBlockPos;
@@ -35,7 +36,9 @@ import java.util.*;
 import java.util.stream.IntStream;
 
 public enum WorldScanner implements IWorldScanner {
-
+    /**
+     * don't access directly, use through {@link IBaritoneProvider#getWorldScanner()}
+     */
     INSTANCE;
 
     private static final int[] DEFAULT_COORDINATE_ITERATION_ORDER = IntStream.range(0, 16).toArray();

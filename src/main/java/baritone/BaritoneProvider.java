@@ -34,10 +34,12 @@ import java.util.List;
  * @author Brady
  * @since 9/29/2018
  */
+@SuppressWarnings("Idea: FieldMayBeFinal")
 public final class BaritoneProvider implements IBaritoneProvider {
 
     private final Baritone primary;
     private final List<IBaritone> all;
+    private IWorldScanner worldScanner = WorldScanner.INSTANCE;
 
     {
         this.primary = new Baritone();
@@ -59,7 +61,7 @@ public final class BaritoneProvider implements IBaritoneProvider {
 
     @Override
     public IWorldScanner getWorldScanner() {
-        return WorldScanner.INSTANCE;
+        return worldScanner;
     }
 
     @Override
@@ -71,4 +73,10 @@ public final class BaritoneProvider implements IBaritoneProvider {
     public ISchematicSystem getSchematicSystem() {
         return SchematicSystem.INSTANCE;
     }
+
+    @Override
+    public IWorldScanner overrideWorldScanner(IWorldScanner scanner) {
+        return worldScanner;
+    }
+
 }

@@ -18,6 +18,7 @@
 package baritone.process;
 
 import baritone.Baritone;
+import baritone.api.BaritoneAPI;
 import baritone.api.pathing.goals.*;
 import baritone.api.process.IMineProcess;
 import baritone.api.process.PathingCommand;
@@ -355,7 +356,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         locs = prune(ctx, locs, filter, max, blacklist, dropped);
 
         if (!untracked.isEmpty() || (Baritone.settings().extendCacheOnThreshold.value && locs.size() < max)) {
-            locs.addAll(WorldScanner.INSTANCE.scanChunkRadius(
+            locs.addAll(BaritoneAPI.getProvider().getWorldScanner().scanChunkRadius(
                     ctx.getBaritone().getPlayerContext(),
                     filter,
                     max,
