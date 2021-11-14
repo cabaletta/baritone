@@ -76,7 +76,9 @@ public final class BaritoneProvider implements IBaritoneProvider {
 
     @Override
     public IWorldScanner overrideWorldScanner(IWorldScanner scanner) {
-        return worldScanner;
+        IWorldScanner old = this.worldScanner;
+        this.worldScanner = scanner;
+        return old;
     }
 
 }
