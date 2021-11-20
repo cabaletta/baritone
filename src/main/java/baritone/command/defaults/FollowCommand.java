@@ -24,6 +24,7 @@ import baritone.api.command.argument.IArgConsumer;
 import baritone.api.command.datatypes.EntityClassById;
 import baritone.api.command.datatypes.IDatatypeFor;
 import baritone.api.command.datatypes.NearbyPlayer;
+import baritone.api.command.exception.CommandErrorMessageException;
 import baritone.api.command.exception.CommandException;
 import baritone.api.command.helpers.TabCompleteHelper;
 import java.util.*;
@@ -60,7 +61,7 @@ public class FollowCommand extends Command {
                 if (gotten instanceof EntityType) {
                     //noinspection unchecked
                     classes.add((EntityType) gotten);
-                } else {
+                } else if (gotten != null) {
                     entities.add((Entity) gotten);
                 }
             }
@@ -74,12 +75,14 @@ public class FollowCommand extends Command {
         if (group != null) {
             logDirect(String.format("Following all %s", group.name().toLowerCase(Locale.US)));
         } else {
-            logDirect("Following these types of entities:");
             if (classes.isEmpty()) {
+                if (entities.isEmpty()) throw new NoEntitiesException();
+                logDirect("Following these entities:");
                 entities.stream()
                         .map(Entity::toString)
                         .forEach(this::logDirect);
             } else {
+                logDirect("Following these types of entities:");
                 classes.stream()
                         .map(Registry.ENTITY_TYPE::getKey)
                         .map(Objects::requireNonNull)
@@ -155,5 +158,13 @@ public class FollowCommand extends Command {
         FollowList(IDatatypeFor datatype) {
             this.datatype = datatype;
         }
+    }
+
+    public static class NoEntitiesException extends CommandErrorMessageException {
+
+        protected NoEntitiesException() {
+            super("No valid entities in range!");
+        }
+
     }
 }

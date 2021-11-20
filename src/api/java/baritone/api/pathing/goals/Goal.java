@@ -54,4 +54,18 @@ public interface Goal {
     default double heuristic(BlockPos pos) {
         return heuristic(pos.getX(), pos.getY(), pos.getZ());
     }
+
+    /**
+     * Returns the heuristic at the goal.
+     * i.e. {@code heuristic() == heuristic(x,y,z)}
+     * when {@code isInGoal(x,y,z) == true}
+     * This is needed by {@code PathingBehavior#estimatedTicksToGoal} because
+     * some Goals actually do not have a heuristic of 0 when that condition is met
+     *
+     * @return The estimate number of ticks to satisfy the goal when the goal
+     * is already satisfied
+     */
+    default double heuristic() {
+        return 0;
+    }
 }
