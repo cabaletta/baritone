@@ -48,17 +48,6 @@
             }
         },
         {
-            "name": "net.jodah:typetools:0.5.0",
-            "downloads": {
-                "artifact": {
-                    "path": "net/jodah/typetools/0.5.0/typetools-0.5.0.jar",
-                    "sha1": "f61380c805c48c98305157e2543ca0bfc91583fe",
-                    "size": 11800,
-                    "url": "https://repo.maven.apache.org/maven2/net/jodah/typetools/0.5.0/typetools-0.5.0.jar"
-                }
-            }
-        },
-        {
             "name": "org.ow2.asm:asm-all:5.2",
             "downloads": {
                 "artifact": {
