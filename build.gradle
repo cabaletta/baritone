@@ -53,6 +53,10 @@ compileJava {
 }
 
 sourceSets {
+    installer {
+        compileClasspath += main.compileClasspath
+    }
+
     launch {
         compileClasspath += main.compileClasspath + main.runtimeClasspath + main.output
     }
@@ -117,7 +121,7 @@ javadoc {
 }
 
 jar {
-    from sourceSets.launch.output, sourceSets.api.output
+    from sourceSets.launch.output, sourceSets.api.output, sourceSets.installer.output
 
     if (!getProject().hasProperty("baritone.forge_build")) {
         exclude "**/BaritoneForgeModXD.class"
@@ -132,7 +136,10 @@ jar {
                 'MixinConfigs': 'mixins.baritone.json',
 
                 'Implementation-Title': 'Baritone',
-                'Implementation-Version': version
+                'Implementation-Version': version,
+                'ModLoader': getProject().hasProperty("baritone.forge_build") ? 'FORGE' : 'TWEAKER',
+
+                'Main-Class': 'baritone.install.BaritoneInstaller',
         )
     }
 }
