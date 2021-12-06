@@ -67,9 +67,9 @@ public class TweakerInstaller {
         Files.write(versions.resolve("1.12.2-Baritone.json"), buffer);
 
         //create profile
-        Path profiles = folder.resolve("launcher_profiles.json");
+        Path profiles = folder.resolve("launcher_profiles_microsoft_store.json");
         if (!Files.exists(profiles)) {
-            profiles = folder.resolve("launcher_profiles_microsoft_store.json");
+            profiles = folder.resolve("launcher_profiles.json");
         }
         if (!Files.exists(profiles)) {
             JOptionPane.showMessageDialog(parent, "Unable to find launcher profiles file: " + profiles.toString(), "Error", JOptionPane.ERROR_MESSAGE);
