@@ -93,6 +93,9 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         this.name = name;
         this.schematic = schematic;
         this.realSchematic = null;
+        if (!Baritone.settings().buildSubstitutes.value.isEmpty()) {
+            this.schematic = new SubstituteSchematic(this.schematic, Baritone.settings().buildSubstitutes.value);
+        }
         int x = origin.getX();
         int y = origin.getY();
         int z = origin.getZ();
@@ -843,6 +846,9 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             return true;
         }
         if (Baritone.settings().buildSkipBlocks.value.contains(desired.getBlock()) && !itemVerify) {
+            return true;
+        }
+        if (Baritone.settings().buildValidSubstitutes.value.getOrDefault(desired.getBlock(), Collections.emptyList()).contains(current.getBlock()) && !itemVerify) {
             return true;
         }
         return current.equals(desired);
