@@ -219,13 +219,6 @@ public final class Settings {
     public final Setting<Map<Block, List<Block>>> buildValidSubstitutes = new Setting<>(new HashMap<>());
 
     /**
-     * A mapping of blocks to blocks to be built instead
-     * <p>
-     * If a schematic asks for a block on this mapping, Baritone will place the first placeable block in the mapped list
-     */
-    public final Setting<Map<Block, List<Block>>> buildSubstitutes = new Setting<>(new HashMap<>());
-
-    /**
      * A list of blocks to become air
      * <p>
      * If a schematic asks for a block on this list, only air will be accepted at that location (and nothing on buildIgnoreBlocks)
