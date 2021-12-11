@@ -68,9 +68,6 @@ import java.io.FileInputStream;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import static baritone.api.pathing.movement.ActionCosts.COST_INF;
 
 public final class BuilderProcess extends BaritoneProcessHelper implements IBuilderProcess {
