@@ -263,8 +263,7 @@ public class SettingsUtil {
             public boolean accepts(Type type) {
                 return List.class.isAssignableFrom(TypeUtils.resolveBaseClass(type));
             }
-        };
-        
+        },
         MAPPING() {
             @Override
             public Object parse(ParserContext context, String raw) {
