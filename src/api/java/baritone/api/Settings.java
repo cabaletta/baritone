@@ -31,10 +31,10 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
 import java.util.List;
-import java.util.function.Consumer;
-
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Consumer;
+
 
 /**
  * Baritone's settings. Settings apply to all Baritone instances.
