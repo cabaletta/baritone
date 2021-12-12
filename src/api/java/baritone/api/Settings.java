@@ -556,13 +556,6 @@ public final class Settings {
     public final Setting<Boolean> pruneRegionsFromRAM = new Setting<>(true);
 
     /**
-     * Remember the contents of containers (chests, echests, furnaces)
-     * <p>
-     * Really buggy since the packet stuff is multithreaded badly thanks to brady
-     */
-    public final Setting<Boolean> containerMemory = new Setting<>(false);
-
-    /**
      * Fill in blocks behind you
      */
     public final Setting<Boolean> backfill = new Setting<>(false);
