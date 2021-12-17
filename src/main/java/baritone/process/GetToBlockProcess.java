@@ -242,7 +242,7 @@ public final class GetToBlockProcess extends BaritoneProcessHelper implements IG
         if (!Baritone.settings().rightClickContainerOnArrival.value) {
             return false;
         }
-        return block == Blocks.CRAFTING_TABLE || block == Blocks.FURNACE || block == Blocks.ENDER_CHEST || block == Blocks.CHEST || block == Blocks.TRAPPED_CHEST;
+        return block == Blocks.CRAFTING_TABLE || block == Blocks.FURNACE || block == Blocks.LIT_FURNACE || block == Blocks.ENDER_CHEST || block == Blocks.CHEST || block == Blocks.TRAPPED_CHEST;
     }
 
     private boolean blockOnTopMustBeRemoved(Block block) {
