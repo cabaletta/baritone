@@ -48,6 +48,9 @@ import baritone.utils.schematic.schematica.SchematicaHelper;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.block.BlockAir;
 import net.minecraft.block.BlockLiquid;
+import net.minecraft.block.BlockGlazedTerracotta;
+import net.minecraft.block.BlockBone;
+import net.minecraft.block.BlockHay;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemBlock;
@@ -834,6 +837,10 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
 
     private boolean valid(IBlockState current, IBlockState desired, boolean itemVerify) {
         if (desired == null) {
+            return true;
+        }
+        if ((current.getBlock() instanceof BlockGlazedTerracotta || current.getBlock() instanceof BlockBone || current.getBlock() instanceof BlockHay)
+                && Baritone.settings().buildIgnoreDirection.value && current.getBlock() == desired.getBlock()) {
             return true;
         }
         if (current.getBlock() instanceof BlockLiquid && Baritone.settings().okIfWater.value) {

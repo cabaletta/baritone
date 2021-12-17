@@ -259,6 +259,11 @@ public final class Settings {
     public final Setting<Boolean> buildIgnoreExisting = new Setting<>(false);
 
     /**
+     * If this is true, the builder will ignore directionality of certain blocks like glazed terracotta.
+     */
+    public final Setting<Boolean> buildIgnoreDirection = new Setting<>(false);
+
+    /**
      * If this setting is true, Baritone will never break a block that is adjacent to an unsupported falling block.
      * <p>
      * I.E. it will never trigger cascading sand / gravel falls
