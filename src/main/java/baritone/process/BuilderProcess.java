@@ -839,10 +839,6 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         if (desired == null) {
             return true;
         }
-        if ((current.getBlock() instanceof BlockGlazedTerracotta || current.getBlock() instanceof BlockBone || current.getBlock() instanceof BlockHay)
-                && Baritone.settings().buildIgnoreDirection.value && current.getBlock() == desired.getBlock()) {
-            return true;
-        }
         if (current.getBlock() instanceof BlockLiquid && Baritone.settings().okIfWater.value) {
             return true;
         }
@@ -861,7 +857,10 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         if (Baritone.settings().buildValidSubstitutes.value.getOrDefault(desired.getBlock(), Collections.emptyList()).contains(current.getBlock()) && !itemVerify) {
             return true;
         }
-        return current.equals(desired);
+        if (current.equals(desired)) {
+            return true;
+        }
+        return Baritone.settings().buildIgnoreDirection.value && current.getBlock() == desired.getBlock();
     }
 
     public class BuilderCalculationContext extends CalculationContext {
