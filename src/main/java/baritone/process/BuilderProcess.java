@@ -839,8 +839,8 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         if (desired == null) {
             return true;
         }
-        if ((current.getBlock() instanceof BlockGlazedTerracotta || current.getBlock() instanceof BlockBone || current.getBlock() instanceof BlockHay)
-                && Baritone.settings().buildIgnoreDirection.value && current.getBlock() == desired.getBlock()) {
+        if (Baritone.settings().buildIgnoreDirection.value && current.getBlock() == desired.getBlock() &&
+            (current.getBlock() instanceof BlockGlazedTerracotta || current.getBlock() instanceof BlockBone || current.getBlock() instanceof BlockHay)) {
             return true;
         }
         if (current.getBlock() instanceof BlockLiquid && Baritone.settings().okIfWater.value) {
