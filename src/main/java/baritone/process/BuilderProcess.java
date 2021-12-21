@@ -843,13 +843,15 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             );
 
     private boolean sameWithoutOrientation(IBlockState first, IBlockState second) {
-        if (first.getBlock() != second.getBlock()
-        ) {return false;}
+        if (first.getBlock() != second.getBlock()) {
+            return false;
+        }
         ImmutableMap<IProperty<?>, Comparable<?>> map1 = first.getProperties();
         ImmutableMap<IProperty<?>, Comparable<?>> map2 = second.getProperties();
         for (IProperty<?> prop : map1.keySet()) {
-            if (map1.get(prop) != map2.get(prop) && !orientationProps.contains(prop)
-            ) {return false;}
+            if (map1.get(prop) != map2.get(prop) && !orientationProps.contains(prop)) {
+                return false;
+            }
         }
         return true;
     }
