@@ -50,7 +50,6 @@ import com.google.common.collect.ImmutableSet;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.block.*;
 import net.minecraft.block.properties.IProperty;
-import net.minecraft.block.properties.PropertyEnum;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemBlock;
@@ -848,7 +847,9 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         }
         ImmutableMap<IProperty<?>, Comparable<?>> map1 = first.getProperties();
         ImmutableMap<IProperty<?>, Comparable<?>> map2 = second.getProperties();
-        for (IProperty<?> prop : map1.keySet()) {
+        HashSet<IProperty<?>> keys = new HashSet<>(first.getPropertyKeys());
+        keys.addAll(second.getPropertyKeys());
+        for (IProperty<?> prop : keys) {
             if (map1.get(prop) != map2.get(prop) && !orientationProps.contains(prop)) {
                 return false;
             }
