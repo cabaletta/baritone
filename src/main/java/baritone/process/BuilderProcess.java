@@ -45,12 +45,11 @@ import baritone.utils.schematic.MapArtSchematic;
 import baritone.utils.schematic.SelectionSchematic;
 import baritone.utils.schematic.SchematicSystem;
 import baritone.utils.schematic.schematica.SchematicaHelper;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-import net.minecraft.block.BlockAir;
-import net.minecraft.block.BlockLiquid;
-import net.minecraft.block.BlockGlazedTerracotta;
-import net.minecraft.block.BlockBone;
-import net.minecraft.block.BlockHay;
+import net.minecraft.block.*;
+import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemBlock;
@@ -835,12 +834,29 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         return result;
     }
 
+    public static final Set<IProperty<?>> orientationProps =
+            ImmutableSet.of(BlockRotatedPillar.AXIS, BlockLog.LOG_AXIS, BlockHorizontal.FACING,
+                    BlockStairs.FACING, BlockStairs.HALF, BlockStairs.SHAPE,
+                    BlockPane.NORTH, BlockPane.EAST, BlockPane.SOUTH, BlockPane.WEST, BlockVine.UP,
+                    BlockTrapDoor.OPEN, BlockTrapDoor.HALF
+            );
+
+    private boolean sameWithoutOrientation(IBlockState first, IBlockState second) {
+        if (first.getBlock() != second.getBlock()) {
+            return false;
+        }
+        ImmutableMap<IProperty<?>, Comparable<?>> map1 = first.getProperties();
+        ImmutableMap<IProperty<?>, Comparable<?>> map2 = second.getProperties();
+        for (IProperty<?> prop : map1.keySet()) {
+            if (map1.get(prop) != map2.get(prop) && !orientationProps.contains(prop)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     private boolean valid(IBlockState current, IBlockState desired, boolean itemVerify) {
         if (desired == null) {
-            return true;
-        }
-        if (Baritone.settings().buildIgnoreDirection.value && current.getBlock() == desired.getBlock() &&
-            (current.getBlock() instanceof BlockGlazedTerracotta || current.getBlock() instanceof BlockBone || current.getBlock() instanceof BlockHay)) {
             return true;
         }
         if (current.getBlock() instanceof BlockLiquid && Baritone.settings().okIfWater.value) {
@@ -861,7 +877,10 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         if (Baritone.settings().buildValidSubstitutes.value.getOrDefault(desired.getBlock(), Collections.emptyList()).contains(current.getBlock()) && !itemVerify) {
             return true;
         }
-        return current.equals(desired);
+        if (current.equals(desired)) {
+            return true;
+        }
+        return Baritone.settings().buildIgnoreDirection.value && sameWithoutOrientation(current, desired);
     }
 
     public class BuilderCalculationContext extends CalculationContext {
