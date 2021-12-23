@@ -847,9 +847,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         }
         ImmutableMap<IProperty<?>, Comparable<?>> map1 = first.getProperties();
         ImmutableMap<IProperty<?>, Comparable<?>> map2 = second.getProperties();
-        HashSet<IProperty<?>> keys = new HashSet<>(first.getPropertyKeys());
-        keys.addAll(second.getPropertyKeys());
-        for (IProperty<?> prop : keys) {
+        for (IProperty<?> prop : map1.keySet()) {
             if (map1.get(prop) != map2.get(prop) && !orientationProps.contains(prop)) {
                 return false;
             }
