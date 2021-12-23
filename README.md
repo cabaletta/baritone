@@ -59,7 +59,7 @@ For 1.16.5, [click here](https://www.youtube.com/watch?v=_4eVJ9Qz2J8) and see de
 
 For 1.17.1 leijurv is to lazy to actually create a release so you can login to github and download the jars in the `artifacts` zip [here](https://github.com/cabaletta/baritone/actions/runs/1451572684)
 
-For 1.18.1 leijurv is to lazy to actually create a release so you can login to github and download the jars in the `artifacts` zip [here](https://github.com/cabaletta/baritone/suites/4536126920/artifacts/121555622) or check the runs for the 1.18 branch [here](https://github.com/cabaletta/baritone/actions?query=branch%3A1.18)
+For 1.18.1 leijurv is to lazy to actually create a release so you can login to github and download the jars in the `artifacts` zip [here](https://github.com/cabaletta/baritone/suites/4536126920/artifacts/121555622) or check the runs for the 1.18 branch [here](https://github.com/cabaletta/baritone/actions/workflows/gradle_build.yml?query=branch%3A1.18)
 
 This project is an updated version of [MineBot](https://github.com/leijurv/MineBot/),
 the original version of the bot for Minecraft 1.8.9, rebuilt for 1.12.2 through 1.16.5. Baritone focuses on reliability and particularly performance (it's over [30x faster](https://github.com/cabaletta/baritone/pull/180#issuecomment-423822928) than MineBot at calculating paths).
