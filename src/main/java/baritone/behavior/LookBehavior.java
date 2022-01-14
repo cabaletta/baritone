@@ -23,6 +23,7 @@ import baritone.api.behavior.ILookBehavior;
 import baritone.api.event.events.PlayerUpdateEvent;
 import baritone.api.event.events.RotationMoveEvent;
 import baritone.api.utils.Rotation;
+import net.minecraft.util.Mth;
 
 public final class LookBehavior extends Behavior implements ILookBehavior {
 
@@ -43,6 +44,9 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
      */
     private float lastYaw;
 
+    private int lerpSteps = 1;
+    private int tempStep = lerpSteps;
+
     public LookBehavior(Baritone baritone) {
         super(baritone);
     }
@@ -62,7 +66,13 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
 
     @Override
     public void onPlayerUpdate(PlayerUpdateEvent event) {
+
+        if (Baritone.settings().smoothAim.value != this.lerpSteps){
+            this.lerpSteps = Baritone.settings().smoothAim.value;
+        }
+
         if (this.target == null) {
+            this.tempStep = this.lerpSteps;
             return;
         }
 
@@ -72,13 +82,15 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
         switch (event.getState()) {
             case PRE: {
                 if (this.force) {
-                    float desiredYaw = Math.round(this.target.getYaw());
-                    float oldPitch = Math.round(ctx.player().getXRot());
-                    float desiredPitch = Math.round(this.target.getPitch());
-                    double xPos = ctx.player().getX();
-                    double yPos = ctx.player().getY();
-                    double zPos = ctx.player().getZ();
-                    ctx.player().lerpTo(xPos,yPos,zPos, desiredYaw, desiredPitch, Baritone.settings().smoothAim.value, true);
+                    float oldYaw = ctx.player().getYRot();
+                    float desiredYaw = this.target.getYaw();
+                    float oldPitch = ctx.player().getXRot();
+                    float desiredPitch = this.target.getPitch();
+                    double g = Mth.wrapDegrees(desiredYaw - (double)oldYaw);
+                    ctx.player().setYRot(oldYaw + (float)g / (float)this.tempStep);
+                    ctx.player().setXRot(oldPitch + (float)(desiredPitch - (double)oldPitch) / (float)this.tempStep);
+                    --this.tempStep;
+//
                     ctx.player().setYRot((float) (ctx.player().getYRot() + (Math.random() - 0.5) * Baritone.settings().randomLooking.value));
                     ctx.player().setXRot((float) (ctx.player().getXRot() +  (Math.random() - 0.5) * Baritone.settings().randomLooking.value));
                     if (desiredPitch == oldPitch && !Baritone.settings().freeLook.value) {
