@@ -286,6 +286,12 @@ public final class Settings {
     public final Setting<Double> randomLooking113 = new Setting<>(2d);
 
     /**
+     * Enable smooth aim while mining/building. Aim is updated per tick (20 = 1 second)
+     * set to 1 to disable.
+     */
+    public final Setting<Integer> smoothAim = new Setting<>(1);
+
+    /**
      * Block reach distance
      */
     public final Setting<Float> blockReachDistance = new Setting<>(4.5f);
