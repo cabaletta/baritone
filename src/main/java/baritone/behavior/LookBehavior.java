@@ -22,6 +22,7 @@ import baritone.api.Settings;
 import baritone.api.behavior.ILookBehavior;
 import baritone.api.event.events.PlayerUpdateEvent;
 import baritone.api.event.events.RotationMoveEvent;
+import baritone.api.event.events.type.EventState;
 import baritone.api.utils.Rotation;
 import net.minecraft.util.Mth;
 
@@ -46,6 +47,9 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
 
     private int lerpSteps = 1;
     private int tempStep = lerpSteps;
+    private int ticks = 0;
+    private boolean update = false;
+    private Rotation prevTarget = null;
 
     public LookBehavior(Baritone baritone) {
         super(baritone);
@@ -66,15 +70,31 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
 
     @Override
     public void onPlayerUpdate(PlayerUpdateEvent event) {
-
         if (Baritone.settings().smoothAim.value != this.lerpSteps){
             this.lerpSteps = Baritone.settings().smoothAim.value;
         }
-
         if (this.target == null) {
             this.tempStep = this.lerpSteps;
             return;
         }
+
+        if(event.getState() == EventState.PRE) {
+            this.ticks++;
+            if (this.update == false && this.ticks % Baritone.settings().waitTicksBeforeAim.value == 0) {
+                this.update = true;
+            }
+        }
+
+        if (!update) {
+            return;
+        }
+        if (!this.target.equals(this.prevTarget)) {
+            this.prevTarget = this.target;
+            this.update = false;
+            ticks = 1;
+            return;
+        }
+
 
         // Whether or not we're going to silently set our angles
         boolean silent = Baritone.settings().antiCheatCompatibility.value && !this.force;

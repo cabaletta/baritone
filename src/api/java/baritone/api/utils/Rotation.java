@@ -156,6 +156,24 @@ public class Rotation {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Rotation rotation = (Rotation) o;
+
+        if (Float.compare(rotation.yaw, yaw) != 0) return false;
+        return Float.compare(rotation.pitch, pitch) == 0;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = (yaw != +0.0f ? Float.floatToIntBits(yaw) : 0);
+        result = 31 * result + (pitch != +0.0f ? Float.floatToIntBits(pitch) : 0);
+        return result;
+    }
+
+    @Override
     public String toString() {
         return "Yaw: " + yaw + ", Pitch: " + pitch;
     }
