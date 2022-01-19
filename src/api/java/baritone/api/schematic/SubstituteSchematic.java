@@ -52,6 +52,9 @@ public class SubstituteSchematic extends AbstractSchematic {
             return desired;
         }
         List<Block> substitutes = substitutions.get(desiredBlock);
+        if (substitutes.isEmpty()) {
+            return desired;
+        }
         if (substitutes.contains(current.getBlock()) && !(current.getBlock() instanceof BlockAir)) {// don't preserve air, it's almost always there and almost never wanted
             return withBlock(desired, current.getBlock());
         }
