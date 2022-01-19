@@ -204,6 +204,9 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         if (state.getBlock() == Blocks.AIR) {
             return null;
         }
+        if (!MovementHelper.canWalkOn(new BlockStateInterface(ctx),x,y,z,state)) { // throwaways have to be canWalkOn so we have to place a wrong block here, air is separate because it is so common
+            return null;
+        }
         return state;
     }
 
@@ -924,7 +927,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                     // this won't be a schematic block, this will be a throwaway
                     return placeBlockCost * 2; // we're going to have to break it eventually
                 }
-                if (placeable.contains(sch)) {
+                if (placeable.contains(sch) && MovementHelper.canWalkOn(bsi,x,y,z,sch)) { // we can only allow placing canWalkOn blocks because of how MovementAscend breaks canWalkThrough blocks
                     return 0; // thats right we gonna make it FREE to place a block where it should go in a structure
                     // no place block penalty at all 😎
                     // i'm such an idiot that i just tried to copy and paste the epic gamer moment emoji too
