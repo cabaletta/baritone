@@ -736,13 +736,19 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         }
         boolean allowSameLevel = ctx.world().getBlockState(pos.up()).getBlock() != Blocks.AIR;
         IBlockState current = ctx.world().getBlockState(pos);
+        IBlockState desired = bcc.getSchematic(pos.getX(), pos.getY(), pos.getZ(), current);
+        boolean allowOnTop = MovementHelper.canWalkOn(bcc.bsi, pos.getX(), pos.getY(), pos.getZ(), desired);
         for (EnumFacing facing : Movement.HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP) {
             //noinspection ConstantConditions
-            if (MovementHelper.canPlaceAgainst(ctx, pos.offset(facing)) && ctx.world().mayPlace(bcc.getSchematic(pos.getX(), pos.getY(), pos.getZ(), current).getBlock(), pos, false, facing, null)) {
-                return new GoalAdjacent(pos, pos.offset(facing), allowSameLevel);
+            if (MovementHelper.canPlaceAgainst(ctx, pos.offset(facing)) && ctx.world().mayPlace(desired.getBlock(), pos, false, facing, null)) {
+                return new GoalAdjacent(pos, pos.offset(facing), allowSameLevel, allowOnTop);
             }
         }
-        return new GoalPlace(pos);
+        if (allowOnTop) {
+            return new GoalPlace(pos);
+        } else {
+            return new GoalAdjacent(pos, null, true, false);
+        }
     }
 
     private Goal breakGoal(BlockPos pos, BuilderCalculationContext bcc) {
@@ -762,23 +768,28 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
 
     public static class GoalAdjacent extends GoalGetToBlock {
 
+        private boolean allowOnTop;
         private boolean allowSameLevel;
         private BlockPos no;
 
-        public GoalAdjacent(BlockPos pos, BlockPos no, boolean allowSameLevel) {
+        public GoalAdjacent(BlockPos pos, BlockPos no, boolean allowSameLevel, boolean allowOnTop) {
             super(pos);
             this.no = no;
             this.allowSameLevel = allowSameLevel;
+            this.allowOnTop = allowOnTop;
         }
 
         public boolean isInGoal(int x, int y, int z) {
             if (x == this.x && y == this.y && z == this.z) {
                 return false;
             }
-            if (x == no.getX() && y == no.getY() && z == no.getZ()) {
+            if (no != null && x == no.getX() && y == no.getY() && z == no.getZ()) {
                 return false;
             }
             if (!allowSameLevel && y == this.y - 1) {
+                return false;
+            }
+            if (!allowOnTop && x == this.x && y == this.y + 1 && z == this.z) {
                 return false;
             }
             if (y < this.y - 1) {
