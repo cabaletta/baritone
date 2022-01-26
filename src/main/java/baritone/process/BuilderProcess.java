@@ -269,7 +269,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                     }
                     IBlockState curr = bcc.bsi.get0(x, y, z);
                     if (MovementHelper.isReplaceable(x, y, z, curr, bcc.bsi) && !valid(curr, desired, false)) {
-                        if (dy == 1 && bcc.bsi.get0(x, y + 1, z).getBlock() == Blocks.AIR) {
+                        if (dy == 1 && MovementHelper.canWalkThrough(bcc.bsi, x, y + 1, z) && !MovementHelper.canWalkThrough(bcc.bsi, x, y, z, desired)) {
                             continue;
                         }
                         desirableOnHotbar.add(desired);
