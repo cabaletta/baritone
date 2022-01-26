@@ -34,6 +34,7 @@ import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.RayTraceUtils;
 import baritone.api.utils.Rotation;
 import baritone.api.utils.RotationUtils;
+import baritone.api.utils.VecUtils;
 import baritone.api.utils.input.Input;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
@@ -527,6 +528,18 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                 logDirect("Unable to do it. Pausing. resume to resume, cancel to cancel");
                 paused = true;
                 return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
+            }
+        }
+        if (!baritone.getPathingBehavior().hasPath() && goal.isInGoal(ctx.playerFeet())) {
+            // We are where we want to be but can't place or break, we are likely standing partially inside a block we want to place
+            // This moves us fully onto our supporting block, either into or out of the block we want to place
+            // Afterwards we can place or pathing will move us to a supported position from where we can place
+            BetterBlockPos pathStart = baritone.getPathingBehavior().pathStart();
+            if (VecUtils.entityFlatDistanceToCenter(ctx.player(), pathStart) > 0.1) { // don't jitter if the builder refuses to place for some reason
+                float yaw = RotationUtils.calcRotationFromVec3d(ctx.playerHead(), VecUtils.getBlockPosCenter(pathStart), ctx.playerRotations()).getYaw();
+                Rotation target = new Rotation(yaw, ctx.player().rotationPitch);
+                baritone.getLookBehavior().updateTarget(target, false);
+                baritone.getInputOverrideHandler().setInputForceState(Input.MOVE_FORWARD, true);
             }
         }
         return new PathingCommandContext(goal, PathingCommandType.FORCE_REVALIDATE_GOAL_AND_PATH, bcc);
