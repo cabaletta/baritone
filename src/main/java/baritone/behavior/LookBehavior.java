@@ -48,7 +48,7 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
     private int lerpSteps = 1;
     private int tempStep = lerpSteps;
     private int ticks = 0;
-    private boolean update = false;
+    private boolean canUpdate = false;
     private Rotation prevTarget = null;
 
     public LookBehavior(Baritone baritone) {
@@ -80,17 +80,18 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
 
         if(event.getState() == EventState.PRE) {
             this.ticks++;
-            if (this.update == false && this.ticks % Baritone.settings().waitTicksBeforeAim.value == 0) {
-                this.update = true;
+            if (Baritone.settings().waitTicksBeforeAim.value <= 0 ||
+                    (this.canUpdate == false && this.ticks % Baritone.settings().waitTicksBeforeAim.value == 0)) {
+                this.canUpdate = true;
             }
         }
 
-        if (!update) {
+        if (!canUpdate) {
             return;
         }
         if (!this.target.equals(this.prevTarget)) {
             this.prevTarget = this.target;
-            this.update = false;
+            this.canUpdate = false;
             ticks = 1;
             return;
         }

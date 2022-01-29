@@ -292,8 +292,8 @@ public final class Settings {
     public final Setting<Integer> smoothAim = new Setting<>(1);
 
     /**
-     * Enable smooth aim while mining/building. Aim is updated per tick (20 = 1 second)
-     * set to 1 to disable.
+     * Enable waiting some ticks before rotate players look. New rotate is updated per tick (20 = 1 second)
+     * set to 0 to disable.
      */
     public final Setting<Integer> waitTicksBeforeAim = new Setting<>(1);
 
