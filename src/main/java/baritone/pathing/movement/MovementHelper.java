@@ -39,6 +39,7 @@ import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.IBlockReader;
 
+import java.util.List;
 import java.util.Optional;
 
 import static baritone.pathing.movement.Movement.HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP;
@@ -522,7 +523,12 @@ public interface MovementHelper extends ActionCosts, Helper {
                 || block instanceof ShulkerBoxBlock) {
             return false;
         }
-        return Block.isOpaque(state.getCollisionShape(null, null));
+        try {
+            return Block.isOpaque(state.getCollisionShape(null, null));
+        } catch (Exception ignored) {
+            // if we can't get the collision shape, assume it's bad and add to blocksToAvoid
+        }
+        return false;
     }
 
     static PlaceResult attemptToPlaceABlock(MovementState state, IBaritone baritone, BlockPos placeAt, boolean preferDown, boolean wouldSneak) {
