@@ -81,12 +81,12 @@ public class WorldProvider implements IWorldProvider, Helper {
             } else {
                 if (mc.getCurrentServer() != null) {
                     folderName = mc.getCurrentServer().ip;
-            } else {
-                //replaymod causes null currentServerData and false singleplayer.
-                currentWorld = null;
-                return;
+                } else {
+                    //replaymod causes null currentServerData and false singleplayer.
+                    currentWorld = null;
+                    return;
+                }
             }
-        }
             if (SystemUtils.IS_OS_WINDOWS) {
                 folderName = folderName.replace(":", "_");
             }
