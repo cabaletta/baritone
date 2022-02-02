@@ -43,8 +43,6 @@ public class FillSchematic extends AbstractSchematic {
     public BlockState desiredState(int x, int y, int z, BlockState current, List<BlockState> approxPlaceable) {
         if (bom.matches(current)) {
             return current;
-        } else if (current.getBlock() != Blocks.AIR) {
-            return Blocks.AIR.defaultBlockState();
         }
         for (BlockState placeable : approxPlaceable) {
             if (bom.matches(placeable)) {

@@ -18,6 +18,8 @@
 package baritone.api.pathing.goals;
 
 import baritone.api.utils.SettingsUtil;
+import it.unimi.dsi.fastutil.doubles.DoubleOpenHashSet;
+import it.unimi.dsi.fastutil.doubles.DoubleIterator;
 import java.util.Arrays;
 import net.minecraft.core.BlockPos;
 
@@ -64,7 +66,7 @@ public class GoalRunAway implements Goal {
     }
 
     @Override
-    public double heuristic(int x, int y, int z) {//mostly copied from GoalBlock
+    public double heuristic(int x, int y, int z) {// mostly copied from GoalBlock
         double min = Double.MAX_VALUE;
         for (BlockPos p : from) {
             double h = GoalXZ.calculate(p.getX() - x, p.getZ() - z);
@@ -77,6 +79,48 @@ public class GoalRunAway implements Goal {
             min = min * 0.6 + GoalYLevel.calculate(maintainY, y) * 1.5;
         }
         return min;
+    }
+
+    @Override
+    public double heuristic() {// TODO less hacky solution
+        int distance = (int) Math.ceil(Math.sqrt(distanceSq));
+        int minX = Integer.MAX_VALUE;
+        int minY = Integer.MAX_VALUE;
+        int minZ = Integer.MAX_VALUE;
+        int maxX = Integer.MIN_VALUE;
+        int maxY = Integer.MIN_VALUE;
+        int maxZ = Integer.MIN_VALUE;
+        for (BlockPos p : from) {
+            minX = Math.min(minX, p.getX() - distance);
+            minY = Math.min(minY, p.getY() - distance);
+            minZ = Math.min(minZ, p.getZ() - distance);
+            maxX = Math.max(minX, p.getX() + distance);
+            maxY = Math.max(minY, p.getY() + distance);
+            maxZ = Math.max(minZ, p.getZ() + distance);
+        }
+        DoubleOpenHashSet maybeAlwaysInside = new DoubleOpenHashSet(); // see pull request #1978
+        double minOutside = Double.POSITIVE_INFINITY;
+        for (int x = minX; x <= maxX; x++) {
+            for (int y = minY; y <= maxY; y++) {
+                for (int z = minZ; z <= maxZ; z++) {
+                    double h = heuristic(x, y, z);
+                    if (h < minOutside && isInGoal(x, y, z)) {
+                        maybeAlwaysInside.add(h);
+                    } else {
+                        minOutside = Math.min(minOutside, h);
+                    }
+                }
+            }
+        }
+        double maxInside = Double.NEGATIVE_INFINITY;
+        DoubleIterator it = maybeAlwaysInside.iterator();
+        while (it.hasNext()) {
+            double inside = it.nextDouble();
+            if (inside < minOutside) {
+                maxInside = Math.max(maxInside, inside);
+            }
+        }
+        return maxInside;
     }
 
     @Override

@@ -17,11 +17,15 @@
 
 package baritone.api;
 
+import baritone.api.utils.NotificationHelper;
 import baritone.api.utils.SettingsUtil;
 import baritone.api.utils.TypeUtils;
+import baritone.api.utils.gui.BaritoneToast;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Vec3i;
+import net.minecraft.network.chat.BaseComponent;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -32,6 +36,7 @@ import java.lang.reflect.Type;
 import java.util.*;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 
 /**
  * Baritone's settings. Settings apply to all Baritone instances.
@@ -69,9 +74,9 @@ public final class Settings {
     public final Setting<Boolean> assumeExternalAutoTool = new Setting<>(false);
 
     /**
-     * If this setting is on, no auto tool will occur at all, not at calculation time nor execution time
+     * Automatically select the best available tool
      */
-    public final Setting<Boolean> disableAutoTool = new Setting<>(false);
+    public final Setting<Boolean> autoTool = new Setting<>(true);
 
     /**
      * It doesn't actually take twenty ticks to place a block, this cost is so high
@@ -186,12 +191,24 @@ public final class Settings {
     /**
      * Blocks that Baritone is not allowed to break
      */
+    public final Setting<List<Block>> blocksToDisallowBreaking = new Setting<>(new ArrayList<>(
+        // Leave Empty by Default
+    ));
+
+    /**
+     * blocks that baritone shouldn't break, but can if it needs to.
+     */
     public final Setting<List<Block>> blocksToAvoidBreaking = new Setting<>(new ArrayList<>(Arrays.asList( // TODO can this be a HashSet or ImmutableSet?
             Blocks.CRAFTING_TABLE,
             Blocks.FURNACE,
             Blocks.CHEST,
             Blocks.TRAPPED_CHEST
     )));
+
+    /**
+     * this multiplies the break speed, if set above 1 it's "encourage breaking" instead
+     */
+    public final Setting<Double> avoidBreakingMultiplier = new Setting<>(.1);
 
     /**
      * A list of blocks to be treated as if they're air.
@@ -201,6 +218,29 @@ public final class Settings {
     public final Setting<List<Block>> buildIgnoreBlocks = new Setting<>(new ArrayList<>(Arrays.asList(
 
     )));
+
+    /**
+     * A list of blocks to be treated as correct.
+     * <p>
+     * If a schematic asks for any block on this list at a certain position, it will be treated as correct, regardless of what it currently is.
+     */
+    public final Setting<List<Block>> buildSkipBlocks = new Setting<>(new ArrayList<>(Arrays.asList(
+
+    )));
+
+    /**
+     * A mapping of blocks to blocks treated as correct in their position
+     * <p>
+     * If a schematic asks for a block on this mapping, all blocks on the mapped list will be accepted at that location as well
+     */
+    public final Setting<Map<Block, List<Block>>> buildValidSubstitutes = new Setting<>(new HashMap<>());
+
+    /**
+     * A mapping of blocks to blocks to be built instead
+     * <p>
+     * If a schematic asks for a block on this mapping, Baritone will place the first placeable block in the mapped list
+     */
+    public final Setting<Map<Block, List<Block>>> buildSubstitutes = new Setting<>(new HashMap<>());
 
     /**
      * A list of blocks to become air
@@ -215,6 +255,11 @@ public final class Settings {
      * If this is true, the builder will treat all non-air blocks as correct. It will only place new blocks.
      */
     public final Setting<Boolean> buildIgnoreExisting = new Setting<>(false);
+
+    /**
+     * If this is true, the builder will ignore directionality of certain blocks like glazed terracotta.
+     */
+    public final Setting<Boolean> buildIgnoreDirection = new Setting<>(false);
 
     /**
      * If this setting is true, Baritone will never break a block that is adjacent to an unsupported falling block.
@@ -519,13 +564,6 @@ public final class Settings {
     public final Setting<Boolean> pruneRegionsFromRAM = new Setting<>(true);
 
     /**
-     * Remember the contents of containers (chests, echests, furnaces)
-     * <p>
-     * Really buggy since the packet stuff is multithreaded badly thanks to brady
-     */
-    public final Setting<Boolean> containerMemory = new Setting<>(false);
-
-    /**
      * Fill in blocks behind you
      */
     public final Setting<Boolean> backfill = new Setting<>(false);
@@ -572,6 +610,12 @@ public final class Settings {
      * Render the goal
      */
     public final Setting<Boolean> renderGoal = new Setting<>(true);
+
+    /**
+     * Render the goal as a sick animated thingy instead of just a box
+     * (also controls animation of GoalXZ if {@link #renderGoalXZBeacon} is enabled)
+     */
+    public final Setting<Boolean> renderGoalAnimated = new Setting<>(true);
 
     /**
      * Render selection boxes
@@ -642,7 +686,7 @@ public final class Settings {
 
     /**
      * When GetToBlockProcess or MineProcess fails to calculate a path, instead of just giving up, mark the closest instance
-     * of that block as "unreachable" and go towards the next closest. GetToBlock expands this seaarch to the whole "vein"; MineProcess does not.
+     * of that block as "unreachable" and go towards the next closest. GetToBlock expands this search to the whole "vein"; MineProcess does not.
      * This is because MineProcess finds individual impossible blocks (like one block in a vein that has gravel on top then lava, so it can't break)
      * Whereas GetToBlock should blacklist the whole "vein" if it can't get to any of them.
      */
@@ -696,6 +740,16 @@ public final class Settings {
      * Censor arguments to ran commands, to hide, for example, coordinates to #goal
      */
     public final Setting<Boolean> censorRanCommands = new Setting<>(false);
+
+    /**
+     * Stop using tools just before they are going to break.
+     */
+    public final Setting<Boolean> itemSaver = new Setting<>(false);
+
+    /**
+     * Durability to leave on the tool when using itemSaver
+     */
+    public final Setting<Integer> itemSaverThreshold = new Setting<>(10);
 
     /**
      * Always prefer silk touch tools over regular tools. This will not sacrifice speed, but it will always prefer silk
@@ -758,7 +812,7 @@ public final class Settings {
     public final Setting<Integer> allowOnlyExposedOresDistance = new Setting<>(1);
 
     /**
-     * When GetToBlock doesn't know any locations for the desired block, explore randomly instead of giving up.
+     * When GetToBlock or non-legit Mine doesn't know any locations for the desired block, explore randomly instead of giving up.
      */
     public final Setting<Boolean> exploreForBlocks = new Setting<>(true);
 
@@ -811,6 +865,11 @@ public final class Settings {
     public final Setting<Boolean> layerOrder = new Setting<>(false);
 
     /**
+     * How high should the individual layers be?
+     */
+    public final Setting<Integer> layerHeight = new Setting<>(1);
+
+    /**
      * Start building the schematic at a specific layer.
      * Can help on larger builds when schematic wants to break things its already built
      */
@@ -822,6 +881,11 @@ public final class Settings {
     public final Setting<Boolean> skipFailedLayers = new Setting<>(false);
 
     /**
+     * Only build the selected part of schematics
+     */
+     public final Setting<Boolean> buildOnlySelection = new Setting<>(false);
+
+    /**
      * How far to move before repeating the build. 0 to disable repeating on a certain axis, 0,0,0 to disable entirely
      */
     public final Setting<Vec3i> buildRepeat = new Setting<>(new Vec3i(0, 0, 0));
@@ -830,6 +894,13 @@ public final class Settings {
      * How many times to buildrepeat. -1 for infinite.
      */
     public final Setting<Integer> buildRepeatCount = new Setting<>(-1);
+
+    /**
+     * Don't notify schematics that they are moved.
+     * e.g. replacing will replace the same spots for every repetition
+     * Mainly for backward compatibility.
+     */
+    public final Setting<Boolean> buildRepeatSneaky = new Setting<>(true);
 
     /**
      * Allow standing above a block while mining it, in BuilderProcess
@@ -939,6 +1010,7 @@ public final class Settings {
      * Disallow MineBehavior from using X-Ray to see where the ores are. Turn this option on to force it to mine "legit"
      * where it will only mine an ore once it can actually see it, so it won't do or know anything that a normal player
      * couldn't. If you don't want it to look like you're X-Raying, turn this on
+     * This will always explore, regardless of exploreForBlocks
      */
     public final Setting<Boolean> legitMine = new Setting<>(false);
 
@@ -1024,6 +1096,20 @@ public final class Settings {
      * {@link Setting#value};
      */
     public final Setting<Consumer<Component>> logger = new Setting<>(Minecraft.getInstance().gui.getChat()::addMessage);
+
+    /**
+     * The function that is called when Baritone will send a desktop notification. This function can be added to
+     * via {@link Consumer#andThen(Consumer)} or it can completely be overriden via setting
+     * {@link Setting#value};
+     */
+    public final Setting<BiConsumer<String, Boolean>> notifier = new Setting<>(NotificationHelper::notify);
+
+    /**
+     * The function that is called when Baritone will show a toast. This function can be added to
+     * via {@link Consumer#andThen(Consumer)} or it can completely be overriden via setting
+     * {@link Setting#value};
+     */
+    public final Setting<BiConsumer<Component, Component>> toaster = new Setting<>(BaritoneToast::addOrUpdate);
 
     /**
      * Print out ALL command exceptions as a stack trace to stdout, even simple syntax errors
@@ -1119,6 +1205,11 @@ public final class Settings {
      * Render selection corners
      */
     public final Setting<Boolean> renderSelectionCorners = new Setting<>(true);
+
+    /**
+     * Use sword to mine.
+     */
+    public final Setting<Boolean> useSwordToMine = new Setting<>(true);
 
     /**
      * Desktop notifications
