@@ -225,8 +225,14 @@ public final class PathRenderer implements IRenderer, Helper {
         double minX, maxX;
         double minZ, maxZ;
         double minY, maxY;
-        double y1, y2;
-        double y = Mth.cos((float) (((float) ((System.nanoTime() / 100000L) % 20000L)) / 20000F * Math.PI * 2));
+        double y, y1, y2;
+        if (!settings.renderGoalAnimated.value) {
+            // y = 1 causes rendering issues when the player is at the same y as the top of a block for some reason
+            y = 0.999F;
+        }
+        else {
+            y = Mth.cos((float) (((float) ((System.nanoTime() / 100000L) % 20000L)) / 20000F * Math.PI * 2));
+        }
         if (goal instanceof IGoalRenderPos) {
             BlockPos goalPos = ((IGoalRenderPos) goal).getGoalPos();
             minX = goalPos.getX() + 0.002 - renderPosX;
