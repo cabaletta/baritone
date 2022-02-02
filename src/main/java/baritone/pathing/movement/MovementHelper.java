@@ -45,6 +45,18 @@ import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.block.*;
+import net.minecraft.fluid.*;
+import net.minecraft.pathfinding.PathType;
+import net.minecraft.state.BooleanProperty;
+import net.minecraft.state.properties.SlabType;
+import net.minecraft.util.Direction;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.BlockRayTraceResult;
+import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.world.IBlockReader;
+import java.util.List;
 import java.util.Optional;
 
 import static baritone.pathing.movement.Movement.HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP;
@@ -538,7 +550,12 @@ public interface MovementHelper extends ActionCosts, Helper {
                 || block instanceof AmethystClusterBlock) {
             return false;
         }
-        return Block.isShapeFullBlock(state.getCollisionShape(null, null));
+        try {
+            return Block.isShapeFullBlock(state.getCollisionShape(null, null));
+        } catch (Exception ignored) {
+            // if we can't get the collision shape, assume it's bad and add to blocksToAvoid
+        }
+        return false;
     }
 
     static PlaceResult attemptToPlaceABlock(MovementState state, IBaritone baritone, BlockPos placeAt, boolean preferDown, boolean wouldSneak) {
