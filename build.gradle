@@ -67,6 +67,12 @@ loom {
         }
     }
     mixin.defaultRefmapName = "mixins.baritone.refmap.json"
+
+    runs {
+        client {
+            source = sourceSets.launch
+        }
+    }
 }
 
 
