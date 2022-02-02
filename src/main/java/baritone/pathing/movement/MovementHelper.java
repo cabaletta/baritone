@@ -550,16 +550,12 @@ public interface MovementHelper extends ActionCosts, Helper {
                 || block instanceof AmethystClusterBlock) {
             return false;
         }
-<<<<<<< HEAD
-        return Block.isShapeFullBlock(state.getCollisionShape(null, null));
-=======
         try {
-            return Block.isOpaque(state.getCollisionShape(null, null));
+            return Block.isShapeFullBlock(state.getCollisionShape(null, null));
         } catch (Exception ignored) {
             // if we can't get the collision shape, assume it's bad and add to blocksToAvoid
         }
         return false;
->>>>>>> 1.16.4
     }
 
     static PlaceResult attemptToPlaceABlock(MovementState state, IBaritone baritone, BlockPos placeAt, boolean preferDown, boolean wouldSneak) {
