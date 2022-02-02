@@ -18,46 +18,39 @@
 package baritone.command.defaults;
 
 import baritone.api.IBaritone;
-import baritone.api.cache.IRememberedInventory;
+import baritone.api.pathing.calc.IPathingControlManager;
+import baritone.api.process.IBaritoneProcess;
+import baritone.api.behavior.IPathingBehavior;
 import baritone.api.command.Command;
-import baritone.api.command.argument.IArgConsumer;
 import baritone.api.command.exception.CommandException;
 import baritone.api.command.exception.CommandInvalidStateException;
-import baritone.api.utils.BetterBlockPos;
+import baritone.api.command.argument.IArgConsumer;
+
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.stream.Stream;
-import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.world.item.ItemStack;
 
-public class ChestsCommand extends Command {
+public class ETACommand extends Command {
 
-    public ChestsCommand(IBaritone baritone) {
-        super(baritone, "chests");
+    public ETACommand(IBaritone baritone) {
+        super(baritone, "eta");
     }
 
     @Override
     public void execute(String label, IArgConsumer args) throws CommandException {
         args.requireMax(0);
-        Set<Map.Entry<BlockPos, IRememberedInventory>> entries =
-                ctx.worldData().getContainerMemory().getRememberedInventories().entrySet();
-        if (entries.isEmpty()) {
-            throw new CommandInvalidStateException("No remembered inventories");
+        IPathingControlManager pathingControlManager = baritone.getPathingControlManager();
+        IBaritoneProcess process = pathingControlManager.mostRecentInControl().orElse(null);
+        if (process == null) {
+            throw new CommandInvalidStateException("No process in control");
         }
-        for (Map.Entry<BlockPos, IRememberedInventory> entry : entries) {
-            // betterblockpos has censoring
-            BetterBlockPos pos = new BetterBlockPos(entry.getKey());
-            IRememberedInventory inv = entry.getValue();
-            logDirect(pos.toString());
-            for (ItemStack item : inv.getContents()) {
-                MutableComponent component = (MutableComponent) item.getDisplayName();
-                component.append(String.format(" x %d", item.getCount()));
-                logDirect(component);
-            }
-        }
+        IPathingBehavior pathingBehavior = baritone.getPathingBehavior();
+        logDirect(String.format(
+                "Next segment: %.2f\n" +
+                "Goal: %.2f",
+                pathingBehavior.ticksRemainingInSegment().orElse(-1.0),
+                pathingBehavior.estimatedTicksToGoal().orElse(-1.0)
+        ));
     }
 
     @Override
@@ -67,16 +60,19 @@ public class ChestsCommand extends Command {
 
     @Override
     public String getShortDesc() {
-        return "Display remembered inventories";
+        return "View the current ETA";
     }
 
     @Override
     public List<String> getLongDesc() {
         return Arrays.asList(
-                "The chests command lists remembered inventories, I guess?",
+                "The ETA command provides information about the estimated time until the next segment.",
+                "and the goal",
+                "",
+                "Be aware that the ETA to your goal is really unprecise",
                 "",
                 "Usage:",
-                "> chests"
+                "> eta - View ETA, if present"
         );
     }
 }

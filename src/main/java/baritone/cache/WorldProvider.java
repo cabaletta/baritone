@@ -75,7 +75,18 @@ public class WorldProvider implements IWorldProvider, Helper {
             directory = directory.resolve("baritone");
             readme = directory;
         } else { // Otherwise, the server must be remote...
-            String folderName = mc.isConnectedToRealms() ? "realms" : mc.getCurrentServer().ip;
+            String folderName;
+            if (mc.isConnectedToRealms()) {
+                folderName = "realms";
+            } else {
+                if (mc.getCurrentServer() != null) {
+                    folderName = mc.getCurrentServer().ip;
+                } else {
+                    //replaymod causes null currentServerData and false singleplayer.
+                    currentWorld = null;
+                    return;
+                }
+            }
             if (SystemUtils.IS_OS_WINDOWS) {
                 folderName = folderName.replace(":", "_");
             }
