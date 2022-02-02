@@ -169,7 +169,7 @@ public class BlockStateInterface {
     // get the block at x,y,z from this chunk WITHOUT creating a single blockpos object
     public static BlockState getFromChunk(LevelChunk chunk, int x, int y, int z) {
         LevelChunkSection section = chunk.getSections()[y >> 4];
-        if (LevelChunkSection.isEmpty(section)) {
+        if (section.hasOnlyAir()) {
             return AIR;
         }
         return section.getBlockState(x & 15, y & 15, z & 15);

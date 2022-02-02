@@ -31,7 +31,7 @@ import baritone.gradle.task.ProguardTask
 
 def compileType = project.hasProperty("baritone.fabric_build") ? "FABRIC" : project.hasProperty("baritone.forge_build") ? "FORGE" : "OFFICIAL"
 
-sourceCompatibility = targetCompatibility = JavaVersion.VERSION_16
+sourceCompatibility = targetCompatibility = JavaVersion.VERSION_17
 
 compileJava {
     options.encoding = "UTF-8" // allow emoji in comments :^)
@@ -67,6 +67,12 @@ loom {
         }
     }
     mixin.defaultRefmapName = "mixins.baritone.refmap.json"
+
+    runs {
+        client {
+            source = sourceSets.launch
+        }
+    }
 }
 
 
@@ -89,7 +95,7 @@ dependencies {
     mappings loom.layered() {
         officialMojangMappings()
         //technically optional, but really helpful in dev:
-        parchment("org.parchmentmc.data:parchment-1.17.1:2021.10.24@zip" as String)
+//        parchment("org.parchmentmc.data:parchment-1.17.1:2021.10.24@zip" as String)
     }
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
     if (!compileType.equals("FORGE")) {
@@ -173,8 +179,8 @@ if (compileType.equals("OFFICIAL")) {
 
 
 task proguard(type: ProguardTask) {
-    url 'https://downloads.sourceforge.net/project/proguard/v7.1.0-beta5/proguard-7.1.0-beta5.zip'
-    extract 'proguard-7.1.0-beta5/lib/proguard.jar'
+    url 'https://github.com/Guardsquare/proguard/releases/download/v7.2.0-beta2/proguard-7.2.0-beta2.zip'
+    extract 'proguard-7.2.0-beta2/lib/proguard.jar'
     compType compileType
 }
 
