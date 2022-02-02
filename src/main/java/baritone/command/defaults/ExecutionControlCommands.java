@@ -112,7 +112,7 @@ public class ExecutionControlCommands {
                 );
             }
         };
-        resumeCommand = new Command(baritone, "resume", "r") {
+        resumeCommand = new Command(baritone, "resume", "r", "unpause") {
             @Override
             public void execute(String label, IArgConsumer args) throws CommandException {
                 args.requireMax(0);
