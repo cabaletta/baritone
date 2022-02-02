@@ -41,7 +41,7 @@ buildscript {
     dependencies {
         classpath group: 'com.github.ImpactDevelopment', name: 'ForgeGradle', version: '3.0.115'
         classpath group: 'com.github.ImpactDevelopment', name: 'MixinGradle', version: '0.6.2'
-        classpath group: 'net.fabricmc', name: 'fabric-loom', version: '0.5-SNAPSHOT'
+        classpath group: 'net.fabricmc', name: 'fabric-loom', version: '0.7-SNAPSHOT'
     }
 }
 
