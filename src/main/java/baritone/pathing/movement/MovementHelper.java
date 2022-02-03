@@ -105,6 +105,9 @@ public interface MovementHelper extends ActionCosts, Helper {
         if (block == Blocks.BIG_DRIPLEAF) {
             return false;
         }
+        if (block == Blocks.POWDER_SNOW) {
+            return false;
+        }
         if (Baritone.settings().blocksToAvoid.value.contains(block)) {
             return false;
         }
