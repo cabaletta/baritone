@@ -134,7 +134,9 @@ public interface MovementHelper extends ActionCosts, Helper {
             }
             return block == Blocks.WATER || block == Blocks.FLOWING_WATER;
         }
-
+        if (block instanceof BlockCauldron) {
+            return false;
+        }
         return block.isPassable(bsi.access, bsi.isPassableBlockPos.setPos(x, y, z));
     }
 
