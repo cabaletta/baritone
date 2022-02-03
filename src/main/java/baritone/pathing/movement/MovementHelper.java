@@ -50,7 +50,7 @@ public interface MovementHelper extends ActionCosts, Helper {
 
     static boolean avoidBreaking(BlockStateInterface bsi, int x, int y, int z, IBlockState state) {
         if (!bsi.worldBorder.canPlaceAt(x, y)) {
-            return false;
+            return true;
         }
         Block b = state.getBlock();
         return Baritone.settings().blocksToDisallowBreaking.value.contains(b)
