@@ -1309,9 +1309,8 @@ public final class Settings {
     // here be dragons
 
     Settings() {
-        // Not sure which one is the actual culprit, but seems to work with both avoided.
         Registry.BLOCK.getOptional(new ResourceLocation("immersive_portals", "portal_placeholder")).ifPresent(blocksToAvoid.defaultValue::add); 
-        Registry.BLOCK.getOptional(new ResourceLocation("immersive_portals", "portal_helper")).ifPresent(blocksToAvoid.defaultValue::add); 
+
         Field[] temp = getClass().getFields();
 
         Map<String, Setting<?>> tmpByName = new HashMap<>();
