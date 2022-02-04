@@ -27,6 +27,8 @@ import net.minecraft.network.chat.BaseComponent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.world.item.Item;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.Registry;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import java.awt.*;
@@ -1307,6 +1309,9 @@ public final class Settings {
     // here be dragons
 
     Settings() {
+        // Not sure which one is the actual culprit, but seems to work with both avoided.
+        Registry.BLOCK.getOptional(new ResourceLocation("immersive_portals", "portal_placeholder")).ifPresent(blocksToAvoid.defaultValue::add); 
+        Registry.BLOCK.getOptional(new ResourceLocation("immersive_portals", "portal_helper")).ifPresent(blocksToAvoid.defaultValue::add); 
         Field[] temp = getClass().getFields();
 
         Map<String, Setting<?>> tmpByName = new HashMap<>();
