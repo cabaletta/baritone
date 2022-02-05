@@ -54,6 +54,7 @@ public class FindCommand extends Command {
                         ).stream()
                 )
                 .map(BetterBlockPos::new)
+                .sorted(bps -> ctx.playerFeet().squaredDistanceFrom(bps))
                 .map(BetterBlockPos::toString)
                 .forEach(this::logDirect);
     }
