@@ -115,6 +115,34 @@ public final class BetterBlockPos extends BlockPos {
         return oth.getX() == x && oth.getY() == y && oth.getZ() == z;
     }
 
+    /**
+     * Squared distance from this object to another. Given a null
+     * BetterBlockPos, the returned distance is -1.
+     * 
+     * This is more performant than distanceFrom due to sqrt's relatively
+     * high cost and should be used unless the exact distance is needed. For
+     * comparisons, use this.
+     */
+    public double distanceFromSquared(BetterBlockPos pos) {
+        if (pos == null) {
+            return -1
+        }
+        return Math.pow(this.x - pos.x, 2) + Math.pow(this.y - pos.y, 2) + Math.pow(this.z - pos.z, 2)
+    }
+
+    /**
+     * Distance from this object to another.
+     * 
+     * This should only be used when the exact distance is needed. The sqrt
+     * operation is somewhat heavy. Use distanceFromSquared for comparison.
+     */
+    public double distanceFrom(BetterBlockPos pos) {
+        if (pos == null) {
+            return -1
+        }
+        return Math.sqrt(distanceFromSquared(pos))
+    }
+
     @Override
     public BetterBlockPos up() {
         // this is unimaginably faster than blockpos.up
