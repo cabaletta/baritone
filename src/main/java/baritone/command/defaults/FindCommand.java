@@ -72,10 +72,11 @@ public class FindCommand extends Command {
     @Override
     public List<String> getLongDesc() {
         return Arrays.asList(
-                "",
+                "Find positions of a certain block.",
+                "Results are ordered by distance from the player.",
                 "",
                 "Usage:",
-                "> "
+                "> find <block> [block]... - List known locations of a block"
         );
     }
 }
