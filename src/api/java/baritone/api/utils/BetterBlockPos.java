@@ -125,9 +125,9 @@ public final class BetterBlockPos extends BlockPos {
      */
     public double distanceFromSquared(BetterBlockPos pos) {
         if (pos == null) {
-            return -1
+            return -1;
         }
-        return Math.pow(this.x - pos.x, 2) + Math.pow(this.y - pos.y, 2) + Math.pow(this.z - pos.z, 2)
+        return Math.pow(this.x - pos.x, 2) + Math.pow(this.y - pos.y, 2) + Math.pow(this.z - pos.z, 2);
     }
 
     /**
@@ -138,9 +138,9 @@ public final class BetterBlockPos extends BlockPos {
      */
     public double distanceFrom(BetterBlockPos pos) {
         if (pos == null) {
-            return -1
+            return -1;
         }
-        return Math.sqrt(distanceFromSquared(pos))
+        return Math.sqrt(distanceFromSquared(pos));
     }
 
     @Override
