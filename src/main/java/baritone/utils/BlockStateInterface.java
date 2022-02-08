@@ -97,6 +97,9 @@ public class BlockStateInterface {
     }
 
     public BlockState get0(int x, int y, int z) { // Mickey resigned
+        if (worldData == null) {
+            return AIR;
+        }
         y -= worldData.dimension.minY();
         // Invalid vertical position
         if (y < 0 || y >= worldData.dimension.height()) {
@@ -124,9 +127,6 @@ public class BlockStateInterface {
         // except here, it's 512x512 tiles instead of 16x16, so even better repetition
         CachedRegion cached = prevCached;
         if (cached == null || cached.getX() != x >> 9 || cached.getZ() != z >> 9) {
-            if (worldData == null) {
-                return AIR;
-            }
             CachedRegion region = worldData.cache.getRegion(x >> 9, z >> 9);
             if (region == null) {
                 return AIR;
