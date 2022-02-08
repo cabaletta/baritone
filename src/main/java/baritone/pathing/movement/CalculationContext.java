@@ -143,7 +143,6 @@ public class CalculationContext {
             return COST_INF;
         }
         if (!worldBorder.canPlaceAt(x, z)) {
-            // TODO perhaps MovementHelper.canPlaceAgainst could also use this?
             return COST_INF;
         }
         return placeBlockCost;
