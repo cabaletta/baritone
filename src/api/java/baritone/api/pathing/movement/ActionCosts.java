@@ -66,7 +66,7 @@ public interface ActionCosts {
 
     static double[] generateFallNBlocksCost() {
         double[] costs = new double[4097];
-        for (int i = 0; i < 4096; i++) {
+        for (int i = 0; i < 4097; i++) {
             costs[i] = distanceToTicks(i);
         }
         return costs;
