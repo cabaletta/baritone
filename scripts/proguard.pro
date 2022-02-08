@@ -22,6 +22,7 @@
 -keep class baritone.api.IBaritoneProvider
 
 -keep class baritone.api.utils.MyChunkPos { *; } # even in standalone we need to keep this for gson reflect
+-keepname class baritone.api.utils.BlockOptionalMeta # this name is exposed to the user, so we need to keep it in all builds
 
 # Keep any class or member annotated with @KeepName so we dont have to put everything in the script
 -keep,allowobfuscation @interface baritone.KeepName
