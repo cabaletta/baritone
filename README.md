@@ -97,7 +97,7 @@ jar.
 
 Below is an example of basic usage for changing some settings, and then pathing to an X/Z goal.
 
-```
+```java
 BaritoneAPI.getSettings().allowSprint.value = true;
 BaritoneAPI.getSettings().primaryTimeoutMS.value = 2000L;
 
