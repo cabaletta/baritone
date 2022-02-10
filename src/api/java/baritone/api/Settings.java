@@ -385,6 +385,9 @@ public final class Settings {
      */
     public final Setting<Double> mobSpawnerAvoidanceCoefficient = new Setting<>(2.0);
 
+    /**
+     * Distance to avoid mob spawners.
+     */
     public final Setting<Integer> mobSpawnerAvoidanceRadius = new Setting<>(16);
 
     /**
@@ -394,6 +397,9 @@ public final class Settings {
      */
     public final Setting<Double> mobAvoidanceCoefficient = new Setting<>(1.5);
 
+    /**
+     * Distance to avoid mobs.
+     */
     public final Setting<Integer> mobAvoidanceRadius = new Setting<>(8);
 
     /**
