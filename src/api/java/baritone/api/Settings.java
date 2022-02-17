@@ -428,6 +428,11 @@ public final class Settings {
     public final Setting<Boolean> cutoffAtLoadBoundary = new Setting<>(false);
 
     /**
+     * Maximum rotation speed per tick. AKA linear smooth thing
+     */
+    public final Setting<Float> maxAccelerationPerTick = new Setting<>(60.0f);
+
+    /**
      * If a movement's cost increases by more than this amount between calculation and execution (due to changes
      * in the environment / world), cancel and recalculate
      */

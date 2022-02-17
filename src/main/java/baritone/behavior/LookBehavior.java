@@ -72,13 +72,18 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
         switch (event.getState()) {
             case PRE: {
                 if (this.force) {
-                    ctx.player().setYRot(this.target.getYaw());
-                    float oldPitch = ctx.player().getXRot();
-                    float desiredPitch = this.target.getPitch();
-                    ctx.player().setXRot(desiredPitch);
+                    float playerCurrentYaw = ctx.player().getYRot() % 360;
+                    float baritoneWantsThisYaw = this.target.getYaw() % 360;
+                    ctx.player().setYRot(playerCurrentYaw + Math.min(Baritone.settings().maxAccelerationPerTick.value, Math.max(-Baritone.settings().maxAccelerationPerTick.value, baritoneWantsThisYaw - playerCurrentYaw)));
+
+                    float playerCurrentPitch = ctx.player().getXRot();
+                    float baritoneWantsThisPitch = this.target.getPitch();
+                    ctx.player().setXRot(playerCurrentPitch + Math.min(Baritone.settings().maxAccelerationPerTick.value, Math.max(-Baritone.settings().maxAccelerationPerTick.value, baritoneWantsThisPitch - playerCurrentPitch)));
+
                     ctx.player().setYRot((float) (ctx.player().getYRot() + (Math.random() - 0.5) * Baritone.settings().randomLooking.value));
-                    ctx.player().setXRot((float) (ctx.player().getXRot() +  (Math.random() - 0.5) * Baritone.settings().randomLooking.value));
-                    if (desiredPitch == oldPitch && !Baritone.settings().freeLook.value) {
+                    ctx.player().setXRot((float) (ctx.player().getXRot() + (Math.random() - 0.5) * Baritone.settings().randomLooking.value));
+
+                    if (baritoneWantsThisPitch == playerCurrentPitch && !Baritone.settings().freeLook.value) {
                         nudgeToLevel();
                     }
                     this.target = null;
