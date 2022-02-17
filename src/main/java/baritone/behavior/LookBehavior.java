@@ -74,11 +74,11 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
                 if (this.force) {
                     float playerCurrentYaw = ctx.player().getYRot() % 360;
                     float baritoneWantsThisYaw = this.target.getYaw() % 360;
-                    ctx.player().setYRot(playerCurrentYaw + Math.min(Baritone.settings().maxAccelerationPerTick.value, Math.max(-Baritone.settings().maxAccelerationPerTick.value, baritoneWantsThisYaw - playerCurrentYaw)));
+                    ctx.player().setYRot(playerCurrentYaw + Math.min(Baritone.settings().maxRotationPerTick.value, Math.max(-Baritone.settings().maxRotationPerTick.value, baritoneWantsThisYaw - playerCurrentYaw)));
 
                     float playerCurrentPitch = ctx.player().getXRot();
                     float baritoneWantsThisPitch = this.target.getPitch();
-                    ctx.player().setXRot(playerCurrentPitch + Math.min(Baritone.settings().maxAccelerationPerTick.value, Math.max(-Baritone.settings().maxAccelerationPerTick.value, baritoneWantsThisPitch - playerCurrentPitch)));
+                    ctx.player().setXRot(playerCurrentPitch + Math.min(Baritone.settings().maxRotationPerTick.value, Math.max(-Baritone.settings().maxRotationPerTick.value, baritoneWantsThisPitch - playerCurrentPitch)));
 
                     ctx.player().setYRot((float) (ctx.player().getYRot() + (Math.random() - 0.5) * Baritone.settings().randomLooking.value));
                     ctx.player().setXRot((float) (ctx.player().getXRot() + (Math.random() - 0.5) * Baritone.settings().randomLooking.value));
