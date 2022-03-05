@@ -22,7 +22,9 @@ import baritone.api.command.Command;
 import baritone.api.command.argument.IArgConsumer;
 import baritone.api.command.datatypes.BlockById;
 import baritone.api.command.exception.CommandException;
+import baritone.api.command.helpers.TabCompleteHelper;
 import baritone.api.utils.BetterBlockPos;
+import baritone.cache.CachedChunk;
 import net.minecraft.block.Block;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
@@ -45,12 +47,13 @@ public class FindCommand extends Command {
 
     @Override
     public void execute(String label, IArgConsumer args) throws CommandException {
+        args.requireMin(1);
         List<Block> toFind = new ArrayList<>();
         while (args.hasAny()) {
             toFind.add(args.getDatatypeFor(BlockById.INSTANCE));
         }
         BetterBlockPos origin = ctx.playerFeet();
-        toFind.stream()
+        ITextComponent[] components = toFind.stream()
                 .flatMap(block ->
                         ctx.worldData().getCachedWorld().getLocationsOf(
                                 Block.REGISTRY.getNameForObject(block).getPath(),
@@ -62,7 +65,12 @@ public class FindCommand extends Command {
                 )
                 .map(BetterBlockPos::new)
                 .map(this::positionToComponent)
-                .forEach(this::logDirect);
+                .toArray(ITextComponent[]::new);
+        if (components.length > 0) {
+            Arrays.asList(components).forEach(this::logDirect);
+        } else {
+            logDirect("No positions known, are you sure the blocks are cached?");
+        }
     }
 
     private ITextComponent positionToComponent(BetterBlockPos pos) {
@@ -79,8 +87,16 @@ public class FindCommand extends Command {
     }
 
     @Override
-    public Stream<String> tabComplete(String label, IArgConsumer args) {
-        return args.tabCompleteDatatype(BlockById.INSTANCE);
+    public Stream<String> tabComplete(String label, IArgConsumer args) throws CommandException {
+        return new TabCompleteHelper()
+                .append(
+                    CachedChunk.BLOCKS_TO_KEEP_TRACK_OF.stream()
+                        .map(Block.REGISTRY::getNameForObject)
+                        .map(Object::toString)
+                )
+                .filterPrefixNamespaced(args.getString())
+                .sortAlphabetically()
+                .stream();
     }
 
     @Override
@@ -92,9 +108,10 @@ public class FindCommand extends Command {
     public List<String> getLongDesc() {
         return Arrays.asList(
                 "The find command searches through Baritone's cache and attempts to find the location of the block.",
+                "Tab completion will suggest only cached blocks and uncached blocks can not be found.",
                 "",
                 "Usage:",
-                "> find <block> - Find positions of a certain block"
+                "> find <block> [...] - Try finding the listed blocks"
         );
     }
 }
