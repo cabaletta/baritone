@@ -24,11 +24,18 @@ import baritone.api.command.datatypes.BlockById;
 import baritone.api.command.exception.CommandException;
 import baritone.api.utils.BetterBlockPos;
 import net.minecraft.block.Block;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextFormatting;
+import net.minecraft.util.text.event.ClickEvent;
+import net.minecraft.util.text.event.HoverEvent;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
+
+import static baritone.api.command.IBaritoneChatControl.FORCE_COMMAND_PREFIX;
 
 public class FindCommand extends Command {
 
@@ -54,8 +61,21 @@ public class FindCommand extends Command {
                         ).stream()
                 )
                 .map(BetterBlockPos::new)
-                .map(BetterBlockPos::toString)
+                .map(this::positionToComponent)
                 .forEach(this::logDirect);
+    }
+
+    private ITextComponent positionToComponent(BetterBlockPos pos) {
+        String positionText = String.format("%s %s %s", pos.x, pos.y, pos.z);
+        String command = String.format("%sgoal %s", FORCE_COMMAND_PREFIX, positionText);
+        ITextComponent baseComponent = new TextComponentString(pos.toString());
+        ITextComponent hoverComponent = new TextComponentString("Click to set goal to this position");
+        baseComponent.getStyle()
+            .setColor(TextFormatting.GRAY)
+            .setInsertion(positionText)
+            .setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, command))
+            .setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverComponent));
+        return baseComponent;
     }
 
     @Override
