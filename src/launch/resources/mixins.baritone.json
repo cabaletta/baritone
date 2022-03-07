@@ -21,6 +21,7 @@
     "MixinEntityRenderer",
     "MixinGuiScreen",
     "MixinItemStack",
+    "MixinItemTool",
     "MixinMinecraft",
     "MixinNetHandlerPlayClient",
     "MixinNetworkManager",
