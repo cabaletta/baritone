@@ -62,7 +62,7 @@ For 1.16.5, [click here](https://www.youtube.com/watch?v=_4eVJ9Qz2J8) and see de
 
 If you need Forge or Fabric 1.17.1, look [here](https://github.com/cabaletta/baritone/releases/tag/v1.7.2) and get the `api-forge` or `api-fabric` jar. **For 1.17.1 Fabric, just click [here](https://github.com/cabaletta/baritone/releases/download/v1.7.2/baritone-api-fabric-1.7.2.jar)**.
 
-If you need Forge or Fabric 1.18.1, look [here](https://github.com/cabaletta/baritone/releases/tag/v1.8.2) and get the `api-forge` or `api-fabric` jar. **For 1.18.1 Fabric, just click [here](https://github.com/cabaletta/baritone/releases/download/v1.8.2/baritone-api-fabric-1.8.2.jar)**.
+If you need Forge or Fabric 1.18.2, look [here](https://github.com/cabaletta/baritone/releases/tag/v1.8.3) and get the `api-forge` or `api-fabric` jar. **For 1.18.2 Fabric, just click [here](https://github.com/cabaletta/baritone/releases/download/v1.8.3/baritone-api-fabric-1.8.3.jar)**. **For 1.18.2 Forge, just click [here](https://github.com/cabaletta/baritone/releases/download/v1.8.3/baritone-api-forge-1.8.3.jar)**.
 
 This project is an updated version of [MineBot](https://github.com/leijurv/MineBot/),
 the original version of the bot for Minecraft 1.8.9, rebuilt for 1.12.2 onwards. Baritone focuses on reliability and particularly performance (it's over [30x faster](https://github.com/cabaletta/baritone/pull/180#issuecomment-423822928) than MineBot at calculating paths).
