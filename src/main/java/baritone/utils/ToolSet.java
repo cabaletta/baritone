@@ -18,6 +18,7 @@
 package baritone.utils;
 
 import baritone.Baritone;
+import baritone.utils.accessor.IItemTool;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.entity.EntityPlayerSP;
@@ -78,15 +79,16 @@ public class ToolSet {
 
     /**
      * Evaluate the material cost of a possible tool. The priority matches the
-     * listed order in the Item.ToolMaterial enum.
+     * harvest level order; there is a chance for multiple at the same with modded tools
+     * but in that case we don't really care.
      *
      * @param itemStack a possibly empty ItemStack
-     * @return values range from -1 to 4
+     * @return values from 0 up
      */
     private int getMaterialCost(ItemStack itemStack) {
         if (itemStack.getItem() instanceof ItemTool) {
             ItemTool tool = (ItemTool) itemStack.getItem();
-            return ToolMaterial.valueOf(tool.getToolMaterialName()).ordinal();
+            return ((IItemTool) tool).getHarvestLevel();
         } else {
             return -1;
         }
