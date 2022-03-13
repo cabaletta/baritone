@@ -30,6 +30,7 @@
     "MixinRenderList",
     "MixinStateImplementation",
     "MixinTabCompleter",
+    "MixinTemplate",
     "MixinVboRenderList",
     "MixinWorldClient"
   ]

@@ -17,6 +17,7 @@
 
 package baritone.utils.schematic.format.defaults;
 
+import baritone.utils.accessor.ITemplate;
 import baritone.utils.schematic.StaticSchematic;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.nbt.NBTTagCompound;
@@ -41,16 +42,7 @@ public final class StructureNBT extends StaticSchematic {
         this.y = size.getY();
         this.z = size.getZ();
 
-        List<Template.BlockInfo> blocks;
-        try {
-            Field f = template.getClass().getDeclaredField("field_186270_a"); // Template.blocks
-            f.setAccessible(true);
-            blocks = (List<Template.BlockInfo>) f.get(template);
-        } catch (final Exception e) {
-            // This should never happen since SRG names are canonical
-            throw new IllegalStateException("reflection error");
-        }
-
+        List<Template.BlockInfo> blocks = ((ITemplate) template).getBlocks();
         this.states = new IBlockState[this.x][this.z][this.y];
         for (Template.BlockInfo block : blocks ) {
             this.states[block.pos.getX()][block.pos.getZ()][block.pos.getY()] = block.blockState;
