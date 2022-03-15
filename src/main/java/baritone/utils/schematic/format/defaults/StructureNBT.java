@@ -20,6 +20,7 @@ package baritone.utils.schematic.format.defaults;
 import baritone.utils.accessor.ITemplate;
 import baritone.utils.schematic.StaticSchematic;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.init.Blocks;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.gen.structure.template.Template;
@@ -49,11 +50,33 @@ public final class StructureNBT extends StaticSchematic {
     }
 
     @Override
+    public IBlockState desiredState(int x, int y, int z, IBlockState current, List<IBlockState> approxPlaceable) {
+        IBlockState block = this.states[x][z][y];
+        if (block != null) {
+            return block;
+        }
+        return current;
+    }
+
+    @Override
+    public IBlockState getDirect(int x, int y, int z) {
+        // Use air blocks as placeholder for Structure Void
+        return desiredState(x, y, z, Blocks.AIR.getDefaultState(), null);
+    }
+
+    @Override
+    public IBlockState[] getColumn(int x, int z) {
+        IBlockState[] column = this.states[x][z];
+        for (int i = 0; i < column.length; i++) {
+            // Use air blocks as placeholder for Structure Void
+            if (column[i] == null) { column[i] = Blocks.AIR.getDefaultState(); }
+        }
+        return column;
+    }
+
+    @Override
     public boolean inSchematic(int x, int y, int z, IBlockState currentState) {
         // Filtering out Structure Void
-        if (x >= 0 && x < widthX() && y >= 0 && y < heightY() && z >= 0 && z < lengthZ()) {
-            return this.states[x][z][y] != null;
-        }
-        return false;
+        return (super.inSchematic(x, y, z, currentState) && this.states[x][z][y] != null);
     }
 }
