@@ -52,10 +52,7 @@ public final class StructureNBT extends StaticSchematic {
     @Override
     public IBlockState desiredState(int x, int y, int z, IBlockState current, List<IBlockState> approxPlaceable) {
         IBlockState block = this.states[x][z][y];
-        if (block != null) {
-            return block;
-        }
-        return current;
+        return block != null ? block : current;
     }
 
     @Override
