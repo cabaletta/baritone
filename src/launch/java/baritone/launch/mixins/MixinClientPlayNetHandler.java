@@ -175,7 +175,7 @@ public class MixinClientPlayNetHandler {
             method = "handlePlayerCombatKill",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/client/Minecraft;setScreen(Lnet/minecraft/client/gui/screens/Screen;)V"
+                    target = "Lnet/minecraft/client/player/LocalPlayer;shouldShowDeathScreen()Z"
             )
     )
     private void onPlayerDeath(ClientboundPlayerCombatKillPacket packetIn, CallbackInfo ci) {
