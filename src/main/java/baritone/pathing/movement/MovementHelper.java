@@ -35,6 +35,7 @@ import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.piston.MovingPistonBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.Half;
 import net.minecraft.world.level.block.state.properties.SlabType;
 import net.minecraft.world.level.material.FlowingFluid;
 import net.minecraft.world.level.material.Fluid;
@@ -346,7 +347,7 @@ public interface MovementHelper extends ActionCosts, Helper {
                 return true;
             }
 
-            if (block instanceof StairBlock && state.getValue(StairBlock.FACING) == Direction.DOWN) {
+            if (block instanceof StairBlock) {
                 return true;
             }
 
