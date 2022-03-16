@@ -550,6 +550,17 @@ public final class Settings {
      */
     public final Setting<Long> slowPathTimeoutMS = new Setting<>(40000L);
 
+
+    /**
+     * allows baritone to save bed waypoints when interacting with beds
+     */
+    public final Setting<Boolean> doBedWaypoints = new Setting<>(true);
+
+    /**
+     * allows baritone to save death waypoints
+     */
+    public final Setting<Boolean> doDeathWaypoints = new Setting<>(true);
+
     /**
      * The big one. Download all chunks in simplified 2-bit format and save them for better very-long-distance pathing.
      */
