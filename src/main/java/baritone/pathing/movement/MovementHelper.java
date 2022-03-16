@@ -346,6 +346,10 @@ public interface MovementHelper extends ActionCosts, Helper {
                 return true;
             }
 
+            if (block instanceof StairBlock && state.getValue(StairBlock.FACING) == Direction.DOWN) {
+                return true;
+            }
+
             if (isFlowing(x, y, z, state, bsi) || upState.getFluidState().getType() == Fluids.FLOWING_WATER) {
                 // the only scenario in which we can walk on flowing water is if it's under still water with jesus off
                 return isWater(upState) && !Baritone.settings().assumeWalkOnWater.value;
