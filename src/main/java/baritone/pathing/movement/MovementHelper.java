@@ -340,6 +340,12 @@ public interface MovementHelper extends ActionCosts, Helper {
             if (up == Blocks.LILY_PAD || up instanceof WoolCarpetBlock) {
                 return true;
             }
+
+            // allow walking on waterlogged topslabs
+            if (block instanceof SlabBlock && state.getValue(SlabBlock.TYPE) == SlabType.TOP) {
+                return true;
+            }
+
             if (isFlowing(x, y, z, state, bsi) || upState.getFluidState().getType() == Fluids.FLOWING_WATER) {
                 // the only scenario in which we can walk on flowing water is if it's under still water with jesus off
                 return isWater(upState) && !Baritone.settings().assumeWalkOnWater.value;
