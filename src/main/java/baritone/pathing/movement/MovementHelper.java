@@ -56,8 +56,12 @@ import static baritone.pathing.movement.Movement.HORIZONTALS_BUT_ALSO_DOWN_____S
 public interface MovementHelper extends ActionCosts, Helper {
 
     static boolean avoidBreaking(BlockStateInterface bsi, int x, int y, int z, IBlockState state) {
+        if (!bsi.worldBorder.canPlaceAt(x, y)) {
+            return true;
+        }
         Block b = state.getBlock();
-        return b == Blocks.ICE // ice becomes water, and water can mess up the path
+        return Baritone.settings().blocksToDisallowBreaking.value.contains(b)
+                || b == Blocks.ICE // ice becomes water, and water can mess up the path
                 || b instanceof BlockSilverfish // obvious reasons
                 // call context.get directly with x,y,z. no need to make 5 new BlockPos for no reason
                 || avoidAdjacentBreaking(bsi, x, y + 1, z, true)
@@ -140,6 +144,9 @@ public interface MovementHelper extends ActionCosts, Helper {
                 return false;
             }
             return true;
+        }
+        if (block instanceof BlockCauldron) {
+            return false;
         }
         // every block that overrides isPassable with anything more complicated than a "return true;" or "return false;"
         // has already been accounted for above
@@ -377,6 +384,9 @@ public interface MovementHelper extends ActionCosts, Helper {
     }
 
     static boolean canPlaceAgainst(BlockStateInterface bsi, int x, int y, int z, IBlockState state) {
+        if (!bsi.worldBorder.canPlaceAt(x, z)) {
+            return false;
+        }
         // can we look at the center of a side face of this block and likely be able to place?
         // (thats how this check is used)
         // therefore dont include weird things that we technically could place against (like carpet) but practically can't

@@ -190,6 +190,13 @@ public final class Settings {
     /**
      * Blocks that Baritone is not allowed to break
      */
+    public final Setting<List<Block>> blocksToDisallowBreaking = new Setting<>(new ArrayList<>(
+        // Leave Empty by Default
+    ));
+
+    /**
+     * blocks that baritone shouldn't break, but can if it needs to.
+     */
     public final Setting<List<Block>> blocksToAvoidBreaking = new Setting<>(new ArrayList<>(Arrays.asList( // TODO can this be a HashSet or ImmutableSet?
             Blocks.CRAFTING_TABLE,
             Blocks.FURNACE,
@@ -198,6 +205,11 @@ public final class Settings {
             Blocks.SIGN,
             Blocks.WALL_SIGN
     )));
+
+    /**
+     * this multiplies the break speed, if set above 1 it's "encourage breaking" instead
+     */
+    public final Setting<Double> avoidBreakingMultiplier = new Setting<>(.1);
 
     /**
      * A list of blocks to be treated as if they're air.
@@ -244,6 +256,11 @@ public final class Settings {
      * If this is true, the builder will treat all non-air blocks as correct. It will only place new blocks.
      */
     public final Setting<Boolean> buildIgnoreExisting = new Setting<>(false);
+
+    /**
+     * If this is true, the builder will ignore directionality of certain blocks like glazed terracotta.
+     */
+    public final Setting<Boolean> buildIgnoreDirection = new Setting<>(false);
 
     /**
      * If this setting is true, Baritone will never break a block that is adjacent to an unsupported falling block.
@@ -372,6 +389,9 @@ public final class Settings {
      */
     public final Setting<Double> mobSpawnerAvoidanceCoefficient = new Setting<>(2.0);
 
+    /**
+     * Distance to avoid mob spawners.
+     */
     public final Setting<Integer> mobSpawnerAvoidanceRadius = new Setting<>(16);
 
     /**
@@ -381,6 +401,9 @@ public final class Settings {
      */
     public final Setting<Double> mobAvoidanceCoefficient = new Setting<>(1.5);
 
+    /**
+     * Distance to avoid mobs.
+     */
     public final Setting<Integer> mobAvoidanceRadius = new Setting<>(8);
 
     /**
@@ -546,13 +569,6 @@ public final class Settings {
      * @see <a href="https://github.com/cabaletta/baritone/issues/248">Issue #248</a>
      */
     public final Setting<Boolean> pruneRegionsFromRAM = new Setting<>(true);
-
-    /**
-     * Remember the contents of containers (chests, echests, furnaces)
-     * <p>
-     * Really buggy since the packet stuff is multithreaded badly thanks to brady
-     */
-    public final Setting<Boolean> containerMemory = new Setting<>(false);
 
     /**
      * Fill in blocks behind you

@@ -45,8 +45,10 @@ import baritone.utils.schematic.MapArtSchematic;
 import baritone.utils.schematic.SelectionSchematic;
 import baritone.utils.schematic.SchematicSystem;
 import baritone.utils.schematic.schematica.SchematicaHelper;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-import net.minecraft.block.BlockAir;
+import net.minecraft.block.*;
 import net.minecraft.block.BlockFlowingFluid;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
@@ -54,6 +56,7 @@ import net.minecraft.item.BlockItemUseContext;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUseContext;
+import net.minecraft.state.IProperty;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.Tuple;
 import net.minecraft.util.math.*;
@@ -849,6 +852,27 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         return result;
     }
 
+    public static final Set<IProperty<?>> orientationProps =
+            ImmutableSet.of(BlockRotatedPillar.AXIS, BlockHorizontal.HORIZONTAL_FACING,
+                    BlockStairs.FACING, BlockStairs.HALF, BlockStairs.SHAPE,
+                    BlockPane.NORTH, BlockPane.EAST, BlockPane.SOUTH, BlockPane.WEST, BlockVine.UP,
+                    BlockTrapDoor.OPEN, BlockTrapDoor.HALF
+            );
+
+    private boolean sameWithoutOrientation(IBlockState first, IBlockState second) {
+        if (first.getBlock() != second.getBlock()) {
+            return false;
+        }
+        ImmutableMap<IProperty<?>, Comparable<?>> map1 = first.getValues();
+        ImmutableMap<IProperty<?>, Comparable<?>> map2 = second.getValues();
+        for (IProperty<?> prop : map1.keySet()) {
+            if (map1.get(prop) != map2.get(prop) && !orientationProps.contains(prop)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     private boolean valid(IBlockState current, IBlockState desired, boolean itemVerify) {
         if (desired == null) {
             return true;
@@ -874,7 +898,10 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         if (Baritone.settings().buildValidSubstitutes.value.getOrDefault(desired.getBlock(), Collections.emptyList()).contains(current.getBlock()) && !itemVerify) {
             return true;
         }
-        return current.equals(desired);
+        if (current.equals(desired)) {
+            return true;
+        }
+        return Baritone.settings().buildIgnoreDirection.value && sameWithoutOrientation(current, desired);
     }
 
     public class BuilderCalculationContext extends CalculationContext {
