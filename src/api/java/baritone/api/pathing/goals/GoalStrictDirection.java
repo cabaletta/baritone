@@ -65,6 +65,11 @@ public class GoalStrictDirection implements Goal {
     }
 
     @Override
+    public double heuristic() {
+        return Double.NEGATIVE_INFINITY;
+    }
+
+    @Override
     public String toString() {
         return String.format(
                 "GoalStrictDirection{x=%s, y=%s, z=%s, dx=%s, dz=%s}",

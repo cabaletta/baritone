@@ -71,4 +71,11 @@ public class CompositeSchematic extends AbstractSchematic {
         }
         return entry.schematic.desiredState(x - entry.x, y - entry.y, z - entry.z, current, approxPlaceable);
     }
+
+    @Override
+    public void reset() {
+        for (CompositeSchematicEntry entry : schematicArr) {
+            entry.schematic.reset();
+        }
+    }
 }
