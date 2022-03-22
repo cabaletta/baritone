@@ -253,8 +253,8 @@ public class TabCompleteHelper {
     public TabCompleteHelper addSettings() {
         return append(
                 BaritoneAPI.getSettings().allSettings.stream()
+                        .filter(s -> !SettingsUtil.javaOnlySetting(s))
                         .map(Settings.Setting::getName)
-                        .filter(s -> !s.equalsIgnoreCase("logger"))
                         .sorted(String.CASE_INSENSITIVE_ORDER)
         );
     }
