@@ -948,7 +948,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         @Override
         public double breakCostMultiplierAt(int x, int y, int z, IBlockState current) {
             if (!allowBreak) {
-                if (!forceAllowBreak.contains(current.getBlock())) {
+                if (!allowBreakAnyway.contains(current.getBlock())) {
                     return COST_INF;
                 }
             }
