@@ -31,23 +31,26 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
-public class MineCommand extends Command {
+/**
+ * Highlight blocks of a certain type
+ * @author stackmagic
+ * @since 2022-03-22
+ */
+public class HighlightCommand extends Command {
 
-    public MineCommand(IBaritone baritone) {
-        super(baritone, "mine");
+    public HighlightCommand(IBaritone baritone) {
+        super(baritone, "highlight");
     }
 
     @Override
     public void execute(String label, IArgConsumer args) throws CommandException {
-        int quantity = args.getAsOrDefault(Integer.class, 0);
-        args.requireMin(1);
         List<BlockOptionalMeta> boms = new ArrayList<>();
         while (args.hasAny()) {
             boms.add(args.getDatatypeFor(ForBlockOptionalMeta.INSTANCE));
         }
         WorldScanner.INSTANCE.repack(ctx);
-        logDirect(String.format("Mining %s", boms));
-        baritone.getMineProcess().mine(quantity, boms.toArray(new BlockOptionalMeta[0]));
+        logDirect(String.format("Highlighting %s", boms));
+        baritone.getHighlightProcess().highlight(boms.toArray(new BlockOptionalMeta[0]));
     }
 
     @Override
@@ -57,22 +60,20 @@ public class MineCommand extends Command {
 
     @Override
     public String getShortDesc() {
-        return "Mine some blocks";
+        return "Highlight some blocks";
     }
 
     @Override
     public List<String> getLongDesc() {
         return Arrays.asList(
-                "The mine command allows you to tell Baritone to search for and mine individual blocks.",
+                "The highlight command allows you to tell Baritone to search for and highlight individual blocks.",
+                "They are highlighted the same way they are while the mine command is running.",
                 "",
                 "The specified blocks can be ores (which are commonly cached), or any other block.",
                 "",
-                "Also see the legitMine settings (see #set l legitMine).",
-                "",
                 "Usage:",
-                "> mine diamond_ore - Mines all diamonds it can find.",
-                "> mine redstone_ore lit_redstone_ore - Mines redstone ore.",
-                "> mine log:0 - Mines only oak logs."
+                "> highlight diamond_ore - Highlight all diamond ore it can find around you.",
+                "> highlight redstone_ore lit_redstone_ore - Highlights redstone ore."
         );
     }
 }

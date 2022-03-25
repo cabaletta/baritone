@@ -23,7 +23,10 @@ import baritone.api.Settings;
 import baritone.api.event.listener.IEventBus;
 import baritone.api.utils.Helper;
 import baritone.api.utils.IPlayerContext;
-import baritone.behavior.*;
+import baritone.behavior.Behavior;
+import baritone.behavior.InventoryBehavior;
+import baritone.behavior.LookBehavior;
+import baritone.behavior.PathingBehavior;
 import baritone.cache.WorldProvider;
 import baritone.command.manager.CommandManager;
 import baritone.event.GameEventHandler;
@@ -73,6 +76,7 @@ public class Baritone implements IBaritone {
 
     private FollowProcess followProcess;
     private MineProcess mineProcess;
+    private HighlightProcess highlightProcess;
     private GetToBlockProcess getToBlockProcess;
     private CustomGoalProcess customGoalProcess;
     private BuilderProcess builderProcess;
@@ -107,6 +111,7 @@ public class Baritone implements IBaritone {
         {
             this.pathingControlManager.registerProcess(followProcess = new FollowProcess(this));
             this.pathingControlManager.registerProcess(mineProcess = new MineProcess(this));
+            this.pathingControlManager.registerProcess(highlightProcess = new HighlightProcess(this));
             this.pathingControlManager.registerProcess(customGoalProcess = new CustomGoalProcess(this)); // very high iq
             this.pathingControlManager.registerProcess(getToBlockProcess = new GetToBlockProcess(this));
             this.pathingControlManager.registerProcess(builderProcess = new BuilderProcess(this));
@@ -175,6 +180,11 @@ public class Baritone implements IBaritone {
     @Override
     public MineProcess getMineProcess() {
         return this.mineProcess;
+    }
+
+    @Override
+    public HighlightProcess getHighlightProcess() {
+        return this.highlightProcess;
     }
 
     public FarmProcess getFarmProcess() {
