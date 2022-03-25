@@ -154,10 +154,8 @@ public class CalculationContext {
     }
 
     public double breakCostMultiplierAt(int x, int y, int z, IBlockState current) {
-        if (!allowBreak) {
-            if (!allowBreakAnyway.contains(current.getBlock())) {
-                return COST_INF;
-            }
+        if (!allowBreak && !allowBreakAnyway.contains(current.getBlock())) {
+            return COST_INF;
         }
         if (isPossiblyProtected(x, y, z)) {
             return COST_INF;

@@ -947,12 +947,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
 
         @Override
         public double breakCostMultiplierAt(int x, int y, int z, IBlockState current) {
-            if (!allowBreak) {
-                if (!allowBreakAnyway.contains(current.getBlock())) {
-                    return COST_INF;
-                }
-            }
-            if (isPossiblyProtected(x, y, z)) {
+            if ((!allowBreak && !allowBreakAnyway.contains(current.getBlock())) || isPossiblyProtected(x, y, z)) {
                 return COST_INF;
             }
             IBlockState sch = getSchematic(x, y, z, current);
