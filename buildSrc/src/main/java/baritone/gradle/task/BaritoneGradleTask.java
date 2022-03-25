@@ -83,7 +83,7 @@ class BaritoneGradleTask extends DefaultTask {
 
     protected void verifyArtifacts() throws IllegalStateException {
         if (!Files.exists(this.artifactPath)) {
-            throw new IllegalStateException("Artifact not found! Run build first!");
+            throw new IllegalStateException("Artifact not found! Run build first! Missing file: " + this.artifactPath);
         }
     }
 
