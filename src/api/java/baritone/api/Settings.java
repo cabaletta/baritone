@@ -50,6 +50,11 @@ public final class Settings {
     public final Setting<Boolean> allowBreak = new Setting<>(true);
 
     /**
+     * Blocks that baritone will be allowed to break even with allowBreak set to false
+     */
+    public final Setting<List<Block>> allowBreakAnyway = new Setting<>(new ArrayList<>());
+
+    /**
      * Allow Baritone to sprint
      */
     public final Setting<Boolean> allowSprint = new Setting<>(true);
