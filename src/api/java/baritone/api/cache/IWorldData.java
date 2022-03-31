@@ -37,9 +37,4 @@ public interface IWorldData {
      */
     IWaypointCollection getWaypoints();
 
-    /**
-     * @return The {@link IContainerMemory} instance
-     * @see IContainerMemory
-     */
-    IContainerMemory getContainerMemory();
 }

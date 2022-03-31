@@ -27,6 +27,7 @@
 -keep class baritone.api.IBaritoneProvider
 
 -keep class baritone.api.utils.MyChunkPos { *; } # even in standalone we need to keep this for gson reflect
+-keepname class baritone.api.utils.BlockOptionalMeta # this name is exposed to the user, so we need to keep it in all builds
 
 # Keep any class or member annotated with @KeepName so we dont have to put everything in the script
 -keep,allowobfuscation @interface baritone.KeepName
@@ -47,7 +48,6 @@
 -keep class baritone.utils.schematic.schematica.**
 #proguard doesnt like it when it cant find our fake schematica classes
 -dontwarn baritone.utils.schematic.schematica.**
-
 
 # Keep - Applications. Keep all application classes, along with their 'main'
 # methods.
@@ -337,3 +337,5 @@
     public java.lang.String substring(int);
     public java.lang.String substring(int,int);
 }
+
+-printmapping mapping.txt

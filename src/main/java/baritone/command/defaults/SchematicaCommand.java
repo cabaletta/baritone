@@ -51,7 +51,7 @@ public class SchematicaCommand extends Command {
     @Override
     public List<String> getLongDesc() {
         return Arrays.asList(
-                "Builds the schematica currently open in Schematica.",
+                "Builds the schematic currently open in Schematica.",
                 "",
                 "Usage:",
                 "> schematica"
