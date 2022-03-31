@@ -70,7 +70,7 @@ public class MineCommand extends Command {
                 "Also see the legitMine settings (see #set l legitMine).",
                 "",
                 "Usage:",
-                "> mine diamond_ore - Mines all diamonds it can find.",
+                "> mine diamond_ore - Mines all diamonds it can find."
         );
     }
 }
