@@ -44,7 +44,7 @@ public final class StructureNBT extends StaticSchematic {
 
         List<Template.BlockInfo> blocks = ((ITemplate) template).getBlocks();
         this.states = new IBlockState[this.x][this.z][this.y];
-        for (Template.BlockInfo block : blocks ) {
+        for (Template.BlockInfo block : blocks) {
             this.states[block.pos.getX()][block.pos.getZ()][block.pos.getY()] = block.blockState;
         }
     }
@@ -66,7 +66,9 @@ public final class StructureNBT extends StaticSchematic {
         IBlockState[] column = this.states[x][z];
         for (int i = 0; i < column.length; i++) {
             // Use air blocks as placeholder for Structure Void
-            if (column[i] == null) { column[i] = Blocks.AIR.getDefaultState(); }
+            if (column[i] == null) {
+                column[i] = Blocks.AIR.getDefaultState();
+            }
         }
         return column;
     }
@@ -74,6 +76,6 @@ public final class StructureNBT extends StaticSchematic {
     @Override
     public boolean inSchematic(int x, int y, int z, IBlockState currentState) {
         // Filtering out Structure Void
-        return (super.inSchematic(x, y, z, currentState) && this.states[x][z][y] != null);
+        return super.inSchematic(x, y, z, currentState) && this.states[x][z][y] != null;
     }
 }
