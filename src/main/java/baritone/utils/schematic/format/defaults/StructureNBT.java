@@ -63,7 +63,7 @@ public final class StructureNBT extends StaticSchematic {
 
     @Override
     public IBlockState[] getColumn(int x, int z) {
-        IBlockState[] column = this.states[x][z];
+        IBlockState[] column = this.states[x][z].clone();
         for (int i = 0; i < column.length; i++) {
             // Use air blocks as placeholder for Structure Void
             if (column[i] == null) {
