@@ -198,7 +198,7 @@ dependencies {
         }
         runtime launchCompile('org.ow2.asm:asm-debug-all:5.2')
         runtime launchCompile('com.github.ImpactDevelopment:SimpleTweaker:1.2')
-        runtime launchCompile('org.spongepowered:mixin:0.8.+') {
+        runtime launchCompile('org.spongepowered:mixin:0.8.3') {
             // Mixin includes a lot of dependencies that are too up-to-date
             exclude module: 'launchwrapper'
             exclude module: 'guava'
