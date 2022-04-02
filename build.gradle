@@ -329,8 +329,8 @@ if (getProject().hasProperty("baritone.fabric_build")) {
 
 
     task proguard(type: ProguardTask, dependsOn: createSrgMc) { // TODO: dont need to create srg mc if doing notch build
-        url 'https://downloads.sourceforge.net/project/proguard/proguard/6.0/proguard6.0.3.zip'
-        extract 'proguard6.0.3/lib/proguard.jar'
+        url 'https://downloads.sourceforge.net/project/proguard/v7.1.0-beta5/proguard-7.1.0-beta5.zip'
+        extract 'proguard-7.1.0-beta5/lib/proguard.jar'
     }
 
     task createDist(type: CreateDistTask, dependsOn: proguard)
