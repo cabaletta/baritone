@@ -22,7 +22,6 @@ import baritone.api.command.Command;
 import baritone.api.command.argument.IArgConsumer;
 import baritone.api.command.datatypes.ItemById;
 import baritone.api.command.exception.CommandException;
-import baritone.api.command.helpers.TabCompleteHelper;
 import net.minecraft.item.Item;
 import net.minecraft.util.ResourceLocation;
 
