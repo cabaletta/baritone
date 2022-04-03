@@ -86,11 +86,11 @@ public class ProguardTask extends BaritoneGradleTask {
     }
 
     private boolean isMcJar(File f) {
-        return f.getName().startsWith(compType.equals("FORGE") ? "forge-" : "minecraft-") && f.getName().contains("minecraft-mapped");
+        return f.getName().startsWith(compType.equals("FORGE") ? "forge-" : "minecraft-") && f.getName().contains("minecraft-merged-named");
     }
 
     private void copyMcJar() throws IOException {
-        File mcClientJar = this.getProject().getConvention().getPlugin(JavaPluginConvention.class).getSourceSets().findByName("launch").getRuntimeClasspath().getFiles()
+        File mcClientJar = this.getProject().getConvention().getPlugin(JavaPluginConvention.class).getSourceSets().findByName("main").getRuntimeClasspath().getFiles()
             .stream()
             .filter(this::isMcJar)
             .map(f -> {
@@ -98,9 +98,9 @@ public class ProguardTask extends BaritoneGradleTask {
                     case "OFFICIAL":
                         return new File(f.getParentFile().getParentFile(), "minecraft-merged.jar");
                     case "FABRIC":
-                        return new File(f.getParentFile(), "minecraft-intermediary.jar");
+                        return new File(f.getParentFile().getParentFile(), "minecraft-merged-intermediary.jar");
                     case "FORGE":
-                        return new File(f.getParentFile(), "minecraft-srg.jar");
+                        return new File(f.getParentFile().getParentFile(), f.getName().replace("-named.jar", "-srg.jar"));
                 }
                 return null;
                 })
@@ -233,7 +233,7 @@ public class ProguardTask extends BaritoneGradleTask {
     }
 
     private void generateConfigs() throws Exception {
-        Files.copy(getRelativeFile(PROGUARD_CONFIG_TEMPLATE), getTemporaryFile(PROGUARD_CONFIG_DEST), REPLACE_EXISTING);
+        Files.copy(getRootRelativeFile(PROGUARD_CONFIG_TEMPLATE), getTemporaryFile(PROGUARD_CONFIG_DEST), REPLACE_EXISTING);
 
         // Setup the template that will be used to derive the API and Standalone configs
         List<String> template = Files.readAllLines(getTemporaryFile(PROGUARD_CONFIG_DEST));
@@ -268,12 +268,8 @@ public class ProguardTask extends BaritoneGradleTask {
         Files.write(getTemporaryFile(PROGUARD_STANDALONE_CONFIG), standalone);
     }
 
-    private File getSrgMcJar() {
-        return getProject().getTasks().findByName("copyMcJar").getOutputs().getFiles().getSingleFile();
-    }
-
     private Stream<File> acquireDependencies() {
-        return getProject().getConvention().getPlugin(JavaPluginConvention.class).getSourceSets().findByName("launch").getRuntimeClasspath().getFiles()
+        return getProject().getConvention().getPlugin(JavaPluginConvention.class).getSourceSets().findByName("main").getRuntimeClasspath().getFiles()
             .stream()
             .filter(File::isFile);
     }

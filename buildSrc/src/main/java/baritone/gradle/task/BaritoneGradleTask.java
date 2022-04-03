@@ -18,6 +18,7 @@
 package baritone.gradle.task;
 
 import org.gradle.api.DefaultTask;
+import org.gradle.api.tasks.Input;
 
 import java.io.File;
 import java.io.IOException;
@@ -59,7 +60,7 @@ class BaritoneGradleTask extends DefaultTask {
         proguardOut;
 
     public BaritoneGradleTask() {
-        this.artifactName = getProject().getName();
+        this.artifactName = getProject().getProperties().get("archivesBaseName").toString();
         this.artifactVersion = getProject().getVersion().toString();
 
         this.artifactPath = this.getBuildFile(formatVersion(ARTIFACT_STANDARD));
@@ -100,6 +101,10 @@ class BaritoneGradleTask extends DefaultTask {
 
     protected Path getRelativeFile(String file) {
         return Paths.get(new File(new File(getProject().getBuildDir(), "../"), file).getAbsolutePath());
+    }
+
+    protected Path getRootRelativeFile(String file) {
+        return Paths.get(new File(new File(getProject().getRootProject().getBuildDir(), "../"), file).getAbsolutePath());
     }
 
     protected Path getTemporaryFile(String file) {

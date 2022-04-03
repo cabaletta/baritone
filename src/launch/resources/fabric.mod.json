@@ -21,7 +21,7 @@
   "entrypoints": {
   },
   "mixins": [
-    "mixins.baritone.json"
+      "mixins.baritone.json"
   ],
 
   "depends": {

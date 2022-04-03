@@ -36,7 +36,12 @@ pluginManagement {
             url = 'https://libraries.minecraft.net/'
         }
         mavenCentral()
+        gradlePluginPortal()
     }
 }
 
 rootProject.name = 'baritone'
+
+include("fabric")
+include("forge")
+include("common")

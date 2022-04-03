@@ -1,0 +1,129 @@
+import baritone.gradle.task.CreateDistTask
+import baritone.gradle.task.ProguardTask
+
+architectury {
+    injectInjectables = false
+    common()
+}
+
+sourceSets {
+    api {
+        compileClasspath += main.compileClasspath
+        java {
+            java {
+                srcDir "$rootDir/src/api/java"
+            }
+            resources {
+                srcDir "$rootDir/src/api/resources"
+            }
+        }
+    }
+    main {
+        compileClasspath += api.output
+        java {
+            java {
+                srcDir "$rootDir/src/main/java"
+            }
+            resources {
+                srcDir "$rootDir/src/main/resources"
+            }
+        }
+    }
+    test {
+        compileClasspath += main.compileClasspath + main.runtimeClasspath + main.output
+        runtimeClasspath += main.compileClasspath + main.runtimeClasspath + main.output
+        java {
+            java {
+                srcDir "$rootDir/src/test/java"
+            }
+            resources {
+                srcDir "$rootDir/src/test/resources"
+            }
+        }
+    }
+    launch {
+        compileClasspath += main.compileClasspath + main.runtimeClasspath + main.output
+        runtimeClasspath += main.compileClasspath + main.runtimeClasspath + main.output
+        java {
+            java {
+                srcDir "$rootDir/src/launch/java"
+            }
+            resources {
+                srcDir "$rootDir/src/launch/resources"
+            }
+        }
+    }
+    schematica_api {
+        compileClasspath += main.compileClasspath
+        java {
+            java {
+                srcDir "$rootDir/src/schematica_api/java"
+            }
+            resources {
+                srcDir "$rootDir/src/schematica_api/resources"
+            }
+        }
+    }
+    main {
+        compileClasspath += schematica_api.output
+    }
+}
+
+dependencies {
+    // We depend on fabric loader here to use the fabric @Environment annotations and get the mixin dependencies
+    // Do NOT use other classes from fabric loader
+    modImplementation "net.fabricmc:fabric-loader:${project.fabric_version}"
+
+    // this makes it compile with the forge tweak stuff
+    implementation 'com.github.ImpactDevelopment:SimpleTweaker:1.2'
+    implementation('net.minecraft:launchwrapper:1.12') {
+        exclude module: 'lwjgl'
+        exclude module: 'asm-debug-all'
+    }
+
+    implementation 'com.google.code.findbugs:jsr305:3.0.2'
+
+    testImplementation 'junit:junit:4.12'
+}
+
+javadoc {
+    options.addStringOption('Xwerror', '-quiet') // makes the build fail on travis when there is a javadoc error
+    options.linkSource true
+    options.encoding "UTF-8" // allow emoji in comments :^)
+    source = sourceSets.api.allJava
+    classpath += sourceSets.api.compileClasspath
+}
+
+jar {
+    classifier "dev"
+    from sourceSets.launch.output, sourceSets.api.output
+
+
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+
+    manifest {
+        attributes(
+                'MixinConfigs': 'mixins.baritone.json',
+                "MixinConnector": "baritone.launch.BaritoneMixinConnector",
+
+                'Implementation-Title': 'Baritone',
+                'Implementation-Version': version,
+        )
+    }
+}
+
+remapJar {
+    targetNamespace.set "official"
+}
+
+
+task proguard(type: ProguardTask) {
+    url 'https://github.com/Guardsquare/proguard/releases/download/v7.2.1/proguard-7.2.1.zip'
+    extract 'proguard-7.2.1/lib/proguard.jar'
+    compType "OFFICIAL"
+}
+
+task createDist(type: CreateDistTask, dependsOn: proguard)
+
+build.finalizedBy(createDist)
