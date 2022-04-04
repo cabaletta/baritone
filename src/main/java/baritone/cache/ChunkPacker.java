@@ -82,7 +82,7 @@ public final class ChunkPacker {
                             Block block = state.getBlock();
                             if (CachedChunk.BLOCKS_TO_KEEP_TRACK_OF.contains(block)) {
                                 String name = BlockUtils.blockToString(block);
-                                specialBlocks.computeIfAbsent(name, b -> new ArrayList<>()).add(new BlockPos(x, y, z));
+                                specialBlocks.computeIfAbsent(name, b -> new ArrayList<>()).add(new BlockPos(x, y+chunk.getMinBuildHeight(), z));
                             }
                         }
                     }
