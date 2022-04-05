@@ -54,13 +54,6 @@ public class ProguardTask extends BaritoneGradleTask {
     }
 
     @Input
-    private String mixinUrl;
-
-    public String getMixinUrl() {
-        return mixinUrl;
-    }
-
-    @Input
     private String extract;
 
     public String getExtract() {
@@ -93,7 +86,7 @@ public class ProguardTask extends BaritoneGradleTask {
     }
 
     private File getMcJar() throws IOException {
-        File mcClientJar = this.getProject().getConvention().getPlugin(JavaPluginConvention.class).getSourceSets().findByName("main").getRuntimeClasspath().getFiles()
+        File mcClientJar = this.getProject().getConvention().getPlugin(JavaPluginConvention.class).getSourceSets().findByName("main").getCompileClasspath().getFiles()
             .stream()
             .filter(this::isMcJar)
             .map(f -> {
@@ -135,13 +128,6 @@ public class ProguardTask extends BaritoneGradleTask {
             ZipEntry zipJarEntry = zipFile.getEntry(this.extract);
             write(zipFile.getInputStream(zipJarEntry), proguardJar);
             zipFile.close();
-        }
-    }
-
-    private void downloadMixin() throws Exception {
-        Path mixinJar = getTemporaryFile(MIXIN_JAR);
-        if (!Files.exists(mixinJar)) {
-            write(new URL(this.mixinUrl).openStream(), mixinJar);
         }
     }
 
@@ -273,9 +259,6 @@ public class ProguardTask extends BaritoneGradleTask {
             libraries.forEach(f -> {
                 template.add(2, "-libraryjars '" + f + "'");
             });
-
-            downloadMixin();
-            template.add(2, "-libraryjars '" + this.getTemporaryFile(MIXIN_JAR) + "'");
         }
 
         Files.createDirectories(this.getRootRelativeFile(PROGUARD_MAPPING_DIR));
@@ -294,7 +277,7 @@ public class ProguardTask extends BaritoneGradleTask {
     }
 
     private Stream<File> acquireDependencies() {
-        return getProject().getConvention().getPlugin(JavaPluginConvention.class).getSourceSets().findByName("main").getRuntimeClasspath().getFiles()
+        return getProject().getConvention().getPlugin(JavaPluginConvention.class).getSourceSets().findByName("main").getCompileClasspath().getFiles()
             .stream()
             .filter(File::isFile);
     }
@@ -317,10 +300,6 @@ public class ProguardTask extends BaritoneGradleTask {
 
     public void setUrl(String url) {
         this.url = url;
-    }
-
-    public void setMixinUrl(String mixinUrl) {
-        this.mixinUrl = mixinUrl;
     }
 
     public void setExtract(String extract) {

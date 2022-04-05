@@ -62,6 +62,10 @@ allprojects {
 
     repositories {
         maven {
+            name = 'spongepowered-repo'
+            url = 'https://repo.spongepowered.org/repository/maven-public/'
+        }
+        maven {
             name = 'impactdevelopment-repo'
             url = 'https://impactdevelopment.github.io/maven/'
         }

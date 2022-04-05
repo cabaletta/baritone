@@ -6,6 +6,7 @@ architectury {
     common()
 }
 
+// ignore this jank, it's so I don't have to move the src folder, as that creates unnecessary git conflicts
 sourceSets {
     realmain {
         java {
@@ -87,7 +88,10 @@ configurations {
 dependencies {
     // We depend on fabric loader here to use the fabric @Environment annotations and get the mixin dependencies
     // Do NOT use other classes from fabric loader
-    modImplementation "net.fabricmc:fabric-loader:${project.fabric_version}"
+    modCompileOnly "net.fabricmc:fabric-loader:${project.fabric_version}"
+
+    // want in the pom but not to compile against as it's also provided by loom
+    runtimeOnly "org.spongepowered:mixin:0.8.4"
 
     // this makes it compile with the forge tweak stuff
     implementation 'com.github.ImpactDevelopment:SimpleTweaker:1.2'
@@ -96,7 +100,7 @@ dependencies {
         exclude module: 'asm-debug-all'
     }
 
-    implementation 'com.google.code.findbugs:jsr305:3.0.2'
+    compileOnly 'com.google.code.findbugs:jsr305:3.0.2'
 
     testImplementation 'junit:junit:4.12'
 }
@@ -134,7 +138,6 @@ remapJar {
 
 task proguard(type: ProguardTask) {
     url 'https://github.com/Guardsquare/proguard/releases/download/v7.2.1/proguard-7.2.1.zip'
-    mixinUrl 'https://maven.fabricmc.net/net/fabricmc/sponge-mixin/0.11.3%2Bmixin.0.8.5/sponge-mixin-0.11.3%2Bmixin.0.8.5.jar'
     extract 'proguard-7.2.1/lib/proguard.jar'
     compType "OFFICIAL"
 }
@@ -142,3 +145,17 @@ task proguard(type: ProguardTask) {
 task createDist(type: CreateDistTask, dependsOn: proguard)
 
 build.finalizedBy(createDist)
+
+publishing {
+    publications {
+        mavenCommon(MavenPublication) {
+            artifactId = rootProject.archives_base_name
+            from components.java
+        }
+    }
+
+    // See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
+    repositories {
+        // Add repositories to publish to here.
+    }
+}
