@@ -28,6 +28,7 @@ import org.gradle.api.tasks.compile.JavaCompile;
 import org.gradle.internal.jvm.Jvm;
 
 import java.io.*;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -53,6 +54,13 @@ public class ProguardTask extends BaritoneGradleTask {
     }
 
     @Input
+    private String mixinUrl;
+
+    public String getMixinUrl() {
+        return mixinUrl;
+    }
+
+    @Input
     private String extract;
 
     public String getExtract() {
@@ -66,14 +74,9 @@ public class ProguardTask extends BaritoneGradleTask {
         return compType;
     }
 
-    private final File copyMcTargetDir = new File("./build/createMcIntermediaryJar").getAbsoluteFile();
-    private final File copyMcTargetJar = new File(copyMcTargetDir, "client.jar");
-
     @TaskAction
     protected void exec() throws Exception {
         super.verifyArtifacts();
-
-        copyMcJar();
 
         // "Haha brady why don't you make separate tasks"
         processArtifact();
@@ -89,7 +92,7 @@ public class ProguardTask extends BaritoneGradleTask {
         return f.getName().startsWith(compType.equals("FORGE") ? "forge-" : "minecraft-") && f.getName().contains("minecraft-merged-named");
     }
 
-    private void copyMcJar() throws IOException {
+    private File getMcJar() throws IOException {
         File mcClientJar = this.getProject().getConvention().getPlugin(JavaPluginConvention.class).getSourceSets().findByName("main").getRuntimeClasspath().getFiles()
             .stream()
             .filter(this::isMcJar)
@@ -107,8 +110,7 @@ public class ProguardTask extends BaritoneGradleTask {
             .findFirst()
             .get();
         if (!mcClientJar.exists()) throw new IOException("Failed to find minecraft! " + mcClientJar.getAbsolutePath());
-        if (!copyMcTargetDir.exists() && !copyMcTargetDir.mkdirs()) throw new IOException("Failed to create target for copyMcJar");
-        Files.copy(mcClientJar.toPath(), copyMcTargetJar.toPath(), REPLACE_EXISTING);
+        return mcClientJar;
     }
 
     private void processArtifact() throws Exception {
@@ -133,6 +135,13 @@ public class ProguardTask extends BaritoneGradleTask {
             ZipEntry zipJarEntry = zipFile.getEntry(this.extract);
             write(zipFile.getInputStream(zipJarEntry), proguardJar);
             zipFile.close();
+        }
+    }
+
+    private void downloadMixin() throws Exception {
+        Path mixinJar = getTemporaryFile(MIXIN_JAR);
+        if (!Files.exists(mixinJar)) {
+            write(new URL(this.mixinUrl).openStream(), mixinJar);
         }
     }
 
@@ -245,6 +254,13 @@ public class ProguardTask extends BaritoneGradleTask {
 
         {
             final Stream<File> libraries;
+            File mcJar;
+            try {
+                mcJar = getMcJar();
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to find Minecraft jar", e);
+            }
+
             {
                 // Discover all of the libraries that we will need to acquire from gradle
                 final Stream<File> dependencies = acquireDependencies()
@@ -252,11 +268,14 @@ public class ProguardTask extends BaritoneGradleTask {
                     .filter(f -> !f.toString().endsWith("-recomp.jar") && !f.getName().startsWith("nashorn") && !f.getName().startsWith("coremods"));
 
                 libraries = dependencies
-                    .map(f -> isMcJar(f) ? copyMcTargetJar : f);
+                    .map(f -> isMcJar(f) ? mcJar : f);
             }
             libraries.forEach(f -> {
                 template.add(2, "-libraryjars '" + f + "'");
             });
+
+            downloadMixin();
+            template.add(2, "-libraryjars '" + this.getTemporaryFile(MIXIN_JAR) + "'");
         }
 
         // API config doesn't require any changes from the changes that we made to the template
@@ -292,6 +311,10 @@ public class ProguardTask extends BaritoneGradleTask {
 
     public void setUrl(String url) {
         this.url = url;
+    }
+
+    public void setMixinUrl(String mixinUrl) {
+        this.mixinUrl = mixinUrl;
     }
 
     public void setExtract(String extract) {

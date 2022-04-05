@@ -40,7 +40,14 @@ configurations {
 dependencies {
     modImplementation "net.fabricmc:fabric-loader:${project.fabric_version}"
 
-    common(project(path: ":common", configuration: "namedElements"))
+    // this makes it compile with the forge tweak stuff
+    implementation 'com.github.ImpactDevelopment:SimpleTweaker:1.2'
+    implementation('net.minecraft:launchwrapper:1.12') {
+        exclude module: 'lwjgl'
+        exclude module: 'asm-debug-all'
+    }
+
+    common(project(path: ":common", configuration: "namedElements")) { transitive false }
     shadowCommon(project(path: ":common", configuration: "transformProductionFabric")) { transitive false }
 }
 
@@ -75,6 +82,7 @@ components.java {
 
 task proguard(type: ProguardTask) {
     url 'https://github.com/Guardsquare/proguard/releases/download/v7.2.1/proguard-7.2.1.zip'
+    mixinUrl 'https://maven.fabricmc.net/net/fabricmc/sponge-mixin/0.11.3%2Bmixin.0.8.5/sponge-mixin-0.11.3%2Bmixin.0.8.5.jar'
     extract 'proguard-7.2.1/lib/proguard.jar'
     compType "FABRIC"
 }

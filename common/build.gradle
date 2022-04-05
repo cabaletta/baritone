@@ -128,19 +128,17 @@ jar {
     }
 }
 
-import net.fabricmc.loom.task.RemapJarTask
-
-task transformProductionTweakerTask(type: RemapJarTask, dependsOn: jar) {
-    input = project.tasks.getByName("jar").archiveFile
-    archiveClassifier = "transformProductionTweaker"
-    targetNamespace = "official"
-
+remapJar {
+    targetNamespace = 'official'
 }
 
-jar.finalizedBy(transformProductionTweakerTask)
-
-artifacts {
-    transformProductionTweaker(transformProductionTweakerTask.archiveFile) {
-        builtBy(transformProductionTweakerTask)
-    }
+task proguard(type: ProguardTask) {
+    url 'https://github.com/Guardsquare/proguard/releases/download/v7.2.1/proguard-7.2.1.zip'
+    mixinUrl 'https://maven.fabricmc.net/net/fabricmc/sponge-mixin/0.11.3%2Bmixin.0.8.5/sponge-mixin-0.11.3%2Bmixin.0.8.5.jar'
+    extract 'proguard-7.2.1/lib/proguard.jar'
+    compType "OFFICIAL"
 }
+
+task createDist(type: CreateDistTask, dependsOn: proguard)
+
+build.finalizedBy(createDist)
