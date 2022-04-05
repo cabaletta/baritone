@@ -38,8 +38,9 @@ configurations {
 }
 
 dependencies {
+    modImplementation "net.fabricmc:fabric-loader:${project.fabric_version}"
 
-    common(project(path: ":common", configuration: "namedElements")) { transitive false }
+    common(project(path: ":common", configuration: "namedElements"))
     shadowCommon(project(path: ":common", configuration: "transformProductionFabric")) { transitive false }
 }
 

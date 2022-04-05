@@ -7,19 +7,7 @@ architectury {
 }
 
 sourceSets {
-    api {
-        compileClasspath += main.compileClasspath
-        java {
-            java {
-                srcDir "$rootDir/src/api/java"
-            }
-            resources {
-                srcDir "$rootDir/src/api/resources"
-            }
-        }
-    }
-    main {
-        compileClasspath += api.output
+    realmain {
         java {
             java {
                 srcDir "$rootDir/src/main/java"
@@ -29,9 +17,25 @@ sourceSets {
             }
         }
     }
+    api {
+        compileClasspath += main.compileClasspath
+        runtimeClasspath += main.runtimeClasspath
+        java {
+            java {
+                srcDir "$rootDir/src/api/java"
+            }
+            resources {
+                srcDir "$rootDir/src/api/resources"
+            }
+        }
+    }
+    realmain {
+        compileClasspath += main.compileClasspath + api.output
+        runtimeClasspath += main.runtimeClasspath + api.output
+    }
     test {
-        compileClasspath += main.compileClasspath + main.runtimeClasspath + main.output
-        runtimeClasspath += main.compileClasspath + main.runtimeClasspath + main.output
+        compileClasspath += realmain.compileClasspath + realmain.output
+        runtimeClasspath += realmain.runtimeClasspath + realmain.output
         java {
             java {
                 srcDir "$rootDir/src/test/java"
@@ -41,9 +45,9 @@ sourceSets {
             }
         }
     }
-    launch {
-        compileClasspath += main.compileClasspath + main.runtimeClasspath + main.output
-        runtimeClasspath += main.compileClasspath + main.runtimeClasspath + main.output
+    main {
+        compileClasspath += realmain.output + api.output
+        runtimeClasspath += realmain.output + api.output
         java {
             java {
                 srcDir "$rootDir/src/launch/java"
@@ -54,7 +58,8 @@ sourceSets {
         }
     }
     schematica_api {
-        compileClasspath += main.compileClasspath
+        compileClasspath += realmain.compileClasspath
+        runtimeClasspath += realmain.runtimeClasspath
         java {
             java {
                 srcDir "$rootDir/src/schematica_api/java"
@@ -64,8 +69,18 @@ sourceSets {
             }
         }
     }
-    main {
+    realmain {
         compileClasspath += schematica_api.output
+        runtimeClasspath += schematica_api.output
+    }
+}
+
+configurations {
+    transformProductionTweaker {
+        canBeConsumed = true
+        canBeResolved = false
+        // If you want this configuration to share the same dependencies, otherwise omit this line
+        extendsFrom implementation, runtimeOnly
     }
 }
 
@@ -96,7 +111,7 @@ javadoc {
 
 jar {
     classifier "dev"
-    from sourceSets.launch.output, sourceSets.api.output
+    from sourceSets.main.output, sourceSets.realmain.output, sourceSets.api.output
 
 
     preserveFileTimestamps = false
@@ -113,17 +128,19 @@ jar {
     }
 }
 
-remapJar {
-    targetNamespace.set "official"
+import net.fabricmc.loom.task.RemapJarTask
+
+task transformProductionTweakerTask(type: RemapJarTask, dependsOn: jar) {
+    input = project.tasks.getByName("jar").archiveFile
+    archiveClassifier = "transformProductionTweaker"
+    targetNamespace = "official"
+
 }
 
+jar.finalizedBy(transformProductionTweakerTask)
 
-task proguard(type: ProguardTask) {
-    url 'https://github.com/Guardsquare/proguard/releases/download/v7.2.1/proguard-7.2.1.zip'
-    extract 'proguard-7.2.1/lib/proguard.jar'
-    compType "OFFICIAL"
+artifacts {
+    transformProductionTweaker(transformProductionTweakerTask.archiveFile) {
+        builtBy(transformProductionTweakerTask)
+    }
 }
-
-task createDist(type: CreateDistTask, dependsOn: proguard)
-
-build.finalizedBy(createDist)

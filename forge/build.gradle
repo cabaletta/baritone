@@ -46,7 +46,9 @@ configurations {
 dependencies {
     forge "net.minecraftforge:forge:${rootProject.forge_version}"
 
-    common(project(path: ":common", configuration: "namedElements")) { transitive false }
+    common(project(path: ":common", configuration: "namedElements")) {
+        exclude module: "fabric-loader"
+     }
     shadowCommon(project(path: ":common", configuration: "transformProductionForge")) { transitive false }
 }
 
