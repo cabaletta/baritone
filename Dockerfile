@@ -5,7 +5,7 @@ ENV DEBIAN_FRONTEND noninteractive
 RUN apt update -y
 
 RUN apt install \
-          openjdk-16-jdk \
+          openjdk-17-jdk \
           --assume-yes
 
 COPY . /code
