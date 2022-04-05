@@ -278,13 +278,19 @@ public class ProguardTask extends BaritoneGradleTask {
             template.add(2, "-libraryjars '" + this.getTemporaryFile(MIXIN_JAR) + "'");
         }
 
+        Files.createDirectories(this.getRootRelativeFile(PROGUARD_MAPPING_DIR));
+
+        List<String> api = new ArrayList<>(template);
+        api.add(2, "-printmapping " + new File(this.getRootRelativeFile(PROGUARD_MAPPING_DIR).toFile(), "mappings-" + compType + "-api.txt"));
+
         // API config doesn't require any changes from the changes that we made to the template
-        Files.write(getTemporaryFile(PROGUARD_API_CONFIG), template);
+        Files.write(getTemporaryFile(compType+PROGUARD_API_CONFIG), api);
 
         // For the Standalone config, don't keep the API package
         List<String> standalone = new ArrayList<>(template);
         standalone.removeIf(s -> s.contains("# this is the keep api"));
-        Files.write(getTemporaryFile(PROGUARD_STANDALONE_CONFIG), standalone);
+        standalone.add(2, "-printmapping " + new File(this.getRootRelativeFile(PROGUARD_MAPPING_DIR).toFile(), "mappings-" + compType + "-standalone.txt"));
+        Files.write(getTemporaryFile(compType+PROGUARD_STANDALONE_CONFIG), standalone);
     }
 
     private Stream<File> acquireDependencies() {
@@ -294,12 +300,12 @@ public class ProguardTask extends BaritoneGradleTask {
     }
 
     private void proguardApi() throws Exception {
-        runProguard(getTemporaryFile(PROGUARD_API_CONFIG));
+        runProguard(getTemporaryFile(compType+PROGUARD_API_CONFIG));
         Determinizer.determinize(this.proguardOut.toString(), this.artifactApiPath.toString());
     }
 
     private void proguardStandalone() throws Exception {
-        runProguard(getTemporaryFile(PROGUARD_STANDALONE_CONFIG));
+        runProguard(getTemporaryFile(compType+PROGUARD_STANDALONE_CONFIG));
         Determinizer.determinize(this.proguardOut.toString(), this.artifactStandalonePath.toString());
     }
 

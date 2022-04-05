@@ -42,6 +42,7 @@ class BaritoneGradleTask extends DefaultTask {
             PROGUARD_API_CONFIG             = "api.pro",
             PROGUARD_STANDALONE_CONFIG      = "standalone.pro",
             PROGUARD_EXPORT_PATH            = "proguard_out.jar",
+            PROGUARD_MAPPING_DIR            = "mapping",
 
             ARTIFACT_STANDARD           = "%s-%s.jar",
             ARTIFACT_UNOPTIMIZED        = "%s-unoptimized-%s.jar",
@@ -101,11 +102,11 @@ class BaritoneGradleTask extends DefaultTask {
     }
 
     protected Path getRelativeFile(String file) {
-        return Paths.get(new File(new File(getProject().getBuildDir(), "../"), file).getAbsolutePath());
+        return Paths.get(new File(getProject().getBuildDir(), file).getAbsolutePath());
     }
 
     protected Path getRootRelativeFile(String file) {
-        return Paths.get(new File(new File(getProject().getRootProject().getBuildDir(), "../"), file).getAbsolutePath());
+        return Paths.get(new File(getProject().getRootDir(), file).getAbsolutePath());
     }
 
     protected Path getTemporaryFile(String file) {
@@ -113,6 +114,6 @@ class BaritoneGradleTask extends DefaultTask {
     }
 
     protected Path getBuildFile(String file) {
-        return getRelativeFile("build/libs/" + file);
+        return getRelativeFile("libs/" + file);
     }
 }
