@@ -36,7 +36,6 @@ class BaritoneGradleTask extends DefaultTask {
     protected static final String
             PROGUARD_ZIP                    = "proguard.zip",
             PROGUARD_JAR                    = "proguard.jar",
-            MIXIN_JAR                       = "mixin.jar",
             PROGUARD_CONFIG_TEMPLATE        = "scripts/proguard.pro",
             PROGUARD_CONFIG_DEST            = "template.pro",
             PROGUARD_API_CONFIG             = "api.pro",
