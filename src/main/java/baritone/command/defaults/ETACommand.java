@@ -28,6 +28,7 @@ import baritone.api.command.argument.IArgConsumer;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 public class ETACommand extends Command {
@@ -45,12 +46,22 @@ public class ETACommand extends Command {
             throw new CommandInvalidStateException("No process in control");
         }
         IPathingBehavior pathingBehavior = baritone.getPathingBehavior();
-        logDirect(String.format(
-                "Next segment: %.2f\n" +
-                "Goal: %.2f",
-                pathingBehavior.ticksRemainingInSegment().orElse(-1.0),
-                pathingBehavior.estimatedTicksToGoal().orElse(-1.0)
-        ));
+
+        Optional<Double> ticksRemainingInSegment = pathingBehavior.ticksRemainingInSegment();
+        Optional<Double> ticksRemainingInGoal = pathingBehavior.estimatedTicksToGoal();
+
+        if (ticksRemainingInGoal.isPresent() && ticksRemainingInSegment.isPresent()) {
+            logDirect(String.format(
+                    "Next segment: %.1fs (%.0f ticks)\n" +
+                            "Goal: %.1fs (%.0f ticks)",
+                    ticksRemainingInSegment.get() / 20, // we just assume tps is 20, it isn't worth the effort that is needed to calculate it exactly
+                    ticksRemainingInSegment.get(),
+                    ticksRemainingInGoal.get() / 20,
+                    ticksRemainingInGoal.get()
+            ));
+        } else {
+            logDirect("Not currently pathing");
+        }
     }
 
     @Override
