@@ -39,6 +39,8 @@ import net.minecraft.entity.item.EntityItem;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.Vec3i;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -418,6 +420,22 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
                     } else {
                         return true;
                     }
+                })
+
+                .filter(pos -> {
+                    if (Baritone.settings().onlyMineInSelection.value || Baritone.settings().onlyMineOutOfSelection.value) {
+                        boolean isInSelection = Arrays.stream(ctx.baritone.getSelectionManager().getSelections()).anyMatch(selection -> selection.aabb().contains(new Vec3d(pos.getX(), pos.getY(), pos.getZ())));
+
+                        if (Baritone.settings().onlyMineInSelection.value && !isInSelection) {
+                            return false;
+                        }
+
+                        // here we use a new if statement to preserve expected behaviour if both settings are enabled (it shouldn't find any blocks)
+                        if (Baritone.settings().onlyMineOutOfSelection.value && isInSelection) {
+                            return false;
+                        }
+                    }
+                    return true;
                 })
 
                 .filter(pos -> pos.getY() >= Baritone.settings().minYLevelWhileMining.value)
