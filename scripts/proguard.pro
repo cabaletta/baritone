@@ -1,5 +1,6 @@
 -keepattributes Signature
 -keepattributes *Annotation*
+-keepattributes InnerClasses
 
 -optimizationpasses 5
 -verbose
