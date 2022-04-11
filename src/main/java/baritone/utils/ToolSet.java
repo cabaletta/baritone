@@ -25,7 +25,7 @@ import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.SwordItem;
-import net.minecraft.item.ToolItem;
+import net.minecraft.item.TieredItem;
 import net.minecraft.potion.Effects;
 
 import java.util.HashMap;
@@ -76,13 +76,20 @@ public class ToolSet {
     }
 
     /**
-     * Evaluate the material cost of a possible tool. Will return 1 for tools, -1 for other
+     * Evaluate the material cost of a possible tool. The priority matches the
+     * harvest level order; there is a chance for multiple at the same with modded tools
+     * but in that case we don't really care.
      *
      * @param itemStack a possibly empty ItemStack
-     * @return Either 1 or -1
+     * @return values from 0 up
      */
     private int getMaterialCost(ItemStack itemStack) {
-        return itemStack.getItem() instanceof ToolItem ? 1 : -1;
+        if (itemStack.getItem() instanceof TieredItem) {
+            TieredItem tool = (TieredItem) itemStack.getItem();
+            return tool.getTier().getHarvestLevel();
+        } else {
+            return -1;
+        }
     }
 
     public boolean hasSilkTouch(ItemStack stack) {
