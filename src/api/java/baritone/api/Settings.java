@@ -843,7 +843,7 @@ public final class Settings {
     /**
      * Only mine blocks in the selected area.
      */
-    public final Setting<Boolean> mineOnlyOutsideOfSelection = new Setting<>(false);
+    public final Setting<Boolean> mineOnlyInsideSelection = new Setting<>(false);
 
     /**
      * When GetToBlock or non-legit Mine doesn't know any locations for the desired block, explore randomly instead of giving up.
