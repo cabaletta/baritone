@@ -840,16 +840,10 @@ public final class Settings {
      */
     public final Setting<Integer> allowOnlyExposedOresDistance = new Setting<>(1);
 
-
     /**
-     * Only mine blocks out of the selected area. Can't be combined with {@link #onlyMineInSelection}
+     * Only mine blocks in the selected area.
      */
-    public final Setting<Boolean> onlyMineOutOfSelection = new Setting<>(false);
-
-    /**
-     * Only mine blocks in the selected area. Can't be combined with {@link #onlyMineOutOfSelection}
-     */
-    public final Setting<Boolean> onlyMineInSelection = new Setting<>(false);
+    public final Setting<Boolean> mineOnlyOutsideOfSelection = new Setting<>(false);
 
     /**
      * When GetToBlock or non-legit Mine doesn't know any locations for the desired block, explore randomly instead of giving up.
