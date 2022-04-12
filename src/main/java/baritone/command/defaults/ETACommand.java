@@ -47,21 +47,17 @@ public class ETACommand extends Command {
         }
         IPathingBehavior pathingBehavior = baritone.getPathingBehavior();
 
-        Optional<Double> ticksRemainingInSegment = pathingBehavior.ticksRemainingInSegment();
-        Optional<Double> ticksRemainingInGoal = pathingBehavior.estimatedTicksToGoal();
+        double ticksRemainingInSegment = pathingBehavior.ticksRemainingInSegment().orElse(Double.NaN);
+        double ticksRemainingInGoal = pathingBehavior.estimatedTicksToGoal().orElse(Double.NaN);
 
-        if (ticksRemainingInGoal.isPresent() && ticksRemainingInSegment.isPresent()) {
-            logDirect(String.format(
-                    "Next segment: %.1fs (%.0f ticks)\n" +
-                            "Goal: %.1fs (%.0f ticks)",
-                    ticksRemainingInSegment.get() / 20, // we just assume tps is 20, it isn't worth the effort that is needed to calculate it exactly
-                    ticksRemainingInSegment.get(),
-                    ticksRemainingInGoal.get() / 20,
-                    ticksRemainingInGoal.get()
-            ));
-        } else {
-            logDirect("Not currently pathing");
-        }
+        logDirect(String.format(
+                "Next segment: %.1fs (%.0f ticks)\n" +
+                        "Goal: %.1fs (%.0f ticks)",
+                ticksRemainingInSegment / 20, // we just assume tps is 20, it isn't worth the effort that is needed to calculate it exactly
+                ticksRemainingInSegment,
+                ticksRemainingInGoal / 20,
+                ticksRemainingInGoal
+        ));
     }
 
     @Override
