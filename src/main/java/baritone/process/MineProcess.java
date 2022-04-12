@@ -425,7 +425,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
                     if (Baritone.settings().mineOnlyInsideSelection.value) {
                         boolean isInSelection = Arrays.stream(ctx.baritone.getSelectionManager().getSelections()).anyMatch(selection -> selection.aabb().contains(new Vec3d(pos.getX(), pos.getY(), pos.getZ())));
 
-                        return !Baritone.settings().mineOnlyInsideSelection.value || isInSelection;
+                        return isInSelection;
                     }
                     return true;
                 })
