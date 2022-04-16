@@ -45,3 +45,4 @@ rootProject.name = 'baritone'
 include("fabric")
 include("forge")
 include("common")
+include("tweaker")

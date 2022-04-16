@@ -21,6 +21,9 @@ classes/
 *.iws
 /logs/
 
+tweaker/logs/
+common/logs/
+
 # Eclipse Files
 .classpath
 .project

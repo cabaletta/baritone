@@ -3,14 +3,13 @@ import baritone.gradle.task.ProguardTask
 
 architectury {
     injectInjectables = false
-    common()
 }
 
-//loom {
-//    mixin {
-//        legacyRemapToNamespace = "official"
-//    }
-//}
+loom {
+    mixin {
+        legacyRemapToNamespace = "official"
+    }
+}
 
 // ignore this jank, it's so I don't have to move the src folder, as that creates unnecessary git conflicts
 sourceSets {
@@ -135,5 +134,33 @@ jar {
                 'Implementation-Title': 'Baritone',
                 'Implementation-Version': version,
         )
+    }
+}
+
+remapJar {
+    targetNamespace = 'official'
+}
+
+task proguard(type: ProguardTask) {
+    url 'https://github.com/Guardsquare/proguard/releases/download/v7.2.1/proguard-7.2.1.zip'
+    extract 'proguard-7.2.1/lib/proguard.jar'
+    compType "OFFICIAL"
+}
+
+task createDist(type: CreateDistTask, dependsOn: proguard)
+
+build.finalizedBy(createDist)
+
+publishing {
+    publications {
+        mavenCommon(MavenPublication) {
+            artifactId = rootProject.archives_base_name
+            from components.java
+        }
+    }
+
+    // See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
+    repositories {
+        // Add repositories to publish to here.
     }
 }
