@@ -28,6 +28,7 @@ import org.gradle.api.tasks.compile.JavaCompile;
 import org.gradle.internal.jvm.Jvm;
 
 import java.io.*;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -66,14 +67,9 @@ public class ProguardTask extends BaritoneGradleTask {
         return compType;
     }
 
-    private final File copyMcTargetDir = new File("./build/createMcIntermediaryJar").getAbsoluteFile();
-    private final File copyMcTargetJar = new File(copyMcTargetDir, "client.jar");
-
     @TaskAction
     protected void exec() throws Exception {
         super.verifyArtifacts();
-
-        copyMcJar();
 
         // "Haha brady why don't you make separate tasks"
         processArtifact();
@@ -86,11 +82,11 @@ public class ProguardTask extends BaritoneGradleTask {
     }
 
     private boolean isMcJar(File f) {
-        return f.getName().startsWith(compType.equals("FORGE") ? "forge-" : "minecraft-") && f.getName().contains("minecraft-mapped");
+        return f.getName().startsWith(compType.equals("FORGE") ? "forge-" : "minecraft-") && f.getName().contains("minecraft-merged-named");
     }
 
-    private void copyMcJar() throws IOException {
-        File mcClientJar = this.getProject().getConvention().getPlugin(JavaPluginConvention.class).getSourceSets().findByName("launch").getRuntimeClasspath().getFiles()
+    private File getMcJar() throws IOException {
+        File mcClientJar = this.getProject().getConvention().getPlugin(JavaPluginConvention.class).getSourceSets().findByName("main").getCompileClasspath().getFiles()
             .stream()
             .filter(this::isMcJar)
             .map(f -> {
@@ -98,17 +94,16 @@ public class ProguardTask extends BaritoneGradleTask {
                     case "OFFICIAL":
                         return new File(f.getParentFile().getParentFile(), "minecraft-merged.jar");
                     case "FABRIC":
-                        return new File(f.getParentFile(), "minecraft-intermediary.jar");
+                        return new File(f.getParentFile().getParentFile(), "minecraft-merged-intermediary.jar");
                     case "FORGE":
-                        return new File(f.getParentFile(), "minecraft-srg.jar");
+                        return new File(f.getParentFile().getParentFile(), f.getName().replace("-named.jar", "-srg.jar"));
                 }
                 return null;
                 })
             .findFirst()
             .get();
         if (!mcClientJar.exists()) throw new IOException("Failed to find minecraft! " + mcClientJar.getAbsolutePath());
-        if (!copyMcTargetDir.exists() && !copyMcTargetDir.mkdirs()) throw new IOException("Failed to create target for copyMcJar");
-        Files.copy(mcClientJar.toPath(), copyMcTargetJar.toPath(), REPLACE_EXISTING);
+        return mcClientJar;
     }
 
     private void processArtifact() throws Exception {
@@ -233,7 +228,7 @@ public class ProguardTask extends BaritoneGradleTask {
     }
 
     private void generateConfigs() throws Exception {
-        Files.copy(getRelativeFile(PROGUARD_CONFIG_TEMPLATE), getTemporaryFile(PROGUARD_CONFIG_DEST), REPLACE_EXISTING);
+        Files.copy(getRootRelativeFile(PROGUARD_CONFIG_TEMPLATE), getTemporaryFile(PROGUARD_CONFIG_DEST), REPLACE_EXISTING);
 
         // Setup the template that will be used to derive the API and Standalone configs
         List<String> template = Files.readAllLines(getTemporaryFile(PROGUARD_CONFIG_DEST));
@@ -245,6 +240,13 @@ public class ProguardTask extends BaritoneGradleTask {
 
         {
             final Stream<File> libraries;
+            File mcJar;
+            try {
+                mcJar = getMcJar();
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to find Minecraft jar", e);
+            }
+
             {
                 // Discover all of the libraries that we will need to acquire from gradle
                 final Stream<File> dependencies = acquireDependencies()
@@ -252,39 +254,41 @@ public class ProguardTask extends BaritoneGradleTask {
                     .filter(f -> !f.toString().endsWith("-recomp.jar") && !f.getName().startsWith("nashorn") && !f.getName().startsWith("coremods"));
 
                 libraries = dependencies
-                    .map(f -> isMcJar(f) ? copyMcTargetJar : f);
+                    .map(f -> isMcJar(f) ? mcJar : f);
             }
             libraries.forEach(f -> {
                 template.add(2, "-libraryjars '" + f + "'");
             });
         }
 
+        Files.createDirectories(this.getRootRelativeFile(PROGUARD_MAPPING_DIR));
+
+        List<String> api = new ArrayList<>(template);
+        api.add(2, "-printmapping " + new File(this.getRootRelativeFile(PROGUARD_MAPPING_DIR).toFile(), "mappings-" + compType + "-api.txt"));
+
         // API config doesn't require any changes from the changes that we made to the template
-        Files.write(getTemporaryFile(PROGUARD_API_CONFIG), template);
+        Files.write(getTemporaryFile(compType+PROGUARD_API_CONFIG), api);
 
         // For the Standalone config, don't keep the API package
         List<String> standalone = new ArrayList<>(template);
         standalone.removeIf(s -> s.contains("# this is the keep api"));
-        Files.write(getTemporaryFile(PROGUARD_STANDALONE_CONFIG), standalone);
-    }
-
-    private File getSrgMcJar() {
-        return getProject().getTasks().findByName("copyMcJar").getOutputs().getFiles().getSingleFile();
+        standalone.add(2, "-printmapping " + new File(this.getRootRelativeFile(PROGUARD_MAPPING_DIR).toFile(), "mappings-" + compType + "-standalone.txt"));
+        Files.write(getTemporaryFile(compType+PROGUARD_STANDALONE_CONFIG), standalone);
     }
 
     private Stream<File> acquireDependencies() {
-        return getProject().getConvention().getPlugin(JavaPluginConvention.class).getSourceSets().findByName("launch").getRuntimeClasspath().getFiles()
+        return getProject().getConvention().getPlugin(JavaPluginConvention.class).getSourceSets().findByName("main").getCompileClasspath().getFiles()
             .stream()
             .filter(File::isFile);
     }
 
     private void proguardApi() throws Exception {
-        runProguard(getTemporaryFile(PROGUARD_API_CONFIG));
+        runProguard(getTemporaryFile(compType+PROGUARD_API_CONFIG));
         Determinizer.determinize(this.proguardOut.toString(), this.artifactApiPath.toString());
     }
 
     private void proguardStandalone() throws Exception {
-        runProguard(getTemporaryFile(PROGUARD_STANDALONE_CONFIG));
+        runProguard(getTemporaryFile(compType+PROGUARD_STANDALONE_CONFIG));
         Determinizer.determinize(this.proguardOut.toString(), this.artifactStandalonePath.toString());
     }
 

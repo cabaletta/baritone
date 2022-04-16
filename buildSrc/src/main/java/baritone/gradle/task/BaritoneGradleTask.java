@@ -18,6 +18,7 @@
 package baritone.gradle.task;
 
 import org.gradle.api.DefaultTask;
+import org.gradle.api.tasks.Input;
 
 import java.io.File;
 import java.io.IOException;
@@ -40,17 +41,18 @@ class BaritoneGradleTask extends DefaultTask {
             PROGUARD_API_CONFIG             = "api.pro",
             PROGUARD_STANDALONE_CONFIG      = "standalone.pro",
             PROGUARD_EXPORT_PATH            = "proguard_out.jar",
+            PROGUARD_MAPPING_DIR            = "mapping",
 
             ARTIFACT_STANDARD           = "%s-%s.jar",
             ARTIFACT_UNOPTIMIZED        = "%s-unoptimized-%s.jar",
             ARTIFACT_API                = "%s-api-%s.jar",
             ARTIFACT_STANDALONE         = "%s-standalone-%s.jar",
-            ARTIFACT_FORGE_UNOPTIMIZED  = "%s-unoptimized-forge-%s.jar",
-            ARTIFACT_FORGE_API          = "%s-api-forge-%s.jar",
-            ARTIFACT_FORGE_STANDALONE   = "%s-standalone-forge-%s.jar",
-            ARTIFACT_FABRIC_UNOPTIMIZED = "%s-unoptimized-fabric-%s.jar",
-            ARTIFACT_FABRIC_API         = "%s-api-fabric-%s.jar",
-            ARTIFACT_FABRIC_STANDALONE  = "%s-standalone-fabric-%s.jar";
+            ARTIFACT_FORGE_UNOPTIMIZED  = "%s-forge-unoptimized-%s.jar",
+            ARTIFACT_FORGE_API          = "%s-forge-api-%s.jar",
+            ARTIFACT_FORGE_STANDALONE   = "%s-forge-standalone-%s.jar",
+            ARTIFACT_FABRIC_UNOPTIMIZED = "%s-fabric-standalone-%s.jar",
+            ARTIFACT_FABRIC_API         = "%s-fabric-api-%s.jar",
+            ARTIFACT_FABRIC_STANDALONE  = "%s-fabric-standalone-%s.jar";
 
     protected String artifactName, artifactVersion;
     protected final Path
@@ -59,7 +61,7 @@ class BaritoneGradleTask extends DefaultTask {
         proguardOut;
 
     public BaritoneGradleTask() {
-        this.artifactName = getProject().getName();
+        this.artifactName = getProject().getProperties().get("archivesBaseName").toString();
         this.artifactVersion = getProject().getVersion().toString();
 
         this.artifactPath = this.getBuildFile(formatVersion(ARTIFACT_STANDARD));
@@ -99,7 +101,11 @@ class BaritoneGradleTask extends DefaultTask {
     }
 
     protected Path getRelativeFile(String file) {
-        return Paths.get(new File(new File(getProject().getBuildDir(), "../"), file).getAbsolutePath());
+        return Paths.get(new File(getProject().getBuildDir(), file).getAbsolutePath());
+    }
+
+    protected Path getRootRelativeFile(String file) {
+        return Paths.get(new File(getProject().getRootDir(), file).getAbsolutePath());
     }
 
     protected Path getTemporaryFile(String file) {
@@ -107,6 +113,6 @@ class BaritoneGradleTask extends DefaultTask {
     }
 
     protected Path getBuildFile(String file) {
-        return getRelativeFile("build/libs/" + file);
+        return getRelativeFile("libs/" + file);
     }
 }

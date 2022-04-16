@@ -16,175 +16,71 @@
  */
 
 plugins {
-    id 'java'
-    id 'dev.architectury.loom' version '0.10.0-SNAPSHOT'
-    id 'maven-publish'
+    id "architectury-plugin" version "3.4.131"
+    id 'dev.architectury.loom' version '0.11.0.254' apply false
 }
 
-
-archivesBaseName  = project.archives_base_name
-version = project.mod_version
-group = project.maven_group
-
-import baritone.gradle.task.CreateDistTask
-import baritone.gradle.task.ProguardTask
-
-def compileType = project.hasProperty("baritone.fabric_build") ? "FABRIC" : project.hasProperty("baritone.forge_build") ? "FORGE" : "OFFICIAL"
-
-sourceCompatibility = targetCompatibility = JavaVersion.VERSION_16
-
-compileJava {
-    options.encoding = "UTF-8" // allow emoji in comments :^)
+architectury {
+    minecraft = rootProject.minecraft_version
 }
 
-sourceSets {
-    api {
-        compileClasspath += main.compileClasspath
-    }
-    main {
-        compileClasspath += api.output
-    }
-    test {
-        compileClasspath += main.compileClasspath + main.runtimeClasspath + main.output
-        runtimeClasspath += main.compileClasspath + main.runtimeClasspath + main.output
-    }
-    launch {
-        compileClasspath += main.compileClasspath + main.runtimeClasspath + main.output
-        runtimeClasspath += main.compileClasspath + main.runtimeClasspath + main.output
-    }
-    schematica_api {
-        compileClasspath += main.compileClasspath
-    }
-    main {
-        compileClasspath += schematica_api.output
-    }
-}
+subprojects {
+    apply plugin: 'java'
+    apply plugin: "maven-publish"
+    apply plugin: "dev.architectury.loom"
 
-loom {
-    if (compileType.equals("FORGE")) {
-        forge {
-            mixinConfig 'mixins.baritone.json'
-        }
-    }
-    mixin.defaultRefmapName = "mixins.baritone.refmap.json"
+    archivesBaseName = rootProject.archives_base_name
+    version = rootProject.mod_version
+    group = rootProject.maven_group
 
-    runs {
-        client {
-            source = sourceSets.launch
+    sourceCompatibility = targetCompatibility = JavaVersion.VERSION_16
+
+    loom {
+        silentMojangMappingsLicense()
+    }
+
+    dependencies {
+        minecraft "com.mojang:minecraft:${rootProject.minecraft_version}"
+        // The following line declares the mojmap mappings, you may use other mappings as well
+        mappings loom.officialMojangMappings()
+        // The following line declares the yarn mappings you may select this one as well.
+        // mappings "net.fabricmc:yarn:1.17.1+build.32:v2"
+    }
+
+    tasks.withType(JavaCompile).configureEach {
+        it.options.encoding = "UTF-8"
+
+        def targetVersion = 16
+        if (JavaVersion.current().isJava9Compatible()) {
+            it.options.release = targetVersion
         }
     }
 }
 
+allprojects {
+    apply plugin: "architectury-plugin"
 
-repositories {
-    maven {
-        name = 'impactdevelopment-repo'
-        url = 'https://impactdevelopment.github.io/maven/'
-    }
-    maven {
-        name = "ldtteam"
-        url = "https://maven.parchmentmc.net/"
-    }
-    mavenCentral()
-}
-
-dependencies {
-    if (compileType.equals("FORGE")) {
-        forge "net.minecraftforge:forge:${project.forge_version}"
-    }
-    mappings loom.layered() {
-        officialMojangMappings()
-        //technically optional, but really helpful in dev:
-        parchment("org.parchmentmc.data:parchment-1.17.1:2021.10.24@zip" as String)
-    }
-    minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    if (!compileType.equals("FORGE")) {
-        modImplementation "net.fabricmc:fabric-loader:${project.fabric_version}"
-    }
-    // this makes it compile with the forge tweak stuff
-    implementation 'com.github.ImpactDevelopment:SimpleTweaker:1.2'
-    implementation('net.minecraft:launchwrapper:1.12') {
-        exclude module: 'lwjgl'
-        exclude module: 'asm-debug-all'
-    }
-
-    implementation 'com.google.code.findbugs:jsr305:3.0.2'
-
-    testImplementation 'junit:junit:4.12'
-}
-
-javadoc {
-    options.addStringOption('Xwerror', '-quiet') // makes the build fail on travis when there is a javadoc error
-    options.linkSource true
-    options.encoding "UTF-8" // allow emoji in comments :^)
-    source = sourceSets.api.allJava
-    classpath += sourceSets.api.compileClasspath
-}
-
-// skidded from fabric-example-mod (comments and all)
-tasks.withType(JavaCompile).configureEach {
-    // ensure that the encoding is set to UTF-8, no matter what the system default is
-    // this fixes some edge cases with special characters not displaying correctly
-    // see http://yodaconditions.net/blog/fix-for-java-file-encoding-problems-with-gradle.html
-    // If Javadoc is generated, this must be specified in that task too.
-    it.options.encoding = "UTF-8"
-
-    // The Minecraft launcher currently installs Java 8 for users, so your mod probably wants to target Java 8 too
-    // JDK 9 introduced a new way of specifying this that will make sure no newer classes or methods are used.
-    // We'll use that if it's available, but otherwise we'll use the older option.
-    def targetVersion = 16
-    if (JavaVersion.current().isJava9Compatible()) {
-        it.options.release = targetVersion
-    }
-}
-
-
-jar {
-    from sourceSets.launch.output, sourceSets.api.output
-
-    if (!getProject().hasProperty("baritone.forge_build")) {
-        exclude "**/BaritoneForgeModXD.class"
-        exclude "**/mods.toml"
-    }
-
-    preserveFileTimestamps = false
-    reproducibleFileOrder = true
-
-    if (getProject().hasProperty("baritone.fabric_build")) {
-        filesMatching("fabric.mod.json") {
-            expand "version": version
+    repositories {
+        maven {
+            name = 'spongepowered-repo'
+            url = 'https://repo.spongepowered.org/repository/maven-public/'
         }
-    } else {
-        exclude("fabric.mod.json")
-    }
-
-
-    manifest {
-        attributes(
-                'MixinConfigs': 'mixins.baritone.json',
-                "MixinConnector": "baritone.launch.BaritoneMixinConnector",
-
-                'Implementation-Title': 'Baritone',
-                'Implementation-Version': version,
-        )
-    }
-}
-
-if (compileType.equals("OFFICIAL")) {
-    remapJar {
-        toM.set "official"
+        maven {
+            name = 'impactdevelopment-repo'
+            url = 'https://impactdevelopment.github.io/maven/'
+        }
+        maven {
+            name = "ldtteam"
+            url = "https://maven.parchmentmc.net/"
+        }
+        // for the newer version of launchwrapper
+        maven {
+            name = "multimc-maven"
+            url = "https://files.multimc.org/maven/"
+            metadataSources {
+                artifact()
+            }
+        }
+        mavenCentral()
     }
 }
-
-
-
-task proguard(type: ProguardTask) {
-    url 'https://downloads.sourceforge.net/project/proguard/v7.1.0-beta5/proguard-7.1.0-beta5.zip'
-    extract 'proguard-7.1.0-beta5/lib/proguard.jar'
-    compType compileType
-}
-
-task createDist(type: CreateDistTask, dependsOn: proguard)
-
-
-build.finalizedBy(createDist)

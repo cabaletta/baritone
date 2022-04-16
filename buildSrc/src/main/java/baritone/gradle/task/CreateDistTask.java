@@ -42,12 +42,12 @@ public class CreateDistTask extends BaritoneGradleTask {
         super.verifyArtifacts();
 
         // Define the distribution file paths
-        Path api = getRelativeFile("dist/" + getFileName(artifactApiPath));
-        Path standalone = getRelativeFile("dist/" + getFileName(artifactStandalonePath));
-        Path unoptimized = getRelativeFile("dist/" + getFileName(artifactUnoptimizedPath));
+        Path api = getRootRelativeFile("dist/" + getFileName(artifactApiPath));
+        Path standalone = getRootRelativeFile("dist/" + getFileName(artifactStandalonePath));
+        Path unoptimized = getRootRelativeFile("dist/" + getFileName(artifactUnoptimizedPath));
 
         // NIO will not automatically create directories
-        Path dir = getRelativeFile("dist/");
+        Path dir = getRootRelativeFile("dist/");
         if (!Files.exists(dir)) {
             Files.createDirectory(dir);
         }
@@ -67,7 +67,7 @@ public class CreateDistTask extends BaritoneGradleTask {
         shasum.forEach(System.out::println);
 
         // Write the checksums to a file
-        Files.write(getRelativeFile("dist/checksums.txt"), shasum);
+        Files.write(getRootRelativeFile("dist/checksums.txt"), shasum);
     }
 
     private static String getFileName(Path p) {
@@ -76,15 +76,15 @@ public class CreateDistTask extends BaritoneGradleTask {
 
     private List<Path> getAllDistJars() {
         return Arrays.asList(
-                getRelativeFile("dist/" + formatVersion(ARTIFACT_API)),
-                getRelativeFile("dist/" + formatVersion(ARTIFACT_FABRIC_API)),
-                getRelativeFile("dist/" + formatVersion(ARTIFACT_FORGE_API)),
-                getRelativeFile("dist/" + formatVersion(ARTIFACT_STANDALONE)),
-                getRelativeFile("dist/" + formatVersion(ARTIFACT_FABRIC_STANDALONE)),
-                getRelativeFile("dist/" + formatVersion(ARTIFACT_FORGE_STANDALONE)),
-                getRelativeFile("dist/" + formatVersion(ARTIFACT_UNOPTIMIZED)),
-                getRelativeFile("dist/" + formatVersion(ARTIFACT_FABRIC_UNOPTIMIZED)),
-                getRelativeFile("dist/" + formatVersion(ARTIFACT_FORGE_UNOPTIMIZED))
+            getRootRelativeFile("dist/" + formatVersion(ARTIFACT_API)),
+            getRootRelativeFile("dist/" + formatVersion(ARTIFACT_FABRIC_API)),
+            getRootRelativeFile("dist/" + formatVersion(ARTIFACT_FORGE_API)),
+            getRootRelativeFile("dist/" + formatVersion(ARTIFACT_STANDALONE)),
+            getRootRelativeFile("dist/" + formatVersion(ARTIFACT_FABRIC_STANDALONE)),
+            getRootRelativeFile("dist/" + formatVersion(ARTIFACT_FORGE_STANDALONE)),
+            getRootRelativeFile("dist/" + formatVersion(ARTIFACT_UNOPTIMIZED)),
+            getRootRelativeFile("dist/" + formatVersion(ARTIFACT_FABRIC_UNOPTIMIZED)),
+            getRootRelativeFile("dist/" + formatVersion(ARTIFACT_FORGE_UNOPTIMIZED))
         );
     }
 

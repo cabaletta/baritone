@@ -337,5 +337,3 @@
     public java.lang.String substring(int);
     public java.lang.String substring(int,int);
 }
-
--printmapping mapping.txt
