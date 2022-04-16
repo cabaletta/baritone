@@ -47,12 +47,12 @@ class BaritoneGradleTask extends DefaultTask {
             ARTIFACT_UNOPTIMIZED        = "%s-unoptimized-%s.jar",
             ARTIFACT_API                = "%s-api-%s.jar",
             ARTIFACT_STANDALONE         = "%s-standalone-%s.jar",
-            ARTIFACT_FORGE_UNOPTIMIZED  = "%s-unoptimized-forge-%s.jar",
-            ARTIFACT_FORGE_API          = "%s-api-forge-%s.jar",
-            ARTIFACT_FORGE_STANDALONE   = "%s-standalone-forge-%s.jar",
-            ARTIFACT_FABRIC_UNOPTIMIZED = "%s-unoptimized-fabric-%s.jar",
-            ARTIFACT_FABRIC_API         = "%s-api-fabric-%s.jar",
-            ARTIFACT_FABRIC_STANDALONE  = "%s-standalone-fabric-%s.jar";
+            ARTIFACT_FORGE_UNOPTIMIZED  = "%s-forge-unoptimized-%s.jar",
+            ARTIFACT_FORGE_API          = "%s-forge-api-%s.jar",
+            ARTIFACT_FORGE_STANDALONE   = "%s-forge-standalone-%s.jar",
+            ARTIFACT_FABRIC_UNOPTIMIZED = "%s-fabric-standalone-%s.jar",
+            ARTIFACT_FABRIC_API         = "%s-fabric-api-%s.jar",
+            ARTIFACT_FABRIC_STANDALONE  = "%s-fabric-standalone-%s.jar";
 
     protected String artifactName, artifactVersion;
     protected final Path
