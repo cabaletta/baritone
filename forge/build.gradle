@@ -46,13 +46,6 @@ configurations {
 dependencies {
     forge "net.minecraftforge:forge:${rootProject.forge_version}"
 
-    // this makes it compile with the forge tweak stuff
-    compileOnly 'com.github.ImpactDevelopment:SimpleTweaker:1.2'
-    compileOnly('net.minecraft:launchwrapper:1.12') {
-        exclude module: 'lwjgl'
-        exclude module: 'asm-debug-all'
-    }
-
     common(project(path: ":common", configuration: "namedElements")) { transitive false }
     shadowCommon(project(path: ":common", configuration: "transformProductionForge")) { transitive false }
 }

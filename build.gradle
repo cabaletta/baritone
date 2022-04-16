@@ -73,6 +73,14 @@ allprojects {
             name = "ldtteam"
             url = "https://maven.parchmentmc.net/"
         }
+        // for the newer version of launchwrapper
+        maven {
+            name = "multimc-maven"
+            url = "https://files.multimc.org/maven/"
+            metadataSources {
+                artifact()
+            }
+        }
         mavenCentral()
     }
 }

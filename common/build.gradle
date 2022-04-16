@@ -96,16 +96,6 @@ dependencies {
     // Do NOT use other classes from fabric loader
     modCompileOnly "net.fabricmc:fabric-loader:${project.fabric_version}"
 
-    // want in the pom but not to compile against as it's also provided by loom
-    runtimeOnly "org.spongepowered:mixin:0.8.4"
-
-    // this makes it compile with the forge tweak stuff
-    implementation 'com.github.ImpactDevelopment:SimpleTweaker:1.2'
-    implementation('net.minecraft:launchwrapper:1.12') {
-        exclude module: 'lwjgl'
-        exclude module: 'asm-debug-all'
-    }
-
     compileOnly 'com.google.code.findbugs:jsr305:3.0.2'
 
     testImplementation 'junit:junit:4.12'
@@ -122,7 +112,6 @@ javadoc {
 jar {
     classifier "dev"
     from sourceSets.main.output, sourceSets.realmain.output, sourceSets.api.output
-
 
     preserveFileTimestamps = false
     reproducibleFileOrder = true

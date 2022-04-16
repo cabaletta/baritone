@@ -51,9 +51,13 @@ sourceSets {
             }
         }
     }
+    tweaker {
+        compileClasspath += realmain.output + api.output + main.compileClasspath
+        runtimeClasspath += realmain.output + api.output + main.compileClasspath
+    }
     main {
-        compileClasspath += realmain.output + api.output
-        runtimeClasspath += realmain.output + api.output
+        compileClasspath += realmain.output + api.output + tweaker.output
+        runtimeClasspath += realmain.output + api.output + tweaker.output
         java {
             java {
                 srcDir "$rootDir/src/launch/java"
@@ -100,7 +104,7 @@ dependencies {
 
     // this makes it compile with the forge tweak stuff
     implementation 'com.github.ImpactDevelopment:SimpleTweaker:1.2'
-    implementation('net.minecraft:launchwrapper:1.12') {
+    implementation('net.minecraft:launchwrapper:of-2.3') {
         exclude module: 'lwjgl'
         exclude module: 'asm-debug-all'
     }
@@ -120,8 +124,7 @@ javadoc {
 
 jar {
     classifier "dev"
-    from sourceSets.main.output, sourceSets.realmain.output, sourceSets.api.output
-
+    from sourceSets.main.output, sourceSets.realmain.output, sourceSets.api.output, sourceSets.tweaker.output
 
     preserveFileTimestamps = false
     reproducibleFileOrder = true
