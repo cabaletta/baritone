@@ -360,19 +360,7 @@ public interface MovementHelper extends ActionCosts, Helper {
                 if (state != null && state.isBlockNormalCube()) {
                     return true;
                 }
-//                if (block == Blocks.LADDER || (block == Blocks.VINE && Baritone.settings().allowVines.value)) {
-//                    return true;
-//                }
-                if (block == Blocks.FARMLAND || block == Blocks.GRASS_PATH) {
-                    return true;
-                }
-                if (block == Blocks.ENDER_CHEST || block == Blocks.CHEST || block == Blocks.TRAPPED_CHEST) {
-                    return true;
-                }
-                if (block == Blocks.GLASS || block == Blocks.STAINED_GLASS) {
-                    return true;
-                }
-                return false;
+                return block == Blocks.FARMLAND || block == Blocks.GRASS_PATH || block == Blocks.ENDER_CHEST || block == Blocks.CHEST || block == Blocks.TRAPPED_CHEST || block == Blocks.GLASS || block == Blocks.STAINED_GLASS;
             }).collect(Collectors.toList());
     }
 
