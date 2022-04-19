@@ -360,7 +360,9 @@ public interface MovementHelper extends ActionCosts, Helper {
                 if (state != null && state.isBlockNormalCube()) {
                     return true;
                 }
-                return block == Blocks.FARMLAND || block == Blocks.GRASS_PATH || block == Blocks.ENDER_CHEST || block == Blocks.CHEST || block == Blocks.TRAPPED_CHEST || block == Blocks.GLASS || block == Blocks.STAINED_GLASS;
+                return block == Blocks.FARMLAND || block == Blocks.GRASS_PATH ||
+                       block == Blocks.ENDER_CHEST || block == Blocks.CHEST || block == Blocks.TRAPPED_CHEST ||
+                       block == Blocks.GLASS || block == Blocks.STAINED_GLASS;
             }).collect(Collectors.toList());
     }
 
