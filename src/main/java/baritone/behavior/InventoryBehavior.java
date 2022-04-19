@@ -18,14 +18,13 @@
 package baritone.behavior;
 
 import baritone.Baritone;
-import baritone.api.BaritoneAPI;
 import baritone.api.event.events.TickEvent;
+import baritone.pathing.movement.MovementHelper;
 import baritone.utils.ToolSet;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.init.Blocks;
-import net.minecraft.init.Items;
 import net.minecraft.inventory.ClickType;
 import net.minecraft.item.*;
 import net.minecraft.util.EnumFacing;
@@ -99,7 +98,7 @@ public final class InventoryBehavior extends Behavior {
         NonNullList<ItemStack> invy = ctx.player().inventory.mainInventory;
         for (int i = 0; i < invy.size(); i++) {
             Item item = invy.get(i).getItem();
-            if (Baritone.settings().acceptableThrowawayItems.value.contains(item) && item != Items.AIR) {
+            if (MovementHelper.filterThrowawayForPlacing(Baritone.settings().acceptableThrowawayItems.value).contains(item)) {
                 return i;
             }
         }
@@ -130,8 +129,7 @@ public final class InventoryBehavior extends Behavior {
     }
 
     public boolean hasGenericThrowaway() {
-        for (Item item : Baritone.settings().acceptableThrowawayItems.value) {
-            if (item == Items.AIR) continue;
+        for (Item item : MovementHelper.filterThrowawayForPlacing(Baritone.settings().acceptableThrowawayItems.value)) {
             if (throwaway(false, stack -> item.equals(stack.getItem()))) {
                 return true;
             }
@@ -147,8 +145,7 @@ public final class InventoryBehavior extends Behavior {
         if (maybe != null && throwaway(select, stack -> stack.getItem() instanceof ItemBlock && ((ItemBlock) stack.getItem()).getBlock().equals(maybe.getBlock()))) {
             return true;
         }
-        for (Item item : Baritone.settings().acceptableThrowawayItems.value) {
-            if (item == Items.AIR) continue;
+        for (Item item : MovementHelper.filterThrowawayForPlacing(Baritone.settings().acceptableThrowawayItems.value)) {
             if (throwaway(select, stack -> item.equals(stack.getItem()))) {
                 return true;
             }
