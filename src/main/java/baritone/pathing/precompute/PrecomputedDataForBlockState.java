@@ -23,6 +23,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.world.IBlockAccess;
 
 import java.lang.reflect.Array;
+import java.util.Iterator;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -41,7 +42,8 @@ public class PrecomputedDataForBlockState {
     }
 
     public void refresh() {
-        for (IBlockState state : Block.BLOCK_STATE_IDS) { // state should never be null
+        for (Iterator<IBlockState> it = Block.BLOCK_STATE_IDS.iterator(); it.hasNext(); ) { // Can be replaced with an enhanced for because that breaks github actions for some reason I can't be bothered to dig into
+            IBlockState state = it.next(); // state should never be null
             Optional<Boolean> applied = precomputer.apply(state);
 
             int id = Block.BLOCK_STATE_IDS.get(state);
