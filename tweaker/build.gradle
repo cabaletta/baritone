@@ -5,11 +5,11 @@ architectury {
     injectInjectables = false
 }
 
-//loom {
-//    mixin {
-//        legacyRemapToNamespace = "official"
-//    }
-//}
+loom {
+    mixin {
+        legacyRemapToNamespace = "official"
+    }
+}
 
 // ignore this jank, it's so I don't have to move the src folder, as that creates unnecessary git conflicts
 sourceSets {
