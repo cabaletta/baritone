@@ -43,6 +43,6 @@ pluginManagement {
 rootProject.name = 'baritone'
 
 include("fabric")
-include("forge")
+//include("forge")
 include("common")
 include("tweaker")

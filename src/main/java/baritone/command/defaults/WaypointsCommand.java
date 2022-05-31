@@ -40,11 +40,11 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.BaseComponent;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.MutableComponent;
 
 import static baritone.api.command.IBaritoneChatControl.FORCE_COMMAND_PREFIX;
 
@@ -63,13 +63,13 @@ public class WaypointsCommand extends Command {
             throw new CommandInvalidTypeException(args.consumed(), "an action");
         }
         BiFunction<IWaypoint, Action, Component> toComponent = (waypoint, _action) -> {
-            BaseComponent component = new TextComponent("");
-            BaseComponent tagComponent = new TextComponent(waypoint.getTag().name() + " ");
+            MutableComponent component = Component.literal("");
+            MutableComponent tagComponent = Component.literal(waypoint.getTag().name() + " ");
             tagComponent.setStyle(tagComponent.getStyle().withColor(ChatFormatting.GRAY));
             String name = waypoint.getName();
-            BaseComponent nameComponent = new TextComponent(!name.isEmpty() ? name : "<empty>");
+            MutableComponent nameComponent = Component.literal(!name.isEmpty() ? name : "<empty>");
             nameComponent.setStyle(nameComponent.getStyle().withColor(!name.isEmpty() ? ChatFormatting.GRAY : ChatFormatting.DARK_GRAY));
-            BaseComponent timestamp = new TextComponent(" @ " + new Date(waypoint.getCreationTimestamp()));
+            MutableComponent timestamp = Component.literal(" @ " + new Date(waypoint.getCreationTimestamp()));
             timestamp.setStyle(timestamp.getStyle().withColor(ChatFormatting.DARK_GRAY));
             component.append(tagComponent);
             component.append(nameComponent);
@@ -77,7 +77,7 @@ public class WaypointsCommand extends Command {
             component.setStyle(component.getStyle()
                     .withHoverEvent(new HoverEvent(
                             HoverEvent.Action.SHOW_TEXT,
-                            new TextComponent("Click to select")
+                            Component.literal("Click to select")
                     ))
                     .withClickEvent(new ClickEvent(
                             ClickEvent.Action.RUN_COMMAND,
@@ -143,7 +143,7 @@ public class WaypointsCommand extends Command {
             args.requireMax(0);
             IWaypoint waypoint = new Waypoint(name, tag, pos);
             ForWaypoints.waypoints(this.baritone).addWaypoint(waypoint);
-            BaseComponent component = new TextComponent("Waypoint added: ");
+            MutableComponent component = Component.literal("Waypoint added: ");
             component.setStyle(component.getStyle().withColor(ChatFormatting.GRAY));
             component.append(toComponent.apply(waypoint, Action.INFO));
             logDirect(component);
@@ -155,8 +155,8 @@ public class WaypointsCommand extends Command {
                 ForWaypoints.waypoints(this.baritone).removeWaypoint(waypoint);
             }
             deletedWaypoints.computeIfAbsent(baritone.getWorldProvider().getCurrentWorld(), k -> new ArrayList<>()).addAll(Arrays.<IWaypoint>asList(waypoints));
-            TextComponent textComponent = new TextComponent(String.format("Cleared %d waypoints, click to restore them", waypoints.length));
-            textComponent.getStyle().withClickEvent(new ClickEvent(
+            MutableComponent MutableComponent = Component.literal(String.format("Cleared %d waypoints, click to restore them", waypoints.length));
+            MutableComponent.getStyle().withClickEvent(new ClickEvent(
                     ClickEvent.Action.RUN_COMMAND,
                     String.format(
                             "%s%s restore @ %s",
@@ -165,7 +165,7 @@ public class WaypointsCommand extends Command {
                             Stream.of(waypoints).map(wp -> Long.toString(wp.getCreationTimestamp())).collect(Collectors.joining(" "))
                     )
             ));
-            logDirect(textComponent);
+            logDirect(MutableComponent);
         } else if (action == Action.RESTORE) {
             List<IWaypoint> waypoints = new ArrayList<>();
             List<IWaypoint> deletedWaypoints = this.deletedWaypoints.getOrDefault(baritone.getWorldProvider().getCurrentWorld(), Collections.emptyList());
@@ -236,7 +236,7 @@ public class WaypointsCommand extends Command {
                 if (action == Action.INFO) {
                     logDirect(transform.apply(waypoint));
                     logDirect(String.format("Position: %s", waypoint.getLocation()));
-                    BaseComponent deleteComponent = new TextComponent("Click to delete this waypoint");
+                    MutableComponent deleteComponent = Component.literal("Click to delete this waypoint");
                     deleteComponent.setStyle(deleteComponent.getStyle().withClickEvent(new ClickEvent(
                             ClickEvent.Action.RUN_COMMAND,
                             String.format(
@@ -247,7 +247,7 @@ public class WaypointsCommand extends Command {
                                     waypoint.getCreationTimestamp()
                             )
                     )));
-                    BaseComponent goalComponent = new TextComponent("Click to set goal to this waypoint");
+                    MutableComponent goalComponent = Component.literal("Click to set goal to this waypoint");
                     goalComponent.setStyle(goalComponent.getStyle().withClickEvent(new ClickEvent(
                             ClickEvent.Action.RUN_COMMAND,
                             String.format(
@@ -258,7 +258,7 @@ public class WaypointsCommand extends Command {
                                     waypoint.getCreationTimestamp()
                             )
                     )));
-                    BaseComponent recreateComponent = new TextComponent("Click to show a command to recreate this waypoint");
+                    MutableComponent recreateComponent = Component.literal("Click to show a command to recreate this waypoint");
                     recreateComponent.getStyle().withClickEvent(new ClickEvent(
                             ClickEvent.Action.SUGGEST_COMMAND,
                             String.format(
@@ -272,7 +272,7 @@ public class WaypointsCommand extends Command {
                                     waypoint.getLocation().z
                             )
                     ));
-                    BaseComponent backComponent = new TextComponent("Click to return to the waypoints list");
+                    MutableComponent backComponent = Component.literal("Click to return to the waypoints list");
                     backComponent.getStyle().withClickEvent(new ClickEvent(
                             ClickEvent.Action.RUN_COMMAND,
                             String.format(
@@ -288,8 +288,8 @@ public class WaypointsCommand extends Command {
                 } else if (action == Action.DELETE) {
                     ForWaypoints.waypoints(this.baritone).removeWaypoint(waypoint);
                     deletedWaypoints.computeIfAbsent(baritone.getWorldProvider().getCurrentWorld(), k -> new ArrayList<>()).add(waypoint);
-                    TextComponent textComponent = new TextComponent("That waypoint has successfully been deleted, click to restore it");
-                    textComponent.getStyle().withClickEvent(new ClickEvent(
+                    MutableComponent MutableComponent = Component.literal("That waypoint has successfully been deleted, click to restore it");
+                    MutableComponent.getStyle().withClickEvent(new ClickEvent(
                             ClickEvent.Action.RUN_COMMAND,
                             String.format(
                                     "%s%s restore @ %s",
@@ -298,7 +298,7 @@ public class WaypointsCommand extends Command {
                                     waypoint.getCreationTimestamp()
                             )
                     ));
-                    logDirect(textComponent);
+                    logDirect(MutableComponent);
                 } else if (action == Action.GOAL) {
                     Goal goal = new GoalBlock(waypoint.getLocation());
                     baritone.getCustomGoalProcess().setGoal(goal);
