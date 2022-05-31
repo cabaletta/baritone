@@ -29,7 +29,6 @@ import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.server.packs.repository.ServerPacksSource;
 import net.minecraft.server.packs.resources.ReloadableResourceManager;
-import net.minecraft.server.packs.resources.SimpleReloadableResourceManager;
 import net.minecraft.util.Unit;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -147,11 +146,11 @@ public final class BlockOptionalMeta {
             PackRepository rpl = new PackRepository(PackType.SERVER_DATA, new ServerPacksSource());
             rpl.reload();
             PackResources thePack = rpl.getAvailablePacks().iterator().next().open();
-            ReloadableResourceManager resourceManager = new SimpleReloadableResourceManager(PackType.SERVER_DATA);
+            ReloadableResourceManager resourceManager = new ReloadableResourceManager(PackType.SERVER_DATA);
             manager = new LootTables(predicate);
             resourceManager.registerReloadListener(manager);
             try {
-                resourceManager.reload(new ThreadPerTaskExecutor(Thread::new), new ThreadPerTaskExecutor(Thread::new), Collections.singletonList(thePack), CompletableFuture.completedFuture(Unit.INSTANCE)).get();
+                resourceManager.createReload(new ThreadPerTaskExecutor(Thread::new), new ThreadPerTaskExecutor(Thread::new), CompletableFuture.completedFuture(Unit.INSTANCE), Collections.singletonList(thePack)).done().get();
             } catch (Exception exception) {
                 throw new RuntimeException(exception);
             }

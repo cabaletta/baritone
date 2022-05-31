@@ -57,22 +57,22 @@ public class WorldProvider implements IWorldProvider, Helper {
      * @param world The world's Registry Data
      */
     public final void initWorld(ResourceKey<Level> worldKey, DimensionType world) {
-        File directory;
-        File readme;
+        Path directory;
+        Path readme;
 
         IntegratedServer integratedServer = mc.getSingleplayerServer();
 
         // If there is an integrated server running (Aka Singleplayer) then do magic to find the world save file
         if (mc.hasSingleplayerServer()) {
-            directory = DimensionType.getStorageFolder(worldKey, integratedServer.getWorldPath(LevelResource.ROOT).toFile());
+            directory = DimensionType.getStorageFolder(worldKey, integratedServer.getWorldPath(LevelResource.ROOT));
 
             // Gets the "depth" of this directory relative the the game's run directory, 2 is the location of the world
-            if (directory.toPath().relativize(mc.gameDirectory.toPath()).getNameCount() != 2) {
+            if (directory.relativize(mc.gameDirectory.toPath()).getNameCount() != 2) {
                 // subdirectory of the main save directory for this world
-                directory = directory.getParentFile();
+                directory = directory.getParent();
             }
 
-            directory = new File(directory, "baritone");
+            directory = directory.resolve("baritone");
             readme = directory;
         } else { // Otherwise, the server must be remote...
             String folderName;
@@ -90,12 +90,12 @@ public class WorldProvider implements IWorldProvider, Helper {
             if (SystemUtils.IS_OS_WINDOWS) {
                 folderName = folderName.replace(":", "_");
             }
-            directory = new File(Baritone.getDir(), folderName);
-            readme = Baritone.getDir();
+            directory = Baritone.getDir().toPath().resolve(folderName);
+            readme = Baritone.getDir().toPath();
         }
 
         // lol wtf is this baritone folder in my minecraft save?
-        try (FileOutputStream out = new FileOutputStream(new File(readme, "readme.txt"))) {
+        try (FileOutputStream out = new FileOutputStream(readme.resolve("readme.txt").toFile())) {
             // good thing we have a readme
             out.write("https://github.com/cabaletta/baritone\n".getBytes());
         } catch (IOException ignored) {}
@@ -114,8 +114,8 @@ public class WorldProvider implements IWorldProvider, Helper {
         }
     }
 
-    public final Path getDimDir(ResourceKey<Level> level, int height, File directory) {
-        return directory.toPath().resolve(level.location().getNamespace()).resolve(level.location().getPath() + "_" + height);
+    public final Path getDimDir(ResourceKey<Level> level, int height, Path directory) {
+        return directory.resolve(level.location().getNamespace()).resolve(level.location().getPath() + "_" + height);
     }
 
     public final void closeWorld() {
