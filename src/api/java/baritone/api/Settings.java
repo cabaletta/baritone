@@ -1305,7 +1305,9 @@ public final class Settings {
 
         public void set(T value) {
             this.value = value;
-            BaritoneAPI.getProvider().getAllBaritones().forEach(iBaritone -> iBaritone.getGameEventHandler().onSettingChanged(new SettingChangedEvent(this)));
+            if (BaritoneAPI.getProvider() != null) {
+                BaritoneAPI.getProvider().getAllBaritones().forEach(iBaritone -> iBaritone.getGameEventHandler().onSettingChanged(new SettingChangedEvent(this)));
+            }
         }
 
         public final String getName() {

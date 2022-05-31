@@ -149,6 +149,7 @@ public class PrecomputedData { // TODO add isFullyPassable
             try { // A dodgy catch-all at the end, for most blocks with default behaviour this will work, however where blocks are special this will error out, and we can handle it when we have this information
                 return Optional.of(block.isPassable(null, null));
             } catch (NullPointerException exception) {
+                System.out.println("Error");
                 return Optional.empty();
             }
         }, (bsi, x, y, z, blockState) -> {
@@ -181,10 +182,6 @@ public class PrecomputedData { // TODO add isFullyPassable
             return block.isPassable(bsi.access, bsi.isPassableBlockPos.setPos(x, y, z));
         });
 
-        long endTime = System.nanoTime();
-
-        System.out.println(endTime - startTime);
-        Thread.dumpStack();
     }
 
     public boolean canWalkOn(BlockStateInterface bsi, int x, int y, int z, IBlockState state) {
@@ -223,15 +220,7 @@ public class PrecomputedData { // TODO add isFullyPassable
      *  Refresh the precomputed data, for use when settings have changed etc.
      */
     public void refresh() {
-        long startTime = System.nanoTime();
-
-        for (int i = 0; i < 10; i++) {
-            canWalkThrough.refresh();
-            canWalkOn.refresh();
-        }
-
-        long endTime = System.nanoTime();
-
-        System.out.println(endTime - startTime);
+        canWalkThrough.refresh();
+        canWalkOn.refresh();
     }
 }
