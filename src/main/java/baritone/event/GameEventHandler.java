@@ -157,6 +157,11 @@ public final class GameEventHandler implements IEventBus, Helper {
     }
 
     @Override
+    public void onSettingChanged(SettingChangedEvent event) {
+        listeners.forEach(l -> l.onSettingChanged(event));
+    }
+
+    @Override
     public final void registerEventListener(IGameEventListener listener) {
         this.listeners.add(listener);
     }

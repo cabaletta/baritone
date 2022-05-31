@@ -21,6 +21,7 @@ import baritone.Baritone;
 import baritone.api.IBaritone;
 import baritone.api.pathing.movement.ActionCosts;
 import baritone.cache.WorldData;
+import baritone.pathing.precompute.PrecomputedData;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.ToolSet;
 import baritone.utils.pathing.BetterWorldBorder;
@@ -76,11 +77,14 @@ public class CalculationContext {
     public final double walkOnWaterOnePenalty;
     public final BetterWorldBorder worldBorder;
 
+    public final PrecomputedData precomputedData;
+
     public CalculationContext(IBaritone baritone) {
-        this(baritone, false);
+        this(baritone, false, new PrecomputedData());
     }
 
-    public CalculationContext(IBaritone baritone, boolean forUseOnAnotherThread) {
+    public CalculationContext(IBaritone baritone, boolean forUseOnAnotherThread, PrecomputedData precomputedData) {
+        this.precomputedData = precomputedData;
         this.safeForThreadedUse = forUseOnAnotherThread;
         this.baritone = baritone;
         EntityPlayerSP player = baritone.getPlayerContext().player();

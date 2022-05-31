@@ -88,6 +88,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         return canWalkThrough(bsi, x, y, z, bsi.get0(x, y, z));
     }
 
+    // if changing something in this function remember to also change it in precomputed data
     static boolean canWalkThrough(BlockStateInterface bsi, int x, int y, int z, IBlockState state) {
         Block block = state.getBlock();
         if (block == Blocks.AIR) { // early return for most common case
@@ -284,6 +285,8 @@ public interface MovementHelper extends ActionCosts, Helper {
      * Can I walk on this block without anything weird happening like me falling
      * through? Includes water because we know that we automatically jump on
      * water
+     *
+     * If changing something in this function remember to also change it in precomputed data
      *
      * @param bsi   Block state provider
      * @param x     The block's x position

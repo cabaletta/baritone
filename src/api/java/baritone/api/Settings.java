@@ -17,6 +17,7 @@
 
 package baritone.api;
 
+import baritone.api.event.events.SettingChangedEvent;
 import baritone.api.utils.NotificationHelper;
 import baritone.api.utils.SettingsUtil;
 import baritone.api.utils.TypeUtils;
@@ -1300,6 +1301,11 @@ public final class Settings {
         @Deprecated
         public final T get() {
             return value;
+        }
+
+        public void set(T value) {
+            this.value = value;
+            BaritoneAPI.getProvider().getAllBaritones().forEach(iBaritone -> iBaritone.getGameEventHandler().onSettingChanged(new SettingChangedEvent(this)));
         }
 
         public final String getName() {

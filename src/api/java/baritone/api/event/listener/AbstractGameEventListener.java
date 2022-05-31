@@ -71,4 +71,7 @@ public interface AbstractGameEventListener extends IGameEventListener {
 
     @Override
     default void onPathEvent(PathEvent event) {}
+
+    @Override
+    default void onSettingChanged(SettingChangedEvent event) {}
 }

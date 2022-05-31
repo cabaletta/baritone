@@ -33,6 +33,7 @@ import baritone.pathing.calc.AbstractNodeCostSearch;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.path.PathExecutor;
+import baritone.pathing.precompute.PrecomputedData;
 import baritone.utils.PathRenderer;
 import baritone.utils.PathingCommandContext;
 import baritone.utils.pathing.Favoring;
@@ -74,8 +75,11 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
 
     private final LinkedBlockingQueue<PathEvent> toDispatch = new LinkedBlockingQueue<>();
 
+    public PrecomputedData precomputedData;
+
     public PathingBehavior(Baritone baritone) {
         super(baritone);
+        precomputedData = new PrecomputedData();
     }
 
     private void queuePathEvent(PathEvent event) {
@@ -259,7 +263,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         if (command instanceof PathingCommandContext) {
             context = ((PathingCommandContext) command).desiredCalcContext;
         } else {
-            context = new CalculationContext(baritone, true);
+            context = new CalculationContext(baritone, true, precomputedData);
         }
         if (goal == null) {
             return false;
@@ -418,7 +422,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
      */
     public BetterBlockPos pathStart() { // TODO move to a helper or util class
         BetterBlockPos feet = ctx.playerFeet();
-        if (!MovementHelper.canWalkOn(ctx, feet.down())) {
+        if (!precomputedData.canWalkOn(ctx, feet.down())) {
             if (ctx.player().onGround) {
                 double playerX = ctx.player().posX;
                 double playerZ = ctx.player().posZ;
@@ -437,7 +441,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                         // can't possibly be sneaking off of this one, we're too far away
                         continue;
                     }
-                    if (MovementHelper.canWalkOn(ctx, possibleSupport.down()) && MovementHelper.canWalkThrough(ctx, possibleSupport) && MovementHelper.canWalkThrough(ctx, possibleSupport.up())) {
+                    if (precomputedData.canWalkOn(ctx, possibleSupport.down()) && precomputedData.canWalkThrough(ctx, possibleSupport) && context.precomputedData.canWalkThrough(ctx, possibleSupport.up())) {
                         // this is plausible
                         //logDebug("Faking path start assuming player is standing off the edge of a block");
                         return possibleSupport;
@@ -447,13 +451,18 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
             } else {
                 // !onGround
                 // we're in the middle of a jump
-                if (MovementHelper.canWalkOn(ctx, feet.down().down())) {
+                if (precomputedData.canWalkOn(ctx, feet.down().down())) {
                     //logDebug("Faking path start assuming player is midair and falling");
                     return feet.down();
                 }
             }
         }
         return feet;
+    }
+
+    @Override
+    public void onSettingChanged(SettingChangedEvent event) {
+        this.precomputedData.refresh();
     }
 
     /**

@@ -38,6 +38,7 @@ import baritone.api.utils.input.Input;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
+import baritone.pathing.precompute.PrecomputedData;
 import baritone.utils.BaritoneProcessHelper;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.PathingCommandContext;
@@ -893,7 +894,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         private final int originZ;
 
         public BuilderCalculationContext() {
-            super(BuilderProcess.this.baritone, true); // wew lad
+            super(BuilderProcess.this.baritone, true, new PrecomputedData()); // wew lad
             this.placeable = approxPlaceable(9);
             this.schematic = BuilderProcess.this.schematic;
             this.originX = origin.getX();
