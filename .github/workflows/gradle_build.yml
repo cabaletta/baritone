@@ -21,7 +21,6 @@ jobs:
         distribution: 'adopt'
 
     - uses: actions/github-script@v2
-      id: fname
       name: apply beta versioning
       with:
         result-encoding: string
@@ -30,9 +29,6 @@ jobs:
           let file = fs.readFileSync("./gradle.properties");
           file = file.toString().split("\n").map(e => e.trim().startsWith("mod_version") ? `${e}-beta-${process.env.GITHUB_SHA.substring(0, 7)}` : e).join("\n");
           fs.writeFileSync("./gradle.properties", file);
-          const mod_version = file.toString().split("\n").filter(e => e.trim().startsWith("mod_version"))[0].split("=")[1].trim();
-          const archives_base_name = file.toString().split("\n").filter(e => e.trim().startsWith("archives_base_name"))[0].split("=")[1].trim();
-          return `${archives_base_name}-${mod_version}`;
 
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
