@@ -29,6 +29,7 @@ jobs:
           let file = fs.readFileSync("./gradle.properties");
           file = file.toString().split("\n").map(e => {
             if (!e.trim().startsWith("mod_version")) return e;
+            if (process.env.GITHUB_REF.includes("tags")) return e;
             let vers = e.split(".");
             let n = parseInt(vers[vers.length-1].trim()) + 1;
             vers = vers.slice(0, vers.length - 1);
