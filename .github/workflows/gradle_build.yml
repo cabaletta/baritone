@@ -30,7 +30,7 @@ jobs:
           file = file.toString().split("\n").map(e => {
             if (!e.trim().startsWith("mod_version")) return e;
             let vers = e.split(".");
-            let n = parseInt(vers[vers.length]) + 1;
+            let n = parseInt(vers[vers.length-1].trim()) + 1;
             vers = vers.slice(0, vers.length - 1);
             vers.push(n);
             return `${vers.join(".")}-beta-${process.env.GITHUB_SHA.substring(0, 7)}`;
