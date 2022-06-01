@@ -27,7 +27,14 @@ jobs:
         script: |
           const fs = require("fs");
           let file = fs.readFileSync("./gradle.properties");
-          file = file.toString().split("\n").map(e => e.trim().startsWith("mod_version") ? `${e}-beta-${process.env.GITHUB_SHA.substring(0, 7)}` : e).join("\n");
+          file = file.toString().split("\n").map(e => {
+            if (!e.trim().startsWith("mod_version")) return e;
+            let vers = e.split(".");
+            let n = parseInt(vers[vers.length]) + 1;
+            vers = vers.slice(0, vers.length - 1);
+            vers.push(n);
+            return `${vers.join(".")}-beta-${process.env.GITHUB_SHA.substring(0, 7)}`;
+          }).join("\n");
           fs.writeFileSync("./gradle.properties", file);
 
     - name: Grant execute permission for gradlew
