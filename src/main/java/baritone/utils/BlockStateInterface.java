@@ -43,7 +43,7 @@ public class BlockStateInterface {
 
     private final ClientChunkCache provider;
     private final WorldData worldData;
-    protected final BlockGetter world;
+    protected final Level world;
     public final BlockPos.MutableBlockPos isPassableBlockPos;
     public final BlockGetter access;
 
@@ -97,9 +97,9 @@ public class BlockStateInterface {
     }
 
     public BlockState get0(int x, int y, int z) { // Mickey resigned
-        y -= worldData.dimension.minY();
+        y -= world.dimensionType().minY();
         // Invalid vertical position
-        if (y < 0 || y >= worldData.dimension.height()) {
+        if (y < 0 || y >= world.dimensionType().height()) {
             return AIR;
         }
 
