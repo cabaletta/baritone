@@ -20,29 +20,11 @@ jobs:
         java-version: '8'
         distribution: 'adopt'
 
-    - uses: actions/github-script@v2
-      name: apply beta versioning
-      with:
-        result-encoding: string
-        script: |
-          const fs = require("fs");
-          let file = fs.readFileSync("./gradle.properties");
-          file = file.toString().split("\n").map(e => {
-            if (!e.trim().startsWith("mod_version")) return e;
-            if (process.env.GITHUB_REF.includes("tags")) return e;
-            let vers = e.split(".");
-            let n = parseInt(vers[vers.length-1].trim()) + 1;
-            vers = vers.slice(0, vers.length - 1);
-            vers.push(n);
-            return `${vers.join(".")}-beta-${process.env.GITHUB_SHA.substring(0, 7)}`;
-          }).join("\n");
-          fs.writeFileSync("./gradle.properties", file);
-
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
       
     - name: Build with Gradle
-      run: ./gradlew build
+      run: ./gradlew build -Pmod_version=$(git describe --always --tags | cut -c2-)
       
     - name: Archive Artifacts
       uses: actions/upload-artifact@v2
