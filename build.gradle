@@ -16,7 +16,13 @@
  */
 
 group 'baritone'
-version project.mod_version
+
+def vers = 'git describe --always --tags --dirty'.execute().text.trim();
+if (!vers.startsWith("v")) {
+    version project.hasProperty("mod_version") + "+" + "local_build";
+} else {
+    version vers.substring(1)
+}
 
 buildscript {
     repositories {
