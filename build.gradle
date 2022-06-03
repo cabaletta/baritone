@@ -19,7 +19,7 @@ group 'baritone'
 
 def vers = 'git describe --always --tags --dirty'.execute().text.trim();
 if (!vers.startsWith("v")) {
-    version project.mod_version + "+" + "local_build";
+    version project.mod_version;
 } else {
     version vers.substring(1)
 }
