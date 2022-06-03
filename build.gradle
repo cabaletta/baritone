@@ -19,7 +19,8 @@ group 'baritone'
 
 def vers = 'git describe --always --tags --dirty'.execute().text.trim();
 if (!vers.startsWith("v")) {
-    version project.mod_version;
+    println "git doesn't appear to be installed!"
+    version project.mod_version
 } else {
     version vers.substring(1)
 }
