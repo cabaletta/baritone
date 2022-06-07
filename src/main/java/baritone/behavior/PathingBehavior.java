@@ -422,7 +422,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
      */
     public BetterBlockPos pathStart() { // TODO move to a helper or util class
         BetterBlockPos feet = ctx.playerFeet();
-        if (!precomputedData.canWalkOn(ctx, feet.down())) {
+        if (!MovementHelper.canWalkOn(ctx, feet.down())) {
             if (ctx.player().onGround) {
                 double playerX = ctx.player().posX;
                 double playerZ = ctx.player().posZ;
@@ -441,7 +441,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                         // can't possibly be sneaking off of this one, we're too far away
                         continue;
                     }
-                    if (precomputedData.canWalkOn(ctx, possibleSupport.down()) && precomputedData.canWalkThrough(ctx, possibleSupport) && context.precomputedData.canWalkThrough(ctx, possibleSupport.up())) {
+                    if (MovementHelper.canWalkOn(ctx, possibleSupport.down()) && MovementHelper.canWalkThrough(ctx, possibleSupport) && MovementHelper.canWalkThrough(ctx, possibleSupport.up())) {
                         // this is plausible
                         //logDebug("Faking path start assuming player is standing off the edge of a block");
                         return possibleSupport;
@@ -451,7 +451,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
             } else {
                 // !onGround
                 // we're in the middle of a jump
-                if (precomputedData.canWalkOn(ctx, feet.down().down())) {
+                if (MovementHelper.canWalkOn(ctx, feet.down().down())) {
                     //logDebug("Faking path start assuming player is midair and falling");
                     return feet.down();
                 }
@@ -462,7 +462,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
 
     @Override
     public void onSettingChanged(SettingChangedEvent event) {
-        this.precomputedData.refresh();
+        this.precomputedData = new PrecomputedData();
     }
 
     /**

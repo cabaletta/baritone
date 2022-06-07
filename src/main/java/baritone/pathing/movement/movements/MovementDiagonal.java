@@ -110,24 +110,24 @@ public class MovementDiagonal extends Movement {
     }
 
     public static void cost(CalculationContext context, int x, int y, int z, int destX, int destZ, MutableMoveResult res) {
-        if (!context.precomputedData.canWalkThrough(context.bsi, destX, y + 1, destZ)) {
+        if (!MovementHelper.canWalkThrough(context, destX, y + 1, destZ)) {
             return;
         }
         IBlockState destInto = context.get(destX, y, destZ);
         boolean ascend = false;
         IBlockState destWalkOn;
         boolean descend = false;
-        if (!context.precomputedData.canWalkThrough(context.bsi, destX, y, destZ, destInto)) {
+        if (!MovementHelper.canWalkThrough(context, destX, y, destZ, destInto)) {
             ascend = true;
-            if (!context.allowDiagonalAscend || !context.precomputedData.canWalkThrough(context.bsi, x, y + 2, z) || !context.precomputedData.canWalkOn(context.bsi, destX, y, destZ, destInto) || !context.precomputedData.canWalkThrough(context.bsi, destX, y + 2, destZ)) {
+            if (!context.allowDiagonalAscend || !MovementHelper.canWalkThrough(context, x, y + 2, z) || !MovementHelper.canWalkOn(context, destX, y, destZ, destInto) || !MovementHelper.canWalkThrough(context, destX, y + 2, destZ)) {
                 return;
             }
             destWalkOn = destInto;
         } else {
             destWalkOn = context.get(destX, y - 1, destZ);
-            if (!context.precomputedData.canWalkOn(context.bsi, destX, y - 1, destZ, destWalkOn)) {
+            if (!MovementHelper.canWalkOn(context, destX, y - 1, destZ, destWalkOn)) {
                 descend = true;
-                if (!context.allowDiagonalDescend || !context.precomputedData.canWalkOn(context.bsi, destX, y - 2, destZ) || !context.precomputedData.canWalkThrough(context.bsi, destX, y - 1, destZ, destWalkOn)) {
+                if (!context.allowDiagonalDescend || !MovementHelper.canWalkOn(context, destX, y - 2, destZ) || !MovementHelper.canWalkThrough(context, destX, y - 1, destZ, destWalkOn)) {
                     return;
                 }
             }
@@ -169,17 +169,17 @@ public class MovementDiagonal extends Movement {
         IBlockState pb0 = context.get(x, y, destZ);
         IBlockState pb2 = context.get(destX, y, z);
         if (ascend) {
-            boolean ATop = context.precomputedData.canWalkThrough(context.bsi, x, y + 2, destZ);
-            boolean AMid = context.precomputedData.canWalkThrough(context.bsi, x, y + 1, destZ);
-            boolean ALow = context.precomputedData.canWalkThrough(context.bsi, x, y, destZ, pb0);
-            boolean BTop = context.precomputedData.canWalkThrough(context.bsi, destX, y + 2, z);
-            boolean BMid = context.precomputedData.canWalkThrough(context.bsi, destX, y + 1, z);
-            boolean BLow = context.precomputedData.canWalkThrough(context.bsi, destX, y, z, pb2);
+            boolean ATop = MovementHelper.canWalkThrough(context, x, y + 2, destZ);
+            boolean AMid = MovementHelper.canWalkThrough(context, x, y + 1, destZ);
+            boolean ALow = MovementHelper.canWalkThrough(context, x, y, destZ, pb0);
+            boolean BTop = MovementHelper.canWalkThrough(context, destX, y + 2, z);
+            boolean BMid = MovementHelper.canWalkThrough(context, destX, y + 1, z);
+            boolean BLow = MovementHelper.canWalkThrough(context, destX, y, z, pb2);
             if ((!(ATop && AMid && ALow) && !(BTop && BMid && BLow)) // no option
                     || MovementHelper.avoidWalkingInto(pb0.getBlock()) // bad
                     || MovementHelper.avoidWalkingInto(pb2.getBlock()) // bad
-                    || (ATop && AMid && context.precomputedData.canWalkOn(context.bsi, x, y, destZ, pb0)) // we could just ascend
-                    || (BTop && BMid && context.precomputedData.canWalkOn(context.bsi, destX, y, z, pb2)) // we could just ascend
+                    || (ATop && AMid && MovementHelper.canWalkOn(context, x, y, destZ, pb0)) // we could just ascend
+                    || (BTop && BMid && MovementHelper.canWalkOn(context, destX, y, z, pb2)) // we could just ascend
                     || (!ATop && AMid && ALow) // head bonk A
                     || (!BTop && BMid && BLow)) { // head bonk B
                 return;
