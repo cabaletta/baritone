@@ -17,6 +17,7 @@
     "MixinEntity",
     "MixinEntityRenderManager",
     "MixinItemStack",
+    "MixinItemTool",
     "MixinLivingEntity",
     "MixinLootContext",
     "MixinMinecraft",
