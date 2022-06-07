@@ -18,14 +18,8 @@
 package baritone.utils;
 
 import baritone.Baritone;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Function;
-
-import baritone.utils.accessor.IItemTool;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.item.DiggerItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.item.TieredItem;
@@ -33,6 +27,10 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Function;
 
 /**
  * A cached list of the best tools on the hotbar for any block
@@ -88,7 +86,7 @@ public class ToolSet {
     private int getMaterialCost(ItemStack itemStack) {
         if (itemStack.getItem() instanceof TieredItem) {
             TieredItem tool = (TieredItem) itemStack.getItem();
-            return ((IItemTool) tool).getHarvestLevel();
+            return tool.getTier().getLevel();
         } else {
             return -1;
         }

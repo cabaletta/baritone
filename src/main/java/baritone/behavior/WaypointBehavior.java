@@ -28,6 +28,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BedPart;
@@ -69,9 +70,9 @@ public class WaypointBehavior extends Behavior {
             return;
         Waypoint deathWaypoint = new Waypoint("death", Waypoint.Tag.DEATH, ctx.playerFeet());
         baritone.getWorldProvider().getCurrentWorld().getWaypoints().addWaypoint(deathWaypoint);
-        Component component = Component.literal("Death position saved.");
-        component.getStyle()
-            .applyFormat(ChatFormatting.WHITE)
+        MutableComponent component = Component.literal("Death position saved.");
+        component.setStyle(component.getStyle()
+            .withColor(ChatFormatting.WHITE)
             .withHoverEvent(new HoverEvent(
                 HoverEvent.Action.SHOW_TEXT,
                 Component.literal("Click to goto death")
@@ -85,7 +86,7 @@ public class WaypointBehavior extends Behavior {
                     deathWaypoint.getTag().getName(),
                     deathWaypoint.getCreationTimestamp()
                 )
-            ));
+            )));
         Helper.HELPER.logDirect(component);
     }
 

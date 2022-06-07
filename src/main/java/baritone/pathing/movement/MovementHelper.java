@@ -157,7 +157,10 @@ public interface MovementHelper extends ActionCosts, Helper {
         if (block instanceof CauldronBlock) {
             return false;
         }
-        return state.isPathfindable(bsi.access, bsi.isPassableBlockPos.set(x, y, z), PathComputationType.LAND); // workaround for future compatibility =P
+        // every block that overrides isPassable with anything more complicated than a "return true;" or "return false;"
+        // has already been accounted for above
+        // therefore it's safe to not construct a blockpos from our x, y, z ints and instead just pass null
+        return state.isPathfindable(bsi.access, BlockPos.ZERO, PathComputationType.LAND); // workaround for future compatibility =P
     }
 
     /**

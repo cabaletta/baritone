@@ -50,7 +50,6 @@
 #proguard doesnt like it when it cant find our fake schematica classes
 -dontwarn baritone.utils.schematic.schematica.**
 
-
 # Keep - Applications. Keep all application classes, along with their 'main'
 # methods.
 -keepclasseswithmembers public class * {

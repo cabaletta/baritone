@@ -28,6 +28,8 @@ import baritone.api.command.exception.CommandInvalidTypeException;
 import baritone.api.command.helpers.Paginator;
 import baritone.api.command.helpers.TabCompleteHelper;
 import baritone.api.utils.SettingsUtil;
+
+import java.awt.*;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -35,6 +37,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.*;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 
 import static baritone.api.command.IBaritoneChatControl.FORCE_COMMAND_PREFIX;
@@ -79,9 +82,9 @@ public class SetCommand extends Command {
                                 " (%s)",
                                 settingTypeToString(setting)
                         ));
-                        typeComponent.getStyle().withColor(ChatFormatting.DARK_GRAY);
+                        typeComponent.setStyle(typeComponent.getStyle().withColor(ChatFormatting.DARK_GRAY));
                         MutableComponent hoverComponent = Component.literal("");
-                        hoverComponent.getStyle().withColor(ChatFormatting.GRAY);
+                        hoverComponent.setStyle(hoverComponent.getStyle().withColor(ChatFormatting.GRAY));
                         hoverComponent.append(setting.getName());
                         hoverComponent.append(String.format("\nType: %s", settingTypeToString(setting)));
                         hoverComponent.append(String.format("\n\nValue:\n%s", settingValueToString(setting)));
