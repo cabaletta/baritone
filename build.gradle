@@ -15,9 +15,15 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+buildscript {
+    dependencies {
+        classpath "org.ow2.asm:asm:9.3"
+    }
+}
+
 plugins {
     id "architectury-plugin" version "3.4.135"
-    id 'dev.architectury.loom' version '0.11.0.275' apply false
+    id 'dev.architectury.loom' version '0.11.0.254' apply false
 }
 
 subprojects {
