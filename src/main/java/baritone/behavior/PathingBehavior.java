@@ -103,6 +103,11 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
             baritone.getPathingControlManager().cancelEverything();
             return;
         }
+
+        if (ticksElapsedSoFar % 200 == 0) {
+            precomputedData = new PrecomputedData(); // This is here for now in case settings aren't changed in normal ways, should mean it is updated whatever once every 10 seconds
+        }
+
         expectedSegmentStart = pathStart();
         baritone.getPathingControlManager().preTick();
         tickPath();
