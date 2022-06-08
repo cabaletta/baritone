@@ -130,7 +130,7 @@ public class MovementDescend extends Movement {
             // and potentially replace the water we're going to fall into
             return false;
         }
-        if (!context.precomputedData.canWalkThrough(context.bsi, destX, y - 2, destZ, below)) {
+        if (!MovementHelper.canWalkThrough(context, destX, y - 2, destZ, below)) {
             return false;
         }
         double costSoFar = 0;
