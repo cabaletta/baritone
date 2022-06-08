@@ -61,7 +61,7 @@ class BaritoneGradleTask extends DefaultTask {
         proguardOut;
 
     public BaritoneGradleTask() {
-        this.artifactName = getProject().getRootProject().getProperties().get("archivesBaseName").toString();
+        this.artifactName = getProject().getProperties().get("archives_base_name").toString();
         this.artifactVersion = getProject().getVersion().toString();
 
         this.artifactPath = this.getBuildFile(formatVersion(ARTIFACT_STANDARD));
