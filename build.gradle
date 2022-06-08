@@ -16,8 +16,8 @@
  */
 
 plugins {
-    id "architectury-plugin" version "3.4-SNAPSHOT"
-    id 'dev.architectury.loom' version '0.11.0-SNAPSHOT' apply false
+    id "architectury-plugin" version "3.4.135"
+    id 'dev.architectury.loom' version '0.11.0.275' apply false
 }
 
 subprojects {
@@ -36,7 +36,7 @@ subprojects {
     }
     group = rootProject.maven_group
 
-    sourceCompatibility = targetCompatibility = JavaVersion.VERSION_16
+    sourceCompatibility = targetCompatibility = JavaVersion.VERSION_17
 
     loom {
         silentMojangMappingsLicense()

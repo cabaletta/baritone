@@ -3,7 +3,7 @@ import baritone.gradle.task.ProguardTask
 
 architectury {
     injectInjectables = false
-    common("fabric")
+    common(System.getProperty("Baritone.enabled_platforms").split(","))
 }
 
 //loom {
@@ -126,3 +126,11 @@ jar {
         )
     }
 }
+
+
+
+task removeDist(type: Delete) {
+    delete new File(rootProject.rootDir, "dist")
+}
+
+clean.finalizedBy(removeDist)
