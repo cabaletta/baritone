@@ -64,7 +64,8 @@ class BaritoneGradleTask extends DefaultTask {
         this.artifactName = getProject().getProperties().get("archives_base_name").toString();
         this.artifactVersion = getProject().getVersion().toString();
 
-        this.artifactPath = this.getBuildFile(formatVersion(ARTIFACT_STANDARD));
+        String subprojectArtifactName = getProject().getProperties().get("archivesBaseName").toString();
+        this.artifactPath = this.getBuildFile(String.format(ARTIFACT_STANDARD, subprojectArtifactName, artifactVersion));
 
         if (getProject().hasProperty("baritone.forge_build")) {
             this.artifactUnoptimizedPath = this.getBuildFile(formatVersion(ARTIFACT_FORGE_UNOPTIMIZED));
