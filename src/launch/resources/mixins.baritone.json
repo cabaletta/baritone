@@ -2,7 +2,6 @@
   "required": true,
   "package": "baritone.launch.mixins",
   "compatibilityLevel": "JAVA_17",
-  "refmap": "baritone-common-refmap.json",
   "verbose": false,
   "injectors": {
     "maxShiftBy": 2,

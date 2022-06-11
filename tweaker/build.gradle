@@ -7,10 +7,12 @@ architectury {
 
 loom {
     mixin {
-        legacyRemapToNamespace = "official"
+        refmapTargetNamespace = "official"
         defaultRefmapName = "baritone-common-refmap.json"
     }
 }
+
+loom.mixin.useLegacyMixinAp = false;
 
 // ignore this jank, it's so I don't have to move the src folder, as that creates unnecessary git conflicts
 sourceSets {

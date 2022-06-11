@@ -23,7 +23,7 @@ buildscript {
 
 plugins {
     id "architectury-plugin" version "3.4.135"
-    id 'dev.architectury.loom' version '0.11.0.254' apply false
+    id 'dev.architectury.loom' version '0.12.0.282' apply false
 }
 
 subprojects {
