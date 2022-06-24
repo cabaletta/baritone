@@ -21,6 +21,8 @@ import baritone.api.utils.NotificationHelper;
 import baritone.api.utils.SettingsUtil;
 import baritone.api.utils.TypeUtils;
 import baritone.api.utils.gui.BaritoneToast;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableList;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.init.Blocks;
@@ -52,7 +54,7 @@ public final class Settings {
     /**
      * Blocks that baritone will be allowed to break even with allowBreak set to false
      */
-    public final Setting<List<Block>> allowBreakAnyway = new Setting<>(new ArrayList<>());
+    public final Setting<List<Block>> allowBreakAnyway = new Setting<>(ImmutableList.of());
 
     /**
      * Allow Baritone to sprint
@@ -178,31 +180,31 @@ public final class Settings {
     /**
      * Blocks that Baritone is allowed to place (as throwaway, for sneak bridging, pillaring, etc.)
      */
-    public final Setting<List<Item>> acceptableThrowawayItems = new Setting<>(new ArrayList<>(Arrays.asList(
+    public final Setting<List<Item>> acceptableThrowawayItems = new Setting<>(ImmutableList.of(
             Item.getItemFromBlock(Blocks.DIRT),
             Item.getItemFromBlock(Blocks.COBBLESTONE),
             Item.getItemFromBlock(Blocks.NETHERRACK),
             Item.getItemFromBlock(Blocks.STONE)
-    )));
+    ));
 
     /**
      * Blocks that Baritone will attempt to avoid (Used in avoidance)
      */
-    public final Setting<List<Block>> blocksToAvoid = new Setting<>(new ArrayList<>(
+    public final Setting<List<Block>> blocksToAvoid = new Setting<>(ImmutableList.of(
             // Leave Empty by Default
     ));
 
     /**
      * Blocks that Baritone is not allowed to break
      */
-    public final Setting<List<Block>> blocksToDisallowBreaking = new Setting<>(new ArrayList<>(
+    public final Setting<List<Block>> blocksToDisallowBreaking = new Setting<>(ImmutableList.of(
         // Leave Empty by Default
     ));
 
     /**
      * blocks that baritone shouldn't break, but can if it needs to.
      */
-    public final Setting<List<Block>> blocksToAvoidBreaking = new Setting<>(new ArrayList<>(Arrays.asList( // TODO can this be a HashSet or ImmutableSet?
+    public final Setting<List<Block>> blocksToAvoidBreaking = new Setting<>(ImmutableList.of(
             Blocks.CRAFTING_TABLE,
             Blocks.FURNACE,
             Blocks.LIT_FURNACE,
@@ -210,7 +212,7 @@ public final class Settings {
             Blocks.TRAPPED_CHEST,
             Blocks.STANDING_SIGN,
             Blocks.WALL_SIGN
-    )));
+    ));
 
     /**
      * this multiplies the break speed, if set above 1 it's "encourage breaking" instead
@@ -222,18 +224,18 @@ public final class Settings {
      * <p>
      * If a schematic asks for air at a certain position, and that position currently contains a block on this list, it will be treated as correct.
      */
-    public final Setting<List<Block>> buildIgnoreBlocks = new Setting<>(new ArrayList<>(Arrays.asList(
+    public final Setting<List<Block>> buildIgnoreBlocks = new Setting<>(ImmutableList.of(
 
-    )));
+    ));
 
     /**
      * A list of blocks to be treated as correct.
      * <p>
      * If a schematic asks for any block on this list at a certain position, it will be treated as correct, regardless of what it currently is.
      */
-    public final Setting<List<Block>> buildSkipBlocks = new Setting<>(new ArrayList<>(Arrays.asList(
+    public final Setting<List<Block>> buildSkipBlocks = new Setting<>(ImmutableList.of(
 
-    )));
+    ));
 
     /**
      * A mapping of blocks to blocks treated as correct in their position
@@ -242,7 +244,7 @@ public final class Settings {
      * <p>
      * Syntax same as <a href="https://baritone.leijurv.com/baritone/api/Settings.html#buildSubstitutes">buildSubstitutes</a>
      */
-    public final Setting<Map<Block, List<Block>>> buildValidSubstitutes = new Setting<>(new HashMap<>());
+    public final Setting<Map<Block, List<Block>>> buildValidSubstitutes = new Setting<>(ImmutableMap.of());
 
     /**
      * A mapping of blocks to blocks to be built instead
@@ -258,16 +260,16 @@ public final class Settings {
      *     stone->cobblestone,andesite,oak_planks->birch_planks,acacia_planks,glass
      * </pre>
      */
-    public final Setting<Map<Block, List<Block>>> buildSubstitutes = new Setting<>(new HashMap<>());
+    public final Setting<Map<Block, List<Block>>> buildSubstitutes = new Setting<>(ImmutableMap.of());
 
     /**
      * A list of blocks to become air
      * <p>
      * If a schematic asks for a block on this list, only air will be accepted at that location (and nothing on buildIgnoreBlocks)
      */
-    public final Setting<List<Block>> okIfAir = new Setting<>(new ArrayList<>(Arrays.asList(
+    public final Setting<List<Block>> okIfAir = new Setting<>(ImmutableList.of(
 
-    )));
+    ));
 
     /**
      * If this is true, the builder will treat all non-air blocks as correct. It will only place new blocks.
