@@ -385,7 +385,7 @@ public class PathExecutor implements IPathExecutor, Helper {
                 return false;
             }
 
-            if (pathPosition < path.length() - 2) {
+            if (pathPosition < path.length() - 3) {
                 IMovement next = path.movements().get(pathPosition + 1);
                 if (next instanceof MovementAscend && current.getDirection().up().equals(next.getDirection().down())) {
                     // a descend then an ascend in the same direction
@@ -396,7 +396,8 @@ public class PathExecutor implements IPathExecutor, Helper {
                     logDebug("Skipping descend to straight ascend");
                     return true;
                 }
-                if (canSprintFromDescendInto(ctx, current, next)) {
+                if (canSprintFromDescendInto(ctx, current, next) &&
+                        canSprintFromDescendInto(ctx, next, path.movements().get(pathPosition + 2))) {
                     if (ctx.playerFeet().equals(current.getDest())) {
                         pathPosition++;
                         onChangeInPathPosition();
@@ -536,11 +537,11 @@ public class PathExecutor implements IPathExecutor, Helper {
     }
 
     private static boolean canSprintFromDescendInto(IPlayerContext ctx, IMovement current, IMovement next) {
-        if (!MovementHelper.canWalkOn(ctx, current.getDest().add(current.getDirection()))) {
-            return false;
-        }
         if (next instanceof MovementDescend && next.getDirection().equals(current.getDirection())) {
             return true;
+        }
+        if (!MovementHelper.canWalkOn(ctx, current.getDest().add(current.getDirection()))) {
+            return false;
         }
         if (next instanceof MovementTraverse && next.getDirection().down().equals(current.getDirection())) {
             return true;
