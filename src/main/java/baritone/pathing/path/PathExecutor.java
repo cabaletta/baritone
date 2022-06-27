@@ -536,11 +536,11 @@ public class PathExecutor implements IPathExecutor, Helper {
     }
 
     private static boolean canSprintFromDescendInto(IPlayerContext ctx, IMovement current, IMovement next) {
-        if (next instanceof MovementDescend && next.getDirection().equals(current.getDirection())) {
-            return true;
-        }
         if (!MovementHelper.canWalkOn(ctx, current.getDest().add(current.getDirection()))) {
             return false;
+        }
+        if (next instanceof MovementDescend && next.getDirection().equals(current.getDirection())) {
+            return true;
         }
         if (next instanceof MovementTraverse && next.getDirection().down().equals(current.getDirection())) {
             return true;
