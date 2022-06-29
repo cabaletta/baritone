@@ -73,8 +73,8 @@ public class PathExecutor implements IPathExecutor, Helper {
     private HashSet<BlockPos> toPlace = new HashSet<>();
     private HashSet<BlockPos> toWalkInto = new HashSet<>();
 
-    private PathingBehavior behavior;
-    private IPlayerContext ctx;
+    private final PathingBehavior behavior;
+    private final IPlayerContext ctx;
 
     private boolean sprintNextTick;
 
@@ -385,7 +385,7 @@ public class PathExecutor implements IPathExecutor, Helper {
                 return false;
             }
 
-            if (pathPosition < path.length() - 3) {
+            if (pathPosition < path.length() - 2) {
                 IMovement next = path.movements().get(pathPosition + 1);
                 if (next instanceof MovementAscend && current.getDirection().up().equals(next.getDirection().down())) {
                     // a descend then an ascend in the same direction
@@ -396,13 +396,21 @@ public class PathExecutor implements IPathExecutor, Helper {
                     logDebug("Skipping descend to straight ascend");
                     return true;
                 }
-                if (canSprintFromDescendInto(ctx, current, next) &&
-                        canSprintFromDescendInto(ctx, next, path.movements().get(pathPosition + 2))) {
+                if (canSprintFromDescendInto(ctx, current, next)) {
+
+                    if (next instanceof MovementDescend && pathPosition < path.length() - 3) {
+                        IMovement next_next = path.movements().get(pathPosition + 2);
+                        if (next_next instanceof MovementDescend && !canSprintFromDescendInto(ctx, next, next_next)) {
+                            return false;
+                        }
+
+                    }
                     if (ctx.playerFeet().equals(current.getDest())) {
                         pathPosition++;
                         onChangeInPathPosition();
                         onTick();
                     }
+
                     return true;
                 }
                 //logDebug("Turning off sprinting " + movement + " " + next + " " + movement.getDirection() + " " + next.getDirection().down() + " " + next.getDirection().down().equals(movement.getDirection()));
