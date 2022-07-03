@@ -35,7 +35,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static baritone.api.pathing.movement.ActionCosts.COST_INF;
