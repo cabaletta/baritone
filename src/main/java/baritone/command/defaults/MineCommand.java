@@ -65,14 +65,12 @@ public class MineCommand extends Command {
         return Arrays.asList(
                 "The mine command allows you to tell Baritone to search for and mine individual blocks.",
                 "",
-                "The specified blocks can be ores (which are commonly cached), or any other block.",
+                "The specified blocks can be ores, or any other block.",
                 "",
                 "Also see the legitMine settings (see #set l legitMine).",
                 "",
                 "Usage:",
-                "> mine diamond_ore - Mines all diamonds it can find.",
-                "> mine redstone_ore lit_redstone_ore - Mines redstone ore.",
-                "> mine log:0 - Mines only oak logs."
+                "> mine diamond_ore - Mines all diamonds it can find."
         );
     }
 }
