@@ -47,6 +47,8 @@ import static baritone.pathing.movement.Movement.HORIZONTALS_BUT_ALSO_DOWN_____S
  * @author leijurv
  */
 public interface MovementHelper extends ActionCosts, Helper {
+    static final Optional<Boolean> TRUE = Optional.of(true);
+    static final Optional<Boolean> FALSE = Optional.of(false);
 
     static boolean avoidBreaking(BlockStateInterface bsi, int x, int y, int z, IBlockState state) {
         if (!bsi.worldBorder.canPlaceAt(x, y)) {
@@ -106,15 +108,15 @@ public interface MovementHelper extends ActionCosts, Helper {
         Block block = state.getBlock();
 
         if (block == Blocks.AIR) {
-            return Optional.of(true);
+            return TRUE;
         }
 
         if (block == Blocks.FIRE || block == Blocks.TRIPWIRE || block == Blocks.WEB || block == Blocks.END_PORTAL || block == Blocks.COCOA || block instanceof BlockSkull || block instanceof BlockTrapDoor || block == Blocks.END_ROD) {
-            return Optional.of(false);
+            return FALSE;
         }
 
         if (Baritone.settings().blocksToAvoid.value.contains(block)) {
-            return Optional.of(false);
+            return FALSE;
         }
 
         if (block instanceof BlockDoor || block instanceof BlockFenceGate) {
@@ -130,7 +132,7 @@ public interface MovementHelper extends ActionCosts, Helper {
 
         if (block instanceof BlockSnow) {
             if (state.getValue(BlockSnow.LAYERS) >= 3) {
-                return Optional.of(false);
+                return FALSE;
             }
 
             return Optional.empty();
@@ -138,14 +140,14 @@ public interface MovementHelper extends ActionCosts, Helper {
 
         if (block instanceof BlockLiquid) {
             if (state.getValue(BlockLiquid.LEVEL) != 0) {
-                return Optional.of(false);
+                return FALSE;
             } else {
                 return Optional.empty();
             }
         }
 
         if (block instanceof BlockCauldron) {
-            return Optional.of(false);
+            return FALSE;
         }
 
         try { // A dodgy catch-all at the end, for most blocks with default behaviour this will work, however where blocks are special this will error out, and we can handle it when we have this information
@@ -346,19 +348,19 @@ public interface MovementHelper extends ActionCosts, Helper {
     static Optional<Boolean> canWalkOnBlockState(IBlockState state) {
         Block block = state.getBlock();
         if (block == Blocks.AIR || block == Blocks.MAGMA) {
-            return Optional.of(false);
+            return FALSE;
         }
         if (state.isBlockNormalCube()) {
-            return Optional.of(true);
+            return TRUE;
         }
         if (block == Blocks.LADDER || (block == Blocks.VINE && Baritone.settings().allowVines.value)) { // TODO reconsider this
-            return Optional.of(true);
+            return TRUE;
         }
         if (block == Blocks.FARMLAND || block == Blocks.GRASS_PATH) {
-            return Optional.of(true);
+            return TRUE;
         }
         if (block == Blocks.ENDER_CHEST || block == Blocks.CHEST || block == Blocks.TRAPPED_CHEST) {
-            return Optional.of(true);
+            return TRUE;
         }
         if (isWater(block)) {
             return Optional.empty();
@@ -370,11 +372,11 @@ public interface MovementHelper extends ActionCosts, Helper {
         if (block instanceof BlockSlab) {
             if (!Baritone.settings().allowWalkOnBottomSlab.value) {
                 if (((BlockSlab) block).isDouble()) {
-                    return Optional.of(true);
+                    return TRUE;
                 }
                 return Optional.of(state.getValue(BlockSlab.HALF) != BlockSlab.EnumBlockHalf.BOTTOM);
             }
-            return Optional.of(true);
+            return TRUE;
         }
 
         return Optional.of(block instanceof BlockStairs);
