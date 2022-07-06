@@ -152,8 +152,8 @@ public interface MovementHelper extends ActionCosts, Helper {
 
         try { // A dodgy catch-all at the end, for most blocks with default behaviour this will work, however where blocks are special this will error out, and we can handle it when we have this information
             return Optional.of(block.isPassable(null, null));
-        } catch (NullPointerException exception) {
-            System.out.println("Error");
+        } catch (Throwable exception) {
+            System.out.println("The block " + state.getBlock().getLocalizedName() + " requires a special case due to the exception " + exception.getMessage());
             return Optional.empty();
         }
     }
@@ -367,6 +367,10 @@ public interface MovementHelper extends ActionCosts, Helper {
         }
         if (Baritone.settings().assumeWalkOnLava.value && MovementHelper.isLava(block)) {
             return Optional.empty();
+        }
+
+        if (block == Blocks.GLASS || block == Blocks.STAINED_GLASS) {
+            return TRUE;
         }
 
         if (block instanceof BlockSlab) {
