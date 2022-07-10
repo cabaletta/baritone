@@ -354,6 +354,12 @@ public final class Settings {
     public final Setting<Double> randomLooking = new Setting<>(0.01d);
 
     /**
+     * Enable smooth aim while mining/building. Aim is updated per tick (20 = 1 second)
+     * set to 1 to disable.
+     */
+    public final Setting<Float> smoothAim = new Setting<>(1f);
+
+    /**
      * This is the big A* setting.
      * As long as your cost heuristic is an *underestimate*, it's guaranteed to find you the best path.
      * 3.5 is always an underestimate, even if you are sprinting.
