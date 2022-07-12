@@ -138,13 +138,14 @@ public class CommandManager implements ICommandManager {
         private void execute() {
             try {
                 this.command.execute(this.label, this.args);
+                throw new CommandUnhandledException("test");
             } catch (Throwable t) {
                 // Create a handleable exception, wrap if needed
                 ICommandException exception = t instanceof ICommandException
                         ? (ICommandException) t
                         : new CommandUnhandledException(t);
 
-                exception.handle(command, args.getArgs());
+                exception.handle(command, this.args);
             }
         }
 
