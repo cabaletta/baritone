@@ -79,7 +79,7 @@ public class ExecutionControlCommands {
                     }
                 }
         );
-        pauseCommand = new Command(baritone, "pause", "p", "paws") {
+        pauseCommand = new Command(baritone, "pause", "p") {
             @Override
             public void execute(String label, IArgConsumer args) throws CommandException {
                 args.requireMax(0);
