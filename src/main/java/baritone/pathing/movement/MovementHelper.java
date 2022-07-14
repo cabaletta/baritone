@@ -30,6 +30,7 @@ import baritone.utils.ToolSet;
 import net.minecraft.block.*;
 import net.minecraft.block.properties.PropertyBool;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.Minecraft;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
@@ -98,10 +99,12 @@ public interface MovementHelper extends ActionCosts, Helper {
         return context.precomputedData.canWalkThrough(context.bsi, x, y, z, context.get(x, y, z));
     }
 
-
     static boolean canWalkThrough(BlockStateInterface bsi, int x, int y, int z, IBlockState state) {
-        Optional<Boolean> canWalkOn = canWalkThroughBlockState(state);
-        return canWalkOn.orElseGet(() -> canWalkThroughPosition(bsi, x, y, z, state));
+        Optional<Boolean> canWalkThrough = canWalkThroughBlockState(state);
+        if (canWalkThrough.isPresent()) {
+            return canWalkThrough.get();
+        }
+        return canWalkThroughPosition(bsi, x, y, z, state);
     }
 
     static Optional<Boolean> canWalkThroughBlockState(IBlockState state) {
@@ -342,7 +345,10 @@ public interface MovementHelper extends ActionCosts, Helper {
      */
     static boolean canWalkOn(BlockStateInterface bsi, int x, int y, int z, IBlockState state) {
         Optional<Boolean> canWalkOn = canWalkOnBlockState(state);
-        return canWalkOn.orElseGet(() -> canWalkOnPosition(bsi, x, y, z, state));
+        if (canWalkOn.isPresent()) {
+            return canWalkOn.get();
+        }
+        return canWalkOnPosition(bsi, x, y, z, state);
     }
 
     static Optional<Boolean> canWalkOnBlockState(IBlockState state) {
@@ -463,7 +469,7 @@ public interface MovementHelper extends ActionCosts, Helper {
 
     static double getMiningDurationTicks(CalculationContext context, int x, int y, int z, IBlockState state, boolean includeFalling) {
         Block block = state.getBlock();
-        if (!canWalkThrough(context.bsi, x, y, z, state)) {
+        if (!canWalkThrough(context, x, y, z, state)) {
             if (block instanceof BlockLiquid) {
                 return COST_INF;
             }
