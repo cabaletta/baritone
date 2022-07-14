@@ -21,6 +21,7 @@ import baritone.api.schematic.IStaticSchematic;
 import baritone.api.schematic.format.ISchematicFormat;
 import baritone.utils.schematic.format.defaults.MCEditSchematic;
 import baritone.utils.schematic.format.defaults.SpongeSchematic;
+import baritone.utils.schematic.format.defaults.StructureNBT;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import org.apache.commons.io.FilenameUtils;
@@ -64,6 +65,18 @@ public enum DefaultSchematicFormats implements ISchematicFormat {
                 default:
                     throw new UnsupportedOperationException("Unsupported Version of a Sponge Schematic");
             }
+        }
+    },
+
+    /**
+     * The vanilla structure block file format. Commonly denoted by the ".nbt" file extension.
+     *
+     * @see <a href="https://minecraft.fandom.com/wiki/Structure_Block_file_format>Structure Block file format</a>
+     */
+    STRUCTURE("nbt") {
+        @Override
+        public IStaticSchematic parse(InputStream input) throws IOException {
+            return new StructureNBT(CompressedStreamTools.readCompressed(input));
         }
     };
 
