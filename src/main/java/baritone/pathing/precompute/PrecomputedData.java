@@ -27,27 +27,73 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 
+import java.util.Arrays;
 import java.util.Optional;
 
 import static baritone.pathing.movement.MovementHelper.isFlowing;
 import static baritone.pathing.movement.MovementHelper.isWater;
 
 public class PrecomputedData { // TODO add isFullyPassable
+    private final int[] data = new int[Block.BLOCK_STATE_IDS.size()]; // Has to be of type boolean due to otherwise it has a generic type
 
-    PrecomputedDataForBlockState canWalkOn;
-    PrecomputedDataForBlockState canWalkThrough;
+    private final int completedMask = 0b1;
+    private final int canWalkOnMask = 0b10;
+    private final int canWalkOnSpecialMask = 0b100;
+    private final int canWalkThroughMask = 0b1000;
+    private final int canWalkThroughSpecialMask = 0b10000;
 
     public PrecomputedData() {
-        canWalkOn = new PrecomputedDataForBlockState(MovementHelper::canWalkOnBlockState, MovementHelper::canWalkOnPosition);
+        Arrays.fill(data, 0);
+    }
 
-        canWalkThrough = new PrecomputedDataForBlockState(MovementHelper::canWalkThroughBlockState, MovementHelper::canWalkThroughPosition);
+    private void fillData(int id, IBlockState state) {
+        Optional<Boolean> canWalkOnState = MovementHelper.canWalkOnBlockState(state);
+        if (canWalkOnState.isPresent()) {
+            if (canWalkOnState.get()) {
+                data[id] = data[id] | canWalkOnMask;
+            }
+        } else {
+            data[id] = data[id] | canWalkOnSpecialMask;
+        }
+
+        Optional<Boolean> canWalkThroughState = MovementHelper.canWalkThroughBlockState(state);
+        if (canWalkThroughState.isPresent()) {
+            if (canWalkThroughState.get()) {
+                data[id] = data[id] | canWalkThroughMask;
+            }
+        } else {
+            data[id] = data[id] | canWalkThroughSpecialMask;
+        }
+
+
+        data[id] = data[id] | completedMask;
     }
 
     public boolean canWalkOn(BlockStateInterface bsi, int x, int y, int z, IBlockState state) {
-        return canWalkOn.get(bsi, x, y, z, state);
+        int id = Block.BLOCK_STATE_IDS.get(state);
+
+        if ((data[id] & completedMask) == 0) { // we need to fill in the data
+            fillData(id, state);
+        }
+
+        if ((data[id] & canWalkOnSpecialMask) != 0) {
+            return MovementHelper.canWalkOnPosition(bsi, x, y, z, state);
+        } else {
+            return (data[id] & canWalkOnMask) != 0;
+        }
     }
 
     public boolean canWalkThrough(BlockStateInterface bsi, int x, int y, int z, IBlockState state) {
-        return canWalkThrough.get(bsi, x, y, z, state);
+        int id = Block.BLOCK_STATE_IDS.get(state);
+
+        if ((data[id] & completedMask) == 0) { // we need to fill in the data
+            fillData(id, state);
+        }
+
+        if ((data[id] & canWalkThroughSpecialMask) != 0) {
+            return MovementHelper.canWalkOnPosition(bsi, x, y, z, state);
+        } else {
+            return (data[id] & canWalkThroughMask) != 0;
+        }
     }
 }
