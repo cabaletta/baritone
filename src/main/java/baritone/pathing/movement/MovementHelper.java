@@ -102,7 +102,7 @@ public interface MovementHelper extends ActionCosts, Helper {
 
     static boolean canWalkThrough(BlockStateInterface bsi, int x, int y, int z, IBlockState state) {
         Optional<Boolean> canWalkThrough = canWalkThroughBlockState(state);
-        if (canWalkThrough.isPresent()) {
+        if (canWalkThrough.isPresent()) { // note: don't replace this with the functional style, because the lambda is impure (it captures local variables as context), meaning it allocates
             return canWalkThrough.get();
         }
         return canWalkThroughPosition(bsi, x, y, z, state);
