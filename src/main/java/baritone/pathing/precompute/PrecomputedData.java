@@ -34,54 +34,60 @@ public class PrecomputedData { // TODO add isFullyPassable
     private final int canWalkThroughMask = 0b1000;
     private final int canWalkThroughSpecialMask = 0b10000;
 
-    private void fillData(int id, IBlockState state) {
+    private int fillData(int id, IBlockState state) {
+        int blockData = 0;
+
         Optional<Boolean> canWalkOnState = MovementHelper.canWalkOnBlockState(state);
         if (canWalkOnState.isPresent()) {
             if (canWalkOnState.get()) {
-                data[id] |= canWalkOnMask;
+                blockData |= canWalkOnMask;
             }
         } else {
-            data[id] |= canWalkOnSpecialMask;
+            blockData |= canWalkOnSpecialMask;
         }
 
         Optional<Boolean> canWalkThroughState = MovementHelper.canWalkThroughBlockState(state);
         if (canWalkThroughState.isPresent()) {
             if (canWalkThroughState.get()) {
-                data[id] |= canWalkThroughMask;
+                blockData |= canWalkThroughMask;
             }
         } else {
-            data[id] |= canWalkThroughSpecialMask;
+            blockData |= canWalkThroughSpecialMask;
         }
 
+        blockData |= completedMask;
 
-        data[id] |= completedMask;
+        data[id] = blockData; // in theory, this is thread "safe" because every thread should compute the exact same int to write?
+        return blockData;
     }
 
     public boolean canWalkOn(BlockStateInterface bsi, int x, int y, int z, IBlockState state) {
         int id = Block.BLOCK_STATE_IDS.get(state);
+        int blockData = data[id];
 
-        if ((data[id] & completedMask) == 0) { // we need to fill in the data
-            fillData(id, state);
+        if ((blockData & completedMask) == 0) { // we need to fill in the data
+            blockData = fillData(id, state);
         }
 
-        if ((data[id] & canWalkOnSpecialMask) != 0) {
+        if ((blockData & canWalkOnSpecialMask) != 0) {
             return MovementHelper.canWalkOnPosition(bsi, x, y, z, state);
         } else {
-            return (data[id] & canWalkOnMask) != 0;
+            return (blockData & canWalkOnMask) != 0;
         }
     }
 
     public boolean canWalkThrough(BlockStateInterface bsi, int x, int y, int z, IBlockState state) {
         int id = Block.BLOCK_STATE_IDS.get(state);
+        int blockData = data[id];
 
-        if ((data[id] & completedMask) == 0) { // we need to fill in the data
-            fillData(id, state);
+        if ((blockData & completedMask) == 0) { // we need to fill in the data
+            blockData = fillData(id, state);
         }
 
-        if ((data[id] & canWalkThroughSpecialMask) != 0) {
+        if ((blockData & canWalkThroughSpecialMask) != 0) {
             return MovementHelper.canWalkThroughPosition(bsi, x, y, z, state);
         } else {
-            return (data[id] & canWalkThroughMask) != 0;
+            return (blockData & canWalkThroughMask) != 0;
         }
     }
 }
