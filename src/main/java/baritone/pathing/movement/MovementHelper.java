@@ -25,6 +25,7 @@ import baritone.api.pathing.movement.MovementStatus;
 import baritone.api.utils.*;
 import baritone.api.utils.input.Input;
 import baritone.pathing.movement.MovementState.MovementTarget;
+import baritone.pathing.precompute.Ternary;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.ToolSet;
 import net.minecraft.block.*;
@@ -40,6 +41,7 @@ import net.minecraft.world.IBlockAccess;
 import java.util.Optional;
 
 import static baritone.pathing.movement.Movement.HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP;
+import static baritone.pathing.precompute.Ternary.*;
 
 /**
  * Static helpers for cost calculation
@@ -47,10 +49,6 @@ import static baritone.pathing.movement.Movement.HORIZONTALS_BUT_ALSO_DOWN_____S
  * @author leijurv
  */
 public interface MovementHelper extends ActionCosts, Helper {
-
-    Optional<Boolean> YES = Optional.of(true);
-    Optional<Boolean> NO = Optional.of(false);
-    Optional<Boolean> MAYBE = Optional.empty();
 
     static boolean avoidBreaking(BlockStateInterface bsi, int x, int y, int z, IBlockState state) {
         if (!bsi.worldBorder.canPlaceAt(x, y)) {
@@ -101,14 +99,17 @@ public interface MovementHelper extends ActionCosts, Helper {
     }
 
     static boolean canWalkThrough(BlockStateInterface bsi, int x, int y, int z, IBlockState state) {
-        Optional<Boolean> canWalkThrough = canWalkThroughBlockState(state);
-        if (canWalkThrough.isPresent()) { // note: don't replace this with the functional style, because the lambda is impure (it captures local variables as context), meaning it allocates
-            return canWalkThrough.get();
+        Ternary canWalkThrough = canWalkThroughBlockState(state);
+        if (canWalkThrough == YES) {
+            return true;
+        }
+        if (canWalkThrough == NO) {
+            return false;
         }
         return canWalkThroughPosition(bsi, x, y, z, state);
     }
 
-    static Optional<Boolean> canWalkThroughBlockState(IBlockState state) {
+    static Ternary canWalkThroughBlockState(IBlockState state) {
         Block block = state.getBlock();
 
         if (block == Blocks.AIR) {
@@ -156,7 +157,11 @@ public interface MovementHelper extends ActionCosts, Helper {
         }
 
         try { // A dodgy catch-all at the end, for most blocks with default behaviour this will work, however where blocks are special this will error out, and we can handle it when we have this information
-            return Optional.of(block.isPassable(null, null));
+            if (block.isPassable(null, null)) {
+                return YES;
+            } else {
+                return NO;
+            }
         } catch (Throwable exception) {
             System.out.println("The block " + state.getBlock().getLocalizedName() + " requires a special case due to the exception " + exception.getMessage());
             return MAYBE;
@@ -346,14 +351,17 @@ public interface MovementHelper extends ActionCosts, Helper {
      * @return Whether or not the specified block can be walked on
      */
     static boolean canWalkOn(BlockStateInterface bsi, int x, int y, int z, IBlockState state) {
-        Optional<Boolean> canWalkOn = canWalkOnBlockState(state);
-        if (canWalkOn.isPresent()) {
-            return canWalkOn.get();
+        Ternary canWalkOn = canWalkOnBlockState(state);
+        if (canWalkOn == YES) {
+            return true;
+        }
+        if (canWalkOn == NO) {
+            return false;
         }
         return canWalkOnPosition(bsi, x, y, z, state);
     }
 
-    static Optional<Boolean> canWalkOnBlockState(IBlockState state) {
+    static Ternary canWalkOnBlockState(IBlockState state) {
         Block block = state.getBlock();
         if (block == Blocks.AIR || block == Blocks.MAGMA) {
             return NO;

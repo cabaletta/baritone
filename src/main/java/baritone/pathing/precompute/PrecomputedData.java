@@ -22,7 +22,8 @@ import baritone.utils.BlockStateInterface;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 
-import java.util.Optional;
+import static baritone.pathing.precompute.Ternary.MAYBE;
+import static baritone.pathing.precompute.Ternary.YES;
 
 public class PrecomputedData { // TODO add isFullyPassable
 
@@ -37,21 +38,19 @@ public class PrecomputedData { // TODO add isFullyPassable
     private int fillData(int id, IBlockState state) {
         int blockData = 0;
 
-        Optional<Boolean> canWalkOnState = MovementHelper.canWalkOnBlockState(state);
-        if (canWalkOnState.isPresent()) {
-            if (canWalkOnState.get()) {
-                blockData |= canWalkOnMask;
-            }
-        } else {
+        Ternary canWalkOnState = MovementHelper.canWalkOnBlockState(state);
+        if (canWalkOnState == YES) {
+            blockData |= canWalkOnMask;
+        }
+        if (canWalkOnState == MAYBE) {
             blockData |= canWalkOnSpecialMask;
         }
 
-        Optional<Boolean> canWalkThroughState = MovementHelper.canWalkThroughBlockState(state);
-        if (canWalkThroughState.isPresent()) {
-            if (canWalkThroughState.get()) {
-                blockData |= canWalkThroughMask;
-            }
-        } else {
+        Ternary canWalkThroughState = MovementHelper.canWalkThroughBlockState(state);
+        if (canWalkThroughState == YES) {
+            blockData |= canWalkThroughMask;
+        }
+        if (canWalkOnState == MAYBE) {
             blockData |= canWalkThroughSpecialMask;
         }
 
