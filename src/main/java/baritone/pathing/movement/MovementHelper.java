@@ -48,8 +48,8 @@ import static baritone.pathing.movement.Movement.HORIZONTALS_BUT_ALSO_DOWN_____S
  */
 public interface MovementHelper extends ActionCosts, Helper {
 
-    Optional<Boolean> TRUE = Optional.of(true);
-    Optional<Boolean> FALSE = Optional.of(false);
+    Optional<Boolean> YES = Optional.of(true);
+    Optional<Boolean> NO = Optional.of(false);
     Optional<Boolean> MAYBE = Optional.empty();
 
     static boolean avoidBreaking(BlockStateInterface bsi, int x, int y, int z, IBlockState state) {
@@ -112,23 +112,23 @@ public interface MovementHelper extends ActionCosts, Helper {
         Block block = state.getBlock();
 
         if (block == Blocks.AIR) {
-            return TRUE;
+            return YES;
         }
 
         if (block == Blocks.FIRE || block == Blocks.TRIPWIRE || block == Blocks.WEB || block == Blocks.END_PORTAL || block == Blocks.COCOA || block instanceof BlockSkull || block instanceof BlockTrapDoor || block == Blocks.END_ROD) {
-            return FALSE;
+            return NO;
         }
 
         if (Baritone.settings().blocksToAvoid.value.contains(block)) {
-            return FALSE;
+            return NO;
         }
 
         if (block instanceof BlockDoor || block instanceof BlockFenceGate) {
             // TODO this assumes that all doors in all mods are openable
             if (block == Blocks.IRON_DOOR) {
-                return FALSE;
+                return NO;
             }
-            return TRUE;
+            return YES;
         }
 
         if (block == Blocks.CARPET) {
@@ -137,7 +137,7 @@ public interface MovementHelper extends ActionCosts, Helper {
 
         if (block instanceof BlockSnow) {
             if (state.getValue(BlockSnow.LAYERS) >= 3) {
-                return FALSE;
+                return NO;
             }
 
             return MAYBE;
@@ -145,14 +145,14 @@ public interface MovementHelper extends ActionCosts, Helper {
 
         if (block instanceof BlockLiquid) {
             if (state.getValue(BlockLiquid.LEVEL) != 0) {
-                return FALSE;
+                return NO;
             } else {
                 return MAYBE;
             }
         }
 
         if (block instanceof BlockCauldron) {
-            return FALSE;
+            return NO;
         }
 
         try { // A dodgy catch-all at the end, for most blocks with default behaviour this will work, however where blocks are special this will error out, and we can handle it when we have this information
@@ -356,19 +356,19 @@ public interface MovementHelper extends ActionCosts, Helper {
     static Optional<Boolean> canWalkOnBlockState(IBlockState state) {
         Block block = state.getBlock();
         if (block == Blocks.AIR || block == Blocks.MAGMA) {
-            return FALSE;
+            return NO;
         }
         if (state.isBlockNormalCube()) {
-            return TRUE;
+            return YES;
         }
         if (block == Blocks.LADDER || (block == Blocks.VINE && Baritone.settings().allowVines.value)) { // TODO reconsider this
-            return TRUE;
+            return YES;
         }
         if (block == Blocks.FARMLAND || block == Blocks.GRASS_PATH) {
-            return TRUE;
+            return YES;
         }
         if (block == Blocks.ENDER_CHEST || block == Blocks.CHEST || block == Blocks.TRAPPED_CHEST) {
-            return TRUE;
+            return YES;
         }
         if (isWater(block)) {
             return MAYBE;
@@ -378,27 +378,27 @@ public interface MovementHelper extends ActionCosts, Helper {
         }
 
         if (block == Blocks.GLASS || block == Blocks.STAINED_GLASS) {
-            return TRUE;
+            return YES;
         }
 
         if (block instanceof BlockSlab) {
             if (!Baritone.settings().allowWalkOnBottomSlab.value) {
                 if (((BlockSlab) block).isDouble()) {
-                    return TRUE;
+                    return YES;
                 }
                 if (state.getValue(BlockSlab.HALF) != BlockSlab.EnumBlockHalf.BOTTOM) {
-                    return TRUE;
+                    return YES;
                 }
-                return FALSE;
+                return NO;
             }
-            return TRUE;
+            return YES;
         }
 
         if (block instanceof BlockStairs) {
-            return TRUE;
+            return YES;
         }
 
-        return FALSE;
+        return NO;
     }
 
     static boolean canWalkOnPosition(BlockStateInterface bsi, int x, int y, int z, IBlockState state) {
