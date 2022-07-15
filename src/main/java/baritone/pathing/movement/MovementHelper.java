@@ -137,10 +137,8 @@ public interface MovementHelper extends ActionCosts, Helper {
         }
 
         if (block instanceof BlockSnow) {
-            if (state.getValue(BlockSnow.LAYERS) >= 3) {
-                return NO;
-            }
-
+            // snow layers cached as the top layer of a packed chunk have no metadata, we can't make a decision based on their depth here
+            // it would otherwise make long distance pathing through snowy biomes impossible
             return MAYBE;
         }
 
@@ -175,7 +173,18 @@ public interface MovementHelper extends ActionCosts, Helper {
             return canWalkOn(bsi, x, y - 1, z);
         }
 
-        if (block instanceof BlockSnow) { // TODO see if this case is necessary, shouldn't it also check this somewhere else?
+        if (block instanceof BlockSnow) {
+            // if they're cached as a top block, we don't know their metadata
+            // default to true (mostly because it would otherwise make long distance pathing through snowy biomes impossible)
+            if (!bsi.worldContainsLoadedChunk(x, z)) {
+                return true;
+            }
+            // the check in BlockSnow.isPassable is layers < 5
+            // while actually, we want < 3 because 3 or greater makes it impassable in a 2 high ceiling
+            if (state.getValue(BlockSnow.LAYERS) >= 3) {
+                return false;
+            }
+            // ok, it's low enough we could walk through it, but is it supported?
             return canWalkOn(bsi, x, y - 1, z);
         }
 
@@ -363,10 +372,7 @@ public interface MovementHelper extends ActionCosts, Helper {
 
     static Ternary canWalkOnBlockState(IBlockState state) {
         Block block = state.getBlock();
-        if (block == Blocks.AIR || block == Blocks.MAGMA) {
-            return NO;
-        }
-        if (state.isBlockNormalCube()) {
+        if (state.isBlockNormalCube() && block != Blocks.MAGMA) {
             return YES;
         }
         if (block == Blocks.LADDER || (block == Blocks.VINE && Baritone.settings().allowVines.value)) { // TODO reconsider this
@@ -378,17 +384,18 @@ public interface MovementHelper extends ActionCosts, Helper {
         if (block == Blocks.ENDER_CHEST || block == Blocks.CHEST || block == Blocks.TRAPPED_CHEST) {
             return YES;
         }
-        if (isWater(block)) {
-            return MAYBE;
-        }
-        if (Baritone.settings().assumeWalkOnLava.value && MovementHelper.isLava(block)) {
-            return MAYBE;
-        }
-
         if (block == Blocks.GLASS || block == Blocks.STAINED_GLASS) {
             return YES;
         }
-
+        if (block instanceof BlockStairs) {
+            return YES;
+        }
+        if (isWater(block)) {
+            return MAYBE;
+        }
+        if (MovementHelper.isLava(block) && Baritone.settings().assumeWalkOnLava.value) {
+            return MAYBE;
+        }
         if (block instanceof BlockSlab) {
             if (!Baritone.settings().allowWalkOnBottomSlab.value) {
                 if (((BlockSlab) block).isDouble()) {
@@ -401,11 +408,6 @@ public interface MovementHelper extends ActionCosts, Helper {
             }
             return YES;
         }
-
-        if (block instanceof BlockStairs) {
-            return YES;
-        }
-
         return NO;
     }
 
@@ -427,7 +429,7 @@ public interface MovementHelper extends ActionCosts, Helper {
             return isWater(up) ^ Baritone.settings().assumeWalkOnWater.value;
         }
 
-        if (Baritone.settings().assumeWalkOnLava.value && MovementHelper.isLava(block) && !MovementHelper.isFlowing(x, y, z, state, bsi)) {
+        if (MovementHelper.isLava(block) && !MovementHelper.isFlowing(x, y, z, state, bsi) && Baritone.settings().assumeWalkOnLava.value) { // if we get here it means that assumeWalkOnLava must be true, so put it last
             return true;
         }
 
