@@ -124,9 +124,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         }
 
         if (block instanceof BlockDoor || block instanceof BlockFenceGate) {
-            // Because there's no nice method in vanilla to check if a door is openable or not, we just have to assume
-            // that anything that isn't an iron door isn't openable, ignoring that some doors introduced in mods can't
-            // be opened by just interacting.
+            // TODO this assumes that all doors in all mods are openable
             if (block == Blocks.IRON_DOOR) {
                 return FALSE;
             }
