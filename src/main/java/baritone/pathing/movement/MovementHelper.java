@@ -111,19 +111,15 @@ public interface MovementHelper extends ActionCosts, Helper {
 
     static Ternary canWalkThroughBlockState(IBlockState state) {
         Block block = state.getBlock();
-
         if (block == Blocks.AIR) {
             return YES;
         }
-
         if (block == Blocks.FIRE || block == Blocks.TRIPWIRE || block == Blocks.WEB || block == Blocks.END_PORTAL || block == Blocks.COCOA || block instanceof BlockSkull || block instanceof BlockTrapDoor || block == Blocks.END_ROD) {
             return NO;
         }
-
         if (Baritone.settings().blocksToAvoid.value.contains(block)) {
             return NO;
         }
-
         if (block instanceof BlockDoor || block instanceof BlockFenceGate) {
             // TODO this assumes that all doors in all mods are openable
             if (block == Blocks.IRON_DOOR) {
@@ -131,17 +127,14 @@ public interface MovementHelper extends ActionCosts, Helper {
             }
             return YES;
         }
-
         if (block == Blocks.CARPET) {
             return MAYBE;
         }
-
         if (block instanceof BlockSnow) {
             // snow layers cached as the top layer of a packed chunk have no metadata, we can't make a decision based on their depth here
             // it would otherwise make long distance pathing through snowy biomes impossible
             return MAYBE;
         }
-
         if (block instanceof BlockLiquid) {
             if (state.getValue(BlockLiquid.LEVEL) != 0) {
                 return NO;
@@ -149,11 +142,9 @@ public interface MovementHelper extends ActionCosts, Helper {
                 return MAYBE;
             }
         }
-
         if (block instanceof BlockCauldron) {
             return NO;
         }
-
         try { // A dodgy catch-all at the end, for most blocks with default behaviour this will work, however where blocks are special this will error out, and we can handle it when we have this information
             if (block.isPassable(null, null)) {
                 return YES;
