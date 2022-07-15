@@ -158,7 +158,7 @@ public final class GetToBlockProcess extends BaritoneProcessHelper implements IG
     public class GetToBlockCalculationContext extends CalculationContext {
 
         public GetToBlockCalculationContext(boolean forUseOnAnotherThread) {
-            super(GetToBlockProcess.super.baritone, forUseOnAnotherThread, null);
+            super(GetToBlockProcess.super.baritone, forUseOnAnotherThread);
         }
 
         @Override

@@ -80,11 +80,11 @@ public class CalculationContext {
     public final PrecomputedData precomputedData;
 
     public CalculationContext(IBaritone baritone) {
-        this(baritone, false, new PrecomputedData());
+        this(baritone, false);
     }
 
-    public CalculationContext(IBaritone baritone, boolean forUseOnAnotherThread, PrecomputedData precomputedData) {
-        this.precomputedData = precomputedData;
+    public CalculationContext(IBaritone baritone, boolean forUseOnAnotherThread) {
+        this.precomputedData = new PrecomputedData();
         this.safeForThreadedUse = forUseOnAnotherThread;
         this.baritone = baritone;
         EntityPlayerSP player = baritone.getPlayerContext().player();

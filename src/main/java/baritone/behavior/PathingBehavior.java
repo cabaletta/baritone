@@ -33,7 +33,6 @@ import baritone.pathing.calc.AbstractNodeCostSearch;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.path.PathExecutor;
-import baritone.pathing.precompute.PrecomputedData;
 import baritone.utils.PathRenderer;
 import baritone.utils.PathingCommandContext;
 import baritone.utils.pathing.Favoring;
@@ -75,11 +74,8 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
 
     private final LinkedBlockingQueue<PathEvent> toDispatch = new LinkedBlockingQueue<>();
 
-    public PrecomputedData precomputedData;
-
     public PathingBehavior(Baritone baritone) {
         super(baritone);
-        precomputedData = new PrecomputedData();
     }
 
     private void queuePathEvent(PathEvent event) {
@@ -102,10 +98,6 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
             secretInternalSegmentCancel();
             baritone.getPathingControlManager().cancelEverything();
             return;
-        }
-
-        if (ticksElapsedSoFar % 200 == 0) {
-            precomputedData = new PrecomputedData(); // This is here for now in case settings aren't changed in normal ways, should mean it is updated whatever once every 10 seconds
         }
 
         expectedSegmentStart = pathStart();
@@ -268,7 +260,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         if (command instanceof PathingCommandContext) {
             context = ((PathingCommandContext) command).desiredCalcContext;
         } else {
-            context = new CalculationContext(baritone, true, precomputedData);
+            context = new CalculationContext(baritone, true);
         }
         if (goal == null) {
             return false;
@@ -463,11 +455,6 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
             }
         }
         return feet;
-    }
-
-    @Override
-    public void onSettingChanged(SettingChangedEvent event) {
-        this.precomputedData = new PrecomputedData();
     }
 
     /**

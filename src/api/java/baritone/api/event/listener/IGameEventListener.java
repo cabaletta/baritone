@@ -144,11 +144,4 @@ public interface IGameEventListener {
      * @param event The event
      */
     void onPathEvent(PathEvent event);
-
-    /**
-     * When the player changes a setting
-     *
-     * @param event The event
-     */
-    void onSettingChanged(SettingChangedEvent event);
 }

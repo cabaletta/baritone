@@ -148,7 +148,7 @@ public class SetCommand extends Command {
                 }
                 //noinspection unchecked
                 Settings.Setting<Boolean> asBoolSetting = (Settings.Setting<Boolean>) setting;
-                asBoolSetting.set(!asBoolSetting.value);
+                asBoolSetting.value ^= true;
                 logDirect(String.format(
                         "Toggled setting %s to %s",
                         setting.getName(),

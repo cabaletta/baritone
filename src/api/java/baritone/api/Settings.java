@@ -17,7 +17,6 @@
 
 package baritone.api;
 
-import baritone.api.event.events.SettingChangedEvent;
 import baritone.api.utils.NotificationHelper;
 import baritone.api.utils.SettingsUtil;
 import baritone.api.utils.TypeUtils;
@@ -35,8 +34,8 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.*;
-import java.util.function.Consumer;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 /**
  * Baritone's settings. Settings apply to all Baritone instances.
@@ -197,7 +196,7 @@ public final class Settings {
      * Blocks that Baritone is not allowed to break
      */
     public final Setting<List<Block>> blocksToDisallowBreaking = new Setting<>(new ArrayList<>(
-        // Leave Empty by Default
+            // Leave Empty by Default
     ));
 
     /**
@@ -913,7 +912,7 @@ public final class Settings {
     /**
      * Only build the selected part of schematics
      */
-     public final Setting<Boolean> buildOnlySelection = new Setting<>(false);
+    public final Setting<Boolean> buildOnlySelection = new Setting<>(false);
 
     /**
      * How far to move before repeating the build. 0 to disable repeating on a certain axis, 0,0,0 to disable entirely
@@ -1301,13 +1300,6 @@ public final class Settings {
         @Deprecated
         public final T get() {
             return value;
-        }
-
-        public void set(T value) {
-            this.value = value;
-            if (BaritoneAPI.getProvider() != null) {
-                BaritoneAPI.getProvider().getAllBaritones().forEach(iBaritone -> iBaritone.getGameEventHandler().onSettingChanged(new SettingChangedEvent(this)));
-            }
         }
 
         public final String getName() {

@@ -199,7 +199,7 @@ public class SettingsUtil {
         if (!intendedType.isInstance(parsed)) {
             throw new IllegalStateException(ioMethod + " parser returned incorrect type, expected " + intendedType + " got " + parsed + " which is " + parsed.getClass());
         }
-        setting.set(parsed);
+        setting.value = parsed;
     }
 
     private interface ISettingParser<T> {
