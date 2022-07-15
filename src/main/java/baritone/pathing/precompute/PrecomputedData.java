@@ -28,11 +28,11 @@ public class PrecomputedData { // TODO add isFullyPassable
 
     private final int[] data = new int[Block.BLOCK_STATE_IDS.size()];
 
-    private final int completedMask = 0b1;
-    private final int canWalkOnMask = 0b10;
-    private final int canWalkOnSpecialMask = 0b100;
-    private final int canWalkThroughMask = 0b1000;
-    private final int canWalkThroughSpecialMask = 0b10000;
+    private final int completedMask = 1 << 0;
+    private final int canWalkOnMask = 1 << 1;
+    private final int canWalkOnSpecialMask = 1 << 2;
+    private final int canWalkThroughMask = 1 << 3;
+    private final int canWalkThroughSpecialMask = 1 << 4;
 
     private int fillData(int id, IBlockState state) {
         int blockData = 0;
