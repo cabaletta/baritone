@@ -30,7 +30,6 @@ import baritone.utils.ToolSet;
 import net.minecraft.block.*;
 import net.minecraft.block.properties.PropertyBool;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.Minecraft;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
@@ -48,8 +47,9 @@ import static baritone.pathing.movement.Movement.HORIZONTALS_BUT_ALSO_DOWN_____S
  * @author leijurv
  */
 public interface MovementHelper extends ActionCosts, Helper {
-    static final Optional<Boolean> TRUE = Optional.of(true);
-    static final Optional<Boolean> FALSE = Optional.of(false);
+
+    Optional<Boolean> TRUE = Optional.of(true);
+    Optional<Boolean> FALSE = Optional.of(false);
 
     static boolean avoidBreaking(BlockStateInterface bsi, int x, int y, int z, IBlockState state) {
         if (!bsi.worldBorder.canPlaceAt(x, y)) {
@@ -333,7 +333,7 @@ public interface MovementHelper extends ActionCosts, Helper {
      * Can I walk on this block without anything weird happening like me falling
      * through? Includes water because we know that we automatically jump on
      * water
-     *
+     * <p>
      * If changing something in this function remember to also change it in precomputed data
      *
      * @param bsi   Block state provider
@@ -389,7 +389,11 @@ public interface MovementHelper extends ActionCosts, Helper {
             return TRUE;
         }
 
-        return Optional.of(block instanceof BlockStairs);
+        if (block instanceof BlockStairs) {
+            return TRUE;
+        }
+
+        return FALSE;
     }
 
     static boolean canWalkOnPosition(BlockStateInterface bsi, int x, int y, int z, IBlockState state) {
