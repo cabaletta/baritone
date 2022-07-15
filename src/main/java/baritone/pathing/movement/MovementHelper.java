@@ -50,6 +50,7 @@ public interface MovementHelper extends ActionCosts, Helper {
 
     Optional<Boolean> TRUE = Optional.of(true);
     Optional<Boolean> FALSE = Optional.of(false);
+    Optional<Boolean> MAYBE = Optional.empty();
 
     static boolean avoidBreaking(BlockStateInterface bsi, int x, int y, int z, IBlockState state) {
         if (!bsi.worldBorder.canPlaceAt(x, y)) {
@@ -126,11 +127,14 @@ public interface MovementHelper extends ActionCosts, Helper {
             // Because there's no nice method in vanilla to check if a door is openable or not, we just have to assume
             // that anything that isn't an iron door isn't openable, ignoring that some doors introduced in mods can't
             // be opened by just interacting.
-            return Optional.of(block != Blocks.IRON_DOOR);
+            if (block == Blocks.IRON_DOOR) {
+                return FALSE;
+            }
+            return TRUE;
         }
 
         if (block == Blocks.CARPET) {
-            return Optional.empty();
+            return MAYBE;
         }
 
         if (block instanceof BlockSnow) {
@@ -138,14 +142,14 @@ public interface MovementHelper extends ActionCosts, Helper {
                 return FALSE;
             }
 
-            return Optional.empty();
+            return MAYBE;
         }
 
         if (block instanceof BlockLiquid) {
             if (state.getValue(BlockLiquid.LEVEL) != 0) {
                 return FALSE;
             } else {
-                return Optional.empty();
+                return MAYBE;
             }
         }
 
@@ -157,7 +161,7 @@ public interface MovementHelper extends ActionCosts, Helper {
             return Optional.of(block.isPassable(null, null));
         } catch (Throwable exception) {
             System.out.println("The block " + state.getBlock().getLocalizedName() + " requires a special case due to the exception " + exception.getMessage());
-            return Optional.empty();
+            return MAYBE;
         }
     }
 
@@ -369,10 +373,10 @@ public interface MovementHelper extends ActionCosts, Helper {
             return TRUE;
         }
         if (isWater(block)) {
-            return Optional.empty();
+            return MAYBE;
         }
         if (Baritone.settings().assumeWalkOnLava.value && MovementHelper.isLava(block)) {
-            return Optional.empty();
+            return MAYBE;
         }
 
         if (block == Blocks.GLASS || block == Blocks.STAINED_GLASS) {
