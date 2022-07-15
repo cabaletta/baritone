@@ -384,7 +384,10 @@ public interface MovementHelper extends ActionCosts, Helper {
                 if (((BlockSlab) block).isDouble()) {
                     return TRUE;
                 }
-                return Optional.of(state.getValue(BlockSlab.HALF) != BlockSlab.EnumBlockHalf.BOTTOM);
+                if (state.getValue(BlockSlab.HALF) != BlockSlab.EnumBlockHalf.BOTTOM) {
+                    return TRUE;
+                }
+                return FALSE;
             }
             return TRUE;
         }
