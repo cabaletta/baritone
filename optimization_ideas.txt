@@ -20,6 +20,15 @@ Thoughts concerning optimization:
 - Alternatively, in each B-tree node, we could store a binary search tree that
   combines the augmentation information for the items in that node. This might
   even benefit ConnGraphs that do not have user-supplied augmentation.
+- Actually, there is a way of speeding up queries by an O(log log N) factor that
+  should be cleaner and easier to implement than a B-tree. We could change each
+  Euler tour node in the top level to store its kth ancestor (e.g. if k = 3,
+  then each node stores a pointer to its great grandparent). Each time we change
+  a node's parent, we have to change the pointers for all of the descendants
+  that are less than k levels below the node - up to 2^k - 1 nodes. Since there
+  are O(log N) parent pointer changes per update, and updates already take
+  O(log^2 N) amortized time, we can afford a k value of up to lg lg N + c (but
+  interestingly, not O(log log N)).
 - If I don't implement the B-tree optimization, there are a couple of small
   optimizations I could try. First, I could move the field
   EulerTourNode.augmentationFunc to EulerTourVertex, in order to save a little
