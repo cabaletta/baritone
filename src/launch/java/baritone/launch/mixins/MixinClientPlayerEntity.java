@@ -42,7 +42,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class MixinClientPlayerEntity {
 
     @Inject(
-            method = "chat(Ljava/lang/String;Lnet/minecraft/network/chat/Component;)V",
+            method = "sendChat(Ljava/lang/String;Lnet/minecraft/network/chat/Component;)V",
             at = @At("HEAD"),
             cancellable = true
     )
