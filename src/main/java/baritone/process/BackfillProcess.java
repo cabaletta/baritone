@@ -93,7 +93,7 @@ public final class BackfillProcess extends BaritoneProcessHelper {
     }
 
     private void amIBreakingABlockHMMMMMMM() {
-        if (!ctx.getSelectedBlock().isPresent()) {
+        if (!ctx.getSelectedBlock().isPresent() || !baritone.getPathingBehavior().isPathing()) {
             return;
         }
         blocksToReplace.put(ctx.getSelectedBlock().get(), ctx.world().getBlockState(ctx.getSelectedBlock().get()));
