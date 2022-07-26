@@ -56,12 +56,12 @@ public final class BackfillProcess extends BaritoneProcessHelper {
             Baritone.settings().backfill.value = false;
             return false;
         }
-        amIBreakingABlockHMMMMMMM();
         for (BlockPos pos : new ArrayList<>(blocksToReplace.keySet())) {
-            if (ctx.world().getChunk(pos) instanceof EmptyChunk) {
+            if (ctx.world().getChunk(pos) instanceof EmptyChunk || ctx.world().getBlockState(pos).getBlock() != Blocks.AIR) {
                 blocksToReplace.remove(pos);
             }
         }
+        amIBreakingABlockHMMMMMMM();
         baritone.getInputOverrideHandler().clearAllKeys();
 
         return !toFillIn().isEmpty();
