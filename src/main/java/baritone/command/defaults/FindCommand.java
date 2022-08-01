@@ -71,10 +71,10 @@ public class FindCommand extends Command {
     @Override
     public List<String> getLongDesc() {
         return Arrays.asList(
-                "",
+                "The find command searches through Baritone's cache and attempts to find the location of the block.",
                 "",
                 "Usage:",
-                "> "
+                "> find <block> - Find positions of a certain block"
         );
     }
 }

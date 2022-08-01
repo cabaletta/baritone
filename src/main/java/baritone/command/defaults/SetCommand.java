@@ -28,16 +28,17 @@ import baritone.api.command.exception.CommandInvalidTypeException;
 import baritone.api.command.helpers.Paginator;
 import baritone.api.command.helpers.TabCompleteHelper;
 import baritone.api.utils.SettingsUtil;
+
+import java.awt.*;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.BaseComponent;
-import net.minecraft.network.chat.ClickEvent;
-import net.minecraft.network.chat.HoverEvent;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.*;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 
 import static baritone.api.command.IBaritoneChatControl.FORCE_COMMAND_PREFIX;
 import static baritone.api.utils.SettingsUtil.*;
@@ -77,19 +78,19 @@ public class SetCommand extends Command {
                                     : String.format("All %ssettings:", viewModified ? "modified " : "")
                     ),
                     setting -> {
-                        TextComponent typeComponent = new TextComponent(String.format(
+                        MutableComponent typeComponent = Component.literal(String.format(
                                 " (%s)",
                                 settingTypeToString(setting)
                         ));
-                        typeComponent.getStyle().withColor(ChatFormatting.DARK_GRAY);
-                        TextComponent hoverComponent = new TextComponent("");
-                        hoverComponent.getStyle().withColor(ChatFormatting.GRAY);
+                        typeComponent.setStyle(typeComponent.getStyle().withColor(ChatFormatting.DARK_GRAY));
+                        MutableComponent hoverComponent = Component.literal("");
+                        hoverComponent.setStyle(hoverComponent.getStyle().withColor(ChatFormatting.GRAY));
                         hoverComponent.append(setting.getName());
                         hoverComponent.append(String.format("\nType: %s", settingTypeToString(setting)));
                         hoverComponent.append(String.format("\n\nValue:\n%s", settingValueToString(setting)));
                         hoverComponent.append(String.format("\n\nDefault Value:\n%s", settingDefaultToString(setting)));
                         String commandSuggestion = Baritone.settings().prefix.value + String.format("set %s ", setting.getName());
-                        TextComponent component = new TextComponent(setting.getName());
+                        MutableComponent component = Component.literal(setting.getName());
                         component.setStyle(component.getStyle().withColor(ChatFormatting.GRAY));
                         component.append(typeComponent);
                         component.setStyle(component.getStyle()
@@ -169,12 +170,12 @@ public class SetCommand extends Command {
                         settingValueToString(setting)
                 ));
             }
-            BaseComponent oldValueComponent = new TextComponent(String.format("Old value: %s", oldValue));
+            MutableComponent oldValueComponent = Component.literal(String.format("Old value: %s", oldValue));
             oldValueComponent.setStyle(oldValueComponent.getStyle()
                     .withColor(ChatFormatting.GRAY)
                     .withHoverEvent(new HoverEvent(
                             HoverEvent.Action.SHOW_TEXT,
-                            new TextComponent("Click to set the setting back to this value")
+                            Component.literal("Click to set the setting back to this value")
                     ))
                     .withClickEvent(new ClickEvent(
                             ClickEvent.Action.RUN_COMMAND,

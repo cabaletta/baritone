@@ -21,7 +21,9 @@ import org.gradle.api.tasks.TaskAction;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.OpenOption;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.security.MessageDigest;
 import java.util.Arrays;
 import java.util.List;
@@ -42,12 +44,12 @@ public class CreateDistTask extends BaritoneGradleTask {
         super.verifyArtifacts();
 
         // Define the distribution file paths
-        Path api = getRelativeFile("dist/" + getFileName(artifactApiPath));
-        Path standalone = getRelativeFile("dist/" + getFileName(artifactStandalonePath));
-        Path unoptimized = getRelativeFile("dist/" + getFileName(artifactUnoptimizedPath));
+        Path api = getRootRelativeFile("dist/" + getFileName(artifactApiPath));
+        Path standalone = getRootRelativeFile("dist/" + getFileName(artifactStandalonePath));
+        Path unoptimized = getRootRelativeFile("dist/" + getFileName(artifactUnoptimizedPath));
 
         // NIO will not automatically create directories
-        Path dir = getRelativeFile("dist/");
+        Path dir = getRootRelativeFile("dist/");
         if (!Files.exists(dir)) {
             Files.createDirectory(dir);
         }
@@ -59,33 +61,19 @@ public class CreateDistTask extends BaritoneGradleTask {
         Files.copy(this.artifactUnoptimizedPath, unoptimized, REPLACE_EXISTING);
 
         // Calculate all checksums and format them like "shasum"
-        List<String> shasum = getAllDistJars().stream()
-                .filter(Files::exists)
+        List<String> shasum = Files.list(getRootRelativeFile("dist/"))
+                .filter(e -> e.getFileName().toString().endsWith(".jar"))
                 .map(path -> sha1(path) + "  " + path.getFileName().toString())
                 .collect(Collectors.toList());
 
         shasum.forEach(System.out::println);
 
         // Write the checksums to a file
-        Files.write(getRelativeFile("dist/checksums.txt"), shasum);
+        Files.write(getRootRelativeFile("dist/checksums.txt"), shasum);
     }
 
     private static String getFileName(Path p) {
         return p.getFileName().toString();
-    }
-
-    private List<Path> getAllDistJars() {
-        return Arrays.asList(
-                getRelativeFile("dist/" + formatVersion(ARTIFACT_API)),
-                getRelativeFile("dist/" + formatVersion(ARTIFACT_FABRIC_API)),
-                getRelativeFile("dist/" + formatVersion(ARTIFACT_FORGE_API)),
-                getRelativeFile("dist/" + formatVersion(ARTIFACT_STANDALONE)),
-                getRelativeFile("dist/" + formatVersion(ARTIFACT_FABRIC_STANDALONE)),
-                getRelativeFile("dist/" + formatVersion(ARTIFACT_FORGE_STANDALONE)),
-                getRelativeFile("dist/" + formatVersion(ARTIFACT_UNOPTIMIZED)),
-                getRelativeFile("dist/" + formatVersion(ARTIFACT_FABRIC_UNOPTIMIZED)),
-                getRelativeFile("dist/" + formatVersion(ARTIFACT_FORGE_UNOPTIMIZED))
-        );
     }
 
     private static synchronized String sha1(Path path) {

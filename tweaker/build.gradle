@@ -1,0 +1,172 @@
+import baritone.gradle.task.CreateDistTask
+import baritone.gradle.task.ProguardTask
+
+architectury {
+    injectInjectables = false
+}
+
+loom {
+    mixin {
+        refmapTargetNamespace = "official"
+        defaultRefmapName = "baritone-common-refmap.json"
+    }
+}
+
+loom.mixin.useLegacyMixinAp = false;
+
+// ignore this jank, it's so I don't have to move the src folder, as that creates unnecessary git conflicts
+sourceSets {
+    realmain {
+        java {
+            java {
+                srcDir "$rootDir/src/main/java"
+            }
+            resources {
+                srcDir "$rootDir/src/main/resources"
+            }
+        }
+    }
+    api {
+        compileClasspath += main.compileClasspath
+        runtimeClasspath += main.runtimeClasspath
+        java {
+            java {
+                srcDir "$rootDir/src/api/java"
+            }
+            resources {
+                srcDir "$rootDir/src/api/resources"
+            }
+        }
+    }
+    realmain {
+        compileClasspath += main.compileClasspath + api.output
+        runtimeClasspath += main.runtimeClasspath + api.output
+    }
+    test {
+        compileClasspath += realmain.compileClasspath + realmain.output
+        runtimeClasspath += realmain.runtimeClasspath + realmain.output
+        java {
+            java {
+                srcDir "$rootDir/src/test/java"
+            }
+            resources {
+                srcDir "$rootDir/src/test/resources"
+            }
+        }
+    }
+    tweaker {
+        compileClasspath += realmain.output + api.output + main.compileClasspath
+        runtimeClasspath += realmain.output + api.output + main.compileClasspath
+    }
+    main {
+        compileClasspath += realmain.output + api.output + tweaker.output
+        runtimeClasspath += realmain.output + api.output + tweaker.output
+        java {
+            java {
+                srcDir "$rootDir/src/launch/java"
+            }
+            resources {
+                srcDir "$rootDir/src/launch/resources"
+            }
+        }
+    }
+    schematica_api {
+        compileClasspath += realmain.compileClasspath
+        runtimeClasspath += realmain.runtimeClasspath
+        java {
+            java {
+                srcDir "$rootDir/src/schematica_api/java"
+            }
+            resources {
+                srcDir "$rootDir/src/schematica_api/resources"
+            }
+        }
+    }
+    realmain {
+        compileClasspath += schematica_api.output
+        runtimeClasspath += schematica_api.output
+    }
+}
+
+configurations {
+    transformProductionTweaker {
+        canBeConsumed = true
+        canBeResolved = false
+        // If you want this configuration to share the same dependencies, otherwise omit this line
+        extendsFrom implementation, runtimeOnly
+    }
+}
+
+dependencies {
+    // We depend on fabric loader here to use the fabric @Environment annotations and get the mixin dependencies
+    // Do NOT use other classes from fabric loader
+    modCompileOnly "net.fabricmc:fabric-loader:${project.fabric_version}"
+
+    // want in the pom but not to compile against as it's also provided by loom
+    runtimeOnly "org.spongepowered:mixin:0.8.4"
+
+    // this makes it compile with the forge tweak stuff
+    implementation 'com.github.ImpactDevelopment:SimpleTweaker:1.2'
+    implementation('net.minecraft:launchwrapper:of-2.3') {
+        exclude module: 'lwjgl'
+        exclude module: 'asm-debug-all'
+    }
+
+    compileOnly 'com.google.code.findbugs:jsr305:3.0.2'
+
+    testImplementation 'junit:junit:4.12'
+}
+
+javadoc {
+    options.addStringOption('Xwerror', '-quiet') // makes the build fail on travis when there is a javadoc error
+    options.linkSource true
+    options.encoding "UTF-8" // allow emoji in comments :^)
+    source = sourceSets.api.allJava
+    classpath += sourceSets.api.compileClasspath
+}
+
+jar {
+    classifier "dev"
+    from sourceSets.main.output, sourceSets.realmain.output, sourceSets.api.output, sourceSets.tweaker.output
+
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+
+    manifest {
+        attributes(
+                'MixinConfigs': 'mixins.baritone.json',
+                "MixinConnector": "baritone.launch.BaritoneMixinConnector",
+
+                'Implementation-Title': 'Baritone',
+                'Implementation-Version': version,
+        )
+    }
+}
+
+remapJar {
+    targetNamespace = 'official'
+}
+
+task proguard(type: ProguardTask) {
+    url 'https://github.com/Guardsquare/proguard/releases/download/v7.2.1/proguard-7.2.1.zip'
+    extract 'proguard-7.2.1/lib/proguard.jar'
+    compType "OFFICIAL"
+}
+
+task createDist(type: CreateDistTask, dependsOn: proguard)
+
+build.finalizedBy(createDist)
+
+publishing {
+    publications {
+        mavenCommon(MavenPublication) {
+            artifactId = rootProject.archives_base_name
+            from components.java
+        }
+    }
+
+    // See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
+    repositories {
+        // Add repositories to publish to here.
+    }
+}

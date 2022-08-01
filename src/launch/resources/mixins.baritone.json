@@ -1,11 +1,11 @@
 {
   "required": true,
   "package": "baritone.launch.mixins",
-  "refmap": "mixins.baritone.refmap.json",
   "compatibilityLevel": "JAVA_17",
   "verbose": false,
   "injectors": {
-    "maxShiftBy": 2
+    "maxShiftBy": 2,
+    "defaultRequire": 1
   },
   "client": [
     "MixinChunkArray",

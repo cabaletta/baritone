@@ -37,7 +37,7 @@ public class RenderCommand extends Command {
     public void execute(String label, IArgConsumer args) throws CommandException {
         args.requireMax(0);
         BetterBlockPos origin = ctx.playerFeet();
-        int renderDistance = (mc.options.renderDistance + 1) * 16;
+        int renderDistance = (mc.options.renderDistance().get() + 1) * 16;
         mc.levelRenderer.setBlocksDirty(
                 origin.x - renderDistance,
                 0,

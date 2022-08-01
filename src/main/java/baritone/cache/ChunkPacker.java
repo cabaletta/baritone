@@ -31,6 +31,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.level.chunk.PalettedContainer;
+import net.minecraft.world.level.dimension.BuiltinDimensionTypes;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.phys.Vec3;
 import java.util.*;
@@ -82,7 +83,7 @@ public final class ChunkPacker {
                             Block block = state.getBlock();
                             if (CachedChunk.BLOCKS_TO_KEEP_TRACK_OF.contains(block)) {
                                 String name = BlockUtils.blockToString(block);
-                                specialBlocks.computeIfAbsent(name, b -> new ArrayList<>()).add(new BlockPos(x, y, z));
+                                specialBlocks.computeIfAbsent(name, b -> new ArrayList<>()).add(new BlockPos(x, y+chunk.getMinBuildHeight(), z));
                             }
                         }
                     }
@@ -132,7 +133,7 @@ public final class ChunkPacker {
                 return PathingBlockType.AVOID;
             }
             if (x == 0 || x == 15 || z == 0 || z == 15) {
-                Vec3 flow = state.getFluidState().getFlow(chunk.getLevel(), new BlockPos(x + chunk.getPos().x << 4, y, z + chunk.getPos().z << 4));
+                Vec3 flow = state.getFluidState().getFlow(chunk.getLevel(), new BlockPos(x + (chunk.getPos().x << 4), y, z + (chunk.getPos().z << 4)));
                 if (flow.x != 0.0 || flow.z != 0.0) {
                     return PathingBlockType.WATER;
                 }
@@ -171,7 +172,7 @@ public final class ChunkPacker {
                 if (dimension.ultraWarm()) {
                     return Blocks.NETHERRACK.defaultBlockState();
                 }
-                if (dimension.createDragonFight()) {
+                if (dimension.effectsLocation().equals(BuiltinDimensionTypes.END_EFFECTS)) {
                     return Blocks.END_STONE.defaultBlockState();
                 }
             default:

@@ -30,15 +30,16 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.BaseComponent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.ClickEvent;
-import net.minecraft.network.chat.TextComponent;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+
 import java.awt.*;
 import java.util.Collections;
 
@@ -53,7 +54,7 @@ public class GuiClick extends Screen implements Helper {
     private BlockPos currentMouseOver;
 
     public GuiClick() {
-        super(new TextComponent("CLICK"));
+        super(Component.literal("CLICK"));
     }
 
     @Override
@@ -90,13 +91,13 @@ public class GuiClick extends Screen implements Helper {
                 if (clickStart != null && !clickStart.equals(currentMouseOver)) {
                     BaritoneAPI.getProvider().getPrimaryBaritone().getSelectionManager().removeAllSelections();
                     BaritoneAPI.getProvider().getPrimaryBaritone().getSelectionManager().addSelection(BetterBlockPos.from(clickStart), BetterBlockPos.from(currentMouseOver));
-                    BaseComponent component = new TextComponent("Selection made! For usage: " + Baritone.settings().prefix.value + "help sel");
-                    component.getStyle()
+                    MutableComponent component = Component.literal("Selection made! For usage: " + Baritone.settings().prefix.value + "help sel");
+                    component.setStyle(component.getStyle()
                             .withColor(ChatFormatting.WHITE)
                             .withClickEvent(new ClickEvent(
                                     ClickEvent.Action.RUN_COMMAND,
                                     FORCE_COMMAND_PREFIX + "help sel"
-                            ));
+                            )));
                     Helper.HELPER.logDirect(component);
                     clickStart = null;
                 } else {

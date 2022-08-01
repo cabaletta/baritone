@@ -76,12 +76,12 @@ public enum PrimaryPlayerController implements IPlayerController, Helper {
     @Override
     public InteractionResult processRightClickBlock(LocalPlayer player, Level world, InteractionHand hand, BlockHitResult result) {
         // primaryplayercontroller is always in a ClientWorld so this is ok
-        return mc.gameMode.useItemOn(player, (ClientLevel) world, hand, result);
+        return mc.gameMode.useItemOn(player, hand, result);
     }
 
     @Override
     public InteractionResult processRightClick(LocalPlayer player, Level world, InteractionHand hand) {
-        return mc.gameMode.useItem(player, world, hand);
+        return mc.gameMode.useItem(player, hand);
     }
 
     @Override

@@ -39,18 +39,18 @@ import baritone.api.utils.BlockOptionalMetaLookup;
 import baritone.utils.IRenderer;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.schematic.StaticSchematic;
-import java.awt.*;
-import java.util.*;
-import java.util.List;
-import java.util.function.Function;
-import java.util.stream.Stream;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
+
+import java.awt.*;
+import java.util.*;
+import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 public class SelCommand extends Command {
 

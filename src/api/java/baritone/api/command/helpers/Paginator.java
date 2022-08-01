@@ -21,15 +21,16 @@ import baritone.api.command.argument.IArgConsumer;
 import baritone.api.command.exception.CommandException;
 import baritone.api.command.exception.CommandInvalidTypeException;
 import baritone.api.utils.Helper;
+
+import java.awt.*;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.BaseComponent;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.MutableComponent;
 
 public class Paginator<E> implements Helper {
 
@@ -74,7 +75,7 @@ public class Paginator<E> implements Helper {
         }
         boolean hasPrevPage = commandPrefix != null && validPage(page - 1);
         boolean hasNextPage = commandPrefix != null && validPage(page + 1);
-        BaseComponent prevPageComponent = new TextComponent("<<");
+        MutableComponent prevPageComponent = Component.literal("<<");
         if (hasPrevPage) {
             prevPageComponent.setStyle(prevPageComponent.getStyle()
                     .withClickEvent(new ClickEvent(
@@ -83,12 +84,12 @@ public class Paginator<E> implements Helper {
                     ))
                     .withHoverEvent(new HoverEvent(
                             HoverEvent.Action.SHOW_TEXT,
-                            new TextComponent("Click to view previous page")
+                            Component.literal("Click to view previous page")
                     )));
         } else {
             prevPageComponent.setStyle(prevPageComponent.getStyle().withColor(ChatFormatting.DARK_GRAY));
         }
-        BaseComponent nextPageComponent = new TextComponent(">>");
+        MutableComponent nextPageComponent = Component.literal(">>");
         if (hasNextPage) {
             nextPageComponent.setStyle(nextPageComponent.getStyle()
                     .withClickEvent(new ClickEvent(
@@ -97,12 +98,12 @@ public class Paginator<E> implements Helper {
                     ))
                     .withHoverEvent(new HoverEvent(
                             HoverEvent.Action.SHOW_TEXT,
-                            new TextComponent("Click to view next page")
+                            Component.literal("Click to view next page")
                     )));
         } else {
             nextPageComponent.setStyle(nextPageComponent.getStyle().withColor(ChatFormatting.DARK_GRAY));
         }
-        BaseComponent pagerComponent = new TextComponent("");
+        MutableComponent pagerComponent = Component.literal("");
         pagerComponent.setStyle(pagerComponent.getStyle().withColor(ChatFormatting.GRAY));
         pagerComponent.append(prevPageComponent);
         pagerComponent.append(" | ");

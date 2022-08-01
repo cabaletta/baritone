@@ -25,16 +25,18 @@ import baritone.api.command.exception.CommandException;
 import baritone.api.command.exception.CommandNotFoundException;
 import baritone.api.command.helpers.Paginator;
 import baritone.api.command.helpers.TabCompleteHelper;
+
+import java.awt.*;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.BaseComponent;
 import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.MutableComponent;
 
 import static baritone.api.command.IBaritoneChatControl.FORCE_COMMAND_PREFIX;
 
@@ -58,17 +60,17 @@ public class HelpCommand extends Command {
                     command -> {
                         String names = String.join("/", command.getNames());
                         String name = command.getNames().get(0);
-                        TextComponent shortDescComponent = new TextComponent(" - " + command.getShortDesc());
+                        MutableComponent shortDescComponent = Component.literal(" - " + command.getShortDesc());
                         shortDescComponent.setStyle(shortDescComponent.getStyle().withColor(ChatFormatting.DARK_GRAY));
-                        TextComponent namesComponent = new TextComponent(names);
+                        MutableComponent namesComponent = Component.literal(names);
                         namesComponent.setStyle(namesComponent.getStyle().withColor(ChatFormatting.WHITE));
-                        TextComponent hoverComponent = new TextComponent("");
+                        MutableComponent hoverComponent = Component.literal("");
                         hoverComponent.setStyle(hoverComponent.getStyle().withColor(ChatFormatting.GRAY));
                         hoverComponent.append(namesComponent);
                         hoverComponent.append("\n" + command.getShortDesc());
                         hoverComponent.append("\n\nClick to view full help");
                         String clickCommand = FORCE_COMMAND_PREFIX + String.format("%s %s", label, command.getNames().get(0));
-                        TextComponent component = new TextComponent(name);
+                        MutableComponent component = Component.literal(name);
                         component.setStyle(component.getStyle().withColor(ChatFormatting.GRAY));
                         component.append(shortDescComponent);
                         component.setStyle(component.getStyle()
@@ -88,7 +90,7 @@ public class HelpCommand extends Command {
             logDirect("");
             command.getLongDesc().forEach(this::logDirect);
             logDirect("");
-            BaseComponent returnComponent = new TextComponent("Click to return to the help menu");
+            MutableComponent returnComponent = Component.literal("Click to return to the help menu");
             returnComponent.setStyle(returnComponent.getStyle().withClickEvent(new ClickEvent(
                     ClickEvent.Action.RUN_COMMAND,
                     FORCE_COMMAND_PREFIX + label

@@ -23,9 +23,7 @@ import baritone.api.utils.TypeUtils;
 import baritone.api.utils.gui.BaritoneToast;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Vec3i;
-import net.minecraft.network.chat.BaseComponent;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -49,6 +47,11 @@ public final class Settings {
      * Allow Baritone to break blocks
      */
     public final Setting<Boolean> allowBreak = new Setting<>(true);
+
+    /**
+     * Blocks that baritone will be allowed to break even with allowBreak set to false
+     */
+    public final Setting<List<Block>> allowBreakAnyway = new Setting<>(new ArrayList<>());
 
     /**
      * Allow Baritone to sprint
@@ -232,6 +235,8 @@ public final class Settings {
      * A mapping of blocks to blocks treated as correct in their position
      * <p>
      * If a schematic asks for a block on this mapping, all blocks on the mapped list will be accepted at that location as well
+     * <p>
+     * Syntax same as <a href="https://baritone.leijurv.com/baritone/api/Settings.html#buildSubstitutes">buildSubstitutes</a>
      */
     public final Setting<Map<Block, List<Block>>> buildValidSubstitutes = new Setting<>(new HashMap<>());
 
@@ -239,6 +244,15 @@ public final class Settings {
      * A mapping of blocks to blocks to be built instead
      * <p>
      * If a schematic asks for a block on this mapping, Baritone will place the first placeable block in the mapped list
+     * <p>
+     * Usage Syntax:
+     * <pre>
+     *      sourceblockA->blockToSubstituteA1,blockToSubstituteA2,...blockToSubstituteAN,sourceBlockB->blockToSubstituteB1,blockToSubstituteB2,...blockToSubstituteBN,...sourceBlockX->blockToSubstituteX1,blockToSubstituteX2...blockToSubstituteXN
+     * </pre>
+     * Example:
+     * <pre>
+     *     stone->cobblestone,andesite,oak_planks->birch_planks,acacia_planks,glass
+     * </pre>
      */
     public final Setting<Map<Block, List<Block>>> buildSubstitutes = new Setting<>(new HashMap<>());
 
@@ -388,6 +402,9 @@ public final class Settings {
      */
     public final Setting<Double> mobSpawnerAvoidanceCoefficient = new Setting<>(2.0);
 
+    /**
+     * Distance to avoid mob spawners.
+     */
     public final Setting<Integer> mobSpawnerAvoidanceRadius = new Setting<>(16);
 
     /**
@@ -397,6 +414,9 @@ public final class Settings {
      */
     public final Setting<Double> mobAvoidanceCoefficient = new Setting<>(1.5);
 
+    /**
+     * Distance to avoid mobs.
+     */
     public final Setting<Integer> mobAvoidanceRadius = new Setting<>(8);
 
     /**
@@ -546,6 +566,17 @@ public final class Settings {
      * The alternative timeout number when slowPath is on
      */
     public final Setting<Long> slowPathTimeoutMS = new Setting<>(40000L);
+
+
+    /**
+     * allows baritone to save bed waypoints when interacting with beds
+     */
+    public final Setting<Boolean> doBedWaypoints = new Setting<>(true);
+
+    /**
+     * allows baritone to save death waypoints
+     */
+    public final Setting<Boolean> doDeathWaypoints = new Setting<>(true);
 
     /**
      * The big one. Download all chunks in simplified 2-bit format and save them for better very-long-distance pathing.
@@ -1095,7 +1126,7 @@ public final class Settings {
      * via {@link Consumer#andThen(Consumer)} or it can completely be overriden via setting
      * {@link Setting#value};
      */
-    public final Setting<Consumer<Component>> logger = new Setting<>(Minecraft.getInstance().gui.getChat()::addMessage);
+    public final Setting<Consumer<Component>> logger = new Setting<>(msg -> Minecraft.getInstance().gui.getChat().addMessage(msg));
 
     /**
      * The function that is called when Baritone will send a desktop notification. This function can be added to

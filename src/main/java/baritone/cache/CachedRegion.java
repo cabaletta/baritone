@@ -43,7 +43,7 @@ public final class CachedRegion implements ICachedRegion {
     /**
      * Magic value to detect invalid cache files, or incompatible cache files saved in an old version of Baritone
      */
-    private static final int CACHED_REGION_MAGIC = 456022910;
+    private static final int CACHED_REGION_MAGIC = 456022911;
 
     /**
      * All of the chunks in this region: A 32x32 array of them.
@@ -166,7 +166,7 @@ public final class CachedRegion implements ICachedRegion {
                                 out.writeShort(entry.getValue().size());
                                 for (BlockPos pos : entry.getValue()) {
                                     out.writeByte((byte) (pos.getZ() << 4 | pos.getX()));
-                                    out.writeByte((byte) (pos.getY()));
+                                    out.writeInt(pos.getY()-dimension.minY());
                                 }
                             }
                         }
@@ -270,8 +270,8 @@ public final class CachedRegion implements ICachedRegion {
                                     byte xz = in.readByte();
                                     int X = xz & 0x0f;
                                     int Z = (xz >>> 4) & 0x0f;
-                                    int Y = in.readByte() & 0xff;
-                                    locs.add(new BlockPos(X, Y, Z));
+                                    int Y = in.readInt();
+                                    locs.add(new BlockPos(X, Y+dimension.minY(), Z));
                                 }
                             }
                         }

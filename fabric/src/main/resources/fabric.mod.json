@@ -21,11 +21,11 @@
   "entrypoints": {
   },
   "mixins": [
-    "mixins.baritone.json"
+      "mixins.baritone.json"
   ],
 
   "depends": {
     "fabricloader": ">=0.11.0",
-    "minecraft": "1.18.x"
+    "minecraft": "1.19.1"
   }
 }

@@ -21,9 +21,10 @@ import baritone.api.BaritoneAPI;
 import baritone.api.utils.gui.BaritoneToast;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.network.chat.BaseComponent;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.MutableComponent;
+
+import java.awt.*;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.stream.Stream;
@@ -51,11 +52,11 @@ public interface Helper {
         // Inner text component
         final Calendar now = Calendar.getInstance();
         final boolean xd = now.get(Calendar.MONTH) == Calendar.APRIL && now.get(Calendar.DAY_OF_MONTH) <= 3;
-        BaseComponent baritone = new TextComponent(xd ? "Baritoe" : BaritoneAPI.getSettings().shortBaritonePrefix.value ? "B" : "Baritone");
+        MutableComponent baritone = Component.literal(xd ? "Baritoe" : BaritoneAPI.getSettings().shortBaritonePrefix.value ? "B" : "Baritone");
         baritone.setStyle(baritone.getStyle().withColor(ChatFormatting.LIGHT_PURPLE));
 
         // Outer brackets
-        BaseComponent prefix = new TextComponent("");
+        MutableComponent prefix = Component.literal("");
         prefix.setStyle(baritone.getStyle().withColor(ChatFormatting.DARK_PURPLE));
         prefix.append("[");
         prefix.append(baritone);
@@ -81,7 +82,7 @@ public interface Helper {
      * @param message The message to display in the popup
      */
     default void logToast(String title, String message) {
-        logToast(new TextComponent(title), new TextComponent(message));
+        logToast(Component.literal(title), Component.literal(message));
     }
 
     /**
@@ -90,7 +91,7 @@ public interface Helper {
      * @param message The message to display in the popup
      */
     default void logToast(String message) {
-        logToast(Helper.getPrefix(), new TextComponent(message));
+        logToast(Helper.getPrefix(), Component.literal(message));
     }
 
     /**
@@ -158,9 +159,9 @@ public interface Helper {
      * @param components The components to send
      */
     default void logDirect(boolean logAsToast, Component... components) {
-        BaseComponent component = new TextComponent("");
+        MutableComponent component = Component.literal("");
         component.append(getPrefix());
-        component.append(new TextComponent(" "));
+        component.append(Component.literal(" "));
         Arrays.asList(components).forEach(component::append);
         if (logAsToast) {
             logToast(getPrefix(), component);
@@ -188,7 +189,7 @@ public interface Helper {
      */
     default void logDirect(String message, ChatFormatting color, boolean logAsToast) {
         Stream.of(message.split("\n")).forEach(line -> {
-            BaseComponent component = new TextComponent(line.replace("\t", "    "));
+            MutableComponent component = Component.literal(line.replace("\t", "    "));
             component.setStyle(component.getStyle().withColor(color));
             logDirect(logAsToast, component);
         });

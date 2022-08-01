@@ -237,11 +237,11 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         if (current != null) {
             switch (event.getState()) {
                 case PRE:
-                    lastAutoJump = mc.options.autoJump;
-                    mc.options.autoJump = false;
+                    lastAutoJump = mc.options.autoJump().get();
+                    mc.options.autoJump().set(false);
                     break;
                 case POST:
-                    mc.options.autoJump = lastAutoJump;
+                    mc.options.autoJump().set(lastAutoJump);
                     break;
                 default:
                     break;

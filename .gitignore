@@ -21,6 +21,9 @@ classes/
 *.iws
 /logs/
 
+tweaker/logs/
+common/logs/
+
 # Eclipse Files
 .classpath
 .project
@@ -32,3 +35,6 @@ baritone_Client.launch
 !/.idea/copyright/profiles_settings.xml
 
 .vscode/launch.json
+.architectury-transformer
+
+mapping
