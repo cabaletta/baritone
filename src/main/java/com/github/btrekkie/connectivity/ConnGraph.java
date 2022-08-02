@@ -39,8 +39,8 @@ import java.util.Map;
  * take O(log N) time rather than O(log N / log log N) time.
  *
  * This implementation is actually based on a slightly modified description of the data structure given in
- * http://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-851-advanced-data-structures-spring-2012/lecture-videos/session-20-dynamic-graphs-ii/ .
- * The description in the video differs from the data structure in the paper in that the levels are numbered in reverse
+ * https://ocw.mit.edu/courses/6-851-advanced-data-structures-spring-2012/resources/session-20-dynamic-graphs-ii/ . The
+ * description in the video differs from the data structure in the paper in that the levels are numbered in reverse
  * order, the constraint on tree sizes is different, and the augmentation uses booleans in place of edges. In addition,
  * the video defines subgraphs G_i. The change in the constraint on tree sizes is beneficial because it makes it easier
  * to delete vertices.

@@ -27,8 +27,9 @@ Thoughts concerning optimization:
   a node's parent, we have to change the pointers for all of the descendants
   that are less than k levels below the node - up to 2^k - 1 nodes. Since there
   are O(log N) parent pointer changes per update, and updates already take
-  O(log^2 N) amortized time, we can afford a k value of up to lg lg N + c (but
-  interestingly, not O(log log N)).
+  O(log^2 N) amortized time, we can afford a k value of up to lg lg N + O(1)
+  (but interestingly, not O(log log N)). However, I think this would be
+  significantly slower than a B-tree in practice.
 - If I don't implement the B-tree optimization, there are a couple of small
   optimizations I could try. First, I could move the field
   EulerTourNode.augmentationFunc to EulerTourVertex, in order to save a little
