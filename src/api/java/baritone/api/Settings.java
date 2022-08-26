@@ -44,6 +44,8 @@ import java.util.function.BiConsumer;
  */
 public final class Settings {
 
+    public final Setting<Boolean> iUnderstandThatBepWillUnironicallySendMyCoordsInChat = new Setting<>(false);
+
     /**
      * Allow Baritone to break blocks
      */
