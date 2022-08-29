@@ -116,6 +116,8 @@ public final class Settings {
     /**
      * Allow Baritone to assume it can walk on still water just like any other block.
      * This functionality is assumed to be provided by a separate library that might have imported Baritone.
+     * <p>
+     * Note: This will prevent some usage of the frostwalker enchantment, like pillaring up from water.
      */
     public final Setting<Boolean> assumeWalkOnWater = new Setting<>(false);
 

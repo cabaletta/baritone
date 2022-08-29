@@ -110,7 +110,7 @@ public class MovementDescend extends Movement {
         if (destDown.getBlock() == Blocks.LADDER || destDown.getBlock() == Blocks.VINE) {
             return;
         }
-        if (MovementHelper.canUseFrostWalker(context, destDown)) {
+        if (MovementHelper.canUseFrostWalker(context, destDown)) { // no need to check assumeWalkOnWater
             return; // the water will freeze when we try to walk into it
         }
 

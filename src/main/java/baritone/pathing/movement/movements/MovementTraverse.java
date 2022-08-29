@@ -82,8 +82,9 @@ public class MovementTraverse extends Movement {
             } else {
                 if (destOn.getBlock() == Blocks.SOUL_SAND) {
                     WC += (WALK_ONE_OVER_SOUL_SAND_COST - WALK_ONE_BLOCK_COST) / 2;
-                } else if (destOn.getBlock() == Blocks.WATER && !MovementHelper.canUseFrostWalker(context, destOn)) {
-                    // with frostwalker we can walk on water without the penalty
+                } else if (MovementHelper.canUseFrostWalker(context, destOn) && !context.assumeWalkOnWater) {
+                    // with frostwalker we can walk on water without the penalty, if we are sure we won't be using jesus
+                } else if (destOn.getBlock() == Blocks.WATER) {
                     WC += context.walkOnWaterOnePenalty;
                 }
                 if (srcDown == Blocks.SOUL_SAND) {
@@ -228,7 +229,7 @@ public class MovementTraverse extends Movement {
             }
         }
 
-        boolean isTheBridgeBlockThere = MovementHelper.canWalkOn(ctx, positionToPlace) || ladder || EnchantmentHelper.hasFrostWalkerEnchantment(ctx.player());
+        boolean isTheBridgeBlockThere = MovementHelper.canWalkOn(ctx, positionToPlace) || ladder || MovementHelper.canUseFrostWalker(ctx, positionToPlace);
         BlockPos feet = ctx.playerFeet();
         if (feet.getY() != dest.getY() && !ladder) {
             logDebug("Wrong Y coordinate");

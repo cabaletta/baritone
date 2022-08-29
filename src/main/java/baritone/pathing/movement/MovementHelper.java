@@ -30,6 +30,7 @@ import baritone.utils.ToolSet;
 import net.minecraft.block.*;
 import net.minecraft.block.properties.PropertyBool;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
@@ -362,6 +363,13 @@ public interface MovementHelper extends ActionCosts, Helper {
 
     static boolean canUseFrostWalker(CalculationContext context, IBlockState state) {
         return context.frostWalker != 0
+                && (state.getBlock() == Blocks.WATER || state.getBlock() == Blocks.FLOWING_WATER)
+                && ((Integer) state.getValue(BlockLiquid.LEVEL)) == 0;
+    }
+
+    static boolean canUseFrostWalker(IPlayerContext ctx, BlockPos pos) {
+        IBlockState state = BlockStateInterface.get(ctx, pos);
+        return EnchantmentHelper.hasFrostWalkerEnchantment(ctx.player())
                 && (state.getBlock() == Blocks.WATER || state.getBlock() == Blocks.FLOWING_WATER)
                 && ((Integer) state.getValue(BlockLiquid.LEVEL)) == 0;
     }

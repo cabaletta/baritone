@@ -94,7 +94,8 @@ public class MovementParkour extends Movement {
         if (standingOn.getBlock() == Blocks.VINE || standingOn.getBlock() == Blocks.LADDER || standingOn.getBlock() instanceof BlockStairs || MovementHelper.isBottomSlab(standingOn)) {
             return;
         }
-        if (standingOn.getBlock() instanceof BlockLiquid && !MovementHelper.canUseFrostWalker(context, standingOn)) {
+        // we can't jump from (frozen) water with assumeWalkOnWater because we can't be sure it will be frozen
+        if (standingOn.getBlock() instanceof BlockLiquid && (!MovementHelper.canUseFrostWalker(context, standingOn) || context.assumeWalkOnWater)) {
             return;
         }
         int maxJump;
@@ -138,6 +139,7 @@ public class MovementParkour extends Movement {
             // check for flat landing position
             IBlockState landingOn = context.bsi.get0(destX, y - 1, destZ);
             // farmland needs to be canWalkOn otherwise farm can never work at all, but we want to specifically disallow ending a jump on farmland haha
+            // frostwalker works here because we can't jump from possibly unfrozen water
             if ((landingOn.getBlock() != Blocks.FARMLAND && MovementHelper.canWalkOn(context.bsi, destX, y - 1, destZ, landingOn))
                     || (Math.min(16, context.frostWalker + 2) >= i && MovementHelper.canUseFrostWalker(context, landingOn))
             ) {

@@ -30,6 +30,7 @@ import baritone.utils.BlockStateInterface;
 import baritone.utils.pathing.MutableMoveResult;
 import com.google.common.collect.ImmutableSet;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockLiquid;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.init.Blocks;
@@ -117,6 +118,7 @@ public class MovementDiagonal extends Movement {
         boolean ascend = false;
         IBlockState destWalkOn;
         boolean descend = false;
+        boolean frostWalker = false;
         if (!MovementHelper.canWalkThrough(context.bsi, destX, y, destZ, destInto)) {
             ascend = true;
             if (!context.allowDiagonalAscend || !MovementHelper.canWalkThrough(context.bsi, x, y + 2, z) || !MovementHelper.canWalkOn(context.bsi, destX, y, destZ, destInto) || !MovementHelper.canWalkThrough(context.bsi, destX, y + 2, destZ)) {
@@ -125,9 +127,8 @@ public class MovementDiagonal extends Movement {
             destWalkOn = destInto;
         } else {
             destWalkOn = context.get(destX, y - 1, destZ);
-            if (!MovementHelper.canWalkOn(context.bsi, destX, y - 1, destZ, destWalkOn)
-                    && !MovementHelper.canUseFrostWalker(context, destWalkOn)
-            ) {
+            frostWalker = MovementHelper.canUseFrostWalker(context, destWalkOn) && !(context.assumeWalkOnWater && context.getBlock(x, y - 1, z) instanceof BlockLiquid);
+            if (!MovementHelper.canWalkOn(context.bsi, destX, y - 1, destZ, destWalkOn) && !frostWalker) {
                 descend = true;
                 if (!context.allowDiagonalDescend || !MovementHelper.canWalkOn(context.bsi, destX, y - 2, destZ) || !MovementHelper.canWalkThrough(context.bsi, destX, y - 1, destZ, destWalkOn)) {
                     return;
@@ -138,8 +139,8 @@ public class MovementDiagonal extends Movement {
         // For either possible soul sand, that affects half of our walking
         if (destWalkOn.getBlock() == Blocks.SOUL_SAND) {
             multiplier += (WALK_ONE_OVER_SOUL_SAND_COST - WALK_ONE_BLOCK_COST) / 2;
-        } else if (!ascend && !descend && MovementHelper.canUseFrostWalker(context, destWalkOn)) {
-            // frostwalker lets us walk on water without the penalty, but only works if we don't ascend or descend
+        } else if (frostWalker) {
+            // frostwalker lets us walk on water without the penalty
         } else if (destWalkOn.getBlock() == Blocks.WATER) {
             multiplier += context.walkOnWaterOnePenalty * SQRT_2;
         }
