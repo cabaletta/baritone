@@ -127,7 +127,8 @@ public class MovementDiagonal extends Movement {
             destWalkOn = destInto;
         } else {
             destWalkOn = context.get(destX, y - 1, destZ);
-            frostWalker = MovementHelper.canUseFrostWalker(context, destWalkOn) && !(context.assumeWalkOnWater && context.getBlock(x, y - 1, z) instanceof BlockLiquid);
+            boolean standingOnABlock = !(context.getBlock(x, y - 1, z) instanceof BlockLiquid) || (!context.assumeWalkOnWater && !(context.getBlock(x, y, z) instanceof BlockLiquid));
+            frostWalker = standingOnABlock && MovementHelper.canUseFrostWalker(context, destWalkOn);
             if (!MovementHelper.canWalkOn(context.bsi, destX, y - 1, destZ, destWalkOn) && !frostWalker) {
                 descend = true;
                 if (!context.allowDiagonalDescend || !MovementHelper.canWalkOn(context.bsi, destX, y - 2, destZ) || !MovementHelper.canWalkThrough(context.bsi, destX, y - 1, destZ, destWalkOn)) {

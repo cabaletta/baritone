@@ -73,7 +73,10 @@ public class MovementTraverse extends Movement {
         IBlockState pb1 = context.get(destX, y, destZ);
         IBlockState destOn = context.get(destX, y - 1, destZ);
         Block srcDown = context.getBlock(x, y - 1, z);
-        if (MovementHelper.canWalkOn(context.bsi, destX, y - 1, destZ, destOn) || MovementHelper.canUseFrostWalker(context, destOn)) { //this is a walk, not a bridge
+        // if we are on water but are neither in water nor can stand on water we must have placed a block to get here
+        boolean standingOnABlock = !(srcDown instanceof BlockLiquid) || (!context.assumeWalkOnWater && !(context.getBlock(x, y, z) instanceof BlockLiquid));
+        boolean frostWalker = standingOnABlock && MovementHelper.canUseFrostWalker(context, destOn);
+        if (MovementHelper.canWalkOn(context.bsi, destX, y - 1, destZ, destOn) || frostWalker) { //this is a walk, not a bridge
             double WC = WALK_ONE_BLOCK_COST;
             boolean water = false;
             if (MovementHelper.isWater(pb0.getBlock()) || MovementHelper.isWater(pb1.getBlock())) {
@@ -82,7 +85,7 @@ public class MovementTraverse extends Movement {
             } else {
                 if (destOn.getBlock() == Blocks.SOUL_SAND) {
                     WC += (WALK_ONE_OVER_SOUL_SAND_COST - WALK_ONE_BLOCK_COST) / 2;
-                } else if (MovementHelper.canUseFrostWalker(context, destOn) && !context.assumeWalkOnWater) {
+                } else if (frostWalker) {
                     // with frostwalker we can walk on water without the penalty, if we are sure we won't be using jesus
                 } else if (destOn.getBlock() == Blocks.WATER) {
                     WC += context.walkOnWaterOnePenalty;
