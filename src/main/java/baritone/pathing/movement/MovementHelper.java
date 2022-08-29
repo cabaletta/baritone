@@ -360,6 +360,12 @@ public interface MovementHelper extends ActionCosts, Helper {
         return canWalkOn(bsi, x, y, z, bsi.get0(x, y, z));
     }
 
+    static boolean canUseFrostWalker(CalculationContext context, IBlockState state) {
+        return context.frostWalker != 0
+                && (state.getBlock() == Blocks.WATER || state.getBlock() == Blocks.FLOWING_WATER)
+                && ((Integer) state.getValue(BlockLiquid.LEVEL)) == 0;
+    }
+
     static boolean canPlaceAgainst(BlockStateInterface bsi, int x, int y, int z) {
         return canPlaceAgainst(bsi, x, y, z, bsi.get0(x, y, z));
     }

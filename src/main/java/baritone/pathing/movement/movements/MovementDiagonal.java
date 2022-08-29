@@ -125,7 +125,9 @@ public class MovementDiagonal extends Movement {
             destWalkOn = destInto;
         } else {
             destWalkOn = context.get(destX, y - 1, destZ);
-            if (!MovementHelper.canWalkOn(context.bsi, destX, y - 1, destZ, destWalkOn)) {
+            if (!MovementHelper.canWalkOn(context.bsi, destX, y - 1, destZ, destWalkOn)
+                    && !MovementHelper.canUseFrostWalker(context, destWalkOn)
+            ) {
                 descend = true;
                 if (!context.allowDiagonalDescend || !MovementHelper.canWalkOn(context.bsi, destX, y - 2, destZ) || !MovementHelper.canWalkThrough(context.bsi, destX, y - 1, destZ, destWalkOn)) {
                     return;
@@ -136,6 +138,8 @@ public class MovementDiagonal extends Movement {
         // For either possible soul sand, that affects half of our walking
         if (destWalkOn.getBlock() == Blocks.SOUL_SAND) {
             multiplier += (WALK_ONE_OVER_SOUL_SAND_COST - WALK_ONE_BLOCK_COST) / 2;
+        } else if (!ascend && !descend && MovementHelper.canUseFrostWalker(context, destWalkOn)) {
+            // frostwalker lets us walk on water without the penalty, but only works if we don't ascend or descend
         } else if (destWalkOn.getBlock() == Blocks.WATER) {
             multiplier += context.walkOnWaterOnePenalty * SQRT_2;
         }
