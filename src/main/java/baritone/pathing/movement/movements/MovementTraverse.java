@@ -70,7 +70,7 @@ public class MovementTraverse extends Movement {
 
     @Override
     protected Set<BetterBlockPos> calculateValidPositions() {
-        return ImmutableSet.of(src, dest);
+        return ImmutableSet.of(src, src.above(), dest); // src.above means that we don't get caught in an infinite loop in water
     }
 
     public static double cost(CalculationContext context, int x, int y, int z, int destX, int destZ) {
