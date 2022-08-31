@@ -380,13 +380,20 @@ public class PathExecutor implements IPathExecutor, Helper {
         // however, descend and ascend don't request sprinting, because they don't know the context of what movement comes after it
         if (current instanceof MovementDescend) {
 
+            IMovement next = path.movements().get(pathPosition + 1);
+            if (next instanceof MovementTraverse) {
+                if (MovementHelper.canUseFrostWalker(ctx, next.getDest().down())) {
+                    // if we are going to continue straight onto the water with frostwalker feet.equals(dest) must hold, otherwise we don't want to waste time
+                    // Since MovementDescend can't know the direction of the next movement we have to tell it
+                    ((MovementDescend) current).forceSafeMode(); // keep this out of onTick, even if that means a tick of delay before it has an effect
+                }
+            }
             if (((MovementDescend) current).safeMode() && !((MovementDescend) current).skipToAscend()) {
                 logDebug("Sprinting would be unsafe");
                 return false;
             }
 
             if (pathPosition < path.length() - 2) {
-                IMovement next = path.movements().get(pathPosition + 1);
                 if (next instanceof MovementAscend && current.getDirection().up().equals(next.getDirection().down())) {
                     // a descend then an ascend in the same direction
                     pathPosition++;

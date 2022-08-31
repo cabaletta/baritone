@@ -44,6 +44,7 @@ import java.util.Set;
 public class MovementDescend extends Movement {
 
     private int numTicks = 0;
+    public boolean forceSafeMode = false;
 
     public MovementDescend(IBaritone baritone, BetterBlockPos start, BetterBlockPos end) {
         super(baritone, start, end, new BetterBlockPos[]{end.up(2), end.up(), end}, end.down());
@@ -53,6 +54,14 @@ public class MovementDescend extends Movement {
     public void reset() {
         super.reset();
         numTicks = 0;
+        forceSafeMode = false;
+    }
+
+    /**
+     * Called by PathExecutor if needing safeMode can only be detected with knowledge about the next movement
+     */
+    public void forceSafeMode() {
+        forceSafeMode = true;
     }
 
     @Override
@@ -252,6 +261,9 @@ public class MovementDescend extends Movement {
     }
 
     public boolean safeMode() {
+        if (forceSafeMode) {
+            return true;
+        }
         // (dest - src) + dest is offset 1 more in the same direction
         // so it's the block we'd need to worry about running into if we decide to sprint straight through this descend
         BlockPos into = dest.subtract(src.down()).add(dest);
