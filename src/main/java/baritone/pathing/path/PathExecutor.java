@@ -380,12 +380,19 @@ public class PathExecutor implements IPathExecutor, Helper {
         // however, descend and ascend don't request sprinting, because they don't know the context of what movement comes after it
         if (current instanceof MovementDescend) {
 
-            IMovement next = path.movements().get(pathPosition + 1);
-            if (next instanceof MovementTraverse) {
+            if (pathPosition < path.length() - 2) {
+                // keep this out of onTick, even if that means a tick of delay before it has an effect
+                IMovement next = path.movements().get(pathPosition + 1);
                 if (MovementHelper.canUseFrostWalker(ctx, next.getDest().down())) {
-                    // if we are going to continue straight onto the water with frostwalker feet.equals(dest) must hold, otherwise we don't want to waste time
-                    // Since MovementDescend can't know the direction of the next movement we have to tell it
-                    ((MovementDescend) current).forceSafeMode(); // keep this out of onTick, even if that means a tick of delay before it has an effect
+                    // frostwalker only works if you cross the edge of the block on ground so in some cases we may not overshoot
+                    // Since MovementDescend can't know the next movement we have to tell it
+                    if (next instanceof MovementTraverse || next instanceof MovementParkour) {
+                        boolean couldPlaceInstead = Baritone.settings().allowPlace.value && behavior.baritone.getInventoryBehavior().hasGenericThrowaway() && next instanceof MovementParkour; // traverse doesn't react fast enough
+                        boolean sameFlatDirection = current.getDirection().up().crossProduct(next.getDirection()).equals(BlockPos.ORIGIN); // here's why you learn maths in school
+                        if (sameFlatDirection && !couldPlaceInstead) {
+                            ((MovementDescend) current).forceSafeMode();
+                        }
+                    }
                 }
             }
             if (((MovementDescend) current).safeMode() && !((MovementDescend) current).skipToAscend()) {
@@ -394,6 +401,7 @@ public class PathExecutor implements IPathExecutor, Helper {
             }
 
             if (pathPosition < path.length() - 2) {
+                IMovement next = path.movements().get(pathPosition + 1);
                 if (next instanceof MovementAscend && current.getDirection().up().equals(next.getDirection().down())) {
                     // a descend then an ascend in the same direction
                     pathPosition++;
