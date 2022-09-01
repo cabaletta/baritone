@@ -42,7 +42,7 @@ public final class DefaultCommands {
                 new VersionCommand(baritone),
                 new RepackCommand(baritone),
                 new BuildCommand(baritone),
-                new SchematicaCommand(baritone),
+                //new SchematicaCommand(baritone),
                 new ComeCommand(baritone),
                 new AxisCommand(baritone),
                 new ForceCancelCommand(baritone),
