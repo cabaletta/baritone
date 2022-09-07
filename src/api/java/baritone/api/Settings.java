@@ -784,6 +784,9 @@ public final class Settings {
     /**
      * Always prefer silk touch tools over regular tools. This will not sacrifice speed, but it will always prefer silk
      * touch tools over other tools of the same speed. This includes always choosing ANY silk touch tool over your hand.
+     *
+     * As a stop-gap fix for #735, this option also serves as a switch to control whether Baritone will mine ice. By
+     * default, ice is not mined to prevent water from being produced.
      */
     public final Setting<Boolean> preferSilkTouch = new Setting<>(false);
 
