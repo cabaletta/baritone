@@ -193,7 +193,7 @@ public final class Settings {
     ));
 
     /**
-     * Blocks that Baritone is not allowed to break
+     * Blocks that Baritone is not allowed to break (Ice avoidance is always on unless preferSilkTouch is set)
      */
     public final Setting<List<Block>> blocksToDisallowBreaking = new Setting<>(new ArrayList<>(
         // Leave Empty by Default
