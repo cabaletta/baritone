@@ -18,7 +18,7 @@
 group 'baritone'
 
 if (project.hasProperty("mod_version")) {
-    vers = project.mod_version
+    version project.mod_version
 } else {
     def vers = 'git describe --always --tags --dirty'.execute().text.trim()
     if (!vers.startsWith("v")) {
