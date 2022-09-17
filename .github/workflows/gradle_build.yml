@@ -14,8 +14,16 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
+
+    - name: Fetch history
+      run: git fetch --unshallow --filter=tree:0 origin $GITHUB_REF
+
+    - name: Fetch tags
+      run: git fetch origin +refs/tags/*:refs/tags/*
+
+    - name: fix pull request head for versioning
+      if: github.event_name == 'pull_request'
+      run: echo ref="${{github.event.pull_request.head.sha}}" >> $GITHUB_ENV
 
     - name: Set up JDK 8
       uses: actions/setup-java@v2
@@ -27,7 +35,7 @@ jobs:
       run: chmod +x gradlew
       
     - name: Build with Gradle
-      run: ./gradlew build -Pmod_version="$(git describe --always --tags | cut -c2-)"
+      run: ./gradlew build -Pmod_version="$(echo "${{env.ref}}" | cut -c2-)"
 
     - name: Archive Artifacts
       uses: actions/upload-artifact@v2
