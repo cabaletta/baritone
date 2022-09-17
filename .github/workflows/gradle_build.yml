@@ -39,7 +39,7 @@ jobs:
       run: chmod +x gradlew
       
     - name: Build with Gradle
-      run: ./gradlew build -Pmod_version="$(echo "${{env.version}}" | cut -c2-)"
+      run: ./gradlew build -Pmod_version="$(echo "${{env.version}}" | cut -c2- | sed -e '0,/-/ s/-/+/')"
 
     - name: Archive Artifacts
       uses: actions/upload-artifact@v2

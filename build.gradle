@@ -26,7 +26,7 @@ if (project.hasProperty("mod_version")) {
         println "using version number: " + project.fallback_version
         version project.fallback_version
     } else {
-        version vers.substring(1)
+        version vers.substring(1).replaceFirst("-", "+")
     }
 }
 
