@@ -19,6 +19,7 @@ package baritone.utils.schematic.format;
 
 import baritone.api.schematic.IStaticSchematic;
 import baritone.api.schematic.format.ISchematicFormat;
+import baritone.utils.schematic.format.defaults.LitematicaSchematic;
 import baritone.utils.schematic.format.defaults.MCEditSchematic;
 import baritone.utils.schematic.format.defaults.SpongeSchematic;
 import org.apache.commons.io.FilenameUtils;
@@ -64,6 +65,21 @@ public enum DefaultSchematicFormats implements ISchematicFormat {
                 default:
                     throw new UnsupportedOperationException("Unsupported Version of a Sponge Schematic");
             }
+        }
+    },
+
+    /**
+     * Litematica Schematic Specification. Commonly denoted by the ".litematic" file extension.
+     */
+
+    LITEMATIC("litematic") {
+        @Override
+        public IStaticSchematic parse(InputStream input) throws IOException {
+            CompoundTag nbt = NbtIo.readCompressed(input);
+            if (nbt.getInt("Version") != 6) {
+                throw new UnsupportedOperationException("Unsupported Version of a Litematica Schematic");
+            }
+            return new LitematicaSchematic(nbt);
         }
     };
 
