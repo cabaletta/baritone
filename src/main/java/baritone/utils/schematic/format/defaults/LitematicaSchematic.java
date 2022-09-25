@@ -36,36 +36,90 @@ import java.util.*;
  *
  */
 public final class LitematicaSchematic extends StaticSchematic {
+    int minX=0,minY=0,minZ=0;
+    private static String reg = "Regions";
+    private static String meta = "Metadata";
+    private static String schemSize = "EnclosingSize";
+    private static String[] regNames;
+    private static String blSt = "BlockStates";
+    private static String blStPl = "BlockStatePalette";
+    private static String pos = "Position";
+    private static String size = "Size";
+    private static NBTTagCompound nbt;
 
     public LitematicaSchematic(NBTTagCompound nbt) {
-        String regionName = (String) nbt.getCompoundTag("Regions").getKeySet().toArray()[0];
-        this.x = Math.abs(nbt.getCompoundTag("Regions").getCompoundTag(regionName).getCompoundTag("Size").getInteger("x"));
-        this.y = Math.abs(nbt.getCompoundTag("Regions").getCompoundTag(regionName).getCompoundTag("Size").getInteger("y"));
-        this.z = Math.abs(nbt.getCompoundTag("Regions").getCompoundTag(regionName).getCompoundTag("Size").getInteger("z"));
+        this.nbt = nbt;
+        regNames = getRegions();
+
+        this.x = Math.abs(nbt.getCompoundTag(meta).getCompoundTag(schemSize).getInteger("x"));
+        this.y = Math.abs(nbt.getCompoundTag(meta).getCompoundTag(schemSize).getInteger("y"));
+        this.z = Math.abs(nbt.getCompoundTag(meta).getCompoundTag(schemSize).getInteger("z"));
         this.states = new IBlockState[this.x][this.z][this.y];
 
-        NBTTagList blockStatePalette = nbt.getCompoundTag("Regions").getCompoundTag(regionName).getTagList("BlockStatePalette", 10);
-        // ListTag blockStatePalette = nbt.getCompound("Regions").getCompound(regionName).getList("BlockStatePalette",10);
-        IBlockState[] paletteBlockStates = paletteBlockStates(blockStatePalette);
-        // BlockState[] paletteBlockStates = paletteBlockStates(blockStatePalette);
+        minCord();
 
-        int bitsPerBlock = bitsPerBlock(blockStatePalette);
-        long schematicVolume = schematicVolume();
-        long[] rawBlockData = rawBlockData(rawBlockArrayString(nbt, regionName));
+        for (String subReg : regNames) {
+            NBTTagList blockStatePalette = nbt.getCompoundTag(reg).getCompoundTag(subReg).getTagList(blStPl, 10);
+            // ListTag blockStatePalette = nbt.getCompound(reg).getCompound(subReg).getList(blStPl,10);
+            IBlockState[] paletteBlockStates = paletteBlockStates(blockStatePalette);
+            // BlockState[] paletteBlockStates = paletteBlockStates(blockStatePalette);
+            int posX = getMin(subReg,"x");
+            int posY = getMin(subReg,"y");
+            int posZ = getMin(subReg,"z");
 
-        LitematicaBitArray bitArray = new LitematicaBitArray(bitsPerBlock, schematicVolume, rawBlockData);
+            int bitsPerBlock = bitsPerBlock(blockStatePalette);
+            long regionVolume = getVolume(subReg);
+            long[] rawBlockData = rawBlockData(rawBlockArrayString(subReg));
 
-        if (bitsPerBlock > 32) {
-            throw new IllegalStateException("Too many blocks in schematic to handle");
-        }
+            LitematicaBitArray bitArray = new LitematicaBitArray(bitsPerBlock, regionVolume, rawBlockData);
 
-        for (int y = 0; y < this.y; y++) {
-            for (int z = 0; z < this.z; z++) {
-                for (int x = 0; x < this.x; x++) {
-                    this.states[x][y][z] = paletteBlockStates[bitArray.getAt((y * this.z + z) * this.x + x)];
+            if (bitsPerBlock > 32) {
+                throw new IllegalStateException("Too many blocks in schematic to handle");
+            }
+
+            int index = 0;
+            for (int y = 0; y < this.y; y++) {
+                for (int z = 0; z < this.z; z++) {
+                    for (int x = 0; x < this.x; x++) {
+                        if (inSubregion(x, y, z, subReg)) {
+                            int paletteIndex = bitArray.getAt(index);
+                            this.states[x-(minX-posX)][z-(minZ-posZ)][y-(minY-posY)] = paletteBlockStates[paletteIndex];
+                            index++;
+                        }
+                    }
                 }
             }
         }
+    }
+
+    private static boolean inSubregion(int x, int y, int z, String subReg) {
+        boolean inspect =
+                x < Math.abs(nbt.getCompoundTag(reg).getCompoundTag(subReg).getCompoundTag(size).getInteger("x")) &&
+                y < Math.abs(nbt.getCompoundTag(reg).getCompoundTag(subReg).getCompoundTag(size).getInteger("y")) &&
+                z < Math.abs(nbt.getCompoundTag(reg).getCompoundTag(subReg).getCompoundTag(size).getInteger("z"));
+        return inspect;
+    }
+
+    private static int getMin(String subReg,String s) {
+        int a = nbt.getCompoundTag(reg).getCompoundTag(subReg).getCompoundTag(pos).getInteger(s);
+        int b = nbt.getCompoundTag(reg).getCompoundTag(subReg).getCompoundTag(size).getInteger(s);
+        if (b < 0) {
+            b++;
+        }
+        return Math.min(a,a+b);
+
+    }
+
+    private void minCord() {
+        for (String subReg : regNames) {
+            this.minX = Math.min(this.minX,getMin(subReg,"x"));
+            this.minY = Math.min(this.minY,getMin(subReg,"y"));
+            this.minZ = Math.min(this.minZ,getMin(subReg,"z"));
+        }
+    }
+
+    private static String[] getRegions() {
+        return nbt.getCompoundTag(reg).getKeySet().toArray(new String[0]);
     }
 
     /**
@@ -157,8 +211,11 @@ public final class LitematicaSchematic extends StaticSchematic {
     /**
      * @return the amount of blocks in the schematic, including air blocks.
      */
-    private long schematicVolume() {
-        return (long) this.x*this.y*this.z;
+    private static long getVolume(String subReg) {
+        return Math.abs(
+                nbt.getCompoundTag(reg).getCompoundTag(subReg).getCompoundTag(size).getInteger("x") *
+                nbt.getCompoundTag(reg).getCompoundTag(subReg).getCompoundTag(size).getInteger("y") *
+                nbt.getCompoundTag(reg).getCompoundTag(subReg).getCompoundTag(size).getInteger("z"));
     }
 
     /**
@@ -174,15 +231,14 @@ public final class LitematicaSchematic extends StaticSchematic {
     }
 
     /**
-     * @param nbt schematic file.
-     * @param regionName Name of the region the schematic is in.
+     * @param subReg Name of the region the schematic is in.
      * @return String Array holding Long values as text.
      */
-    private static String[] rawBlockArrayString(NBTTagCompound nbt, String regionName) {
-        //private static String[] rawBlockArrayString(CompoundTag nbt, String regionName) {
+    private static String[] rawBlockArrayString(String subReg) {
+        //private static String[] rawBlockArrayString(String regionName) {
 
-        String rawBlockString = Objects.requireNonNull((nbt.getCompoundTag("Regions").getCompoundTag(regionName).getTag("BlockStates"))).toString();
-        //String rawBlockString = Objects.requireNonNull((nbt.getCompound("Regions").getCompound(regionName).get("BlockStates"))).toString();
+        String rawBlockString = Objects.requireNonNull((nbt.getCompoundTag(reg).getCompoundTag(subReg).getTag(blSt))).toString();
+        //String rawBlockString = Objects.requireNonNull((nbt.getCompound(reg).getCompound(subReg).get(blSt))).toString();
         rawBlockString = rawBlockString.substring(3,rawBlockString.length()-1);
         return rawBlockString.split(",");
     }
