@@ -31,6 +31,9 @@ import java.util.*;
 /**
  * @author Emerson
  * @since 12/27/2020
+ * @author rycbar
+ * @since 22.09.2022
+ *
  */
 public final class LitematicaSchematic extends StaticSchematic {
 
@@ -41,80 +44,147 @@ public final class LitematicaSchematic extends StaticSchematic {
         this.z = Math.abs(nbt.getCompoundTag("Regions").getCompoundTag(regionName).getCompoundTag("Size").getInteger("z"));
         this.states = new IBlockState[this.x][this.z][this.y];
 
+        NBTTagList blockStatePalette = nbt.getCompoundTag("Regions").getCompoundTag(regionName).getTagList("BlockStatePalette", 10);
+        // ListTag blockStatePalette = nbt.getCompound("Regions").getCompound(regionName).getList("BlockStatePalette",10);
+        IBlockState[] paletteBlockStates = paletteBlockStates(blockStatePalette);
+        // BlockState[] paletteBlockStates = paletteBlockStates(blockStatePalette);
 
-        NBTTagList paletteTag = nbt.getCompoundTag("Regions").getCompoundTag(regionName).getTagList("BlockStatePalette",10);
-        // ListNBT paletteTag = nbt.getCompound("Regions").getCompound(regionName).getList("BlockStatePalette",10);
+        int bitsPerBlock = bitsPerBlock(blockStatePalette);
+        long schematicVolume = schematicVolume();
+        long[] rawBlockData = rawBlockData(rawBlockArrayString(nbt, regionName));
 
-        // Create the block states array
-        IBlockState[] paletteBlockStates = new IBlockState[paletteTag.tagCount()];
-        // For every part of the array
-        for (int i = 0; i<paletteTag.tagCount(); i++) {
-            // Set the default state by getting block name
-            Block block = Block.REGISTRY.getObject(new ResourceLocation((((NBTTagCompound) paletteTag.get(i)).getString("Name"))));
-            IBlockState blockState = block.getDefaultState();
-            NBTTagCompound properties = ((NBTTagCompound) paletteTag.get(i)).getCompoundTag("Properties");
-            Object[] keys = properties.getKeySet().toArray();
-            Map<String, String> propertiesMap = new HashMap<>();
-            // Create a map for each state
-            for (int j = 0; j<keys.length; j++) {
-                propertiesMap.put((String) keys[j], (properties.getString((String) keys[j])));
-            }
-            for (int j = 0; j<keys.length; j++) {
-                IProperty<?> property = block.getBlockState().getProperty(keys[j].toString());
-                if (property != null) {
-                    blockState = setPropertyValue(blockState, property, propertiesMap.get(keys[j]));
-                }
-            }
-            paletteBlockStates[i] = blockState;
+        LitematicaBitArray bitArray = new LitematicaBitArray(bitsPerBlock, schematicVolume, rawBlockData);
+
+        if (bitsPerBlock > 32) {
+            throw new IllegalStateException("Too many blocks in schematic to handle");
         }
 
+        for (int y = 0; y < this.y; y++) {
+            for (int z = 0; z < this.z; z++) {
+                for (int x = 0; x < this.x; x++) {
+                    this.states[x][y][z] = paletteBlockStates[bitArray.getAt((y * this.z + z) * this.x + x)];
+                }
+            }
+        }
+    }
 
-        // BlockData is stored as an NBT long[]
-        int paletteSize = (int) Math.floor(log2(paletteTag.tagCount()))+1;
-        long litematicSize = (long) this.x*this.y*this.z;
+    /**
+     * @param blockStatePalette List of all different block types used in the schematic.
+     * @return Array of BlockStates.
+     */
+    private static IBlockState[] paletteBlockStates(NBTTagList blockStatePalette) {
+        // private static BlockState[] paletteBlockStates(TagList blockStatePalette) {
+        IBlockState[] paletteBlockStates = new IBlockState[blockStatePalette.tagCount()];
+        //BlockState[] paletteBlockState = new BlockState[blockStatePalette.tagCount()];
 
-        // In 1.12, the long array isn't exposed by the libraries so parsing has to be done manually
-        String rawBlockString = (nbt.getCompoundTag("Regions").getCompoundTag(regionName)).getTag("BlockStates").toString();
-        rawBlockString = rawBlockString.substring(3,rawBlockString.length()-1);
-        String[] rawBlockArrayString = rawBlockString.split(",");
+        for (int i = 0; i< blockStatePalette.tagCount(); i++) {
+            Block block = Block.REGISTRY.getObject(new ResourceLocation((((NBTTagCompound) blockStatePalette.get(i)).getString("Name"))));
+            //Block block = Registry.BLOCK.get(new ResourceLocation((((CompoundTag) blockStatePalette.get(i)).getString("Name"))));
+            NBTTagCompound properties = ((NBTTagCompound) blockStatePalette.get(i)).getCompoundTag("Properties");
+            //CompoundTag properties = ((CompoundTag) blockStatePalette.get(i)).getCompound("Properties");
+
+            paletteBlockStates[i] = getBlockState(block, properties);
+        }
+        return paletteBlockStates;
+    }
+
+    /**
+     * @param block block.
+     * @param properties List of Properties the block has.
+     * @return A blockState.
+     */
+    private static IBlockState getBlockState(Block block, NBTTagCompound properties) {
+        //private static BlockState getBlockState(Block block, CompoundTag properties) {
+        IBlockState blockState = block.getDefaultState();
+        //BlockState blockState = block.defaultBlockState();
+
+        for (Object key : properties.getKeySet().toArray()) {
+            //for (Object key : properties.getAllKeys().toArray()) {
+            IProperty<?> property = block.getBlockState().getProperty(key.toString());
+            //Property<?> property = block.getStateDefinition().getProperty(key.toString());
+            if (property != null) {
+                blockState = setPropertyValue(blockState, property, propertiesMap(properties).get(key));
+            }
+        }
+        return blockState;
+    }
+
+    /**
+     * i haven't written this and i wont try to decode it.
+     * @param state
+     * @param property
+     * @param value
+     * @return
+     * @param <T>
+     */
+    private static <T extends Comparable<T>> IBlockState setPropertyValue(IBlockState state, IProperty<T> property, String value) {
+        //private static <T extends Comparable<T>> BlockState setPropertyValue(BlockState state, Property<T> property, String value) {
+        Optional<T> parsed = property.parseValue(value).toJavaUtil();
+        //Optional<T> parsed = property.getValue(value);
+        if (parsed.isPresent()) {
+            return state.withProperty(property, parsed.get());
+            //return state.setValue(property, parsed.get());
+        } else {
+            throw new IllegalArgumentException("Invalid value for property " + property);
+        }
+    }
+
+    /**
+     * @param properties properties a block has.
+     * @return properties as map.
+     */
+    private static Map<String, String> propertiesMap(NBTTagCompound properties) {
+        //private static Map<String, String> propertiesMap(CompoundTag properties) {
+        Map<String, String> propertiesMap = new HashMap<>();
+
+        for (Object key : properties.getKeySet().toArray()) {
+            //for (Object key : properties.getAllKeys().toArray()) {
+            propertiesMap.put((String) key, (properties.getString((String) key)));
+        }
+        return propertiesMap;
+    }
+
+    /**
+     * @param blockStatePalette List of all different block types used in the schematic.
+     * @return amount of bits used to encode a block.
+     */
+    private static int bitsPerBlock(NBTTagList blockStatePalette) {
+        //private static int bitsPerBlock(ListTag blockStatePalette) {
+        return  (int) Math.floor((Math.log(blockStatePalette.tagCount())) / Math.log(2))+1;
+        //return (int) Math.floor((Math.log(blockStatePalette.size())) / Math.log(2))+1;
+    }
+
+    /**
+     * @return the amount of blocks in the schematic, including air blocks.
+     */
+    private long schematicVolume() {
+        return (long) this.x*this.y*this.z;
+    }
+
+    /**
+     * @param rawBlockArrayString String Array holding Long values as text.
+     * @return array of Long values.
+     */
+    private static long[] rawBlockData(String[] rawBlockArrayString) {
         long[] rawBlockData = new long[rawBlockArrayString.length];
         for (int i = 0; i < rawBlockArrayString.length; i++) {
             rawBlockData[i] = Long.parseLong(rawBlockArrayString[i].substring(0,rawBlockArrayString[i].length()-1));
         }
-
-
-        LitematicaBitArray bitArray = new LitematicaBitArray(paletteSize, litematicSize, rawBlockData);
-        if (paletteSize > 32) {
-            throw new IllegalStateException("Too many blocks in schematic to handle");
-        }
-
-        int[] serializedBlockStates = new int[(int) litematicSize];
-        for (int i = 0; i<serializedBlockStates.length; i++) {
-            serializedBlockStates[i] = bitArray.getAt(i);
-        }
-
-        int counter = 0;
-        for (int y = 0; y < this.y; y++) {
-            for (int z = 0; z < this.z; z++) {
-                for (int x = 0; x < this.x; x++) {
-                    IBlockState state = paletteBlockStates[serializedBlockStates[counter]];
-                    this.states[x][z][y] = state;
-                    counter++;
-                }
-            }
-        }
-    }
-    private static double log2(int N) {
-        return (Math.log(N) / Math.log(2));
+        return rawBlockData;
     }
 
-    private static <T extends Comparable<T>> IBlockState setPropertyValue(IBlockState state, IProperty<T> property, String value) {
-        Optional<T> parsed = property.parseValue(value).toJavaUtil();
-        if (parsed.isPresent()) {
-            return state.withProperty(property, parsed.get());
-        } else {
-            throw new IllegalArgumentException("Invalid value for property " + property);
-        }
+    /**
+     * @param nbt schematic file.
+     * @param regionName Name of the region the schematic is in.
+     * @return String Array holding Long values as text.
+     */
+    private static String[] rawBlockArrayString(NBTTagCompound nbt, String regionName) {
+        //private static String[] rawBlockArrayString(CompoundTag nbt, String regionName) {
+
+        String rawBlockString = Objects.requireNonNull((nbt.getCompoundTag("Regions").getCompoundTag(regionName).getTag("BlockStates"))).toString();
+        //String rawBlockString = Objects.requireNonNull((nbt.getCompound("Regions").getCompound(regionName).get("BlockStates"))).toString();
+        rawBlockString = rawBlockString.substring(3,rawBlockString.length()-1);
+        return rawBlockString.split(",");
     }
 
     /** LitematicaBitArray class from litematica */
