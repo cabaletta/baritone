@@ -47,39 +47,33 @@ public final class LitematicaSchematic extends StaticSchematic {
     private static final String blStPl = "BlockStatePalette";
     private static final String pos = "Position";
     private static final String size = "Size";
-    private static String subReg;
-    private static String[] regNames;
-    private static NBTTagCompound nbt;
 
-    public LitematicaSchematic(NBTTagCompound nbtCompound) {
-        nbt = nbtCompound;
-        regNames = getRegions();
-        getMinimumCorner();
+    public LitematicaSchematic(NBTTagCompound nbt) {
+        getMinimumCorner(nbt);
 
         this.x = Math.abs(nbt.getCompoundTag(meta).getCompoundTag(schemSize).getInteger("x"));
         this.y = Math.abs(nbt.getCompoundTag(meta).getCompoundTag(schemSize).getInteger("y"));
         this.z = Math.abs(nbt.getCompoundTag(meta).getCompoundTag(schemSize).getInteger("z"));
         this.states = new IBlockState[this.x][this.z][this.y];
 
-        for (String subRegion : regNames) {
-            subReg = subRegion;
+        for (String subReg : getRegions(nbt)) {
             NBTTagList usedBlockTypes = nbt.getCompoundTag(reg).getCompoundTag(subReg).getTagList(blStPl, 10);
             IBlockState[] blockList = getBlockList(usedBlockTypes);
 
             int bitsPerBlock = getBitsPerBlock(usedBlockTypes.tagCount());
-            long regionVolume = getVolume();
-            long[] blockStateArray = getBlockStates();
+            long regionVolume = getVolume(nbt, subReg);
+            long[] blockStateArray = getBlockStates(nbt, subReg);
 
             LitematicaBitArray bitArray = new LitematicaBitArray(bitsPerBlock, regionVolume, blockStateArray);
 
-            writeSubregionIntoSchematic(blockList, bitArray);
+            writeSubregionIntoSchematic(nbt, subReg, blockList, bitArray);
         }
     }
 
     /**
      * @return Array of subregion names.
      */
-    private static String[] getRegions() {
+    private static String[] getRegions(NBTTagCompound nbt) {
         return nbt.getCompoundTag(reg).getKeySet().toArray(new String[0]);
     }
 
@@ -87,12 +81,11 @@ public final class LitematicaSchematic extends StaticSchematic {
      * Calculates the minimum cords/origin of the schematic as litematica schematics
      * can have a non-minimum origin.
      */
-    private void getMinimumCorner() {
-        for (String subRegion : regNames) {
-            subReg = subRegion;
-            this.minX = Math.min(this.minX, getMinimumCord("x"));
-            this.minY = Math.min(this.minY, getMinimumCord("y"));
-            this.minZ = Math.min(this.minZ, getMinimumCord("z"));
+    private void getMinimumCorner(NBTTagCompound nbt) {
+        for (String subReg : getRegions(nbt)) {
+            this.minX = Math.min(this.minX, getMinimumCord(nbt, subReg,"x"));
+            this.minY = Math.min(this.minY, getMinimumCord(nbt, subReg,"y"));
+            this.minZ = Math.min(this.minZ, getMinimumCord(nbt, subReg,"z"));
         }
     }
 
@@ -100,7 +93,7 @@ public final class LitematicaSchematic extends StaticSchematic {
      * @param s axis that should be read.
      * @return the lower cord of the requested axis.
      */
-    private static int getMinimumCord(String s) {
+    private static int getMinimumCord(NBTTagCompound nbt, String subReg, String s) {
         int a = nbt.getCompoundTag(reg).getCompoundTag(subReg).getCompoundTag(pos).getInteger(s);
         int b = nbt.getCompoundTag(reg).getCompoundTag(subReg).getCompoundTag(size).getInteger(s);
         if (b < 0) {
@@ -172,7 +165,7 @@ public final class LitematicaSchematic extends StaticSchematic {
     /**
      * @return the volume of the subregion.
      */
-    private static long getVolume() {
+    private static long getVolume(NBTTagCompound nbt, String subReg) {
         return Math.abs(
                 nbt.getCompoundTag(reg).getCompoundTag(subReg).getCompoundTag(size).getInteger("x") *
                         nbt.getCompoundTag(reg).getCompoundTag(subReg).getCompoundTag(size).getInteger("y") *
@@ -182,7 +175,7 @@ public final class LitematicaSchematic extends StaticSchematic {
     /**
      * @return array of Long values.
      */
-    private static long[] getBlockStates() {
+    private static long[] getBlockStates(NBTTagCompound nbt, String subReg) {
         return ((INBTTagLongArray) nbt.getCompoundTag(reg).getCompoundTag(subReg).getTag(blSt)).getLongArray();
     }
 
@@ -190,15 +183,15 @@ public final class LitematicaSchematic extends StaticSchematic {
      * @param blockList list with the different block types used in the schematic
      * @param bitArray bit array that holds the placement pattern
      */
-    private void writeSubregionIntoSchematic(IBlockState[] blockList, LitematicaBitArray bitArray) {
-        int posX = getMinimumCord("x");
-        int posY = getMinimumCord("y");
-        int posZ = getMinimumCord("z");
+    private void writeSubregionIntoSchematic(NBTTagCompound nbt, String subReg, IBlockState[] blockList, LitematicaBitArray bitArray) {
+        int posX = getMinimumCord(nbt, subReg,"x");
+        int posY = getMinimumCord(nbt, subReg,"y");
+        int posZ = getMinimumCord(nbt, subReg,"z");
         int index = 0;
         for (int y = 0; y < this.y; y++) {
             for (int z = 0; z < this.z; z++) {
                 for (int x = 0; x < this.x; x++) {
-                    if (inSubregion(x, y, z)) {
+                    if (inSubregion(nbt, subReg, x, y, z)) {
                         this.states[x-(minX- posX)][z-(minZ- posZ)][y-(minY- posY)] = blockList[bitArray.getAt(index)];
                         index++;
                     }
@@ -213,7 +206,7 @@ public final class LitematicaSchematic extends StaticSchematic {
      * @param z cord of the schematic.
      * @return if the current block is inside the subregion.
      */
-    private static boolean inSubregion(int x, int y, int z) {
+    private static boolean inSubregion(NBTTagCompound nbt, String subReg, int x, int y, int z) {
         return
                 x < Math.abs(nbt.getCompoundTag(reg).getCompoundTag(subReg).getCompoundTag(size).getInteger("x")) &&
                 y < Math.abs(nbt.getCompoundTag(reg).getCompoundTag(subReg).getCompoundTag(size).getInteger("y")) &&
