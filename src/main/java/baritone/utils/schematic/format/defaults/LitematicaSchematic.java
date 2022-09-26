@@ -247,7 +247,9 @@ public final class LitematicaSchematic extends StaticSchematic {
      * @return array of Long values.
      */
     private static long[] getBlockStates() {
-        String[] rawBlockArrayString = rawBlockArrayString();
+        String rawBlockString = Objects.requireNonNull((nbt.getCompoundTag(reg).getCompoundTag(subReg).getTag(blSt))).toString();
+        rawBlockString = rawBlockString.substring(3,rawBlockString.length()-1);
+        String[] rawBlockArrayString = rawBlockString.split(",");
         long[] rawBlockData = new long[rawBlockArrayString.length];
         for (int i = 0; i < rawBlockArrayString.length; i++) {
             rawBlockData[i] = Long.parseLong(rawBlockArrayString[i].substring(0,rawBlockArrayString[i].length()-1));
@@ -255,17 +257,15 @@ public final class LitematicaSchematic extends StaticSchematic {
         return rawBlockData;
     }
 
+    // will only work after 1.12. will replace the getBlockStates() above.
+    /*
     /**
-     * @return String Array holding Long values as text.
+     * @return array of Long values.
      */
-    private static String[] rawBlockArrayString() {
-        //private static String[] rawBlockArrayString(String regionName) {
-
-        String rawBlockString = Objects.requireNonNull((nbt.getCompoundTag(reg).getCompoundTag(subReg).getTag(blSt))).toString();
-        //String rawBlockString = Objects.requireNonNull((nbt.getCompound(reg).getCompound(subReg).get(blSt))).toString();
-        rawBlockString = rawBlockString.substring(3,rawBlockString.length()-1);
-        return rawBlockString.split(",");
-    }
+    /*
+    private static long[] getBlockStates() {
+        return nbt.getCompoundTag(reg).getCompoundTag(subReg).getTag(blSt).getLongArray();
+    }*/
 
     /** LitematicaBitArray class from litematica */
     private static class LitematicaBitArray
