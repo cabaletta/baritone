@@ -51,7 +51,7 @@ public final class LitematicaSchematic extends StaticSchematic {
     public LitematicaSchematic(NBTTagCompound nbtCompound) {
         nbt = nbtCompound;
         regNames = getRegions();
-        minCord();
+        getMinimumCorner();
 
         this.x = Math.abs(nbt.getCompoundTag(meta).getCompoundTag(schemSize).getInteger("x"));
         this.y = Math.abs(nbt.getCompoundTag(meta).getCompoundTag(schemSize).getInteger("y"));
@@ -60,81 +60,16 @@ public final class LitematicaSchematic extends StaticSchematic {
 
         for (String subRegion : regNames) {
             subReg = subRegion;
-            NBTTagList blockStatePalette = nbt.getCompoundTag(reg).getCompoundTag(subReg).getTagList(blStPl, 10);
-            IBlockState[] paletteBlockStates = paletteBlockStates(blockStatePalette);
+            NBTTagList usedBlockTypes = nbt.getCompoundTag(reg).getCompoundTag(subReg).getTagList(blStPl, 10);
+            IBlockState[] blockList = getBlockList(usedBlockTypes);
 
-            int bitsPerBlock = bitsPerBlock(blockStatePalette.tagCount());
+            int bitsPerBlock = getBitsPerBlock(usedBlockTypes.tagCount());
             long regionVolume = getVolume();
             long[] blockStateArray = getBlockStates();
 
             LitematicaBitArray bitArray = new LitematicaBitArray(bitsPerBlock, regionVolume, blockStateArray);
 
-            if (bitsPerBlock > 32) {
-                throw new IllegalStateException("Too many blocks in schematic to handle");
-            }
-
-            createSchematicOfSubRegion(paletteBlockStates, bitArray);
-        }
-    }
-
-    /**
-     * @param paletteBlockStates list with the different block types used in the schematic
-     * @param bitArray bit array that holds the placement pattern
-     */
-    private void createSchematicOfSubRegion(IBlockState[] paletteBlockStates, LitematicaBitArray bitArray) {
-        int posX = getMin("x");
-        int posY = getMin("y");
-        int posZ = getMin("z");
-        int index = 0;
-        for (int y = 0; y < this.y; y++) {
-            for (int z = 0; z < this.z; z++) {
-                for (int x = 0; x < this.x; x++) {
-                    if (inSubregion(x, y, z)) {
-                        this.states[x-(minX- posX)][z-(minZ- posZ)][y-(minY- posY)] = paletteBlockStates[bitArray.getAt(index)];
-                        index++;
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * @param x cord of the schematic.
-     * @param y cord of the schematic.
-     * @param z cord of the schematic.
-     * @return if the current block is inside the subregion.
-     */
-    private static boolean inSubregion(int x, int y, int z) {
-        return
-                x < Math.abs(nbt.getCompoundTag(reg).getCompoundTag(subReg).getCompoundTag(size).getInteger("x")) &&
-                y < Math.abs(nbt.getCompoundTag(reg).getCompoundTag(subReg).getCompoundTag(size).getInteger("y")) &&
-                z < Math.abs(nbt.getCompoundTag(reg).getCompoundTag(subReg).getCompoundTag(size).getInteger("z"));
-    }
-
-    /**
-     * @param s axis that should be read.
-     * @return the lower cord of the requested axis.
-     */
-    private static int getMin(String s) {
-        int a = nbt.getCompoundTag(reg).getCompoundTag(subReg).getCompoundTag(pos).getInteger(s);
-        int b = nbt.getCompoundTag(reg).getCompoundTag(subReg).getCompoundTag(size).getInteger(s);
-        if (b < 0) {
-            b++;
-        }
-        return Math.min(a,a+b);
-
-    }
-
-    /**
-     * Calculates the minimum cords/origin of the schematic as litematica schematics
-     * can have a non-minimum origin.
-     */
-    private void minCord() {
-        for (String subRegion : regNames) {
-            subReg = subRegion;
-            this.minX = Math.min(this.minX,getMin("x"));
-            this.minY = Math.min(this.minY,getMin("y"));
-            this.minZ = Math.min(this.minZ,getMin("z"));
+            writeSubregionIntoSchematic(blockList, bitArray);
         }
     }
 
@@ -146,19 +81,46 @@ public final class LitematicaSchematic extends StaticSchematic {
     }
 
     /**
+     * Calculates the minimum cords/origin of the schematic as litematica schematics
+     * can have a non-minimum origin.
+     */
+    private void getMinimumCorner() {
+        for (String subRegion : regNames) {
+            subReg = subRegion;
+            this.minX = Math.min(this.minX, getMinimumCord("x"));
+            this.minY = Math.min(this.minY, getMinimumCord("y"));
+            this.minZ = Math.min(this.minZ, getMinimumCord("z"));
+        }
+    }
+
+    /**
+     * @param s axis that should be read.
+     * @return the lower cord of the requested axis.
+     */
+    private static int getMinimumCord(String s) {
+        int a = nbt.getCompoundTag(reg).getCompoundTag(subReg).getCompoundTag(pos).getInteger(s);
+        int b = nbt.getCompoundTag(reg).getCompoundTag(subReg).getCompoundTag(size).getInteger(s);
+        if (b < 0) {
+            b++;
+        }
+        return Math.min(a,a+b);
+
+    }
+
+    /**
      * @param blockStatePalette List of all different block types used in the schematic.
      * @return Array of BlockStates.
      */
-    private static IBlockState[] paletteBlockStates(NBTTagList blockStatePalette) {
-        IBlockState[] paletteBlockStates = new IBlockState[blockStatePalette.tagCount()];
+    private static IBlockState[] getBlockList(NBTTagList blockStatePalette) {
+        IBlockState[] blockList = new IBlockState[blockStatePalette.tagCount()];
 
         for (int i = 0; i< blockStatePalette.tagCount(); i++) {
             Block block = Block.REGISTRY.getObject(new ResourceLocation((((NBTTagCompound) blockStatePalette.get(i)).getString("Name"))));
             NBTTagCompound properties = ((NBTTagCompound) blockStatePalette.get(i)).getCompoundTag("Properties");
 
-            paletteBlockStates[i] = getBlockState(block, properties);
+            blockList[i] = getBlockState(block, properties);
         }
-        return paletteBlockStates;
+        return blockList;
     }
 
     /**
@@ -169,11 +131,11 @@ public final class LitematicaSchematic extends StaticSchematic {
     private static IBlockState getBlockState(Block block, NBTTagCompound properties) {
         IBlockState blockState = block.getDefaultState();
 
-
         for (Object key : properties.getKeySet().toArray()) {
             IProperty<?> property = block.getBlockState().getProperty((String) key);
+            String propertyValue = properties.getString((String) key);
             if (property != null) {
-                blockState = setPropertyValue(blockState, property, properties.getString((String) key));
+                blockState = setPropertyValue(blockState, property, propertyValue);
             }
         }
         return blockState;
@@ -200,7 +162,7 @@ public final class LitematicaSchematic extends StaticSchematic {
      * @param amountOfBlockTypes amount of block types in the schematic.
      * @return amount of bits used to encode a block.
      */
-    private static int bitsPerBlock(int amountOfBlockTypes) {
+    private static int getBitsPerBlock(int amountOfBlockTypes) {
         return  (int) Math.floor((Math.log(amountOfBlockTypes)) / Math.log(2))+1;
     }
 
@@ -210,8 +172,8 @@ public final class LitematicaSchematic extends StaticSchematic {
     private static long getVolume() {
         return Math.abs(
                 nbt.getCompoundTag(reg).getCompoundTag(subReg).getCompoundTag(size).getInteger("x") *
-                nbt.getCompoundTag(reg).getCompoundTag(subReg).getCompoundTag(size).getInteger("y") *
-                nbt.getCompoundTag(reg).getCompoundTag(subReg).getCompoundTag(size).getInteger("z"));
+                        nbt.getCompoundTag(reg).getCompoundTag(subReg).getCompoundTag(size).getInteger("y") *
+                        nbt.getCompoundTag(reg).getCompoundTag(subReg).getCompoundTag(size).getInteger("z"));
     }
 
     /**
@@ -226,6 +188,40 @@ public final class LitematicaSchematic extends StaticSchematic {
             rawBlockData[i] = Long.parseLong(rawBlockArrayString[i].substring(0,rawBlockArrayString[i].length()-1));
         }
         return rawBlockData;
+    }
+
+    /**
+     * @param blockList list with the different block types used in the schematic
+     * @param bitArray bit array that holds the placement pattern
+     */
+    private void writeSubregionIntoSchematic(IBlockState[] blockList, LitematicaBitArray bitArray) {
+        int posX = getMinimumCord("x");
+        int posY = getMinimumCord("y");
+        int posZ = getMinimumCord("z");
+        int index = 0;
+        for (int y = 0; y < this.y; y++) {
+            for (int z = 0; z < this.z; z++) {
+                for (int x = 0; x < this.x; x++) {
+                    if (inSubregion(x, y, z)) {
+                        this.states[x-(minX- posX)][z-(minZ- posZ)][y-(minY- posY)] = blockList[bitArray.getAt(index)];
+                        index++;
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * @param x cord of the schematic.
+     * @param y cord of the schematic.
+     * @param z cord of the schematic.
+     * @return if the current block is inside the subregion.
+     */
+    private static boolean inSubregion(int x, int y, int z) {
+        return
+                x < Math.abs(nbt.getCompoundTag(reg).getCompoundTag(subReg).getCompoundTag(size).getInteger("x")) &&
+                y < Math.abs(nbt.getCompoundTag(reg).getCompoundTag(subReg).getCompoundTag(size).getInteger("y")) &&
+                z < Math.abs(nbt.getCompoundTag(reg).getCompoundTag(subReg).getCompoundTag(size).getInteger("z"));
     }
 
     /** LitematicaBitArray class from litematica */
