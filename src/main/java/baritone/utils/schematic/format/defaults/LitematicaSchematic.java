@@ -37,7 +37,9 @@ import java.util.*;
  *
  */
 public final class LitematicaSchematic extends StaticSchematic {
-    int minX=0,minY=0,minZ=0;
+    int minX=0;
+    int minY=0;
+    int minZ=0;
     private static final String reg = "Regions";
     private static final String meta = "Metadata";
     private static final String schemSize = "EnclosingSize";
@@ -277,6 +279,7 @@ public final class LitematicaSchematic extends StaticSchematic {
 
         public static long roundUp(long number, long interval)
         {
+            int sign = 1;
             if (interval == 0)
             {
                 return 0;
@@ -289,11 +292,11 @@ public final class LitematicaSchematic extends StaticSchematic {
             {
                 if (number < 0)
                 {
-                    interval *= -1;
+                    sign = -1;
                 }
 
-                long i = number % interval;
-                return i == 0 ? number : number + interval - i;
+                long i = number % (interval * sign);
+                return i == 0 ? number : number + (interval * sign) - i;
             }
         }
     }
