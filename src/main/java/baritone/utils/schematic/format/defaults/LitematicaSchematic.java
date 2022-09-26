@@ -48,8 +48,8 @@ public final class LitematicaSchematic extends StaticSchematic {
     private static String[] regNames;
     private static NBTTagCompound nbt;
 
-    public LitematicaSchematic(NBTTagCompound nbt) {
-        this.nbt = nbt;
+    public LitematicaSchematic(NBTTagCompound nbtCompound) {
+        nbt = nbtCompound;
         regNames = getRegions();
         minCord();
 
@@ -61,9 +61,7 @@ public final class LitematicaSchematic extends StaticSchematic {
         for (String subRegion : regNames) {
             subReg = subRegion;
             NBTTagList blockStatePalette = nbt.getCompoundTag(reg).getCompoundTag(subReg).getTagList(blStPl, 10);
-            // ListTag blockStatePalette = nbt.getCompound(reg).getCompound(subReg).getList(blStPl,10);
             IBlockState[] paletteBlockStates = paletteBlockStates(blockStatePalette);
-            // BlockState[] paletteBlockStates = paletteBlockStates(blockStatePalette);
 
             int bitsPerBlock = bitsPerBlock(blockStatePalette.tagCount());
             long regionVolume = getVolume();
@@ -129,7 +127,7 @@ public final class LitematicaSchematic extends StaticSchematic {
 
     /**
      * Calculates the minimum cords/origin of the schematic as litematica schematics
-     * can have a non minimum origin.
+     * can have a non-minimum origin.
      */
     private void minCord() {
         for (String subRegion : regNames) {
@@ -152,15 +150,11 @@ public final class LitematicaSchematic extends StaticSchematic {
      * @return Array of BlockStates.
      */
     private static IBlockState[] paletteBlockStates(NBTTagList blockStatePalette) {
-        // private static BlockState[] paletteBlockStates(TagList blockStatePalette) {
         IBlockState[] paletteBlockStates = new IBlockState[blockStatePalette.tagCount()];
-        //BlockState[] paletteBlockState = new BlockState[blockStatePalette.tagCount()];
 
         for (int i = 0; i< blockStatePalette.tagCount(); i++) {
             Block block = Block.REGISTRY.getObject(new ResourceLocation((((NBTTagCompound) blockStatePalette.get(i)).getString("Name"))));
-            //Block block = Registry.BLOCK.get(new ResourceLocation((((CompoundTag) blockStatePalette.get(i)).getString("Name"))));
             NBTTagCompound properties = ((NBTTagCompound) blockStatePalette.get(i)).getCompoundTag("Properties");
-            //CompoundTag properties = ((CompoundTag) blockStatePalette.get(i)).getCompound("Properties");
 
             paletteBlockStates[i] = getBlockState(block, properties);
         }
@@ -173,16 +167,13 @@ public final class LitematicaSchematic extends StaticSchematic {
      * @return A blockState.
      */
     private static IBlockState getBlockState(Block block, NBTTagCompound properties) {
-        //private static BlockState getBlockState(Block block, CompoundTag properties) {
         IBlockState blockState = block.getDefaultState();
-        //BlockState blockState = block.defaultBlockState();
+
 
         for (Object key : properties.getKeySet().toArray()) {
-            //for (Object key : properties.getAllKeys().toArray()) {
-            IProperty<?> property = block.getBlockState().getProperty(key.toString());
-            //Property<?> property = block.getStateDefinition().getProperty(key.toString());
+            IProperty<?> property = block.getBlockState().getProperty((String) key);
             if (property != null) {
-                blockState = setPropertyValue(blockState, property, propertiesMap(properties).get(key));
+                blockState = setPropertyValue(blockState, property, properties.getString((String) key));
             }
         }
         return blockState;
@@ -197,30 +188,12 @@ public final class LitematicaSchematic extends StaticSchematic {
      * @param <T> .
      */
     private static <T extends Comparable<T>> IBlockState setPropertyValue(IBlockState state, IProperty<T> property, String value) {
-        //private static <T extends Comparable<T>> BlockState setPropertyValue(BlockState state, Property<T> property, String value) {
         Optional<T> parsed = property.parseValue(value).toJavaUtil();
-        //Optional<T> parsed = property.getValue(value);
         if (parsed.isPresent()) {
             return state.withProperty(property, parsed.get());
-            //return state.setValue(property, parsed.get());
         } else {
             throw new IllegalArgumentException("Invalid value for property " + property);
         }
-    }
-
-    /**
-     * @param properties properties a block has.
-     * @return properties as map.
-     */
-    private static Map<String, String> propertiesMap(NBTTagCompound properties) {
-        //private static Map<String, String> propertiesMap(CompoundTag properties) {
-        Map<String, String> propertiesMap = new HashMap<>();
-
-        for (Object key : properties.getKeySet().toArray()) {
-            //for (Object key : properties.getAllKeys().toArray()) {
-            propertiesMap.put((String) key, (properties.getString((String) key)));
-        }
-        return propertiesMap;
     }
 
     /**
@@ -228,9 +201,7 @@ public final class LitematicaSchematic extends StaticSchematic {
      * @return amount of bits used to encode a block.
      */
     private static int bitsPerBlock(int amountOfBlockTypes) {
-        //private static int bitsPerBlock(ListTag blockStatePalette) {
         return  (int) Math.floor((Math.log(amountOfBlockTypes)) / Math.log(2))+1;
-        //return (int) Math.floor((Math.log(blockStatePalette.size())) / Math.log(2))+1;
     }
 
     /**
@@ -256,16 +227,6 @@ public final class LitematicaSchematic extends StaticSchematic {
         }
         return rawBlockData;
     }
-
-    // will only work after 1.12. will replace the getBlockStates() above.
-    /*
-    /**
-     * @return array of Long values.
-     */
-    /*
-    private static long[] getBlockStates() {
-        return nbt.getCompoundTag(reg).getCompoundTag(subReg).getTag(blSt).getLongArray();
-    }*/
 
     /** LitematicaBitArray class from litematica */
     private static class LitematicaBitArray
