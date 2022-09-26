@@ -48,8 +48,8 @@ public final class LitematicaSchematic extends StaticSchematic {
     private static NBTTagCompound nbt;
 
     public LitematicaSchematic(NBTTagCompound nbt) {
+        this.nbt = nbt;
         regNames = getRegions();
-        LitematicaSchematic.nbt = nbt;
         minCord();
 
         this.x = Math.abs(nbt.getCompoundTag(meta).getCompoundTag(schemSize).getInteger("x"));
