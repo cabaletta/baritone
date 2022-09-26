@@ -18,6 +18,7 @@
 package baritone.utils.schematic.format.defaults;
 
 import baritone.utils.schematic.StaticSchematic;
+import baritone.utils.accessor.INBTTagLongArray;
 import net.minecraft.block.*;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.nbt.*;
@@ -180,14 +181,7 @@ public final class LitematicaSchematic extends StaticSchematic {
      * @return array of Long values.
      */
     private static long[] getBlockStates() {
-        String rawBlockString = Objects.requireNonNull((nbt.getCompoundTag(reg).getCompoundTag(subReg).getTag(blSt))).toString();
-        rawBlockString = rawBlockString.substring(3,rawBlockString.length()-1);
-        String[] rawBlockArrayString = rawBlockString.split(",");
-        long[] rawBlockData = new long[rawBlockArrayString.length];
-        for (int i = 0; i < rawBlockArrayString.length; i++) {
-            rawBlockData[i] = Long.parseLong(rawBlockArrayString[i].substring(0,rawBlockArrayString[i].length()-1));
-        }
-        return rawBlockData;
+        return ((INBTTagLongArray) nbt.getCompoundTag(reg).getCompoundTag(subReg).getTag(blSt)).getLongArray();
     }
 
     /**
