@@ -44,9 +44,13 @@ import baritone.utils.PathingCommandContext;
 import baritone.utils.schematic.MapArtSchematic;
 import baritone.utils.schematic.SelectionSchematic;
 import baritone.utils.schematic.SchematicSystem;
+import baritone.utils.schematic.litematica.LitematicaHelper;
 import baritone.utils.schematic.schematica.SchematicaHelper;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import fi.dy.masa.litematica.data.DataManager;
+import fi.dy.masa.litematica.schematic.placement.SchematicPlacement;
+import fi.dy.masa.litematica.schematic.placement.SchematicPlacementManager;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.block.*;
 import net.minecraft.block.properties.IProperty;
@@ -173,6 +177,24 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             }
         } else {
             logDirect("Schematica is not present");
+        }
+    }
+
+    @Override
+    public void buildOpenLitematic() {
+        if (LitematicaHelper.isLitematicaPresent()) {
+            SchematicPlacementManager placementManager = DataManager.getSchematicPlacementManager();
+            List<SchematicPlacement> placementList = placementManager.getAllSchematicsPlacements();
+            if (placementList.size()>0) {
+                String name = LitematicaHelper.getName(placementList,0);
+                File schemFile = LitematicaHelper.getSchematicFile(placementList,0);
+                Vec3i origin = LitematicaHelper.getOrigin(placementList,0);
+
+                build(name, schemFile, origin);
+            } else {
+                logDirect("No schematic currently open");
+            }
+            logDirect("Litematica is not present");
         }
     }
 
