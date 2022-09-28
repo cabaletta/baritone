@@ -17,9 +17,8 @@
 
 package baritone.utils.schematic.litematica;
 
-import com.github.lunatrius.schematica.Schematica;
+import fi.dy.masa.litematica.Litematica;
 import fi.dy.masa.litematica.schematic.placement.SchematicPlacement;
-import fi.dy.masa.litematica.schematic.placement.SchematicPlacementManager;
 import net.minecraft.util.math.Vec3i;
 
 import java.io.File;
@@ -28,7 +27,7 @@ import java.util.List;
 public enum LitematicaHelper { ;
     public static boolean isLitematicaPresent() {
         try {
-            Class.forName(Schematica.class.getName());
+            Class.forName(Litematica.class.getName());
             return true;
         } catch (ClassNotFoundException | NoClassDefFoundError ex) {
             return false;

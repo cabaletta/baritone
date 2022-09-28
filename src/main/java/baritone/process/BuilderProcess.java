@@ -50,7 +50,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import fi.dy.masa.litematica.data.DataManager;
 import fi.dy.masa.litematica.schematic.placement.SchematicPlacement;
-import fi.dy.masa.litematica.schematic.placement.SchematicPlacementManager;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.block.*;
 import net.minecraft.block.properties.IProperty;
@@ -182,9 +181,8 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
 
     @Override
     public void buildOpenLitematic() {
-        if (LitematicaHelper.isLitematicaPresent()) {
-            SchematicPlacementManager placementManager = DataManager.getSchematicPlacementManager();
-            List<SchematicPlacement> placementList = placementManager.getAllSchematicsPlacements();
+        if (LitematicaHelper.isLitematicaPresent()) { //TODO Investigate why true even without litematica being present
+            List<SchematicPlacement> placementList = DataManager.getSchematicPlacementManager().getAllSchematicPlacements();
             if (placementList.size()>0) {
                 String name = LitematicaHelper.getName(placementList,0);
                 File schemFile = LitematicaHelper.getSchematicFile(placementList,0);
@@ -194,6 +192,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             } else {
                 logDirect("No schematic currently open");
             }
+        } else {
             logDirect("Litematica is not present");
         }
     }
