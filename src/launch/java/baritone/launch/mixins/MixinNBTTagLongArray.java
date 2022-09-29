@@ -32,6 +32,4 @@ public abstract class MixinNBTTagLongArray implements INBTTagLongArray {
     @Accessor("data")
     @Override
     public abstract long[] getLongArray();
-
-
 }

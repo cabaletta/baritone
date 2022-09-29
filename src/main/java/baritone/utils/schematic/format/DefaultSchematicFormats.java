@@ -19,9 +19,9 @@ package baritone.utils.schematic.format;
 
 import baritone.api.schematic.IStaticSchematic;
 import baritone.api.schematic.format.ISchematicFormat;
+import baritone.utils.schematic.format.defaults.LitematicaSchematic;
 import baritone.utils.schematic.format.defaults.MCEditSchematic;
 import baritone.utils.schematic.format.defaults.SpongeSchematic;
-import baritone.utils.schematic.format.defaults.LitematicaSchematic;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import org.apache.commons.io.FilenameUtils;
@@ -71,17 +71,17 @@ public enum DefaultSchematicFormats implements ISchematicFormat {
     /**
      * The Litematica schematic specification. Commonly denoted by the ".litematic" file extension.
      */
-    Litematica("litematic") {
+    LITEMATICA("litematic") {
         @Override
         public IStaticSchematic parse(InputStream input) throws IOException {
             NBTTagCompound nbt = CompressedStreamTools.readCompressed(input);
             int version = nbt.getInteger("Version");
             switch (version) {
-                case 4:
+                case 4: //1.12
                     return new LitematicaSchematic(nbt);
-                case 5:
-                case 6:
-                    throw new UnsupportedOperationException("This Schematic Verion is to new.");
+                case 5: //1.13-1.17
+                case 6: //1.18+
+                    throw new UnsupportedOperationException("This litematic Verion is to new.");
                 default:
                     throw new UnsupportedOperationException("Unsuported Version of a Litematica Schematic");
             }

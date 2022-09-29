@@ -23,6 +23,7 @@
     "MixinItemStack",
     "MixinItemTool",
     "MixinMinecraft",
+    "MixinNBTTagLongArray",
     "MixinNetHandlerPlayClient",
     "MixinNetworkManager",
     "MixinPlayerControllerMP",
@@ -31,7 +32,6 @@
     "MixinStateImplementation",
     "MixinTabCompleter",
     "MixinVboRenderList",
-    "MixinWorldClient",
-    "MixinNBTTagLongArray"
+    "MixinWorldClient"
   ]
 }
