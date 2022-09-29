@@ -71,7 +71,7 @@ public enum DefaultSchematicFormats implements ISchematicFormat {
     /**
      * The Litematica schematic specification. Commonly denoted by the ".litematic" file extension.
      */
-    Litematica("litematic") {
+    LITEMATICA("litematic") {
         @Override
         public IStaticSchematic parse(InputStream input) throws IOException {
             NBTTagCompound nbt = CompressedStreamTools.readCompressed(input);

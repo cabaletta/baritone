@@ -37,27 +37,30 @@ import java.util.*;
  *
  */
 public final class LitematicaSchematic extends StaticSchematic {
-    int minX=0;
-    int minY=0;
-    int minZ=0;
-    private static final String reg = "Regions";
-    private static final String meta = "Metadata";
-    private static final String schemSize = "EnclosingSize";
-    private static final String blSt = "BlockStates";
-    private static final String blStPl = "BlockStatePalette";
-    private static final String pos = "Position";
-    private static final String size = "Size";
+    private final int minX;
+    private final int minY;
+    private final int minZ;
 
     public LitematicaSchematic(NBTTagCompound nbt) {
-        getMinimumCorner(nbt);
+        int x=0;
+        int y=0;
+        int z=0;
+        for (String subReg : getRegions(nbt)) {
+            x = Math.min(x, getMinimumCord(nbt, subReg,"x"));
+            y = Math.min(y, getMinimumCord(nbt, subReg,"y"));
+            z = Math.min(z, getMinimumCord(nbt, subReg,"z"));
+        }
+        this.minX = x;
+        this.minY = y;
+        this.minZ = z;
 
-        this.x = Math.abs(nbt.getCompoundTag(meta).getCompoundTag(schemSize).getInteger("x"));
-        this.y = Math.abs(nbt.getCompoundTag(meta).getCompoundTag(schemSize).getInteger("y"));
-        this.z = Math.abs(nbt.getCompoundTag(meta).getCompoundTag(schemSize).getInteger("z"));
+        this.x = Math.abs(nbt.getCompoundTag("Metadata").getCompoundTag("EnclosingSize").getInteger("x"));
+        this.y = Math.abs(nbt.getCompoundTag("Metadata").getCompoundTag("EnclosingSize").getInteger("y"));
+        this.z = Math.abs(nbt.getCompoundTag("Metadata").getCompoundTag("EnclosingSize").getInteger("z"));
         this.states = new IBlockState[this.x][this.z][this.y];
 
         for (String subReg : getRegions(nbt)) {
-            NBTTagList usedBlockTypes = nbt.getCompoundTag(reg).getCompoundTag(subReg).getTagList(blStPl, 10);
+            NBTTagList usedBlockTypes = nbt.getCompoundTag("Regions").getCompoundTag(subReg).getTagList("BlockStatePalette", 10);
             IBlockState[] blockList = getBlockList(usedBlockTypes);
 
             int bitsPerBlock = getBitsPerBlock(usedBlockTypes.tagCount());
@@ -74,28 +77,16 @@ public final class LitematicaSchematic extends StaticSchematic {
      * @return Array of subregion names.
      */
     private static String[] getRegions(NBTTagCompound nbt) {
-        return nbt.getCompoundTag(reg).getKeySet().toArray(new String[0]);
-    }
-
-    /**
-     * Calculates the minimum cords/origin of the schematic as litematica schematics
-     * can have a non-minimum origin.
-     */
-    private void getMinimumCorner(NBTTagCompound nbt) {
-        for (String subReg : getRegions(nbt)) {
-            this.minX = Math.min(this.minX, getMinimumCord(nbt, subReg,"x"));
-            this.minY = Math.min(this.minY, getMinimumCord(nbt, subReg,"y"));
-            this.minZ = Math.min(this.minZ, getMinimumCord(nbt, subReg,"z"));
-        }
+        return nbt.getCompoundTag("Regions").getKeySet().toArray(new String[0]);
     }
 
     /**
      * @param s axis that should be read.
-     * @return the lower cord of the requested axis.
+     * @return the lower coord of the requested axis.
      */
     private static int getMinimumCord(NBTTagCompound nbt, String subReg, String s) {
-        int a = nbt.getCompoundTag(reg).getCompoundTag(subReg).getCompoundTag(pos).getInteger(s);
-        int b = nbt.getCompoundTag(reg).getCompoundTag(subReg).getCompoundTag(size).getInteger(s);
+        int a = nbt.getCompoundTag("Regions").getCompoundTag(subReg).getCompoundTag("Position").getInteger(s);
+        int b = nbt.getCompoundTag("Regions").getCompoundTag(subReg).getCompoundTag("Size").getInteger(s);
         if (b < 0) {
             b++;
         }
@@ -167,16 +158,16 @@ public final class LitematicaSchematic extends StaticSchematic {
      */
     private static long getVolume(NBTTagCompound nbt, String subReg) {
         return Math.abs(
-                nbt.getCompoundTag(reg).getCompoundTag(subReg).getCompoundTag(size).getInteger("x") *
-                        nbt.getCompoundTag(reg).getCompoundTag(subReg).getCompoundTag(size).getInteger("y") *
-                        nbt.getCompoundTag(reg).getCompoundTag(subReg).getCompoundTag(size).getInteger("z"));
+                nbt.getCompoundTag("Regions").getCompoundTag(subReg).getCompoundTag("Size").getInteger("x") *
+                        nbt.getCompoundTag("Regions").getCompoundTag(subReg).getCompoundTag("Size").getInteger("y") *
+                        nbt.getCompoundTag("Regions").getCompoundTag(subReg).getCompoundTag("Size").getInteger("z"));
     }
 
     /**
      * @return array of Long values.
      */
     private static long[] getBlockStates(NBTTagCompound nbt, String subReg) {
-        return ((INBTTagLongArray) nbt.getCompoundTag(reg).getCompoundTag(subReg).getTag(blSt)).getLongArray();
+        return ((INBTTagLongArray) nbt.getCompoundTag("Regions").getCompoundTag(subReg).getTag("BlockStates")).getLongArray();
     }
 
     /**
@@ -201,16 +192,16 @@ public final class LitematicaSchematic extends StaticSchematic {
     }
 
     /**
-     * @param x cord of the schematic.
-     * @param y cord of the schematic.
-     * @param z cord of the schematic.
+     * @param x coord of the schematic.
+     * @param y coord of the schematic.
+     * @param z coord of the schematic.
      * @return if the current block is inside the subregion.
      */
     private static boolean inSubregion(NBTTagCompound nbt, String subReg, int x, int y, int z) {
         return
-                x < Math.abs(nbt.getCompoundTag(reg).getCompoundTag(subReg).getCompoundTag(size).getInteger("x")) &&
-                y < Math.abs(nbt.getCompoundTag(reg).getCompoundTag(subReg).getCompoundTag(size).getInteger("y")) &&
-                z < Math.abs(nbt.getCompoundTag(reg).getCompoundTag(subReg).getCompoundTag(size).getInteger("z"));
+                x < Math.abs(nbt.getCompoundTag("Regions").getCompoundTag(subReg).getCompoundTag("Size").getInteger("x")) &&
+                y < Math.abs(nbt.getCompoundTag("Regions").getCompoundTag(subReg).getCompoundTag("Size").getInteger("y")) &&
+                z < Math.abs(nbt.getCompoundTag("Regions").getCompoundTag(subReg).getCompoundTag("Size").getInteger("z"));
     }
 
     /** LitematicaBitArray class from litematica */
