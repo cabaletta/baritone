@@ -204,7 +204,11 @@ public final class LitematicaSchematic extends StaticSchematic {
                 z < Math.abs(nbt.getCompoundTag("Regions").getCompoundTag(subReg).getCompoundTag("Size").getInteger("z"));
     }
 
-    /** LitematicaBitArray class from litematica */
+    /**
+     * @author maruohon
+     * Class from the Litematica mod by maruohon
+     * https://github.com/maruohon/litematica
+     */
     private static class LitematicaBitArray
     {
         /** The long array that is used to store the data for this BitArray. */
