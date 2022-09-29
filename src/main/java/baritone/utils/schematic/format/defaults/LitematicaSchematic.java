@@ -82,6 +82,7 @@ public final class LitematicaSchematic extends StaticSchematic {
 
     /**
      * Gets both ends from schematic box for a given axis and returns the lower one.
+     *
      * @param s axis that should be read.
      * @return the lower coord of the requested axis.
      */
@@ -152,6 +153,7 @@ public final class LitematicaSchematic extends StaticSchematic {
     /**
      * Calculates the volume of the subregion. As size can be a negative value we take the absolute value of the
      * multiplication as the volume still holds a positive amount of blocks.
+     *
      * @return the volume of the subregion.
      */
     private static long getVolume(NBTTagCompound nbt, String subReg) {
@@ -170,6 +172,7 @@ public final class LitematicaSchematic extends StaticSchematic {
 
     /**
      * Subregion don't have to be the same size as the enclosing size of the schematic. If they are smaller we check here if the current block is part of the subregion.
+     *
      * @param x coord of the block relative to the minimum corner.
      * @param y coord of the block relative to the minimum corner.
      * @param z coord of the block relative to the minimum corner.

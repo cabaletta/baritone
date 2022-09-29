@@ -19,9 +19,9 @@ package baritone.utils.schematic.format;
 
 import baritone.api.schematic.IStaticSchematic;
 import baritone.api.schematic.format.ISchematicFormat;
+import baritone.utils.schematic.format.defaults.LitematicaSchematic;
 import baritone.utils.schematic.format.defaults.MCEditSchematic;
 import baritone.utils.schematic.format.defaults.SpongeSchematic;
-import baritone.utils.schematic.format.defaults.LitematicaSchematic;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import org.apache.commons.io.FilenameUtils;
