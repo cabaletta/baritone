@@ -150,6 +150,9 @@ public class MovementTraverse extends Movement {
                 if (!standingOnABlock) { // standing on water / swimming
                     return COST_INF; // this is obviously impossible
                 }
+                if (srcDown instanceof BlockLiquid && (context.getBlock(x,y,z) == Blocks.WATERLILY || context.getBlock(x,y,z) == Blocks.CARPET)) {
+                    return COST_INF; // we can stand on these but can't place against them
+                }
                 WC = WC * (SNEAK_ONE_BLOCK_COST / WALK_ONE_BLOCK_COST);//since we are sneak backplacing, we are sneaking lol
                 return WC + placeCost + hardness1 + hardness2;
             }
