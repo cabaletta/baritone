@@ -178,15 +178,12 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
     }
 
     @Override
-    public void buildOpenLitematic() {
-        logDirect("start building open litematic");
+    public void buildOpenLitematic(int i) {
         if (LitematicaHelper.isLitematicaPresent()) {
-            logDirect("litematica is present"); //TODO debug line remove
             if (LitematicaHelper.hasLoadedSchematic()) {
-                logDirect("a schematic is present"); //TODO debug line remove
-                String name = LitematicaHelper.getName(0);
-                File schemFile = LitematicaHelper.getSchematicFile(0);
-                Vec3i origin = LitematicaHelper.getOrigin(0);
+                String name = LitematicaHelper.getName(i);
+                File schemFile = LitematicaHelper.getSchematicFile(i);
+                Vec3i origin = LitematicaHelper.getOrigin(i);
 
                 boolean success = build(name, schemFile, origin);
                 if (success) {
