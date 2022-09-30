@@ -96,7 +96,7 @@ public class MovementParkour extends Movement {
             return;
         }
         // we can't jump from (frozen) water with assumeWalkOnWater because we can't be sure it will be frozen
-        if (standingOn.getBlock() instanceof BlockLiquid && (!MovementHelper.canUseFrostWalker(context, standingOn) || context.assumeWalkOnWater)) {
+        if (context.assumeWalkOnWater && standingOn.getBlock() instanceof BlockLiquid) {
             return;
         }
         int maxJump;
