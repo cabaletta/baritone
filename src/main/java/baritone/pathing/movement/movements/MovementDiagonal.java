@@ -135,6 +135,7 @@ public class MovementDiagonal extends Movement {
                     return;
                 }
             }
+            frostWalker &= !context.assumeWalkOnWater; // do this after checking for descends because jesus can't prevent the water from freezing, it just prevents us from relying on the water freezing
         }
         double multiplier = WALK_ONE_BLOCK_COST;
         // For either possible soul sand, that affects half of our walking
