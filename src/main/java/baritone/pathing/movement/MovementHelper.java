@@ -374,6 +374,26 @@ public interface MovementHelper extends ActionCosts, Helper {
                 && ((Integer) state.getValue(BlockLiquid.LEVEL)) == 0;
     }
 
+    /**
+     * If movements make us stand/walk on this block, will it have a top to walk on?
+     */
+    static boolean mustBeSolidToWalkOn(CalculationContext context, int x, int y, int z, IBlockState state) {
+        Block block = state.getBlock();
+        if (block == Blocks.LADDER || block == Blocks.VINE) {
+            return false;
+        }
+        if (block instanceof BlockLiquid) {
+            if (context.assumeWalkOnWater) {
+                return false;
+            }
+            Block blockAbove = context.getBlock(x, y+1, z);
+            if (blockAbove instanceof BlockLiquid) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     static boolean canPlaceAgainst(BlockStateInterface bsi, int x, int y, int z) {
         return canPlaceAgainst(bsi, x, y, z, bsi.get0(x, y, z));
     }
