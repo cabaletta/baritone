@@ -99,6 +99,9 @@ public class MovementParkour extends Movement {
         if (context.assumeWalkOnWater && standingOn.getBlock() instanceof BlockLiquid) {
             return;
         }
+        if (context.getBlock(x, y, z) instanceof BlockLiquid) {
+            return; // can't jump out of water
+        }
         int maxJump;
         if (standingOn.getBlock() == Blocks.SOUL_SAND) {
             maxJump = 2; // 1 block gap
