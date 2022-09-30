@@ -48,8 +48,6 @@ import baritone.utils.schematic.litematica.LitematicaHelper;
 import baritone.utils.schematic.schematica.SchematicaHelper;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import fi.dy.masa.litematica.data.DataManager;
-import fi.dy.masa.litematica.schematic.placement.SchematicPlacement;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.block.*;
 import net.minecraft.block.properties.IProperty;
@@ -181,16 +179,24 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
 
     @Override
     public void buildOpenLitematic() {
-        if (LitematicaHelper.isLitematicaPresent()) { //TODO Investigate why true even without litematica being present
-            List<SchematicPlacement> placementList = DataManager.getSchematicPlacementManager().getAllSchematicPlacements();
-            if (placementList.size()>0) {
-                String name = LitematicaHelper.getName(placementList,0);
-                File schemFile = LitematicaHelper.getSchematicFile(placementList,0);
-                Vec3i origin = LitematicaHelper.getOrigin(placementList,0);
+        logDirect("start building open litematic");
+        if (LitematicaHelper.isLitematicaPresent()) {
+            logDirect("litematica is present"); //TODO debug line remove
+            if (LitematicaHelper.hasLoadedSchematic()) {
+                logDirect("a schematic is present"); //TODO debug line remove
+                String name = LitematicaHelper.getName(0);
+                File schemFile = LitematicaHelper.getSchematicFile(0);
+                Vec3i origin = LitematicaHelper.getOrigin(0);
 
-                build(name, schemFile, origin);
+                boolean success = build(name, schemFile, origin);
+                if (success) {
+                    logDirect(String.format("Building Schematic: %s\nOrigion: %s",name,origin));
+                } else {
+                    logDirect("Couldn't load the schematic. That is strange.");
+                    //this should happen as invalid schematics should not be abel to be loaded in litematica in the first place
+                }
             } else {
-                logDirect("No schematic currently open");
+                logDirect("No schematic currently loaded");
             }
         } else {
             logDirect("Litematica is not present");
