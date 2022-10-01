@@ -19,6 +19,9 @@ package baritone.utils.schematic.litematica;
 
 import fi.dy.masa.litematica.Litematica;
 import fi.dy.masa.litematica.data.DataManager;
+import fi.dy.masa.litematica.schematic.placement.SchematicPlacement;
+import net.minecraft.util.Mirror;
+import net.minecraft.util.Rotation;
 import net.minecraft.util.math.Vec3i;
 
 import java.io.File;
@@ -47,6 +50,12 @@ public final class LitematicaHelper {
     }
     public static File getSchematicFile(int i) {
         return DataManager.getSchematicPlacementManager().getAllSchematicsPlacements().get(i).getSchematicFile();
+    }
+    public static Rotation getRotation(int i) {
+        return DataManager.getSchematicPlacementManager().getAllSchematicsPlacements().get(i).getRotation();
+    }
+    public static Mirror getMirror(int i) {
+        return DataManager.getSchematicPlacementManager().getAllSchematicsPlacements().get(i).getMirror();
     }
 }
 

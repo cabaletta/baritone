@@ -25,6 +25,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.Vec3i;
 import org.apache.commons.lang3.Validate;
 
 import javax.annotation.Nullable;
@@ -207,6 +208,22 @@ public final class LitematicaSchematic extends StaticSchematic {
                 }
             }
         }
+    }
+
+    public Vec3i getMinimumCorner() {
+        return new Vec3i(this.minX, this.minY, this.minZ);
+    }
+    public int getX() {
+        return this.x;
+    }
+    public int getY() {
+        return this.y;
+    }
+    public int getZ() {
+        return this.z;
+    }
+    public void setDirect(int x,int y,int z,IBlockState blockState) {
+        this.states[x][z][y] = blockState;
     }
 
     /**
