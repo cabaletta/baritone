@@ -190,7 +190,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                 try {
                     LitematicaSchematic schematic1 = new LitematicaSchematic(CompressedStreamTools.readCompressed(Files.newInputStream(LitematicaHelper.getSchematicFile(i).toPath())),false);
                     LitematicaSchematic schematic2 = LitematicaHelper.blackMagicFuckery(schematic1, i);
-                    Vec3i correctedOrigin = LitematicaHelper.getCorrectedOrigin(LitematicaHelper.getOrigin(i), schematic2.getMinimumCorner());
+                    Vec3i correctedOrigin = LitematicaHelper.getCorrectedOrigin(schematic2, i);
 
                     build(name, schematic2, correctedOrigin);
                 } catch (IOException e) {

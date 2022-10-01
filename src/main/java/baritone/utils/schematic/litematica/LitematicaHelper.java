@@ -57,8 +57,50 @@ public final class LitematicaHelper {
     public static Mirror getMirror(int i) {
         return DataManager.getSchematicPlacementManager().getAllSchematicsPlacements().get(i).getMirror();
     }
-    public static Vec3i getCorrectedOrigin(Vec3i origin, Vec3i correction) {
-        return new Vec3i(origin.getX()+ correction.getX(), origin.getY() + correction.getY(), origin.getZ() + correction.getZ());
+    public static Vec3i getCorrectedOrigin(LitematicaSchematic schematic, int i) {
+        int x = LitematicaHelper.getOrigin(i).getX() + schematic.getMinimumCorner().getX();
+        int y = LitematicaHelper.getOrigin(i).getY() + schematic.getMinimumCorner().getY();
+        int z = LitematicaHelper.getOrigin(i).getZ() + schematic.getMinimumCorner().getZ();
+        Vec3i correctedOrigin;
+        Mirror mirror = LitematicaHelper.getMirror(i);
+        Rotation rotation = LitematicaHelper.getRotation(i);
+
+        //todo there has to be a better way to do this but i cant finde it atm
+        switch (mirror) {
+            case FRONT_BACK:
+            case LEFT_RIGHT:
+                switch ((mirror.ordinal()*2+rotation.ordinal())%4) {
+                    case 1:
+                        correctedOrigin = new Vec3i(x - schematic.getX()+1, y, z - schematic.getZ()+1);
+                        break;
+                    case 2:
+                        correctedOrigin = new Vec3i(x, y, z - schematic.getZ()+1);
+                        break;
+                    case 3:
+                        correctedOrigin = new Vec3i(x, y, z);
+                        break;
+                    default:
+                        correctedOrigin = new Vec3i(x - schematic.getX()+1, y, z);
+                        break;
+                }
+                break;
+            default:
+                switch (rotation) {
+                    case CLOCKWISE_90:
+                        correctedOrigin = new Vec3i(x - schematic.getX()+1, y, z);
+                        break;
+                    case CLOCKWISE_180:
+                        correctedOrigin = new Vec3i(x - schematic.getX()+1, y, z - schematic.getZ()+1);
+                        break;
+                    case COUNTERCLOCKWISE_90:
+                        correctedOrigin = new Vec3i(x, y, z - schematic.getZ()+1);
+                        break;
+                    default:
+                        correctedOrigin = new Vec3i(x, y, z);
+                        break;
+                }
+        }
+        return correctedOrigin;
     }
     public static Vec3i doMirroring(Vec3i in, int sizeX, int sizeZ, Mirror mirror) {
         int xOut = in.getX();
