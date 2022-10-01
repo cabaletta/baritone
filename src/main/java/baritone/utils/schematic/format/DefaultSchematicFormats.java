@@ -78,7 +78,7 @@ public enum DefaultSchematicFormats implements ISchematicFormat {
             int version = nbt.getInteger("Version");
             switch (version) {
                 case 4: //1.12
-                    return new LitematicaSchematic(nbt);
+                    return new LitematicaSchematic(nbt, false);
                 case 5: //1.13-1.17
                 case 6: //1.18+
                     throw new UnsupportedOperationException("This litematic Verion is to new.");

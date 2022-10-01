@@ -74,14 +74,21 @@ public final class LitematicaHelper {
         return new  Vec3i(sizeX - (sizeX - sizeZ) - in.getZ(), in.getY(), in.getX());
     }
     public static LitematicaSchematic blackMagicFuckery(LitematicaSchematic schemIn, int i) {
-        LitematicaSchematic tempSchem = schemIn.getCopy();
+        LitematicaSchematic tempSchem = schemIn.getCopy(LitematicaHelper.getRotation(i).ordinal()%2==1);
         for (int yCounter=0; yCounter<schemIn.getY(); yCounter++) {
             for (int zCounter=0; zCounter<schemIn.getZ(); zCounter++) {
                 for (int xCounter=0; xCounter<schemIn.getX(); xCounter++) {
                     Vec3i xyzHolder = new Vec3i(xCounter, yCounter, zCounter);
+                    //System.out.println(String.format("In: %s, sizeX=%S, sizeZ=%s",xyzHolder,schemIn.getX(),schemIn.getZ()));
                     xyzHolder = LitematicaHelper.doMirroring(xyzHolder, schemIn.getX() - 1, schemIn.getZ() - 1, LitematicaHelper.getMirror(i));
+                    //System.out.println(String.format("Mirror: %s, sizeX=%S, sizeZ=%s",xyzHolder,schemIn.getX(),schemIn.getZ()));
                     for (int turns = 0; turns < LitematicaHelper.getRotation(i).ordinal(); turns++) {
-                        xyzHolder = LitematicaHelper.rotate(xyzHolder, schemIn.getX() - 1, schemIn.getZ() - 1);
+                        if ((turns%2)==0) {
+                            xyzHolder = LitematicaHelper.rotate(xyzHolder, schemIn.getX() - 1, schemIn.getZ() - 1);
+                        } else {
+                            xyzHolder = LitematicaHelper.rotate(xyzHolder, schemIn.getZ() - 1, schemIn.getX() - 1);
+                        }
+                        //System.out.println(String.format("Turned: %s, sizeX=%S, sizeZ=%s",xyzHolder,schemIn.getX(),schemIn.getZ()));
                     }
                     tempSchem.setDirect(xyzHolder.getX(), xyzHolder.getY(), xyzHolder.getZ(), schemIn.getDirect(xCounter, yCounter, zCounter));
                 }
