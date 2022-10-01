@@ -17,9 +17,9 @@
 
 package baritone.utils.schematic.litematica;
 
+import baritone.utils.schematic.format.defaults.LitematicaSchematic;
 import fi.dy.masa.litematica.Litematica;
 import fi.dy.masa.litematica.data.DataManager;
-import fi.dy.masa.litematica.schematic.placement.SchematicPlacement;
 import net.minecraft.util.Mirror;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.Vec3i;
@@ -57,28 +57,36 @@ public final class LitematicaHelper {
     public static Mirror getMirror(int i) {
         return DataManager.getSchematicPlacementManager().getAllSchematicsPlacements().get(i).getMirror();
     }
+    public static Vec3i getCorrectedOrigin(Vec3i origin, Vec3i correction) {
+        return new Vec3i(origin.getX()+ correction.getX(), origin.getY() + correction.getY(), origin.getZ() + correction.getZ());
+    }
+    public static Vec3i doMirroring(Vec3i in, int sizeX, int sizeZ, Mirror mirror) {
+        int xOut = in.getX();
+        int zOut = in.getZ();
+        if(mirror == Mirror.LEFT_RIGHT) {
+            zOut = sizeZ - in.getZ();
+        } else if (mirror == Mirror.FRONT_BACK) {
+            xOut = sizeX - in.getX();
+        }
+        return new Vec3i(xOut, in.getY(), zOut);
+    }
+    public static Vec3i rotate(Vec3i in, int sizeX, int sizeZ) {
+        return new  Vec3i(sizeX - (sizeX - sizeZ) - in.getZ(), in.getY(), in.getX());
+    }
+    public static LitematicaSchematic blackMagicFuckery(LitematicaSchematic schemIn, int i) {
+        LitematicaSchematic tempSchem = schemIn.getCopy();
+        for (int yCounter=0; yCounter<schemIn.getY(); yCounter++) {
+            for (int zCounter=0; zCounter<schemIn.getZ(); zCounter++) {
+                for (int xCounter=0; xCounter<schemIn.getX(); xCounter++) {
+                    Vec3i xyzHolder = new Vec3i(xCounter, yCounter, zCounter);
+                    xyzHolder = LitematicaHelper.doMirroring(xyzHolder, schemIn.getX() - 1, schemIn.getZ() - 1, LitematicaHelper.getMirror(i));
+                    for (int turns = 0; turns < LitematicaHelper.getRotation(i).ordinal(); turns++) {
+                        xyzHolder = LitematicaHelper.rotate(xyzHolder, schemIn.getX() - 1, schemIn.getZ() - 1);
+                    }
+                    tempSchem.setDirect(xyzHolder.getX(), xyzHolder.getY(), xyzHolder.getZ(), schemIn.getDirect(xCounter, yCounter, zCounter));
+                }
+            }
+        }
+        return tempSchem;
+    }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

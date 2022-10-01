@@ -58,13 +58,13 @@ import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.Mirror;
 import net.minecraft.util.Tuple;
 import net.minecraft.util.math.*;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -187,72 +187,15 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             //if java.lang.NoSuchMethodError is thrown see comment in SchematicPlacementManager
             if (LitematicaHelper.hasLoadedSchematic()) {
                 String name = LitematicaHelper.getName(i);
-                File schemFile = LitematicaHelper.getSchematicFile(i);
-                Vec3i origin = LitematicaHelper.getOrigin(i);
-
-
-
-
                 try {
-                    LitematicaSchematic     herbert = new LitematicaSchematic(CompressedStreamTools.readCompressed(new FileInputStream(schemFile)));
-                    LitematicaSchematic     volker_rainer_fahrenhorst = new LitematicaSchematic(CompressedStreamTools.readCompressed(new FileInputStream(schemFile)));
+                    LitematicaSchematic schematic = new LitematicaSchematic(CompressedStreamTools.readCompressed(Files.newInputStream(LitematicaHelper.getSchematicFile(i).toPath())));
+                    schematic = LitematicaHelper.blackMagicFuckery(schematic, i);
+                    Vec3i correctedOrigin = LitematicaHelper.getCorrectedOrigin(LitematicaHelper.getOrigin(i), schematic.getMinimumCorner());
 
-                    net.minecraft.util.Rotation rotation = LitematicaHelper.getRotation(i);
-                    net.minecraft.util.Mirror mirror = LitematicaHelper.getMirror(i);
-
-
-                    Vec3i gustav = herbert.getMinimumCorner();
-                    Vec3i martin = new Vec3i(origin.getX()+gustav.getX(),origin.getY()+gustav.getY(),origin.getZ()+gustav.getZ());
-                    int xena = herbert.getX();
-                    int yvonne = herbert.getY();
-                    int zuse = herbert.getZ();
-
-                    for (int brian=0; brian<yvonne; brian++) {
-                        for (int carmen=0; carmen<zuse; carmen++) {
-                            for (int ariel=0; ariel<xena; ariel++) {
-                                int dora;
-                                int eleonore;
-                                int ferdinand;
-
-                                if(mirror== Mirror.LEFT_RIGHT) {
-                                    dora = ariel; //x stays the same in this transformation
-                                    eleonore = brian; //y stays the same
-                                    ferdinand = (zuse-1)-carmen; //[new Z] =  ([size Z] - 1(because index starts at 0)) - [original Z]
-                                } else if (mirror==Mirror.FRONT_BACK) {
-                                    dora = (xena-1)-ariel; //[new X] = ([size X] - 1(because index starts at 0)) - [original x]
-                                    eleonore = brian; //y stays the same
-                                    ferdinand = carmen; //z stays the same in this transformation
-                                } else {
-                                    dora = ariel; //we dont transform
-                                    eleonore = brian; //we dont transform
-                                    ferdinand = carmen; //we dont transform
-                                }
-                                int turns;
-                                switch (rotation) {
-                                    case CLOCKWISE_90: turns=1; break;
-                                    case CLOCKWISE_180: turns=2; break;
-                                    case COUNTERCLOCKWISE_90: turns=3; break;
-                                    default: turns=0; break;
-                                }
-                                for (int werner=0; werner<turns; werner++) {
-                                    int tempx = dora;
-                                    int tempz = ferdinand;
-                                    dora = (xena-1) -tempz - (xena-zuse); //[new x] = (([size x] - 1(because index starts at 0)) - ([size x] - [size z])) - [old x]
-                                    ferdinand = tempx; //[new z] = [old x]
-                                }
-                                volker_rainer_fahrenhorst.setDirect(dora,eleonore,ferdinand,herbert.getDirect(ariel,brian,carmen));
-                            }
-                        }
-                    }
-                    logDirect("congratulation you did it. we dont know yet if your result is right but you have successfully done something");
-                    build(name,volker_rainer_fahrenhorst,martin);
+                    build(name, schematic, correctedOrigin);
                 } catch (IOException e) {
-                    logDirect("something went wrong along the way :(");
+                    logDirect("Schematic File could not be loaded");
                 }
-
-
-
-
             } else {
                 logDirect("No schematic currently loaded");
             }

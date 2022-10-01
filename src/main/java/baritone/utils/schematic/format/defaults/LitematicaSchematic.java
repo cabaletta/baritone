@@ -41,8 +41,10 @@ public final class LitematicaSchematic extends StaticSchematic {
     private final int minX;
     private final int minY;
     private final int minZ;
+    private final NBTTagCompound nbt;
 
-    public LitematicaSchematic(NBTTagCompound nbt) {
+    public LitematicaSchematic(NBTTagCompound nbtTagCompound) {
+        this.nbt = nbtTagCompound;
         int x = 0;
         int y = 0;
         int z = 0;
@@ -224,6 +226,9 @@ public final class LitematicaSchematic extends StaticSchematic {
     }
     public void setDirect(int x,int y,int z,IBlockState blockState) {
         this.states[x][z][y] = blockState;
+    }
+    public LitematicaSchematic getCopy() {
+        return new LitematicaSchematic(nbt);
     }
 
     /**
