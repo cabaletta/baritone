@@ -20,6 +20,7 @@ package baritone.utils.schematic.litematica;
 import baritone.utils.schematic.format.defaults.LitematicaSchematic;
 import fi.dy.masa.litematica.Litematica;
 import fi.dy.masa.litematica.data.DataManager;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.Mirror;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.Vec3i;
@@ -132,7 +133,8 @@ public final class LitematicaHelper {
                         }
                         //System.out.println(String.format("Turned: %s, sizeX=%S, sizeZ=%s",xyzHolder,schemIn.getX(),schemIn.getZ()));
                     }
-                    tempSchem.setDirect(xyzHolder.getX(), xyzHolder.getY(), xyzHolder.getZ(), schemIn.getDirect(xCounter, yCounter, zCounter));
+                    IBlockState state = schemIn.getDirect(xCounter, yCounter, zCounter).withMirror(LitematicaHelper.getMirror(i)).withRotation(LitematicaHelper.getRotation(i));
+                    tempSchem.setDirect(xyzHolder.getX(), xyzHolder.getY(), xyzHolder.getZ(), state);
                 }
             }
         }
