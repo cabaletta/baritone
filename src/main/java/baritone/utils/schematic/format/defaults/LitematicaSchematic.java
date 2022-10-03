@@ -25,6 +25,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.Vec3i;
 import org.apache.commons.lang3.Validate;
 
 import javax.annotation.Nullable;
@@ -37,40 +38,27 @@ import java.util.Optional;
  * @since 22.09.2022
  */
 public final class LitematicaSchematic extends StaticSchematic {
-    private final int minX;
-    private final int minY;
-    private final int minZ;
+    private final Vec3i offsetMinCorner;
+    private final NBTTagCompound nbt;
 
-    public LitematicaSchematic(NBTTagCompound nbt) {
-        int x = 0;
-        int y = 0;
-        int z = 0;
-        for (String subReg : getRegions(nbt)) {
-            x = Math.min(x, getMinimumCoord(nbt, subReg, "x"));
-            y = Math.min(y, getMinimumCoord(nbt, subReg, "y"));
-            z = Math.min(z, getMinimumCoord(nbt, subReg, "z"));
-        }
-        this.minX = x;
-        this.minY = y;
-        this.minZ = z;
-
-        this.x = Math.abs(nbt.getCompoundTag("Metadata").getCompoundTag("EnclosingSize").getInteger("x"));
+    /**
+     * @param nbtTagCompound a decompressed file stream aka nbt data.
+     * @param rotated        if the schematic is rotated by 90° aka x and z size are switched.
+     */
+    public LitematicaSchematic(NBTTagCompound nbtTagCompound, boolean rotated) {
+        this.nbt = nbtTagCompound;
+        this.offsetMinCorner = new Vec3i(getMinOfSchematic("x"), getMinOfSchematic("y"), getMinOfSchematic("z"));
         this.y = Math.abs(nbt.getCompoundTag("Metadata").getCompoundTag("EnclosingSize").getInteger("y"));
-        this.z = Math.abs(nbt.getCompoundTag("Metadata").getCompoundTag("EnclosingSize").getInteger("z"));
-        this.states = new IBlockState[this.x][this.z][this.y];
 
-        for (String subReg : getRegions(nbt)) {
-            NBTTagList usedBlockTypes = nbt.getCompoundTag("Regions").getCompoundTag(subReg).getTagList("BlockStatePalette", 10);
-            IBlockState[] blockList = getBlockList(usedBlockTypes);
-
-            int bitsPerBlock = getBitsPerBlock(usedBlockTypes.tagCount());
-            long regionVolume = getVolume(nbt, subReg);
-            long[] blockStateArray = getBlockStates(nbt, subReg);
-
-            LitematicaBitArray bitArray = new LitematicaBitArray(bitsPerBlock, regionVolume, blockStateArray);
-
-            writeSubregionIntoSchematic(nbt, subReg, blockList, bitArray);
+        if (rotated) {
+            this.x = Math.abs(nbt.getCompoundTag("Metadata").getCompoundTag("EnclosingSize").getInteger("z"));
+            this.z = Math.abs(nbt.getCompoundTag("Metadata").getCompoundTag("EnclosingSize").getInteger("x"));
+        } else {
+            this.x = Math.abs(nbt.getCompoundTag("Metadata").getCompoundTag("EnclosingSize").getInteger("x"));
+            this.z = Math.abs(nbt.getCompoundTag("Metadata").getCompoundTag("EnclosingSize").getInteger("z"));
         }
+        this.states = new IBlockState[this.x][this.z][this.y];
+        fillInSchematic();
     }
 
     /**
@@ -81,12 +69,12 @@ public final class LitematicaSchematic extends StaticSchematic {
     }
 
     /**
-     * Gets both ends from schematic box for a given axis and returns the lower one.
+     * Gets both ends from a region box for a given axis and returns the lower one.
      *
      * @param s axis that should be read.
      * @return the lower coord of the requested axis.
      */
-    private static int getMinimumCoord(NBTTagCompound nbt, String subReg, String s) {
+    private static int getMinOfSubregion(NBTTagCompound nbt, String subReg, String s) {
         int a = nbt.getCompoundTag("Regions").getCompoundTag(subReg).getCompoundTag("Position").getInteger(s);
         int b = nbt.getCompoundTag("Regions").getCompoundTag(subReg).getCompoundTag("Size").getInteger(s);
         if (b < 0) {
@@ -186,27 +174,100 @@ public final class LitematicaSchematic extends StaticSchematic {
     }
 
     /**
-     * @param blockList list with the different block types used in the schematic
-     * @param bitArray  bit array that holds the placement pattern
+     * @param s axis.
+     * @return the lowest coordinate of that axis of the schematic.
      */
-    //x,y,z are the releative positons to the minimum corner of the enclosing box
-    //minX,minY,minZ are correction terms if the schematic origin isn't the minimum corner
-    //posX,posY,posZ are the subregions offset relative to the minimum corner
+    private int getMinOfSchematic(String s) {
+        int n = Integer.MAX_VALUE;
+        for (String subReg : getRegions(nbt)) {
+            n = Math.min(n, getMinOfSubregion(nbt, subReg, s));
+        }
+        return n;
+    }
+
+    /**
+     * reads the file data.
+     */
+    private void fillInSchematic() {
+        for (String subReg : getRegions(nbt)) {
+            NBTTagList usedBlockTypes = nbt.getCompoundTag("Regions").getCompoundTag(subReg).getTagList("BlockStatePalette", 10);
+            IBlockState[] blockList = getBlockList(usedBlockTypes);
+
+            int bitsPerBlock = getBitsPerBlock(usedBlockTypes.tagCount());
+            long regionVolume = getVolume(nbt, subReg);
+            long[] blockStateArray = getBlockStates(nbt, subReg);
+
+            LitematicaBitArray bitArray = new LitematicaBitArray(bitsPerBlock, regionVolume, blockStateArray);
+
+            writeSubregionIntoSchematic(nbt, subReg, blockList, bitArray);
+        }
+    }
+
+    /**
+     * Writes the file data in to the IBlockstate array.
+     *
+     * @param blockList list with the different block types used in the schematic.
+     * @param bitArray  bit array that holds the placement pattern.
+     */
     private void writeSubregionIntoSchematic(NBTTagCompound nbt, String subReg, IBlockState[] blockList, LitematicaBitArray bitArray) {
-        int posX = getMinimumCoord(nbt, subReg, "x");
-        int posY = getMinimumCoord(nbt, subReg, "y");
-        int posZ = getMinimumCoord(nbt, subReg, "z");
+        Vec3i offsetSubregion = new Vec3i(getMinOfSubregion(nbt, subReg, "x"), getMinOfSubregion(nbt, subReg, "y"), getMinOfSubregion(nbt, subReg, "z"));
         int index = 0;
         for (int y = 0; y < this.y; y++) {
             for (int z = 0; z < this.z; z++) {
                 for (int x = 0; x < this.x; x++) {
                     if (inSubregion(nbt, subReg, x, y, z)) {
-                        this.states[x - (minX - posX)][z - (minZ - posZ)][y - (minY - posY)] = blockList[bitArray.getAt(index)];
+                        this.states[x - (offsetMinCorner.getX() - offsetSubregion.getX())][z - (offsetMinCorner.getZ() - offsetSubregion.getZ())][y - (offsetMinCorner.getY() - offsetSubregion.getY())] = blockList[bitArray.getAt(index)];
                         index++;
                     }
                 }
             }
         }
+    }
+
+    /**
+     * @return offset from the schematic origin to the minimum Corner as a Vec3i.
+     */
+    public Vec3i getOffsetMinCorner() {
+        return offsetMinCorner;
+    }
+
+    /**
+     * @return x size of the schematic.
+     */
+    public int getX() {
+        return this.x;
+    }
+
+    /**
+     * @return y size of the schematic.
+     */
+    public int getY() {
+        return this.y;
+    }
+
+    /**
+     * @return z size of the schematic.
+     */
+    public int getZ() {
+        return this.z;
+    }
+
+    /**
+     * @param x          position relative to the minimum corner of the schematic.
+     * @param y          position relative to the minimum corner of the schematic.
+     * @param z          position relative to the minimum corner of the schematic.
+     * @param blockState new blockstate of the block at this position.
+     */
+    public void setDirect(int x, int y, int z, IBlockState blockState) {
+        this.states[x][z][y] = blockState;
+    }
+
+    /**
+     * @param rotated if the schematic is rotated by 90°.
+     * @return a copy of the schematic.
+     */
+    public LitematicaSchematic getCopy(boolean rotated) {
+        return new LitematicaSchematic(nbt, rotated);
     }
 
     /**
