@@ -181,6 +181,10 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         }
     }
 
+    /**
+     * Builds the with index 'i' given schematic placement.
+     * @param i index reference to the schematic placement list.
+     */
     @Override
     public void buildOpenLitematic(int i) {
         if (LitematicaHelper.isLitematicaPresent()) {
@@ -190,14 +194,10 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                 try {
                     LitematicaSchematic schematic1 = new LitematicaSchematic(CompressedStreamTools.readCompressed(Files.newInputStream(LitematicaHelper.getSchematicFile(i).toPath())),false);
                     Vec3i correctedOrigin = LitematicaHelper.getCorrectedOrigin(schematic1, i);
-                    try {
-                        LitematicaSchematic schematic2 = LitematicaHelper.blackMagicFuckery(schematic1, i);
-                        build(name, schematic2, correctedOrigin);
-                    } catch (IndexOutOfBoundsException e) {
-                        logDirect("BlackMagicFuckery summoned a Balrog. This foe is beyond any of you. ");
-                    }
+                    LitematicaSchematic schematic2 = LitematicaHelper.blackMagicFuckery(schematic1, i);
+                    build(name, schematic2, correctedOrigin);
                 } catch (IOException e) {
-                    logDirect("Schematic File could not be loaded");
+                    logDirect("Schematic File could not be loaded.");
                 }
             } else {
                 logDirect("No schematic currently loaded");
