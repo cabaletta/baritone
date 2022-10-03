@@ -189,11 +189,9 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                 String name = LitematicaHelper.getName(i);
                 try {
                     LitematicaSchematic schematic1 = new LitematicaSchematic(CompressedStreamTools.readCompressed(Files.newInputStream(LitematicaHelper.getSchematicFile(i).toPath())),false);
+                    Vec3i correctedOrigin = LitematicaHelper.getCorrectedOrigin(schematic1, i);
                     try {
                         LitematicaSchematic schematic2 = LitematicaHelper.blackMagicFuckery(schematic1, i);
-                        Vec3i correctedOrigin = LitematicaHelper.getCorrectedOrigin(schematic2, i);
-                        //Vec3i correctedOrigin = new Vec3i(0,4,0);
-
                         build(name, schematic2, correctedOrigin);
                     } catch (IndexOutOfBoundsException e) {
                         logDirect("BlackMagicFuckery summoned a Balrog. This foe is beyond any of you. ");

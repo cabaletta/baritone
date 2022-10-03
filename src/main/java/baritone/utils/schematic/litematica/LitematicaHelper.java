@@ -67,6 +67,7 @@ public final class LitematicaHelper {
         int mz = schematic.getMinimumCorner().getZ();
         int sx = (schematic.getX() - 1) * -1;
         int sz = (schematic.getZ() - 1) * -1;
+
         Vec3i correctedOrigin;
         Mirror mirror = LitematicaHelper.getMirror(i);
         Rotation rotation = LitematicaHelper.getRotation(i);
@@ -93,7 +94,7 @@ public final class LitematicaHelper {
             default:
                 switch (rotation) {
                     case CLOCKWISE_90:
-                        correctedOrigin = new Vec3i(x + (sz - mz), y + my, z + mz);
+                        correctedOrigin = new Vec3i(x + (sz - mz), y + my, z + mx);
                         break;
                     case CLOCKWISE_180:
                         correctedOrigin = new Vec3i(x + (sx - mx), y + my, z + (sz - mz));
