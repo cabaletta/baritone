@@ -62,7 +62,7 @@ public final class LitematicaSchematic extends StaticSchematic {
     }
 
     private int getMinOfSchematic(String s) {
-        int n = 0;
+        int n = Integer.MAX_VALUE;
         for (String subReg : getRegions(nbt)) {
             n = Math.min(n, getMinOfSubregion(nbt, subReg, s));
         }

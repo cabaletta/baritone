@@ -59,9 +59,14 @@ public final class LitematicaHelper {
         return DataManager.getSchematicPlacementManager().getAllSchematicsPlacements().get(i).getMirror();
     }
     public static Vec3i getCorrectedOrigin(LitematicaSchematic schematic, int i) {
-        int x = LitematicaHelper.getOrigin(i).getX() + schematic.getMinimumCorner().getX();
-        int y = LitematicaHelper.getOrigin(i).getY() + schematic.getMinimumCorner().getY();
-        int z = LitematicaHelper.getOrigin(i).getZ() + schematic.getMinimumCorner().getZ();
+        int x = LitematicaHelper.getOrigin(i).getX();
+        int y = LitematicaHelper.getOrigin(i).getY();
+        int z = LitematicaHelper.getOrigin(i).getZ();
+        int mx = schematic.getMinimumCorner().getX();
+        int my = schematic.getMinimumCorner().getY();
+        int mz = schematic.getMinimumCorner().getZ();
+        int sx = (schematic.getX() - 1) * -1;
+        int sz = (schematic.getZ() - 1) * -1;
         Vec3i correctedOrigin;
         Mirror mirror = LitematicaHelper.getMirror(i);
         Rotation rotation = LitematicaHelper.getRotation(i);
@@ -72,32 +77,32 @@ public final class LitematicaHelper {
             case LEFT_RIGHT:
                 switch ((mirror.ordinal()*2+rotation.ordinal())%4) {
                     case 1:
-                        correctedOrigin = new Vec3i(x - schematic.getX()+1, y, z - schematic.getZ()+1);
+                        correctedOrigin = new Vec3i(x + (sz - mz), y + my, z + (sx - mx));
                         break;
                     case 2:
-                        correctedOrigin = new Vec3i(x, y, z - schematic.getZ()+1);
+                        correctedOrigin = new Vec3i(x + mx, y + my, z + (sz - mz));
                         break;
                     case 3:
-                        correctedOrigin = new Vec3i(x, y, z);
+                        correctedOrigin = new Vec3i(x + mz, y + my, z + mx);
                         break;
                     default:
-                        correctedOrigin = new Vec3i(x - schematic.getX()+1, y, z);
+                        correctedOrigin = new Vec3i(x + (sx - mx), y + my, z + mz);
                         break;
                 }
                 break;
             default:
                 switch (rotation) {
                     case CLOCKWISE_90:
-                        correctedOrigin = new Vec3i(x - schematic.getX()+1, y, z);
+                        correctedOrigin = new Vec3i(x + (sz - mz), y + my, z + mz);
                         break;
                     case CLOCKWISE_180:
-                        correctedOrigin = new Vec3i(x - schematic.getX()+1, y, z - schematic.getZ()+1);
+                        correctedOrigin = new Vec3i(x + (sx - mx), y + my, z + (sz - mz));
                         break;
                     case COUNTERCLOCKWISE_90:
-                        correctedOrigin = new Vec3i(x, y, z - schematic.getZ()+1);
+                        correctedOrigin = new Vec3i(x + mz, y + my, z + (sx - mx));
                         break;
                     default:
-                        correctedOrigin = new Vec3i(x, y, z);
+                        correctedOrigin = new Vec3i(x + mx, y + my, z + mz);
                         break;
                 }
         }
@@ -122,18 +127,23 @@ public final class LitematicaHelper {
             for (int zCounter=0; zCounter<schemIn.getZ(); zCounter++) {
                 for (int xCounter=0; xCounter<schemIn.getX(); xCounter++) {
                     Vec3i xyzHolder = new Vec3i(xCounter, yCounter, zCounter);
-                    //System.out.println(String.format("In: %s, sizeX=%S, sizeZ=%s",xyzHolder,schemIn.getX(),schemIn.getZ()));
+                    System.out.println(String.format("In: %s, sizeX=%S, sizeZ=%s",xyzHolder,schemIn.getX(),schemIn.getZ()));
                     xyzHolder = LitematicaHelper.doMirroring(xyzHolder, schemIn.getX() - 1, schemIn.getZ() - 1, LitematicaHelper.getMirror(i));
-                    //System.out.println(String.format("Mirror: %s, sizeX=%S, sizeZ=%s",xyzHolder,schemIn.getX(),schemIn.getZ()));
+                    System.out.println(String.format("Mirror: %s, sizeX=%S, sizeZ=%s",xyzHolder,schemIn.getX(),schemIn.getZ()));
                     for (int turns = 0; turns < LitematicaHelper.getRotation(i).ordinal(); turns++) {
                         if ((turns%2)==0) {
                             xyzHolder = LitematicaHelper.rotate(xyzHolder, schemIn.getX() - 1, schemIn.getZ() - 1);
                         } else {
                             xyzHolder = LitematicaHelper.rotate(xyzHolder, schemIn.getZ() - 1, schemIn.getX() - 1);
                         }
-                        //System.out.println(String.format("Turned: %s, sizeX=%S, sizeZ=%s",xyzHolder,schemIn.getX(),schemIn.getZ()));
+                        System.out.println(String.format("Turned: %s, sizeX=%S, sizeZ=%s",xyzHolder,schemIn.getX(),schemIn.getZ()));
                     }
-                    IBlockState state = schemIn.getDirect(xCounter, yCounter, zCounter).withMirror(LitematicaHelper.getMirror(i)).withRotation(LitematicaHelper.getRotation(i));
+                    IBlockState state = schemIn.getDirect(xCounter, yCounter, zCounter);
+                    try {
+                        state.withMirror(LitematicaHelper.getMirror(i)).withRotation(LitematicaHelper.getRotation(i));
+                    } catch (NullPointerException e) {
+                        System.out.println("nullpointerexception aka schemblock that is void");
+                    }
                     tempSchem.setDirect(xyzHolder.getX(), xyzHolder.getY(), xyzHolder.getZ(), state);
                 }
             }
