@@ -32,8 +32,9 @@ import javax.annotation.Nullable;
 import java.util.Optional;
 
 /**
- * @author Emerson
- * @since 12/27/2020
+ * Based on EmersonDove's work
+ * <a href="https://github.com/cabaletta/baritone/pull/2544">...</a>
+ *
  * @author rycbar
  * @since 22.09.2022
  */
@@ -43,7 +44,7 @@ public final class LitematicaSchematic extends StaticSchematic {
 
     /**
      * @param nbtTagCompound a decompressed file stream aka nbt data.
-     * @param rotated        if the schematic is rotated by 90° aka x and z size are switched.
+     * @param rotated        if the schematic is rotated by 90°.
      */
     public LitematicaSchematic(NBTTagCompound nbtTagCompound, boolean rotated) {
         this.nbt = nbtTagCompound;
@@ -167,10 +168,10 @@ public final class LitematicaSchematic extends StaticSchematic {
      * @return if the current block is part of the subregion.
      */
     private static boolean inSubregion(NBTTagCompound nbt, String subReg, int x, int y, int z) {
-        return
+        return x >= 0 && y >= 0 && z >= 0 &&
                 x < Math.abs(nbt.getCompoundTag("Regions").getCompoundTag(subReg).getCompoundTag("Size").getInteger("x")) &&
-                        y < Math.abs(nbt.getCompoundTag("Regions").getCompoundTag(subReg).getCompoundTag("Size").getInteger("y")) &&
-                        z < Math.abs(nbt.getCompoundTag("Regions").getCompoundTag(subReg).getCompoundTag("Size").getInteger("z"));
+                y < Math.abs(nbt.getCompoundTag("Regions").getCompoundTag(subReg).getCompoundTag("Size").getInteger("y")) &&
+                z < Math.abs(nbt.getCompoundTag("Regions").getCompoundTag(subReg).getCompoundTag("Size").getInteger("z"));
     }
 
     /**
@@ -273,6 +274,7 @@ public final class LitematicaSchematic extends StaticSchematic {
     /**
      * @author maruohon
      * Class from the Litematica mod by maruohon
+     * Usage under LGPLv3 with the permission of the author.
      * <a href="https://github.com/maruohon/litematica">...</a>
      */
     private static class LitematicaBitArray {

@@ -81,7 +81,7 @@ public enum DefaultSchematicFormats implements ISchematicFormat {
                     return new LitematicaSchematic(nbt, false);
                 case 5: //1.13-1.17
                 case 6: //1.18+
-                    throw new UnsupportedOperationException("This litematic Verion is to new.");
+                    throw new UnsupportedOperationException("This litematic Verion is too new.");
                 default:
                     throw new UnsupportedOperationException("Unsuported Version of a Litematica Schematic");
             }

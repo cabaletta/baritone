@@ -35,10 +35,10 @@ public class LitematicaCommand extends Command {
     @Override
     public void execute(String label, IArgConsumer args) throws CommandException {
         int schematic = 0;
-        if(args.hasAny()) {
+        if (args.hasAny()) {
             args.requireMax(1);
             if (args.is(Integer.class)) {
-                schematic = args.getAs(Integer.class)-1;
+                schematic = args.getAs(Integer.class) - 1;
             }
         }
         try {
