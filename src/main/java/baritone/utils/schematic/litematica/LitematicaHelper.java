@@ -202,7 +202,7 @@ public final class LitematicaHelper {
                     }
                     IBlockState state = schemIn.getDirect(xCounter, yCounter, zCounter);
                     try {
-                        state.withMirror(LitematicaHelper.getMirror(i)).withRotation(LitematicaHelper.getRotation(i));
+                        state = state.withMirror(LitematicaHelper.getMirror(i)).withRotation(LitematicaHelper.getRotation(i));
                     } catch (NullPointerException e) {
                         //nothing to worry about it's just a hole in the schematic.
                     }
