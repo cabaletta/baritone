@@ -43,11 +43,11 @@ public final class LitematicaSchematic extends StaticSchematic {
 
     /**
      * @param nbtTagCompound a decompressed file stream aka nbt data.
-     * @param rotated if the schematic is rotated by 90° aka x and z size are switched.
+     * @param rotated        if the schematic is rotated by 90° aka x and z size are switched.
      */
     public LitematicaSchematic(NBTTagCompound nbtTagCompound, boolean rotated) {
         this.nbt = nbtTagCompound;
-        this.offsetMinCorner = new Vec3i(getMinOfSchematic("x"),getMinOfSchematic("y"),getMinOfSchematic("z"));
+        this.offsetMinCorner = new Vec3i(getMinOfSchematic("x"), getMinOfSchematic("y"), getMinOfSchematic("z"));
         this.y = Math.abs(nbt.getCompoundTag("Metadata").getCompoundTag("EnclosingSize").getInteger("y"));
 
         if (rotated) {
@@ -59,36 +59,6 @@ public final class LitematicaSchematic extends StaticSchematic {
         }
         this.states = new IBlockState[this.x][this.z][this.y];
         fillInSchematic();
-    }
-
-    /**
-     * @param s axis.
-     * @return the lowest coordinate of that axis of the schematic.
-     */
-    private int getMinOfSchematic(String s) {
-        int n = Integer.MAX_VALUE;
-        for (String subReg : getRegions(nbt)) {
-            n = Math.min(n, getMinOfSubregion(nbt, subReg, s));
-        }
-        return n;
-    }
-
-    /**
-     * reads the file data.
-     */
-    private void fillInSchematic() {
-        for (String subReg : getRegions(nbt)) {
-            NBTTagList usedBlockTypes = nbt.getCompoundTag("Regions").getCompoundTag(subReg).getTagList("BlockStatePalette", 10);
-            IBlockState[] blockList = getBlockList(usedBlockTypes);
-
-            int bitsPerBlock = getBitsPerBlock(usedBlockTypes.tagCount());
-            long regionVolume = getVolume(nbt, subReg);
-            long[] blockStateArray = getBlockStates(nbt, subReg);
-
-            LitematicaBitArray bitArray = new LitematicaBitArray(bitsPerBlock, regionVolume, blockStateArray);
-
-            writeSubregionIntoSchematic(nbt, subReg, blockList, bitArray);
-        }
     }
 
     /**
@@ -204,6 +174,36 @@ public final class LitematicaSchematic extends StaticSchematic {
     }
 
     /**
+     * @param s axis.
+     * @return the lowest coordinate of that axis of the schematic.
+     */
+    private int getMinOfSchematic(String s) {
+        int n = Integer.MAX_VALUE;
+        for (String subReg : getRegions(nbt)) {
+            n = Math.min(n, getMinOfSubregion(nbt, subReg, s));
+        }
+        return n;
+    }
+
+    /**
+     * reads the file data.
+     */
+    private void fillInSchematic() {
+        for (String subReg : getRegions(nbt)) {
+            NBTTagList usedBlockTypes = nbt.getCompoundTag("Regions").getCompoundTag(subReg).getTagList("BlockStatePalette", 10);
+            IBlockState[] blockList = getBlockList(usedBlockTypes);
+
+            int bitsPerBlock = getBitsPerBlock(usedBlockTypes.tagCount());
+            long regionVolume = getVolume(nbt, subReg);
+            long[] blockStateArray = getBlockStates(nbt, subReg);
+
+            LitematicaBitArray bitArray = new LitematicaBitArray(bitsPerBlock, regionVolume, blockStateArray);
+
+            writeSubregionIntoSchematic(nbt, subReg, blockList, bitArray);
+        }
+    }
+
+    /**
      * Writes the file data in to the IBlockstate array.
      *
      * @param blockList list with the different block types used in the schematic.
@@ -253,12 +253,12 @@ public final class LitematicaSchematic extends StaticSchematic {
     }
 
     /**
-     * @param x position relative to the minimum corner of the schematic.
-     * @param y position relative to the minimum corner of the schematic.
-     * @param z position relative to the minimum corner of the schematic.
+     * @param x          position relative to the minimum corner of the schematic.
+     * @param y          position relative to the minimum corner of the schematic.
+     * @param z          position relative to the minimum corner of the schematic.
      * @param blockState new blockstate of the block at this position.
      */
-    public void setDirect(int x,int y,int z,IBlockState blockState) {
+    public void setDirect(int x, int y, int z, IBlockState blockState) {
         this.states[x][z][y] = blockState;
     }
 

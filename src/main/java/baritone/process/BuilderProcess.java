@@ -26,9 +26,9 @@ import baritone.api.process.IBuilderProcess;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
 import baritone.api.schematic.FillSchematic;
-import baritone.api.schematic.SubstituteSchematic;
 import baritone.api.schematic.ISchematic;
 import baritone.api.schematic.IStaticSchematic;
+import baritone.api.schematic.SubstituteSchematic;
 import baritone.api.schematic.format.ISchematicFormat;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.RayTraceUtils;
@@ -42,8 +42,8 @@ import baritone.utils.BaritoneProcessHelper;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.PathingCommandContext;
 import baritone.utils.schematic.MapArtSchematic;
-import baritone.utils.schematic.SelectionSchematic;
 import baritone.utils.schematic.SchematicSystem;
+import baritone.utils.schematic.SelectionSchematic;
 import baritone.utils.schematic.format.defaults.LitematicaSchematic;
 import baritone.utils.schematic.litematica.LitematicaHelper;
 import baritone.utils.schematic.schematica.SchematicaHelper;
@@ -183,6 +183,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
 
     /**
      * Builds the with index 'i' given schematic placement.
+     *
      * @param i index reference to the schematic placement list.
      */
     @Override
@@ -192,7 +193,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             if (LitematicaHelper.hasLoadedSchematic()) {
                 String name = LitematicaHelper.getName(i);
                 try {
-                    LitematicaSchematic schematic1 = new LitematicaSchematic(CompressedStreamTools.readCompressed(Files.newInputStream(LitematicaHelper.getSchematicFile(i).toPath())),false);
+                    LitematicaSchematic schematic1 = new LitematicaSchematic(CompressedStreamTools.readCompressed(Files.newInputStream(LitematicaHelper.getSchematicFile(i).toPath())), false);
                     Vec3i correctedOrigin = LitematicaHelper.getCorrectedOrigin(schematic1, i);
                     LitematicaSchematic schematic2 = LitematicaHelper.blackMagicFuckery(schematic1, i);
                     build(name, schematic2, correctedOrigin);
