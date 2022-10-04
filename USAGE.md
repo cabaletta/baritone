@@ -32,13 +32,13 @@ Watch this [showcase video](https://youtu.be/CZkLXWo4Fg4)!
 
 To toggle a boolean setting, just say its name in chat (for example saying `allowBreak` toggles whether Baritone will consider breaking blocks). For a numeric setting, say its name then the new value (like `primaryTimeoutMS 250`). It's case insensitive. To reset a setting to its default value, say `acceptableThrowawayItems reset`. To reset all settings, say `reset`. To see all settings that have been modified from their default values, say `modified`.
 
-Some common examples:
+Commands in Baritone:
 - `thisway 1000` then `path` to go in the direction you're facing for a thousand blocks
 - `goal x y z` or `goal x z` or `goal y`, then `path` to set a goal to a certain coordinate then path to it
 - `goto x y z` or `goto x z` or `goto y` to go to a certain coordinate (in a single step, starts going immediately)
 - `goal` to set the goal to your player's feet
 - `goal clear` to clear the goal
-- `cancel` or `stop` to stop everything
+- `cancel` or `stop` to stop everything, `forcecancel` is also an option
 - `goto portal` or `goto ender_chest` or `goto block_type` to go to a block. (in Impact, `.goto` is an alias for `.b goto` for the most part)
 - `mine diamond_ore iron_ore` to mine diamond ore or iron ore (turn on the setting `legitMine` to only mine ores that it can actually see. It will explore randomly around y=11 until it finds them.) An amount of blocks can also be specified, for example, `mine 64 diamond_ore`.
 - `click` to click your destination on the screen. Right click path to on top of the block, left click to path into it (either at foot level or eye level), and left click and drag to select an area (`#help sel` to see what you can do with that selection).
@@ -51,10 +51,18 @@ Some common examples:
 - `axis` to go to an axis or diagonal axis at y=120 (`axisHeight` is a configurable setting, defaults to 120).
 - `explore x z` to explore the world from the origin of x,z. Leave out x and z to default to player feet. This will continually path towards the closest chunk to the origin that it's never seen before. `explorefilter filter.json` with optional invert can be used to load in a list of chunks to load.
 - `invert` to invert the current goal and path. This gets as far away from it as possible, instead of as close as possible. For example, do `goal` then `invert` to run as far as possible from where you're standing at the start.
+- `come` tells Baritone to head towards your camera, useful when freecam doesn't move your player position.
+- `blacklist` will stop baritone from going to the closest block so it won't attempt to get to it.
+- `eta` to get information about the estimated time until the next segment and the goal, be aware that the ETA to your goal is really unprecise.
+- `proc` to view miscellaneous information about the process currently controlling Baritone.
+- `repack` to re-cache the chunks around you.
+- `gc` to call `System.gc()` which may free up some memory.
+- `render` to fix glitched chunk rendering without having to reload all of them.
+- `reloadall` to reload Baritone's world cache or `saveall` to save Baritone's world cache.
+- `find` to search through Baritone's cache and attempt to find the location of the block.
+- `surface` or `top` to tell Baritone to head towards the closest surface-like area, this can be the surface or highest available air space.
 - `version` to get the version of Baritone you're running
 - `damn` daniel
-
-For the rest of the commands, you can take a look at the code [here](https://baritone.leijurv.com/baritone/api/Settings.html).
 
 All the settings and documentation are <a href="https://github.com/cabaletta/baritone/blob/master/src/api/java/baritone/api/Settings.java">here</a>. If you find HTML easier to read than Javadoc, you can look <a href="https://baritone.leijurv.com/baritone/api/Settings.html#field.detail">here</a>.
 

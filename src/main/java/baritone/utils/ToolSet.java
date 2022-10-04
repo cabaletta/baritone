@@ -18,6 +18,18 @@
 package baritone.utils;
 
 import baritone.Baritone;
+import baritone.utils.accessor.IItemTool;
+import net.minecraft.block.Block;
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.init.Enchantments;
+import net.minecraft.init.MobEffects;
+import net.minecraft.item.Item.ToolMaterial;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemSword;
+import net.minecraft.item.ItemTool;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -75,13 +87,23 @@ public class ToolSet {
     }
 
     /**
+     * Evaluate the material cost of a possible tool. The priority matches the
+     * harvest level order; there is a chance for multiple at the same with modded tools
+     * but in that case we don't really care.
      * Evaluate the material cost of a possible tool. Will return 1 for tools, -1 for other
      *
      * @param itemStack a possibly empty ItemStack
+     * @return values from 0 up
      * @return Either 1 or -1
      */
     private int getMaterialCost(ItemStack itemStack) {
         return itemStack.getItem() instanceof DiggerItem ? 1 : -1;
+        if (itemStack.getItem() instanceof ItemTool) {
+            ItemTool tool = (ItemTool) itemStack.getItem();
+            return ((IItemTool) tool).getHarvestLevel();
+        } else {
+            return -1;
+        }
     }
 
     public boolean hasSilkTouch(ItemStack stack) {

@@ -22,6 +22,12 @@ import baritone.api.utils.IPlayerContext;
 import baritone.cache.CachedRegion;
 import baritone.cache.WorldData;
 import baritone.utils.accessor.IClientChunkProvider;
+import baritone.utils.accessor.IChunkProviderClient;
+import baritone.utils.pathing.BetterWorldBorder;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import net.minecraft.block.Block;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientChunkCache;
 import net.minecraft.core.BlockPos;
@@ -46,6 +52,7 @@ public class BlockStateInterface {
     protected final Level world;
     public final BlockPos.MutableBlockPos isPassableBlockPos;
     public final BlockGetter access;
+    public final BetterWorldBorder worldBorder;
 
     private LevelChunk prev = null;
     private CachedRegion prevCached = null;
@@ -64,6 +71,7 @@ public class BlockStateInterface {
 
     public BlockStateInterface(Level world, WorldData worldData, boolean copyLoadedChunks) {
         this.world = world;
+        this.worldBorder = new BetterWorldBorder(world.getWorldBorder());
         this.worldData = worldData;
         if (copyLoadedChunks) {
             this.provider = ((IClientChunkProvider) world.getChunkSource()).createThreadSafeCopy();
