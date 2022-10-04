@@ -47,8 +47,10 @@
 
 #try to keep usage of schematica in separate classes
 -keep class baritone.utils.schematic.schematica.**
+-keep class baritone.utils.schematic.litematica.**
 #proguard doesnt like it when it cant find our fake schematica classes
 -dontwarn baritone.utils.schematic.schematica.**
+-dontwarn baritone.utils.schematic.litematica.**
 
 # Keep - Applications. Keep all application classes, along with their 'main'
 # methods.
