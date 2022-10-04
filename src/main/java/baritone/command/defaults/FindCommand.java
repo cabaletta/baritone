@@ -27,8 +27,7 @@ import baritone.api.utils.BetterBlockPos;
 import baritone.cache.CachedChunk;
 import net.minecraft.block.Block;
 import net.minecraft.util.registry.Registry;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.util.text.*;
 import net.minecraft.util.text.event.ClickEvent;
 import net.minecraft.util.text.event.HoverEvent;
 
@@ -76,10 +75,10 @@ public class FindCommand extends Command {
     private ITextComponent positionToComponent(BetterBlockPos pos) {
         String positionText = String.format("%s %s %s", pos.x, pos.y, pos.z);
         String command = String.format("%sgoal %s", FORCE_COMMAND_PREFIX, positionText);
-        ITextComponent baseComponent = new TextComponentString(pos.toString());
-        ITextComponent hoverComponent = new TextComponentString("Click to set goal to this position");
+        ITextComponent baseComponent = new StringTextComponent(pos.toString());
+        ITextComponent hoverComponent = new StringTextComponent("Click to set goal to this position");
         baseComponent.getStyle()
-            .setColor(TextFormatting.GRAY)
+            .setColor(Color.fromTextFormatting(TextFormatting.GRAY))
             .setInsertion(positionText)
             .setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, command))
             .setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverComponent));
@@ -91,7 +90,7 @@ public class FindCommand extends Command {
         return new TabCompleteHelper()
                 .append(
                     CachedChunk.BLOCKS_TO_KEEP_TRACK_OF.stream()
-                        .map(Registry.BLOCK::getNameForObject)
+                        .map(Registry.BLOCK::getKey)
                         .map(Object::toString)
                 )
                 .filterPrefixNamespaced(args.getString())
