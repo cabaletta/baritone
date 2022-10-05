@@ -1150,11 +1150,6 @@ public final class Settings {
     public final Setting<Boolean> verboseCommandExceptions = new Setting<>(false);
 
     /**
-     * Print out ALL command exceptions as a stack trace to stdout, even simple syntax errors
-     */
-    public final Setting<Boolean> verboseCommandExceptions = new Setting<>(false);
-
-    /**
      * The size of the box that is rendered when the current goal is a GoalYLevel
      */
     public final Setting<Double> yLevelBoxSize = new Setting<>(15D);

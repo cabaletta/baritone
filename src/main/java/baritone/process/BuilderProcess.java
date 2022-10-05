@@ -42,8 +42,8 @@ import baritone.utils.BaritoneProcessHelper;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.PathingCommandContext;
 import baritone.utils.schematic.MapArtSchematic;
-import baritone.utils.schematic.SelectionSchematic;
 import baritone.utils.schematic.SchematicSystem;
+import baritone.utils.schematic.SelectionSchematic;
 import baritone.utils.schematic.format.defaults.LitematicaSchematic;
 import baritone.utils.schematic.litematica.LitematicaHelper;
 import baritone.utils.schematic.schematica.SchematicaHelper;
@@ -51,17 +51,10 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.block.*;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.BlockItemUseContext;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemUseContext;
-import net.minecraft.nbt.CompressedStreamTools;
-import net.minecraft.state.Property;
-import net.minecraft.util.Direction;
-import net.minecraft.util.Hand;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
+import net.minecraft.nbt.NbtIo;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.BlockItem;
@@ -76,6 +69,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.nio.file.Files;
@@ -177,7 +171,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             Optional<Tuple<IStaticSchematic, BlockPos>> schematic = SchematicaHelper.getOpenSchematic();
             if (schematic.isPresent()) {
                 IStaticSchematic s = schematic.get().getA();
-                BlockPos origin = schematic.get().getSecond();
+                BlockPos origin = schematic.get().getB();
                 ISchematic schem = Baritone.settings().mapArtMode.value ? new MapArtSchematic(s) : s;
                 if (Baritone.settings().buildOnlySelection.value) {
                     schem = new SelectionSchematic(schem, origin, baritone.getSelectionManager().getSelections());
@@ -202,8 +196,8 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             if (LitematicaHelper.hasLoadedSchematic()) {
                 String name = LitematicaHelper.getName(i);
                 try {
-                    LitematicaSchematic schematic1 = new LitematicaSchematic(CompressedStreamTools.readCompressed(Files.newInputStream(LitematicaHelper.getSchematicFile(i).toPath())), false);
-                    Vector3i correctedOrigin = LitematicaHelper.getCorrectedOrigin(schematic1, i);
+                    LitematicaSchematic schematic1 = new LitematicaSchematic(NbtIo.readCompressed(Files.newInputStream(LitematicaHelper.getSchematicFile(i).toPath())), false);
+                    Vec3i correctedOrigin = LitematicaHelper.getCorrectedOrigin(schematic1, i);
                     LitematicaSchematic schematic2 = LitematicaHelper.blackMagicFuckery(schematic1, i);
                     build(name, schematic2, correctedOrigin);
                 } catch (Exception e) {

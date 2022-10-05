@@ -20,10 +20,10 @@ package baritone.utils.schematic.litematica;
 import baritone.utils.schematic.format.defaults.LitematicaSchematic;
 import fi.dy.masa.litematica.Litematica;
 import fi.dy.masa.litematica.data.DataManager;
-import net.minecraft.block.BlockState;
-import net.minecraft.util.Mirror;
-import net.minecraft.util.Rotation;
-import net.minecraft.util.math.vector.Vector3i;
+import net.minecraft.core.Vec3i;
+import net.minecraft.world.level.block.Mirror;
+import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.state.BlockState;
 
 import java.io.File;
 
@@ -66,7 +66,7 @@ public final class LitematicaHelper {
      * @param i index of the Schematic in the schematic placement list.
      * @return the world coordinates of the schematic origin. This can but does not have to be the minimum corner.
      */
-    public static Vector3i getOrigin(int i) {
+    public static Vec3i getOrigin(int i) {
         return DataManager.getSchematicPlacementManager().getAllSchematicsPlacements().get(i).getOrigin();
     }
 
@@ -99,7 +99,7 @@ public final class LitematicaHelper {
      * @param i         index of the Schematic in the schematic placement list.
      * @return the minimum corner coordinates of the schematic, after the original schematic got rotated and mirrored.
      */
-    public static Vector3i getCorrectedOrigin(LitematicaSchematic schematic, int i) {
+    public static Vec3i getCorrectedOrigin(LitematicaSchematic schematic, int i) {
         int x = LitematicaHelper.getOrigin(i).getX();
         int y = LitematicaHelper.getOrigin(i).getY();
         int z = LitematicaHelper.getOrigin(i).getZ();
@@ -109,7 +109,7 @@ public final class LitematicaHelper {
         int sx = (schematic.getX() - 1) * -1;
         int sz = (schematic.getZ() - 1) * -1;
 
-        Vector3i correctedOrigin;
+        Vec3i correctedOrigin;
         Mirror mirror = LitematicaHelper.getMirror(i);
         Rotation rotation = LitematicaHelper.getRotation(i);
 
@@ -119,32 +119,32 @@ public final class LitematicaHelper {
             case LEFT_RIGHT:
                 switch ((mirror.ordinal() * 2 + rotation.ordinal()) % 4) {
                     case 1:
-                        correctedOrigin = new Vector3i(x + (sz - mz), y + my, z + (sx - mx));
+                        correctedOrigin = new Vec3i(x + (sz - mz), y + my, z + (sx - mx));
                         break;
                     case 2:
-                        correctedOrigin = new Vector3i(x + mx, y + my, z + (sz - mz));
+                        correctedOrigin = new Vec3i(x + mx, y + my, z + (sz - mz));
                         break;
                     case 3:
-                        correctedOrigin = new Vector3i(x + mz, y + my, z + mx);
+                        correctedOrigin = new Vec3i(x + mz, y + my, z + mx);
                         break;
                     default:
-                        correctedOrigin = new Vector3i(x + (sx - mx), y + my, z + mz);
+                        correctedOrigin = new Vec3i(x + (sx - mx), y + my, z + mz);
                         break;
                 }
                 break;
             default:
                 switch (rotation) {
                     case CLOCKWISE_90:
-                        correctedOrigin = new Vector3i(x + (sz - mz), y + my, z + mx);
+                        correctedOrigin = new Vec3i(x + (sz - mz), y + my, z + mx);
                         break;
                     case CLOCKWISE_180:
-                        correctedOrigin = new Vector3i(x + (sx - mx), y + my, z + (sz - mz));
+                        correctedOrigin = new Vec3i(x + (sx - mx), y + my, z + (sz - mz));
                         break;
                     case COUNTERCLOCKWISE_90:
-                        correctedOrigin = new Vector3i(x + mz, y + my, z + (sx - mx));
+                        correctedOrigin = new Vec3i(x + mz, y + my, z + (sx - mx));
                         break;
                     default:
-                        correctedOrigin = new Vector3i(x + mx, y + my, z + mz);
+                        correctedOrigin = new Vec3i(x + mx, y + my, z + mz);
                         break;
                 }
         }
@@ -158,7 +158,7 @@ public final class LitematicaHelper {
      * @param mirror the mirroring of the schematic placement.
      * @return the corresponding xyz coordinates after mirroring them according to the given mirroring.
      */
-    public static Vector3i doMirroring(Vector3i in, int sizeX, int sizeZ, Mirror mirror) {
+    public static Vec3i doMirroring(Vec3i in, int sizeX, int sizeZ, Mirror mirror) {
         int xOut = in.getX();
         int zOut = in.getZ();
         if (mirror == Mirror.LEFT_RIGHT) {
@@ -166,7 +166,7 @@ public final class LitematicaHelper {
         } else if (mirror == Mirror.FRONT_BACK) {
             xOut = sizeX - in.getX();
         }
-        return new Vector3i(xOut, in.getY(), zOut);
+        return new Vec3i(xOut, in.getY(), zOut);
     }
 
     /**
@@ -175,8 +175,8 @@ public final class LitematicaHelper {
      * @param sizeZ size of the schematic in the z-axis direction.
      * @return the corresponding xyz coordinates after rotation them 90° clockwise.
      */
-    public static Vector3i rotate(Vector3i in, int sizeX, int sizeZ) {
-        return new Vector3i(sizeX - (sizeX - sizeZ) - in.getZ(), in.getY(), in.getX());
+    public static Vec3i rotate(Vec3i in, int sizeX, int sizeZ) {
+        return new Vec3i(sizeX - (sizeX - sizeZ) - in.getZ(), in.getY(), in.getX());
     }
 
     /**
@@ -191,7 +191,7 @@ public final class LitematicaHelper {
         for (int yCounter = 0; yCounter < schemIn.getY(); yCounter++) {
             for (int zCounter = 0; zCounter < schemIn.getZ(); zCounter++) {
                 for (int xCounter = 0; xCounter < schemIn.getX(); xCounter++) {
-                    Vector3i xyzHolder = new Vector3i(xCounter, yCounter, zCounter);
+                    Vec3i xyzHolder = new Vec3i(xCounter, yCounter, zCounter);
                     xyzHolder = LitematicaHelper.doMirroring(xyzHolder, schemIn.getX() - 1, schemIn.getZ() - 1, LitematicaHelper.getMirror(i));
                     for (int turns = 0; turns < LitematicaHelper.getRotation(i).ordinal(); turns++) {
                         if ((turns % 2) == 0) {

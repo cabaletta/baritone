@@ -24,14 +24,13 @@ import baritone.api.event.events.BlockInteractEvent;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.Helper;
 import baritone.utils.BlockStateInterface;
-import net.minecraft.block.BedBlock;
-import net.minecraft.block.BlockState;
-import net.minecraft.state.properties.BedPart;
-import net.minecraft.util.text.IFormattableTextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.util.text.event.ClickEvent;
-import net.minecraft.util.text.event.HoverEvent;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.HoverEvent;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.world.level.block.BedBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BedPart;
 
 import java.util.Set;
 
@@ -52,11 +51,11 @@ public class WaypointBehavior extends Behavior {
             BetterBlockPos pos = BetterBlockPos.from(event.getPos());
             BlockState state = BlockStateInterface.get(ctx, pos);
             if (state.getBlock() instanceof BedBlock) {
-                if (state.get(BedBlock.PART) == BedPart.FOOT) {
-                    pos = pos.offset(state.get(BedBlock.HORIZONTAL_FACING));
+                if (state.getValue(BedBlock.PART) == BedPart.FOOT) {
+                    pos = (BetterBlockPos) pos.offset(state.getValue(BedBlock.FACING).getNormal());
                 }
                 Set<IWaypoint> waypoints = baritone.getWorldProvider().getCurrentWorld().getWaypoints().getByTag(IWaypoint.Tag.BED);
-                boolean exists = waypoints.stream().map(IWaypoint::getLocation).filter(pos::equals).findFirst().isPresent();
+                boolean exists = waypoints.stream().map(IWaypoint::getLocation).anyMatch(pos::equals);
                 if (!exists) {
                     baritone.getWorldProvider().getCurrentWorld().getWaypoints().addWaypoint(new Waypoint("bed", Waypoint.Tag.BED, pos));
                 }
@@ -70,14 +69,14 @@ public class WaypointBehavior extends Behavior {
             return;
         Waypoint deathWaypoint = new Waypoint("death", Waypoint.Tag.DEATH, ctx.playerFeet());
         baritone.getWorldProvider().getCurrentWorld().getWaypoints().addWaypoint(deathWaypoint);
-        IFormattableTextComponent component = new StringTextComponent("Death position saved.");
-        component.setStyle(component.getStyle()
-            .setFormatting(TextFormatting.WHITE)
-            .setHoverEvent(new HoverEvent(
+        TextComponent component = new TextComponent("Death position saved.");
+        component.getStyle()
+            .withColor(ChatFormatting.WHITE)
+            .withHoverEvent(new HoverEvent(
                 HoverEvent.Action.SHOW_TEXT,
-                new StringTextComponent("Click to goto death")
+                new TextComponent("Click to goto death")
             ))
-            .setClickEvent(new ClickEvent(
+            .withClickEvent(new ClickEvent(
                 ClickEvent.Action.RUN_COMMAND,
                 String.format(
                     "%s%s goto %s @ %d",
@@ -86,7 +85,7 @@ public class WaypointBehavior extends Behavior {
                     deathWaypoint.getTag().getName(),
                     deathWaypoint.getCreationTimestamp()
                 )
-            )));
+            ));
         Helper.HELPER.logDirect(component);
     }
 

@@ -36,34 +36,27 @@ import baritone.api.selection.ISelectionManager;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.BlockOptionalMeta;
 import baritone.api.utils.BlockOptionalMetaLookup;
-import baritone.utils.IRenderer;
 import baritone.utils.BlockStateInterface;
+import baritone.utils.IRenderer;
 import baritone.utils.schematic.StaticSchematic;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.BlockState;
-import net.minecraft.util.Direction;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.vector.Vector3i;
-
-import java.awt.*;
-import java.util.*;
-import java.util.List;
-import java.util.function.Function;
-import java.util.stream.Stream;
-
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 
+import java.awt.*;
+import java.util.List;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Stream;
+
 public class SelCommand extends Command {
 
     private ISelectionManager manager = baritone.getSelectionManager();
     private BetterBlockPos pos1 = null;
     private ISchematic clipboard = null;
-    private Vector3i clipboardOffset = null;
+    private Vec3i clipboardOffset = null;
 
     public SelCommand(IBaritone baritone) {
         super(baritone, "sel", "selection", "s");
@@ -189,7 +182,7 @@ public class SelCommand extends Command {
                 );
             }
             for (ISelection selection : selections) {
-                Vector3i size = selection.size();
+                Vec3i size = selection.size();
                 BetterBlockPos min = selection.min();
                 BlockState[][][] blockstates = new BlockState[size.getX()][size.getZ()][size.getY()];
                 for (int x = 0; x < size.getX(); x++) {

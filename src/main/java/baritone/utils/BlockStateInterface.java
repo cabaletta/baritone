@@ -22,6 +22,7 @@ import baritone.api.utils.IPlayerContext;
 import baritone.cache.CachedRegion;
 import baritone.cache.WorldData;
 import baritone.utils.accessor.IClientChunkProvider;
+import baritone.utils.pathing.BetterWorldBorder;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientChunkCache;
 import net.minecraft.core.BlockPos;
