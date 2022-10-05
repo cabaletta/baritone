@@ -74,14 +74,14 @@ public enum DefaultSchematicFormats implements ISchematicFormat {
     LITEMATICA("litematic") {
         @Override
         public IStaticSchematic parse(InputStream input) throws IOException {
-            NBTTagCompound nbt = CompressedStreamTools.readCompressed(input);
-            int version = nbt.getInteger("Version");
+            CompoundTag nbt = NbtIo.readCompressed(input);
+            int version = nbt.getInt("Version");
             switch (version) {
                 case 4: //1.12
-                    return new LitematicaSchematic(nbt, false);
                 case 5: //1.13-1.17
+                throw new UnsupportedOperationException("This litematic Version is too old.");
                 case 6: //1.18+
-                    throw new UnsupportedOperationException("This litematic Verion is too new.");
+                    return new LitematicaSchematic(nbt, false);
                 default:
                     throw new UnsupportedOperationException("Unsuported Version of a Litematica Schematic");
             }

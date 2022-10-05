@@ -21,23 +21,21 @@ import baritone.api.utils.NotificationHelper;
 import baritone.api.utils.SettingsUtil;
 import baritone.api.utils.TypeUtils;
 import baritone.api.utils.gui.BaritoneToast;
-import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Vec3i;
-import net.minecraft.network.chat.BaseComponent;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+
 import java.awt.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.*;
-import java.util.function.Consumer;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 /**
  * Baritone's settings. Settings apply to all Baritone instances.
@@ -1129,7 +1127,7 @@ public final class Settings {
      * via {@link Consumer#andThen(Consumer)} or it can completely be overriden via setting
      * {@link Setting#value};
      */
-    public final Setting<Consumer<Component>> logger = new Setting<>(msg -> Minecraft.getInstance().ingameGUI.getChatGUI().printChatMessage(msg));
+    public final Setting<Consumer<Component>> logger = new Setting<>(msg -> Minecraft.getInstance().gui.getChat().addMessage(msg));
 
     /**
      * The function that is called when Baritone will send a desktop notification. This function can be added to

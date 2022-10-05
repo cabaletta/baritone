@@ -25,19 +25,18 @@ import baritone.api.command.exception.CommandException;
 import baritone.api.command.helpers.TabCompleteHelper;
 import baritone.api.utils.BetterBlockPos;
 import baritone.cache.CachedChunk;
-import net.minecraft.block.Block;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TextComponentString;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.util.text.event.ClickEvent;
-import net.minecraft.util.text.event.HoverEvent;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.Registry;
+import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.HoverEvent;
+import net.minecraft.network.chat.TextColor;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.world.level.block.Block;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
-import net.minecraft.core.Registry;
-import net.minecraft.world.level.block.Block;
 
 import static baritone.api.command.IBaritoneChatControl.FORCE_COMMAND_PREFIX;
 
@@ -55,7 +54,7 @@ public class FindCommand extends Command {
             toFind.add(args.getDatatypeFor(BlockById.INSTANCE));
         }
         BetterBlockPos origin = ctx.playerFeet();
-        ITextComponent[] components = toFind.stream()
+        TextComponent[] components = toFind.stream()
                 .flatMap(block ->
                         ctx.worldData().getCachedWorld().getLocationsOf(
                                 Registry.BLOCK.getKey(block).getPath(),
@@ -67,7 +66,7 @@ public class FindCommand extends Command {
                 )
                 .map(BetterBlockPos::new)
                 .map(this::positionToComponent)
-                .toArray(ITextComponent[]::new);
+                .toArray(TextComponent[]::new);
         if (components.length > 0) {
             Arrays.asList(components).forEach(this::logDirect);
         } else {
@@ -75,16 +74,16 @@ public class FindCommand extends Command {
         }
     }
 
-    private ITextComponent positionToComponent(BetterBlockPos pos) {
+    private TextComponent positionToComponent(BetterBlockPos pos) {
         String positionText = String.format("%s %s %s", pos.x, pos.y, pos.z);
         String command = String.format("%sgoal %s", FORCE_COMMAND_PREFIX, positionText);
-        ITextComponent baseComponent = new TextComponentString(pos.toString());
-        ITextComponent hoverComponent = new TextComponentString("Click to set goal to this position");
+        TextComponent baseComponent = new TextComponent(pos.toString());
+        TextComponent hoverComponent = new TextComponent("Click to set goal to this position");
         baseComponent.getStyle()
-            .setColor(TextFormatting.GRAY)
-            .setInsertion(positionText)
-            .setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, command))
-            .setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverComponent));
+            .withColor(TextColor.fromLegacyFormat(ChatFormatting.GRAY))
+            .withInsertion(positionText)
+            .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, command))
+            .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverComponent));
         return baseComponent;
     }
 
@@ -93,7 +92,7 @@ public class FindCommand extends Command {
         return new TabCompleteHelper()
                 .append(
                     CachedChunk.BLOCKS_TO_KEEP_TRACK_OF.stream()
-                        .map(Block.REGISTRY::getNameForObject)
+                        .map(Registry.BLOCK::getKey)
                         .map(Object::toString)
                 )
                 .filterPrefixNamespaced(args.getString())

@@ -154,7 +154,7 @@ public interface MovementHelper extends ActionCosts, Helper {
             }
             return true;
         }
-        if (block instanceof BlockCauldron) {
+        if (block instanceof CauldronBlock) {
             return false;
         }
         // every block that overrides isPassable with anything more complicated than a "return true;" or "return false;"
