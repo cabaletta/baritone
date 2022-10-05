@@ -18,6 +18,7 @@
     "MixinItemStack",
     "MixinLivingEntity",
     "MixinLootContext",
+    "MixinItemTool",
     "MixinMinecraft",
     "MixinNetworkManager",
     "MixinPlayerController",
