@@ -53,14 +53,7 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
-import net.minecraft.block.*;
-import net.minecraft.block.properties.IProperty;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.init.Blocks;
-import net.minecraft.item.ItemBlock;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompressedStreamTools;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.nbt.NbtIo;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.BlockItem;
@@ -75,6 +68,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -207,7 +201,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             if (LitematicaHelper.hasLoadedSchematic()) {
                 String name = LitematicaHelper.getName(i);
                 try {
-                    LitematicaSchematic schematic1 = new LitematicaSchematic(CompressedStreamTools.readCompressed(Files.newInputStream(LitematicaHelper.getSchematicFile(i).toPath())), false);
+                    LitematicaSchematic schematic1 = new LitematicaSchematic(NbtIo.readCompressed(Files.newInputStream(LitematicaHelper.getSchematicFile(i).toPath())), false);
                     Vec3i correctedOrigin = LitematicaHelper.getCorrectedOrigin(schematic1, i);
                     LitematicaSchematic schematic2 = LitematicaHelper.blackMagicFuckery(schematic1, i);
                     build(name, schematic2, correctedOrigin);

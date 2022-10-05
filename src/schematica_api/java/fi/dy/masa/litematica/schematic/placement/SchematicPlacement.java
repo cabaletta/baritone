@@ -17,8 +17,8 @@
 
 package fi.dy.masa.litematica.schematic.placement;
 
-import net.minecraft.util.Mirror;
-import net.minecraft.util.Rotation;
+import net.minecraft.world.level.block.Mirror;
+import net.minecraft.world.level.block.Rotation;
 
 public class SchematicPlacement extends SchematicPlacementUnloaded {
     private Rotation rotation;

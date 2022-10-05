@@ -20,10 +20,10 @@ package baritone.utils.schematic.litematica;
 import baritone.utils.schematic.format.defaults.LitematicaSchematic;
 import fi.dy.masa.litematica.Litematica;
 import fi.dy.masa.litematica.data.DataManager;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.util.Mirror;
-import net.minecraft.util.Rotation;
-import net.minecraft.util.math.Vec3i;
+import net.minecraft.core.Vec3i;
+import net.minecraft.world.level.block.Mirror;
+import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.state.BlockState;
 
 import java.io.File;
 
@@ -200,9 +200,9 @@ public final class LitematicaHelper {
                             xyzHolder = LitematicaHelper.rotate(xyzHolder, schemIn.getZ() - 1, schemIn.getX() - 1);
                         }
                     }
-                    IBlockState state = schemIn.getDirect(xCounter, yCounter, zCounter);
+                    BlockState state = schemIn.getDirect(xCounter, yCounter, zCounter);
                     try {
-                        state = state.withMirror(LitematicaHelper.getMirror(i)).withRotation(LitematicaHelper.getRotation(i));
+                        state = state.mirror(LitematicaHelper.getMirror(i)).rotate(LitematicaHelper.getRotation(i));
                     } catch (NullPointerException e) {
                         //nothing to worry about it's just a hole in the schematic.
                     }

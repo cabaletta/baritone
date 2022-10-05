@@ -18,21 +18,6 @@
 package baritone.utils;
 
 import baritone.Baritone;
-import baritone.utils.accessor.IItemTool;
-import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.init.Enchantments;
-import net.minecraft.init.MobEffects;
-import net.minecraft.item.Item.ToolMaterial;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemSword;
-import net.minecraft.item.ItemTool;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Function;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.item.DiggerItem;
@@ -42,6 +27,10 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Function;
 
 /**
  * A cached list of the best tools on the hotbar for any block

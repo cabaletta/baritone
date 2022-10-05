@@ -1128,7 +1128,7 @@ public final class Settings {
      * via {@link Consumer#andThen(Consumer)} or it can completely be overriden via setting
      * {@link Setting#value};
      */
-    public final Setting<Consumer<Component>> logger = new Setting<>(msg -> Minecraft.getInstance().gui.getChat()::addMessage);
+    public final Setting<Consumer<Component>> logger = new Setting<>(msg -> Minecraft.getInstance().gui.getChat().addMessage(msg));
 //    public final Setting<Consumer<ITextComponent>> logger = new Setting<>(msg -> Minecraft.getMinecraft().ingameGUI.getChatGUI().printChatMessage(msg));
 
     /**
