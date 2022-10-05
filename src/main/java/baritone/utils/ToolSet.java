@@ -18,6 +18,16 @@
 package baritone.utils;
 
 import baritone.Baritone;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
+import net.minecraft.client.entity.player.ClientPlayerEntity;
+import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.enchantment.Enchantments;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.SwordItem;
+import net.minecraft.item.TieredItem;
+import net.minecraft.potion.Effects;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -28,7 +38,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.level.block.AirBlock;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
@@ -75,10 +87,12 @@ public class ToolSet {
     }
 
     /**
-     * Evaluate the material cost of a possible tool. Will return 1 for tools, -1 for other
+     * Evaluate the material cost of a possible tool. The priority matches the
+     * harvest level order; there is a chance for multiple at the same with modded tools
+     * but in that case we don't really care.
      *
      * @param itemStack a possibly empty ItemStack
-     * @return Either 1 or -1
+     * @return values from 0 up
      */
     private int getMaterialCost(ItemStack itemStack) {
         return itemStack.getItem() instanceof DiggerItem ? 1 : -1;

@@ -30,6 +30,12 @@ import baritone.api.utils.input.Input;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.MovementHelper;
 import baritone.utils.BaritoneProcessHelper;
+import net.minecraft.block.Block;
+import net.minecraft.block.Blocks;
+import net.minecraft.block.BlockState;
+import net.minecraft.inventory.container.PlayerContainer;
+import net.minecraft.util.math.BlockPos;
+
 import java.util.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.inventory.InventoryMenu;
@@ -241,7 +247,7 @@ public final class GetToBlockProcess extends BaritoneProcessHelper implements IG
     private boolean rightClickOnArrival(Block block) {
         if (!Baritone.settings().rightClickContainerOnArrival.value) {
             return false;
-        }
+        } //what about the smoker?
         return block == Blocks.CRAFTING_TABLE || block == Blocks.FURNACE || block == Blocks.BLAST_FURNACE || block == Blocks.ENDER_CHEST || block == Blocks.CHEST || block == Blocks.TRAPPED_CHEST;
     }
 
