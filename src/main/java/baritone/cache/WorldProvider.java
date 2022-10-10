@@ -76,8 +76,8 @@ public class WorldProvider implements IWorldProvider, Helper {
             readme = directory;
         } else { // Otherwise, the server must be remote...
             String folderName;
-            if (mc.getCurrentServerData() != null) {
-                folderName = mc.isConnectedToRealms() ? "realms" : mc.getCurrentServerData().serverIP;
+            if (mc.getCurrentServer() != null) {
+                folderName = mc.isConnectedToRealms() ? "realms" : mc.getCurrentServer().ip;
             } else {
                 if (mc.getCurrentServer() != null) {
                     folderName = mc.getCurrentServer().ip;

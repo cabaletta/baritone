@@ -74,7 +74,7 @@ public enum DefaultSchematicFormats implements ISchematicFormat {
     LITEMATICA("litematic") {
         @Override
         public IStaticSchematic parse(InputStream input) throws IOException {
-            CompoundNBT nbt = CompressedStreamTools.readCompressed(input);
+            CompoundTag nbt = NbtIo.readCompressed(input);
             int version = nbt.getInt("Version");
             switch (version) {
                 case 4: //1.12
