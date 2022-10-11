@@ -57,6 +57,8 @@ public interface IBuilderProcess extends IBaritoneProcess {
 
     void buildOpenSchematic();
 
+    void buildOpenLitematic(int i);
+
     void pause();
 
     boolean isPaused();

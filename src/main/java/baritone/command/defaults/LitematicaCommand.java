@@ -20,57 +20,52 @@ package baritone.command.defaults;
 import baritone.api.IBaritone;
 import baritone.api.command.Command;
 import baritone.api.command.argument.IArgConsumer;
-import baritone.api.command.datatypes.BlockById;
-import baritone.api.command.datatypes.ForBlockOptionalMeta;
 import baritone.api.command.exception.CommandException;
-import baritone.api.utils.BlockOptionalMeta;
-import baritone.cache.WorldScanner;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
-public class MineCommand extends Command {
+public class LitematicaCommand extends Command {
 
-    public MineCommand(IBaritone baritone) {
-        super(baritone, "mine");
+    public LitematicaCommand(IBaritone baritone) {
+        super(baritone, "litematica");
     }
 
     @Override
     public void execute(String label, IArgConsumer args) throws CommandException {
-        int quantity = args.getAsOrDefault(Integer.class, 0);
-        args.requireMin(1);
-        List<BlockOptionalMeta> boms = new ArrayList<>();
-        while (args.hasAny()) {
-            boms.add(args.getDatatypeFor(ForBlockOptionalMeta.INSTANCE));
+        int schematic = 0;
+        if (args.hasAny()) {
+            args.requireMax(1);
+            if (args.is(Integer.class)) {
+                schematic = args.getAs(Integer.class) - 1;
+            }
         }
-        WorldScanner.INSTANCE.repack(ctx);
-        logDirect(String.format("Mining %s", boms.toString()));
-        baritone.getMineProcess().mine(quantity, boms.toArray(new BlockOptionalMeta[0]));
+        try {
+            baritone.getBuilderProcess().buildOpenLitematic(schematic);
+        } catch (IndexOutOfBoundsException e) {
+            logDirect("Pleas provide a valid index.");
+        }
     }
 
     @Override
     public Stream<String> tabComplete(String label, IArgConsumer args) {
-        return args.tabCompleteDatatype(BlockById.INSTANCE);
+        return Stream.empty();
     }
 
     @Override
     public String getShortDesc() {
-        return "Mine some blocks";
+        return "Builds the loaded schematic";
     }
 
     @Override
     public List<String> getLongDesc() {
         return Arrays.asList(
-                "The mine command allows you to tell Baritone to search for and mine individual blocks.",
-                "",
-                "The specified blocks can be ores, or any other block.",
-                "",
-                "Also see the legitMine settings (see #set l legitMine).",
+                "Build a schematic currently open in Litematica.",
                 "",
                 "Usage:",
-                "> mine diamond_ore - Mines all diamonds it can find."
+                "> litematica",
+                "> litematica <#>"
         );
     }
 }

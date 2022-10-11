@@ -18,9 +18,10 @@
 package baritone.api.schematic;
 
 import baritone.api.utils.BlockOptionalMeta;
-import java.util.List;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+
+import java.util.List;
 
 public class FillSchematic extends AbstractSchematic {
 

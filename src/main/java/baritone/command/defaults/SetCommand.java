@@ -81,9 +81,9 @@ public class SetCommand extends Command {
                                 " (%s)",
                                 settingTypeToString(setting)
                         ));
-                        typeComponent.getStyle().withColor(ChatFormatting.DARK_GRAY);
+                        typeComponent.setStyle(typeComponent.getStyle().withColor(ChatFormatting.DARK_GRAY));
                         TextComponent hoverComponent = new TextComponent("");
-                        hoverComponent.getStyle().withColor(ChatFormatting.GRAY);
+                        hoverComponent.setStyle(hoverComponent.getStyle().withColor(ChatFormatting.GRAY));
                         hoverComponent.append(setting.getName());
                         hoverComponent.append(String.format("\nType: %s", settingTypeToString(setting)));
                         hoverComponent.append(String.format("\n\nValue:\n%s", settingValueToString(setting)));
