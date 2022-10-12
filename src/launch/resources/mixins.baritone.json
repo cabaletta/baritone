@@ -19,6 +19,7 @@
     "MixinLivingEntity",
     "MixinLootContext",
     "MixinMinecraft",
+    "MixinLongArrayNBT",
     "MixinNetworkManager",
     "MixinPlayerController",
     "MixinScreen",
