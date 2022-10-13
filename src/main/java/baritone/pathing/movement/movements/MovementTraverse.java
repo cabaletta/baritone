@@ -98,7 +98,7 @@ public class MovementTraverse extends Movement {
                 return COST_INF;
             }
             double hardness2 = MovementHelper.getMiningDurationTicks(context, destX, y + 1, destZ, pb0, true); // only include falling on the upper block to break
-            if (hardness1 == 0 && hardness2 == 0) {
+            if (hardness1 == 0 && hardness2 == 0 && !MovementHelper.isOverMagma(context.bsi, x, y, z)) {
                 if (!water && context.canSprint) {
                     // If there's nothing in the way, and this isn't water, and we aren't sneak placing
                     // We can sprint =D
@@ -241,7 +241,7 @@ public class MovementTraverse extends Movement {
             return state;
         }
 
-        if (MovementHelper.isOverMagma(ctx)) {
+        if (MovementHelper.isOverMagma(ctx, src, dest)) {
             state.setInput(Input.SPRINT, false);
             state.setInput(Input.SNEAK, true);
         }

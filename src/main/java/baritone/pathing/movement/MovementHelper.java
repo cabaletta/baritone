@@ -280,27 +280,20 @@ public interface MovementHelper extends ActionCosts, Helper {
                 || block == Blocks.WEB;
     }
 
-    static boolean isOverMagma(IPlayerContext ctx) {
+    static boolean isOverMagma(IPlayerContext ctx, BetterBlockPos src, BetterBlockPos dest) {
         int x = ctx.playerFeet().x;
         int y = ctx.playerFeet().y;
         int z = ctx.playerFeet().z;
         BlockStateInterface bsi = new BlockStateInterface(ctx);
 
-        return isOverMagma(bsi, x, y, z);
+        boolean moveDiagonaly = src.x != dest.x && src.z != dest.z;
+        return  isOverMagma(bsi, x, y, z) ||                                  //we are on magma
+                isOverMagma(bsi,x-(src.x-dest.x),y,z-(src.z-dest.z)) ||       //next block is magma
+                isOverMagma(bsi,x-(src.x-dest.x),y,z) && moveDiagonaly ||     //we are cutting the corner of a magma block
+                isOverMagma(bsi, x, y, z-(src.z - dest.z)) && moveDiagonaly;  //we are cutting the corner of a magma block other side
     }
-    //todo its terrible but it does the job for the moment
     static boolean isOverMagma(BlockStateInterface bsi, int x, int y, int z) {
-        Block block0 = bsi.get0(x,y-1,z).getBlock();
-        Block block1 = bsi.get0(x+1,y-1,z).getBlock();
-        Block block2 = bsi.get0(x-1,y-1,z).getBlock();
-        Block block3 = bsi.get0(x,y-1,z+1).getBlock();
-        Block block4 = bsi.get0(x,y-1,z-1).getBlock();
-
-        return  block0 == Blocks.MAGMA ||
-                block1 == Blocks.MAGMA ||
-                block2 == Blocks.MAGMA ||
-                block3 == Blocks.MAGMA ||
-                block4 == Blocks.MAGMA;
+        return bsi.get0(x,y-1,z).getBlock() == Blocks.MAGMA;
     }
 
     /**
