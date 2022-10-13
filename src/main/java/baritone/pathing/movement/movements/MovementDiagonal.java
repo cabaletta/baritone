@@ -146,12 +146,11 @@ public class MovementDiagonal extends Movement {
         if (fromDown == Blocks.SOUL_SAND) {
             multiplier += (WALK_ONE_OVER_SOUL_SAND_COST - WALK_ONE_BLOCK_COST) / 2;
         }
-        Block cuttingOver1 = context.get(x, y - 1, destZ).getBlock();
-        if (cuttingOver1 == Blocks.MAGMA || MovementHelper.isLava(cuttingOver1)) {
+        Block cuttingOver1 = context.get(x, y - 1, destZ).getBlock(); //cutting over adjacent x-axis block
+        Block cuttingOver2 = context.get(destX, y - 1, z).getBlock(); //cutting over adjacent z-axis block
+        if (MovementHelper.isLava(cuttingOver1) || MovementHelper.isLava(cuttingOver2)) {
             return;
-        }
-        Block cuttingOver2 = context.get(destX, y - 1, z).getBlock();
-        if (cuttingOver2 == Blocks.MAGMA || MovementHelper.isLava(cuttingOver2)) {
+        } else if ((cuttingOver1 == Blocks.MAGMA || cuttingOver2 == Blocks.MAGMA) && !Baritone.settings().allowSneakOverMagma.value) {
             return;
         }
         Block startIn = context.getBlock(x, y, z);
@@ -232,7 +231,12 @@ public class MovementDiagonal extends Movement {
                 multiplier *= SPRINT_MULTIPLIER;
             }
         }
-        res.cost = multiplier * SQRT_2;
+        //todo feels like the cost formula isnt correct yet
+        if (cuttingOver1 == Blocks.MAGMA || cuttingOver2 == Blocks.MAGMA) {
+            res.cost = SQRT_2 * SNEAK_ONE_BLOCK_COST;
+        } else {
+            res.cost = multiplier * SQRT_2;
+        }
         if (descend) {
             res.cost += Math.max(FALL_N_BLOCKS_COST[1], CENTER_AFTER_FALL_COST);
             res.y = y - 1;
@@ -261,6 +265,10 @@ public class MovementDiagonal extends Movement {
         if (sprint()) {
             state.setInput(Input.SPRINT, true);
         }
+        if (sneak()) {
+            state.setInput(Input.SPRINT, false);//we cant sprint while sneaking
+            state.setInput(Input.SNEAK,true);
+        }
         MovementHelper.moveTowards(ctx, state, dest);
         return state;
     }
@@ -275,6 +283,10 @@ public class MovementDiagonal extends Movement {
             }
         }
         return true;
+    }
+
+    private boolean sneak() {
+        return MovementHelper.isOverMagma(ctx);
     }
 
     @Override

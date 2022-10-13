@@ -280,6 +280,29 @@ public interface MovementHelper extends ActionCosts, Helper {
                 || block == Blocks.WEB;
     }
 
+    static boolean isOverMagma(IPlayerContext ctx) {
+        int x = ctx.playerFeet().x;
+        int y = ctx.playerFeet().y;
+        int z = ctx.playerFeet().z;
+        BlockStateInterface bsi = new BlockStateInterface(ctx);
+
+        return isOverMagma(bsi, x, y, z);
+    }
+    //todo its terrible but it does the job for the moment
+    static boolean isOverMagma(BlockStateInterface bsi, int x, int y, int z) {
+        Block block0 = bsi.get0(x,y-1,z).getBlock();
+        Block block1 = bsi.get0(x+1,y-1,z).getBlock();
+        Block block2 = bsi.get0(x-1,y-1,z).getBlock();
+        Block block3 = bsi.get0(x,y-1,z+1).getBlock();
+        Block block4 = bsi.get0(x,y-1,z-1).getBlock();
+
+        return  block0 == Blocks.MAGMA ||
+                block1 == Blocks.MAGMA ||
+                block2 == Blocks.MAGMA ||
+                block3 == Blocks.MAGMA ||
+                block4 == Blocks.MAGMA;
+    }
+
     /**
      * Can I walk on this block without anything weird happening like me falling
      * through? Includes water because we know that we automatically jump on
@@ -294,7 +317,7 @@ public interface MovementHelper extends ActionCosts, Helper {
      */
     static boolean canWalkOn(BlockStateInterface bsi, int x, int y, int z, IBlockState state) {
         Block block = state.getBlock();
-        if (block == Blocks.AIR || block == Blocks.MAGMA) {
+        if (block == Blocks.AIR || (!Baritone.settings().allowSneakOverMagma.value && block == Blocks.MAGMA)) {
             // early return for most common case (air)
             // plus magma, which is a normal cube but it hurts you
             return false;

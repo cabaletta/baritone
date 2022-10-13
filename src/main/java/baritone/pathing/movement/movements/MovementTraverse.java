@@ -73,7 +73,12 @@ public class MovementTraverse extends Movement {
         IBlockState destOn = context.get(destX, y - 1, destZ);
         Block srcDown = context.getBlock(x, y - 1, z);
         if (MovementHelper.canWalkOn(context.bsi, destX, y - 1, destZ, destOn)) {//this is a walk, not a bridge
-            double WC = WALK_ONE_BLOCK_COST;
+            double WC;
+            if (MovementHelper.isOverMagma(context.bsi, x, y, z)) {
+                WC = SNEAK_ONE_BLOCK_COST;
+            } else {
+                WC = WALK_ONE_BLOCK_COST;
+            }
             boolean water = false;
             if (MovementHelper.isWater(pb0.getBlock()) || MovementHelper.isWater(pb1.getBlock())) {
                 WC = context.waterWalkSpeed;
@@ -234,6 +239,11 @@ public class MovementTraverse extends Movement {
                 return state.setInput(Input.JUMP, true);
             }
             return state;
+        }
+
+        if (MovementHelper.isOverMagma(ctx)) {
+            state.setInput(Input.SPRINT, false);
+            state.setInput(Input.SNEAK, true);
         }
 
         if (isTheBridgeBlockThere) {

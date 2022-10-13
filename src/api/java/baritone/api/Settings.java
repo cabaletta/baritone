@@ -60,6 +60,11 @@ public final class Settings {
     public final Setting<Boolean> allowSprint = new Setting<>(true);
 
     /**
+     * Allow Baritone to sneak over magma blocks
+     */
+    public final Setting<Boolean> allowSneakOverMagma = new Setting<>(true);
+
+    /**
      * Allow Baritone to place blocks
      */
     public final Setting<Boolean> allowPlace = new Setting<>(true);
