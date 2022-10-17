@@ -287,10 +287,11 @@ public interface MovementHelper extends ActionCosts, Helper {
         BlockStateInterface bsi = new BlockStateInterface(ctx);
 
         boolean moveDiagonaly = src.x != dest.x && src.z != dest.z;
-        return  isOverMagma(bsi, x, y, z) ||                                  //we are on magma
-                isOverMagma(bsi,x-(src.x-dest.x),y,z-(src.z-dest.z)) ||       //next block is magma
-                isOverMagma(bsi,x-(src.x-dest.x),y,z) && moveDiagonaly ||     //we are cutting the corner of a magma block
-                isOverMagma(bsi, x, y, z-(src.z - dest.z)) && moveDiagonaly;  //we are cutting the corner of a magma block other side
+        boolean result = isOverMagma(bsi, x, y, z) ||                                                                //we are on magma
+                isOverMagma(bsi,x - (src.x - dest.x),y - (src.y - dest.y),z-(src.z-dest.z)) ||      //next block is magma
+                (isOverMagma(bsi,x-(src.x-dest.x),y,z) && moveDiagonaly) ||                              //we are cutting the corner of a magma block
+                (isOverMagma(bsi, x, y, z-(src.z - dest.z)) && moveDiagonaly);                           //we are cutting the corner of a magma block other side
+        return result;
     }
     static boolean isOverMagma(BlockStateInterface bsi, int x, int y, int z) {
         return bsi.get0(x,y-1,z).getBlock() == Blocks.MAGMA;

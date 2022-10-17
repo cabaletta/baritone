@@ -72,9 +72,12 @@ public class MovementTraverse extends Movement {
         IBlockState pb1 = context.get(destX, y, destZ);
         IBlockState destOn = context.get(destX, y - 1, destZ);
         Block srcDown = context.getBlock(x, y - 1, z);
+        if ((srcDown == Blocks.MAGMA || destOn.getBlock() == Blocks.MAGMA) && !context.allowSneakOverMagma) {
+            return COST_INF;
+        }
         if (MovementHelper.canWalkOn(context.bsi, destX, y - 1, destZ, destOn)) {//this is a walk, not a bridge
             double WC;
-            if (MovementHelper.isOverMagma(context.bsi, x, y, z)) {
+            if (srcDown == Blocks.MAGMA) {
                 WC = SNEAK_ONE_BLOCK_COST;
             } else {
                 WC = WALK_ONE_BLOCK_COST;

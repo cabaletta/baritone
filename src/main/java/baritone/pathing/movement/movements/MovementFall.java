@@ -153,6 +153,11 @@ public class MovementFall extends Movement {
             Vec3d destCenterOffset = new Vec3d(destCenter.x + 0.125 * avoid.getX(), destCenter.y, destCenter.z + 0.125 * avoid.getZ());
             state.setTarget(new MovementTarget(RotationUtils.calcRotationFromVec3d(ctx.playerHead(), destCenterOffset, ctx.playerRotations()), false));
         }
+        //if (destBlock == Blocks.MAGMA && playerFeet.getY() < src.y) {
+        if (MovementHelper.isOverMagma(ctx,src,dest) && playerFeet.getY() < src.y) {
+            state.setInput(Input.SPRINT, false);
+            state.setInput(Input.SNEAK, true);
+        }
         return state;
     }
 

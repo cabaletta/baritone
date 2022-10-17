@@ -20,6 +20,7 @@ package baritone.pathing.movement.movements;
 import baritone.api.IBaritone;
 import baritone.api.pathing.movement.MovementStatus;
 import baritone.api.utils.BetterBlockPos;
+import baritone.api.utils.input.Input;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
@@ -66,6 +67,8 @@ public class MovementDownward extends Movement {
         Block downBlock = down.getBlock();
         if (downBlock == Blocks.LADDER || downBlock == Blocks.VINE) {
             return LADDER_DOWN_ONE_COST;
+        } else if (downBlock == Blocks.MAGMA && !context.allowSneakOverMagma) {
+            return COST_INF;
         } else {
             // we're standing on it, while it might be block falling, it'll be air by the time we get here in the movement
             return FALL_N_BLOCKS_COST[1] + MovementHelper.getMiningDurationTicks(context, x, y - 1, z, down, false);
@@ -77,6 +80,10 @@ public class MovementDownward extends Movement {
         super.updateState(state);
         if (state.getStatus() != MovementStatus.RUNNING) {
             return state;
+        }
+        if (MovementHelper.isOverMagma(ctx, src, dest)) {
+            state.setInput(Input.SPRINT, false);
+            state.setInput(Input.SNEAK, true);
         }
 
         if (ctx.playerFeet().equals(dest)) {

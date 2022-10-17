@@ -68,7 +68,10 @@ public class MovementAscend extends Movement {
     public static double cost(CalculationContext context, int x, int y, int z, int destX, int destZ) {
         IBlockState toPlace = context.get(destX, y, destZ);
         double additionalPlacementCost = 0;
-        if (!MovementHelper.canWalkOn(context.bsi, destX, y, destZ, toPlace)) {
+        if ((toPlace.getBlock() == Blocks.MAGMA || context.get(x, y, z).getBlock() == Blocks.MAGMA) && !context.allowSneakOverMagma) {
+            return COST_INF;
+        }
+        if (!MovementHelper.canWalkOn(context.bsi, destX, y, destZ, toPlace) ) { // || (toPlace.getBlock() == Blocks.MAGMA && !context.allowSneakOverMagma)) {
             additionalPlacementCost = context.costOfPlacingAt(destX, y, destZ, toPlace);
             if (additionalPlacementCost >= COST_INF) {
                 return COST_INF;
@@ -134,6 +137,8 @@ public class MovementAscend extends Movement {
             // jumpingFromBottomSlab must be false
             if (toPlace.getBlock() == Blocks.SOUL_SAND) {
                 walk = WALK_ONE_OVER_SOUL_SAND_COST;
+            } else if (toPlace.getBlock() == Blocks.MAGMA) {
+                walk = Math.max(JUMP_ONE_BLOCK_COST, SNEAK_ONE_BLOCK_COST);
             } else {
                 walk = Math.max(JUMP_ONE_BLOCK_COST, WALK_ONE_BLOCK_COST);
             }
@@ -187,6 +192,10 @@ public class MovementAscend extends Movement {
             }
 
             return state;
+        }
+        if (MovementHelper.isOverMagma(ctx, src, dest)) {
+            state.setInput(Input.SPRINT,false);
+            state.setInput(Input.SNEAK, true);
         }
         MovementHelper.moveTowards(ctx, state, dest);
         if (MovementHelper.isBottomSlab(jumpingOnto) && !MovementHelper.isBottomSlab(BlockStateInterface.get(ctx, src.down()))) {

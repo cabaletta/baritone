@@ -136,7 +136,7 @@ public class MovementDiagonal extends Movement {
         Block cuttingOver2 = context.get(destX, y - 1, z).getBlock(); //cutting over adjacent z-axis block
         if (MovementHelper.isLava(cuttingOver1) || MovementHelper.isLava(cuttingOver2)) {
             return;
-        } else if ((cuttingOver1 == Blocks.MAGMA || cuttingOver2 == Blocks.MAGMA) && !Baritone.settings().allowSneakOverMagma.value) {
+        } else if ((cuttingOver1 == Blocks.MAGMA || cuttingOver2 == Blocks.MAGMA) && !context.allowSneakOverMagma) {
             return;
         }
         double multiplier;
