@@ -78,22 +78,26 @@ public class MovementTraverse extends Movement {
         if (MovementHelper.canWalkOn(context.bsi, destX, y - 1, destZ, destOn)) {//this is a walk, not a bridge
             double WC;
             if (srcDown == Blocks.MAGMA) {
-                WC = SNEAK_ONE_BLOCK_COST;
+                WC = SNEAK_ONE_BLOCK_COST / 2;
+            } else if (srcDown == Blocks.SOUL_SAND) {
+                WC = WALK_ONE_OVER_SOUL_SAND_COST / 2;
             } else {
-                WC = WALK_ONE_BLOCK_COST;
+                WC = WALK_ONE_BLOCK_COST / 2;
+            }
+            if (destOn.getBlock() == Blocks.MAGMA) {
+                WC += SNEAK_ONE_BLOCK_COST/2;
+            } else if (destOn.getBlock() == Blocks.SOUL_SAND) {
+                WC += WALK_ONE_OVER_SOUL_SAND_COST / 2;
+            } else {
+                WC += WALK_ONE_BLOCK_COST / 2;
             }
             boolean water = false;
             if (MovementHelper.isWater(pb0.getBlock()) || MovementHelper.isWater(pb1.getBlock())) {
                 WC = context.waterWalkSpeed;
                 water = true;
             } else {
-                if (destOn.getBlock() == Blocks.SOUL_SAND) {
-                    WC += (WALK_ONE_OVER_SOUL_SAND_COST - WALK_ONE_BLOCK_COST) / 2;
-                } else if (destOn.getBlock() == Blocks.WATER) {
+                if (destOn.getBlock() == Blocks.WATER) {
                     WC += context.walkOnWaterOnePenalty;
-                }
-                if (srcDown == Blocks.SOUL_SAND) {
-                    WC += (WALK_ONE_OVER_SOUL_SAND_COST - WALK_ONE_BLOCK_COST) / 2;
                 }
             }
             double hardness1 = MovementHelper.getMiningDurationTicks(context, destX, y, destZ, pb1, false);

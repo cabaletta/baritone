@@ -286,11 +286,16 @@ public interface MovementHelper extends ActionCosts, Helper {
         int z = ctx.playerFeet().z;
         BlockStateInterface bsi = new BlockStateInterface(ctx);
 
-        boolean moveDiagonaly = src.x != dest.x && src.z != dest.z;
-        boolean result = isOverMagma(bsi, x, y, z) ||                                                                //we are on magma
-                isOverMagma(bsi,x - (src.x - dest.x),y - (src.y - dest.y),z-(src.z-dest.z)) ||      //next block is magma
-                (isOverMagma(bsi,x-(src.x-dest.x),y,z) && moveDiagonaly) ||                              //we are cutting the corner of a magma block
-                (isOverMagma(bsi, x, y, z-(src.z - dest.z)) && moveDiagonaly);                           //we are cutting the corner of a magma block other side
+        //todo make this readable
+        boolean result = isOverMagma(bsi, x, y, z) ||                           //we are standing on a magma block
+                         isOverMagma(bsi, dest.x, y, dest.z) ||                 //the block we are going too, at the same y level is magma
+                         (isOverMagma(bsi, dest.x, dest.y, dest.z)              //the block we are going too is magma and
+                                 && y < src.y) ||                               //we are already dropping
+                         ((src.x != dest.x && src.z != dest.z) &&               //when moving diagonaly and
+                                         (isOverMagma(bsi, src.x, y, dest.z) || //we are cutting over magma or
+                                          isOverMagma(bsi, dest.x, y, src.z) || //we are cutting over magma or
+                                          isOverMagma(bsi, dest.x, y, dest.z))); //we are ending up on magma
+
         return result;
     }
     static boolean isOverMagma(BlockStateInterface bsi, int x, int y, int z) {

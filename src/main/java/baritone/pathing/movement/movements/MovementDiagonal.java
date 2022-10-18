@@ -150,6 +150,8 @@ public class MovementDiagonal extends Movement {
             multiplier += (WALK_ONE_OVER_SOUL_SAND_COST - WALK_ONE_BLOCK_COST) / 2;
         } else if (destWalkOn.getBlock() == Blocks.WATER) {
             multiplier += context.walkOnWaterOnePenalty * SQRT_2;
+        } else if (destWalkOn.getBlock() == Blocks.MAGMA && (cuttingOver1 != Blocks.MAGMA || cuttingOver2 != Blocks.MAGMA)) {
+            multiplier += (SNEAK_ONE_BLOCK_COST - WALK_ONE_BLOCK_COST) / 2;
         }
         Block fromDown = context.get(x, y - 1, z).getBlock();
         if (fromDown == Blocks.LADDER || fromDown == Blocks.VINE) {
@@ -157,6 +159,8 @@ public class MovementDiagonal extends Movement {
         }
         if (fromDown == Blocks.SOUL_SAND) {
             multiplier += (WALK_ONE_OVER_SOUL_SAND_COST - WALK_ONE_BLOCK_COST) / 2;
+        } else if (fromDown == Blocks.MAGMA && (cuttingOver1 != Blocks.MAGMA || cuttingOver2 != Blocks.MAGMA)) {
+            multiplier += (SNEAK_ONE_BLOCK_COST - WALK_ONE_BLOCK_COST) / 2;
         }
         Block startIn = context.getBlock(x, y, z);
         boolean water = false;

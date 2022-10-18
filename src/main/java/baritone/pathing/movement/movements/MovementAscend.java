@@ -71,7 +71,7 @@ public class MovementAscend extends Movement {
         if ((toPlace.getBlock() == Blocks.MAGMA || context.get(x, y, z).getBlock() == Blocks.MAGMA) && !context.allowSneakOverMagma) {
             return COST_INF;
         }
-        if (!MovementHelper.canWalkOn(context.bsi, destX, y, destZ, toPlace) ) { // || (toPlace.getBlock() == Blocks.MAGMA && !context.allowSneakOverMagma)) {
+        if (!MovementHelper.canWalkOn(context.bsi, destX, y, destZ, toPlace)) {
             additionalPlacementCost = context.costOfPlacingAt(destX, y, destZ, toPlace);
             if (additionalPlacementCost >= COST_INF) {
                 return COST_INF;

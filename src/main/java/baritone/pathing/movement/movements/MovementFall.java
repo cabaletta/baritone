@@ -87,6 +87,10 @@ public class MovementFall extends Movement {
         if (state.getStatus() != MovementStatus.RUNNING) {
             return state;
         }
+        if (MovementHelper.isOverMagma(ctx,src,dest)) {
+            state.setInput(Input.SPRINT, false);
+            state.setInput(Input.SNEAK, true);
+        }
 
         BlockPos playerFeet = ctx.playerFeet();
         Rotation toDest = RotationUtils.calcRotationFromVec3d(ctx.playerHead(), VecUtils.getBlockPosCenter(dest), ctx.playerRotations());
@@ -152,11 +156,6 @@ public class MovementFall extends Movement {
         if (targetRotation == null) {
             Vec3d destCenterOffset = new Vec3d(destCenter.x + 0.125 * avoid.getX(), destCenter.y, destCenter.z + 0.125 * avoid.getZ());
             state.setTarget(new MovementTarget(RotationUtils.calcRotationFromVec3d(ctx.playerHead(), destCenterOffset, ctx.playerRotations()), false));
-        }
-        //if (destBlock == Blocks.MAGMA && playerFeet.getY() < src.y) {
-        if (MovementHelper.isOverMagma(ctx,src,dest) && playerFeet.getY() < src.y) {
-            state.setInput(Input.SPRINT, false);
-            state.setInput(Input.SNEAK, true);
         }
         return state;
     }
