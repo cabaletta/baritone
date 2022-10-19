@@ -182,7 +182,7 @@ public class MovementPillar extends Movement {
             }
             return state;
         }
-        if (fromDown.getBlock() == Blocks.MAGMA) {
+        if (fromDown.getBlock() == Blocks.MAGMA && !MovementHelper.hasFrostWalker(ctx)) {
             state.setInput(Input.SPRINT, false);
             state.setInput(Input.SNEAK, true);
         }

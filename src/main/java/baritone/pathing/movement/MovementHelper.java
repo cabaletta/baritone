@@ -31,6 +31,7 @@ import net.minecraft.block.*;
 import net.minecraft.block.properties.PropertyBool;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
+import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
@@ -286,6 +287,9 @@ public interface MovementHelper extends ActionCosts, Helper {
         int z = ctx.playerFeet().z;
         BlockStateInterface bsi = new BlockStateInterface(ctx);
 
+        if (hasFrostWalker(ctx)) { //if we are wearing frostwalker boots magma can go fuck itself
+            return false;
+        }
         if (isOverMagma(bsi, x, y, z) || isOverMagma(bsi, dest.x, y, dest.z)) { //we are or going to stand on magma
             return true;
         }
@@ -299,6 +303,21 @@ public interface MovementHelper extends ActionCosts, Helper {
     }
     static boolean isOverMagma(BlockStateInterface bsi, int x, int y, int z) {
         return bsi.get0(x,y-1,z).getBlock() == Blocks.MAGMA;
+    }
+
+    static boolean hasFrostWalker(CalculationContext context) {
+        return hasFrostWalker(context.getBaritone().getPlayerContext());
+    }
+
+    static boolean hasFrostWalker(IPlayerContext ctx) {
+        boolean frostwaker = false;
+        NBTTagList nbtTagList = ctx.player().inventory.player.inventory.player.inventory.player.inventory.player.inventory.armorInventory.get(0).getEnchantmentTagList(); //get all enchantments of the players boots
+        for (int i = 0; i<nbtTagList.tagCount();i++) {
+            if(nbtTagList.get(i).toString().contains("id:9s")) { //this is very hacky pls advice on how to test for frostwalker enchantment the proper way
+                frostwaker = true;
+            }
+        }
+        return frostwaker;
     }
 
     /**
