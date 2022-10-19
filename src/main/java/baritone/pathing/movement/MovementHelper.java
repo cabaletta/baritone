@@ -315,7 +315,7 @@ public interface MovementHelper extends ActionCosts, Helper {
      */
     static boolean canWalkOn(BlockStateInterface bsi, int x, int y, int z, IBlockState state) {
         Block block = state.getBlock();
-        if (block == Blocks.AIR || (!Baritone.settings().allowSneakOverMagma.value && block == Blocks.MAGMA)) {
+        if (block == Blocks.AIR) {
             // early return for most common case (air)
             // plus magma, which is a normal cube but it hurts you
             return false;

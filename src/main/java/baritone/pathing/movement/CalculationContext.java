@@ -56,7 +56,6 @@ public class CalculationContext {
     public final boolean hasWaterBucket;
     public final boolean hasThrowaway;
     public final boolean canSprint;
-    public final boolean allowSneakOverMagma;
     protected final double placeBlockCost; // protected because you should call the function instead
     public final boolean allowBreak;
     public final List<Block> allowBreakAnyway;
@@ -92,7 +91,6 @@ public class CalculationContext {
         this.hasThrowaway = Baritone.settings().allowPlace.value && ((Baritone) baritone).getInventoryBehavior().hasGenericThrowaway();
         this.hasWaterBucket = Baritone.settings().allowWaterBucketFall.value && InventoryPlayer.isHotbar(player.inventory.getSlotFor(STACK_BUCKET_WATER)) && !world.provider.isNether();
         this.canSprint = Baritone.settings().allowSprint.value && player.getFoodStats().getFoodLevel() > 6;
-        this.allowSneakOverMagma = Baritone.settings().allowSneakOverMagma.value;
         this.placeBlockCost = Baritone.settings().blockPlacementPenalty.value;
         this.allowBreak = Baritone.settings().allowBreak.value;
         this.allowBreakAnyway = new ArrayList<>(Baritone.settings().allowBreakAnyway.value);
