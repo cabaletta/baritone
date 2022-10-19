@@ -101,7 +101,7 @@ public class MovementDescend extends Movement {
         //C, D, etc determine the length of the fall
 
         IBlockState below = context.get(destX, y - 2, destZ);
-        if (!MovementHelper.canWalkOn(context.bsi, destX, y - 2, destZ, below) || (below.getBlock() == Blocks.MAGMA && !context.allowSneakOverMagma)) {
+        if (!MovementHelper.canWalkOn(context.bsi, destX, y - 2, destZ, below)) {
             dynamicFallCost(context, x, y, z, destX, destZ, totalCost, below, res);
             return;
         }

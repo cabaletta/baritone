@@ -72,9 +72,6 @@ public class MovementPillar extends Movement {
         if (from == Blocks.VINE && !hasAgainst(context, x, y, z)) { // TODO this vine can't be climbed, but we could place a pillar still since vines are replacable, no? perhaps the pillar jump would be impossible because of the slowdown actually.
             return COST_INF;
         }
-        if (fromDown.getBlock() == Blocks.MAGMA && !context.allowSneakOverMagma) {
-            return COST_INF;
-        }
         IBlockState toBreak = context.get(x, y + 2, z);
         Block toBreakBlock = toBreak.getBlock();
         if (toBreakBlock instanceof BlockFenceGate) { // see issue #172

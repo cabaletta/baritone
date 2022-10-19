@@ -72,32 +72,24 @@ public class MovementTraverse extends Movement {
         IBlockState pb1 = context.get(destX, y, destZ);
         IBlockState destOn = context.get(destX, y - 1, destZ);
         Block srcDown = context.getBlock(x, y - 1, z);
-        if ((srcDown == Blocks.MAGMA || destOn.getBlock() == Blocks.MAGMA) && !context.allowSneakOverMagma) {
-            return COST_INF;
-        }
         if (MovementHelper.canWalkOn(context.bsi, destX, y - 1, destZ, destOn)) {//this is a walk, not a bridge
-            double WC;
-            if (srcDown == Blocks.MAGMA) {
-                WC = SNEAK_ONE_BLOCK_COST / 2;
-            } else if (srcDown == Blocks.SOUL_SAND) {
-                WC = WALK_ONE_OVER_SOUL_SAND_COST / 2;
-            } else {
-                WC = WALK_ONE_BLOCK_COST / 2;
-            }
-            if (destOn.getBlock() == Blocks.MAGMA) {
-                WC += SNEAK_ONE_BLOCK_COST/2;
-            } else if (destOn.getBlock() == Blocks.SOUL_SAND) {
-                WC += WALK_ONE_OVER_SOUL_SAND_COST / 2;
-            } else {
-                WC += WALK_ONE_BLOCK_COST / 2;
-            }
+            double WC = WALK_ONE_BLOCK_COST;
             boolean water = false;
             if (MovementHelper.isWater(pb0.getBlock()) || MovementHelper.isWater(pb1.getBlock())) {
                 WC = context.waterWalkSpeed;
                 water = true;
             } else {
-                if (destOn.getBlock() == Blocks.WATER) {
+                if (destOn.getBlock() == Blocks.SOUL_SAND) {
+                    WC += (WALK_ONE_OVER_SOUL_SAND_COST - WALK_ONE_BLOCK_COST) / 2;
+                } else if (destOn.getBlock() == Blocks.WATER) {
                     WC += context.walkOnWaterOnePenalty;
+                } else if (destOn.getBlock() == Blocks.MAGMA) {
+                    WC += (SNEAK_ONE_BLOCK_COST - WALK_ONE_BLOCK_COST) / 2;
+                }
+                if (srcDown == Blocks.SOUL_SAND) {
+                    WC += (WALK_ONE_OVER_SOUL_SAND_COST - WALK_ONE_BLOCK_COST) / 2;
+                } else if (srcDown == Blocks.MAGMA) {
+                    WC += (SNEAK_ONE_BLOCK_COST - WALK_ONE_BLOCK_COST) / 2;
                 }
             }
             double hardness1 = MovementHelper.getMiningDurationTicks(context, destX, y, destZ, pb1, false);
@@ -105,8 +97,8 @@ public class MovementTraverse extends Movement {
                 return COST_INF;
             }
             double hardness2 = MovementHelper.getMiningDurationTicks(context, destX, y + 1, destZ, pb0, true); // only include falling on the upper block to break
-            if (hardness1 == 0 && hardness2 == 0 && !MovementHelper.isOverMagma(context.bsi, x, y, z)) {
-                if (!water && context.canSprint) {
+            if (hardness1 == 0 && hardness2 == 0) {
+                if (!water && context.canSprint && !MovementHelper.isOverMagma(context.bsi, x, y, z)) {
                     // If there's nothing in the way, and this isn't water, and we aren't sneak placing
                     // We can sprint =D
                     // Don't check for soul sand, since we can sprint on that too

@@ -68,9 +68,6 @@ public class MovementAscend extends Movement {
     public static double cost(CalculationContext context, int x, int y, int z, int destX, int destZ) {
         IBlockState toPlace = context.get(destX, y, destZ);
         double additionalPlacementCost = 0;
-        if ((toPlace.getBlock() == Blocks.MAGMA || context.get(x, y, z).getBlock() == Blocks.MAGMA) && !context.allowSneakOverMagma) {
-            return COST_INF;
-        }
         if (!MovementHelper.canWalkOn(context.bsi, destX, y, destZ, toPlace)) {
             additionalPlacementCost = context.costOfPlacingAt(destX, y, destZ, toPlace);
             if (additionalPlacementCost >= COST_INF) {
