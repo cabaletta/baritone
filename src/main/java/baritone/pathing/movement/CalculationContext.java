@@ -49,6 +49,7 @@ public class CalculationContext {
 
     public final boolean safeForThreadedUse;
     public final IBaritone baritone;
+    public final EntityPlayerSP player;
     public final World world;
     public final WorldData worldData;
     public final BlockStateInterface bsi;
@@ -83,7 +84,7 @@ public class CalculationContext {
     public CalculationContext(IBaritone baritone, boolean forUseOnAnotherThread) {
         this.safeForThreadedUse = forUseOnAnotherThread;
         this.baritone = baritone;
-        EntityPlayerSP player = baritone.getPlayerContext().player();
+        this.player = baritone.getPlayerContext().player();
         this.world = baritone.getPlayerContext().world();
         this.worldData = (WorldData) baritone.getWorldProvider().getCurrentWorld();
         this.bsi = new BlockStateInterface(world, worldData, forUseOnAnotherThread);
