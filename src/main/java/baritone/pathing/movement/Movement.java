@@ -171,6 +171,10 @@ public abstract class Movement implements IMovement, MovementHelper {
                     if (ctx.isLookingAt(blockPos) || ctx.playerRotations().isReallyCloseTo(rotTowardsBlock)) {
                         state.setInput(Input.CLICK_LEFT, true);
                     }
+                    if (MovementHelper.isOverMagma(ctx, src, dest)) {
+                        state.setInput(Input.SPRINT, false);
+                        state.setInput(Input.SNEAK, true);
+                    }
                     return false;
                 }
                 //get rekt minecraft

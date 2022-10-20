@@ -34,6 +34,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockFalling;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
@@ -115,7 +116,7 @@ public class MovementDescend extends Movement {
         if (fromDown == Blocks.SOUL_SAND) {
             // use this ratio to apply the soul sand speed penalty to our 0.8 block distance
             walk *= WALK_ONE_OVER_SOUL_SAND_COST / WALK_ONE_BLOCK_COST;
-        } else if (fromDown == Blocks.MAGMA && !MovementHelper.hasFrostWalker(context)) {
+        } else if (fromDown == Blocks.MAGMA && !EnchantmentHelper.hasFrostWalkerEnchantment(mc.player)) {
             walk *= SNEAK_ONE_BLOCK_COST / WALK_ONE_BLOCK_COST;
         }
         totalCost += walk + Math.max(FALL_N_BLOCKS_COST[1], CENTER_AFTER_FALL_COST);

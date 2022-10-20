@@ -66,8 +66,6 @@ public class MovementDownward extends Movement {
         Block downBlock = down.getBlock();
         if (downBlock == Blocks.LADDER || downBlock == Blocks.VINE) {
             return LADDER_DOWN_ONE_COST;
-        } else if (downBlock == Blocks.MAGMA && !MovementHelper.hasFrostWalker(context)){//because i cant bring it to sneak when breaking the block atm
-            return COST_INF;
         } else {
             // we're standing on it, while it might be block falling, it'll be air by the time we get here in the movement
             return FALL_N_BLOCKS_COST[1] + MovementHelper.getMiningDurationTicks(context, x, y - 1, z, down, false);

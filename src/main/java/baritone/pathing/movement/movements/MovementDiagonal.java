@@ -32,6 +32,7 @@ import com.google.common.collect.ImmutableSet;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
@@ -138,7 +139,7 @@ public class MovementDiagonal extends Movement {
             return;
         }
         double multiplier;
-        if ((cuttingOver1 == Blocks.MAGMA || cuttingOver2 == Blocks.MAGMA) && !MovementHelper.hasFrostWalker(context)) {
+        if ((cuttingOver1 == Blocks.MAGMA || cuttingOver2 == Blocks.MAGMA) && !EnchantmentHelper.hasFrostWalkerEnchantment(mc.player)) {
             multiplier = SNEAK_ONE_BLOCK_COST;
         } else {
             multiplier = WALK_ONE_BLOCK_COST;
@@ -148,7 +149,7 @@ public class MovementDiagonal extends Movement {
             multiplier += (WALK_ONE_OVER_SOUL_SAND_COST - WALK_ONE_BLOCK_COST) / 2;
         } else if (destWalkOn.getBlock() == Blocks.WATER) {
             multiplier += context.walkOnWaterOnePenalty * SQRT_2;
-        } else if (destWalkOn.getBlock() == Blocks.MAGMA && (cuttingOver1 != Blocks.MAGMA || cuttingOver2 != Blocks.MAGMA) && !MovementHelper.hasFrostWalker(context)) {
+        } else if (destWalkOn.getBlock() == Blocks.MAGMA && cuttingOver1 != Blocks.MAGMA && cuttingOver2 != Blocks.MAGMA && !EnchantmentHelper.hasFrostWalkerEnchantment(mc.player)) {
             multiplier += (SNEAK_ONE_BLOCK_COST - WALK_ONE_BLOCK_COST) / 2;
         }
         Block fromDown = context.get(x, y - 1, z).getBlock();
@@ -157,7 +158,7 @@ public class MovementDiagonal extends Movement {
         }
         if (fromDown == Blocks.SOUL_SAND) {
             multiplier += (WALK_ONE_OVER_SOUL_SAND_COST - WALK_ONE_BLOCK_COST) / 2;
-        } else if (fromDown == Blocks.MAGMA && (cuttingOver1 != Blocks.MAGMA || cuttingOver2 != Blocks.MAGMA) && !MovementHelper.hasFrostWalker(context)) {
+        } else if (fromDown == Blocks.MAGMA && cuttingOver1 != Blocks.MAGMA && cuttingOver2 != Blocks.MAGMA && !EnchantmentHelper.hasFrostWalkerEnchantment(mc.player)) {
             multiplier += (SNEAK_ONE_BLOCK_COST - WALK_ONE_BLOCK_COST) / 2;
         }
         Block startIn = context.getBlock(x, y, z);

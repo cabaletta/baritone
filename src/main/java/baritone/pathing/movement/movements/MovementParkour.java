@@ -31,6 +31,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockLiquid;
 import net.minecraft.block.BlockStairs;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.EnumFacing;
 
@@ -91,7 +92,7 @@ public class MovementParkour extends Movement {
             return;
         }
         IBlockState standingOn = context.get(x, y - 1, z);
-        if (standingOn.getBlock() == Blocks.MAGMA && !MovementHelper.hasFrostWalker(context)) {
+        if (standingOn.getBlock() == Blocks.MAGMA && !EnchantmentHelper.hasFrostWalkerEnchantment(mc.player)) {
             return;
         }
         if (standingOn.getBlock() == Blocks.VINE || standingOn.getBlock() == Blocks.LADDER || standingOn.getBlock() instanceof BlockStairs || MovementHelper.isBottomSlab(standingOn) || standingOn.getBlock() instanceof BlockLiquid) {

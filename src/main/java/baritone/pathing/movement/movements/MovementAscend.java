@@ -30,6 +30,7 @@ import baritone.utils.BlockStateInterface;
 import com.google.common.collect.ImmutableSet;
 import net.minecraft.block.BlockFalling;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.EnumFacing;
 
@@ -134,7 +135,7 @@ public class MovementAscend extends Movement {
             // jumpingFromBottomSlab must be false
             if (toPlace.getBlock() == Blocks.SOUL_SAND) {
                 walk = WALK_ONE_OVER_SOUL_SAND_COST;
-            } else if (toPlace.getBlock() == Blocks.MAGMA && !MovementHelper.hasFrostWalker(context)) {
+            } else if (toPlace.getBlock() == Blocks.MAGMA && !EnchantmentHelper.hasFrostWalkerEnchantment(mc.player)) {
                 walk = Math.max(JUMP_ONE_BLOCK_COST, SNEAK_ONE_BLOCK_COST);
             } else {
                 walk = Math.max(JUMP_ONE_BLOCK_COST, WALK_ONE_BLOCK_COST);

@@ -33,6 +33,7 @@ import baritone.utils.BlockStateInterface;
 import com.google.common.collect.ImmutableSet;
 import net.minecraft.block.*;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
@@ -83,12 +84,12 @@ public class MovementTraverse extends Movement {
                     WC += (WALK_ONE_OVER_SOUL_SAND_COST - WALK_ONE_BLOCK_COST) / 2;
                 } else if (destOn.getBlock() == Blocks.WATER) {
                     WC += context.walkOnWaterOnePenalty;
-                } else if (destOn.getBlock() == Blocks.MAGMA && !MovementHelper.hasFrostWalker(context)) {
+                } else if (destOn.getBlock() == Blocks.MAGMA && !EnchantmentHelper.hasFrostWalkerEnchantment(mc.player)) {
                     WC += (SNEAK_ONE_BLOCK_COST - WALK_ONE_BLOCK_COST) / 2;
                 }
                 if (srcDown == Blocks.SOUL_SAND) {
                     WC += (WALK_ONE_OVER_SOUL_SAND_COST - WALK_ONE_BLOCK_COST) / 2;
-                } else if (srcDown == Blocks.MAGMA && !MovementHelper.hasFrostWalker(context)) {
+                } else if (srcDown == Blocks.MAGMA && !EnchantmentHelper.hasFrostWalkerEnchantment(mc.player)) {
                     WC += (SNEAK_ONE_BLOCK_COST - WALK_ONE_BLOCK_COST) / 2;
                 }
             }
