@@ -84,12 +84,12 @@ public class MovementTraverse extends Movement {
                     WC += (WALK_ONE_OVER_SOUL_SAND_COST - WALK_ONE_BLOCK_COST) / 2;
                 } else if (destOn.getBlock() == Blocks.WATER) {
                     WC += context.walkOnWaterOnePenalty;
-                } else if (destOn.getBlock() == Blocks.MAGMA && !EnchantmentHelper.hasFrostWalkerEnchantment(context.player)) {
+                } else if (destOn.getBlock() == Blocks.MAGMA && !context.frostwalker) {
                     WC += (SNEAK_ONE_BLOCK_COST - WALK_ONE_BLOCK_COST) / 2;
                 }
                 if (srcDown == Blocks.SOUL_SAND) {
                     WC += (WALK_ONE_OVER_SOUL_SAND_COST - WALK_ONE_BLOCK_COST) / 2;
-                } else if (srcDown == Blocks.MAGMA && !EnchantmentHelper.hasFrostWalkerEnchantment(context.player)) {
+                } else if (srcDown == Blocks.MAGMA && !context.frostwalker) {
                     WC += (SNEAK_ONE_BLOCK_COST - WALK_ONE_BLOCK_COST) / 2;
                 }
             }
@@ -99,7 +99,7 @@ public class MovementTraverse extends Movement {
             }
             double hardness2 = MovementHelper.getMiningDurationTicks(context, destX, y + 1, destZ, pb0, true); // only include falling on the upper block to break
             if (hardness1 == 0 && hardness2 == 0) {
-                if (!water && context.canSprint && !MovementHelper.isOverMagma(context.bsi, x, y, z)) {
+                if (!water && context.canSprint && context.bsi.get0(x,y-1,z).getBlock() != Blocks.MAGMA) {
                     // If there's nothing in the way, and this isn't water, and we aren't sneak placing
                     // We can sprint =D
                     // Don't check for soul sand, since we can sprint on that too

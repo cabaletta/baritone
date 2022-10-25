@@ -328,7 +328,6 @@ public interface MovementHelper extends ActionCosts, Helper {
         Block block = state.getBlock();
         if (block == Blocks.AIR) {
             // early return for most common case (air)
-            // plus magma, which is a normal cube but it hurts you
             return false;
         }
         if (state.isBlockNormalCube()) {

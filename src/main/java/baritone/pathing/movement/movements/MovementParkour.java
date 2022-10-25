@@ -92,7 +92,7 @@ public class MovementParkour extends Movement {
             return;
         }
         IBlockState standingOn = context.get(x, y - 1, z);
-        if (standingOn.getBlock() == Blocks.MAGMA && !EnchantmentHelper.hasFrostWalkerEnchantment(context.player)) {
+        if (standingOn.getBlock() == Blocks.MAGMA && !context.frostwalker) {
             return;
         }
         if (standingOn.getBlock() == Blocks.VINE || standingOn.getBlock() == Blocks.LADDER || standingOn.getBlock() instanceof BlockStairs || MovementHelper.isBottomSlab(standingOn) || standingOn.getBlock() instanceof BlockLiquid) {

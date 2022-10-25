@@ -135,7 +135,7 @@ public class MovementAscend extends Movement {
             // jumpingFromBottomSlab must be false
             if (toPlace.getBlock() == Blocks.SOUL_SAND) {
                 walk = WALK_ONE_OVER_SOUL_SAND_COST;
-            } else if (toPlace.getBlock() == Blocks.MAGMA && !EnchantmentHelper.hasFrostWalkerEnchantment(context.player)) {
+            } else if (toPlace.getBlock() == Blocks.MAGMA && !context.frostwalker) {
                 walk = Math.max(JUMP_ONE_BLOCK_COST, SNEAK_ONE_BLOCK_COST);
             } else {
                 walk = Math.max(JUMP_ONE_BLOCK_COST, WALK_ONE_BLOCK_COST);
