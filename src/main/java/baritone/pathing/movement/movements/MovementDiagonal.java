@@ -32,7 +32,6 @@ import com.google.common.collect.ImmutableSet;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
@@ -140,7 +139,6 @@ public class MovementDiagonal extends Movement {
         }
         double multiplier;
 
-        //if we will have to sneak
         if ((cuttingOver1 == Blocks.MAGMA || cuttingOver2 == Blocks.MAGMA) && !context.frostwalker) {
             multiplier = SNEAK_ONE_BLOCK_COST;
         } else {
@@ -148,10 +146,9 @@ public class MovementDiagonal extends Movement {
         }
         // For either possible soul sand, that affects half of our walking
         if (destWalkOn.getBlock() == Blocks.SOUL_SAND) {
-            multiplier += (WALK_ONE_OVER_SOUL_SAND_COST - WALK_ONE_BLOCK_COST) / 2;
+            multiplier += (WALK_ONE_OVER_SOUL_SAND_COST - WALK_ONE_BLOCK_COST) / 2; //todo if cut over magma is true this should be (soul_sand_cost - sneak_cost)/2
         } else if (destWalkOn.getBlock() == Blocks.WATER) {
             multiplier += context.walkOnWaterOnePenalty * SQRT_2;
-        //we walk on to magma and arnt already sneaking -> cost increase because sneak
         } else if (destWalkOn.getBlock() == Blocks.MAGMA && cuttingOver1 != Blocks.MAGMA && cuttingOver2 != Blocks.MAGMA && !context.frostwalker) {
             multiplier += (SNEAK_ONE_BLOCK_COST - WALK_ONE_BLOCK_COST) / 2;
         }
@@ -160,8 +157,7 @@ public class MovementDiagonal extends Movement {
             return;
         }
         if (fromDown == Blocks.SOUL_SAND) {
-            multiplier += (WALK_ONE_OVER_SOUL_SAND_COST - WALK_ONE_BLOCK_COST) / 2;
-        //we walk from magma and arnt already sneaking -> cost increase because sneak
+            multiplier += (WALK_ONE_OVER_SOUL_SAND_COST - WALK_ONE_BLOCK_COST) / 2; //todo if cut over magma is true this should be (soul_sand_cost - sneak_cost)/2
         } else if (fromDown == Blocks.MAGMA && cuttingOver1 != Blocks.MAGMA && cuttingOver2 != Blocks.MAGMA && !context.frostwalker) {
             multiplier += (SNEAK_ONE_BLOCK_COST - WALK_ONE_BLOCK_COST) / 2;
         }
