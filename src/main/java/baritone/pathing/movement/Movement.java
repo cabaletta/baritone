@@ -39,29 +39,21 @@ public abstract class Movement implements IMovement, MovementHelper {
 
     protected final IBaritone baritone;
     protected final IPlayerContext ctx;
-
-    private MovementState currentState = new MovementState().setStatus(MovementStatus.PREPPING);
-
     protected final BetterBlockPos src;
-
     protected final BetterBlockPos dest;
-
     /**
      * The positions that need to be broken before this movement can ensue
      */
     protected final BetterBlockPos[] positionsToBreak;
-
     /**
      * The position where we need to place a block before this movement can ensue
      */
     protected final BetterBlockPos positionToPlace;
-
-    private Double cost;
-
     public List<BlockPos> toBreakCached = null;
     public List<BlockPos> toPlaceCached = null;
     public List<BlockPos> toWalkIntoCached = null;
-
+    private MovementState currentState = new MovementState().setStatus(MovementStatus.PREPPING);
+    private Double cost;
     private Set<BetterBlockPos> validPositionsCached = null;
 
     private Boolean calculatedWhileLoaded;

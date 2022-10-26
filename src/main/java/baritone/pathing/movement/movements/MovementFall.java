@@ -87,7 +87,7 @@ public class MovementFall extends Movement {
         if (state.getStatus() != MovementStatus.RUNNING) {
             return state;
         }
-        if (MovementHelper.isOverMagma(ctx,src,dest)) {
+        if (MovementHelper.isOverMagma(ctx, src, dest)) {
             state.setInput(Input.SPRINT, false);
             state.setInput(Input.SNEAK, true);
         }

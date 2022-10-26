@@ -34,7 +34,6 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockFalling;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
@@ -213,7 +212,7 @@ public class MovementDescend extends Movement {
             return state;
         }
 
-        if (MovementHelper.isOverMagma(ctx,src,dest)) {
+        if (MovementHelper.isOverMagma(ctx, src, dest)) {
             state.setInput(Input.SPRINT, false);
             state.setInput(Input.SNEAK, true);
         }

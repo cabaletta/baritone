@@ -283,8 +283,9 @@ public interface MovementHelper extends ActionCosts, Helper {
 
     /**
      * Do I have to sneak because im on a Magma block?
-     * @param ctx IPlayerContext to access player position and inventory
-     * @param src the block we are comming from
+     *
+     * @param ctx  IPlayerContext to access player position and inventory
+     * @param src  the block we are comming from
      * @param dest the block we want to go to
      * @return if we have to sneak to prevent magma damage
      */
@@ -308,8 +309,9 @@ public interface MovementHelper extends ActionCosts, Helper {
         }
         return false; //if we get this far there is no magma
     }
+
     static boolean isOverMagma(BlockStateInterface bsi, int x, int y, int z) {
-        return bsi.get0(x,y-1,z).getBlock() == Blocks.MAGMA;
+        return bsi.get0(x, y - 1, z).getBlock() == Blocks.MAGMA;
     }
 
     /**

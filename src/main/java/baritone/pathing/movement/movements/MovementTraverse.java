@@ -33,7 +33,6 @@ import baritone.utils.BlockStateInterface;
 import com.google.common.collect.ImmutableSet;
 import net.minecraft.block.*;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
@@ -99,7 +98,7 @@ public class MovementTraverse extends Movement {
             }
             double hardness2 = MovementHelper.getMiningDurationTicks(context, destX, y + 1, destZ, pb0, true); // only include falling on the upper block to break
             if (hardness1 == 0 && hardness2 == 0) {
-                if (!water && context.canSprint && context.bsi.get0(x,y-1,z).getBlock() != Blocks.MAGMA) {
+                if (!water && context.canSprint && context.bsi.get0(x, y - 1, z).getBlock() != Blocks.MAGMA) {
                     // If there's nothing in the way, and this isn't water, and we aren't sneak placing
                     // We can sprint =D
                     // Don't check for soul sand, since we can sprint on that too

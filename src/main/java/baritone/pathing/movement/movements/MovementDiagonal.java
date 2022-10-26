@@ -270,7 +270,7 @@ public class MovementDiagonal extends Movement {
         }
         if (MovementHelper.isOverMagma(ctx, src, dest)) {
             state.setInput(Input.SPRINT, false);//we cant sprint while sneaking
-            state.setInput(Input.SNEAK,true);
+            state.setInput(Input.SNEAK, true);
         }
         MovementHelper.moveTowards(ctx, state, dest);
         return state;

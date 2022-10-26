@@ -62,6 +62,8 @@ public class PathExecutor implements IPathExecutor, Helper {
     private static final double MAX_TICKS_AWAY = 200;
 
     private final IPath path;
+    private final PathingBehavior behavior;
+    private final IPlayerContext ctx;
     private int pathPosition;
     private int ticksAway;
     private int ticksOnCurrent;
@@ -72,10 +74,6 @@ public class PathExecutor implements IPathExecutor, Helper {
     private HashSet<BlockPos> toBreak = new HashSet<>();
     private HashSet<BlockPos> toPlace = new HashSet<>();
     private HashSet<BlockPos> toWalkInto = new HashSet<>();
-
-    private final PathingBehavior behavior;
-    private final IPlayerContext ctx;
-
     private boolean sprintNextTick;
 
     public PathExecutor(PathingBehavior behavior, IPath path) {

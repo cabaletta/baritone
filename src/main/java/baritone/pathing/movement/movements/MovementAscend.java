@@ -191,7 +191,7 @@ public class MovementAscend extends Movement {
             return state;
         }
         if (MovementHelper.isOverMagma(ctx, src, dest)) {
-            state.setInput(Input.SPRINT,false);
+            state.setInput(Input.SPRINT, false);
             state.setInput(Input.SNEAK, true);
         }
         MovementHelper.moveTowards(ctx, state, dest);
