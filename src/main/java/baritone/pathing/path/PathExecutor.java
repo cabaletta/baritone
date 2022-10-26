@@ -358,7 +358,7 @@ public class PathExecutor implements IPathExecutor, Helper {
         // traverse requests sprinting, so we need to do this check first
         if (current instanceof MovementTraverse && pathPosition < path.length() - 3) {
             IMovement next = path.movements().get(pathPosition + 1);
-            if (next instanceof MovementAscend && sprintableAscend(ctx, (MovementTraverse) current, (MovementAscend) next, path.movements().get(pathPosition + 2))) {
+            if (next instanceof MovementAscend && sprintableAscend(ctx, (MovementTraverse) current, (MovementAscend) next, path.movements().get(pathPosition + 2)) && !behavior.baritone.getInputOverrideHandler().isInputForcedDown(Input.SNEAK)) {
                 if (skipNow(ctx, current)) {
                     logDebug("Skipping traverse to straight ascend");
                     pathPosition++;

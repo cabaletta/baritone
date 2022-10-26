@@ -30,7 +30,6 @@ import baritone.utils.BlockStateInterface;
 import com.google.common.collect.ImmutableSet;
 import net.minecraft.block.BlockFalling;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.EnumFacing;
 
@@ -215,7 +214,7 @@ public class MovementAscend extends Movement {
             return state;
         }
 
-        if (headBonkClear()) {
+        if (headBonkClear() && (state.getInputStates().get(Input.SNEAK) == null || !state.getInputStates().get(Input.SNEAK))) {
             return state.setInput(Input.JUMP, true);
         }
 
