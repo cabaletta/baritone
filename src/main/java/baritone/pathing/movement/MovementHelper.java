@@ -35,6 +35,7 @@ import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.piston.MovingPistonBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.Half;
 import net.minecraft.world.level.block.state.properties.SlabType;
 import net.minecraft.world.level.material.FlowingFluid;
 import net.minecraft.world.level.material.Fluid;
@@ -346,6 +347,16 @@ public interface MovementHelper extends ActionCosts, Helper {
             if (up == Blocks.LILY_PAD || up instanceof WoolCarpetBlock) {
                 return true;
             }
+
+            // allow walking on waterlogged topslabs
+            if (block instanceof SlabBlock && state.getValue(SlabBlock.TYPE) == SlabType.TOP) {
+                return true;
+            }
+
+            if (block instanceof StairBlock) {
+                return true;
+            }
+
             if (isFlowing(x, y, z, state, bsi) || upState.getFluidState().getType() == Fluids.FLOWING_WATER) {
                 // the only scenario in which we can walk on flowing water is if it's under still water with jesus off
                 return isWater(upState) && !Baritone.settings().assumeWalkOnWater.value;
