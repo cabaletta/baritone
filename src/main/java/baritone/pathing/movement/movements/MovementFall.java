@@ -87,6 +87,10 @@ public class MovementFall extends Movement {
         if (state.getStatus() != MovementStatus.RUNNING) {
             return state;
         }
+        if (MovementHelper.isOverMagma(ctx, src, dest)) {
+            state.setInput(Input.SPRINT, false);
+            state.setInput(Input.SNEAK, true);
+        }
 
         BlockPos playerFeet = ctx.playerFeet();
         Rotation toDest = RotationUtils.calcRotationFromVec3d(ctx.playerHead(), VecUtils.getBlockPosCenter(dest), ctx.playerRotations());

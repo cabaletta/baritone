@@ -33,6 +33,7 @@ import baritone.utils.BlockStateInterface;
 import com.google.common.collect.ImmutableSet;
 import net.minecraft.block.*;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
@@ -181,6 +182,10 @@ public class MovementPillar extends Movement {
                 return state.setStatus(MovementStatus.SUCCESS);
             }
             return state;
+        }
+        if (fromDown.getBlock() == Blocks.MAGMA && !EnchantmentHelper.hasFrostWalkerEnchantment(ctx.player())) {
+            state.setInput(Input.SPRINT, false);
+            state.setInput(Input.SNEAK, true);
         }
         boolean ladder = fromDown.getBlock() == Blocks.LADDER || fromDown.getBlock() == Blocks.VINE;
         boolean vine = fromDown.getBlock() == Blocks.VINE;

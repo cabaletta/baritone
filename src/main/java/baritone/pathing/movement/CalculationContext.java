@@ -56,7 +56,6 @@ public class CalculationContext {
     public final boolean hasWaterBucket;
     public final boolean hasThrowaway;
     public final boolean canSprint;
-    protected final double placeBlockCost; // protected because you should call the function instead
     public final boolean allowBreak;
     public final List<Block> allowBreakAnyway;
     public final boolean allowParkour;
@@ -69,12 +68,14 @@ public class CalculationContext {
     public final boolean allowDownward;
     public final int maxFallHeightNoWater;
     public final int maxFallHeightBucket;
+    public final boolean frostwalker;
     public final double waterWalkSpeed;
     public final double breakBlockAdditionalCost;
-    public double backtrackCostFavoringCoefficient;
-    public double jumpPenalty;
     public final double walkOnWaterOnePenalty;
     public final BetterWorldBorder worldBorder;
+    protected final double placeBlockCost; // protected because you should call the function instead
+    public double backtrackCostFavoringCoefficient;
+    public double jumpPenalty;
 
     public CalculationContext(IBaritone baritone) {
         this(baritone, false);
@@ -104,6 +105,7 @@ public class CalculationContext {
         this.allowDownward = Baritone.settings().allowDownward.value;
         this.maxFallHeightNoWater = Baritone.settings().maxFallHeightNoWater.value;
         this.maxFallHeightBucket = Baritone.settings().maxFallHeightBucket.value;
+        this.frostwalker = EnchantmentHelper.hasFrostWalkerEnchantment(player);
         int depth = EnchantmentHelper.getDepthStriderModifier(player);
         if (depth > 3) {
             depth = 3;

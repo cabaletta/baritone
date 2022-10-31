@@ -115,6 +115,8 @@ public class MovementDescend extends Movement {
         if (fromDown == Blocks.SOUL_SAND) {
             // use this ratio to apply the soul sand speed penalty to our 0.8 block distance
             walk *= WALK_ONE_OVER_SOUL_SAND_COST / WALK_ONE_BLOCK_COST;
+        } else if (fromDown == Blocks.MAGMA && !context.frostwalker) {
+            walk *= SNEAK_ONE_BLOCK_COST / WALK_ONE_BLOCK_COST;
         }
         totalCost += walk + Math.max(FALL_N_BLOCKS_COST[1], CENTER_AFTER_FALL_COST);
         res.x = destX;
@@ -208,6 +210,11 @@ public class MovementDescend extends Movement {
         super.updateState(state);
         if (state.getStatus() != MovementStatus.RUNNING) {
             return state;
+        }
+
+        if (MovementHelper.isOverMagma(ctx, src, dest)) {
+            state.setInput(Input.SPRINT, false);
+            state.setInput(Input.SNEAK, true);
         }
 
         BlockPos playerFeet = ctx.playerFeet();

@@ -30,6 +30,7 @@ import baritone.utils.ToolSet;
 import net.minecraft.block.*;
 import net.minecraft.block.properties.PropertyBool;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
@@ -281,6 +282,39 @@ public interface MovementHelper extends ActionCosts, Helper {
     }
 
     /**
+     * Do I have to sneak because im on a Magma block?
+     *
+     * @param ctx  IPlayerContext to access player position and inventory
+     * @param src  the block we are comming from
+     * @param dest the block we want to go to
+     * @return if we have to sneak to prevent magma damage
+     */
+    static boolean isOverMagma(IPlayerContext ctx, BetterBlockPos src, BetterBlockPos dest) {
+        int x = ctx.playerFeet().x;
+        int y = ctx.playerFeet().y;
+        int z = ctx.playerFeet().z;
+        BlockStateInterface bsi = new BlockStateInterface(ctx);
+
+        if (EnchantmentHelper.hasFrostWalkerEnchantment(ctx.player())) {        //if we are wearing frostwalker boots magma can go fuck itself
+            return false;
+        }
+        if (isOverMagma(bsi, x, y, z) || isOverMagma(bsi, dest.x, y, dest.z)) { //we are or going to stand on magma
+            return true;
+        }
+        if (isOverMagma(bsi, dest.x, dest.y, dest.z) && y < src.y) {            //we drop down on a magma block
+            return true;
+        }
+        if ((src.x != dest.x && src.z != dest.z)) {                             //we move diagonally
+            return isOverMagma(bsi, src.x, y, dest.z) || isOverMagma(bsi, dest.x, y, dest.z) || isOverMagma(bsi, dest.x, y, src.z); //over a magmablock
+        }
+        return false; //if we get this far there is no magma
+    }
+
+    static boolean isOverMagma(BlockStateInterface bsi, int x, int y, int z) {
+        return bsi.get0(x, y - 1, z).getBlock() == Blocks.MAGMA;
+    }
+
+    /**
      * Can I walk on this block without anything weird happening like me falling
      * through? Includes water because we know that we automatically jump on
      * water
@@ -294,9 +328,8 @@ public interface MovementHelper extends ActionCosts, Helper {
      */
     static boolean canWalkOn(BlockStateInterface bsi, int x, int y, int z, IBlockState state) {
         Block block = state.getBlock();
-        if (block == Blocks.AIR || block == Blocks.MAGMA) {
+        if (block == Blocks.AIR) {
             // early return for most common case (air)
-            // plus magma, which is a normal cube but it hurts you
             return false;
         }
         if (state.isBlockNormalCube()) {
