@@ -1048,7 +1048,7 @@ public final class Settings {
     /**
      * What Y level to go to for legit strip mining
      */
-    public final Setting<Integer> legitMineYLevel = new Setting<>(11);
+    public final Setting<Integer> legitMineYLevel = new Setting<>(-59);
 
     /**
      * Magically see ores that are separated diagonally from existing ores. Basically like mining around the ores that it finds

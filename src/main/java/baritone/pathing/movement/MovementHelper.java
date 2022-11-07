@@ -622,7 +622,7 @@ public interface MovementHelper extends ActionCosts, Helper {
 
     static boolean isTransparent(Block b) {
 
-        return b == Blocks.AIR ||
+        return b instanceof AirBlock ||
                 b == Blocks.LAVA ||
                 b == Blocks.WATER;
     }
