@@ -108,6 +108,13 @@ public final class Settings {
     public final Setting<Double> walkOnWaterOnePenalty = new Setting<>(3D);
 
     /**
+     * Don't allow breaking blocks next to liquids.
+     * <p>
+     * Enable if you have mods adding custom fluid physics.
+     */
+    public final Setting<Boolean> strictLiquidCheck = new Setting<>(false);
+
+    /**
      * Allow Baritone to fall arbitrary distances and place a water bucket beneath it.
      * Reliability: questionable.
      */
