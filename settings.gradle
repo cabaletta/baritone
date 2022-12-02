@@ -17,32 +17,30 @@
 
 pluginManagement {
     repositories {
-        maven { url "https://maven.architectury.dev/" }
+        mavenLocal()
         maven {
+            name = 'WagYourMaven'
+            url = 'https://maven.wagyourtail.xyz/snapshots'
+        }
+        maven {
+            name = 'ForgeMaven'
+            url = 'https://maven.minecraftforge.net/'
+        }
+        maven {
+            name = 'FabricMaven'
             url = 'https://maven.fabricmc.net/'
         }
-        maven {
-            name = 'forge'
-            url = 'https://files.minecraftforge.net/maven'
-        }
-        maven {
-            name = 'impactdevelopment-repo'
-            url = 'https://impactdevelopment.github.io/maven/'
-        }
-        maven {
-            url = 'https://www.dogforce-games.com/maven/'
-        }
-        maven {
-            url = 'https://libraries.minecraft.net/'
-        }
         mavenCentral()
-        gradlePluginPortal()
+        gradlePluginPortal() {
+            content {
+                excludeGroup "org.apache.logging.log4j"
+            }
+        }
     }
 }
 
 rootProject.name = 'baritone'
 
-include("common")
 include("tweaker")
 if (System.getProperty("Baritone.enabled_platforms") == null) {
     System.setProperty("Baritone.enabled_platforms", "fabric,forge")
