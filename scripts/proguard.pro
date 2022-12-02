@@ -340,6 +340,3 @@
     public java.lang.String substring(int);
     public java.lang.String substring(int,int);
 }
-
--keep class sun.misc.Unsafe { *; }
--dontnote sun.misc.Unsafe
