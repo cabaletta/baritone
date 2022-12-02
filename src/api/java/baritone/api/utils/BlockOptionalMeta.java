@@ -18,9 +18,7 @@
 package baritone.api.utils;
 
 import baritone.api.utils.accessor.IItemStack;
-import baritone.utils.accessors.IServerPackSource;
 import com.google.common.collect.ImmutableSet;
-import com.mojang.authlib.minecraft.client.MinecraftClient;
 import io.netty.util.concurrent.ThreadPerTaskExecutor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -56,6 +54,7 @@ import sun.misc.Unsafe;
 
 import javax.annotation.Nonnull;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -156,9 +155,26 @@ public final class BlockOptionalMeta {
         return null;
     }
 
+    private static Method getVanillaServerPack;
+
+    private static VanillaPackResources getVanillaServerPack() {
+        if (getVanillaServerPack == null) {
+            getVanillaServerPack = Arrays.stream(ServerPacksSource.class.getDeclaredMethods()).filter(field -> field.getReturnType() == VanillaPackResources.class).findFirst().orElseThrow();
+            getVanillaServerPack.setAccessible(true);
+        }
+
+        try {
+            return (VanillaPackResources) getVanillaServerPack.invoke(null);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
     public static LootTables getManager() {
         if (lootTables == null) {
-            MultiPackResourceManager resources = new MultiPackResourceManager(PackType.SERVER_DATA, List.of(((IServerPackSource) new ServerPacksSource()).callCreateVanillaPackSource()));
+            MultiPackResourceManager resources = new MultiPackResourceManager(PackType.SERVER_DATA, List.of(getVanillaServerPack()));
             ReloadableResourceManager resourceManager = new ReloadableResourceManager(PackType.SERVER_DATA);
             lootTables = new LootTables(predicate);
             resourceManager.registerReloadListener(lootTables);
@@ -211,6 +227,7 @@ public final class BlockOptionalMeta {
 
         @Override
         public FeatureFlagSet enabledFeatures() {
+            assert client.level != null;
             return client.level.enabledFeatures();
         }
 
