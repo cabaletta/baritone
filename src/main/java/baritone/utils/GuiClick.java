@@ -80,6 +80,7 @@ public class GuiClick extends Screen implements Helper {
             HitResult result = player.level.clip(new ClipContext(near.add(viewerPos), far.add(viewerPos), ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, player));
             if (result != null && result.getType() == HitResult.Type.BLOCK) {
                 currentMouseOver = ((BlockHitResult) result).getBlockPos();
+                System.out.println("currentMouseOver = " + currentMouseOver);
             }
         }
     }
@@ -158,9 +159,13 @@ public class GuiClick extends Screen implements Helper {
         y = y * 2 - 1;
 
         Vector4f pos = new Vector4f((float) x, (float) y, (float) z, 1.0F);
-        projectionViewMatrix.transformProject(pos);
+        projectionViewMatrix.transform(pos);
 
-        pos.normalize();
+        if (pos.w() == 0) {
+            return null;
+        }
+
+        pos.mul(1/pos.w());
         return new Vec3(pos.x(), pos.y(), pos.z());
     }
 }
