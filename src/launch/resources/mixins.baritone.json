@@ -23,6 +23,7 @@
     "MixinNetworkManager",
     "MixinPlayerController",
     "MixinScreen",
+    "MixinServerPackSource",
     "MixinWorldRenderer"
   ]
 }

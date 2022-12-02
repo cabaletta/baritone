@@ -20,14 +20,19 @@ package baritone.launch.mixins;
 import baritone.Baritone;
 import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
+import baritone.api.event.events.ChatEvent;
 import baritone.api.event.events.ChunkEvent;
 import baritone.api.event.events.type.EventState;
 import baritone.cache.CachedChunk;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.*;
 import net.minecraft.world.level.ChunkPos;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -62,6 +67,25 @@ public class MixinClientPlayNetHandler {
             }
         }
     }*/
+
+    @Shadow @Final private Minecraft minecraft;
+
+    @Inject(
+        method = "sendChat(Ljava/lang/String;)V",
+        at = @At("HEAD"),
+        cancellable = true
+    )
+    private void sendChatMessage(String string, CallbackInfo ci) {
+        ChatEvent event = new ChatEvent(string);
+        IBaritone baritone = BaritoneAPI.getProvider().getBaritoneForPlayer(this.minecraft.player);
+        if (baritone == null) {
+            return;
+        }
+        baritone.getGameEventHandler().onSendChatMessage(event);
+        if (event.isCancelled()) {
+            ci.cancel();
+        }
+    }
 
     @Inject(
             method = "handleLevelChunkWithLight",

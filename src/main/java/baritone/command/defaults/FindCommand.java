@@ -27,6 +27,7 @@ import baritone.api.utils.BetterBlockPos;
 import baritone.cache.CachedChunk;
 import net.minecraft.core.Registry;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
@@ -57,7 +58,7 @@ public class FindCommand extends Command {
         Component[] components = toFind.stream()
                 .flatMap(block ->
                         ctx.worldData().getCachedWorld().getLocationsOf(
-                                Registry.BLOCK.getKey(block).getPath(),
+                            BuiltInRegistries.BLOCK.getKey(block).getPath(),
                                 Integer.MAX_VALUE,
                                 origin.x,
                                 origin.y,
@@ -93,7 +94,7 @@ public class FindCommand extends Command {
         return new TabCompleteHelper()
                 .append(
                     CachedChunk.BLOCKS_TO_KEEP_TRACK_OF.stream()
-                        .map(Registry.BLOCK::getKey)
+                        .map(BuiltInRegistries.BLOCK::getKey)
                         .map(Object::toString)
                 )
                 .filterPrefixNamespaced(args.getString())

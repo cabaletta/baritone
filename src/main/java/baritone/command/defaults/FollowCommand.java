@@ -31,6 +31,7 @@ import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -84,7 +85,7 @@ public class FollowCommand extends Command {
             } else {
                 logDirect("Following these types of entities:");
                 classes.stream()
-                        .map(Registry.ENTITY_TYPE::getKey)
+                        .map(BuiltInRegistries.ENTITY_TYPE::getKey)
                         .map(Objects::requireNonNull)
                         .map(ResourceLocation::toString)
                         .forEach(this::logDirect);

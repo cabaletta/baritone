@@ -26,6 +26,7 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
@@ -106,7 +107,7 @@ public final class SpongeSchematic extends StaticSchematic {
 
         private BlockState deserialize() {
             if (this.blockState == null) {
-                Block block = Registry.BLOCK.get(this.resourceLocation);
+                Block block = BuiltInRegistries.BLOCK.get(this.resourceLocation);
                 this.blockState = block.defaultBlockState();
 
                 this.properties.keySet().stream().sorted(String::compareTo).forEachOrdered(key -> {
