@@ -66,6 +66,7 @@ allprojects {
         // The following line declares the mojmap mappings, you may use other mappings as well
         mappings "net.fabricmc:intermediary:${rootProject.minecraft_version}:v2"
         mappings "net.minecraft:minecraft:${rootProject.minecraft_version}:client-mappings"
+        mappings "org.parchmentmc.data:parchment-1.19.2:2022.11.27@zip"
 
         implementation "org.spongepowered:mixin:0.8.5"
         implementation "org.ow2.asm:asm:9.3"
