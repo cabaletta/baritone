@@ -111,7 +111,10 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
             Baritone.getExecutor().execute(() -> rescan(curr, context));
         }
         if (Baritone.settings().legitMine.value) {
-            if (!addNearby()) return null;
+            if (!addNearby()) {
+                cancel();
+                return null;
+            }
         }
         Optional<BlockPos> shaft = curr.stream()
                 .filter(pos -> pos.getX() == ctx.playerFeet().getX() && pos.getZ() == ctx.playerFeet().getZ())
