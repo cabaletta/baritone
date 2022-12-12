@@ -83,6 +83,7 @@ public class WorldProvider implements IWorldProvider, Helper {
                     folderName = mc.getCurrentServer().ip;
                 } else {
                     //replaymod causes null currentServerData and false singleplayer.
+                    System.out.println("BARITONE: setting current world to null");
                     currentWorld = null;
                     return;
                 }
