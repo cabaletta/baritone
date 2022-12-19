@@ -48,6 +48,10 @@ public class WorldProvider implements IWorldProvider, Helper {
 
     @Override
     public final WorldData getCurrentWorld() {
+        // attempt reload if the worldData is null
+        if (currentWorld == null && mc.level != null) {
+            initWorld(mc.level.dimension(), mc.level.dimensionType());
+        }
         return this.currentWorld;
     }
 
