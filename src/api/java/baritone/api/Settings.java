@@ -280,6 +280,12 @@ public final class Settings {
     public final Setting<Boolean> buildIgnoreDirection = new Setting<>(false);
 
     /**
+     * A list of names of block properties the builder will ignore.
+     */
+    public final Setting<List<String>> buildIgnoreProperties = new Setting<>(new ArrayList<>(Arrays.asList(
+    )));
+
+    /**
      * If this setting is true, Baritone will never break a block that is adjacent to an unsupported falling block.
      * <p>
      * I.E. it will never trigger cascading sand / gravel falls
