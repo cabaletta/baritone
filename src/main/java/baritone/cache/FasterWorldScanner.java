@@ -102,12 +102,27 @@ public enum FasterWorldScanner implements IWorldScanner {
             this.ctx = ctx;
         }
 
-        public List<ChunkPos> getChunkRange(int centerX, int centerZ, int chunkrange) {
+        public List<ChunkPos> getChunkRange(int centerX, int centerZ, int chunkRadius) {
             List<ChunkPos> chunks = new ArrayList<>();
-            for (int x = centerX - chunkrange; x <= centerX + chunkrange; x++) {
-                for (int z = centerZ - chunkrange; z <= centerZ + chunkrange; z++) {
+            // spiral out
+            int x = centerX;
+            int z = centerZ;
+            int dx = 0;
+            int dz = -1;
+            int t = Math.max(chunkRadius, 1);
+            int maxI = t * t;
+            for (int i = 0; i < maxI; i++) {
+                if ((-chunkRadius / 2 <= x) && (x <= chunkRadius / 2) && (-chunkRadius / 2 <= z) && (z <= chunkRadius / 2)) {
                     chunks.add(new ChunkPos(x, z));
                 }
+                // idk how this works, copilot did it
+                if ((x == z) || ((x < 0) && (x == -z)) || ((x > 0) && (x == 1 - z))) {
+                    t = dx;
+                    dx = -dz;
+                    dz = t;
+                }
+                x += dx;
+                z += dz;
             }
             return chunks;
         }
@@ -221,36 +236,25 @@ public enum FasterWorldScanner implements IWorldScanner {
         }
 
         private static void forEach(BitArray array, boolean[] isInFilter, IntConsumer action) {
-            int counter = 0;
-            long[] storage = array.getBackingLongArray();
+            long[] longArray = array.getBackingLongArray();
             int arraySize = array.size();
-            int elementBits = ((IBitArray) array).getBitsPerEntry();
-            long maxValue = ((IBitArray) array).getMaxEntryValue();
-            int storageLength = storage.length;
+            int bitsPerEntry = ((IBitArray) array).getBitsPerEntry();
+            long maxEntryValue = ((IBitArray) array).getMaxEntryValue();
 
-            if (storageLength != 0) {
-                int lastStorageIdx = 0;
-                long row = storage[0];
-                long nextRow = storageLength > 1 ? storage[1] : 0L;
+            for (int idx = 0, kl = bitsPerEntry - 1; idx < arraySize; idx++, kl += bitsPerEntry) {
+                final int i = idx * bitsPerEntry;
+                final int j = i >> 6;
+                final int l = i & 63;
+                final int k = kl >> 6;
+                final long jl = longArray[j] >>> l;
 
-                for (int idx = 0; idx < arraySize; idx++) {
-                    int n = idx * elementBits;
-                    int storageIdx = n >> 6;
-                    int p = (idx + 1) * elementBits - 1 >> 6;
-                    int q = n ^ storageIdx << 6;
-                    if (storageIdx != lastStorageIdx) {
-                        row = nextRow;
-                        nextRow = storageIdx + 1 < storageLength ? storage[storageIdx + 1] : 0L;
-                        lastStorageIdx = storageIdx;
+                if (j == k) {
+                    if (isInFilter[(int) (jl & maxEntryValue)]) {
+                        action.accept(idx);
                     }
-                    if (storageIdx == p) {
-                        if (isInFilter[(int) (row >>> q & maxValue)]) {
-                            action.accept(counter);
-                        } else {
-                            if (isInFilter[(int) ((row >>> q | nextRow << (64 - q)) & maxValue)]) {
-                                action.accept(counter);
-                            }
-                        }
+                } else {
+                    if (isInFilter[(int) ((jl | longArray[k] << (64 - l)) & maxEntryValue)]) {
+                        action.accept(idx);
                     }
                 }
             }
