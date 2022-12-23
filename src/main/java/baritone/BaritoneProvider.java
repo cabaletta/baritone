@@ -22,6 +22,7 @@ import baritone.api.IBaritoneProvider;
 import baritone.api.cache.IWorldScanner;
 import baritone.api.command.ICommandSystem;
 import baritone.api.schematic.ISchematicSystem;
+import baritone.cache.FasterWorldScanner;
 import baritone.cache.WorldScanner;
 import baritone.command.CommandSystem;
 import baritone.command.ExampleBaritoneControl;
@@ -59,7 +60,7 @@ public final class BaritoneProvider implements IBaritoneProvider {
 
     @Override
     public IWorldScanner getWorldScanner() {
-        return WorldScanner.INSTANCE;
+        return FasterWorldScanner.INSTANCE;
     }
 
     @Override
