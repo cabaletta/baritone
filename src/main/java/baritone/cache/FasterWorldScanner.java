@@ -91,34 +91,38 @@ public enum FasterWorldScanner implements IWorldScanner {
         return queued;
     }
 
-    // for porting, see {@link https://github.com/JsMacros/JsMacros/blob/backport-1.12.2/common/src/main/java/xyz/wagyourtail/jsmacros/client/api/classes/worldscanner/WorldScanner.java}
-    // tho I did change some things...
+    // ordered in a way that the closest blocks are generally first
+    public List<ChunkPos> getChunkRange(int centerX, int centerZ, int chunkRadius) {
+        List<ChunkPos> chunks = new ArrayList<>();
+        // spiral out
+        chunks.add(new ChunkPos(centerX, centerZ));
+        for (int i = 1; i < chunkRadius; i++) {
+            for (int j = 0; j <= i; j++) {
+                chunks.add(new ChunkPos(centerX - j, centerZ - i));
+                chunks.add(new ChunkPos(centerX + j, centerZ - i));
+                chunks.add(new ChunkPos(centerX - j, centerZ + i));
+                chunks.add(new ChunkPos(centerX + j, centerZ + i));
+                if (j != 0 && j != i) {
+                    chunks.add(new ChunkPos(centerX - i, centerZ - j));
+                    chunks.add(new ChunkPos(centerX + i, centerZ - j));
+                    chunks.add(new ChunkPos(centerX - i, centerZ + j));
+                    chunks.add(new ChunkPos(centerX + i, centerZ + j));
+                }
+            }
+        }
+        return chunks;
+    }
+
     public static class WorldScannerContext {
         private final BlockOptionalMetaLookup filter;
         private final IPlayerContext ctx;
-        private final Map<IBlockState, Boolean> cachedFilter = new ConcurrentHashMap<>();
 
         public WorldScannerContext(BlockOptionalMetaLookup filter, IPlayerContext ctx) {
             this.filter = filter;
             this.ctx = ctx;
         }
 
-        public List<ChunkPos> getChunkRange(int centerX, int centerZ, int chunkRadius) {
-            List<ChunkPos> chunks = new ArrayList<>();
-            // spiral out
-            chunks.add(new ChunkPos(centerX, centerZ));
-            for (int i = 1; i < chunkRadius; i++) {
-                for (int x = centerX - i; x <= centerX + i; x++) {
-                    chunks.add(new ChunkPos(x, centerZ - i));
-                    chunks.add(new ChunkPos(x, centerZ + i));
-                }
-                for (int z = centerZ - i + 1; z <= centerZ + i - 1; z++) {
-                    chunks.add(new ChunkPos(centerX - i, z));
-                    chunks.add(new ChunkPos(centerX + i, z));
-                }
-            }
-            return chunks;
-        }
+
 
         public List<BlockPos> scanAroundPlayerRange(int range) {
             return scanAroundPlayer(range, -1);
