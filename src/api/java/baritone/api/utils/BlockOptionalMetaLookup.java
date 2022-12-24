@@ -22,15 +22,22 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.item.ItemStack;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 
 public class BlockOptionalMetaLookup {
-
+    private final Set<Block> blockSet = new HashSet<>();
+    private final Set<IBlockState> blockStateSet = new HashSet<>();
     private final BlockOptionalMeta[] boms;
 
     public BlockOptionalMetaLookup(BlockOptionalMeta... boms) {
         this.boms = boms;
+        for (BlockOptionalMeta bom : boms) {
+            blockSet.add(bom.getBlock());
+            blockStateSet.addAll(bom.getAllBlockStates());
+        }
     }
 
     public BlockOptionalMetaLookup(Block... blocks) {
@@ -52,23 +59,11 @@ public class BlockOptionalMetaLookup {
     }
 
     public boolean has(Block block) {
-        for (BlockOptionalMeta bom : boms) {
-            if (bom.getBlock() == block) {
-                return true;
-            }
-        }
-
-        return false;
+        return blockSet.contains(block);
     }
 
     public boolean has(IBlockState state) {
-        for (BlockOptionalMeta bom : boms) {
-            if (bom.matches(state)) {
-                return true;
-            }
-        }
-
-        return false;
+        return blockStateSet.contains(state);
     }
 
     public boolean has(ItemStack stack) {

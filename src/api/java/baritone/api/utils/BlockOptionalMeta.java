@@ -315,4 +315,8 @@ public final class BlockOptionalMeta {
 
         return null;
     }
+
+    public Set<IBlockState> getAllBlockStates() {
+        return blockstates;
+    }
 }

@@ -37,8 +37,6 @@ import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 import java.util.function.IntConsumer;
 import java.util.stream.Collectors;
@@ -48,12 +46,16 @@ public enum FasterWorldScanner implements IWorldScanner {
     INSTANCE;
     @Override
     public List<BlockPos> scanChunkRadius(IPlayerContext ctx, BlockOptionalMetaLookup filter, int max, int yLevelThreshold, int maxSearchRadius) {
-        return new WorldScannerContext(filter, ctx).scanAroundPlayer(maxSearchRadius, max);
+        assert ctx.world() != null;
+        if (maxSearchRadius < 0) {
+            throw new IllegalArgumentException("chunkRange must be >= 0");
+        }
+        return scanChunksInternal(ctx, filter, getChunkRange(ctx.playerFeet().x >> 4, ctx.playerFeet().z >> 4, maxSearchRadius), max);
     }
 
     @Override
     public List<BlockPos> scanChunk(IPlayerContext ctx, BlockOptionalMetaLookup filter, ChunkPos pos, int max, int yLevelThreshold) {
-        return new WorldScannerContext(filter, ctx).scanChunkInternal(pos).collect(Collectors.toList());
+        return scanChunkInternal(ctx, filter, pos).limit(max).collect(Collectors.toList());
     }
 
     @Override
@@ -92,15 +94,17 @@ public enum FasterWorldScanner implements IWorldScanner {
     }
 
     // ordered in a way that the closest blocks are generally first
-    public List<ChunkPos> getChunkRange(int centerX, int centerZ, int chunkRadius) {
+    public static List<ChunkPos> getChunkRange(int centerX, int centerZ, int chunkRadius) {
         List<ChunkPos> chunks = new ArrayList<>();
         // spiral out
         chunks.add(new ChunkPos(centerX, centerZ));
         for (int i = 1; i < chunkRadius; i++) {
             for (int j = 0; j <= i; j++) {
                 chunks.add(new ChunkPos(centerX - j, centerZ - i));
-                chunks.add(new ChunkPos(centerX + j, centerZ - i));
-                chunks.add(new ChunkPos(centerX - j, centerZ + i));
+                if (j != 0) {
+                    chunks.add(new ChunkPos(centerX + j, centerZ - i));
+                    chunks.add(new ChunkPos(centerX - j, centerZ + i));
+                }
                 chunks.add(new ChunkPos(centerX + j, centerZ + i));
                 if (j != 0 && j != i) {
                     chunks.add(new ChunkPos(centerX - i, centerZ - j));
@@ -113,180 +117,133 @@ public enum FasterWorldScanner implements IWorldScanner {
         return chunks;
     }
 
-    public static class WorldScannerContext {
-        private final BlockOptionalMetaLookup filter;
-        private final IPlayerContext ctx;
-
-        public WorldScannerContext(BlockOptionalMetaLookup filter, IPlayerContext ctx) {
-            this.filter = filter;
-            this.ctx = ctx;
-        }
-
-
-
-        public List<BlockPos> scanAroundPlayerRange(int range) {
-            return scanAroundPlayer(range, -1);
-        }
-
-        public List<BlockPos> scanAroundPlayerUntilCount(int count) {
-            return scanAroundPlayer(32, count);
-        }
-
-        public List<BlockPos> scanAroundPlayer(int range, int maxCount) {
-            assert ctx.player() != null;
-            return scanChunkRange(ctx.playerFeet().x >> 4, ctx.playerFeet().z >> 4, range, maxCount);
-        }
-
-        public List<BlockPos> scanChunkRange(int centerX, int centerZ, int chunkRange, int maxBlocks) {
-            assert ctx.world() != null;
-            if (chunkRange < 0) {
-                throw new IllegalArgumentException("chunkRange must be >= 0");
-            }
-            return scanChunksInternal(getChunkRange(centerX, centerZ, chunkRange), maxBlocks);
-        }
-
-        private List<BlockPos> scanChunksInternal(List<ChunkPos> chunkPositions, int maxBlocks) {
-            assert ctx.world() != null;
-            try {
-            Stream<BlockPos> posStream = chunkPositions.parallelStream().flatMap(this::scanChunkInternal);
+    private List<BlockPos> scanChunksInternal(IPlayerContext ctx, BlockOptionalMetaLookup lookup, List<ChunkPos> chunkPositions, int maxBlocks) {
+        assert ctx.world() != null;
+        try {
+            Stream<BlockPos> posStream = chunkPositions.parallelStream().flatMap(p -> scanChunkInternal(ctx, lookup, p));
             if (maxBlocks >= 0) {
                 // WARNING: this can be expensive if maxBlocks is large...
                 // see limit's javadoc
                 posStream = posStream.limit(maxBlocks);
             }
             return posStream.collect(Collectors.toList());
-            } catch (Exception e) {
-                e.printStackTrace();
-                throw e;
-            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
+        }
+    }
+
+    private Stream<BlockPos> scanChunkInternal(IPlayerContext ctx, BlockOptionalMetaLookup lookup, ChunkPos pos) {
+        IChunkProvider chunkProvider = ctx.world().getChunkProvider();
+        // if chunk is not loaded, return empty stream
+        if (!chunkProvider.isChunkGeneratedAt(pos.x, pos.z)) {
+            return Stream.empty();
         }
 
-        private Stream<BlockPos> scanChunkInternal(ChunkPos pos) {
-            IChunkProvider chunkProvider = ctx.world().getChunkProvider();
-            // if chunk is not loaded, return empty stream
-            if (!chunkProvider.isChunkGeneratedAt(pos.x, pos.z)) {
-                return Stream.empty();
+        long chunkX = (long) pos.x << 4;
+        long chunkZ = (long) pos.z << 4;
+
+        List<BlockPos> blocks = new ArrayList<>();
+
+        collectChunkSections(lookup, chunkProvider.getLoadedChunk(pos.x, pos.z), (section, isInFilter) -> {
+            int yOffset = section.getYLocation();
+            BitArray array = (BitArray) ((IBlockStateContainer) section.getData()).getStorage();
+            collectBlockLocations(array, isInFilter, place -> blocks.add(new BlockPos(
+                    chunkX + ((place & 255) & 15),
+                    yOffset + (place >> 8),
+                    chunkZ + ((place & 255) >> 4)
+            )));
+        });
+        return blocks.stream();
+    }
+
+
+
+    private void collectChunkSections(BlockOptionalMetaLookup lookup, Chunk chunk, BiConsumer<ExtendedBlockStorage, boolean[]> consumer) {
+        for (ExtendedBlockStorage section : chunk.getBlockStorageArray()) {
+            if (section == null || section.isEmpty()) {
+                continue;
             }
 
-            long chunkX = (long) pos.x << 4;
-            long chunkZ = (long) pos.z << 4;
-
-            List<BlockPos> blocks = new ArrayList<>();
-
-            streamChunkSections(chunkProvider.getLoadedChunk(pos.x, pos.z), (section, isInFilter) -> {
-                int yOffset = section.getYLocation();
-                BitArray array = (BitArray) ((IBlockStateContainer) section.getData()).getStorage();
-                forEach(array, isInFilter, place -> blocks.add(new BlockPos(
-                        chunkX + ((place & 255) & 15),
-                        yOffset + (place >> 8),
-                        chunkZ + ((place & 255) >> 4)
-                )));
-            });
-            return blocks.stream();
-        }
-
-        private void streamChunkSections(Chunk chunk, BiConsumer<ExtendedBlockStorage, boolean[]> consumer) {
-            for (ExtendedBlockStorage section : chunk.getBlockStorageArray()) {
-                if (section == null || section.isEmpty()) {
-                    continue;
-                }
-
-                BlockStateContainer sectionContainer = section.getData();
-                //this won't work if the PaletteStorage is of the type EmptyPaletteStorage
-                if (((IBlockStateContainer) sectionContainer).getStorage() == null) {
-                    continue;
-                }
-
-                boolean[] isInFilter = getIncludedFilterIndices(((IBlockStateContainer) sectionContainer).getPalette());
-                if (isInFilter.length == 0) {
-                    continue;
-                }
-                consumer.accept(section, isInFilter);
-            }
-        }
-
-        private boolean getFilterResult(IBlockState state) {
-            Boolean v;
-            return (v = cachedFilter.get(state)) == null ? addCachedState(state) : v;
-        }
-
-        private boolean addCachedState(IBlockState state) {
-            boolean isInFilter = false;
-
-            if (filter != null) {
-                isInFilter = filter.has(state);
+            BlockStateContainer sectionContainer = section.getData();
+            //this won't work if the PaletteStorage is of the type EmptyPaletteStorage
+            if (((IBlockStateContainer) sectionContainer).getStorage() == null) {
+                continue;
             }
 
-            cachedFilter.put(state, isInFilter);
-            return isInFilter;
-        }
-
-        private boolean[] getIncludedFilterIndices(IBlockStatePalette palette) {
-            boolean commonBlockFound = false;
-            ObjectIntIdentityMap<IBlockState> paletteMap = getPalette(palette);
-            int size = paletteMap.size();
-
-            boolean[] isInFilter = new boolean[size];
-
-            for (int i = 0; i < size; i++) {
-                IBlockState state = paletteMap.getByValue(i);
-                if (getFilterResult(state)) {
-                    isInFilter[i] = true;
-                    commonBlockFound = true;
-                } else {
-                    isInFilter[i] = false;
-                }
+            boolean[] isInFilter = getIncludedFilterIndices(lookup, ((IBlockStateContainer) sectionContainer).getPalette());
+            if (isInFilter.length == 0) {
+                continue;
             }
-
-            if (!commonBlockFound) {
-                return new boolean[0];
-            }
-            return isInFilter;
+            consumer.accept(section, isInFilter);
         }
+    }
 
-        private static void forEach(BitArray array, boolean[] isInFilter, IntConsumer action) {
-            long[] longArray = array.getBackingLongArray();
-            int arraySize = array.size();
-            int bitsPerEntry = ((IBitArray) array).getBitsPerEntry();
-            long maxEntryValue = ((IBitArray) array).getMaxEntryValue();
+    private boolean[] getIncludedFilterIndices(BlockOptionalMetaLookup lookup, IBlockStatePalette palette) {
+        boolean commonBlockFound = false;
+        ObjectIntIdentityMap<IBlockState> paletteMap = getPalette(palette);
+        int size = paletteMap.size();
 
-            for (int idx = 0, kl = bitsPerEntry - 1; idx < arraySize; idx++, kl += bitsPerEntry) {
-                final int i = idx * bitsPerEntry;
-                final int j = i >> 6;
-                final int l = i & 63;
-                final int k = kl >> 6;
-                final long jl = longArray[j] >>> l;
+        boolean[] isInFilter = new boolean[size];
 
-                if (j == k) {
-                    if (isInFilter[(int) (jl & maxEntryValue)]) {
-                        action.accept(idx);
-                    }
-                } else {
-                    if (isInFilter[(int) ((jl | longArray[k] << (64 - l)) & maxEntryValue)]) {
-                        action.accept(idx);
-                    }
-                }
-            }
-        }
-
-        /**
-         * cheats to get the actual map of id -> blockstate from the various palette implementations
-         */
-        private static ObjectIntIdentityMap<IBlockState> getPalette(IBlockStatePalette palette) {
-            if (palette instanceof BlockStatePaletteRegistry) {
-                return Block.BLOCK_STATE_IDS;
+        for (int i = 0; i < size; i++) {
+            IBlockState state = paletteMap.getByValue(i);
+            if (lookup.has(state)) {
+                isInFilter[i] = true;
+                commonBlockFound = true;
             } else {
-                PacketBuffer buf = new PacketBuffer(Unpooled.buffer());
-                palette.write(buf);
-                int size = buf.readVarInt();
-                ObjectIntIdentityMap<IBlockState> states = new ObjectIntIdentityMap<>();
-                for (int i = 0; i < size; i++) {
-                    IBlockState state = Block.BLOCK_STATE_IDS.getByValue(buf.readVarInt());
-                    assert state != null;
-                    states.put(state, i);
-                }
-                return states;
+                isInFilter[i] = false;
             }
+        }
+
+        if (!commonBlockFound) {
+            return new boolean[0];
+        }
+        return isInFilter;
+    }
+
+    private static void collectBlockLocations(BitArray array, boolean[] isInFilter, IntConsumer action) {
+        long[] longArray = array.getBackingLongArray();
+        int arraySize = array.size();
+        int bitsPerEntry = ((IBitArray) array).getBitsPerEntry();
+        long maxEntryValue = ((IBitArray) array).getMaxEntryValue();
+
+        for (int idx = 0, kl = bitsPerEntry - 1; idx < arraySize; idx++, kl += bitsPerEntry) {
+            final int i = idx * bitsPerEntry;
+            final int j = i >> 6;
+            final int l = i & 63;
+            final int k = kl >> 6;
+            final long jl = longArray[j] >>> l;
+
+            if (j == k) {
+                if (isInFilter[(int) (jl & maxEntryValue)]) {
+                    action.accept(idx);
+                }
+            } else {
+                if (isInFilter[(int) ((jl | longArray[k] << (64 - l)) & maxEntryValue)]) {
+                    action.accept(idx);
+                }
+            }
+        }
+    }
+
+    /**
+     * cheats to get the actual map of id -> blockstate from the various palette implementations
+     */
+    private static ObjectIntIdentityMap<IBlockState> getPalette(IBlockStatePalette palette) {
+        if (palette instanceof BlockStatePaletteRegistry) {
+            return Block.BLOCK_STATE_IDS;
+        } else {
+            PacketBuffer buf = new PacketBuffer(Unpooled.buffer());
+            palette.write(buf);
+            int size = buf.readVarInt();
+            ObjectIntIdentityMap<IBlockState> states = new ObjectIntIdentityMap<>();
+            for (int i = 0; i < size; i++) {
+                IBlockState state = Block.BLOCK_STATE_IDS.getByValue(buf.readVarInt());
+                assert state != null;
+                states.put(state, i);
+            }
+            return states;
         }
     }
 }
