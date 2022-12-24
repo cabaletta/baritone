@@ -88,4 +88,11 @@ public interface IBaritoneProvider {
      * @return The {@link ISchematicSystem} instance.
      */
     ISchematicSystem getSchematicSystem();
+
+    /**
+     * @param scanner new world scanner to replace current
+     *
+     * @return current world scanner
+     */
+    IWorldScanner overrideWorldScanner(IWorldScanner scanner);
 }
