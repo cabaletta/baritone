@@ -105,24 +105,16 @@ public enum FasterWorldScanner implements IWorldScanner {
         public List<ChunkPos> getChunkRange(int centerX, int centerZ, int chunkRadius) {
             List<ChunkPos> chunks = new ArrayList<>();
             // spiral out
-            int x = centerX;
-            int z = centerZ;
-            int dx = 0;
-            int dz = -1;
-            int t = Math.max(chunkRadius, 1);
-            int maxI = t * t;
-            for (int i = 0; i < maxI; i++) {
-                if ((-chunkRadius / 2 <= x) && (x <= chunkRadius / 2) && (-chunkRadius / 2 <= z) && (z <= chunkRadius / 2)) {
-                    chunks.add(new ChunkPos(x, z));
+            chunks.add(new ChunkPos(centerX, centerZ));
+            for (int i = 1; i < chunkRadius; i++) {
+                for (int x = centerX - i; x <= centerX + i; x++) {
+                    chunks.add(new ChunkPos(x, centerZ - i));
+                    chunks.add(new ChunkPos(x, centerZ + i));
                 }
-                // idk how this works, copilot did it
-                if ((x == z) || ((x < 0) && (x == -z)) || ((x > 0) && (x == 1 - z))) {
-                    t = dx;
-                    dx = -dz;
-                    dz = t;
+                for (int z = centerZ - i + 1; z <= centerZ + i - 1; z++) {
+                    chunks.add(new ChunkPos(centerX - i, z));
+                    chunks.add(new ChunkPos(centerX + i, z));
                 }
-                x += dx;
-                z += dz;
             }
             return chunks;
         }
