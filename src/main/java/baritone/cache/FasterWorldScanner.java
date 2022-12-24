@@ -25,7 +25,6 @@ import baritone.api.utils.IPlayerContext;
 import baritone.utils.accessor.IBitArray;
 import baritone.utils.accessor.IBlockStateContainer;
 import io.netty.buffer.Unpooled;
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.network.PacketBuffer;
@@ -49,12 +48,12 @@ public enum FasterWorldScanner implements IWorldScanner {
     INSTANCE;
     @Override
     public List<BlockPos> scanChunkRadius(IPlayerContext ctx, BlockOptionalMetaLookup filter, int max, int yLevelThreshold, int maxSearchRadius) {
-        return new WorldScannerContext(filter, ctx).scanAroundPlayerRange(maxSearchRadius);
+        return new WorldScannerContext(filter, ctx).scanAroundPlayer(maxSearchRadius, max);
     }
 
     @Override
     public List<BlockPos> scanChunk(IPlayerContext ctx, BlockOptionalMetaLookup filter, ChunkPos pos, int max, int yLevelThreshold) {
-        return new WorldScannerContext(filter, ctx).scanAroundPlayerUntilCount(max);
+        return new WorldScannerContext(filter, ctx).scanChunkInternal(pos).collect(Collectors.toList());
     }
 
     @Override
