@@ -101,7 +101,7 @@ public class MovementDescend extends Movement {
         //C, D, etc determine the length of the fall
 
         IBlockState below = context.get(destX, y - 2, destZ);
-        if (!MovementHelper.canWalkOn(context.bsi, destX, y - 2, destZ, below)) {
+        if (!MovementHelper.canWalkOn(context, destX, y - 2, destZ, below)) {
             dynamicFallCost(context, x, y, z, destX, destZ, totalCost, below, res);
             return;
         }
@@ -130,7 +130,7 @@ public class MovementDescend extends Movement {
             // and potentially replace the water we're going to fall into
             return false;
         }
-        if (!MovementHelper.canWalkThrough(context.bsi, destX, y - 2, destZ, below)) {
+        if (!MovementHelper.canWalkThrough(context, destX, y - 2, destZ, below)) {
             return false;
         }
         double costSoFar = 0;
@@ -146,7 +146,7 @@ public class MovementDescend extends Movement {
             int unprotectedFallHeight = fallHeight - (y - effectiveStartHeight); // equal to fallHeight - y + effectiveFallHeight, which is equal to -newY + effectiveFallHeight, which is equal to effectiveFallHeight - newY
             double tentativeCost = WALK_OFF_BLOCK_COST + FALL_N_BLOCKS_COST[unprotectedFallHeight] + frontBreak + costSoFar;
             if (MovementHelper.isWater(ontoBlock.getBlock())) {
-                if (!MovementHelper.canWalkThrough(context.bsi, destX, newY, destZ, ontoBlock)) {
+                if (!MovementHelper.canWalkThrough(context, destX, newY, destZ, ontoBlock)) {
                     return false;
                 }
                 if (context.assumeWalkOnWater) {
@@ -155,7 +155,7 @@ public class MovementDescend extends Movement {
                 if (MovementHelper.isFlowing(destX, newY, destZ, ontoBlock, context.bsi)) {
                     return false; // TODO flowing check required here?
                 }
-                if (!MovementHelper.canWalkOn(context.bsi, destX, newY - 1, destZ)) {
+                if (!MovementHelper.canWalkOn(context, destX, newY - 1, destZ)) {
                     // we could punch right through the water into something else
                     return false;
                 }
@@ -174,10 +174,10 @@ public class MovementDescend extends Movement {
                 effectiveStartHeight = newY;
                 continue;
             }
-            if (MovementHelper.canWalkThrough(context.bsi, destX, newY, destZ, ontoBlock)) {
+            if (MovementHelper.canWalkThrough(context, destX, newY, destZ, ontoBlock)) {
                 continue;
             }
-            if (!MovementHelper.canWalkOn(context.bsi, destX, newY, destZ, ontoBlock)) {
+            if (!MovementHelper.canWalkOn(context, destX, newY, destZ, ontoBlock)) {
                 return false;
             }
             if (MovementHelper.isBottomSlab(ontoBlock)) {
