@@ -93,6 +93,7 @@ public enum FasterWorldScanner implements IWorldScanner {
     }
 
     // for porting, see {@link https://github.com/JsMacros/JsMacros/blob/backport-1.12.2/common/src/main/java/xyz/wagyourtail/jsmacros/client/api/classes/worldscanner/WorldScanner.java}
+    // tho I did change some things...
     public static class WorldScannerContext {
         private final BlockOptionalMetaLookup filter;
         private final IPlayerContext ctx;
