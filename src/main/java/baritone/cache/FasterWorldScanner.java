@@ -30,6 +30,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.BitArray;
+import net.minecraft.util.ObjectIntIdentityMap;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.chunk.*;
@@ -142,8 +143,20 @@ public enum FasterWorldScanner implements IWorldScanner {
 
         private List<BlockPos> scanChunksInternal(List<ChunkPos> chunkPositions, int maxBlocks) {
             assert ctx.world() != null;
-            return chunkPositions.parallelStream().flatMap(this::scanChunkInternal).limit(maxBlocks <= 0 ? Long.MAX_VALUE : maxBlocks).collect(Collectors.toList());
+            try {
+            Stream<BlockPos> posStream = chunkPositions.parallelStream().flatMap(this::scanChunkInternal);
+            if (maxBlocks >= 0) {
+                // WARNING: this can be expensive if maxBlocks is large...
+                // see limit's javadoc
+                posStream = posStream.limit(maxBlocks);
+            }
+            return posStream.collect(Collectors.toList());
+            } catch (Exception e) {
+                e.printStackTrace();
+                throw e;
+            }
         }
+
         private Stream<BlockPos> scanChunkInternal(ChunkPos pos) {
             IChunkProvider chunkProvider = ctx.world().getChunkProvider();
             // if chunk is not loaded, return empty stream
@@ -206,13 +219,13 @@ public enum FasterWorldScanner implements IWorldScanner {
 
         private boolean[] getIncludedFilterIndices(IBlockStatePalette palette) {
             boolean commonBlockFound = false;
-            Int2ObjectOpenHashMap<IBlockState> paletteMap = getPalette(palette);
+            ObjectIntIdentityMap<IBlockState> paletteMap = getPalette(palette);
             int size = paletteMap.size();
 
             boolean[] isInFilter = new boolean[size];
 
             for (int i = 0; i < size; i++) {
-                IBlockState state = paletteMap.get(i);
+                IBlockState state = paletteMap.getByValue(i);
                 if (getFilterResult(state)) {
                     isInFilter[i] = true;
                     commonBlockFound = true;
@@ -252,15 +265,24 @@ public enum FasterWorldScanner implements IWorldScanner {
             }
         }
 
-        private static Int2ObjectOpenHashMap<IBlockState> getPalette(IBlockStatePalette palette) {
-            PacketBuffer buf = new PacketBuffer(Unpooled.buffer());
-            palette.write(buf);
-            int size = buf.readVarInt();
-            Int2ObjectOpenHashMap<IBlockState> paletteMap = new Int2ObjectOpenHashMap<>(size);
-            for (int i = 0; i < size; i++) {
-                paletteMap.put(i, Block.BLOCK_STATE_IDS.getByValue(buf.readVarInt()));
+        /**
+         * cheats to get the actual map of id -> blockstate from the various palette implementations
+         */
+        private static ObjectIntIdentityMap<IBlockState> getPalette(IBlockStatePalette palette) {
+            if (palette instanceof BlockStatePaletteRegistry) {
+                return Block.BLOCK_STATE_IDS;
+            } else {
+                PacketBuffer buf = new PacketBuffer(Unpooled.buffer());
+                palette.write(buf);
+                int size = buf.readVarInt();
+                ObjectIntIdentityMap<IBlockState> states = new ObjectIntIdentityMap<>();
+                for (int i = 0; i < size; i++) {
+                    IBlockState state = Block.BLOCK_STATE_IDS.getByValue(buf.readVarInt());
+                    assert state != null;
+                    states.put(state, i);
+                }
+                return states;
             }
-            return paletteMap;
         }
     }
 }
