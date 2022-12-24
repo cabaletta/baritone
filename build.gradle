@@ -16,7 +16,25 @@
  */
 
 group 'baritone'
-version '1.2.15'
+
+if (project.hasProperty("mod_version")) {
+    version project.mod_version
+} else {
+    def vers;
+    try {
+        vers = 'git describe --always --tags --dirty'.execute().text.trim()
+    } catch (IOException ignored) {
+        vers = ""
+        println "git doesn't appear to be installed!"
+    }
+    if (!vers.startsWith("v")) {
+        println "Failed to find a valid version tag using git"
+        println "using fallback version number: " + project.fallback_version
+        version project.fallback_version
+    } else {
+        version vers.substring(1).replaceFirst("-", "+")
+    }
+}
 
 buildscript {
     repositories {

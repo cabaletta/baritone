@@ -13,19 +13,34 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
+
+    - name: Fetch history
+      run: git fetch --unshallow --filter=tree:0 origin $GITHUB_REF
+
+    - name: Fetch tags
+      run: git fetch origin +refs/tags/*:refs/tags/*
+
+    - name: Determine version (pull request)
+      if: github.event_name == 'pull_request'
+      run: echo version="$(git describe --always --tags ${{github.event.pull_request.head.sha}})-pr-$(echo $GITHUB_REF | cut -d / -f 3)" >> $GITHUB_ENV
+
+    - name: Determine version (other)
+      if: github.event_name != 'pull_request'
+      run: echo version="$(git describe --always --tags ${{github.sha}})" >> $GITHUB_ENV
+
     - name: Set up JDK 8
       uses: actions/setup-java@v2
       with:
         java-version: '8'
         distribution: 'adopt'
-        
+
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
       
     - name: Build with Gradle
-      run: ./gradlew build
-      
+      run: ./gradlew build -Pmod_version="$(echo "${{env.version}}" | cut -c2- | sed -e '0,/-/ s/-/+/')"
+
     - name: Archive Artifacts
       uses: actions/upload-artifact@v2
       with:
