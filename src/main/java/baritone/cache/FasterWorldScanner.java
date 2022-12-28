@@ -149,9 +149,11 @@ public enum FasterWorldScanner implements IWorldScanner {
         long chunkX = (long) pos.x << 4;
         long chunkZ = (long) pos.z << 4;
 
+        int playerSectionY = ctx.playerFeet().y >> 4;
+
         List<BlockPos> blocks = new ArrayList<>();
 
-        collectChunkSections(lookup, chunkProvider.getLoadedChunk(pos.x, pos.z), (section, isInFilter) -> {
+        collectChunkSections(lookup, chunkProvider.getLoadedChunk(pos.x, pos.z), playerSectionY, (section, isInFilter) -> {
             int yOffset = section.getYLocation();
             BitArray array = (BitArray) ((IBlockStateContainer) section.getData()).getStorage();
             collectBlockLocations(array, isInFilter, place -> blocks.add(new BlockPos(
@@ -165,24 +167,38 @@ public enum FasterWorldScanner implements IWorldScanner {
 
 
 
-    private void collectChunkSections(BlockOptionalMetaLookup lookup, Chunk chunk, BiConsumer<ExtendedBlockStorage, boolean[]> consumer) {
-        for (ExtendedBlockStorage section : chunk.getBlockStorageArray()) {
-            if (section == null || section.isEmpty()) {
-                continue;
+    private void collectChunkSections(BlockOptionalMetaLookup lookup, Chunk chunk, int playerSection, BiConsumer<ExtendedBlockStorage, boolean[]> consumer) {
+        // iterate over sections relative to player
+        ExtendedBlockStorage[] sections = chunk.getBlockStorageArray();
+        int l = sections.length;
+        int i = playerSection - 1;
+        int j = playerSection;
+        for (; i >= 0 || j < l; ++j, --i) {
+            if (j < l) {
+                visitSection(lookup, sections[j], consumer);
             }
-
-            BlockStateContainer sectionContainer = section.getData();
-            //this won't work if the PaletteStorage is of the type EmptyPaletteStorage
-            if (((IBlockStateContainer) sectionContainer).getStorage() == null) {
-                continue;
+            if (i >= 0) {
+                visitSection(lookup, sections[i], consumer);
             }
-
-            boolean[] isInFilter = getIncludedFilterIndices(lookup, ((IBlockStateContainer) sectionContainer).getPalette());
-            if (isInFilter.length == 0) {
-                continue;
-            }
-            consumer.accept(section, isInFilter);
         }
+    }
+
+    private void visitSection(BlockOptionalMetaLookup lookup, ExtendedBlockStorage section, BiConsumer<ExtendedBlockStorage, boolean[]> consumer) {
+        if (section == null || section.isEmpty()) {
+            return;
+        }
+
+        BlockStateContainer sectionContainer = section.getData();
+        //this won't work if the PaletteStorage is of the type EmptyPaletteStorage
+        if (((IBlockStateContainer) sectionContainer).getStorage() == null) {
+            return;
+        }
+
+        boolean[] isInFilter = getIncludedFilterIndices(lookup, ((IBlockStateContainer) sectionContainer).getPalette());
+        if (isInFilter.length == 0) {
+            return;
+        }
+        consumer.accept(section, isInFilter);
     }
 
     private boolean[] getIncludedFilterIndices(BlockOptionalMetaLookup lookup, IBlockStatePalette palette) {
