@@ -106,11 +106,13 @@ public enum FasterWorldScanner implements IWorldScanner {
                     chunks.add(new ChunkPos(centerX - j, centerZ + i));
                 }
                 chunks.add(new ChunkPos(centerX + j, centerZ + i));
-                if (j != 0 && j != i) {
+                if (j != i) {
                     chunks.add(new ChunkPos(centerX - i, centerZ - j));
                     chunks.add(new ChunkPos(centerX + i, centerZ - j));
-                    chunks.add(new ChunkPos(centerX - i, centerZ + j));
-                    chunks.add(new ChunkPos(centerX + i, centerZ + j));
+                    if (j != 0) {
+                        chunks.add(new ChunkPos(centerX - i, centerZ + j));
+                        chunks.add(new ChunkPos(centerX + i, centerZ + j));
+                    }
                 }
             }
         }
