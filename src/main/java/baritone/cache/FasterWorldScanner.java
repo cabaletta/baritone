@@ -36,13 +36,10 @@ import net.minecraft.world.chunk.*;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.IntConsumer;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public enum FasterWorldScanner implements IWorldScanner {
@@ -149,59 +146,43 @@ public enum FasterWorldScanner implements IWorldScanner {
             return Stream.empty();
         }
 
-        long inChunkX = (long) pos.x << 4;
-        long inChunkZ = (long) pos.z << 4;
+        long chunkX = (long) pos.x << 4;
+        long chunkZ = (long) pos.z << 4;
 
-        int playerY = ctx.playerFeet().y;
-        int playerSection = ctx.playerFeet().y >> 4;
+        List<BlockPos> blocks = new ArrayList<>();
 
-
-        return streamChunkSections(lookup, chunkProvider.getLoadedChunk(pos.x, pos.z), playerSection).flatMap((data) -> {
-            ExtendedBlockStorage section = data.section;
-            boolean[] isInFilter = data.isInFilter;
-            List<BlockPos> blocks = new ArrayList<>();
+        collectChunkSections(lookup, chunkProvider.getLoadedChunk(pos.x, pos.z), (section, isInFilter) -> {
             int yOffset = section.getYLocation();
             BitArray array = (BitArray) ((IBlockStateContainer) section.getData()).getStorage();
             collectBlockLocations(array, isInFilter, place -> blocks.add(new BlockPos(
-                    (int) inChunkX + ((place & 255) & 15),
+                    chunkX + ((place & 255) & 15),
                     yOffset + (place >> 8),
-                    (int) inChunkZ + ((place & 255) >> 4)
+                    chunkZ + ((place & 255) >> 4)
             )));
-            return blocks.stream().sorted((a, b) -> {
-                int distA = Math.abs(a.getY() - playerY);
-                int distB = Math.abs(b.getY() - playerY);
-                return Integer.compare(distA, distB);
-            });
         });
+        return blocks.stream();
     }
 
 
 
-    private Stream<SectionData> streamChunkSections(BlockOptionalMetaLookup lookup, Chunk chunk, int playerSection) {
-        ExtendedBlockStorage[] sections = chunk.getBlockStorageArray();
-        // order sections by distance to player
-
-        return IntStream.range(0, sections.length)
-                .boxed()
-                .sorted(Comparator.comparingInt(a -> Math.abs(a - playerSection)))
-                .map(i -> {
-            ExtendedBlockStorage section = sections[i];
+    private void collectChunkSections(BlockOptionalMetaLookup lookup, Chunk chunk, BiConsumer<ExtendedBlockStorage, boolean[]> consumer) {
+        for (ExtendedBlockStorage section : chunk.getBlockStorageArray()) {
             if (section == null || section.isEmpty()) {
-                return null;
+                continue;
             }
 
             BlockStateContainer sectionContainer = section.getData();
             //this won't work if the PaletteStorage is of the type EmptyPaletteStorage
             if (((IBlockStateContainer) sectionContainer).getStorage() == null) {
-                return null;
+                continue;
             }
 
             boolean[] isInFilter = getIncludedFilterIndices(lookup, ((IBlockStateContainer) sectionContainer).getPalette());
             if (isInFilter.length == 0) {
-                return null;
+                continue;
             }
-            return new SectionData(section, isInFilter);
-        }).filter(Objects::nonNull);
+            consumer.accept(section, isInFilter);
+        }
     }
 
     private boolean[] getIncludedFilterIndices(BlockOptionalMetaLookup lookup, IBlockStatePalette palette) {
@@ -269,16 +250,6 @@ public enum FasterWorldScanner implements IWorldScanner {
                 states.put(state, i);
             }
             return states;
-        }
-    }
-
-    private static class SectionData {
-        ExtendedBlockStorage section;
-        boolean[] isInFilter;
-
-        SectionData(ExtendedBlockStorage section, boolean[] isInFilter) {
-            this.section = section;
-            this.isInFilter = isInFilter;
         }
     }
 }
