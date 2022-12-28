@@ -41,8 +41,8 @@ public final class BlockOptionalMeta {
     private final int meta;
     private final boolean noMeta;
     private final Set<IBlockState> blockstates;
-    private final ImmutableSet<Integer> stateHashes;
-    private final ImmutableSet<Integer> stackHashes;
+    private final Set<Integer> stateHashes;
+    private final Set<Integer> stackHashes;
     private static final Pattern pattern = Pattern.compile("^(.+?)(?::(\\d+))?$");
     private static final Map<Object, Object> normalizations;
 
@@ -318,5 +318,9 @@ public final class BlockOptionalMeta {
 
     public Set<IBlockState> getAllBlockStates() {
         return blockstates;
+    }
+
+    public Set<Integer> stackHashes() {
+        return stackHashes;
     }
 }

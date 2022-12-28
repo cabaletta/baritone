@@ -17,6 +17,7 @@
 
 package baritone.api.utils;
 
+import com.google.common.collect.ImmutableSet;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.item.ItemStack;
@@ -28,34 +29,41 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 public class BlockOptionalMetaLookup {
-    private final Set<Block> blockSet = new HashSet<>();
-    private final Set<IBlockState> blockStateSet = new HashSet<>();
+    private final Set<Block> blockSet;
+    private final Set<IBlockState> blockStateSet;
     private final BlockOptionalMeta[] boms;
 
     public BlockOptionalMetaLookup(BlockOptionalMeta... boms) {
         this.boms = boms;
+        Set<Block> blocks = new HashSet<>();
+        Set<IBlockState> blockStates = new HashSet<>();
+        Set<Integer> stacks = new HashSet<>();
         for (BlockOptionalMeta bom : boms) {
-            blockSet.add(bom.getBlock());
-            blockStateSet.addAll(bom.getAllBlockStates());
+            blocks.add(bom.getBlock());
+            blockStates.addAll(bom.getAllBlockStates());
+            stacks.addAll(bom.stackHashes());
         }
+        this.blockSet = ImmutableSet.copyOf(blocks);
+        this.blockStateSet = ImmutableSet.copyOf(blockStates);
     }
 
     public BlockOptionalMetaLookup(Block... blocks) {
-        this.boms = Stream.of(blocks)
+        this(Stream.of(blocks)
                 .map(BlockOptionalMeta::new)
-                .toArray(BlockOptionalMeta[]::new);
+                .toArray(BlockOptionalMeta[]::new));
+
     }
 
     public BlockOptionalMetaLookup(List<Block> blocks) {
-        this.boms = blocks.stream()
+        this(blocks.stream()
                 .map(BlockOptionalMeta::new)
-                .toArray(BlockOptionalMeta[]::new);
+                .toArray(BlockOptionalMeta[]::new));
     }
 
     public BlockOptionalMetaLookup(String... blocks) {
-        this.boms = Stream.of(blocks)
+        this(Stream.of(blocks)
                 .map(BlockOptionalMeta::new)
-                .toArray(BlockOptionalMeta[]::new);
+                .toArray(BlockOptionalMeta[]::new));
     }
 
     public boolean has(Block block) {

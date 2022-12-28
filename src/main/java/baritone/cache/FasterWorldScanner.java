@@ -55,7 +55,11 @@ public enum FasterWorldScanner implements IWorldScanner {
 
     @Override
     public List<BlockPos> scanChunk(IPlayerContext ctx, BlockOptionalMetaLookup filter, ChunkPos pos, int max, int yLevelThreshold) {
-        return scanChunkInternal(ctx, filter, pos).limit(max).collect(Collectors.toList());
+        Stream<BlockPos> stream = scanChunkInternal(ctx, filter, pos);
+        if (max >= 0) {
+            stream = stream.limit(max);
+        }
+        return stream.collect(Collectors.toList());
     }
 
     @Override
