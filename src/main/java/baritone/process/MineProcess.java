@@ -54,7 +54,7 @@ import static baritone.api.pathing.movement.ActionCosts.COST_INF;
  */
 public final class MineProcess extends BaritoneProcessHelper implements IMineProcess {
 
-    private static final int ORE_LOCATIONS_COUNT = 32;
+    private static final int ORE_LOCATIONS_COUNT = 64;
 
     private BlockOptionalMetaLookup filter;
     private List<BlockPos> knownOreLocations;
