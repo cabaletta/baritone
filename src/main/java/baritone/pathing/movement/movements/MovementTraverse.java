@@ -72,7 +72,7 @@ public class MovementTraverse extends Movement {
         IBlockState pb1 = context.get(destX, y, destZ);
         IBlockState destOn = context.get(destX, y - 1, destZ);
         Block srcDown = context.getBlock(x, y - 1, z);
-        if (MovementHelper.canWalkOn(context.bsi, destX, y - 1, destZ, destOn)) {//this is a walk, not a bridge
+        if (MovementHelper.canWalkOn(context, destX, y - 1, destZ, destOn)) {//this is a walk, not a bridge
             double WC = WALK_ONE_BLOCK_COST;
             boolean water = false;
             if (MovementHelper.isWater(pb0.getBlock()) || MovementHelper.isWater(pb1.getBlock())) {

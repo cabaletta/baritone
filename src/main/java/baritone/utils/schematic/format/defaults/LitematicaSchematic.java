@@ -136,7 +136,7 @@ public final class LitematicaSchematic extends StaticSchematic {
      * @return amount of bits used to encode a block.
      */
     private static int getBitsPerBlock(int amountOfBlockTypes) {
-        return (int) Math.floor((Math.log(amountOfBlockTypes)) / Math.log(2)) + 1;
+        return (int) Math.max(2,Math.ceil(Math.log(amountOfBlockTypes) / Math.log(2)));
     }
 
     /**
