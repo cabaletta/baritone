@@ -350,7 +350,7 @@ public class PathExecutor implements IPathExecutor, Helper {
         behavior.baritone.getInputOverrideHandler().setInputForceState(Input.SPRINT, false);
 
         // first and foremost, if allowSprint is off, or if we don't have enough hunger, don't try and sprint
-        if (!new CalculationContext(behavior.baritone).canSprint) {
+        if (!new CalculationContext(behavior.baritone, false).canSprint) {
             return false;
         }
         IMovement current = path.movements().get(pathPosition);

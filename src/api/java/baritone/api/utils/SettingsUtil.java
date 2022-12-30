@@ -176,7 +176,7 @@ public class SettingsUtil {
     /**
      * This should always be the same as whether the setting can be parsed from or serialized to a string
      *
-     * @param the setting
+     * @param setting The Setting
      * @return true if the setting can not be set or read by the user
      */
     public static boolean javaOnlySetting(Settings.Setting setting) {
