@@ -34,8 +34,8 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.*;
-import java.util.function.Consumer;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 /**
  * Baritone's settings. Settings apply to all Baritone instances.
@@ -196,7 +196,7 @@ public final class Settings {
      * Blocks that Baritone is not allowed to break
      */
     public final Setting<List<Block>> blocksToDisallowBreaking = new Setting<>(new ArrayList<>(
-        // Leave Empty by Default
+            // Leave Empty by Default
     ));
 
     /**
@@ -277,6 +277,12 @@ public final class Settings {
      * If this is true, the builder will ignore directionality of certain blocks like glazed terracotta.
      */
     public final Setting<Boolean> buildIgnoreDirection = new Setting<>(false);
+
+    /**
+     * A list of names of block properties the builder will ignore.
+     */
+    public final Setting<List<String>> buildIgnoreProperties = new Setting<>(new ArrayList<>(Arrays.asList(
+    )));
 
     /**
      * If this setting is true, Baritone will never break a block that is adjacent to an unsupported falling block.
@@ -916,7 +922,7 @@ public final class Settings {
     /**
      * Only build the selected part of schematics
      */
-     public final Setting<Boolean> buildOnlySelection = new Setting<>(false);
+    public final Setting<Boolean> buildOnlySelection = new Setting<>(false);
 
     /**
      * How far to move before repeating the build. 0 to disable repeating on a certain axis, 0,0,0 to disable entirely
