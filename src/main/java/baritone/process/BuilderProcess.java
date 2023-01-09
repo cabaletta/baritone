@@ -67,6 +67,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static baritone.api.pathing.movement.ActionCosts.COST_INF;
 
@@ -83,6 +84,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
     private int layer;
     private int numRepeats;
     private List<IBlockState> approxPlaceable;
+    public final int[] selectionYBounds = {0, 0};
 
     public BuilderProcess(Baritone baritone) {
         super(baritone);
@@ -111,6 +113,24 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         this.origin = new Vec3i(x, y, z);
         this.paused = false;
         this.layer = Baritone.settings().startAtLayer.value;
+        if (Baritone.settings().buildOnlySelection.value) {
+            if (baritone.getSelectionManager().getSelections().length == 0) {
+                logDirect("Poor little kitten forgot to set a selection while BuildOnlySelection is true");
+            }
+            if (Baritone.settings().buildInLayers.value) {
+                OptionalInt minim = Stream.of(baritone.getSelectionManager().getSelections()).mapToInt(sel -> sel.min().y).min();
+                OptionalInt maxim = Stream.of(baritone.getSelectionManager().getSelections()).mapToInt(sel -> sel.max().y).max();
+                logDirect(String.format("Schematic starts at y=%s with height %s", y, schematic.heightY()));
+                logDirect(String.format("Selection starts at y=%s and ends at y=%s", minim.isPresent() ? minim.getAsInt() : 0, maxim.isPresent() ? maxim.getAsInt() : 0));
+                if (minim.isPresent() && maxim.isPresent()) {
+                    selectionYBounds[0] = Baritone.settings().layerOrder.value ? y + schematic.heightY() - maxim.getAsInt() : minim.getAsInt() - y;
+                    selectionYBounds[1] = Baritone.settings().layerOrder.value ? y + schematic.heightY() - minim.getAsInt() : maxim.getAsInt() - y;
+                }
+                this.layer = this.selectionYBounds[0] / Baritone.settings().layerHeight.value;
+                logDirect("Skipped everything under layer " + this.layer);
+            }
+        }
+
         this.numRepeats = 0;
         this.observedCompleted = new LongOpenHashSet();
         this.incorrectPositions = null;
@@ -459,6 +479,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         }
         BuilderCalculationContext bcc = new BuilderCalculationContext();
         if (!recalc(bcc)) {
+            checkAboveSelection();
             if (Baritone.settings().buildInLayers.value && layer * Baritone.settings().layerHeight.value < realSchematic.heightY()) {
                 logDirect("Starting layer " + layer);
                 layer++;
@@ -549,6 +570,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         if (goal == null) {
             goal = assemble(bcc, approxPlaceable, true); // we're far away, so assume that we have our whole inventory to recalculate placeable properly
             if (goal == null) {
+                checkAboveSelection();
                 if (Baritone.settings().skipFailedLayers.value && Baritone.settings().buildInLayers.value && layer * Baritone.settings().layerHeight.value < realSchematic.heightY()) {
                     logDirect("Skipping layer that I cannot construct! Layer #" + layer);
                     layer++;
@@ -560,6 +582,14 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             }
         }
         return new PathingCommandContext(goal, PathingCommandType.FORCE_REVALIDATE_GOAL_AND_PATH, bcc);
+    }
+
+    private void checkAboveSelection() {
+        if (Baritone.settings().buildInLayers.value && Baritone.settings().buildOnlySelection.value &&
+                this.layer * Baritone.settings().layerHeight.value > this.selectionYBounds[1]) {
+            logDirect("Skipped everything above layer " + this.layer);
+            this.layer = realSchematic.heightY() / Baritone.settings().layerHeight.value;
+        }
     }
 
     private boolean recalc(BuilderCalculationContext bcc) {
