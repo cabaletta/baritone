@@ -142,6 +142,8 @@ public class WorldProvider implements IWorldProvider, Helper {
             if (mc.world != null) {
                 initWorld(mc.world.provider.getDimensionType().getId());
             }
+        } else if (currentWorld == null && mc.world != null) {
+            initWorld(mc.world.provider.getDimensionType().getId());
         }
     }
 }
