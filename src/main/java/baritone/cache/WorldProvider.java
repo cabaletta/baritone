@@ -145,7 +145,7 @@ public class WorldProvider implements IWorldProvider, Helper {
                 System.out.println("mc.world loaded unnoticed! Loading Baritone cache now.");
                 initWorld(mc.world.provider.getDimensionType().getId());
             }
-        } else if (currentWorld == null && mc.world != null) {
+        } else if (currentWorld == null && mc.world != null && (mc.isSingleplayer() || mc.getCurrentServerData() != null)) {
             System.out.println("Retrying to load Baritone cache");
             initWorld(mc.world.provider.getDimensionType().getId());
         }
