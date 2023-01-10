@@ -84,7 +84,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
     private int layer;
     private int numRepeats;
     private List<IBlockState> approxPlaceable;
-    public final int[] selectionYBounds = {0, 0};
+    public final int[] selectionLayerBounds = {0, 0};
 
     public BuilderProcess(Baritone baritone) {
         super(baritone);
@@ -123,10 +123,10 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                 logDirect(String.format("Schematic starts at y=%s with height %s", y, schematic.heightY()));
                 logDirect(String.format("Selection starts at y=%s and ends at y=%s", minim.isPresent() ? minim.getAsInt() : 0, maxim.isPresent() ? maxim.getAsInt() : 0));
                 if (minim.isPresent() && maxim.isPresent()) {
-                    selectionYBounds[0] = Baritone.settings().layerOrder.value ? y + schematic.heightY() - maxim.getAsInt() : minim.getAsInt() - y;
-                    selectionYBounds[1] = Baritone.settings().layerOrder.value ? y + schematic.heightY() - minim.getAsInt() : maxim.getAsInt() - y;
+                    selectionLayerBounds[0] = Baritone.settings().layerOrder.value ? y + schematic.heightY() - maxim.getAsInt() : minim.getAsInt() - y;
+                    selectionLayerBounds[1] = Baritone.settings().layerOrder.value ? y + schematic.heightY() - minim.getAsInt() : maxim.getAsInt() - y;
                 }
-                this.layer = this.selectionYBounds[0] / Baritone.settings().layerHeight.value;
+                this.layer = this.selectionLayerBounds[0] / Baritone.settings().layerHeight.value;
                 logDirect("Skipped everything under layer " + this.layer);
             }
         }
@@ -586,9 +586,9 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
 
     private void checkAboveSelection() {
         if (Baritone.settings().buildInLayers.value && Baritone.settings().buildOnlySelection.value &&
-                this.layer * Baritone.settings().layerHeight.value > this.selectionYBounds[1]) {
+                this.layer * Baritone.settings().layerHeight.value > this.selectionLayerBounds[1]) {
             logDirect("Skipped everything above layer " + this.layer);
-            this.layer = realSchematic.heightY() / Baritone.settings().layerHeight.value;
+            this.layer = realSchematic.heightY() / Baritone.settings().layerHeight.value + 1;
         }
     }
 
