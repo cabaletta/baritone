@@ -85,6 +85,7 @@ public class WorldProvider implements IWorldProvider, Helper {
                 folderName = mc.getCurrentServerData().serverIP;
             } else {
                 //replaymod causes null currentServerData and false singleplayer.
+                System.out.println("World seems to be a replay. Not loading Baritone cache.");
                 currentWorld = null;
                 mcWorld = mc.world;
                 return;
@@ -137,12 +138,15 @@ public class WorldProvider implements IWorldProvider, Helper {
     private final void detectAndHandleBrokenLoading() {
         if (this.mcWorld != mc.world) {
             if (this.currentWorld != null) {
+                System.out.println("mc.world unloaded unnoticed! Unloading Baritone cache now.");
                 closeWorld();
             }
             if (mc.world != null) {
+                System.out.println("mc.world loaded unnoticed! Loading Baritone cache now.");
                 initWorld(mc.world.provider.getDimensionType().getId());
             }
         } else if (currentWorld == null && mc.world != null) {
+            System.out.println("Retrying to load Baritone cache");
             initWorld(mc.world.provider.getDimensionType().getId());
         }
     }
