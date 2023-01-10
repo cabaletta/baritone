@@ -43,6 +43,7 @@ public final class DefaultCommands {
                 new RepackCommand(baritone),
                 new BuildCommand(baritone),
                 new SchematicaCommand(baritone),
+                new LitematicaCommand(baritone),
                 new ComeCommand(baritone),
                 new AxisCommand(baritone),
                 new ForceCancelCommand(baritone),
