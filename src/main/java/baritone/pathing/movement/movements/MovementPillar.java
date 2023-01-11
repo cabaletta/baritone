@@ -101,7 +101,7 @@ public class MovementPillar extends Movement {
             // if we're standing on water and assumeWalkOnWater is false, we must have ascended to here, or sneak backplaced, so it is possible to pillar again
             return COST_INF;
         }
-        if (fromDown.getBlock() instanceof BlockLiquid && (from == Blocks.WATERLILY || from == Blocks.CARPET)) {
+        if ((from == Blocks.WATERLILY || from == Blocks.CARPET) && fromDown.getBlock() instanceof BlockLiquid) {
             // to ascend here we'd have to break the block we are standing on
             return COST_INF;
         }
