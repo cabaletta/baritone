@@ -114,36 +114,45 @@ public class MovementDiagonal extends Movement {
             return;
         }
         IBlockState destInto = context.get(destX, y, destZ);
+        IBlockState fromDown;
         boolean ascend = false;
         IBlockState destWalkOn;
         boolean descend = false;
+        boolean frostWalker = false;
         if (!MovementHelper.canWalkThrough(context, destX, y, destZ, destInto)) {
             ascend = true;
             if (!context.allowDiagonalAscend || !MovementHelper.canWalkThrough(context, x, y + 2, z) || !MovementHelper.canWalkOn(context, destX, y, destZ, destInto) || !MovementHelper.canWalkThrough(context, destX, y + 2, destZ)) {
                 return;
             }
             destWalkOn = destInto;
+            fromDown = context.get(x, y - 1, z);
         } else {
             destWalkOn = context.get(destX, y - 1, destZ);
-            if (!MovementHelper.canWalkOn(context, destX, y - 1, destZ, destWalkOn)) {
+            fromDown = context.get(x, y - 1, z);
+            boolean standingOnABlock = MovementHelper.mustBeSolidToWalkOn(context, x, y - 1, z, fromDown);
+            frostWalker = standingOnABlock && MovementHelper.canUseFrostWalker(context, destWalkOn);
+            if (!frostWalker && !MovementHelper.canWalkOn(context, destX, y - 1, destZ, destWalkOn)) {
                 descend = true;
                 if (!context.allowDiagonalDescend || !MovementHelper.canWalkOn(context, destX, y - 2, destZ) || !MovementHelper.canWalkThrough(context, destX, y - 1, destZ, destWalkOn)) {
                     return;
                 }
             }
+            frostWalker &= !context.assumeWalkOnWater; // do this after checking for descends because jesus can't prevent the water from freezing, it just prevents us from relying on the water freezing
         }
         double multiplier = WALK_ONE_BLOCK_COST;
         // For either possible soul sand, that affects half of our walking
         if (destWalkOn.getBlock() == Blocks.SOUL_SAND) {
             multiplier += (WALK_ONE_OVER_SOUL_SAND_COST - WALK_ONE_BLOCK_COST) / 2;
+        } else if (frostWalker) {
+            // frostwalker lets us walk on water without the penalty
         } else if (destWalkOn.getBlock() == Blocks.WATER) {
             multiplier += context.walkOnWaterOnePenalty * SQRT_2;
         }
-        Block fromDown = context.get(x, y - 1, z).getBlock();
-        if (fromDown == Blocks.LADDER || fromDown == Blocks.VINE) {
+        Block fromDownBlock = fromDown.getBlock();
+        if (fromDownBlock == Blocks.LADDER || fromDownBlock == Blocks.VINE) {
             return;
         }
-        if (fromDown == Blocks.SOUL_SAND) {
+        if (fromDownBlock == Blocks.SOUL_SAND) {
             multiplier += (WALK_ONE_OVER_SOUL_SAND_COST - WALK_ONE_BLOCK_COST) / 2;
         }
         Block cuttingOver1 = context.get(x, y - 1, destZ).getBlock();
