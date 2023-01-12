@@ -114,7 +114,7 @@ public class MovementDiagonal extends Movement {
             return;
         }
         IBlockState destInto = context.get(destX, y, destZ);
-        IBlockState fromDown = context.get(x, y - 1, z);
+        IBlockState fromDown;
         boolean ascend = false;
         IBlockState destWalkOn;
         boolean descend = false;
@@ -125,8 +125,10 @@ public class MovementDiagonal extends Movement {
                 return;
             }
             destWalkOn = destInto;
+            fromDown = context.get(x, y - 1, z);
         } else {
             destWalkOn = context.get(destX, y - 1, destZ);
+            fromDown = context.get(x, y - 1, z);
             boolean standingOnABlock = MovementHelper.mustBeSolidToWalkOn(context, x, y - 1, z, fromDown);
             frostWalker = standingOnABlock && MovementHelper.canUseFrostWalker(context, destWalkOn);
             if (!frostWalker && !MovementHelper.canWalkOn(context, destX, y - 1, destZ, destWalkOn)) {
