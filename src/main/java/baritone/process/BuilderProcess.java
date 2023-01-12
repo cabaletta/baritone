@@ -95,6 +95,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         this.name = name;
         this.schematic = schematic;
         this.realSchematic = null;
+        boolean buildingSelectionSchematic = schematic instanceof SelectionSchematic;
         if (!Baritone.settings().buildSubstitutes.value.isEmpty()) {
             this.schematic = new SubstituteSchematic(this.schematic, Baritone.settings().buildSubstitutes.value);
         }
@@ -114,7 +115,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         this.paused = false;
         this.layer = Baritone.settings().startAtLayer.value;
         this.stopAtHeight = schematic.heightY();
-        if (Baritone.settings().buildOnlySelection.value) {
+        if (Baritone.settings().buildOnlySelection.value && buildingSelectionSchematic) {  // currently redundant but safer maybe
             if (baritone.getSelectionManager().getSelections().length == 0) {
                 logDirect("Poor little kitten forgot to set a selection while BuildOnlySelection is true");
                 this.stopAtHeight = 0;
@@ -124,12 +125,10 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                 if (minim.isPresent() && maxim.isPresent()) {
                     int startAtHeight = Baritone.settings().layerOrder.value ? y + schematic.heightY() - maxim.getAsInt() : minim.getAsInt() - y;
                     this.stopAtHeight = (Baritone.settings().layerOrder.value ? y + schematic.heightY() - minim.getAsInt() : maxim.getAsInt() - y) + 1;
-                    this.layer = startAtHeight / Baritone.settings().layerHeight.value;
-                    if (Baritone.settings().chatDebug.value) {
-                        logDirect(String.format("Schematic starts at y=%s with height %s", y, schematic.heightY()));
-                        logDirect(String.format("Selection starts at y=%s and ends at y=%s", minim.getAsInt(), maxim.getAsInt()));
-                        logDirect(String.format("Considering relevant height %s - %s", startAtHeight, this.stopAtHeight));
-                    }
+                    this.layer = Math.max(this.layer, startAtHeight / Baritone.settings().layerHeight.value);  // startAtLayer or startAtHeight, whichever is highest
+                    logDebug(String.format("Schematic starts at y=%s with height %s", y, schematic.heightY()));
+                    logDebug(String.format("Selection starts at y=%s and ends at y=%s", minim.getAsInt(), maxim.getAsInt()));
+                    logDebug(String.format("Considering relevant height %s - %s", startAtHeight, this.stopAtHeight));
                 }
             }
         }
