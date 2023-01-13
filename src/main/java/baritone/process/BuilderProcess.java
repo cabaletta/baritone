@@ -651,7 +651,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                     }
                     // this is not in render distance
                     if (!observedCompleted.contains(BetterBlockPos.longHash(blockX, blockY, blockZ))
-                          && !Baritone.settings().buildSkipBlocks.value.contains(schematic.desiredState(x, y, z, current, this.approxPlaceable).getBlock())) {
+                            && !Baritone.settings().buildSkipBlocks.value.contains(schematic.desiredState(x, y, z, current, this.approxPlaceable).getBlock())) {
                         // and we've never seen this position be correct
                         // therefore mark as incorrect
                         incorrectPositions.add(new BetterBlockPos(blockX, blockY, blockZ));
@@ -898,14 +898,21 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                     TrapDoorBlock.OPEN, TrapDoorBlock.HALF
             );
 
-    private boolean sameWithoutOrientation(BlockState first, BlockState second) {
+    private boolean sameBlockstate(BlockState first, BlockState second) {
         if (first.getBlock() != second.getBlock()) {
             return false;
+        }
+        boolean ignoreDirection = Baritone.settings().buildIgnoreDirection.value;
+        List<String> ignoredProps = Baritone.settings().buildIgnoreProperties.value;
+        if (!ignoreDirection && ignoredProps.isEmpty()) {
+            return first.equals(second); // early return if no properties are being ignored
         }
         ImmutableMap<Property<?>, Comparable<?>> map1 = first.getValues();
         ImmutableMap<Property<?>, Comparable<?>> map2 = second.getValues();
         for (Property<?> prop : map1.keySet()) {
-            if (map1.get(prop) != map2.get(prop) && !orientationProps.contains(prop)) {
+            if (map1.get(prop) != map2.get(prop)
+                    && !(ignoreDirection && orientationProps.contains(prop))
+                    && !ignoredProps.contains(prop.getName())) {
                 return false;
             }
         }
@@ -940,7 +947,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         if (current.equals(desired)) {
             return true;
         }
-        return Baritone.settings().buildIgnoreDirection.value && sameWithoutOrientation(current, desired);
+        return sameBlockstate(current, desired);
     }
 
     public class BuilderCalculationContext extends CalculationContext {

@@ -99,6 +99,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
             baritone.getPathingControlManager().cancelEverything();
             return;
         }
+
         expectedSegmentStart = pathStart();
         baritone.getPathingControlManager().preTick();
         tickPath();

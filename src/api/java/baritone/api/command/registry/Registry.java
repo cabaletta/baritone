@@ -84,7 +84,7 @@ public class Registry<V> {
      * @param entry The entry to unregister.
      */
     public void unregister(V entry) {
-        if (registered(entry)) {
+        if (!registered(entry)) {
             return;
         }
         _entries.remove(entry);

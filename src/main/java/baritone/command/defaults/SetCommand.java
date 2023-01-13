@@ -147,7 +147,8 @@ public class SetCommand extends Command {
                     throw new CommandInvalidTypeException(args.consumed(), "a toggleable setting", "some other setting");
                 }
                 //noinspection unchecked
-                ((Settings.Setting<Boolean>) setting).value ^= true;
+                Settings.Setting<Boolean> asBoolSetting = (Settings.Setting<Boolean>) setting;
+                asBoolSetting.value ^= true;
                 logDirect(String.format(
                         "Toggled setting %s to %s",
                         setting.getName(),
