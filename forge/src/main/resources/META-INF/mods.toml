@@ -15,7 +15,7 @@ issueTrackerURL="https://github.com/cabaletta/baritone/issues" #optional
 # The modid of the mod
 modId="baritoe" #mandatory
 # The version number of the mod - there's a few well known ${} variables useable here or just hardcode it
-version="${file.jarVersion}" #mandatory
+version="${version}" #mandatory
  # A display name for the mod
 displayName="Baritone" #mandatory
 # A URL for the "homepage" for this mod, displayed in the mod UI
@@ -35,6 +35,6 @@ A Minecraft pathfinder bot.
 modId="minecraft"
 mandatory=true
 # This version range declares a minimum of the current minecraft version up to but not including the next major version
-versionRange="[1.19.2]"
+versionRange="[1.19.3]"
 ordering="NONE"
 side="BOTH"

@@ -24,8 +24,6 @@ import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.Helper;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Matrix4f;
-import com.mojang.math.Vector4f;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.player.LocalPlayer;
@@ -39,6 +37,8 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Matrix4f;
+import org.joml.Vector4f;
 
 import java.awt.*;
 import java.util.Collections;
@@ -80,6 +80,7 @@ public class GuiClick extends Screen implements Helper {
             HitResult result = player.level.clip(new ClipContext(near.add(viewerPos), far.add(viewerPos), ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, player));
             if (result != null && result.getType() == HitResult.Type.BLOCK) {
                 currentMouseOver = ((BlockHitResult) result).getBlockPos();
+                System.out.println("currentMouseOver = " + currentMouseOver);
             }
         }
     }
@@ -118,8 +119,8 @@ public class GuiClick extends Screen implements Helper {
     }
 
     public void onRender(PoseStack modelViewStack, Matrix4f projectionMatrix) {
-        this.projectionViewMatrix = projectionMatrix.copy();
-        this.projectionViewMatrix.multiply(modelViewStack.last().pose());
+        this.projectionViewMatrix = new Matrix4f(projectionMatrix);
+        this.projectionViewMatrix.mul(modelViewStack.last().pose());
         this.projectionViewMatrix.invert();
 
         if (currentMouseOver != null) {
@@ -158,12 +159,13 @@ public class GuiClick extends Screen implements Helper {
         y = y * 2 - 1;
 
         Vector4f pos = new Vector4f((float) x, (float) y, (float) z, 1.0F);
-        pos.transform(this.projectionViewMatrix);
+        projectionViewMatrix.transform(pos);
+
         if (pos.w() == 0) {
             return null;
         }
 
-        pos.perspectiveDivide();
+        pos.mul(1/pos.w());
         return new Vec3(pos.x(), pos.y(), pos.z());
     }
 }

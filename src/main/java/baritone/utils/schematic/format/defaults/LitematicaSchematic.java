@@ -21,6 +21,7 @@ import baritone.utils.accessor.ILongArrayNBT;
 import baritone.utils.schematic.StaticSchematic;
 import net.minecraft.core.Registry;
 import net.minecraft.core.Vec3i;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.resources.ResourceLocation;
@@ -94,7 +95,7 @@ public final class LitematicaSchematic extends StaticSchematic {
         BlockState[] blockList = new BlockState[blockStatePalette.size()];
 
         for (int i = 0; i < blockStatePalette.size(); i++) {
-            Block block = Registry.BLOCK.get(new ResourceLocation((((CompoundTag) blockStatePalette.get(i)).getString("Name"))));
+            Block block = BuiltInRegistries.BLOCK.get(new ResourceLocation((((CompoundTag) blockStatePalette.get(i)).getString("Name"))));
             CompoundTag properties = ((CompoundTag) blockStatePalette.get(i)).getCompound("Properties");
 
             blockList[i] = getBlockState(block, properties);

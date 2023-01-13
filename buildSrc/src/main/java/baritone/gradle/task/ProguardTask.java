@@ -26,6 +26,9 @@ import org.gradle.api.tasks.TaskCollection;
 import org.gradle.api.tasks.compile.ForkOptions;
 import org.gradle.api.tasks.compile.JavaCompile;
 import org.gradle.internal.jvm.Jvm;
+import xyz.wagyourtail.unimined.api.Constants;
+import xyz.wagyourtail.unimined.api.minecraft.EnvType;
+import xyz.wagyourtail.unimined.api.minecraft.MinecraftProvider;
 
 import java.io.*;
 import java.net.MalformedURLException;
@@ -81,29 +84,14 @@ public class ProguardTask extends BaritoneGradleTask {
         cleanup();
     }
 
-    private boolean isMcJar(File f) {
-        return f.getName().startsWith(compType.equals("FORGE") ? "forge-" : "minecraft-") && f.getName().contains("minecraft-merged-named");
+    MinecraftProvider<?, ?> provider = this.getProject().getExtensions().getByType(MinecraftProvider.class);
+
+    private File getMcJar() {
+        return provider.getMinecraftWithMapping(EnvType.COMBINED, provider.getMcPatcher().getProdNamespace(), provider.getMcPatcher().getProdFallbackNamespace()).toFile();
     }
 
-    private File getMcJar() throws IOException {
-        File mcClientJar = this.getProject().getConvention().getPlugin(JavaPluginConvention.class).getSourceSets().findByName("main").getCompileClasspath().getFiles()
-            .stream()
-            .filter(this::isMcJar)
-            .map(f -> {
-                switch (compType) {
-                    case "OFFICIAL":
-                        return new File(f.getParentFile().getParentFile(), "minecraft-merged.jar");
-                    case "FABRIC":
-                        return new File(f.getParentFile().getParentFile(), "minecraft-merged-intermediary.jar");
-                    case "FORGE":
-                        return new File(f.getParentFile().getParentFile(), f.getName().replace("-named.jar", "-srg.jar"));
-                }
-                return null;
-                })
-            .findFirst()
-            .get();
-        if (!mcClientJar.exists()) throw new IOException("Failed to find minecraft! " + mcClientJar.getAbsolutePath());
-        return mcClientJar;
+    private boolean isMcJar(File f) {
+        return this.getProject().getConfigurations().getByName(Constants.MINECRAFT_COMBINED_PROVIDER).getFiles().contains(f);
     }
 
     private void processArtifact() throws Exception {
@@ -237,6 +225,7 @@ public class ProguardTask extends BaritoneGradleTask {
 
         template.add(2, "-libraryjars  <java.home>/jmods/java.base.jmod(!**.jar;!module-info.class)");
         template.add(3, "-libraryjars  <java.home>/jmods/java.desktop.jmod(!**.jar;!module-info.class)");
+        template.add(4, "-libraryjars  <java.home>/jmods/jdk.unsupported.jmod(!**.jar;!module-info.class)");
 
         {
             final Stream<File> libraries;

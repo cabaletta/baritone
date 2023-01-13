@@ -48,6 +48,10 @@ public class WorldProvider implements IWorldProvider, Helper {
 
     @Override
     public final WorldData getCurrentWorld() {
+        // attempt reload if the worldData is null
+        if (currentWorld == null && mc.level != null) {
+            initWorld(mc.level.dimension(), mc.level.dimensionType());
+        }
         return this.currentWorld;
     }
 
@@ -83,6 +87,7 @@ public class WorldProvider implements IWorldProvider, Helper {
                     folderName = mc.getCurrentServer().ip;
                 } else {
                     //replaymod causes null currentServerData and false singleplayer.
+                    System.out.println("BARITONE: setting current world to null");
                     currentWorld = null;
                     return;
                 }
