@@ -25,7 +25,8 @@ import org.spongepowered.asm.mixin.Shadow;
 
 @Mixin(ItemTool.class)
 public class MixinItemTool implements IItemTool {
-    @Shadow protected Item.ToolMaterial toolMaterial;
+    @Shadow
+    protected Item.ToolMaterial toolMaterial;
 
     @Override
     public int getHarvestLevel() {
