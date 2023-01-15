@@ -52,7 +52,7 @@ public class PrecomputedData {
         if (canWalkThroughState == YES) {
             blockData |= CAN_WALK_THROUGH_MASK;
         }
-        if (canWalkOnState == MAYBE) {
+        if (canWalkThroughState == MAYBE) {
             blockData |= CAN_WALK_THROUGH_SPECIAL_MASK;
         }
 
