@@ -75,13 +75,13 @@ public class FindCommand extends Command {
     private ITextComponent positionToComponent(BetterBlockPos pos) {
         String positionText = String.format("%s %s %s", pos.x, pos.y, pos.z);
         String command = String.format("%sgoal %s", FORCE_COMMAND_PREFIX, positionText);
-        ITextComponent baseComponent = new StringTextComponent(pos.toString());
-        ITextComponent hoverComponent = new StringTextComponent("Click to set goal to this position");
-        baseComponent.getStyle()
-            .setColor(Color.fromTextFormatting(TextFormatting.GRAY))
-            .setInsertion(positionText)
-            .setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, command))
-            .setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverComponent));
+        IFormattableTextComponent baseComponent = new StringTextComponent(pos.toString());
+        IFormattableTextComponent hoverComponent = new StringTextComponent("Click to set goal to this position");
+        baseComponent.setStyle(baseComponent.getStyle()
+                .setFormatting(TextFormatting.GRAY)
+                .setInsertion(positionText)
+                .setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, command))
+                .setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverComponent)));
         return baseComponent;
     }
 
