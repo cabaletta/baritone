@@ -37,7 +37,6 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.IBlockAccess;
 
 import java.util.Optional;
 
@@ -210,33 +209,10 @@ public interface MovementHelper extends ActionCosts, Helper {
         return block.isPassable(bsi.access, bsi.isPassableBlockPos.setPos(x, y, z));
     }
 
-
-    /**
-     * canWalkThrough but also won't impede movement at all. so not including doors or fence gates (we'd have to right click),
-     * not including water, and not including ladders or vines or cobwebs (they slow us down)
-     *
-     * @param context Calculation context to provide block state lookup
-     * @param x       The block's x position
-     * @param y       The block's y position
-     * @param z       The block's z position
-     * @return Whether or not the block at the specified position
-     */
-    static boolean fullyPassable(CalculationContext context, int x, int y, int z) {
-        return fullyPassable(
-                context.bsi.access,
-                context.bsi.isPassableBlockPos.setPos(x, y, z),
-                context.bsi.get0(x, y, z)
-        );
-    }
-
-    static boolean fullyPassable(IPlayerContext ctx, BlockPos pos) {
-        return fullyPassable(ctx.world(), pos, ctx.world().getBlockState(pos));
-    }
-
-    static boolean fullyPassable(IBlockAccess access, BlockPos pos, IBlockState state) {
+    static Ternary fullyPassableBlockState(IBlockState state) {
         Block block = state.getBlock();
         if (block == Blocks.AIR) { // early return for most common case
-            return true;
+            return YES;
         }
         // exceptions - blocks that are isPassable true, but we can't actually jump through
         if (block == Blocks.FIRE
@@ -252,10 +228,49 @@ public interface MovementHelper extends ActionCosts, Helper {
                 || block instanceof BlockTrapDoor
                 || block instanceof BlockEndPortal
                 || block instanceof BlockSkull) {
-            return false;
+            return NO;
         }
         // door, fence gate, liquid, trapdoor have been accounted for, nothing else uses the world or pos parameters
-        return block.isPassable(access, pos);
+        // at least in 1.12.2 vanilla, that is.....
+        try { // A dodgy catch-all at the end, for most blocks with default behaviour this will work, however where blocks are special this will error out, and we can handle it when we have this information
+            if (block.isPassable(null, null)) {
+                return YES;
+            } else {
+                return NO;
+            }
+        } catch (Throwable exception) {
+            // see PR #1087 for why
+            System.out.println("The block " + state.getBlock().getLocalizedName() + " requires a special case due to the exception " + exception.getMessage());
+            return MAYBE;
+        }
+    }
+
+    /**
+     * canWalkThrough but also won't impede movement at all. so not including doors or fence gates (we'd have to right click),
+     * not including water, and not including ladders or vines or cobwebs (they slow us down)
+     */
+    static boolean fullyPassable(CalculationContext context, int x, int y, int z) {
+        return fullyPassable(context, x, y, z, context.get(x, y, z));
+    }
+
+    static boolean fullyPassable(CalculationContext context, int x, int y, int z, IBlockState state) {
+        return context.precomputedData.fullyPassable(context.bsi, x, y, z, state);
+    }
+
+    static boolean fullyPassable(IPlayerContext ctx, BlockPos pos) {
+        IBlockState state = ctx.world().getBlockState(pos);
+        Ternary fullyPassable = fullyPassableBlockState(state);
+        if (fullyPassable == YES) {
+            return true;
+        }
+        if (fullyPassable == NO) {
+            return false;
+        }
+        return fullyPassablePosition(new BlockStateInterface(ctx), pos.getX(), pos.getY(), pos.getZ(), state); // meh
+    }
+
+    static boolean fullyPassablePosition(BlockStateInterface bsi, int x, int y, int z, IBlockState state) {
+        return state.getBlock().isPassable(bsi.access, bsi.isPassableBlockPos.setPos(x, y, z));
     }
 
     static boolean isReplaceable(int x, int y, int z, IBlockState state, BlockStateInterface bsi) {
@@ -488,7 +503,7 @@ public interface MovementHelper extends ActionCosts, Helper {
             if (context.assumeWalkOnWater) {
                 return false;
             }
-            Block blockAbove = context.getBlock(x, y+1, z);
+            Block blockAbove = context.getBlock(x, y + 1, z);
             if (blockAbove instanceof BlockLiquid) {
                 return false;
             }

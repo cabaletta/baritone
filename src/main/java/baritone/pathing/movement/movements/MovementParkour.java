@@ -112,13 +112,13 @@ public class MovementParkour extends Movement {
                 maxJump = 3;
             }
         }
-        
+
         // check parkour jumps from smallest to largest for obstacles/walls and landing positions
         int verifiedMaxJump = 1; // i - 1 (when i = 2)
         for (int i = 2; i <= maxJump; i++) {
             int destX = x + xDiff * i;
             int destZ = z + zDiff * i;
-            
+
             // check head/feet
             if (!MovementHelper.fullyPassable(context, destX, y + 1, destZ)) {
                 break;
@@ -126,10 +126,10 @@ public class MovementParkour extends Movement {
             if (!MovementHelper.fullyPassable(context, destX, y + 2, destZ)) {
                 break;
             }
-            
+
             // check for ascend landing position
             IBlockState destInto = context.bsi.get0(destX, y, destZ);
-            if (!MovementHelper.fullyPassable(context.bsi.access, context.bsi.isPassableBlockPos.setPos(destX, y, destZ), destInto)) {
+            if (!MovementHelper.fullyPassable(context, destX, y, destZ, destInto)) {
                 if (i <= 3 && context.allowParkourAscend && context.canSprint && MovementHelper.canWalkOn(context, destX, y, destZ, destInto) && checkOvershootSafety(context.bsi, destX + xDiff, y + 1, destZ + zDiff)) {
                     res.x = destX;
                     res.y = y + 1;
@@ -139,7 +139,7 @@ public class MovementParkour extends Movement {
                 }
                 break;
             }
-            
+
             // check for flat landing position
             IBlockState landingOn = context.bsi.get0(destX, y - 1, destZ);
             // farmland needs to be canWalkOn otherwise farm can never work at all, but we want to specifically disallow ending a jump on farmland haha
@@ -156,14 +156,14 @@ public class MovementParkour extends Movement {
                 }
                 break;
             }
-            
+
             if (!MovementHelper.fullyPassable(context, destX, y + 3, destZ)) {
                 break;
             }
-            
+
             verifiedMaxJump = i;
         }
-        
+
         // parkour place starts here
         if (!context.allowParkourPlace) {
             return;
