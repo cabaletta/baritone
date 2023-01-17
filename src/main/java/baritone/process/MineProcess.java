@@ -28,7 +28,6 @@ import baritone.cache.CachedChunk;
 import baritone.cache.WorldScanner;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.MovementHelper;
-import baritone.pathing.precompute.PrecomputedData;
 import baritone.utils.BaritoneProcessHelper;
 import baritone.utils.BlockStateInterface;
 import net.minecraft.block.Block;
@@ -215,6 +214,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
                 public boolean isInGoal(int x, int y, int z) {
                     return false;
                 }
+
                 @Override
                 public double heuristic() {
                     return Double.NEGATIVE_INFINITY;
@@ -500,9 +500,9 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         }
         if (!Baritone.settings().allowBreak.value) {
             BlockOptionalMetaLookup f = new BlockOptionalMetaLookup(this.filter.blocks()
-                .stream()
-                .filter(e -> Baritone.settings().allowBreakAnyway.value.contains(e.getBlock()))
-                .toArray(BlockOptionalMeta[]::new));
+                    .stream()
+                    .filter(e -> Baritone.settings().allowBreakAnyway.value.contains(e.getBlock()))
+                    .toArray(BlockOptionalMeta[]::new));
             if (f.blocks().isEmpty()) {
                 logDirect("Unable to mine when allowBreak is false and target block is not in allowBreakAnyway!");
                 return null;

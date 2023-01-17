@@ -73,7 +73,7 @@ public class MovementTraverse extends Movement {
         IBlockState destOn = context.get(destX, y - 1, destZ);
         IBlockState srcDown = context.get(x, y - 1, z);
         Block srcDownBlock = srcDown.getBlock();
-        boolean standingOnABlock = MovementHelper.mustBeSolidToWalkOn(context, x, y-1, z, srcDown);
+        boolean standingOnABlock = MovementHelper.mustBeSolidToWalkOn(context, x, y - 1, z, srcDown);
         boolean frostWalker = standingOnABlock && !context.assumeWalkOnWater && MovementHelper.canUseFrostWalker(context, destOn);
         if (frostWalker || MovementHelper.canWalkOn(context, destX, y - 1, destZ, destOn)) { //this is a walk, not a bridge
             double WC = WALK_ONE_BLOCK_COST;

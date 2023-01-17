@@ -299,7 +299,7 @@ public class SettingsUtil {
                 Parser keyParser = Parser.getParser(keyType);
                 Parser valueParser = Parser.getParser(valueType);
 
-                return ((Map<?,?>) value).entrySet().stream()
+                return ((Map<?, ?>) value).entrySet().stream()
                         .map(o -> keyParser.toString(context, o.getKey()) + "->" + valueParser.toString(context, o.getValue()))
                         .collect(Collectors.joining(","));
             }

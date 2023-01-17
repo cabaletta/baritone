@@ -23,8 +23,8 @@ import baritone.api.utils.Helper;
 import baritone.utils.accessor.IAnvilChunkLoader;
 import baritone.utils.accessor.IChunkProviderServer;
 import net.minecraft.server.integrated.IntegratedServer;
-import net.minecraft.world.WorldServer;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldServer;
 import org.apache.commons.lang3.SystemUtils;
 
 import java.io.File;

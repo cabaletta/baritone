@@ -22,6 +22,7 @@ import net.minecraft.block.BlockAir;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -33,7 +34,7 @@ public class SubstituteSchematic extends AbstractSchematic {
     private final Map<Block, List<Block>> substitutions;
     private final Map<IBlockState, Map<Block, IBlockState>> blockStateCache = new HashMap<>();
 
-    public SubstituteSchematic(ISchematic schematic, Map<Block,List<Block>> substitutions) {
+    public SubstituteSchematic(ISchematic schematic, Map<Block, List<Block>> substitutions) {
         super(schematic.widthX(), schematic.heightY(), schematic.lengthZ());
         this.schematic = schematic;
         this.substitutions = substitutions;
@@ -80,9 +81,10 @@ public class SubstituteSchematic extends AbstractSchematic {
             } catch (IllegalArgumentException e) { //property does not exist for target block
             }
         }
-        blockStateCache.computeIfAbsent(state, s -> new HashMap<Block,IBlockState>()).put(block, newState);
+        blockStateCache.computeIfAbsent(state, s -> new HashMap<Block, IBlockState>()).put(block, newState);
         return newState;
     }
+
     private <T extends Comparable<T>> IBlockState copySingleProp(IBlockState fromState, IBlockState toState, IProperty<T> prop) {
         return toState.withProperty(prop, fromState.getValue(prop));
     }
