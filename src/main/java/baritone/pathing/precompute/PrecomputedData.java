@@ -25,7 +25,7 @@ import net.minecraft.block.state.IBlockState;
 import static baritone.pathing.precompute.Ternary.MAYBE;
 import static baritone.pathing.precompute.Ternary.YES;
 
-public class PrecomputedData { // TODO add isFullyPassable
+public class PrecomputedData {
 
     private final int[] data = new int[Block.BLOCK_STATE_IDS.size()];
 
@@ -34,6 +34,8 @@ public class PrecomputedData { // TODO add isFullyPassable
     private static final int CAN_WALK_ON_SPECIAL_MASK = 1 << 2;
     private static final int CAN_WALK_THROUGH_MASK = 1 << 3;
     private static final int CAN_WALK_THROUGH_SPECIAL_MASK = 1 << 4;
+    private static final int FULLY_PASSABLE_MASK = 1 << 5;
+    private static final int FULLY_PASSABLE_SPECIAL_MASK = 1 << 6;
 
     private int fillData(int id, IBlockState state) {
         int blockData = 0;
@@ -50,8 +52,16 @@ public class PrecomputedData { // TODO add isFullyPassable
         if (canWalkThroughState == YES) {
             blockData |= CAN_WALK_THROUGH_MASK;
         }
-        if (canWalkOnState == MAYBE) {
+        if (canWalkThroughState == MAYBE) {
             blockData |= CAN_WALK_THROUGH_SPECIAL_MASK;
+        }
+
+        Ternary fullyPassableState = MovementHelper.fullyPassableBlockState(state);
+        if (fullyPassableState == YES) {
+            blockData |= FULLY_PASSABLE_MASK;
+        }
+        if (fullyPassableState == MAYBE) {
+            blockData |= FULLY_PASSABLE_SPECIAL_MASK;
         }
 
         blockData |= COMPLETED_MASK;
@@ -87,6 +97,21 @@ public class PrecomputedData { // TODO add isFullyPassable
             return MovementHelper.canWalkThroughPosition(bsi, x, y, z, state);
         } else {
             return (blockData & CAN_WALK_THROUGH_MASK) != 0;
+        }
+    }
+
+    public boolean fullyPassable(BlockStateInterface bsi, int x, int y, int z, IBlockState state) {
+        int id = Block.BLOCK_STATE_IDS.get(state);
+        int blockData = data[id];
+
+        if ((blockData & COMPLETED_MASK) == 0) { // we need to fill in the data
+            blockData = fillData(id, state);
+        }
+
+        if ((blockData & FULLY_PASSABLE_SPECIAL_MASK) != 0) {
+            return MovementHelper.fullyPassablePosition(bsi, x, y, z, state);
+        } else {
+            return (blockData & FULLY_PASSABLE_MASK) != 0;
         }
     }
 }

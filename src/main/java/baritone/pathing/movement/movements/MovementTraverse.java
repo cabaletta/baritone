@@ -33,7 +33,6 @@ import baritone.utils.BlockStateInterface;
 import com.google.common.collect.ImmutableSet;
 import net.minecraft.block.*;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.fluid.WaterFluid;
 import net.minecraft.init.Blocks;
 import net.minecraft.state.properties.SlabType;
 import net.minecraft.util.math.BlockPos;
@@ -73,9 +72,11 @@ public class MovementTraverse extends Movement {
         IBlockState pb0 = context.get(destX, y + 1, destZ);
         IBlockState pb1 = context.get(destX, y, destZ);
         IBlockState destOn = context.get(destX, y - 1, destZ);
-        IBlockState down = context.get(x, y - 1, z);
-        Block srcDown = down.getBlock();
-        if (MovementHelper.canWalkOn(context, destX, y - 1, destZ, destOn)) {//this is a walk, not a bridge
+        IBlockState srcDown = context.get(x, y - 1, z);
+        Block srcDownBlock = srcDown.getBlock();
+        boolean standingOnABlock = MovementHelper.mustBeSolidToWalkOn(context, x, y - 1, z, srcDown);
+        boolean frostWalker = standingOnABlock && !context.assumeWalkOnWater && MovementHelper.canUseFrostWalker(context, destOn);
+        if (frostWalker || MovementHelper.canWalkOn(context, destX, y - 1, destZ, destOn)) { //this is a walk, not a bridge
             double WC = WALK_ONE_BLOCK_COST;
             boolean water = false;
             if (MovementHelper.isWater(pb0) || MovementHelper.isWater(pb1)) {
@@ -84,10 +85,12 @@ public class MovementTraverse extends Movement {
             } else {
                 if (destOn.getBlock() == Blocks.SOUL_SAND) {
                     WC += (WALK_ONE_OVER_SOUL_SAND_COST - WALK_ONE_BLOCK_COST) / 2;
+                } else if (frostWalker) {
+                    // with frostwalker we can walk on water without the penalty, if we are sure we won't be using jesus
                 } else if (destOn.getBlock() == Blocks.WATER) {
                     WC += context.walkOnWaterOnePenalty;
                 }
-                if (srcDown == Blocks.SOUL_SAND) {
+                if (srcDownBlock == Blocks.SOUL_SAND) {
                     WC += (WALK_ONE_OVER_SOUL_SAND_COST - WALK_ONE_BLOCK_COST) / 2;
                 }
             }
@@ -105,13 +108,13 @@ public class MovementTraverse extends Movement {
                 }
                 return WC;
             }
-            if (srcDown == Blocks.LADDER || srcDown == Blocks.VINE) {
+            if (srcDownBlock == Blocks.LADDER || srcDownBlock == Blocks.VINE) {
                 hardness1 *= 5;
                 hardness2 *= 5;
             }
             return WC + hardness1 + hardness2;
         } else {//this is a bridge, so we need to place a block
-            if (srcDown == Blocks.LADDER || srcDown == Blocks.VINE) {
+            if (srcDownBlock == Blocks.LADDER || srcDownBlock == Blocks.VINE) {
                 return COST_INF;
             }
             if (MovementHelper.isReplaceable(destX, y - 1, destZ, destOn, context.bsi)) {
@@ -142,11 +145,15 @@ public class MovementTraverse extends Movement {
                     }
                 }
                 // now that we've checked all possible directions to side place, we actually need to backplace
-                if (srcDown == Blocks.SOUL_SAND || (srcDown instanceof BlockSlab && down.get(BlockSlab.TYPE) != SlabType.DOUBLE)) {
+                if (srcDownBlock == Blocks.SOUL_SAND || (srcDownBlock instanceof BlockSlab && srcDown.get(BlockSlab.TYPE) != SlabType.DOUBLE)) {
                     return COST_INF; // can't sneak and backplace against soul sand or half slabs (regardless of whether it's top half or bottom half) =/
                 }
-                if (down.getFluidState() instanceof WaterFluid) {
+                if (!standingOnABlock) { // standing on water / swimming
                     return COST_INF; // this is obviously impossible
+                }
+                Block blockSrc = context.getBlock(x, y, z);
+                if ((blockSrc == Blocks.LILY_PAD || blockSrc instanceof BlockCarpet) && !srcDown.getFluidState().isEmpty()) {
+                    return COST_INF; // we can stand on these but can't place against them
                 }
                 WC = WC * (SNEAK_ONE_BLOCK_COST / WALK_ONE_BLOCK_COST);//since we are sneak backplacing, we are sneaking lol
                 return WC + placeCost + hardness1 + hardness2;
@@ -229,7 +236,7 @@ public class MovementTraverse extends Movement {
             }
         }
 
-        boolean isTheBridgeBlockThere = MovementHelper.canWalkOn(ctx, positionToPlace) || ladder;
+        boolean isTheBridgeBlockThere = MovementHelper.canWalkOn(ctx, positionToPlace) || ladder || MovementHelper.canUseFrostWalker(ctx, positionToPlace);
         BlockPos feet = ctx.playerFeet();
         if (feet.getY() != dest.getY() && !ladder) {
             logDebug("Wrong Y coordinate");

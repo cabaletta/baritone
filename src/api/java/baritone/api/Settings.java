@@ -108,6 +108,13 @@ public final class Settings {
     public final Setting<Double> walkOnWaterOnePenalty = new Setting<>(3D);
 
     /**
+     * Don't allow breaking blocks next to liquids.
+     * <p>
+     * Enable if you have mods adding custom fluid physics.
+     */
+    public final Setting<Boolean> strictLiquidCheck = new Setting<>(false);
+
+    /**
      * Allow Baritone to fall arbitrary distances and place a water bucket beneath it.
      * Reliability: questionable.
      */
@@ -116,6 +123,8 @@ public final class Settings {
     /**
      * Allow Baritone to assume it can walk on still water just like any other block.
      * This functionality is assumed to be provided by a separate library that might have imported Baritone.
+     * <p>
+     * Note: This will prevent some usage of the frostwalker enchantment, like pillaring up from water.
      */
     public final Setting<Boolean> assumeWalkOnWater = new Setting<>(false);
 
