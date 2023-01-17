@@ -166,17 +166,21 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             return false;
         }
 
-        if (Baritone.settings().mapArtMode.value) {
-            parsed = new MapArtSchematic((IStaticSchematic) parsed);
-        }
-
-        if (Baritone.settings().buildOnlySelection.value) {
-            parsed = new SelectionSchematic(parsed, origin, baritone.getSelectionManager().getSelections());
-        }
-
+        parsed = applyMapArtAndSelection(origin, parsed);
 
         build(name, parsed, origin);
         return true;
+    }
+
+    private ISchematic applyMapArtAndSelection(Vec3i origin, ISchematic schematic) {
+        if (Baritone.settings().mapArtMode.value) {
+            schematic = new MapArtSchematic((IStaticSchematic) schematic);
+        }
+
+        if (Baritone.settings().buildOnlySelection.value) {
+            schematic = new SelectionSchematic(schematic, origin, baritone.getSelectionManager().getSelections());
+        }
+        return schematic;
     }
 
     @Override
@@ -217,7 +221,8 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                 try {
                     LitematicaSchematic schematic1 = new LitematicaSchematic(CompressedStreamTools.readCompressed(Files.newInputStream(LitematicaHelper.getSchematicFile(i).toPath())), false);
                     Vec3i correctedOrigin = LitematicaHelper.getCorrectedOrigin(schematic1, i);
-                    LitematicaSchematic schematic2 = LitematicaHelper.blackMagicFuckery(schematic1, i);
+                    ISchematic schematic2 = LitematicaHelper.blackMagicFuckery(schematic1, i);
+                    schematic2 = applyMapArtAndSelection(origin, schematic2);
                     build(name, schematic2, correctedOrigin);
                 } catch (IOException e) {
                     logDirect("Schematic File could not be loaded.");
