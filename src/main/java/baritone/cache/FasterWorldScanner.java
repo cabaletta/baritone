@@ -25,6 +25,8 @@ import baritone.api.utils.IPlayerContext;
 import baritone.utils.accessor.IBitArray;
 import baritone.utils.accessor.IBlockStateContainer;
 import io.netty.buffer.Unpooled;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntList;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.network.PacketBuffer;
@@ -126,6 +128,7 @@ public enum FasterWorldScanner implements IWorldScanner {
     private List<BlockPos> scanChunksInternal(IPlayerContext ctx, BlockOptionalMetaLookup lookup, List<ChunkPos> chunkPositions, int maxBlocks) {
         assert ctx.world() != null;
         try {
+            // p -> scanChunkInternal(ctx, lookup, p)
             Stream<BlockPos> posStream = chunkPositions.parallelStream().flatMap(p -> scanChunkInternal(ctx, lookup, p));
             if (maxBlocks >= 0) {
                 // WARNING: this can be expensive if maxBlocks is large...
@@ -151,39 +154,30 @@ public enum FasterWorldScanner implements IWorldScanner {
 
         int playerSectionY = ctx.playerFeet().y >> 4;
 
-        List<BlockPos> blocks = new ArrayList<>();
-
-        collectChunkSections(lookup, chunkProvider.getLoadedChunk(pos.x, pos.z), playerSectionY, (section, isInFilter) -> {
-            int yOffset = section.getYLocation();
-            BitArray array = (BitArray) ((IBlockStateContainer) section.getData()).getStorage();
-            collectBlockLocations(array, isInFilter, place -> blocks.add(new BlockPos(
-                    chunkX + ((place & 255) & 15),
-                    yOffset + (place >> 8),
-                    chunkZ + ((place & 255) >> 4)
-            )));
-        });
-        return blocks.stream();
+        return collectChunkSections(lookup, chunkProvider.getLoadedChunk(pos.x, pos.z), chunkX, chunkZ, playerSectionY).stream();
     }
 
 
 
-    private void collectChunkSections(BlockOptionalMetaLookup lookup, Chunk chunk, int playerSection, BiConsumer<ExtendedBlockStorage, boolean[]> consumer) {
+    private List<BlockPos> collectChunkSections(BlockOptionalMetaLookup lookup, Chunk chunk, long chunkX, long chunkZ, int playerSection) {
         // iterate over sections relative to player
+        List<BlockPos> blocks = new ArrayList<>();
         ExtendedBlockStorage[] sections = chunk.getBlockStorageArray();
         int l = sections.length;
         int i = playerSection - 1;
         int j = playerSection;
         for (; i >= 0 || j < l; ++j, --i) {
             if (j < l) {
-                visitSection(lookup, sections[j], consumer);
+                visitSection(lookup, sections[j], blocks, chunkX, chunkZ);
             }
             if (i >= 0) {
-                visitSection(lookup, sections[i], consumer);
+                visitSection(lookup, sections[i], blocks, chunkX, chunkZ);
             }
         }
+        return blocks;
     }
 
-    private void visitSection(BlockOptionalMetaLookup lookup, ExtendedBlockStorage section, BiConsumer<ExtendedBlockStorage, boolean[]> consumer) {
+    private void visitSection(BlockOptionalMetaLookup lookup, ExtendedBlockStorage section, List<BlockPos> blocks, long chunkX, long chunkZ) {
         if (section == null || section.isEmpty()) {
             return;
         }
@@ -198,7 +192,17 @@ public enum FasterWorldScanner implements IWorldScanner {
         if (isInFilter.length == 0) {
             return;
         }
-        consumer.accept(section, isInFilter);
+
+
+        int yOffset = section.getYLocation();
+        BitArray array = ((IBlockStateContainer) section.getData()).getStorage();
+        for (int place : collectBlockLocations(array, isInFilter)) {
+            blocks.add(new BlockPos(
+                chunkX + ((place & 255) & 15),
+                yOffset + (place >> 8),
+                chunkZ + ((place & 255) >> 4)
+            ));
+        }
     }
 
     private boolean[] getIncludedFilterIndices(BlockOptionalMetaLookup lookup, IBlockStatePalette palette) {
@@ -224,11 +228,13 @@ public enum FasterWorldScanner implements IWorldScanner {
         return isInFilter;
     }
 
-    private static void collectBlockLocations(BitArray array, boolean[] isInFilter, IntConsumer action) {
+    private static IntList collectBlockLocations(BitArray array, boolean[] isInFilter) {
         long[] longArray = array.getBackingLongArray();
         int arraySize = array.size();
         int bitsPerEntry = ((IBitArray) array).getBitsPerEntry();
         long maxEntryValue = ((IBitArray) array).getMaxEntryValue();
+
+        IntList positions = new IntArrayList();
 
         for (int idx = 0, kl = bitsPerEntry - 1; idx < arraySize; idx++, kl += bitsPerEntry) {
             final int i = idx * bitsPerEntry;
@@ -239,14 +245,15 @@ public enum FasterWorldScanner implements IWorldScanner {
 
             if (j == k) {
                 if (isInFilter[(int) (jl & maxEntryValue)]) {
-                    action.accept(idx);
+                    positions.add(idx);
                 }
             } else {
                 if (isInFilter[(int) ((jl | longArray[k] << (64 - l)) & maxEntryValue)]) {
-                    action.accept(idx);
+                    positions.add(idx);
                 }
             }
         }
+        return positions;
     }
 
     /**
