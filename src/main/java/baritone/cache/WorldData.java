@@ -22,7 +22,6 @@ import baritone.api.cache.ICachedWorld;
 import baritone.api.cache.IWaypointCollection;
 import baritone.api.cache.IWorldData;
 
-import java.io.IOException;
 import java.nio.file.Path;
 
 /**
