@@ -157,7 +157,6 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         if (!format.isPresent()) {
             return false;
         }
-
         ISchematic parsed;
         try {
             parsed = format.get().parse(new FileInputStream(schematic));
@@ -165,18 +164,16 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             e.printStackTrace();
             return false;
         }
-
-        parsed = applyMapArtAndSelection(origin, parsed);
-
+        parsed = applyMapArtAndSelection(origin, (IStaticSchematic) parsed);
         build(name, parsed, origin);
         return true;
     }
 
-    private ISchematic applyMapArtAndSelection(Vec3i origin, ISchematic schematic) {
+    private ISchematic applyMapArtAndSelection(Vec3i origin, IStaticSchematic parsed) {
+        ISchematic schematic = parsed;
         if (Baritone.settings().mapArtMode.value) {
-            schematic = new MapArtSchematic((IStaticSchematic) schematic);
+            schematic = new MapArtSchematic(parsed);
         }
-
         if (Baritone.settings().buildOnlySelection.value) {
             schematic = new SelectionSchematic(schematic, origin, baritone.getSelectionManager().getSelections());
         }
@@ -222,7 +219,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                     LitematicaSchematic schematic1 = new LitematicaSchematic(CompressedStreamTools.readCompressed(Files.newInputStream(LitematicaHelper.getSchematicFile(i).toPath())), false);
                     Vec3i correctedOrigin = LitematicaHelper.getCorrectedOrigin(schematic1, i);
                     ISchematic schematic2 = LitematicaHelper.blackMagicFuckery(schematic1, i);
-                    schematic2 = applyMapArtAndSelection(origin, schematic2);
+                    schematic2 = applyMapArtAndSelection(origin, (IStaticSchematic) schematic2);
                     build(name, schematic2, correctedOrigin);
                 } catch (IOException e) {
                     logDirect("Schematic File could not be loaded.");
