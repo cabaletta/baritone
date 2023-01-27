@@ -18,17 +18,16 @@
 package baritone.command.defaults;
 
 import baritone.api.IBaritone;
-import baritone.api.pathing.calc.IPathingControlManager;
-import baritone.api.process.IBaritoneProcess;
 import baritone.api.behavior.IPathingBehavior;
 import baritone.api.command.Command;
+import baritone.api.command.argument.IArgConsumer;
 import baritone.api.command.exception.CommandException;
 import baritone.api.command.exception.CommandInvalidStateException;
-import baritone.api.command.argument.IArgConsumer;
+import baritone.api.pathing.calc.IPathingControlManager;
+import baritone.api.process.IBaritoneProcess;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 public class ETACommand extends Command {

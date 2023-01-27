@@ -128,7 +128,7 @@ public class ToolSet {
             if (!Baritone.settings().useSwordToMine.value && itemStack.getItem() instanceof SwordItem) {
                 continue;
             }
-          
+
             if (Baritone.settings().itemSaver.value && (itemStack.getDamage() + Baritone.settings().itemSaverThreshold.value) >= itemStack.getMaxDamage() && itemStack.getMaxDamage() > 1) {
                 continue;
             }

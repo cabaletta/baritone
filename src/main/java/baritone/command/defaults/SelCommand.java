@@ -36,8 +36,8 @@ import baritone.api.selection.ISelectionManager;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.BlockOptionalMeta;
 import baritone.api.utils.BlockOptionalMetaLookup;
-import baritone.utils.IRenderer;
 import baritone.utils.BlockStateInterface;
+import baritone.utils.IRenderer;
 import baritone.utils.schematic.StaticSchematic;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.BlockState;
@@ -193,7 +193,7 @@ public class SelCommand extends Command {
                         }
                     }
                 }
-                ISchematic schematic = new StaticSchematic(){{
+                ISchematic schematic = new StaticSchematic() {{
                     states = blockstates;
                     x = size.getX();
                     y = size.getY();
