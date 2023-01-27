@@ -89,9 +89,9 @@ public class FindCommand extends Command {
     public Stream<String> tabComplete(String label, IArgConsumer args) throws CommandException {
         return new TabCompleteHelper()
                 .append(
-                    CachedChunk.BLOCKS_TO_KEEP_TRACK_OF.stream()
-                        .map(Registry.BLOCK::getKey)
-                        .map(Object::toString)
+                        CachedChunk.BLOCKS_TO_KEEP_TRACK_OF.stream()
+                                .map(Registry.BLOCK::getKey)
+                                .map(Object::toString)
                 )
                 .filterPrefixNamespaced(args.getString())
                 .sortAlphabetically()

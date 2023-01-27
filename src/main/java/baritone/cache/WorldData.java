@@ -24,7 +24,6 @@ import baritone.api.cache.IWorldData;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.world.World;
 
-import java.io.IOException;
 import java.nio.file.Path;
 
 /**
