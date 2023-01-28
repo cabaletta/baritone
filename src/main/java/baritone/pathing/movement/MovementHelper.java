@@ -29,16 +29,23 @@ import baritone.pathing.precompute.Ternary;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.ToolSet;
 import net.minecraft.block.*;
-import net.minecraft.fluid.*;
+import net.minecraft.block.material.Material;
+import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.fluid.FlowingFluid;
+import net.minecraft.fluid.Fluid;
+import net.minecraft.fluid.Fluids;
+import net.minecraft.fluid.FluidState;
+import net.minecraft.fluid.WaterFluid;
 import net.minecraft.pathfinding.PathType;
 import net.minecraft.state.BooleanProperty;
+import net.minecraft.state.properties.Half;
 import net.minecraft.state.properties.SlabType;
+import net.minecraft.state.properties.StairsShape;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.world.IBlockReader;
 
 import java.util.List;
 import java.util.Optional;
@@ -54,7 +61,7 @@ import static baritone.pathing.precompute.Ternary.*;
 public interface MovementHelper extends ActionCosts, Helper {
 
     static boolean avoidBreaking(BlockStateInterface bsi, int x, int y, int z, BlockState state) {
-        if (!bsi.worldBorder.canPlaceAt(x, y)) {
+        if (!bsi.worldBorder.canPlaceAt(x, z)) {
             return true;
         }
         Block b = state.getBlock();
@@ -81,6 +88,19 @@ public interface MovementHelper extends ActionCosts, Helper {
                 && Baritone.settings().avoidUpdatingFallingBlocks.value // and if the setting is enabled
                 && FallingBlock.canFallThrough(bsi.get0(x, y - 1, z))) { // and if it would fall (i.e. it's unsupported)
             return true; // dont break a block that is adjacent to unsupported gravel because it can cause really weird stuff
+        }
+        // only pure liquids for now
+        // waterlogged blocks can have closed bottom sides and such
+        if (block instanceof FlowingFluidBlock) {
+            if (directlyAbove || Baritone.settings().strictLiquidCheck.value) {
+                return true;
+            }
+            int level = state.get(FlowingFluidBlock.LEVEL);
+            if (level == 0) {
+                return true; // source blocks like to flow horizontally
+            }
+            // everything else will prefer flowing down
+            return !(bsi.get0(x, y - 1, z).getBlock() instanceof FlowingFluidBlock); // assume everything is in a static state
         }
         return !state.getFluidState().isEmpty();
     }
@@ -206,33 +226,10 @@ public interface MovementHelper extends ActionCosts, Helper {
         return state.allowsMovement(bsi.access, BlockPos.ZERO, PathType.LAND); // workaround for future compatibility =P
     }
 
-
-    /**
-     * canWalkThrough but also won't impede movement at all. so not including doors or fence gates (we'd have to right click),
-     * not including water, and not including ladders or vines or cobwebs (they slow us down)
-     *
-     * @param context Calculation context to provide block state lookup
-     * @param x       The block's x position
-     * @param y       The block's y position
-     * @param z       The block's z position
-     * @return Whether or not the block at the specified position
-     */
-    static boolean fullyPassable(CalculationContext context, int x, int y, int z) {
-        return fullyPassable(
-                context.bsi.access,
-                context.bsi.isPassableBlockPos.setPos(x, y, z),
-                context.bsi.get0(x, y, z)
-        );
-    }
-
-    static boolean fullyPassable(IPlayerContext ctx, BlockPos pos) {
-        return fullyPassable(ctx.world(), pos, ctx.world().getBlockState(pos));
-    }
-
-    static boolean fullyPassable(IBlockReader access, BlockPos pos, BlockState state) {
+    static Ternary fullyPassableBlockState(BlockState state) {
         Block block = state.getBlock();
         if (block instanceof AirBlock) { // early return for most common case
-            return true;
+            return YES;
         }
         // exceptions - blocks that are isPassable true, but we can't actually jump through
         if (block instanceof AbstractFireBlock
@@ -249,10 +246,49 @@ public interface MovementHelper extends ActionCosts, Helper {
                 || block instanceof EndPortalBlock
                 || block instanceof SkullBlock
                 || block instanceof ShulkerBoxBlock) {
-            return false;
+            return NO;
         }
         // door, fence gate, liquid, trapdoor have been accounted for, nothing else uses the world or pos parameters
-        return state.allowsMovement(access, pos, PathType.LAND);
+        // at least in 1.12.2 vanilla, that is.....
+        try { // A dodgy catch-all at the end, for most blocks with default behaviour this will work, however where blocks are special this will error out, and we can handle it when we have this information
+            if (state.allowsMovement(null, null, PathType.LAND)) {
+                return YES;
+            } else {
+                return NO;
+            }
+        } catch (Throwable exception) {
+            // see PR #1087 for why
+            System.out.println("The block " + state.getBlock().getTranslatedName().getString() + " requires a special case due to the exception " + exception.getMessage());
+            return MAYBE;
+        }
+    }
+
+    /**
+     * canWalkThrough but also won't impede movement at all. so not including doors or fence gates (we'd have to right click),
+     * not including water, and not including ladders or vines or cobwebs (they slow us down)
+     */
+    static boolean fullyPassable(CalculationContext context, int x, int y, int z) {
+        return fullyPassable(context, x, y, z, context.get(x, y, z));
+    }
+
+    static boolean fullyPassable(CalculationContext context, int x, int y, int z, BlockState state) {
+        return context.precomputedData.fullyPassable(context.bsi, x, y, z, state);
+    }
+
+    static boolean fullyPassable(IPlayerContext ctx, BlockPos pos) {
+        BlockState state = ctx.world().getBlockState(pos);
+        Ternary fullyPassable = fullyPassableBlockState(state);
+        if (fullyPassable == YES) {
+            return true;
+        }
+        if (fullyPassable == NO) {
+            return false;
+        }
+        return fullyPassablePosition(new BlockStateInterface(ctx), pos.getX(), pos.getY(), pos.getZ(), state); // meh
+    }
+
+    static boolean fullyPassablePosition(BlockStateInterface bsi, int x, int y, int z, BlockState state) {
+        return state.allowsMovement(bsi.access, bsi.isPassableBlockPos.setPos(x, y, z), PathType.LAND);
     }
 
     static boolean isReplaceable(int x, int y, int z, BlockState state, BlockStateInterface bsi) {
@@ -458,6 +494,60 @@ public interface MovementHelper extends ActionCosts, Helper {
 
     static boolean canWalkOn(BlockStateInterface bsi, int x, int y, int z) {
         return canWalkOn(bsi, x, y, z, bsi.get0(x, y, z));
+    }
+
+    static boolean canUseFrostWalker(CalculationContext context, BlockState state) {
+        return context.frostWalker != 0
+                && state.getMaterial() == Material.WATER
+                && ((Integer) state.get(FlowingFluidBlock.LEVEL)) == 0;
+    }
+
+    static boolean canUseFrostWalker(IPlayerContext ctx, BlockPos pos) {
+        BlockState state = BlockStateInterface.get(ctx, pos);
+        return EnchantmentHelper.hasFrostWalker(ctx.player())
+                && state.getMaterial() == Material.WATER
+                && ((Integer) state.get(FlowingFluidBlock.LEVEL)) == 0;
+    }
+
+    /**
+     * If movements make us stand/walk on this block, will it have a top to walk on?
+     */
+    static boolean mustBeSolidToWalkOn(CalculationContext context, int x, int y, int z, BlockState state) {
+        Block block = state.getBlock();
+        if (block == Blocks.LADDER || block == Blocks.VINE) {
+            return false;
+        }
+        if (!state.getFluidState().isEmpty()) {
+            // used for frostwalker so only includes blocks where we are still on ground when leaving them to any side
+            // TODO 1.19+ : add leaves, add dripleaf?
+            if (block instanceof SlabBlock) {
+                if (state.get(SlabBlock.TYPE) != SlabType.BOTTOM) {
+                    return true;
+                }
+            } else if (block instanceof StairsBlock) {
+                if (state.get(StairsBlock.HALF) == Half.TOP) {
+                    return true;
+                }
+                StairsShape shape = state.get(StairsBlock.SHAPE);
+                if (shape == StairsShape.INNER_LEFT || shape == StairsShape.INNER_RIGHT) {
+                    return true;
+                }
+            } else if (block instanceof TrapDoorBlock) {
+                if (!state.get(TrapDoorBlock.OPEN) && state.get(TrapDoorBlock.HALF) == Half.TOP) {
+                    return true;
+                }
+            } else if (block == Blocks.SCAFFOLDING) {
+                return true;
+            }
+            if (context.assumeWalkOnWater) {
+                return false;
+            }
+            Block blockAbove = context.getBlock(x, y + 1, z);
+            if (blockAbove instanceof FlowingFluidBlock) {
+                return false;
+            }
+        }
+        return true;
     }
 
     static boolean canPlaceAgainst(BlockStateInterface bsi, int x, int y, int z) {

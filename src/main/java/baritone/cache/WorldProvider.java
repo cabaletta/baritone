@@ -45,9 +45,11 @@ public class WorldProvider implements IWorldProvider, Helper {
     private static final Map<Path, WorldData> worldCache = new HashMap<>(); // this is how the bots have the same cached world
 
     private WorldData currentWorld;
+    private World mcWorld; // this let's us detect a broken load/unload hook
 
     @Override
     public final WorldData getCurrentWorld() {
+        detectAndHandleBrokenLoading();
         return this.currentWorld;
     }
 
@@ -80,7 +82,9 @@ public class WorldProvider implements IWorldProvider, Helper {
                 folderName = mc.isConnectedToRealms() ? "realms" : mc.getCurrentServerData().serverIP;
             } else {
                 //replaymod causes null currentServerData and false singleplayer.
+                System.out.println("World seems to be a replay. Not loading Baritone cache.");
                 currentWorld = null;
+                mcWorld = mc.world;
                 return;
             }
             if (SystemUtils.IS_OS_WINDOWS) {
@@ -108,11 +112,13 @@ public class WorldProvider implements IWorldProvider, Helper {
         synchronized (worldCache) {
             this.currentWorld = worldCache.computeIfAbsent(dir, d -> new WorldData(d, world));
         }
+        this.mcWorld = mc.world;
     }
 
     public final void closeWorld() {
         WorldData world = this.currentWorld;
         this.currentWorld = null;
+        this.mcWorld = null;
         if (world == null) {
             return;
         }
@@ -120,8 +126,25 @@ public class WorldProvider implements IWorldProvider, Helper {
     }
 
     public final void ifWorldLoaded(Consumer<WorldData> currentWorldConsumer) {
+        detectAndHandleBrokenLoading();
         if (this.currentWorld != null) {
             currentWorldConsumer.accept(this.currentWorld);
+        }
+    }
+
+    private final void detectAndHandleBrokenLoading() {
+        if (this.mcWorld != mc.world) {
+            if (this.currentWorld != null) {
+                System.out.println("mc.world unloaded unnoticed! Unloading Baritone cache now.");
+                closeWorld();
+            }
+            if (mc.world != null) {
+                System.out.println("mc.world loaded unnoticed! Loading Baritone cache now.");
+                initWorld(mc.world.getDimensionKey());
+            }
+        } else if (currentWorld == null && mc.world != null && (mc.isSingleplayer() || mc.getCurrentServerData() != null)) {
+            System.out.println("Retrying to load Baritone cache");
+            initWorld(mc.world.getDimensionKey());
         }
     }
 }
