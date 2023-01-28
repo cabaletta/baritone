@@ -193,40 +193,14 @@ public enum FasterWorldScanner implements IWorldScanner {
             return;
         }
 
-
-        int yOffset = section.getYLocation();
         BitArray array = ((IBlockStateContainer) section.getData()).getStorage();
-        collectBlockLocations(array, isInFilter, blocks, chunkX, chunkZ, yOffset);
-    }
-
-    private boolean[] getIncludedFilterIndices(BlockOptionalMetaLookup lookup, IBlockStatePalette palette) {
-        boolean commonBlockFound = false;
-        ObjectIntIdentityMap<IBlockState> paletteMap = getPalette(palette);
-        int size = paletteMap.size();
-
-        boolean[] isInFilter = new boolean[size];
-
-        for (int i = 0; i < size; i++) {
-            IBlockState state = paletteMap.getByValue(i);
-            if (lookup.has(state)) {
-                isInFilter[i] = true;
-                commonBlockFound = true;
-            } else {
-                isInFilter[i] = false;
-            }
-        }
-
-        if (!commonBlockFound) {
-            return new boolean[0];
-        }
-        return isInFilter;
-    }
-
-    private static void collectBlockLocations(BitArray array, boolean[] isInFilter, List<BlockPos> blocks, long chunkX, long chunkZ, int yOffset) {
         long[] longArray = array.getBackingLongArray();
         int arraySize = array.size();
         int bitsPerEntry = ((IBitArray) array).getBitsPerEntry();
         long maxEntryValue = ((IBitArray) array).getMaxEntryValue();
+
+
+        int yOffset = section.getYLocation();
 
         for (int idx = 0, kl = bitsPerEntry - 1; idx < arraySize; idx++, kl += bitsPerEntry) {
             final int i = idx * bitsPerEntry;
@@ -255,6 +229,29 @@ public enum FasterWorldScanner implements IWorldScanner {
                 }
             }
         }
+    }
+
+    private boolean[] getIncludedFilterIndices(BlockOptionalMetaLookup lookup, IBlockStatePalette palette) {
+        boolean commonBlockFound = false;
+        ObjectIntIdentityMap<IBlockState> paletteMap = getPalette(palette);
+        int size = paletteMap.size();
+
+        boolean[] isInFilter = new boolean[size];
+
+        for (int i = 0; i < size; i++) {
+            IBlockState state = paletteMap.getByValue(i);
+            if (lookup.has(state)) {
+                isInFilter[i] = true;
+                commonBlockFound = true;
+            } else {
+                isInFilter[i] = false;
+            }
+        }
+
+        if (!commonBlockFound) {
+            return new boolean[0];
+        }
+        return isInFilter;
     }
 
     /**
