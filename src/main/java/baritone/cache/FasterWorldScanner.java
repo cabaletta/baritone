@@ -196,13 +196,7 @@ public enum FasterWorldScanner implements IWorldScanner {
 
         int yOffset = section.getYLocation();
         BitArray array = ((IBlockStateContainer) section.getData()).getStorage();
-        for (int place : collectBlockLocations(array, isInFilter)) {
-            blocks.add(new BlockPos(
-                chunkX + ((place & 255) & 15),
-                yOffset + (place >> 8),
-                chunkZ + ((place & 255) >> 4)
-            ));
-        }
+        collectBlockLocations(array, isInFilter, blocks, chunkX, chunkZ, yOffset);
     }
 
     private boolean[] getIncludedFilterIndices(BlockOptionalMetaLookup lookup, IBlockStatePalette palette) {
@@ -228,13 +222,11 @@ public enum FasterWorldScanner implements IWorldScanner {
         return isInFilter;
     }
 
-    private static IntList collectBlockLocations(BitArray array, boolean[] isInFilter) {
+    private static void collectBlockLocations(BitArray array, boolean[] isInFilter, List<BlockPos> blocks, long chunkX, long chunkZ, int yOffset) {
         long[] longArray = array.getBackingLongArray();
         int arraySize = array.size();
         int bitsPerEntry = ((IBitArray) array).getBitsPerEntry();
         long maxEntryValue = ((IBitArray) array).getMaxEntryValue();
-
-        IntList positions = new IntArrayList();
 
         for (int idx = 0, kl = bitsPerEntry - 1; idx < arraySize; idx++, kl += bitsPerEntry) {
             final int i = idx * bitsPerEntry;
@@ -245,15 +237,24 @@ public enum FasterWorldScanner implements IWorldScanner {
 
             if (j == k) {
                 if (isInFilter[(int) (jl & maxEntryValue)]) {
-                    positions.add(idx);
+                    //noinspection DuplicateExpressions
+                    blocks.add(new BlockPos(
+                        chunkX + ((idx & 255) & 15),
+                        yOffset + (idx >> 8),
+                        chunkZ + ((idx & 255) >> 4)
+                    ));
                 }
             } else {
                 if (isInFilter[(int) ((jl | longArray[k] << (64 - l)) & maxEntryValue)]) {
-                    positions.add(idx);
+                    //noinspection DuplicateExpressions
+                    blocks.add(new BlockPos(
+                        chunkX + ((idx & 255) & 15),
+                        yOffset + (idx >> 8),
+                        chunkZ + ((idx & 255) >> 4)
+                    ));
                 }
             }
         }
-        return positions;
     }
 
     /**
