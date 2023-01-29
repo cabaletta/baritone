@@ -19,8 +19,8 @@ package baritone.api.pathing.goals;
 
 import baritone.api.utils.SettingsUtil;
 import baritone.api.utils.interfaces.IGoalRenderPos;
-import it.unimi.dsi.fastutil.doubles.DoubleOpenHashSet;
 import it.unimi.dsi.fastutil.doubles.DoubleIterator;
+import it.unimi.dsi.fastutil.doubles.DoubleOpenHashSet;
 import net.minecraft.core.BlockPos;
 
 public class GoalNear implements Goal, IGoalRenderPos {

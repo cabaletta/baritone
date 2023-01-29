@@ -21,15 +21,17 @@ import baritone.Baritone;
 import baritone.api.IBaritone;
 import baritone.api.pathing.movement.ActionCosts;
 import baritone.cache.WorldData;
+import baritone.pathing.precompute.PrecomputedData;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.ToolSet;
 import baritone.utils.pathing.BetterWorldBorder;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -64,6 +66,7 @@ public class CalculationContext {
     public final boolean allowJumpAt256;
     public final boolean allowParkourAscend;
     public final boolean assumeWalkOnWater;
+    public final int frostWalker;
     public final boolean allowDiagonalDescend;
     public final boolean allowDiagonalAscend;
     public final boolean allowDownward;
@@ -76,11 +79,14 @@ public class CalculationContext {
     public final double walkOnWaterOnePenalty;
     public final BetterWorldBorder worldBorder;
 
+    public final PrecomputedData precomputedData;
+
     public CalculationContext(IBaritone baritone) {
         this(baritone, false);
     }
 
     public CalculationContext(IBaritone baritone, boolean forUseOnAnotherThread) {
+        this.precomputedData = new PrecomputedData();
         this.safeForThreadedUse = forUseOnAnotherThread;
         this.baritone = baritone;
         LocalPlayer player = baritone.getPlayerContext().player();
@@ -99,6 +105,7 @@ public class CalculationContext {
         this.allowJumpAt256 = Baritone.settings().allowJumpAt256.value;
         this.allowParkourAscend = Baritone.settings().allowParkourAscend.value;
         this.assumeWalkOnWater = Baritone.settings().assumeWalkOnWater.value;
+        this.frostWalker = EnchantmentHelper.getEnchantmentLevel(Enchantments.FROST_WALKER, baritone.getPlayerContext().player());
         this.allowDiagonalDescend = Baritone.settings().allowDiagonalDescend.value;
         this.allowDiagonalAscend = Baritone.settings().allowDiagonalAscend.value;
         this.allowDownward = Baritone.settings().allowDownward.value;
