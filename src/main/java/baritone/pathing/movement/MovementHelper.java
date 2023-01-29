@@ -159,7 +159,7 @@ public interface MovementHelper extends ActionCosts, Helper {
             }
             return YES;
         }
-        if (block instanceof WoolCarpetBlock) {
+        if (block instanceof CarpetBlock) {
             return MAYBE;
         }
         if (block instanceof SnowLayerBlock) {
@@ -193,7 +193,7 @@ public interface MovementHelper extends ActionCosts, Helper {
     static boolean canWalkThroughPosition(BlockStateInterface bsi, int x, int y, int z, BlockState state) {
         Block block = state.getBlock();
 
-        if (block instanceof WoolCarpetBlock) {
+        if (block instanceof CarpetBlock) {
             return canWalkOn(bsi, x, y - 1, z);
         }
 
@@ -466,7 +466,7 @@ public interface MovementHelper extends ActionCosts, Helper {
             // BlockPos s that we'd just garbage collect immediately is actually noticeable. I don't even think its a decrease in readability
             BlockState upState = bsi.get0(x, y + 1, z);
             Block up = upState.getBlock();
-            if (up == Blocks.LILY_PAD || up instanceof WoolCarpetBlock) {
+            if (up == Blocks.LILY_PAD || up instanceof CarpetBlock) {
                 return true;
             }
             if (MovementHelper.isFlowing(x, y, z, state, bsi) || upState.getFluidState().getType() == Fluids.FLOWING_WATER) {
