@@ -17,7 +17,6 @@
 
 package baritone.utils.schematic.format.defaults;
 
-import baritone.utils.accessor.ILongArrayNBT;
 import baritone.utils.schematic.StaticSchematic;
 import net.minecraft.core.Registry;
 import net.minecraft.core.Vec3i;
@@ -137,7 +136,7 @@ public final class LitematicaSchematic extends StaticSchematic {
      * @return amount of bits used to encode a block.
      */
     private static int getBitsPerBlock(int amountOfBlockTypes) {
-        return (int) Math.floor((Math.log(amountOfBlockTypes)) / Math.log(2)) + 1;
+        return (int) Math.max(2, Math.ceil(Math.log(amountOfBlockTypes) / Math.log(2)));
     }
 
     /**
@@ -157,7 +156,7 @@ public final class LitematicaSchematic extends StaticSchematic {
      * @return array of Long values.
      */
     private static long[] getBlockStates(CompoundTag nbt, String subReg) {
-        return ((ILongArrayNBT) nbt.getCompound("Regions").getCompound(subReg).get("BlockStates")).getLongArray();
+        return nbt.getCompound("Regions").getCompound(subReg).getLongArray("BlockStates");
     }
 
     /**

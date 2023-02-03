@@ -67,7 +67,7 @@ public class MovementAscend extends Movement {
     public static double cost(CalculationContext context, int x, int y, int z, int destX, int destZ) {
         BlockState toPlace = context.get(destX, y, destZ);
         double additionalPlacementCost = 0;
-        if (!MovementHelper.canWalkOn(context.bsi, destX, y, destZ, toPlace)) {
+        if (!MovementHelper.canWalkOn(context, destX, y, destZ, toPlace)) {
             additionalPlacementCost = context.costOfPlacingAt(destX, y, destZ, toPlace);
             if (additionalPlacementCost >= COST_INF) {
                 return COST_INF;
@@ -93,7 +93,7 @@ public class MovementAscend extends Movement {
             }
         }
         BlockState srcUp2 = context.get(x, y + 2, z); // used lower down anyway
-        if (context.get(x, y + 3, z).getBlock() instanceof FallingBlock && (MovementHelper.canWalkThrough(context.bsi, x, y + 1, z) || !(srcUp2.getBlock() instanceof FallingBlock))) {//it would fall on us and possibly suffocate us
+        if (context.get(x, y + 3, z).getBlock() instanceof FallingBlock && (MovementHelper.canWalkThrough(context, x, y + 1, z) || !(srcUp2.getBlock() instanceof FallingBlock))) {//it would fall on us and possibly suffocate us
             // HOWEVER, we assume that we're standing in the start position
             // that means that src and src.up(1) are both air
             // maybe they aren't now, but they will be by the time this starts

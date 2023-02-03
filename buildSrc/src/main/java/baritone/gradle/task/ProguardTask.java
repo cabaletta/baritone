@@ -237,8 +237,8 @@ public class ProguardTask extends BaritoneGradleTask {
 
         // Setup the template that will be used to derive the API and Standalone configs
         List<String> template = Files.readAllLines(getTemporaryFile(PROGUARD_CONFIG_DEST));
-        template.add(0, "-injars " + this.artifactPath.toString());
-        template.add(1, "-outjars " + this.getTemporaryFile(PROGUARD_EXPORT_PATH));
+        template.add(0, "-injars '" + this.artifactPath.toString() + "'");
+        template.add(1, "-outjars '" + this.getTemporaryFile(PROGUARD_EXPORT_PATH) + "'");
 
         template.add(2, "-libraryjars  <java.home>/jmods/java.base.jmod(!**.jar;!module-info.class)");
         template.add(3, "-libraryjars  <java.home>/jmods/java.desktop.jmod(!**.jar;!module-info.class)");
@@ -312,9 +312,15 @@ public class ProguardTask extends BaritoneGradleTask {
             Files.delete(this.proguardOut);
         }
 
-        Path proguardJar = getTemporaryFile(PROGUARD_JAR);
+        // Make paths relative to work directory; fixes spaces in path to config, @"" doesn't work
+        Path workingDirectory = getTemporaryFile("");
+        Path proguardJar = workingDirectory.relativize(getTemporaryFile(PROGUARD_JAR));
+        config = workingDirectory.relativize(config);
+        
+        // Honestly, if you still have spaces in your path at this point, you're SOL.
+
         Process p = new ProcessBuilder("java", "-jar", proguardJar.toString(), "@" + config.toString())
-                .directory(getTemporaryFile("").toFile()) // Set the working directory to the temporary folder]
+                .directory(workingDirectory.toFile()) // Set the working directory to the temporary folder]
                 .start();
 
         // We can't do output inherit process I/O with gradle for some reason and have it work, so we have to do this

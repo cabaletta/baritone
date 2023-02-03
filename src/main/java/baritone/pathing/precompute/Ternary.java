@@ -15,21 +15,8 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.launch.mixins;
+package baritone.pathing.precompute;
 
-import baritone.utils.accessor.ILongArrayNBT;
-import net.minecraft.nbt.LongArrayTag;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.gen.Accessor;
-
-/**
- * @author rycbar
- * @since 26.09.2022
- */
-@Mixin(LongArrayTag.class)
-public abstract class MixinLongArrayNBT implements ILongArrayNBT {
-
-    @Accessor("data")
-    @Override
-    public abstract long[] getLongArray();
+public enum Ternary {
+    YES, MAYBE, NO
 }
