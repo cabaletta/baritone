@@ -72,21 +72,21 @@ public class WaypointBehavior extends Behavior {
         baritone.getWorldProvider().getCurrentWorld().getWaypoints().addWaypoint(deathWaypoint);
         BaseComponent component = new TextComponent("Death position saved.");
         component.setStyle(component.getStyle()
-            .withColor(ChatFormatting.WHITE)
-            .withHoverEvent(new HoverEvent(
-                HoverEvent.Action.SHOW_TEXT,
-                new TextComponent("Click to goto death")
-            ))
-            .withClickEvent(new ClickEvent(
-                ClickEvent.Action.RUN_COMMAND,
-                String.format(
-                    "%s%s goto %s @ %d",
-                    FORCE_COMMAND_PREFIX,
-                    "wp",
-                    deathWaypoint.getTag().getName(),
-                    deathWaypoint.getCreationTimestamp()
-                )
-            )));
+                .withColor(ChatFormatting.WHITE)
+                .withHoverEvent(new HoverEvent(
+                        HoverEvent.Action.SHOW_TEXT,
+                        new TextComponent("Click to goto death")
+                ))
+                .withClickEvent(new ClickEvent(
+                        ClickEvent.Action.RUN_COMMAND,
+                        String.format(
+                                "%s%s goto %s @ %d",
+                                FORCE_COMMAND_PREFIX,
+                                "wp",
+                                deathWaypoint.getTag().getName(),
+                                deathWaypoint.getCreationTimestamp()
+                        )
+                )));
         Helper.HELPER.logDirect(component);
     }
 

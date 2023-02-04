@@ -18,7 +18,6 @@
 package baritone.behavior;
 
 import baritone.Baritone;
-import baritone.api.BaritoneAPI;
 import baritone.api.event.events.TickEvent;
 import baritone.utils.ToolSet;
 import net.minecraft.client.player.LocalPlayer;
