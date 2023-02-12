@@ -33,10 +33,10 @@ public class SelectionSchematic extends MaskSchematic {
     public SelectionSchematic(ISchematic schematic, Vec3i origin, ISelection[] selections) {
         super(schematic);
         this.selections = Stream.of(selections).map(
-                sel -> sel
-                    .shift(Direction.WEST, origin.getX())
-                    .shift(Direction.DOWN, origin.getY())
-                    .shift(Direction.NORTH, origin.getZ()))
+                        sel -> sel
+                                .shift(Direction.WEST, origin.getX())
+                                .shift(Direction.DOWN, origin.getY())
+                                .shift(Direction.NORTH, origin.getZ()))
                 .toArray(ISelection[]::new);
     }
 
@@ -44,7 +44,7 @@ public class SelectionSchematic extends MaskSchematic {
     protected boolean partOfMask(int x, int y, int z, BlockState currentState) {
         for (ISelection selection : selections) {
             if (x >= selection.min().x && y >= selection.min().y && z >= selection.min().z
-             && x <= selection.max().x && y <= selection.max().y && z <= selection.max().z) {
+                    && x <= selection.max().x && y <= selection.max().y && z <= selection.max().z) {
                 return true;
             }
         }

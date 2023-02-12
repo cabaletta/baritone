@@ -26,7 +26,8 @@ import java.util.stream.Stream;
 
 public enum RelativeCoordinate implements IDatatypePost<Double, Double> {
     INSTANCE;
-    private static Pattern PATTERN = Pattern.compile("^(~?)([+-]?(?:\\d+(?:\\.\\d*)?|\\.\\d+)([k-k]?)|)$");
+    private static String ScalesAliasRegex = "[kKmM]";
+    private static Pattern PATTERN = Pattern.compile("^(~?)([+-]?(?:\\d+(?:\\.\\d*)?|\\.\\d+)(" + ScalesAliasRegex + "?)|)$");
 
     @Override
     public Double apply(IDatatypeContext ctx, Double origin) throws CommandException {
@@ -41,11 +42,15 @@ public enum RelativeCoordinate implements IDatatypePost<Double, Double> {
 
         boolean isRelative = !matcher.group(1).isEmpty();
 
-        double offset = matcher.group(2).isEmpty() ? 0 : Double.parseDouble(matcher.group(2).replaceAll("k", ""));
+        double offset = matcher.group(2).isEmpty() ? 0 : Double.parseDouble(matcher.group(2).replaceAll(ScalesAliasRegex, ""));
 
-        if (matcher.group(2).contains("k")) {
+        if (matcher.group(2).toLowerCase().contains("k")) {
             offset *= 1000;
         }
+        if (matcher.group(2).toLowerCase().contains("m")) {
+            offset *= 1000000;
+        }
+
 
         if (isRelative) {
             return origin + offset;

@@ -83,10 +83,10 @@ public enum RelativeFile implements IDatatypePost<File, File> {
         boolean useParent = !currentPathStringThing.isEmpty() && !currentPathStringThing.endsWith(File.separator);
         File currentFile = currentPath.isAbsolute() ? currentPath.toFile() : new File(base, currentPathStringThing);
         return Stream.of(Objects.requireNonNull(getCanonicalFileUnchecked(
-                useParent
-                        ? currentFile.getParentFile()
-                        : currentFile
-        ).listFiles()))
+                        useParent
+                                ? currentFile.getParentFile()
+                                : currentFile
+                ).listFiles()))
                 .map(f -> (currentPath.isAbsolute() ? f : basePath.relativize(f.toPath()).toString()) +
                         (f.isDirectory() ? File.separator : ""))
                 .filter(s -> s.toLowerCase(Locale.US).startsWith(currentPathStringThing.toLowerCase(Locale.US)))

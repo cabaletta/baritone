@@ -79,11 +79,10 @@ public class FindCommand extends Command {
         BaseComponent baseComponent = new TextComponent(pos.toString());
         BaseComponent hoverComponent = new TextComponent("Click to set goal to this position");
         baseComponent.setStyle(baseComponent.getStyle()
-            .withColor(ChatFormatting.GRAY)
-            .withInsertion(positionText)
-            .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, command))
-            .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverComponent))
-        );
+                .withColor(ChatFormatting.GRAY)
+                .withInsertion(positionText)
+                .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, command))
+                .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverComponent)));
         return baseComponent;
     }
 
@@ -91,9 +90,9 @@ public class FindCommand extends Command {
     public Stream<String> tabComplete(String label, IArgConsumer args) throws CommandException {
         return new TabCompleteHelper()
                 .append(
-                    CachedChunk.BLOCKS_TO_KEEP_TRACK_OF.stream()
-                        .map(Registry.BLOCK::getKey)
-                        .map(Object::toString)
+                        CachedChunk.BLOCKS_TO_KEEP_TRACK_OF.stream()
+                                .map(Registry.BLOCK::getKey)
+                                .map(Object::toString)
                 )
                 .filterPrefixNamespaced(args.getString())
                 .sortAlphabetically()
