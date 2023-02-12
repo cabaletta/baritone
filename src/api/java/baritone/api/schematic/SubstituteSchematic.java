@@ -34,7 +34,7 @@ public class SubstituteSchematic extends AbstractSchematic {
     private final Map<Block, List<Block>> substitutions;
     private final Map<BlockState, Map<Block, BlockState>> blockStateCache = new HashMap<>();
 
-    public SubstituteSchematic(ISchematic schematic, Map<Block,List<Block>> substitutions) {
+    public SubstituteSchematic(ISchematic schematic, Map<Block, List<Block>> substitutions) {
         super(schematic.widthX(), schematic.heightY(), schematic.lengthZ());
         this.schematic = schematic;
         this.substitutions = substitutions;
@@ -81,9 +81,10 @@ public class SubstituteSchematic extends AbstractSchematic {
             } catch (IllegalArgumentException e) { //property does not exist for target block
             }
         }
-        blockStateCache.computeIfAbsent(state, s -> new HashMap<Block,BlockState>()).put(block, newState);
+        blockStateCache.computeIfAbsent(state, s -> new HashMap<Block, BlockState>()).put(block, newState);
         return newState;
     }
+
     private <T extends Comparable<T>> BlockState copySingleProp(BlockState fromState, BlockState toState, Property<T> prop) {
         return toState.setValue(prop, fromState.getValue(prop));
     }

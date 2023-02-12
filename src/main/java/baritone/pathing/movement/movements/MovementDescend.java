@@ -42,6 +42,7 @@ import net.minecraft.world.phys.Vec3;
 public class MovementDescend extends Movement {
 
     private int numTicks = 0;
+    public boolean forceSafeMode = false;
 
     public MovementDescend(IBaritone baritone, BetterBlockPos start, BetterBlockPos end) {
         super(baritone, start, end, new BetterBlockPos[]{end.above(2), end.above(), end}, end.below());
@@ -51,6 +52,14 @@ public class MovementDescend extends Movement {
     public void reset() {
         super.reset();
         numTicks = 0;
+        forceSafeMode = false;
+    }
+
+    /**
+     * Called by PathExecutor if needing safeMode can only be detected with knowledge about the next movement
+     */
+    public void forceSafeMode() {
+        forceSafeMode = true;
     }
 
     @Override
@@ -100,13 +109,16 @@ public class MovementDescend extends Movement {
         //C, D, etc determine the length of the fall
 
         BlockState below = context.get(destX, y - 2, destZ);
-        if (!MovementHelper.canWalkOn(context.bsi, destX, y - 2, destZ, below)) {
+        if (!MovementHelper.canWalkOn(context, destX, y - 2, destZ, below)) {
             dynamicFallCost(context, x, y, z, destX, destZ, totalCost, below, res);
             return;
         }
 
         if (destDown.getBlock() == Blocks.LADDER || destDown.getBlock() == Blocks.VINE) {
             return;
+        }
+        if (MovementHelper.canUseFrostWalker(context, destDown)) { // no need to check assumeWalkOnWater
+            return; // the water will freeze when we try to walk into it
         }
 
         // we walk half the block plus 0.3 to get to the edge, then we walk the other 0.2 while simultaneously falling (math.max because of how it's in parallel)
@@ -129,7 +141,7 @@ public class MovementDescend extends Movement {
             // and potentially replace the water we're going to fall into
             return false;
         }
-        if (!MovementHelper.canWalkThrough(context.bsi, destX, y - 2, destZ, below)) {
+        if (!MovementHelper.canWalkThrough(context, destX, y - 2, destZ, below)) {
             return false;
         }
         double costSoFar = 0;
@@ -145,7 +157,7 @@ public class MovementDescend extends Movement {
             int unprotectedFallHeight = fallHeight - (y - effectiveStartHeight); // equal to fallHeight - y + effectiveFallHeight, which is equal to -newY + effectiveFallHeight, which is equal to effectiveFallHeight - newY
             double tentativeCost = WALK_OFF_BLOCK_COST + FALL_N_BLOCKS_COST[unprotectedFallHeight] + frontBreak + costSoFar;
             if (MovementHelper.isWater(ontoBlock)) {
-                if (!MovementHelper.canWalkThrough(context.bsi, destX, newY, destZ, ontoBlock)) {
+                if (!MovementHelper.canWalkThrough(context, destX, newY, destZ, ontoBlock)) {
                     return false;
                 }
                 if (context.assumeWalkOnWater) {
@@ -154,7 +166,7 @@ public class MovementDescend extends Movement {
                 if (MovementHelper.isFlowing(destX, newY, destZ, ontoBlock, context.bsi)) {
                     return false; // TODO flowing check required here?
                 }
-                if (!MovementHelper.canWalkOn(context.bsi, destX, newY - 1, destZ)) {
+                if (!MovementHelper.canWalkOn(context, destX, newY - 1, destZ)) {
                     // we could punch right through the water into something else
                     return false;
                 }
@@ -173,10 +185,10 @@ public class MovementDescend extends Movement {
                 effectiveStartHeight = newY;
                 continue;
             }
-            if (MovementHelper.canWalkThrough(context.bsi, destX, newY, destZ, ontoBlock)) {
+            if (MovementHelper.canWalkThrough(context, destX, newY, destZ, ontoBlock)) {
                 continue;
             }
-            if (!MovementHelper.canWalkOn(context.bsi, destX, newY, destZ, ontoBlock)) {
+            if (!MovementHelper.canWalkOn(context, destX, newY, destZ, ontoBlock)) {
                 return false;
             }
             if (MovementHelper.isBottomSlab(ontoBlock)) {
@@ -247,6 +259,9 @@ public class MovementDescend extends Movement {
     }
 
     public boolean safeMode() {
+        if (forceSafeMode) {
+            return true;
+        }
         // (dest - src) + dest is offset 1 more in the same direction
         // so it's the block we'd need to worry about running into if we decide to sprint straight through this descend
         BlockPos into = dest.subtract(src.below()).offset(dest);

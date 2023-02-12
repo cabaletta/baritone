@@ -21,7 +21,7 @@ jobs:
       uses: actions/setup-java@v3
       with:
         java-version: '17'
-        distribution: 'adopt'
+        distribution: 'temurin'
         cache: gradle
 
     - name: Grant execute permission for gradlew
@@ -31,13 +31,13 @@ jobs:
       run: ./gradlew build -Pmod_version="$(git describe --always --tags | cut -c2-)"
 
     - name: Archive Artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: Artifacts
         path: dist/
         
     - name: Archive mapping.txt
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: Mappings
         path: mapping/
