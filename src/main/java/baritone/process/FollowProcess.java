@@ -27,8 +27,13 @@ import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
 import baritone.utils.BaritoneProcessHelper;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.item.EntityItem;
+import net.minecraft.item.Item;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -43,6 +48,7 @@ public final class FollowProcess extends BaritoneProcessHelper implements IFollo
 
     private Predicate<Entity> filter;
     private List<Entity> cache;
+    private List<String> itemFilter = new ArrayList<>();
 
     public FollowProcess(Baritone baritone) {
         super(baritone);
@@ -87,6 +93,27 @@ public final class FollowProcess extends BaritoneProcessHelper implements IFollo
                 .filter(this.filter)
                 .distinct()
                 .collect(Collectors.toList());
+
+        //TODO i really hate this but idk how i could make this into a stream/lambda solution
+        //TODO the booleans used here are a war crime
+        boolean andCondition = itemFilter != null;
+        for (Entity entity: cache) {
+            andCondition = andCondition && entity instanceof EntityItem;
+        }
+        if (andCondition) {
+            Iterator<Entity> iterator = cache.iterator();
+            while (iterator.hasNext()) {
+                EntityItem item = (EntityItem) iterator.next();
+                boolean orCondition = false;
+                for (String filter : itemFilter) {
+                    ResourceLocation resLoc = Item.REGISTRY.getNameForObject(item.getItem().getItem());
+                    orCondition = orCondition || resLoc.getPath().equalsIgnoreCase(filter) || resLoc.toString().equalsIgnoreCase(filter);
+                }
+                if (!orCondition) {
+                    iterator.remove();
+                }
+            }
+        }
     }
 
     @Override
@@ -102,6 +129,7 @@ public final class FollowProcess extends BaritoneProcessHelper implements IFollo
     public void onLostControl() {
         filter = null;
         cache = null;
+        itemFilter = null;
     }
 
     @Override
@@ -112,6 +140,16 @@ public final class FollowProcess extends BaritoneProcessHelper implements IFollo
     @Override
     public void follow(Predicate<Entity> filter) {
         this.filter = filter;
+    }
+
+    @Override
+    public void setItemFilter(List<String> itemFilter) {
+        this.itemFilter = itemFilter;
+    }
+
+    @Override
+    public List<String> getItemFilter() {
+        return itemFilter;
     }
 
     @Override

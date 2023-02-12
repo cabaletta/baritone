@@ -48,4 +48,17 @@ public interface IFollowProcess extends IBaritoneProcess {
     default void cancel() {
         onLostControl();
     }
+
+    /**
+     * Sets the item filter so that when following items only the items matching
+     * this filter actually get followed.
+     *
+     * @param itemFilter List of Strings containing item names (minecraft:apple)
+     */
+    void setItemFilter(List<String> itemFilter);
+
+    /**
+     * @return The List of items that should be followed. null if no filter is set.
+     */
+    List<String> getItemFilter();
 }
