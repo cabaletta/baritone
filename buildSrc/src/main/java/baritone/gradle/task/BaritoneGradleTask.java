@@ -19,6 +19,8 @@ package baritone.gradle.task;
 
 import org.gradle.api.DefaultTask;
 import org.gradle.api.tasks.Input;
+import org.gradle.api.tasks.Optional;
+import org.gradle.api.tasks.TaskAction;
 
 import java.io.File;
 import java.io.IOException;
@@ -49,14 +51,35 @@ class BaritoneGradleTask extends DefaultTask {
             ARTIFACT_STANDALONE         = "%s-standalone-%s.jar";
 
     protected String artifactName, artifactVersion;
-    protected final Path
+    protected Path
         artifactPath,
         artifactUnoptimizedPath, artifactApiPath, artifactStandalonePath, // these are different for forge builds
         proguardOut;
 
+
+    @Input
+    @Optional
+    protected String compType = null;
+
+    public String getCompType() {
+        return compType;
+    }
+
+    public void setCompType(String compType) {
+        this.compType = compType;
+    }
+
+
     public BaritoneGradleTask() {
-        this.artifactName = getProject().getProperties().get("archivesBaseName").toString();
-        this.artifactVersion = getProject().getVersion().toString();
+        this.artifactName = getProject().getRootProject().getProperties().get("archives_base_name").toString();
+    }
+
+    public void doFirst() {
+        if (compType != null) {
+            this.artifactVersion = compType + "-" + getProject().getVersion();
+        } else {
+            this.artifactVersion = getProject().getVersion().toString();
+        }
 
         this.artifactPath = this.getBuildFile(formatVersion(ARTIFACT_STANDARD));
 
@@ -98,5 +121,9 @@ class BaritoneGradleTask extends DefaultTask {
 
     protected Path getBuildFile(String file) {
         return getRelativeFile("libs/" + file);
+    }
+
+    protected String addCompTypeFirst(String string) {
+        return compType == null ? string : compType + "-" + string;
     }
 }
