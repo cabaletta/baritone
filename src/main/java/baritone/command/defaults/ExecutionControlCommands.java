@@ -56,6 +56,7 @@ public class ExecutionControlCommands {
 
                     @Override
                     public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
+                        baritone.getInputOverrideHandler().clearAllKeys();
                         return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
                     }
 
