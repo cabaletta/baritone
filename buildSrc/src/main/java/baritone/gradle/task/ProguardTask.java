@@ -63,15 +63,9 @@ public class ProguardTask extends BaritoneGradleTask {
         return extract;
     }
 
-    @Input
-    private String compType;
-
-    public String getCompType() {
-        return compType;
-    }
-
     @TaskAction
     protected void exec() throws Exception {
+        super.doFirst();
         super.verifyArtifacts();
 
         // "Haha brady why don't you make separate tasks"
@@ -253,7 +247,7 @@ public class ProguardTask extends BaritoneGradleTask {
         Files.createDirectories(this.getRootRelativeFile(PROGUARD_MAPPING_DIR));
 
         List<String> api = new ArrayList<>(template);
-        api.add(2, "-printmapping " + new File(this.getRootRelativeFile(PROGUARD_MAPPING_DIR).toFile(), "mappings-" + compType + "-api.txt"));
+        api.add(2, "-printmapping " + new File(this.getRootRelativeFile(PROGUARD_MAPPING_DIR).toFile(), "mappings-" + addCompTypeFirst("api.txt")));
 
         // API config doesn't require any changes from the changes that we made to the template
         Files.write(getTemporaryFile(compType+PROGUARD_API_CONFIG), api);
@@ -261,7 +255,7 @@ public class ProguardTask extends BaritoneGradleTask {
         // For the Standalone config, don't keep the API package
         List<String> standalone = new ArrayList<>(template);
         standalone.removeIf(s -> s.contains("# this is the keep api"));
-        standalone.add(2, "-printmapping " + new File(this.getRootRelativeFile(PROGUARD_MAPPING_DIR).toFile(), "mappings-" + compType + "-standalone.txt"));
+        standalone.add(2, "-printmapping " + new File(this.getRootRelativeFile(PROGUARD_MAPPING_DIR).toFile(), "mappings-" + addCompTypeFirst("standalone.txt")));
         Files.write(getTemporaryFile(compType+PROGUARD_STANDALONE_CONFIG), standalone);
     }
 
@@ -294,11 +288,6 @@ public class ProguardTask extends BaritoneGradleTask {
     public void setExtract(String extract) {
         this.extract = extract;
     }
-
-    public void setCompType(String compType) {
-        this.compType = compType;
-    }
-
     private void runProguard(Path config) throws Exception {
         // Delete the existing proguard output file. Proguard probably handles this already, but why not do it ourselves
         if (Files.exists(this.proguardOut)) {

@@ -41,6 +41,7 @@ public class CreateDistTask extends BaritoneGradleTask {
 
     @TaskAction
     protected void exec() throws Exception {
+        super.doFirst();
         super.verifyArtifacts();
 
         // Define the distribution file paths

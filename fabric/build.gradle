@@ -22,7 +22,7 @@ plugins {
     id "com.github.johnrengelman.shadow" version "7.0.0"
 }
 
-archivesBaseName = archivesBaseName + "-" + project.name
+archivesBaseName = archivesBaseName + "-fabric"
 
 minecraft {
     fabric()
@@ -79,10 +79,12 @@ components.java {
 task proguard(type: ProguardTask) {
     url 'https://github.com/Guardsquare/proguard/releases/download/v7.2.1/proguard-7.2.1.zip'
     extract 'proguard-7.2.1/lib/proguard.jar'
-    compType "FABRIC"
+    compType "fabric"
 }
 
-task createDist(type: CreateDistTask, dependsOn: proguard)
+task createDist(type: CreateDistTask, dependsOn: proguard) {
+    compType "fabric"
+}
 
 build.finalizedBy(createDist)
 
