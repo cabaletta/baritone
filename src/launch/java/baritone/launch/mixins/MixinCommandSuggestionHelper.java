@@ -19,6 +19,7 @@ package baritone.launch.mixins;
 
 import baritone.api.BaritoneAPI;
 import baritone.api.event.events.TabCompleteEvent;
+import com.mojang.brigadier.ParseResults;
 import com.mojang.brigadier.context.StringRange;
 import com.mojang.brigadier.suggestion.Suggestion;
 import com.mojang.brigadier.suggestion.Suggestions;
@@ -52,7 +53,16 @@ public class MixinCommandSuggestionHelper {
     private List<String> exceptionList;
 
     @Shadow
+    private ParseResults parseResults;
+
+    @Shadow
     private CompletableFuture<Suggestions> suggestionsFuture;
+
+    @Shadow
+    private CommandSuggestionHelper.Suggestions suggestions;
+
+    @Shadow
+    boolean isApplyingSuggestion;
 
     @Inject(
             method = "init",
@@ -74,27 +84,32 @@ public class MixinCommandSuggestionHelper {
         if (event.completions != null) {
             ci.cancel();
 
+            this.parseResults = null; // stop coloring
+
+            if (this.isApplyingSuggestion) { // Supress suggestions update when cycling suggestions.
+                return;
+            }
+
+            this.inputField.setSuggestion(null); // clear old suggestions
+            this.suggestions = null;
             // TODO: Support populating the command usage
             this.exceptionList.clear();
 
             if (event.completions.length == 0) {
                 this.suggestionsFuture = Suggestions.empty();
             } else {
-                int offset = this.inputField.getText().endsWith(" ")
-                        ? this.inputField.getCursorPosition()
-                        : this.inputField.getText().lastIndexOf(" ") + 1; // If there is no space this is still 0 haha yes
+                StringRange range = StringRange.between(prefix.lastIndexOf(" ") + 1, prefix.length()); // if there is no space this starts at 0
 
                 List<Suggestion> suggestionList = Stream.of(event.completions)
-                        .map(s -> new Suggestion(StringRange.between(offset, offset + s.length()), s))
+                        .map(s -> new Suggestion(range, s))
                         .collect(Collectors.toList());
 
-                Suggestions suggestions = new Suggestions(
-                        StringRange.between(offset, offset + suggestionList.stream().mapToInt(s -> s.getText().length()).max().orElse(0)),
-                        suggestionList);
+                Suggestions suggestions = new Suggestions(range, suggestionList);
 
                 this.suggestionsFuture = new CompletableFuture<>();
                 this.suggestionsFuture.complete(suggestions);
             }
+            ((CommandSuggestionHelper) (Object) this).updateSuggestions(true); // actually populate the suggestions list from the suggestions future
         }
     }
 }
