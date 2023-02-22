@@ -22,12 +22,16 @@ import baritone.api.command.Command;
 import baritone.api.command.argument.IArgConsumer;
 import baritone.api.command.exception.CommandException;
 import baritone.api.command.exception.CommandInvalidStateException;
+import baritone.launch.BaritoneVersionProvider;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.ServiceLoader;
 import java.util.stream.Stream;
 
 public class VersionCommand extends Command {
+
+    private static final BaritoneVersionProvider versionProvider = ServiceLoader.load(BaritoneVersionProvider.class, VersionCommand.class.getClassLoader()).findFirst().orElseThrow();
 
     public VersionCommand(IBaritone baritone) {
         super(baritone, "version");
@@ -36,7 +40,7 @@ public class VersionCommand extends Command {
     @Override
     public void execute(String label, IArgConsumer args) throws CommandException {
         args.requireMax(0);
-        String version = getClass().getPackage().getImplementationVersion();
+        String version = versionProvider.getVersion();
         if (version == null) {
             throw new CommandInvalidStateException("Null version (this is normal in a dev environment)");
         } else {
@@ -63,4 +67,5 @@ public class VersionCommand extends Command {
                 "> version - View version information, if present"
         );
     }
+
 }
