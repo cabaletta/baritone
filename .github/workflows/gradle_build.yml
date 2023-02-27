@@ -27,7 +27,7 @@ jobs:
 
     - name: Determine version (other)
       if: github.event_name != 'pull_request'
-      run: echo version="$(git describe --always --tags ${{github.sha}})" >> $GITHUB_ENV
+      run: echo version="$(git describe --always --tags --match 'v*' ${{github.sha}})" >> $GITHUB_ENV
 
     - name: Set up JDK 8
       uses: actions/setup-java@v2
