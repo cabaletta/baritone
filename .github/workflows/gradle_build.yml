@@ -23,7 +23,7 @@ jobs:
 
     - name: Determine version (pull request)
       if: github.event_name == 'pull_request'
-      run: echo version="$(git describe --always --tags ${{github.event.pull_request.head.sha}})-pr-$(echo $GITHUB_REF | cut -d / -f 3)" >> $GITHUB_ENV
+      run: echo version="$(git describe --always --tags --match 'v*' ${{github.event.pull_request.head.sha}})-pr-$(echo $GITHUB_REF | cut -d / -f 3)" >> $GITHUB_ENV
 
     - name: Determine version (other)
       if: github.event_name != 'pull_request'
