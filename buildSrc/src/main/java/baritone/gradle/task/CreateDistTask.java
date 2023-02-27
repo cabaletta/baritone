@@ -43,6 +43,7 @@ public class CreateDistTask extends BaritoneGradleTask {
 
         // Define the distribution file paths
         Path api             = getRelativeFile("dist/" + formatVersion(ARTIFACT_API));
+        Path deobf           = getRelativeFile("dist/" + formatVersion(ARTIFACT_DEOBF));
         Path standalone      = getRelativeFile("dist/" + formatVersion(ARTIFACT_STANDALONE));
         Path unoptimized     = getRelativeFile("dist/" + formatVersion(ARTIFACT_UNOPTIMIZED));
         Path forgeApi        = getRelativeFile("dist/" + formatVersion(ARTIFACT_FORGE_API));
@@ -56,13 +57,14 @@ public class CreateDistTask extends BaritoneGradleTask {
 
         // Copy build jars to dist/
         Files.copy(this.artifactApiPath,             api,             REPLACE_EXISTING);
+        Files.copy(this.artifactDeobfPath,           deobf,           REPLACE_EXISTING);
         Files.copy(this.artifactStandalonePath,      standalone,      REPLACE_EXISTING);
         Files.copy(this.artifactUnoptimizedPath,     unoptimized,     REPLACE_EXISTING);
         Files.copy(this.artifactForgeApiPath,        forgeApi,        REPLACE_EXISTING);
         Files.copy(this.artifactForgeStandalonePath, forgeStandalone, REPLACE_EXISTING);
 
         // Calculate all checksums and format them like "shasum"
-        List<String> shasum = Stream.of(api, forgeApi, standalone, forgeStandalone, unoptimized)
+        List<String> shasum = Stream.of(api, deobf, forgeApi, standalone, forgeStandalone, unoptimized)
                 .map(path -> sha1(path) + "  " + path.getFileName().toString())
                 .collect(Collectors.toList());
 

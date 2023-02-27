@@ -45,12 +45,13 @@ class BaritoneGradleTask extends DefaultTask {
             ARTIFACT_STANDARD         = "%s-%s.jar",
             ARTIFACT_UNOPTIMIZED      = "%s-unoptimized-%s.jar",
             ARTIFACT_API              = "%s-api-%s.jar",
+            ARTIFACT_DEOBF            = "%s-deobf-%s.jar",
             ARTIFACT_STANDALONE       = "%s-standalone-%s.jar",
             ARTIFACT_FORGE_API        = "%s-api-forge-%s.jar",
             ARTIFACT_FORGE_STANDALONE = "%s-standalone-forge-%s.jar";
 
     protected String artifactName, artifactVersion;
-    protected Path artifactPath, artifactUnoptimizedPath, artifactApiPath, artifactStandalonePath, artifactForgeApiPath, artifactForgeStandalonePath, proguardOut;
+    protected Path artifactPath, artifactUnoptimizedPath, artifactApiPath, artifactDeobfPath, artifactStandalonePath, artifactForgeApiPath, artifactForgeStandalonePath, proguardOut;
 
     protected void verifyArtifacts() throws IllegalStateException {
         this.artifactName = getProject().getName();
@@ -59,6 +60,7 @@ class BaritoneGradleTask extends DefaultTask {
         this.artifactPath                = this.getBuildFile(formatVersion(ARTIFACT_STANDARD));
         this.artifactUnoptimizedPath     = this.getBuildFile(formatVersion(ARTIFACT_UNOPTIMIZED));
         this.artifactApiPath             = this.getBuildFile(formatVersion(ARTIFACT_API));
+        this.artifactDeobfPath           = this.getBuildFile(formatVersion(ARTIFACT_DEOBF));
         this.artifactStandalonePath      = this.getBuildFile(formatVersion(ARTIFACT_STANDALONE));
         this.artifactForgeApiPath        = this.getBuildFile(formatVersion(ARTIFACT_FORGE_API));
         this.artifactForgeStandalonePath = this.getBuildFile(formatVersion(ARTIFACT_FORGE_STANDALONE));

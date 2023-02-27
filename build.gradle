@@ -144,23 +144,32 @@ task proguard(type: ProguardTask) {
 
 task createDist(type: CreateDistTask, dependsOn: proguard)
 
+task deobfJar(type: Jar) {
+    from sourceSets.api.output, sourceSets.main.output, sourceSets.launch.output
+    baseName += "-deobf"
+}
+
+build.dependsOn(deobfJar)
 build.finalizedBy(createDist)
 
 install {
     def jarApiName = String.format("%s-api-%s", rootProject.name, version.toString())
     def jarApiForgeName = String.format("%s-api-forge-%s", rootProject.name, version.toString())
+    def jarApiDeobfName = String.format("%s-deobf-%s", rootProject.name, version.toString())
     def jarSAName = String.format("%s-standalone-%s", rootProject.name, version.toString())
     def jarSAForgeName = String.format("%s-standalone-forge-%s", rootProject.name, version.toString())
 
     artifacts {
         archives file("$buildDir/libs/"+jarApiName+".jar")
         archives file("$buildDir/libs/"+jarApiForgeName+".jar")
+        archives file("$buildDir/libs/"+jarApiDeobfName+".jar")
         archives file("$buildDir/libs/"+jarSAName+".jar")
         archives file("$buildDir/libs/"+jarSAForgeName+".jar")
     }
     repositories.mavenInstaller {
 		addFilter('api') { artifact, file -> artifact.name == "baritone-api" }
 		addFilter('api-forge') { artifact, file -> artifact.name == "baritone-api-forge" }
+        addFilter('deobf') { artifact, file -> artifact.name == "baritone-deobf" }
 		addFilter('standalone') { artifact, file -> artifact.name == "baritone-standalone" }
 		addFilter('standalone-forge') { artifact, file -> artifact.name == "baritone-standalone-forge" }
     }
