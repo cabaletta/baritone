@@ -33,12 +33,15 @@ import net.minecraft.block.properties.PropertyBool;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.init.Blocks;
+import net.minecraft.item.Item;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static baritone.pathing.movement.Movement.HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP;
 import static baritone.pathing.precompute.Ternary.*;
@@ -460,6 +463,25 @@ public interface MovementHelper extends ActionCosts, Helper {
 
     static boolean canWalkOn(CalculationContext context, int x, int y, int z) {
         return canWalkOn(context, x, y, z, context.get(x, y, z));
+    }
+
+    static List<Item> filterThrowawayForPlacing(List<Item> items) {
+        return items.stream()
+            .filter(item -> {
+                Block block = Block.getBlockFromItem(item);
+                if (block == Blocks.AIR || block == Blocks.MAGMA) {
+                    // early return for most common case (air)
+                    // plus magma, which is a normal cube but it hurts you
+                    return false;
+                }
+                IBlockState state = block.getDefaultState();
+                if (state != null && state.isBlockNormalCube()) {
+                    return true;
+                }
+                return block == Blocks.FARMLAND || block == Blocks.GRASS_PATH ||
+                       block == Blocks.ENDER_CHEST || block == Blocks.CHEST || block == Blocks.TRAPPED_CHEST ||
+                       block == Blocks.GLASS || block == Blocks.STAINED_GLASS;
+            }).collect(Collectors.toList());
     }
 
     static boolean canWalkOn(IPlayerContext ctx, BetterBlockPos pos, IBlockState state) {

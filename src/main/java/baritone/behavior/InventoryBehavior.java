@@ -19,6 +19,7 @@ package baritone.behavior;
 
 import baritone.Baritone;
 import baritone.api.event.events.TickEvent;
+import baritone.pathing.movement.MovementHelper;
 import baritone.utils.ToolSet;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -96,7 +97,8 @@ public final class InventoryBehavior extends Behavior {
     private int firstValidThrowaway() { // TODO offhand idk
         NonNullList<ItemStack> invy = ctx.player().inventory.mainInventory;
         for (int i = 0; i < invy.size(); i++) {
-            if (Baritone.settings().acceptableThrowawayItems.value.contains(invy.get(i).getItem())) {
+            Item item = invy.get(i).getItem();
+            if (MovementHelper.filterThrowawayForPlacing(Baritone.settings().acceptableThrowawayItems.value).contains(item)) {
                 return i;
             }
         }
@@ -127,7 +129,7 @@ public final class InventoryBehavior extends Behavior {
     }
 
     public boolean hasGenericThrowaway() {
-        for (Item item : Baritone.settings().acceptableThrowawayItems.value) {
+        for (Item item : MovementHelper.filterThrowawayForPlacing(Baritone.settings().acceptableThrowawayItems.value)) {
             if (throwaway(false, stack -> item.equals(stack.getItem()))) {
                 return true;
             }
@@ -143,7 +145,7 @@ public final class InventoryBehavior extends Behavior {
         if (maybe != null && throwaway(select, stack -> stack.getItem() instanceof ItemBlock && ((ItemBlock) stack.getItem()).getBlock().equals(maybe.getBlock()))) {
             return true;
         }
-        for (Item item : Baritone.settings().acceptableThrowawayItems.value) {
+        for (Item item : MovementHelper.filterThrowawayForPlacing(Baritone.settings().acceptableThrowawayItems.value)) {
             if (throwaway(select, stack -> item.equals(stack.getItem()))) {
                 return true;
             }
