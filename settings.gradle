@@ -15,5 +15,37 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+pluginManagement {
+    repositories {
+        mavenLocal()
+        maven {
+            name = 'WagYourMaven'
+            url = 'https://maven.wagyourtail.xyz/snapshots'
+        }
+        maven {
+            name = 'ForgeMaven'
+            url = 'https://maven.minecraftforge.net/'
+        }
+        maven {
+            name = 'FabricMaven'
+            url = 'https://maven.fabricmc.net/'
+        }
+        mavenCentral()
+        gradlePluginPortal() {
+            content {
+                excludeGroup "org.apache.logging.log4j"
+            }
+        }
+    }
+}
+
 rootProject.name = 'baritone'
 
+include("tweaker")
+if (System.getProperty("Baritone.enabled_platforms") == null) {
+    System.setProperty("Baritone.enabled_platforms", "fabric,forge")
+//    System.setProperty("Baritone.enabled_platforms", "fabric")
+}
+for (platform in System.getProperty("Baritone.enabled_platforms").split(",")) {
+       include(platform)
+}

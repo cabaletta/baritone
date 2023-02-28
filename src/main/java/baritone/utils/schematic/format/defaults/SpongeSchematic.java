@@ -146,7 +146,7 @@ public final class SpongeSchematic extends StaticSchematic {
         }
 
         private static <T extends Comparable<T>> IBlockState setPropertyValue(IBlockState state, IProperty<T> property, String value) {
-            Optional<T> parsed = property.parseValue(value).toJavaUtil();
+            Optional<T> parsed = Optional.ofNullable(property.parseValue(value).orNull());
             if (parsed.isPresent()) {
                 return state.withProperty(property, parsed.get());
             } else {
