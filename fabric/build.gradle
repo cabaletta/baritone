@@ -32,6 +32,7 @@ minecraft {
 
 mappings {
     // fabric uses newer mixin...
+    // in reality, fields from this class should become constants at compile time
     getStub("COMBINED").withMappings(["intermediary", "official"]) {
         c("org.objectweb.asm.Opcodes", "org.spongepowered.asm.lib.Opcodes")
     }
