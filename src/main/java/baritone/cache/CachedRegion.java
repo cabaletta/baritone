@@ -43,7 +43,8 @@ public final class CachedRegion implements ICachedRegion {
     /**
      * Magic value to detect invalid cache files, or incompatible cache files saved in an old version of Baritone
      */
-    private static final int CACHED_REGION_MAGIC = 456022910;
+    private static final int CACHED_REGION_MAGIC = 456022911;
+    private static final int OLD_CACHED_REGION_MAGIC = 456022910;
 
     /**
      * All of the chunks in this region: A 32x32 array of them.
@@ -61,6 +62,8 @@ public final class CachedRegion implements ICachedRegion {
     private final int z;
 
     private final DimensionType dimension;
+
+    boolean isOldFormat = false;
 
     /**
      * Has this region been modified since its most recent load or save
@@ -166,7 +169,7 @@ public final class CachedRegion implements ICachedRegion {
                                 out.writeShort(entry.getValue().size());
                                 for (BlockPos pos : entry.getValue()) {
                                     out.writeByte((byte) (pos.getZ() << 4 | pos.getX()));
-                                    out.writeByte((byte) (pos.getY()));
+                                    out.writeInt(pos.getY());
                                 }
                             }
                         }
@@ -209,10 +212,14 @@ public final class CachedRegion implements ICachedRegion {
             ) {
                 int magic = in.readInt();
                 if (magic != CACHED_REGION_MAGIC) {
-                    // in the future, if we change the format on disk
-                    // we can keep converters for the old format
-                    // by switching on the magic value, and either loading it normally, or loading through a converter.
-                    throw new IOException("Bad magic value " + magic);
+                    if (magic == OLD_CACHED_REGION_MAGIC) {
+                        isOldFormat = true;
+                    } else {
+                        // in the future, if we change the format on disk
+                        // we can keep converters for the old format
+                        // by switching on the magic value, and either loading it normally, or loading through a converter.
+                        throw new IOException("Bad magic value " + magic);
+                    }
                 }
                 boolean[][] present = new boolean[32][32];
                 BitSet[][] bitSets = new BitSet[32][32];
@@ -270,7 +277,7 @@ public final class CachedRegion implements ICachedRegion {
                                     byte xz = in.readByte();
                                     int X = xz & 0x0f;
                                     int Z = (xz >>> 4) & 0x0f;
-                                    int Y = in.readByte() & 0xff;
+                                    int Y = isOldFormat ? in.readByte() & 0xFF : in.readInt();
                                     locs.add(new BlockPos(X, Y, Z));
                                 }
                             }
