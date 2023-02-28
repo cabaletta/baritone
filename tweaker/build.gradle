@@ -38,7 +38,7 @@ configurations {
 }
 
 dependencies {
-    implementation "org.spongepowered:mixin:0.8.5"
+    implementation "org.spongepowered:mixin:0.7.11-SNAPSHOT"
 
     // for some reason mixin isn't including these...
     implementation "org.ow2.asm:asm:9.3"
