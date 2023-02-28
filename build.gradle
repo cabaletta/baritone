@@ -80,10 +80,6 @@ allprojects {
 
         mappings "de.oceanlabs.mcp:mcp_config:${rootProject.minecraft_version}@zip"
         mappings "de.oceanlabs.mcp:mcp_${rootProject.mcp_channel}:${rootProject.mcp_version}@zip"
-
-        implementation "org.spongepowered:mixin:0.7.11-SNAPSHOT", {
-            transitive = false
-        }
     }
 
     tasks.withType(JavaCompile).configureEach {
@@ -131,6 +127,10 @@ sourceSets {
 
 dependencies {
     testImplementation 'junit:junit:4.13.2'
+
+    implementation "org.spongepowered:mixin:0.7.11-SNAPSHOT", {
+        transitive = false
+    }
 }
 
 jar {

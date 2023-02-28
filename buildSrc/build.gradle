@@ -16,7 +16,6 @@
  */
 
 repositories {
-    mavenLocal()
     maven {
         name = 'WagYourMaven'
         url = 'https://maven.wagyourtail.xyz/releases'
