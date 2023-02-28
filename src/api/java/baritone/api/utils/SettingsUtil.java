@@ -202,6 +202,84 @@ public class SettingsUtil {
         setting.value = parsed;
     }
 
+    private static <K,V> void mergeMap(Map<K,V> into, Map<K,V> value) {
+        for (K key : value.keySet()) {
+            if (!into.containsKey(key)) {
+                into.put(key, value.get(key));
+            } else {
+                if (into.get(key) instanceof List) {
+                    ((List) into.get(key)).addAll((List) value.get(key));
+                } else if (into.get(key) instanceof Map) {
+                    mergeMap((Map) into.get(key), (Map) value.get(key));
+                } else {
+                    into.put(key, value.get(key));
+                }
+            }
+        }
+    }
+
+    public static void parseAndAdd(Settings settings, String settingName, String settingValue) throws IllegalStateException, NumberFormatException {
+        Settings.Setting setting = settings.byLowerName.get(settingName);
+        if (setting == null) {
+            throw new IllegalStateException("No setting by that name");
+        }
+        Class intendedType = setting.getValueClass();
+        ISettingParser ioMethod = Parser.getParser(setting.getType());
+        Object parsed = ioMethod.parse(new ParserContext(setting), settingValue);
+        if (!intendedType.isInstance(parsed)) {
+            throw new IllegalStateException(ioMethod + " parser returned incorrect type, expected " + intendedType + " got " + parsed + " which is " + parsed.getClass());
+        }
+        if (intendedType == List.class) {
+            List newValue = new ArrayList((List) setting.value);
+            newValue.addAll((List) parsed);
+            setting.value = newValue;
+        } else if (intendedType == Map.class) {
+            Map newValue = new java.util.HashMap((Map) setting.value);
+            mergeMap(newValue, (Map) parsed);
+            setting.value = newValue;
+        } else {
+            throw new IllegalStateException("Not a map or list");
+        }
+    }
+
+    private static <K,V> void removeMap(Map<K,V> from, Map<K,V> value) {
+        for (K key : value.keySet()) {
+            if (from.containsKey(key)) {
+                if (from.get(key).equals(value.get(key))) {
+                    from.remove(key);
+                } else if (from.get(key) instanceof List) {
+                    ((List) from.get(key)).removeIf(((List) value.get(key))::contains);
+                } else if (from.get(key) instanceof Map) {
+                    removeMap((Map) from.get(key), (Map) value.get(key));
+                }
+            }
+        }
+    }
+
+    public static void parseAndRemove(Settings settings, String settingName, String settingValue) throws IllegalStateException, NumberFormatException {
+        Settings.Setting setting = settings.byLowerName.get(settingName);
+        if (setting == null) {
+            throw new IllegalStateException("No setting by that name");
+        }
+        Class intendedType = setting.getValueClass();
+        ISettingParser ioMethod = Parser.getParser(setting.getType());
+        Object parsed = ioMethod.parse(new ParserContext(setting), settingValue);
+        if (!intendedType.isInstance(parsed)) {
+            throw new IllegalStateException(ioMethod + " parser returned incorrect type, expected " + intendedType + " got " + parsed + " which is " + parsed.getClass());
+        }
+        if (intendedType == List.class) {
+            List newValue = new ArrayList((List) setting.value);
+            newValue.removeIf(((List) parsed)::contains);
+            setting.value = newValue;
+        } else if (intendedType == Map.class) {
+            Map newValue = new java.util.HashMap((Map) setting.value);
+            removeMap(newValue, (Map) parsed);
+            setting.value = newValue;
+        } else {
+            throw new IllegalStateException("Not a map or list");
+        }
+    }
+
     private interface ISettingParser<T> {
 
         T parse(ParserContext context, String raw);
