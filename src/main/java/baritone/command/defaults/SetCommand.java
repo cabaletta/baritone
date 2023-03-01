@@ -57,6 +57,18 @@ public class SetCommand extends Command {
             logDirect("Settings saved");
             return;
         }
+        if (Arrays.asList("load", "ld").contains(arg)) {
+            String file = SETTINGS_DEFAULT_NAME;
+            if (args.hasAny()) {
+                file = args.getString();
+            }
+            // reset to defaults
+            SettingsUtil.modifiedSettings(Baritone.settings()).forEach(Settings.Setting::reset);
+            // then load from disk
+            SettingsUtil.readAndApply(Baritone.settings(), file);
+            logDirect("Settings reloaded from " + file);
+            return;
+        }
         boolean viewModified = Arrays.asList("m", "mod", "modified").contains(arg);
         boolean viewAll = Arrays.asList("all", "l", "list").contains(arg);
         boolean paginate = viewModified || viewAll;
@@ -228,7 +240,7 @@ public class SetCommand extends Command {
                 return new TabCompleteHelper()
                         .addSettings()
                         .sortAlphabetically()
-                        .prepend("list", "modified", "reset", "toggle", "save")
+                        .prepend("list", "modified", "reset", "toggle", "save", "load")
                         .filterPrefix(arg)
                         .stream();
             }
@@ -255,7 +267,9 @@ public class SetCommand extends Command {
                 "> set reset all - Reset ALL SETTINGS to their defaults",
                 "> set reset <setting> - Reset a setting to its default",
                 "> set toggle <setting> - Toggle a boolean setting",
-                "> set save - Save all settings (this is automatic tho)"
+                "> set save - Save all settings (this is automatic tho)",
+                "> set load - Load settings from settings.txt",
+                "> set load [filename] - Load settings from another file in your minecraft/baritone"
         );
     }
 }

@@ -35,7 +35,7 @@ public final class BaritoneAPI {
 
     static {
         settings = new Settings();
-        SettingsUtil.readAndApply(settings);
+        SettingsUtil.readAndApply(settings, SettingsUtil.SETTINGS_DEFAULT_NAME);
 
         ServiceLoader<IBaritoneProvider> baritoneLoader = ServiceLoader.load(IBaritoneProvider.class);
         Iterator<IBaritoneProvider> instances = baritoneLoader.iterator();
