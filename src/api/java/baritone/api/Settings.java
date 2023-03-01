@@ -70,6 +70,16 @@ public final class Settings {
     public final Setting<Boolean> allowInventory = new Setting<>(false);
 
     /**
+     * Wait this many ticks between InventoryBehavior moving inventory items
+     */
+    public final Setting<Integer> ticksBetweenInventoryMoves = new Setting<>(1);
+
+    /**
+     * Come to a halt before doing any inventory moves. Intended for anticheat such as 2b2t
+     */
+    public final Setting<Boolean> inventoryMoveOnlyIfStationary = new Setting<>(false);
+
+    /**
      * Disable baritone's auto-tool at runtime, but still assume that another mod will provide auto tool functionality
      * <p>
      * Specifically, path calculation will still assume that an auto tool will run at execution time, even though
