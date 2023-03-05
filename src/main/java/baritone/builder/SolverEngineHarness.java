@@ -33,15 +33,13 @@ public class SolverEngineHarness {
     private final ISolverEngine engine;
     private final PackedBlockStateCuboid blocks;
     private final PlaceOrderDependencyGraph graph;
-    private final DependencyGraphScaffoldingOverlay overlay;
     private final Scaffolder scaffolder;
 
     public SolverEngineHarness(ISolverEngine engine, PackedBlockStateCuboid blocks) {
         this.engine = engine;
         this.blocks = blocks;
         this.graph = new PlaceOrderDependencyGraph(blocks);
-        this.overlay = new DependencyGraphScaffoldingOverlay(graph);
-        this.scaffolder = Scaffolder.run(overlay);
+        this.scaffolder = Scaffolder.run(graph);
     }
 
     public List<SolvedActionStep> solve(long playerStartPos) {
@@ -55,7 +53,7 @@ public class SolverEngineHarness {
             }
             List<LongOpenHashSet> goals = expandAndSubtract(frontier, alreadyPlacedSoFar);
             long playerPos = steps.isEmpty() ? playerStartPos : steps.get(steps.size() - 1).playerMovesTo();
-            SolverEngineInput inp = new SolverEngineInput(graph, overlay.scaffolding(), alreadyPlacedSoFar, goals, playerPos);
+            SolverEngineInput inp = new SolverEngineInput(graph, scaffolder.scaffolding(), alreadyPlacedSoFar, goals, playerPos);
             SolverEngineOutput out = engine.solve(inp);
             if (Main.DEBUG) {
                 out.sanityCheck(inp);
@@ -69,7 +67,7 @@ public class SolverEngineHarness {
                     if (!alreadyPlacedSoFar.add(pos)) {
                         throw new IllegalStateException();
                     }
-                    if (overlay.air(pos)) { // not part of the schematic, nor intended scaffolding
+                    if (scaffolder.air(pos)) { // not part of the schematic, nor intended scaffolding
                         ancillaryScaffolding.add(pos); // therefore it must be ancillary scaffolding, some throwaway block we needed to place in order to achieve something else, maybe to get a needed vantage point on some particularly tricky placement
                     }
                 }
@@ -77,13 +75,13 @@ public class SolverEngineHarness {
             scaffolder.enableAncillaryScaffoldingAndRecomputeRoot(ancillaryScaffolding);
         }
         if (Main.DEBUG) {
-            overlay.forEachReal(pos -> {
+            scaffolder.forEachReal(pos -> {
                 if (!alreadyPlacedSoFar.contains(pos)) {
                     throw new IllegalStateException();
                 }
             });
             alreadyPlacedSoFar.forEach(pos -> {
-                if (!overlay.real(pos)) {
+                if (!scaffolder.real(pos)) {
                     throw new IllegalStateException();
                 }
             });

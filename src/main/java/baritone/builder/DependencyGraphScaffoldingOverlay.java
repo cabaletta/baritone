@@ -34,6 +34,8 @@ import java.util.*;
  * Contains a set of coordinates that are "air" in the schematic, but we are going to put scaffolding throwaway blocks there
  * <p>
  * Maintains and incrementally updates a collapsed dependency graph, which is the block placement dependency graph reduced to directed acyclic graph form by way of collapsing all strongly connected components into single nodes
+ * <p>
+ * Helper class, only intended to be used within Scaffolder
  */
 public class DependencyGraphScaffoldingOverlay {
 

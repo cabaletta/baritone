@@ -86,6 +86,9 @@ public class SolverEngineInput {
             throw new IllegalStateException();
         }
         if (allToPlaceNow.contains(pos)) {
+            if (Main.DEBUG && (intendedScaffolding.contains(pos) != graph.airTreatedAsScaffolding(pos))) {
+                throw new IllegalStateException("adding this sanity check 2+ years later, hope it's correct");
+            }
             if (graph.airTreatedAsScaffolding(pos)) {
                 return PlacementDesire.SCAFFOLDING_OF_CURRENT_GOAL;
             } else {

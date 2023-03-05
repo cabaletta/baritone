@@ -44,8 +44,8 @@ public class Scaffolder {
 
     private final List<CollapsedDependencyGraphComponent> rootComponents;
 
-    private Scaffolder(DependencyGraphScaffoldingOverlay overlayGraph) {
-        this.overlayGraph = overlayGraph;
+    private Scaffolder(PlaceOrderDependencyGraph graph) {
+        this.overlayGraph = new DependencyGraphScaffoldingOverlay(graph);
         this.collapsedGraph = overlayGraph.getCollapsedGraph();
         this.components = collapsedGraph.getComponents();
         this.componentLocations = collapsedGraph.getComponentLocations();
@@ -53,8 +53,8 @@ public class Scaffolder {
         this.rootComponents = calcRoots();
     }
 
-    public static Scaffolder run(DependencyGraphScaffoldingOverlay overlayGraph) {
-        Scaffolder scaffolder = new Scaffolder(overlayGraph);
+    public static Scaffolder run(PlaceOrderDependencyGraph graph) {
+        Scaffolder scaffolder = new Scaffolder(graph);
         while (scaffolder.rootComponents.size() > 1) {
             scaffolder.loop();
         }
@@ -125,17 +125,18 @@ public class Scaffolder {
     }
 
     public void enableAncillaryScaffoldingAndRecomputeRoot(LongList positions) {
+        System.out.println("TODO: should ancillary scaffolding even recompute the components? that scaffolding doesn't NEED to part of any component, and having all components be mutable even after the scaffolder is done is sketchy");
         getRoot();
         enable(positions);
         getRoot();
     }
 
-    public CollapsedDependencyGraphComponent getRoot() {
+    public CollapsedDependencyGraphComponent getRoot() { // TODO this should probably return a new class that is not mutable in-place
         if (rootComponents.size() != 1) {
             throw new IllegalStateException(); // this is okay because this can only possibly be called after Scaffolder.run is completed
         }
         CollapsedDependencyGraphComponent root = rootComponents.get(0);
-        if (!root.getIncoming().isEmpty()) {
+        if (!root.getIncoming().isEmpty() || root.deleted()) {
             throw new IllegalStateException();
         }
         return root;
@@ -148,6 +149,7 @@ public class Scaffolder {
         }
     }
 
+    // TODO refactor dijkstra into an implementation of IScaffolderStrategy that would be passed as an argument to Scaffolder
     private ScaffoldingSearchNode dijkstra(CollapsedDependencyGraphComponent root) {
         Set<CollapsedDependencyGraphComponent> exclusiveDescendents = new ObjectOpenHashSet<>();
         walkAllDescendents(root, exclusiveDescendents);
@@ -225,5 +227,22 @@ public class Scaffolder {
         private ScaffoldingSearchNode(long pos) {
             this.pos = pos;
         }
+    }
+
+    // TODO should Scaffolder return a different class? "CompletedScaffolding" or something that has these methods as non-delegate, as well as getRoot returning a immutable equivalent of CollapsedDependencyGraphComponent?
+    public boolean real(long pos) {
+        return overlayGraph.real(pos);
+    }
+
+    public void forEachReal(Bounds.BoundsLongConsumer consumer) {
+        overlayGraph.forEachReal(consumer);
+    }
+
+    public LongSets.UnmodifiableSet scaffolding() {
+        return overlayGraph.scaffolding();
+    }
+
+    public boolean air(long pos) {
+        return overlayGraph.air(pos);
     }
 }
