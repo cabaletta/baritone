@@ -337,7 +337,7 @@ public class DependencyGraphScaffoldingOverlay {
                 if (!Main.STRICT_Y || positions.isEmpty()) {
                     throw new IllegalStateException();
                 }
-                if (y == -1) {
+                if (y == -1) { // TODO won't work in 1.17+ lol
                     y = BetterBlockPos.YfromLong(positions.iterator().nextLong());
                     if (y == -1) {
                         throw new IllegalStateException();
@@ -376,7 +376,7 @@ public class DependencyGraphScaffoldingOverlay {
                 if (component.positions.isEmpty()) {
                     throw new IllegalStateException();
                 }
-                int y = Main.STRICT_Y ? component.y() : -1;
+                Integer y = Main.STRICT_Y ? component.y() : null;
                 for (CollapsedDependencyGraphComponent out : component.outgoingEdges) {
                     if (Main.STRICT_Y && out.y() < y) {
                         throw new IllegalStateException();

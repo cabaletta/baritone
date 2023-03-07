@@ -33,7 +33,7 @@ public class SolverEngineHarness {
     private final ISolverEngine engine;
     private final PackedBlockStateCuboid blocks;
     private final PlaceOrderDependencyGraph graph;
-    private final Scaffolder scaffolder;
+    private final Scaffolder.Output scaffolder;
 
     public SolverEngineHarness(ISolverEngine engine, PackedBlockStateCuboid blocks, IScaffolderStrategy scaffolderStrategy) {
         this.engine = engine;
