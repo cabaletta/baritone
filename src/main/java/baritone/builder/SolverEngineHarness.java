@@ -35,11 +35,11 @@ public class SolverEngineHarness {
     private final PlaceOrderDependencyGraph graph;
     private final Scaffolder scaffolder;
 
-    public SolverEngineHarness(ISolverEngine engine, PackedBlockStateCuboid blocks) {
+    public SolverEngineHarness(ISolverEngine engine, PackedBlockStateCuboid blocks, IScaffolderStrategy scaffolderStrategy) {
         this.engine = engine;
         this.blocks = blocks;
         this.graph = new PlaceOrderDependencyGraph(blocks);
-        this.scaffolder = Scaffolder.run(graph);
+        this.scaffolder = Scaffolder.run(graph, scaffolderStrategy);
     }
 
     public List<SolvedActionStep> solve(long playerStartPos) {

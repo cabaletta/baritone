@@ -36,6 +36,7 @@ import java.util.stream.Collectors;
  */
 public class Scaffolder {
 
+    private final IScaffolderStrategy strategy;
     private final DependencyGraphScaffoldingOverlay overlayGraph;
     // NOTE: these next three fields are updated in-place as the overlayGraph is updated :)
     private final CollapsedDependencyGraph collapsedGraph;
@@ -44,7 +45,8 @@ public class Scaffolder {
 
     private final List<CollapsedDependencyGraphComponent> rootComponents;
 
-    private Scaffolder(PlaceOrderDependencyGraph graph) {
+    private Scaffolder(PlaceOrderDependencyGraph graph, IScaffolderStrategy strategy) {
+        this.strategy = strategy;
         this.overlayGraph = new DependencyGraphScaffoldingOverlay(graph);
         this.collapsedGraph = overlayGraph.getCollapsedGraph();
         this.components = collapsedGraph.getComponents();
@@ -53,8 +55,8 @@ public class Scaffolder {
         this.rootComponents = calcRoots();
     }
 
-    public static Scaffolder run(PlaceOrderDependencyGraph graph) {
-        Scaffolder scaffolder = new Scaffolder(graph);
+    public static Scaffolder run(PlaceOrderDependencyGraph graph, IScaffolderStrategy strategy) {
+        Scaffolder scaffolder = new Scaffolder(graph, strategy);
         while (scaffolder.rootComponents.size() > 1) {
             scaffolder.loop();
         }
@@ -75,28 +77,23 @@ public class Scaffolder {
         if (rootComponents.size() <= 1) {
             throw new IllegalStateException();
         }
-        CollapsedDependencyGraphComponent root = rootComponents.remove(rootComponents.size() - 1);
+        CollapsedDependencyGraphComponent root = rootComponents.get(rootComponents.size() - 1); // don't remove yet since we aren't sure which way it'll merge (in theory, in practice it'll stop being a root when STRICT_Y is true, since it'll become a descendant, but in theory with STRICT_Y false it could merge on equal footing with another component)
         if (!root.getIncoming().isEmpty()) {
             throw new IllegalStateException();
         }
-        ScaffoldingSearchNode end = dijkstra(root);
-        List<ScaffoldingSearchNode> path = new ArrayList<>();
-        while (end != null) {
-            path.add(end);
-            end = end.prev;
-        }
-        if (!root.getPositions().contains(path.get(path.size() - 1).pos)) {
+        LongList path = strategy.scaffoldTo(root, overlayGraph);
+        if (!root.getPositions().contains(path.get(path.size() - 1))) {
             throw new IllegalStateException();
         }
-        if (!componentLocations.containsKey(path.get(0).pos)) {
+        if (!componentLocations.containsKey(path.get(0))) {
             throw new IllegalStateException();
         }
-        LongList toEnable = path
-                .subList(1, path.size() - 1)
-                .stream()
-                .map(node -> node.pos)
-                .collect(Collectors.toCollection(LongArrayList::new));
-        enable(toEnable);
+        for (int i = 1; i < path.size(); i++) {
+            if (!overlayGraph.hypotheticalScaffoldingIncomingEdge(path.get(i), Face.between(path.get(i), path.get(i - 1)))) {
+                throw new IllegalStateException();
+            }
+        }
+        enable(path.subList(1, path.size() - 1));
     }
 
     private void enable(LongList positions) {
@@ -107,7 +104,7 @@ public class Scaffolder {
         });
         int cid = collapsedGraph.lastComponentID().getAsInt();
 
-        positions.forEach(overlayGraph::enable);
+        positions.forEach(overlayGraph::enable); // TODO more performant to enable in reverse order maybe?
 
         int newCID = collapsedGraph.lastComponentID().getAsInt();
         for (int i = cid + 1; i <= newCID; i++) {
@@ -142,92 +139,6 @@ public class Scaffolder {
         return root;
     }
 
-    private void walkAllDescendents(CollapsedDependencyGraphComponent root, Set<CollapsedDependencyGraphComponent> set) {
-        set.add(root);
-        for (CollapsedDependencyGraphComponent component : root.getOutgoing()) {
-            walkAllDescendents(component, set);
-        }
-    }
-
-    // TODO refactor dijkstra into an implementation of IScaffolderStrategy that would be passed as an argument to Scaffolder
-    private ScaffoldingSearchNode dijkstra(CollapsedDependencyGraphComponent root) {
-        Set<CollapsedDependencyGraphComponent> exclusiveDescendents = new ObjectOpenHashSet<>();
-        walkAllDescendents(root, exclusiveDescendents);
-        exclusiveDescendents.remove(root);
-        PriorityQueue<ScaffoldingSearchNode> openSet = new PriorityQueue<>(Comparator.comparingInt(node -> node.costSoFar));
-        Long2ObjectOpenHashMap<ScaffoldingSearchNode> nodeMap = new Long2ObjectOpenHashMap<>();
-        LongIterator it = root.getPositions().iterator();
-        while (it.hasNext()) {
-            long l = it.nextLong();
-            nodeMap.put(l, new ScaffoldingSearchNode(l));
-        }
-        openSet.addAll(nodeMap.values());
-        while (!openSet.isEmpty()) {
-            ScaffoldingSearchNode node = openSet.poll();
-            CollapsedDependencyGraphComponent tentativeComponent = componentLocations.get(node.pos);
-            if (tentativeComponent != null) {
-                if (exclusiveDescendents.contains(tentativeComponent)) {
-                    // have gone back onto a descendent of this node
-                    // sadly this can happen even at the same Y level even in Y_STRICT mode due to orientable blocks forming a loop
-                    continue; // TODO does this need to be here? can I expand THROUGH an unrelated component? probably requires testing, this is quite a mind bending possibility
-                } else {
-                    // found a path to a component that isn't a descendent of the root
-                    if (tentativeComponent != root) { // but if it IS the root, then we're just on our first loop iteration, we are far from done
-                        return node; // all done! found a path to a component unrelated to this one, meaning we have successfully connected this part of the build with scaffolding back to the rest of it
-                    }
-                }
-            }
-            for (Face face : Face.VALUES) {
-                if (overlayGraph.hypotheticalScaffoldingIncomingEdge(node.pos, face)) { // we don't have to worry about an incoming edge going into the frontier set because the root component is strongly connected and has no incoming edges from other SCCs, therefore any and all incoming edges will come from hypothetical scaffolding air locations
-                    long neighborPos = face.offset(node.pos);
-                    int newCost = node.costSoFar + edgeCost(face); // TODO future edge cost should include an added modifier for if neighborPos is in a favorable or unfavorable position e.g. above / under a diagonal depending on if map art or not
-                    ScaffoldingSearchNode existingNode = nodeMap.get(neighborPos);
-                    if (existingNode != null) {
-                        // it's okay if neighbor isn't marked as "air" in the overlay - that's what we want to find - a path to another component
-                        // however, we can't consider neighbors within the same component as a solution, clearly
-                        // we can accomplish this and kill two birds with one stone by skipping all nodes already in the node map
-                        // any position in the initial frontier is clearly in the node map, but also any node that has already been considered
-                        // this prevents useless cycling of equivalent paths
-                        // this is okay because all paths are equivalent, so there is no possible way to find a better path (because currently it's a fixed value for horizontal / vertical movements)
-                        if (existingNode.costSoFar != newCost) {
-                            throw new IllegalStateException();
-                        }
-                        continue; // nothing to do - we already have an equal-or-better path to this location
-                    }
-                    ScaffoldingSearchNode newNode = new ScaffoldingSearchNode(neighborPos);
-                    newNode.costSoFar = newCost;
-                    newNode.prev = node;
-                    nodeMap.put(newNode.pos, newNode);
-                    openSet.add(newNode);
-                }
-            }
-        }
-        return null;
-    }
-
-    private int edgeCost(Face face) {
-        if (Main.STRICT_Y && face == Face.UP) {
-            throw new IllegalStateException();
-        }
-        // gut feeling: give slight bias to moving horizontally
-        // that will influence it to create horizontal bridges more often than vertical pillars
-        // horizontal bridges are easier to maneuver around and over
-        if (face.y == 0) {
-            return 1;
-        }
-        return 2;
-    }
-
-    private static class ScaffoldingSearchNode {
-
-        private final long pos;
-        private int costSoFar;
-        private ScaffoldingSearchNode prev;
-
-        private ScaffoldingSearchNode(long pos) {
-            this.pos = pos;
-        }
-    }
 
     // TODO should Scaffolder return a different class? "CompletedScaffolding" or something that has these methods as non-delegate, as well as getRoot returning a immutable equivalent of CollapsedDependencyGraphComponent?
     public boolean real(long pos) {

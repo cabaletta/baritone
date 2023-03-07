@@ -86,4 +86,13 @@ public enum Face {
     public static int oppositeHorizontal(int horizontalIndex) {
         return horizontalIndex ^ 2;
     }
+
+    public static Face between(long from, long to) {
+        for (int i = 0; i < NUM_FACES; i++) {
+            if (offset(from, i) == to) {
+                return VALUES[i];
+            }
+        }
+        return null;
+    }
 }
