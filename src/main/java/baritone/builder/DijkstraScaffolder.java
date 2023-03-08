@@ -44,7 +44,7 @@ public enum DijkstraScaffolder implements IScaffolderStrategy {
             ScaffoldingSearchNode node = openSet.poll();
             CollapsedDependencyGraphComponent tentativeComponent = overlayGraph.getCollapsedGraph().getComponentLocations().get(node.pos);
             if (tentativeComponent != null) {
-                if (exclusiveDescendents.contains(tentativeComponent)) { // TODO is exclusiveDescendants even valid? returning a route into one of the descendants, if it's on the top of the heap, is valid because it closes a loop and the next dijkstra can start from there? perhaps there's no need to treat descendant interactions differently from any other non-root component?
+                if (exclusiveDescendents.contains(tentativeComponent)) { // TODO is exclusiveDescendants even valid? returning a route into one of the descendants, if it's on the top of the heap, is valid because it closes a loop and the next dijkstra can start from there? perhaps there's no need to treat descendant interactions differently from any other non-root component? EDIT: maybe it's good to prevent adding useless scaffolding that closes loops for no good reason?
                     // have gone back onto a descendent of this node
                     // sadly this can happen even at the same Y level even in Y_STRICT mode due to orientable blocks forming a loop
                     continue; // TODO does this need to be here? can I expand THROUGH an unrelated component? probably requires testing, this is quite a mind bending possibility

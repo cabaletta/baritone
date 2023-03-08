@@ -222,6 +222,7 @@ public class DependencyGraphScaffoldingOverlay {
             }
             components.remove(child.id);
             child.deleted = true;
+            child.deletedInto = parent.id;
             //System.out.println("Debug child contains: " + child.positions.contains(963549069314L) + " " + parent.positions.contains(963549069314L));
             return parent;
         }
@@ -320,6 +321,7 @@ public class DependencyGraphScaffoldingOverlay {
             // if i change ^^ that "Set" to "ObjectOpenHashSet" it actually makes the bench about 15% SLOWER?!?!?
             private int y = -1;
             private boolean deleted;
+            private int deletedInto;
             private final Set<CollapsedDependencyGraphComponent> unmodifiableOutgoing = Collections.unmodifiableSet(outgoingEdges);
             private final Set<CollapsedDependencyGraphComponent> unmodifiableIncoming = Collections.unmodifiableSet(incomingEdges);
 
@@ -348,6 +350,13 @@ public class DependencyGraphScaffoldingOverlay {
 
             public boolean deleted() {
                 return deleted;
+            }
+
+            public int deletedIntoRecursive() { // what cid was this merged into that caused it to be deleted
+                if (!deleted) {
+                    return id;
+                }
+                return components.get(deletedInto).deletedIntoRecursive();
             }
 
             public LongSet getPositions() {

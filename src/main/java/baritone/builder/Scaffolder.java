@@ -112,8 +112,26 @@ public class Scaffolder {
                 rootComponents.add(components.get(i));
             }
         }
-        // this works because as we add new components and connect them up, we can say that
-        rootComponents.removeIf(CollapsedDependencyGraphComponent::deleted);
+        // why is this valid?
+        // for this to be valid, we need to be confident that no component from cid 0 to old lastcid could have had incomings become empty
+        // consider the case root -> descendant
+        // what if scaffolding created descendant -> root, then they were merged together, but descendant won?
+        // then, descendant would have cid less than last cid, and it wouldn't be added to rootComponents by the previous line perhaps?
+        // but, dijkstra strategy skips merging roots with their descendants intentionally since it's useless to do so
+        rootComponents.removeIf(root -> {
+            if (root.deleted()) {
+                if (root.deletedIntoRecursive() <= cid) {
+                    throw new IllegalStateException(); // sanity check the above - if this throws, i suspect it would mean that a root component was merged into one of its descendants by useless scaffolding
+                    // if this ends up being unavoidable, then iterating over all deletedIntoRecursive of rootComponents should find all new rootComponents
+                    // this is because all new scaffoldings have their own component, so the only way for an old component to have no incomings is if it was merged "the wrong way" with the root, which is easily locatable by deletedIntoRecursive
+                }
+                return true;
+            }
+            return false;
+        });
+        /*rootComponents.clear();
+        rootComponents.addAll(calcRoots());*/
+
         if (Main.DEBUG) {
             if (!rootComponents.equals(calcRoots())) {
                 throw new IllegalStateException();
