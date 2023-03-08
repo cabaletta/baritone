@@ -21,17 +21,22 @@ package baritone.builder;
  * An immutable graph representing block placement dependency order
  * <p>
  * Air blocks are treated as scaffolding!
+ * (the idea is that treating air blocks as air would be boring - nothing can place against them and they can't be placed against anything)
  * <p>
  * Edge A --> B means that B can be placed against A
  */
 public class PlaceOrderDependencyGraph {
+
+    private static final BlockStateCachedData[] PER_STATE_WITH_SCAFFOLDING = BlockStateCachedData.getAllStates().stream().map(
+            state -> state != null && treatAsScaffolding(state) ? BlockStateCachedData.SCAFFOLDING : state
+    ).toArray(BlockStateCachedData[]::new);
 
     private final PackedBlockStateCuboid states;
     private final byte[] edges;
 
     public PlaceOrderDependencyGraph(PackedBlockStateCuboid states) {
         this.states = states;
-        this.edges = new byte[states.bounds.volume()];
+        this.edges = new byte[bounds().volume()];
 
         bounds().forEach(this::compute);
     }
@@ -57,7 +62,7 @@ public class PlaceOrderDependencyGraph {
     }
 
     public BlockStateCachedData data(long pos) {
-        return BlockStateCachedData.getScaffoldingVariant(state(pos));
+        return PER_STATE_WITH_SCAFFOLDING[state(pos)];
     }
 
     // example: dirt at 0,0,0 torch at 0,1,0. outgoingEdge(0,0,0,UP) returns true, incomingEdge(0,1,0,DOWN) returns true
@@ -84,7 +89,9 @@ public class PlaceOrderDependencyGraph {
     }
 
     public boolean airTreatedAsScaffolding(long pos) {
-        // alternatively, could be return BlockStateCachedData.getScaffoldingVariant(state(pos)) == BlockStateCachedData.SCAFFOLDING
+        // alternate valid implementations of this could be:
+        // return BlockStateCachedData.getScaffoldingVariant(state(pos)) == BlockStateCachedData.SCAFFOLDING;
+        // return data(pos) == BlockStateCachedData.SCAFFOLDING;
         return treatAsScaffolding(BlockStateCachedData.get(state(pos)));
     }
 
