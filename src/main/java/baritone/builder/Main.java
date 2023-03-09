@@ -33,13 +33,14 @@ import java.util.stream.Stream;
 
 public class Main {
 
-    public static final boolean DEBUG = true;
+    public static final boolean DEBUG = false;
     public static final boolean SLOW_DEBUG = false;
+    public static final boolean VERY_SLOW_DEBUG = false;
 
     /**
      * If true, many different parts of the builder switch to a more efficient mode where blocks can only be placed adjacent or upwards, never downwards
      */
-    public static final boolean STRICT_Y = false;
+    public static final boolean STRICT_Y = true;
 
     public static final boolean fakePlacementForPerformanceTesting = true;
 
@@ -92,7 +93,13 @@ public class Main {
         {
             System.out.println(BetterBlockPos.fromLong(BetterBlockPos.toLong(150, 150, 150)));
         }
-        for (int i = 0; i < 0; i++) {
+        for (int i = 0; i < 10; i++) {
+            if (!fakePlacementForPerformanceTesting) {
+                // when facePlacement is off, then all the blocks in this test can be placed bidirectionally (since they're dirt)
+                // this causes the test to not actually be that interesting because there are no possible loops or diamond shapes in the graph
+                // for example: if you turn off fakePlacement, then this test will no longer catch if pathExists in DGSO only returned the first path (because, no more diamond shapes, so no more need to consider multiple paths from src to dst)
+                throw new IllegalStateException("should be true");
+            }
             long aaa = System.currentTimeMillis();
             int[][][] test = new int[64][64][64];
             int based = Block.BLOCK_STATE_IDS.get(Blocks.DIRT.getDefaultState());
@@ -101,7 +108,7 @@ public class Main {
                 for (int y = 0; y < test[0].length; y++) {
                     for (int z = 0; z < test[0][0].length; z++) {
                         //if ((x + y + z) % 2 == 0) {
-                        if (RAND.nextBoolean()) {
+                        if (RAND.nextInt(10) < 2) {
                             test[x][y][z] = based;
                             numRealBlocks++;
                         }
@@ -129,9 +136,10 @@ public class Main {
             }*/
             DependencyGraphScaffoldingOverlay scaffolding = new DependencyGraphScaffoldingOverlay(graph);
             long a = System.currentTimeMillis();
-            int goal = numRealBlocks + 10000;
+            System.out.println(scaffolding.getCollapsedGraph().getComponents().size());
+            int goal = numRealBlocks + 200000;
             while (numRealBlocks < goal) {
-                //System.out.println(numRealBlocks);
+                //System.out.println(numRealBlocks + " " + scaffolding.getCollapsedGraph().getComponents().size());
                 int x = RAND.nextInt(((CuboidBounds) scaffolding.bounds()).sizeX);
                 int y = RAND.nextInt(((CuboidBounds) scaffolding.bounds()).sizeY);
                 int z = RAND.nextInt(((CuboidBounds) scaffolding.bounds()).sizeZ);
@@ -140,8 +148,13 @@ public class Main {
                     //System.out.println("Setting to scaffolding " + BetterBlockPos.fromLong(pos) + " " + pos);
                     scaffolding.enable(pos);
                     numRealBlocks++;
+                    if (numRealBlocks % 10000 == 0) {
+                        System.out.println(numRealBlocks + " " + scaffolding.getCollapsedGraph().getComponents().size());
+                        scaffolding.recheckEntireCollapsedGraph();
+                    }
                 }
             }
+            System.out.println(scaffolding.getCollapsedGraph().getComponents().size());
             System.out.println("Done " + (System.currentTimeMillis() - a) + "ms after " + (a - aa) + "ms after " + (aa - aaa) + "ms");
             Thread.sleep(500);
             System.gc();
@@ -405,6 +418,37 @@ Branchy took 124ms
                 System.out.println(SneakPosition.decode(SneakPosition.encode(0, sneak)));
                 System.out.println(SneakPosition.decode(SneakPosition.encode(BetterBlockPos.POST_ADDITION_MASK, sneak)));
             }
+        }
+        {
+            if (fakePlacementForPerformanceTesting) {
+                throw new IllegalStateException("not compatible with this test");
+            }
+            int[][][] test = new int[1][4][10];
+            int dirt = Block.BLOCK_STATE_IDS.get(Blocks.DIRT.getDefaultState());
+            System.out.println("D " + dirt);
+            for (int x = 0; x < test.length; x++) {
+                for (int z = 0; z < test[0][0].length; z++) {
+                    test[x][0][z] = dirt;
+                    test[x][1][z] = dirt;
+                }
+            }
+            PackedBlockStateCuboid states = new PackedBlockStateCuboid(test);
+            PlaceOrderDependencyGraph graph = new PlaceOrderDependencyGraph(states);
+            System.out.println("N " + Face.NORTH.z);
+            System.out.println("S " + Face.SOUTH.z);
+            for (int z = 0; z < test[0][0].length; z++) {
+                //System.out.println(states.get(states.bounds.toIndex(0, 0, z)));
+                System.out.println(z + " " + graph.outgoingEdge(BetterBlockPos.toLong(0, 0, z), Face.NORTH) + " " + graph.outgoingEdge(BetterBlockPos.toLong(0, 0, z), Face.SOUTH));
+            }
+            DependencyGraphAnalyzer.prevalidate(graph);
+            DependencyGraphAnalyzer.prevalidateExternalToInteriorSearch(graph);
+            DependencyGraphScaffoldingOverlay scaffolding = new DependencyGraphScaffoldingOverlay(graph);
+            System.out.println("Hewwo");
+            scaffolding.getCollapsedGraph().getComponents().forEach((key, value) -> {
+                System.out.println(key);
+                System.out.println(value.getPositions().stream().map(BetterBlockPos::fromLong).collect(Collectors.toList()));
+            });
+            System.out.println();
         }
         System.exit(0);
     }

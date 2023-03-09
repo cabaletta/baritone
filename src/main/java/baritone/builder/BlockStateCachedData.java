@@ -100,6 +100,9 @@ public final class BlockStateCachedData {
         if (placement.against != against.against.opposite()) {
             throw new IllegalArgumentException();
         }
+        if (placement.against.vertical) {
+            return true;
+        }
         return
                 (against.presentsAnOptionStrictlyInTheBottomHalfOfTheStandardVoxelPlane() && placement.half != Half.TOP) ||
                         (against.presentsAnOptionStrictlyInTheTopHalfOfTheStandardVoxelPlane() && placement.half != Half.BOTTOM);

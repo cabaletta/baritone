@@ -108,10 +108,14 @@ public class DependencyGraphScaffoldingOverlay {
         collapsedGraph.incrementalUpdate(pos);
         if (Main.SLOW_DEBUG) {
             //System.out.println(collapsedGraph.posToComponent.containsKey(pos) + " " + scaffoldingAdded.contains(pos) + " " + real(pos));
-            checkEquality(collapsedGraph, new CollapsedDependencyGraph(TarjansAlgorithm.run(this)));
-            //System.out.println("Checked equality");
-            //System.out.println("Num connected components: " + collapsedGraph.components.size());
+            recheckEntireCollapsedGraph();
         }
+    }
+
+    public void recheckEntireCollapsedGraph() {
+        checkEquality(collapsedGraph, new CollapsedDependencyGraph(TarjansAlgorithm.run(this)));
+        //System.out.println("Checked equality");
+        //System.out.println("Num connected components: " + collapsedGraph.components.size());
     }
 
     public LongSets.UnmodifiableSet scaffolding() {

@@ -18,8 +18,7 @@
 package baritone.builder;
 
 import baritone.api.utils.BetterBlockPos;
-import it.unimi.dsi.fastutil.longs.LongArrayFIFOQueue;
-import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import it.unimi.dsi.fastutil.longs.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -66,26 +65,16 @@ public class DependencyGraphAnalyzer {
      * requires a single root node at the bottom.
      */
     public static void prevalidateExternalToInteriorSearch(PlaceOrderDependencyGraph graph) {
-        LongOpenHashSet reachable = new LongOpenHashSet();
-        LongArrayFIFOQueue queue = new LongArrayFIFOQueue();
+        LongList edgeBegins = new LongArrayList();
         graph.bounds().forEach(pos -> {
             for (Face face : Face.VALUES) {
                 if (graph.incomingEdgePermitExterior(pos, face) && !graph.incomingEdge(pos, face)) {
                     // this block is placeable from the exterior of the schematic!
-                    queue.enqueue(pos); // this will intentionally put the top of the schematic at the front
+                    edgeBegins.add(pos); // this will intentionally put the top of the schematic at the front
                 }
             }
         });
-        while (!queue.isEmpty()) {
-            long pos = queue.dequeueLong();
-            if (reachable.add(pos)) {
-                for (Face face : Face.VALUES) {
-                    if (graph.outgoingEdge(pos, face)) {
-                        queue.enqueueFirst(face.offset(pos));
-                    }
-                }
-            }
-        }
+        LongSet reachable = searchGraph(edgeBegins, graph::outgoingEdge);
         List<String> locs = new ArrayList<>();
         graph.bounds().forEach(pos -> {
             if (graph.airTreatedAsScaffolding(pos)) {
@@ -99,6 +88,31 @@ public class DependencyGraphAnalyzer {
         if (!locs.isEmpty()) {
             throw new IllegalStateException("Placeable, in theory, but in practice there is no valid path from the exterior to it: " + cuteTrim(locs));
         }
+    }
+
+    @FunctionalInterface
+    interface EdgeTester {
+        boolean hasEdge(long from, Face dir);
+    }
+
+    public static LongSet searchGraph(LongCollection origin, EdgeTester edgeTester) {
+        LongOpenHashSet reachable = new LongOpenHashSet();
+        LongArrayFIFOQueue queue = new LongArrayFIFOQueue(origin.size());
+        LongIterator it = origin.iterator();
+        while (it.hasNext()) {
+            queue.enqueue(it.nextLong());
+        }
+        while (!queue.isEmpty()) {
+            long pos = queue.dequeueLong();
+            if (reachable.add(pos)) {
+                for (Face face : Face.VALUES) {
+                    if (edgeTester.hasEdge(pos, face)) {
+                        queue.enqueueFirst(face.offset(pos));
+                    }
+                }
+            }
+        }
+        return reachable;
     }
 
     private static List<String> cuteTrim(List<String> pos) {

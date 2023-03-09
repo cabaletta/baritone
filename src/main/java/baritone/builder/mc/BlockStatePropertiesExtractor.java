@@ -237,6 +237,10 @@ public class BlockStatePropertiesExtractor {
             builder.canOnlyPlaceAgainst(Face.fromMC(state.getValue(BlockShulkerBox.FACING)).opposite());
             builder.collisionHeight(1); // TODO should this be 1.5 because sometimes the shulker is open?
             fullyUnderstood = true;
+            if (state.getValue(BlockShulkerBox.FACING) == EnumFacing.DOWN && Main.STRICT_Y) {
+                // TODO fix downward facing shulker box in STRICT_Y mode
+                fullyUnderstood = false;
+            }
         }
 
         if (block instanceof BlockFenceGate // because if we place it we need to think about hypothetically walking through it

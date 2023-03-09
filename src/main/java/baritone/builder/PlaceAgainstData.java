@@ -58,6 +58,9 @@ public class PlaceAgainstData {
         if (!streamRelativeToPlace().allMatch(Vec3d::inOriginUnitVoxel)) {
             throw new IllegalStateException();
         }
+        if (hits.length == 0) {
+            throw new IllegalStateException();
+        }
     }
 
     public PlaceAgainstData(Face against, Half half, boolean mustSneak) {

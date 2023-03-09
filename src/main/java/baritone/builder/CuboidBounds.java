@@ -95,6 +95,7 @@ public class CuboidBounds implements Bounds {
 
     @Override
     public void forEach(BoundsIntsConsumer consumer) {
+        int sizeX = this.sizeX, sizeY = this.sizeY, sizeZ = this.sizeZ;
         for (int x = 0; x < sizeX; x++) {
             for (int y = 0; y < sizeY; y++) {
                 for (int z = 0; z < sizeZ; z++) {
@@ -106,6 +107,7 @@ public class CuboidBounds implements Bounds {
 
     @Override
     public void forEach(BoundsLongConsumer consumer) {
+        int sizeX = this.sizeX, sizeY = this.sizeY, sizeZ = this.sizeZ;
         for (int x = 0; x < sizeX; x++) {
             for (int y = 0; y < sizeY; y++) {
                 for (int z = 0; z < sizeZ; z++) {
@@ -117,6 +119,7 @@ public class CuboidBounds implements Bounds {
 
     @Override
     public void forEach(BoundsIntAndLongConsumer consumer) {
+        int sizeX = this.sizeX, sizeY = this.sizeY, sizeZ = this.sizeZ;
         for (int x = 0; x < sizeX; x++) {
             for (int y = 0; y < sizeY; y++) {
                 for (int z = 0; z < sizeZ; z++) {
