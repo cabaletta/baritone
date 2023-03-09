@@ -27,6 +27,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -133,7 +134,7 @@ public class GuiClick extends Screen implements Helper {
                 //TODO: check
                 IRenderer.glColor(Color.RED, 0.4F);
                 RenderSystem.lineWidth(Baritone.settings().pathRenderLineWidthPixels.value);
-                RenderSystem.disableTexture();
+                RenderSystem.setShader(GameRenderer::getPositionColorShader);
                 RenderSystem.depthMask(false);
                 RenderSystem.disableDepthTest();
                 BetterBlockPos a = new BetterBlockPos(currentMouseOver);
@@ -142,7 +143,6 @@ public class GuiClick extends Screen implements Helper {
                 RenderSystem.enableDepthTest();
 
                 RenderSystem.depthMask(true);
-                RenderSystem.enableTexture();
                 RenderSystem.disableBlend();
             }
         }
