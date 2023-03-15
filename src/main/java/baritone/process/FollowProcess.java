@@ -25,6 +25,7 @@ import baritone.api.pathing.goals.GoalXZ;
 import baritone.api.process.IFollowProcess;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
+import baritone.api.utils.BetterBlockPos;
 import baritone.utils.BaritoneProcessHelper;
 import java.util.List;
 import java.util.function.Predicate;
@@ -59,7 +60,7 @@ public final class FollowProcess extends BaritoneProcessHelper implements IFollo
             pos = following.blockPosition();
         } else {
             GoalXZ g = GoalXZ.fromDirection(following.position(), Baritone.settings().followOffsetDirection.value, Baritone.settings().followOffsetDistance.value);
-            pos = new BlockPos(g.getX(), following.position().y, g.getZ());
+            pos = new BetterBlockPos(g.getX(), following.position().y, g.getZ());
         }
         return new GoalNear(pos, Baritone.settings().followRadius.value);
     }

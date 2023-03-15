@@ -24,6 +24,7 @@ import baritone.api.pathing.goals.GoalComposite;
 import baritone.api.process.IFarmProcess;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
+import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.RayTraceUtils;
 import baritone.api.utils.Rotation;
 import baritone.api.utils.RotationUtils;
@@ -306,7 +307,7 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
                 ItemEntity ei = (ItemEntity) entity;
                 if (PICKUP_DROPPED.contains(ei.getItem().getItem())) {
                     // +0.1 because of farmland's 0.9375 dummy height lol
-                    goalz.add(new GoalBlock(new BlockPos(entity.position().x, entity.position().y + 0.1, entity.position().z)));
+                    goalz.add(new GoalBlock(new BetterBlockPos(entity.position().x, entity.position().y + 0.1, entity.position().z)));
                 }
             }
         }
