@@ -7,13 +7,19 @@ import com.github.btrekkie.red_black_node.RedBlackNode;
  * ConnGraph.
  */
 class EulerTourNode extends RedBlackNode<EulerTourNode> {
-    /** The dummy leaf node. */
+    /**
+     * The dummy leaf node.
+     */
     public static final EulerTourNode LEAF = new EulerTourNode(null, null);
 
-    /** The vertex this node visits. */
+    /**
+     * The vertex this node visits.
+     */
     public final EulerTourVertex vertex;
 
-    /** The number of nodes in the subtree rooted at this node. */
+    /**
+     * The number of nodes in the subtree rooted at this node.
+     */
     public int size;
 
     /**
@@ -53,13 +59,15 @@ class EulerTourNode extends RedBlackNode<EulerTourNode> {
         this.augmentationFunc = augmentationFunc;
     }
 
-    /** Like augment(), but only updates the augmentation fields hasGraphEdge and hasForestEdge. */
+    /**
+     * Like augment(), but only updates the augmentation fields hasGraphEdge and hasForestEdge.
+     */
     public boolean augmentFlags() {
         boolean newHasGraphEdge =
-            left.hasGraphEdge || right.hasGraphEdge || (vertex.arbitraryVisit == this && vertex.graphListHead != null);
+                left.hasGraphEdge || right.hasGraphEdge || (vertex.arbitraryVisit == this && vertex.graphListHead != null);
         boolean newHasForestEdge =
-            left.hasForestEdge || right.hasForestEdge ||
-            (vertex.arbitraryVisit == this && vertex.forestListHead != null);
+                left.hasForestEdge || right.hasForestEdge ||
+                        (vertex.arbitraryVisit == this && vertex.forestListHead != null);
         if (newHasGraphEdge == hasGraphEdge && newHasForestEdge == hasForestEdge) {
             return false;
         } else {

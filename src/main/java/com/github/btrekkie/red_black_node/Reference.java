@@ -5,10 +5,13 @@ package com.github.btrekkie.red_black_node;
 /**
  * Wraps a value using reference equality.  In other words, two references are equal only if their values are the same
  * object instance, as in ==.
+ *
  * @param <T> The type of value.
  */
 class Reference<T> {
-    /** The value this wraps. */
+    /**
+     * The value this wraps.
+     */
     private final T value;
 
     public Reference(T value) {
@@ -19,7 +22,7 @@ class Reference<T> {
         if (!(obj instanceof Reference)) {
             return false;
         }
-        Reference<?> reference = (Reference<?>)obj;
+        Reference<?> reference = (Reference<?>) obj;
         return value == reference.value;
     }
 

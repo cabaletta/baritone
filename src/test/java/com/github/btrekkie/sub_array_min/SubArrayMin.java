@@ -1,14 +1,20 @@
 package com.github.btrekkie.sub_array_min;
 
-/** A list of integers.  SubArrayMin provides the ability to quickly determine the minimum value in a given sublist. */
+/**
+ * A list of integers.  SubArrayMin provides the ability to quickly determine the minimum value in a given sublist.
+ */
 /* We implement SubArrayMin using a red-black tree augmented by subtree size and minimum value.  Using the subtree size
  * augmentation, we can find the node at a given index.
  */
 public class SubArrayMin {
-    /** The root node. */
+    /**
+     * The root node.
+     */
     private SubArrayMinNode root = SubArrayMinNode.LEAF;
 
-    /** Appends the specified value to the end of the list. */
+    /**
+     * Appends the specified value to the end of the list.
+     */
     public void add(int value) {
         SubArrayMinNode newNode = new SubArrayMinNode(value);
         newNode.left = SubArrayMinNode.LEAF;
@@ -25,7 +31,9 @@ public class SubArrayMin {
         }
     }
 
-    /** Returns the node for the element with the specified index.  Assumes "index" is in the range [0, root.size). */
+    /**
+     * Returns the node for the element with the specified index.  Assumes "index" is in the range [0, root.size).
+     */
     private SubArrayMinNode getNode(int index) {
         if (index < 0 || index >= root.size) {
             throw new IndexOutOfBoundsException("Index " + index + " is not in the range [0, " + root.size + ")");

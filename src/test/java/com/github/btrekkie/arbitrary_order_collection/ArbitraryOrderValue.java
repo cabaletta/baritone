@@ -5,7 +5,9 @@ package com.github.btrekkie.arbitrary_order_collection;
  * compareTo.
  */
 public class ArbitraryOrderValue implements Comparable<ArbitraryOrderValue> {
-    /** The node that establishes this value's relative position. */
+    /**
+     * The node that establishes this value's relative position.
+     */
     final ArbitraryOrderNode node;
 
     ArbitraryOrderValue(ArbitraryOrderNode node) {

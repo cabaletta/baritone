@@ -1,19 +1,20 @@
 package com.github.btrekkie.arbitrary_order_collection.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import com.github.btrekkie.arbitrary_order_collection.ArbitraryOrderCollection;
+import com.github.btrekkie.arbitrary_order_collection.ArbitraryOrderValue;
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.junit.Test;
-
-import com.github.btrekkie.arbitrary_order_collection.ArbitraryOrderCollection;
-import com.github.btrekkie.arbitrary_order_collection.ArbitraryOrderValue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class ArbitraryOrderCollectionTest {
-    /** Tests ArbitraryOrderCollection. */
+    /**
+     * Tests ArbitraryOrderCollection.
+     */
     @Test
     public void test() {
         ArbitraryOrderCollection collection = new ArbitraryOrderCollection();

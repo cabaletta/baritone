@@ -8,7 +8,9 @@ import java.util.Map;
  * a given graph, regardless of how many levels the vertex is in. See the comments for the implementation of ConnGraph.
  */
 class VertexInfo {
-    /** The representation of the vertex in the highest level. */
+    /**
+     * The representation of the vertex in the highest level.
+     */
     public EulerTourVertex vertex;
 
     /**

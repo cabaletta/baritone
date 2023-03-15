@@ -35,9 +35,13 @@ class EulerTourVertex {
      */
     public ConnEdge forestListHead;
 
-    /** The augmentation associated with this vertex, if any. This is null instead if higherVertex != null. */
+    /**
+     * The augmentation associated with this vertex, if any. This is null instead if higherVertex != null.
+     */
     public Object augmentation;
 
-    /** Whether there is any augmentation associated with this vertex. This is false instead if higherVertex != null. */
+    /**
+     * Whether there is any augmentation associated with this vertex. This is false instead if higherVertex != null.
+     */
     public boolean hasAugmentation;
 }

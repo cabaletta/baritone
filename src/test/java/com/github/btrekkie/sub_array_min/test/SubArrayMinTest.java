@@ -1,13 +1,14 @@
 package com.github.btrekkie.sub_array_min.test;
 
-import static org.junit.Assert.assertEquals;
-
+import com.github.btrekkie.sub_array_min.SubArrayMin;
 import org.junit.Test;
 
-import com.github.btrekkie.sub_array_min.SubArrayMin;
+import static org.junit.Assert.assertEquals;
 
 public class SubArrayMinTest {
-    /** Tests SubArrayMin. */
+    /**
+     * Tests SubArrayMin.
+     */
     @Test
     public void test() {
         SubArrayMin sam = new SubArrayMin();

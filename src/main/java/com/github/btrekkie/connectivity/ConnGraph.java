@@ -1,10 +1,6 @@
 package com.github.btrekkie.connectivity;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Implements an undirected graph with dynamic connectivity. It supports adding and removing edges and determining
@@ -12,7 +8,7 @@ import java.util.Map;
  * amortized time with high probability, while checking whether two vertices are connected takes O(log N) time with high
  * probability. It uses O(V log V + E) space, where V is the number of vertices and E is the number of edges. Note that
  * a ConnVertex may appear in multiple ConnGraphs, with a different set of adjacent vertices in each graph.
- *
+ * <p>
  * ConnGraph optionally supports arbitrary augmentation. Each vertex may have an associated augmentation, or value.
  * Given a vertex V, ConnGraph can quickly report the result of combining the augmentations of all of the vertices in
  * the connected component containing V, using a combining function provided to the constructor. For example, if a
@@ -22,12 +18,12 @@ import java.util.Map;
  * the augmentation takes a constant amount of space. Retrieving the combined augmentation for a connected component
  * takes O(log N) time with high probability. (Although ConnGraph does not directly support augmenting edges, this can
  * also be accomplished, by imputing each edge's augmentation to an adjacent vertex.)
- *
+ * <p>
  * When a vertex no longer has any adjacent edges, and it has no augmentation information, ConnGraph stops keeping track
  * of the vertex. This reduces the time and space bounds of the ConnGraph, and it enables the ConnVertex to be garbage
  * collected. If you know you are finished with a vertex, and that vertex has an augmentation, then you should call
  * removeVertexAugmentation on the vertex, so that the graph can release it.
- *
+ * <p>
  * As a side note, it would be more proper if ConnGraph had a generic type parameter indicating the type of the
  * augmentation values. However, it is expected that it is more common not to use augmentation, so by not using a type
  * parameter, we make usage of the ConnGraph class more convenient and less confusing in the common case.
@@ -106,7 +102,7 @@ public class ConnGraph {
      * The maximum number of vertices we can store in a ConnGraph. This is limited by the fact that EulerTourNode.size
      * is an int. Since the size of an Euler tour tree is one less than twice the number of vertices in the tree, the
      * number of vertices may be at most (int)((((long)Integer.MAX_VALUE) + 1) / 2).
-     *
+     * <p>
      * Of course, we could simply change the "size" field to be a long. But more fundamentally, the number of vertices
      * is limited by the fact that vertexInfo and VertexInfo.edges use HashMaps. Using a HashMap becomes problematic at
      * around Integer.MAX_VALUE entries. HashMap buckets entries based on 32-bit hash codes, so in principle, it can
@@ -115,7 +111,9 @@ public class ConnGraph {
      */
     private static final int MAX_VERTEX_COUNT = 1 << 30;
 
-    /** The augmentation function for the graph, if any. */
+    /**
+     * The augmentation function for the graph, if any.
+     */
     private final Augmentation augmentation;
 
     /**
@@ -139,22 +137,28 @@ public class ConnGraph {
      */
     private int maxVertexInfoSize;
 
-    /** Constructs a new ConnGraph with no augmentation. */
+    /**
+     * Constructs a new ConnGraph with no augmentation.
+     */
     public ConnGraph() {
         augmentation = null;
     }
 
-    /** Constructs an augmented ConnGraph, using the specified function to combine augmentation values. */
+    /**
+     * Constructs an augmented ConnGraph, using the specified function to combine augmentation values.
+     */
     public ConnGraph(Augmentation augmentation) {
         this.augmentation = augmentation;
     }
 
-    /** Equivalent implementation is contractual. */
+    /**
+     * Equivalent implementation is contractual.
+     */
     private void assertIsAugmented() {
         if (augmentation == null) {
             throw new RuntimeException(
-                "You may only call augmentation-related methods on ConnGraph if the graph is augmented, i.e. if an " +
-                "Augmentation was passed to the constructor");
+                    "You may only call augmentation-related methods on ConnGraph if the graph is augmented, i.e. if an " +
+                            "Augmentation was passed to the constructor");
         }
     }
 
@@ -171,8 +175,8 @@ public class ConnGraph {
 
         if (vertexInfo.size() == MAX_VERTEX_COUNT) {
             throw new RuntimeException(
-                "Sorry, ConnGraph has too many vertices to perform this operation. ConnGraph does not support " +
-                "storing more than ~2^30 vertices at a time.");
+                    "Sorry, ConnGraph has too many vertices to perform this operation. ConnGraph does not support " +
+                            "storing more than ~2^30 vertices at a time.");
         }
 
         EulerTourVertex eulerTourVertex = new EulerTourVertex();
@@ -215,9 +219,10 @@ public class ConnGraph {
      * list for an EulerTourVertex that represents the same underlying ConnVertex, but at a higher level. This has the
      * effect of prepending the list for the lower level to the beginning of the list for the higher level, and
      * replacing all links to the lower-level vertex in the ConnEdges with links to the higher-level vertex.
-     * @param head The first node in the list for the higher-level vertex.
-     * @param lowerHead The first node in the list for the lower-level vertex.
-     * @param vertex The higher-level vertex.
+     *
+     * @param head        The first node in the list for the higher-level vertex.
+     * @param lowerHead   The first node in the list for the lower-level vertex.
+     * @param vertex      The higher-level vertex.
      * @param lowerVertex The lower-level vertex.
      * @return The head of the combined linked list.
      */
@@ -257,7 +262,7 @@ public class ConnGraph {
 
     /**
      * Equivalent implementation is contractual.
-     *
+     * <p>
      * This method is useful for when an EulerTourVertex's lists (graphListHead or forestListHead) or arbitrary visit
      * change, as these affect the hasGraphEdge and hasForestEdge augmentations.
      */
@@ -301,7 +306,7 @@ public class ConnGraph {
                 }
 
                 vertex.graphListHead =
-                    collapseEdgeList(vertex.graphListHead, lowerVertex.graphListHead, vertex, lowerVertex);
+                        collapseEdgeList(vertex.graphListHead, lowerVertex.graphListHead, vertex, lowerVertex);
                 if (lowerVertex.forestListHead != null) {
                     // Change the eulerTourEdge links
                     ConnEdge lowerEdge = lowerVertex.forestListHead;
@@ -320,7 +325,7 @@ public class ConnGraph {
                     }
 
                     vertex.forestListHead =
-                        collapseEdgeList(vertex.forestListHead, lowerVertex.forestListHead, vertex, lowerVertex);
+                            collapseEdgeList(vertex.forestListHead, lowerVertex.forestListHead, vertex, lowerVertex);
                 }
             }
 
@@ -505,7 +510,9 @@ public class ConnGraph {
         return new EulerTourEdge(newNode, max);
     }
 
-    /** Removes the specified edge from the Euler tour forest F_i. */
+    /**
+     * Removes the specified edge from the Euler tour forest F_i.
+     */
     private void removeForestEdge(EulerTourEdge edge) {
         EulerTourNode firstNode;
         EulerTourNode secondNode;
@@ -535,8 +542,9 @@ public class ConnGraph {
     /**
      * Adds the specified edge to the edge map for srcInfo (srcInfo.edges). Assumes that the edge is not currently in
      * the map.
-     * @param edge The edge.
-     * @param srcInfo The source vertex's info.
+     *
+     * @param edge       The edge.
+     * @param srcInfo    The source vertex's info.
      * @param destVertex The destination vertex, i.e. the edge's key in srcInfo.edges.
      */
     private void addToEdgeMap(ConnEdge edge, VertexInfo srcInfo, ConnVertex destVertex) {
@@ -549,6 +557,7 @@ public class ConnGraph {
     /**
      * Adds an edge between the specified vertices, if such an edge is not already present. Taken together with
      * removeEdge, this method takes O(log^2 N) amortized time with high probability.
+     *
      * @return Whether there was no edge between the vertices.
      */
     public boolean addEdge(ConnVertex connVertex1, ConnVertex connVertex2) {
@@ -557,8 +566,8 @@ public class ConnGraph {
         }
         if (vertexInfo.size() >= MAX_VERTEX_COUNT - 1) {
             throw new RuntimeException(
-                "Sorry, ConnGraph has too many vertices to perform this operation. ConnGraph does not support " +
-                "storing more than ~2^30 vertices at a time.");
+                    "Sorry, ConnGraph has too many vertices to perform this operation. ConnGraph does not support " +
+                            "storing more than ~2^30 vertices at a time.");
         }
         VertexInfo info1 = ensureInfo(connVertex1);
         if (info1.edges.containsKey(connVertex2)) {
@@ -614,7 +623,7 @@ public class ConnGraph {
             return;
         }
         EulerTourNode node;
-        for (node = root; node.left.hasForestEdge; node = node.left);
+        for (node = root; node.left.hasForestEdge; node = node.left) ;
         while (node != null) {
             EulerTourVertex vertex = node.vertex;
             ConnEdge edge = vertex.forestListHead;
@@ -657,7 +666,7 @@ public class ConnGraph {
 
             // Iterate to the next node with hasForestEdge == true, clearing hasForestEdge as we go
             if (node.right.hasForestEdge) {
-                for (node = node.right; node.left.hasForestEdge; node = node.left);
+                for (node = node.right; node.left.hasForestEdge; node = node.left) ;
             } else {
                 node.hasForestEdge = false;
                 while (node.parent != null && node.parent.right == node) {
@@ -674,6 +683,7 @@ public class ConnGraph {
      * tree, where i is the level of the tree. This is a "replacement" edge because it replaces the edge that was
      * previously connecting the two trees. We push any level-i edges we encounter that do not connect to another tree
      * down to level i - 1, adding them to G_{i - 1}. This method assumes that root.hasForestEdge is false.
+     *
      * @param root The root of the tree.
      * @return The replacement edge, or null if there is no replacement edge.
      */
@@ -683,7 +693,7 @@ public class ConnGraph {
             return null;
         }
         EulerTourNode node;
-        for (node = root; node.left.hasGraphEdge; node = node.left);
+        for (node = root; node.left.hasGraphEdge; node = node.left) ;
         while (node != null) {
             EulerTourVertex vertex = node.vertex;
             ConnEdge edge = vertex.graphListHead;
@@ -767,7 +777,7 @@ public class ConnGraph {
             // Iterate to the next node with hasGraphEdge == true. Note that nodes' hasGraphEdge fields can change as we
             // push down edges.
             if (node.right.hasGraphEdge) {
-                for (node = node.right; node.left.hasGraphEdge; node = node.left);
+                for (node = node.right; node.left.hasGraphEdge; node = node.left) ;
             } else {
                 while (node.parent != null && (node.parent.right == node || !node.parent.hasGraphEdge)) {
                     node = node.parent;
@@ -798,6 +808,7 @@ public class ConnGraph {
     /**
      * Removes the edge between the specified vertices, if there is such an edge. Taken together with addEdge, this
      * method takes O(log^2 N) amortized time with high probability.
+     *
      * @return Whether there was an edge between the vertices.
      */
     public boolean removeEdge(ConnVertex vertex1, ConnVertex vertex2) {
@@ -912,7 +923,9 @@ public class ConnGraph {
         return info2 != null && info1.vertex.arbitraryVisit.root() == info2.vertex.arbitraryVisit.root();
     }
 
-    /** Returns the vertices that are directly adjacent to the specified vertex. */
+    /**
+     * Returns the vertices that are directly adjacent to the specified vertex.
+     */
     public Collection<ConnVertex> adjacentVertices(ConnVertex vertex) {
         VertexInfo info = vertexInfo.get(vertex);
         if (info != null) {
@@ -925,12 +938,12 @@ public class ConnGraph {
     /**
      * Sets the augmentation associated with the specified vertex. This method takes O(log N) time with high
      * probability.
-     *
+     * <p>
      * Note that passing a null value for the second argument is not the same as removing the augmentation. For that,
      * you need to call removeVertexAugmentation.
      *
      * @return The augmentation that was previously associated with the vertex. Returns null if it did not have any
-     *     associated augmentation.
+     * associated augmentation.
      */
     public Object setVertexAugmentation(ConnVertex connVertex, Object vertexAugmentation) {
         assertIsAugmented();
@@ -952,8 +965,9 @@ public class ConnGraph {
     /**
      * Removes any augmentation associated with the specified vertex. This method takes O(log N) time with high
      * probability.
+     *
      * @return The augmentation that was previously associated with the vertex. Returns null if it did not have any
-     *     associated augmentation.
+     * associated augmentation.
      */
     public Object removeVertexAugmentation(ConnVertex connVertex) {
         assertIsAugmented();
@@ -1127,7 +1141,7 @@ public class ConnGraph {
     private void optimizeGraphEdges() {
         for (VertexInfo info : vertexInfo.values()) {
             EulerTourVertex vertex;
-            for (vertex = info.vertex; vertex.lowerVertex != null; vertex = vertex.lowerVertex);
+            for (vertex = info.vertex; vertex.lowerVertex != null; vertex = vertex.lowerVertex) ;
             while (vertex != null) {
                 EulerTourNode node = vertex.arbitraryVisit;
                 ConnEdge edge = vertex.graphListHead;

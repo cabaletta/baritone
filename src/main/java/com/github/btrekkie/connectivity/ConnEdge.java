@@ -4,7 +4,7 @@ package com.github.btrekkie.connectivity;
  * Represents an edge in a ConnGraph, at the level of the edge (i.e. at the lowest level i for which G_i contains the
  * edge). Every graph edge has exactly one corresponding ConnEdge object, regardless of the number of levels it appears
  * in. See the comments for the implementation of ConnGraph.
- *
+ * <p>
  * ConnEdges are stored in the linked lists suggested by EulerTourVertex.graphListHead and
  * EulerTourVertex.forestListHead. Each ConnEdge is in two linked lists, so care must be taken when traversing the
  * linked lists. prev1 and next1 are the links for the list starting at vertex1.graphListHead or vertex1.forestListHead,
@@ -14,10 +14,14 @@ package com.github.btrekkie.connectivity;
  * after next1 is next1.next1, but otherwise, it is next1.next2.
  */
 class ConnEdge {
-    /** The edge's first endpoint (at the same level as the edge). */
+    /**
+     * The edge's first endpoint (at the same level as the edge).
+     */
     public EulerTourVertex vertex1;
 
-    /** The edge's second endpoint (at the same level as the edge). */
+    /**
+     * The edge's second endpoint (at the same level as the edge).
+     */
     public EulerTourVertex vertex2;
 
     /**

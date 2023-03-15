@@ -2,9 +2,13 @@ package com.github.btrekkie.connectivity;
 
 import java.util.Random;
 
-/** A vertex in a ConnGraph. See the comments for ConnGraph. */
+/**
+ * A vertex in a ConnGraph. See the comments for ConnGraph.
+ */
 public class ConnVertex {
-    /** The thread-local random number generator we use by default to set the "hash" field. */
+    /**
+     * The thread-local random number generator we use by default to set the "hash" field.
+     */
     private static final ThreadLocal<Random> random = new ThreadLocal<Random>() {
         @Override
         protected Random initialValue() {
@@ -24,8 +28,9 @@ public class ConnVertex {
 
     /**
      * Constructs a new ConnVertex.
+     *
      * @param random The random number generator to use to produce a random hash code. ConnGraph relies on random hash
-     *     codes for its performance guarantees.
+     *               codes for its performance guarantees.
      */
     public ConnVertex(Random random) {
         hash = random.nextInt();

@@ -2,22 +2,32 @@ package com.github.btrekkie.red_black_node.test;
 
 import com.github.btrekkie.red_black_node.RedBlackNode;
 
-/** A RedBlackNode for RedBlackNodeTest. */
+/**
+ * A RedBlackNode for RedBlackNodeTest.
+ */
 class TestRedBlackNode extends RedBlackNode<TestRedBlackNode> {
-    /** The dummy leaf node. */
+    /**
+     * The dummy leaf node.
+     */
     public static final TestRedBlackNode LEAF = new TestRedBlackNode();
 
-    /** The value stored in this node.  "value" is unspecified if this is a leaf node. */
+    /**
+     * The value stored in this node.  "value" is unspecified if this is a leaf node.
+     */
     public int value;
 
-    /** Whether this node is considered valid, as in assertNodeIsValid(). */
+    /**
+     * Whether this node is considered valid, as in assertNodeIsValid().
+     */
     public boolean isValid = true;
 
     public TestRedBlackNode(int value) {
         this.value = value;
     }
 
-    /** Constructs a new dummy leaf node. */
+    /**
+     * Constructs a new dummy leaf node.
+     */
     private TestRedBlackNode() {
 
     }
