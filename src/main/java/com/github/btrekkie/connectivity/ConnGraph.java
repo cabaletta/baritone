@@ -131,13 +131,6 @@ public class ConnGraph {
     private int maxLogVertexCountSinceRebuild;
 
     /**
-     * The maximum number of entries in vertexInfo since the last time we copied that field to a new HashMap. We do this
-     * when the number of vertices drops sufficiently, in order to limit space usage. (The capacity of a HashMap is not
-     * automatically reduced as the number of entries decreases, so we have to limit space usage manually.)
-     */
-    private int maxVertexInfoSize;
-
-    /**
      * Constructs a new ConnGraph with no augmentation.
      */
     public ConnGraph() {
@@ -191,7 +184,6 @@ public class ConnGraph {
         if (vertexInfo.size() > 1 << maxLogVertexCountSinceRebuild) {
             maxLogVertexCountSinceRebuild++;
         }
-        maxVertexInfoSize = Math.max(maxVertexInfoSize, vertexInfo.size());
         return info;
     }
 
@@ -202,13 +194,6 @@ public class ConnGraph {
      */
     private void remove(ConnVertex vertex) {
         vertexInfo.remove(vertex);
-        if (4 * vertexInfo.size() <= maxVertexInfoSize && maxVertexInfoSize > 12) {
-            // The capacity of a HashMap is not automatically reduced as the number of entries decreases. To avoid
-            // violating our O(V log V + E) space guarantee, we copy vertexInfo to a new HashMap, which will have a
-            // suitable capacity.
-            vertexInfo = new HashMap<ConnVertex, VertexInfo>(vertexInfo);
-            maxVertexInfoSize = vertexInfo.size();
-        }
         if (vertexInfo.size() << REBUILD_CHANGE <= 1 << maxLogVertexCountSinceRebuild) {
             rebuild();
         }
@@ -549,9 +534,6 @@ public class ConnGraph {
      */
     private void addToEdgeMap(ConnEdge edge, VertexInfo srcInfo, ConnVertex destVertex) {
         srcInfo.edges.put(destVertex, edge);
-        if (srcInfo.edges.size() > srcInfo.maxEdgeCountSinceRebuild) {
-            srcInfo.maxEdgeCountSinceRebuild = srcInfo.edges.size();
-        }
     }
 
     /**
@@ -794,14 +776,6 @@ public class ConnGraph {
      */
     private ConnEdge removeFromEdgeMap(VertexInfo srcInfo, ConnVertex destVertex) {
         ConnEdge edge = srcInfo.edges.remove(destVertex);
-        if (edge != null && 4 * srcInfo.edges.size() <= srcInfo.maxEdgeCountSinceRebuild &&
-                srcInfo.maxEdgeCountSinceRebuild > 6) {
-            // The capacity of a HashMap is not automatically reduced as the number of entries decreases. To avoid
-            // violating our O(V log V + E) space guarantee, we copy srcInfo.edges to a new HashMap, which will have a
-            // suitable capacity.
-            srcInfo.edges = new HashMap<ConnVertex, ConnEdge>(srcInfo.edges);
-            srcInfo.maxEdgeCountSinceRebuild = srcInfo.edges.size();
-        }
         return edge;
     }
 
@@ -1058,7 +1032,6 @@ public class ConnGraph {
         // space
         vertexInfo = new HashMap<ConnVertex, VertexInfo>();
         maxLogVertexCountSinceRebuild = 0;
-        maxVertexInfoSize = 0;
     }
 
     /**

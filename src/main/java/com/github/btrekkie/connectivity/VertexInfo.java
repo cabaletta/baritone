@@ -20,14 +20,6 @@ class VertexInfo {
      */
     public Map<ConnVertex, ConnEdge> edges = new HashMap<ConnVertex, ConnEdge>();
 
-    /**
-     * The maximum number of entries in "edges" since the last time we "rebuilt" that field. When the number of edges
-     * drops sufficiently, we rebuild "edges" by copying its contents to a new HashMap. We do this to ensure that
-     * "edges" uses O(K) space, where K is the number of vertices adjacent to this. (The capacity of a HashMap is not
-     * automatically reduced as the number of entries decreases, so we have to limit space usage manually.)
-     */
-    public int maxEdgeCountSinceRebuild;
-
     public VertexInfo(EulerTourVertex vertex) {
         this.vertex = vertex;
     }
