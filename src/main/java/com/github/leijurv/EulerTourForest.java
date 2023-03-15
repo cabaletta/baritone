@@ -14,7 +14,7 @@ public class EulerTourForest {
     static long parentCalls;
     // https://web.stanford.edu/class/archive/cs/cs166/cs166.1166/lectures/17/Small17.pdf
     // https://u.cs.biu.ac.il/~rodittl/p723-holm.pdf
-    // https://infoscience.epfl.ch/record/99353/files/HenzingerK99.pdf
+    // https://web.archive.org/web/20180725100607/https://infoscience.epfl.ch/record/99353/files/HenzingerK99.pdf
     // https://en.wikipedia.org/wiki/Dynamic_connectivity#The_Level_structure
 
     public final BSTNode[] loopbacks; // a (v,v) fake edge is created per vertex and maintained at the appropriate location in the tree, to allow fast lookups of where "v" is, without having to rely on the presence or absence of tree edges connected to v
