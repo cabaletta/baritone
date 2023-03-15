@@ -4,7 +4,9 @@ import com.github.btrekkie.connectivity.ConnGraph;
 import com.github.btrekkie.connectivity.ConnVertex;
 import org.junit.Test;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 import static org.junit.Assert.*;
 
@@ -12,6 +14,9 @@ import static org.junit.Assert.*;
  * behavior more predictable. That way, there are consistent test results, and test failures are easier to debug.
  */
 public class ConnGraphTest {
+    private static long toLong(int x, int y) {
+        return (long) x & 0xffffffffL | ((long) y & 0xffffffffL) << 32;
+    }
 
     @Test
     public void testPerformanceOnRepeatedConnectionAndDisconnection() {
@@ -24,10 +29,10 @@ public class ConnGraphTest {
             long setup = System.currentTimeMillis();
             ConnGraph graph = new ConnGraph((a, b) -> (Integer) a + (Integer) b);
             int SZ = 1000;
-            ConnVertex[] vertices = new ConnVertex[SZ * SZ];
-            for (int i = 0; i < vertices.length; i++) {
-                vertices[i] = new ConnVertex();
-                graph.setVertexAugmentation(vertices[i], 1);
+            for (int x = 0; x < SZ; x++) {
+                for (int y = 0; y < SZ; y++) {
+                    graph.setVertexAugmentation(toLong(x, y), 1); // much faster to do this earlier idk
+                }
             }
             for (int x = 0; x < SZ; x++) {
                 if (x % 100 == 0) {
@@ -35,15 +40,15 @@ public class ConnGraphTest {
                 }
                 for (int y = 0; y < SZ; y++) {
                     if (y != SZ - 1 && y != SZ / 2) { // leave graph disconnected in the center - two big areas with no connection
-                        graph.addEdge(vertices[x * SZ + y], vertices[x * SZ + y + 1]);
+                        graph.addEdge(toLong(x, y), toLong(x, y + 1));
                     }
                     if (x != SZ - 1) {
-                        graph.addEdge(vertices[x * SZ + y], vertices[(x + 1) * SZ + y]);
+                        graph.addEdge(toLong(x, y), toLong(x + 1, y));
                     }
                 }
             }
             System.out.println("Setup took " + (System.currentTimeMillis() - setup));
-            System.out.println("Part size " + graph.getComponentAugmentation(vertices[0]));
+            System.out.println("Part size " + graph.getComponentAugmentation(0));
 
         /*
         // previous test for cutting in half
@@ -62,11 +67,11 @@ public class ConnGraphTest {
                 long start = System.currentTimeMillis();
                 int x = SZ / 2;
                 int y = SZ / 2;
-                graph.addEdge(vertices[x * SZ + y], vertices[x * SZ + y + 1]);
+                graph.addEdge(toLong(x, y), toLong(x, y + 1));
                 long afterAdd = System.currentTimeMillis();
-                System.out.println("Connected size " + graph.getComponentAugmentation(vertices[0]));
-                graph.removeEdge(vertices[x * SZ + y], vertices[x * SZ + y + 1]);
-                System.out.println("Disconnected size " + graph.getComponentAugmentation(vertices[0]));
+                System.out.println("Connected size " + graph.getComponentAugmentation(0));
+                graph.removeEdge(toLong(x, y), toLong(x, y + 1));
+                System.out.println("Disconnected size " + graph.getComponentAugmentation(0));
                 System.out.println("Took " + (System.currentTimeMillis() - afterAdd) + " to remove and " + (afterAdd - start) + " to add");
             }
 
@@ -78,34 +83,34 @@ public class ConnGraphTest {
                 long start = System.currentTimeMillis();
                 int y = SZ / 2;
                 for (int x = 0; x < SZ; x++) {
-                    graph.addEdge(vertices[x * SZ + y], vertices[x * SZ + y + 1]);
+                    graph.addEdge(toLong(x, y), toLong(x, y + 1));
                 }
                 long afterAdd = System.currentTimeMillis();
-                System.out.println("Connected size " + graph.getComponentAugmentation(vertices[0]));
+                System.out.println("Connected size " + graph.getComponentAugmentation(0));
                 for (int x = 0; x < SZ; x++) {
-                    graph.removeEdge(vertices[x * SZ + y], vertices[x * SZ + y + 1]);
+                    graph.removeEdge(toLong(x, y), toLong(x, y + 1));
                 }
-                System.out.println("Disconnected size " + graph.getComponentAugmentation(vertices[0]));
+                System.out.println("Disconnected size " + graph.getComponentAugmentation(0));
                 System.out.println("Took " + (System.currentTimeMillis() - afterAdd) + " to remove and " + (afterAdd - start) + " to add");
             }
 
             // entire column
-            System.out.println("Part size " + graph.getComponentAugmentation(vertices[0]));
+            System.out.println("Part size " + graph.getComponentAugmentation(0));
             {
                 int y = SZ / 2;
                 for (int x = 0; x < SZ; x++) {
-                    graph.addEdge(vertices[x * SZ + y], vertices[x * SZ + y + 1]);
+                    graph.addEdge(toLong(x, y), toLong(x, y + 1));
                 }
             }
-            System.out.println("Part size " + graph.getComponentAugmentation(vertices[0]));
+            System.out.println("Part size " + graph.getComponentAugmentation(0));
             long col = System.currentTimeMillis();
             {
                 int x = SZ / 2;
                 for (int y = 0; y < SZ; y++) {
-                    graph.removeEdge(vertices[x * SZ + y], vertices[(x + 1) * SZ + y]);
+                    graph.removeEdge(toLong(x, y), toLong(x + 1, y));
                 }
             }
-            System.out.println("Part size " + graph.getComponentAugmentation(vertices[0]));
+            System.out.println("Part size " + graph.getComponentAugmentation(0));
             System.out.println("Column took " + (System.currentTimeMillis() - col));
         }
     }
