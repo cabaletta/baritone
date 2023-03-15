@@ -49,11 +49,6 @@
   </repositories>
   <dependencies>
     <dependency>
-      <groupId>com.github.btrekkie</groupId>
-      <artifactId>RedBlackNode</artifactId>
-      <version>1.0.1</version>
-    </dependency>
-    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>4.13.1</version>
