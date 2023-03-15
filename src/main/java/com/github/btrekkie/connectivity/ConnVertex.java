@@ -20,10 +20,10 @@ public class ConnVertex {
      * A randomly generated integer to use as the return value of hashCode(). ConnGraph relies on random hash codes for
      * its performance guarantees.
      */
-    private final int hash;
+    private final long hash;
 
     public ConnVertex() {
-        hash = random.get().nextInt();
+        hash = random.get().nextLong();
     }
 
     /**
@@ -33,11 +33,15 @@ public class ConnVertex {
      *               codes for its performance guarantees.
      */
     public ConnVertex(Random random) {
-        hash = random.nextInt();
+        hash = random.nextLong();
     }
 
     @Override
     public int hashCode() {
+        throw new UnsupportedOperationException();
+    }
+
+    public long getIdentity(){
         return hash;
     }
 }

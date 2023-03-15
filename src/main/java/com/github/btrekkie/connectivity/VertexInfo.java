@@ -1,5 +1,7 @@
 package com.github.btrekkie.connectivity;
 
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -18,7 +20,7 @@ class VertexInfo {
      * vertex. Lookups take O(1) expected time and O(log N / log log N) time with high probability, because "edges" is a
      * HashMap, and ConnVertex.hashCode() returns a random integer.
      */
-    public Map<ConnVertex, ConnEdge> edges = new HashMap<ConnVertex, ConnEdge>();
+    public Long2ObjectOpenHashMap<ConnEdge> edges = new Long2ObjectOpenHashMap<>();
 
     public VertexInfo(EulerTourVertex vertex) {
         this.vertex = vertex;

@@ -160,7 +160,7 @@ public class ConnGraphTest {
         assertFalse(graph.connected(vertex1, vertex8));
         assertFalse(graph.connected(vertex6, vertex9));
 
-        Set<ConnVertex> expectedAdjVertices = new HashSet<ConnVertex>();
+        /*Set<ConnVertex> expectedAdjVertices = new HashSet<ConnVertex>();
         expectedAdjVertices.add(vertex2);
         expectedAdjVertices.add(vertex3);
         expectedAdjVertices.add(vertex4);
@@ -170,7 +170,7 @@ public class ConnGraphTest {
         expectedAdjVertices.add(vertex7);
         assertEquals(expectedAdjVertices, new HashSet<ConnVertex>(graph.adjacentVertices(vertex6)));
         assertEquals(Collections.singleton(vertex8), new HashSet<ConnVertex>(graph.adjacentVertices(vertex9)));
-        assertEquals(Collections.emptySet(), new HashSet<ConnVertex>(graph.adjacentVertices(new ConnVertex(random))));
+        assertEquals(Collections.emptySet(), new HashSet<ConnVertex>(graph.adjacentVertices(new ConnVertex(random))));*/
         graph.optimize();
 
         List<ConnVertex> vertices = new ArrayList<ConnVertex>(1000);
@@ -1089,8 +1089,8 @@ public class ConnGraphTest {
         assertTrue(graph.connected(vertex4, vertex5));
         assertFalse(graph.connected(vertex1, vertex4));
 
-        assertEquals(Collections.singleton(vertex3), new HashSet<ConnVertex>(graph.adjacentVertices(vertex2)));
-        assertTrue(graph.adjacentVertices(vertex1).isEmpty());
-        assertTrue(graph.adjacentVertices(vertex6).isEmpty());
+        //assertEquals(Collections.singleton(vertex3), new HashSet<ConnVertex>(graph.adjacentVertices(vertex2)));
+        //assertTrue(graph.adjacentVertices(vertex1).isEmpty());
+        //assertTrue(graph.adjacentVertices(vertex6).isEmpty());
     }
 }

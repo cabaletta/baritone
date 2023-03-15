@@ -1,5 +1,9 @@
 package com.github.btrekkie.connectivity;
 
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.longs.LongSet;
+import it.unimi.dsi.fastutil.longs.LongSets;
+
 import java.util.*;
 
 /**
@@ -122,7 +126,7 @@ public class ConnGraph {
      * expected time and O(log N / log log N) time with high probability, because vertexInfo is a HashMap, and
      * ConnVertex.hashCode() returns a random integer.
      */
-    private Map<ConnVertex, VertexInfo> vertexInfo = new HashMap<ConnVertex, VertexInfo>();
+    private Long2ObjectOpenHashMap<VertexInfo> vertexInfo = new Long2ObjectOpenHashMap<>();
 
     /**
      * Ceiling of log base 2 of the maximum number of vertices in this graph since the last rebuild. This is 0 if that
@@ -160,7 +164,7 @@ public class ConnGraph {
      * this graph (i.e. it does not have an entry in vertexInfo), this method adds it to the graph, and creates a
      * VertexInfo object for it.
      */
-    private VertexInfo ensureInfo(ConnVertex vertex) {
+    private VertexInfo ensureInfo(long vertex) {
         VertexInfo info = vertexInfo.get(vertex);
         if (info != null) {
             return info;
@@ -192,7 +196,7 @@ public class ConnGraph {
      * adjacent edges and does not have any augmentation information. This method assumes that the vertex is currently
      * in the graph.
      */
-    private void remove(ConnVertex vertex) {
+    private void remove(long vertex) {
         vertexInfo.remove(vertex);
         if (vertexInfo.size() << REBUILD_CHANGE <= 1 << maxLogVertexCountSinceRebuild) {
             rebuild();
@@ -532,8 +536,13 @@ public class ConnGraph {
      * @param srcInfo    The source vertex's info.
      * @param destVertex The destination vertex, i.e. the edge's key in srcInfo.edges.
      */
-    private void addToEdgeMap(ConnEdge edge, VertexInfo srcInfo, ConnVertex destVertex) {
+    private void addToEdgeMap(ConnEdge edge, VertexInfo srcInfo, long destVertex) {
         srcInfo.edges.put(destVertex, edge);
+    }
+
+    @Deprecated
+    public boolean addEdge(ConnVertex connVertex1, ConnVertex connVertex2) {
+        return addEdge(connVertex1.getIdentity(), connVertex2.getIdentity());
     }
 
     /**
@@ -542,7 +551,7 @@ public class ConnGraph {
      *
      * @return Whether there was no edge between the vertices.
      */
-    public boolean addEdge(ConnVertex connVertex1, ConnVertex connVertex2) {
+    public boolean addEdge(long connVertex1, long connVertex2) {
         if (connVertex1 == connVertex2) {
             throw new IllegalArgumentException("Self-loops are not allowed");
         }
@@ -774,9 +783,14 @@ public class ConnGraph {
      * Removes the edge from srcInfo to destVertex from the edge map for srcInfo (srcInfo.edges), if it is present.
      * Returns the edge that we removed, if any.
      */
-    private ConnEdge removeFromEdgeMap(VertexInfo srcInfo, ConnVertex destVertex) {
+    private ConnEdge removeFromEdgeMap(VertexInfo srcInfo, long destVertex) {
         ConnEdge edge = srcInfo.edges.remove(destVertex);
         return edge;
+    }
+
+    @Deprecated
+    public boolean removeEdge(ConnVertex vertex1, ConnVertex vertex2) {
+        return removeEdge(vertex1.getIdentity(), vertex2.getIdentity());
     }
 
     /**
@@ -785,7 +799,7 @@ public class ConnGraph {
      *
      * @return Whether there was an edge between the vertices.
      */
-    public boolean removeEdge(ConnVertex vertex1, ConnVertex vertex2) {
+    public boolean removeEdge(long vertex1, long vertex2) {
         if (vertex1 == vertex2) {
             throw new IllegalArgumentException("Self-loops are not allowed");
         }
@@ -881,11 +895,16 @@ public class ConnGraph {
         return true;
     }
 
+    @Deprecated
+    public boolean connected(ConnVertex vertex1, ConnVertex vertex2) {
+        return connected(vertex1.getIdentity(), vertex2.getIdentity());
+    }
+
     /**
      * Returns whether the specified vertices are connected - whether there is a path between them. Returns true if
      * vertex1 == vertex2. This method takes O(log N) time with high probability.
      */
-    public boolean connected(ConnVertex vertex1, ConnVertex vertex2) {
+    public boolean connected(long vertex1, long vertex2) {
         if (vertex1 == vertex2) {
             return true;
         }
@@ -900,13 +919,18 @@ public class ConnGraph {
     /**
      * Returns the vertices that are directly adjacent to the specified vertex.
      */
-    public Collection<ConnVertex> adjacentVertices(ConnVertex vertex) {
+    public LongSet adjacentVertices(long vertex) {
         VertexInfo info = vertexInfo.get(vertex);
         if (info != null) {
-            return new ArrayList<ConnVertex>(info.edges.keySet());
+            return info.edges.keySet();
         } else {
-            return Collections.emptyList();
+            return LongSets.emptySet();
         }
+    }
+
+    @Deprecated
+    public Object setVertexAugmentation(ConnVertex connVertex, Object vertexAugmentation) {
+        return setVertexAugmentation(connVertex.getIdentity(), vertexAugmentation);
     }
 
     /**
@@ -919,7 +943,7 @@ public class ConnGraph {
      * @return The augmentation that was previously associated with the vertex. Returns null if it did not have any
      * associated augmentation.
      */
-    public Object setVertexAugmentation(ConnVertex connVertex, Object vertexAugmentation) {
+    public Object setVertexAugmentation(long connVertex, Object vertexAugmentation) {
         assertIsAugmented();
         EulerTourVertex vertex = ensureInfo(connVertex).vertex;
         Object oldAugmentation = vertex.augmentation;
@@ -936,6 +960,11 @@ public class ConnGraph {
         return oldAugmentation;
     }
 
+    @Deprecated
+    public Object removeVertexAugmentation(ConnVertex connVertex) {
+        return removeVertexAugmentation(connVertex.getIdentity());
+    }
+
     /**
      * Removes any augmentation associated with the specified vertex. This method takes O(log N) time with high
      * probability.
@@ -943,7 +972,7 @@ public class ConnGraph {
      * @return The augmentation that was previously associated with the vertex. Returns null if it did not have any
      * associated augmentation.
      */
-    public Object removeVertexAugmentation(ConnVertex connVertex) {
+    public Object removeVertexAugmentation(long connVertex) {
         assertIsAugmented();
         VertexInfo info = vertexInfo.get(connVertex);
         if (info == null) {
@@ -966,11 +995,16 @@ public class ConnGraph {
         return oldAugmentation;
     }
 
+    @Deprecated
+    public Object getVertexAugmentation(ConnVertex vertex) {
+        return getVertexAugmentation(vertex.getIdentity());
+    }
+
     /**
      * Returns the augmentation associated with the specified vertex. Returns null if it does not have any associated
      * augmentation. At present, this method takes constant expected time. Contrast with getComponentAugmentation.
      */
-    public Object getVertexAugmentation(ConnVertex vertex) {
+    public Object getVertexAugmentation(long vertex) {
         assertIsAugmented();
         VertexInfo info = vertexInfo.get(vertex);
         if (info != null) {
@@ -980,12 +1014,17 @@ public class ConnGraph {
         }
     }
 
+    @Deprecated
+    public Object getComponentAugmentation(ConnVertex vertex) {
+        return getComponentAugmentation(vertex.getIdentity());
+    }
+
     /**
      * Returns the result of combining the augmentations associated with all of the vertices in the connected component
      * containing the specified vertex. Returns null if none of those vertices has any associated augmentation. This
      * method takes O(log N) time with high probability.
      */
-    public Object getComponentAugmentation(ConnVertex vertex) {
+    public Object getComponentAugmentation(long vertex) {
         assertIsAugmented();
         VertexInfo info = vertexInfo.get(vertex);
         if (info != null) {
@@ -995,11 +1034,16 @@ public class ConnGraph {
         }
     }
 
+    @Deprecated
+    public boolean vertexHasAugmentation(ConnVertex vertex) {
+        return vertexHasAugmentation(vertex.getIdentity());
+    }
+
     /**
      * Returns whether the specified vertex has any associated augmentation. At present, this method takes constant
      * expected time. Contrast with componentHasAugmentation.
      */
-    public boolean vertexHasAugmentation(ConnVertex vertex) {
+    public boolean vertexHasAugmentation(long vertex) {
         assertIsAugmented();
         VertexInfo info = vertexInfo.get(vertex);
         if (info != null) {
@@ -1009,11 +1053,16 @@ public class ConnGraph {
         }
     }
 
+    @Deprecated
+    public boolean componentHasAugmentation(ConnVertex vertex) {
+        return componentHasAugmentation(vertex.getIdentity());
+    }
+
     /**
      * Returns whether any of the vertices in the connected component containing the specified vertex has any associated
      * augmentation. This method takes O(log N) time with high probability.
      */
-    public boolean componentHasAugmentation(ConnVertex vertex) {
+    public boolean componentHasAugmentation(long vertex) {
         assertIsAugmented();
         VertexInfo info = vertexInfo.get(vertex);
         if (info != null) {
@@ -1030,7 +1079,7 @@ public class ConnGraph {
     public void clear() {
         // Note that we construct a new HashMap rather than calling vertexInfo.clear() in order to ensure a reduction in
         // space
-        vertexInfo = new HashMap<ConnVertex, VertexInfo>();
+        vertexInfo = new Long2ObjectOpenHashMap<>();
         maxLogVertexCountSinceRebuild = 0;
     }
 
