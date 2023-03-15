@@ -62,6 +62,7 @@ Baritone is the pathfinding system used in [Impact](https://impactclient.net/) s
 | [1.17.1 Forge](https://github.com/cabaletta/baritone/releases/download/v1.7.3/baritone-api-forge-1.7.3.jar)   | [1.17.1 Fabric](https://github.com/cabaletta/baritone/releases/download/v1.7.3/baritone-api-fabric-1.7.3.jar) |
 | [1.18.2 Forge](https://github.com/cabaletta/baritone/releases/download/v1.8.4/baritone-api-forge-1.8.4.jar)   | [1.18.2 Fabric](https://github.com/cabaletta/baritone/releases/download/v1.8.4/baritone-api-fabric-1.8.4.jar) |
 | [1.19.3 Forge](https://github.com/cabaletta/baritone/releases/download/v1.9.1/baritone-api-forge-1.9.1.jar)   | [1.19.3 Fabric](https://github.com/cabaletta/baritone/releases/download/v1.9.1/baritone-api-fabric-1.9.1.jar) |
+| | [1.19.4 Fabric](https://github.com/cabaletta/baritone/releases/download/v1.9.2/baritone-api-fabric-1.9.2.jar) |
 
 **How to immediately get started:** Type `#goto 1000 500` in chat to go to x=1000 z=500. Type `#mine diamond_ore` to mine diamond ore. Type `#stop` to stop. For more, read [the usage page](USAGE.md) and/or watch this [tutorial playlist](https://www.youtube.com/playlist?list=PLnwnJ1qsS7CoQl9Si-RTluuzCo_4Oulpa)
 
