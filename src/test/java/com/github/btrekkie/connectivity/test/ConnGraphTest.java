@@ -1,27 +1,118 @@
 package com.github.btrekkie.connectivity.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
-
-import org.junit.Test;
-
 import com.github.btrekkie.connectivity.ConnGraph;
 import com.github.btrekkie.connectivity.ConnVertex;
+import org.junit.Test;
+
+import java.util.*;
+
+import static org.junit.Assert.*;
 
 /* Note that most of the ConnGraphTest test methods use the one-argument ConnVertex constructor, in order to make their
  * behavior more predictable. That way, there are consistent test results, and test failures are easier to debug.
  */
 public class ConnGraphTest {
-    /** Tests ConnectivityGraph on a small forest and a binary tree-like subgraph. */
+
+    @Test
+    public void testPerformanceOnRepeatedConnectionAndDisconnection() {
+        for (int trial = 0; trial < 10; trial++) {
+            try {
+                Thread.sleep(2000);
+                System.gc();
+                Thread.sleep(2000);
+            } catch (InterruptedException ex) {}
+            long setup = System.currentTimeMillis();
+            ConnGraph graph = new ConnGraph((a, b) -> (Integer) a + (Integer) b);
+            int SZ = 1000;
+            ConnVertex[] vertices = new ConnVertex[SZ * SZ];
+            for (int i = 0; i < vertices.length; i++) {
+                vertices[i] = new ConnVertex();
+                graph.setVertexAugmentation(vertices[i], 1);
+            }
+            for (int x = 0; x < SZ; x++) {
+                if (x % 100 == 0) {
+                    System.out.println("Indicating progress: connected row " + x);
+                }
+                for (int y = 0; y < SZ; y++) {
+                    if (y != SZ - 1 && y != SZ / 2) { // leave graph disconnected in the center - two big areas with no connection
+                        graph.addEdge(vertices[x * SZ + y], vertices[x * SZ + y + 1]);
+                    }
+                    if (x != SZ - 1) {
+                        graph.addEdge(vertices[x * SZ + y], vertices[(x + 1) * SZ + y]);
+                    }
+                }
+            }
+            System.out.println("Setup took " + (System.currentTimeMillis() - setup));
+            System.out.println("Part size " + graph.getComponentAugmentation(vertices[0]));
+
+        /*
+        // previous test for cutting in half
+        long a = System.currentTimeMillis();
+        for (int x = 0; x < SZ; x++) {
+            int y = SZ / 2;
+            graph.removeEdge(vertices[x*SZ+y],vertices[x*SZ+y+1]);
+            System.out.println("Sz " + graph.getComponentAugmentation(vertices[0]));
+        }
+        System.out.println("Time: " + (System.currentTimeMillis() - a));
+        */
+
+            // try connecting and disconnecting one edge
+
+            for (int reconnectTrial = 0; reconnectTrial < 10; reconnectTrial++) { // then try connecting and disconnecting them
+                long start = System.currentTimeMillis();
+                int x = SZ / 2;
+                int y = SZ / 2;
+                graph.addEdge(vertices[x * SZ + y], vertices[x * SZ + y + 1]);
+                long afterAdd = System.currentTimeMillis();
+                System.out.println("Connected size " + graph.getComponentAugmentation(vertices[0]));
+                graph.removeEdge(vertices[x * SZ + y], vertices[x * SZ + y + 1]);
+                System.out.println("Disconnected size " + graph.getComponentAugmentation(vertices[0]));
+                System.out.println("Took " + (System.currentTimeMillis() - afterAdd) + " to remove and " + (afterAdd - start) + " to add");
+            }
+
+            System.out.println("entire row");
+
+            // now try connecting and disconnecting the entire row
+
+            for (int reconnectTrial = 0; reconnectTrial < 10; reconnectTrial++) { // then try connecting and disconnecting them
+                long start = System.currentTimeMillis();
+                int y = SZ / 2;
+                for (int x = 0; x < SZ; x++) {
+                    graph.addEdge(vertices[x * SZ + y], vertices[x * SZ + y + 1]);
+                }
+                long afterAdd = System.currentTimeMillis();
+                System.out.println("Connected size " + graph.getComponentAugmentation(vertices[0]));
+                for (int x = 0; x < SZ; x++) {
+                    graph.removeEdge(vertices[x * SZ + y], vertices[x * SZ + y + 1]);
+                }
+                System.out.println("Disconnected size " + graph.getComponentAugmentation(vertices[0]));
+                System.out.println("Took " + (System.currentTimeMillis() - afterAdd) + " to remove and " + (afterAdd - start) + " to add");
+            }
+
+            // entire column
+            System.out.println("Part size " + graph.getComponentAugmentation(vertices[0]));
+            {
+                int y = SZ / 2;
+                for (int x = 0; x < SZ; x++) {
+                    graph.addEdge(vertices[x * SZ + y], vertices[x * SZ + y + 1]);
+                }
+            }
+            System.out.println("Part size " + graph.getComponentAugmentation(vertices[0]));
+            long col = System.currentTimeMillis();
+            {
+                int x = SZ / 2;
+                for (int y = 0; y < SZ; y++) {
+                    graph.removeEdge(vertices[x * SZ + y], vertices[(x + 1) * SZ + y]);
+                }
+            }
+            System.out.println("Part size " + graph.getComponentAugmentation(vertices[0]));
+            System.out.println("Column took " + (System.currentTimeMillis() - col));
+        }
+    }
+
+    /**
+     * Tests ConnectivityGraph on a small forest and a binary tree-like subgraph.
+     */
     @Test
     public void testForestAndBinaryTree() {
         ConnGraph graph = new ConnGraph();
@@ -117,7 +208,9 @@ public class ConnGraphTest {
         assertTrue(graph.connected(vertices.get(991), vertices.get(999)));
     }
 
-    /** Tests ConnectivityGraph on a small graph that has cycles. */
+    /**
+     * Tests ConnectivityGraph on a small graph that has cycles.
+     */
     @Test
     public void testSmallCycles() {
         ConnGraph graph = new ConnGraph();
@@ -148,7 +241,9 @@ public class ConnGraphTest {
         assertFalse(graph.connected(vertex1, vertex4));
     }
 
-    /** Tests ConnectivityGraph on a grid-based graph. */
+    /**
+     * Tests ConnectivityGraph on a grid-based graph.
+     */
     @Test
     public void testGrid() {
         ConnGraph graph = new ConnGraph();
@@ -234,7 +329,9 @@ public class ConnGraphTest {
         assertFalse(graph.componentHasAugmentation(vertices.get(6).get(4)));
     }
 
-    /** Tests a graph with a hub-and-spokes subgraph and a clique subgraph. */
+    /**
+     * Tests a graph with a hub-and-spokes subgraph and a clique subgraph.
+     */
     @Test
     public void testWheelAndClique() {
         ConnGraph graph = new ConnGraph(SumAndMax.AUGMENTATION);
@@ -313,7 +410,7 @@ public class ConnGraphTest {
         assertEquals(new SumAndMax(9, 29), graph.setVertexAugmentation(clique.get(9), new SumAndMax(-20, 4)));
         for (int i = 0; i < 10; i++) {
             assertEquals(
-                new SumAndMax(i, i + 10), graph.setVertexAugmentation(spokes2.get(i), new SumAndMax(i - 1, i)));
+                    new SumAndMax(i, i + 10), graph.setVertexAugmentation(spokes2.get(i), new SumAndMax(i - 1, i)));
         }
         assertNull(graph.removeVertexAugmentation(hub));
         assertEquals(new SumAndMax(4, 4), graph.removeVertexAugmentation(spokes1.get(4)));
@@ -355,12 +452,13 @@ public class ConnGraphTest {
     /**
      * Sets the matching between vertices.get(columnIndex) and vertices.get(columnIndex + 1) to the permutation
      * suggested by newPermutation. See the comments for the implementation of testPermutations().
-     * @param graph The graph.
-     * @param vertices The vertices.
-     * @param columnIndex The index of the column.
+     *
+     * @param graph          The graph.
+     * @param vertices       The vertices.
+     * @param columnIndex    The index of the column.
      * @param oldPermutation The permutation for the current matching between vertices.get(columnIndex) and
-     *     vertices.get(columnIndex + 1). setPermutation removes the edges in this matching. If there are currently no
-     *     edges between those columns, then oldPermutation is null.
+     *                       vertices.get(columnIndex + 1). setPermutation removes the edges in this matching. If there are currently no
+     *                       edges between those columns, then oldPermutation is null.
      * @param newPermutation The permutation for the new matching.
      * @return newPermutation.
      */
@@ -467,7 +565,9 @@ public class ConnGraphTest {
         checkPermutation(graph, vertices, 7, new int[]{5, 2, 0, 6, 4, 7, 3, 1});
     }
 
-    /** Tests a graph based on the United States. */
+    /**
+     * Tests a graph based on the United States.
+     */
     @Test
     public void testUnitedStates() {
         ConnGraph graph = new ConnGraph(SumAndMax.AUGMENTATION);
@@ -876,7 +976,9 @@ public class ConnGraphTest {
         assertNull(graph.getComponentAugmentation(arkansas));
     }
 
-    /** Tests ConnectivityGraph on the graph for a dodecahedron. */
+    /**
+     * Tests ConnectivityGraph on the graph for a dodecahedron.
+     */
     @Test
     public void testDodecahedron() {
         ConnGraph graph = new ConnGraph();
@@ -957,7 +1059,9 @@ public class ConnGraphTest {
         assertFalse(graph.connected(vertex1, vertex2));
     }
 
-    /** Tests the zero-argument ConnVertex constructor. */
+    /**
+     * Tests the zero-argument ConnVertex constructor.
+     */
     @Test
     public void testDefaultConnVertexConstructor() {
         ConnGraph graph = new ConnGraph();
