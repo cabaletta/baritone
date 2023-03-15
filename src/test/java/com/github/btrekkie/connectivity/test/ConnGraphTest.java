@@ -2,6 +2,7 @@ package com.github.btrekkie.connectivity.test;
 
 import com.github.btrekkie.connectivity.ConnGraph;
 import com.github.btrekkie.connectivity.ConnVertex;
+import com.github.leijurv.EulerTourForest;
 import org.junit.Test;
 
 import java.util.*;
@@ -15,6 +16,7 @@ public class ConnGraphTest {
 
     @Test
     public void testPerformanceOnRepeatedConnectionAndDisconnection() {
+        EulerTourForest.sanityCheck();
         for (int trial = 0; trial < 10; trial++) {
             try {
                 Thread.sleep(2000);
