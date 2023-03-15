@@ -13,3 +13,13 @@ hs_err_pid*
 .DS_Store
 target/**
 !target/dynamic-connectivity*.jar
+
+
+# gradle
+build/
+.gradle/
+classes/
+*.class
+
+# intellij
+.idea/
