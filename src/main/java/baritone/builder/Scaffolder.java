@@ -17,13 +17,17 @@
 
 package baritone.builder;
 
+import baritone.api.utils.BetterBlockPos;
 import baritone.builder.DependencyGraphScaffoldingOverlay.CollapsedDependencyGraph;
 import baritone.builder.DependencyGraphScaffoldingOverlay.CollapsedDependencyGraph.CollapsedDependencyGraphComponent;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import it.unimi.dsi.fastutil.longs.*;
-import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.longs.LongList;
+import it.unimi.dsi.fastutil.longs.LongSets;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -77,23 +81,33 @@ public class Scaffolder {
         if (rootComponents.size() <= 1) {
             throw new IllegalStateException();
         }
-        CollapsedDependencyGraphComponent root = rootComponents.get(rootComponents.size() - 1); // don't remove yet since we aren't sure which way it'll merge (in theory, in practice it'll stop being a root when STRICT_Y is true, since it'll become a descendant, but in theory with STRICT_Y false it could merge on equal footing with another component)
-        if (!root.getIncoming().isEmpty()) {
-            throw new IllegalStateException();
-        }
-        LongList path = strategy.scaffoldTo(root, overlayGraph);
-        if (!root.getPositions().contains(path.get(path.size() - 1))) {
-            throw new IllegalStateException();
-        }
-        if (!componentLocations.containsKey(path.get(0))) {
-            throw new IllegalStateException();
-        }
-        for (int i = 1; i < path.size(); i++) {
-            if (!overlayGraph.hypotheticalScaffoldingIncomingEdge(path.get(i), Face.between(path.get(i), path.get(i - 1)))) {
+        for (CollapsedDependencyGraphComponent root : rootComponents) {
+            // don't remove from rootComponents yet since we aren't sure which way it'll merge (in theory, in practice it'll stop being a root when STRICT_Y is true, since it'll become a descendant, but in theory with STRICT_Y false it could merge on equal footing with another component)
+            if (!root.getIncoming().isEmpty()) {
                 throw new IllegalStateException();
             }
+            LongList path = strategy.scaffoldTo(root, overlayGraph);
+            if (path == null) {
+                continue;
+            }
+            if (!root.getPositions().contains(path.get(path.size() - 1))) {
+                throw new IllegalStateException();
+            }
+            if (root.getPositions().contains(path.get(0))) {
+                throw new IllegalStateException();
+            }
+            if (!componentLocations.containsKey(path.get(0))) {
+                throw new IllegalStateException();
+            }
+            for (int i = 1; i < path.size(); i++) {
+                if (!overlayGraph.hypotheticalScaffoldingIncomingEdge(path.get(i), Face.between(path.get(i), path.get(i - 1)))) {
+                    throw new IllegalStateException();
+                }
+            }
+            enable(path.subList(1, path.size() - 1));
+            return;
         }
-        enable(path.subList(1, path.size() - 1));
+        throw new IllegalStateException("unconnectable");
     }
 
     private void enable(LongList positions) {
@@ -102,6 +116,7 @@ public class Scaffolder {
                 throw new IllegalStateException();
             }
         });
+        System.out.println("Enabling " + positions.stream().map(BetterBlockPos::fromLong).collect(Collectors.toList()));
         int cid = collapsedGraph.lastComponentID().getAsInt();
 
         positions.forEach(overlayGraph::enable); // TODO more performant to enable in reverse order maybe?
@@ -110,6 +125,7 @@ public class Scaffolder {
         for (int i = cid + 1; i <= newCID; i++) {
             if (components.get(i) != null && components.get(i).getIncoming().isEmpty()) {
                 rootComponents.add(components.get(i));
+                System.out.println("Adding");
             }
         }
         // why is this valid?
@@ -120,20 +136,26 @@ public class Scaffolder {
         // but, dijkstra strategy skips merging roots with their descendants intentionally since it's useless to do so
         rootComponents.removeIf(root -> {
             if (root.deleted()) {
-                if (root.deletedIntoRecursive() <= cid) {
+                if (!rootComponents.contains(root.deletedIntoRecursive())) {
                     throw new IllegalStateException(); // sanity check the above - if this throws, i suspect it would mean that a root component was merged into one of its descendants by useless scaffolding
                     // if this ends up being unavoidable, then iterating over all deletedIntoRecursive of rootComponents should find all new rootComponents
                     // this is because all new scaffoldings have their own component, so the only way for an old component to have no incomings is if it was merged "the wrong way" with the root, which is easily locatable by deletedIntoRecursive
                 }
                 return true;
             }
+            if (!root.getIncoming().isEmpty()) { // handle the actual root itself that we just connected (hopefully)
+                return true;
+            }
             return false;
         });
+
         /*rootComponents.clear();
         rootComponents.addAll(calcRoots());*/
-
         if (Main.DEBUG) {
-            if (!rootComponents.equals(calcRoots())) {
+            if (!new HashSet<>(rootComponents).equals(new HashSet<>(calcRoots()))) { // equal ignoring order
+                // TODO rootComponents should be a Set instead of a List anyway
+                System.out.println(rootComponents);
+                System.out.println(calcRoots());
                 throw new IllegalStateException();
             }
         }
@@ -172,6 +194,10 @@ public class Scaffolder {
 
         public boolean air(long pos) {
             return overlayGraph.air(pos);
+        }
+
+        DependencyGraphScaffoldingOverlay secretInternalForTesting() {
+            return overlayGraph;
         }
     }
 }

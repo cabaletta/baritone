@@ -27,22 +27,23 @@ import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 
 import java.util.Random;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public class Main {
 
-    public static final boolean DEBUG = false;
-    public static final boolean SLOW_DEBUG = false;
-    public static final boolean VERY_SLOW_DEBUG = false;
+    public static final boolean DEBUG = true;
+    public static final boolean SLOW_DEBUG = true;
+    public static final boolean VERY_SLOW_DEBUG = true;
 
     /**
      * If true, many different parts of the builder switch to a more efficient mode where blocks can only be placed adjacent or upwards, never downwards
      */
     public static final boolean STRICT_Y = true;
 
-    public static final boolean fakePlacementForPerformanceTesting = true;
+    public static final boolean fakePlacementForPerformanceTesting = false;
 
     public static final IBlockStateDataProvider DATA_PROVIDER = new VanillaBlockStateDataProvider();
 
@@ -93,7 +94,7 @@ public class Main {
         {
             System.out.println(BetterBlockPos.fromLong(BetterBlockPos.toLong(150, 150, 150)));
         }
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 0; i++) {
             if (!fakePlacementForPerformanceTesting) {
                 // when facePlacement is off, then all the blocks in this test can be placed bidirectionally (since they're dirt)
                 // this causes the test to not actually be that interesting because there are no possible loops or diamond shapes in the graph
@@ -423,7 +424,7 @@ Branchy took 124ms
             if (fakePlacementForPerformanceTesting) {
                 throw new IllegalStateException("not compatible with this test");
             }
-            int[][][] test = new int[1][4][10];
+            int[][][] test = new int[8][8][8];
             int dirt = Block.BLOCK_STATE_IDS.get(Blocks.DIRT.getDefaultState());
             System.out.println("D " + dirt);
             for (int x = 0; x < test.length; x++) {
@@ -432,6 +433,25 @@ Branchy took 124ms
                     test[x][1][z] = dirt;
                 }
             }
+            test[5][5][5] = dirt;
+            test[5][5][6] = dirt;
+            test[0][5][5] = dirt;
+            Consumer<DependencyGraphScaffoldingOverlay> debug = dgso -> {
+                for (int y = 0; y < test[0].length; y++) {
+                    System.out.println("Layer " + y);
+                    for (int x = 0; x < test.length; x++) {
+                        for (int z = 0; z < test[0][0].length; z++) {
+                            long pos = BetterBlockPos.toLong(x, y, z);
+                            if (dgso.real(pos)) {
+                                System.out.print(dgso.getCollapsedGraph().getComponentLocations().get(pos).deletedIntoRecursive());
+                            } else {
+                                System.out.print(" ");
+                            }
+                        }
+                        System.out.println();
+                    }
+                }
+            };
             PackedBlockStateCuboid states = new PackedBlockStateCuboid(test);
             PlaceOrderDependencyGraph graph = new PlaceOrderDependencyGraph(states);
             System.out.println("N " + Face.NORTH.z);
@@ -449,6 +469,9 @@ Branchy took 124ms
                 System.out.println(value.getPositions().stream().map(BetterBlockPos::fromLong).collect(Collectors.toList()));
             });
             System.out.println();
+            debug.accept(scaffolding);
+            Scaffolder.Output out = Scaffolder.run(graph, DijkstraScaffolder.INSTANCE);
+            debug.accept(out.secretInternalForTesting());
         }
         System.exit(0);
     }

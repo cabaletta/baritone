@@ -17,11 +17,18 @@
 
 package baritone.builder;
 
+import baritone.api.utils.BetterBlockPos;
 import baritone.builder.DependencyGraphScaffoldingOverlay.CollapsedDependencyGraph.CollapsedDependencyGraphComponent;
-import it.unimi.dsi.fastutil.longs.*;
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.longs.LongArrayList;
+import it.unimi.dsi.fastutil.longs.LongIterator;
+import it.unimi.dsi.fastutil.longs.LongList;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 
-import java.util.*;
+import java.util.Comparator;
+import java.util.PriorityQueue;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public enum DijkstraScaffolder implements IScaffolderStrategy {
     INSTANCE;
@@ -39,6 +46,7 @@ public enum DijkstraScaffolder implements IScaffolderStrategy {
             long l = it.nextLong();
             nodeMap.put(l, new ScaffoldingSearchNode(l));
         }
+        System.out.println(root.getPositions().stream().map(BetterBlockPos::fromLong).collect(Collectors.toList()));
         openSet.addAll(nodeMap.values());
         while (!openSet.isEmpty()) {
             ScaffoldingSearchNode node = openSet.poll();
@@ -47,7 +55,7 @@ public enum DijkstraScaffolder implements IScaffolderStrategy {
                 if (exclusiveDescendents.contains(tentativeComponent)) { // TODO is exclusiveDescendants even valid? returning a route into one of the descendants, if it's on the top of the heap, is valid because it closes a loop and the next dijkstra can start from there? perhaps there's no need to treat descendant interactions differently from any other non-root component? EDIT: maybe it's good to prevent adding useless scaffolding that closes loops for no good reason?
                     // have gone back onto a descendent of this node
                     // sadly this can happen even at the same Y level even in Y_STRICT mode due to orientable blocks forming a loop
-                    continue; // TODO does this need to be here? can I expand THROUGH an unrelated component? probably requires testing, this is quite a mind bending possibility
+                    continue; // TODO does this need to be here? can I expand THROUGH an unrelated component? probably requires testing, this is quite a mind bending possibility. cost should be zero i think?
                 } else {
                     // found a path to a component that isn't a descendent of the root
                     if (tentativeComponent != root) { // but if it IS the root, then we're just on our first loop iteration, we are far from done
@@ -68,7 +76,10 @@ public enum DijkstraScaffolder implements IScaffolderStrategy {
                         // any position in the initial frontier is clearly in the node map, but also any node that has already been considered
                         // this prevents useless cycling of equivalent paths
                         // this is okay because all paths are equivalent, so there is no possible way to find a better path (because currently it's a fixed value for horizontal / vertical movements)
-                        if (existingNode.costSoFar != newCost && !root.getPositions().contains(neighborPos)) { // initialization nodes will have costSoFar = 0 as a base case
+                        if (existingNode.costSoFar > newCost && !root.getPositions().contains(node.pos)) { // initialization nodes will have costSoFar = 0 as a base case
+                            // note that obviously there is a loopback possibility: search one block north then one block south, you'll run into the same node again. that's fine - "costSoFar < newCost" doesn't mean anything
+                            // same for diagonals: one block north then one block down, versus one block down then one block north. that's also fine - "costSoFar == newCost" doesn't mean anything
+                            System.out.println(BetterBlockPos.fromLong(node.pos) + " to " + BetterBlockPos.fromLong(neighborPos) + " " + existingNode.costSoFar + " " + newCost + " " + root.getPositions().contains(node.pos) + " " + root.getPositions().contains(neighborPos) + " " + reconstructPathTo(node).stream().map(BetterBlockPos::fromLong).collect(Collectors.toList()) + " " + reconstructPathTo(existingNode).stream().map(BetterBlockPos::fromLong).collect(Collectors.toList()));
                             throw new IllegalStateException();
                         }
                         // TODO if root spans more than 1 y level, then this assumption is not correct because edgeCost is different for a horizontal vs vertical face, meaning that a neighbor can have different cost routes if both sideways and up are part of the root component
@@ -111,7 +122,7 @@ public enum DijkstraScaffolder implements IScaffolderStrategy {
         if (face.y == 0) {
             return 1;
         }
-        return 2;
+        return 1;
     }
 
     private static class ScaffoldingSearchNode {

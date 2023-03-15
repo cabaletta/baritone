@@ -225,9 +225,8 @@ public class DependencyGraphScaffoldingOverlay {
                 posToComponent.put(pos, parent);
             }
             components.remove(child.id);
-            child.deleted = true;
-            child.deletedInto = parent.id;
-            //System.out.println("Debug child contains: " + child.positions.contains(963549069314L) + " " + parent.positions.contains(963549069314L));
+            child.deletedInto = parent;
+            // TODO clear and trim child.positions? maybe unnecessary because nothing should retain a reference to child for longer than a moment
             return parent;
         }
 
@@ -324,8 +323,7 @@ public class DependencyGraphScaffoldingOverlay {
             private final Set<CollapsedDependencyGraphComponent> incomingEdges = new ObjectOpenHashSet<>();
             // if i change ^^ that "Set" to "ObjectOpenHashSet" it actually makes the bench about 15% SLOWER?!?!?
             private int y = -1;
-            private boolean deleted;
-            private int deletedInto;
+            private CollapsedDependencyGraphComponent deletedInto;
             private final Set<CollapsedDependencyGraphComponent> unmodifiableOutgoing = Collections.unmodifiableSet(outgoingEdges);
             private final Set<CollapsedDependencyGraphComponent> unmodifiableIncoming = Collections.unmodifiableSet(incomingEdges);
 
@@ -353,26 +351,43 @@ public class DependencyGraphScaffoldingOverlay {
             }
 
             public boolean deleted() {
-                return deleted;
+                return deletedInto != null;
             }
 
-            public int deletedIntoRecursive() { // what cid was this merged into that caused it to be deleted
-                if (!deleted) {
-                    return id;
+            public CollapsedDependencyGraphComponent deletedIntoRecursive() { // what cid was this merged into that caused it to be deleted
+                if (!deleted()) {
+                    return this;
                 }
-                return components.get(deletedInto).deletedIntoRecursive();
+                return deletedInto.deletedIntoRecursive();
             }
 
             public LongSet getPositions() {
+                if (deleted()) {
+                    throw new IllegalStateException();
+                }
                 return LongSets.unmodifiable(positions);
             }
 
             public Set<CollapsedDependencyGraphComponent> getIncoming() {
+                if (deleted()) {
+                    throw new IllegalStateException();
+                }
                 return unmodifiableIncoming;
             }
 
             public Set<CollapsedDependencyGraphComponent> getOutgoing() {
+                if (deleted()) {
+                    throw new IllegalStateException();
+                }
                 return unmodifiableOutgoing;
+            }
+
+            @Override
+            public String toString() {
+                if (!Main.DEBUG) {
+                    throw new IllegalStateException();
+                }
+                return "cid" + id;
             }
         }
 
