@@ -157,7 +157,7 @@ public final class BetterBlockPos {
         return false;
     }
 
-    public BetterBlockPos up() {
+    public BetterBlockPos upPlusY() {
         // this is unimaginably faster than blockpos.up
         // that literally calls
         // this.up(1)
@@ -170,50 +170,50 @@ public final class BetterBlockPos {
         return new BetterBlockPos(x, y + 1, z);
     }
 
-    public BetterBlockPos up(int amt) {
+    public BetterBlockPos upPlusY(int amt) {
         // see comment in up()
         return amt == 0 ? this : new BetterBlockPos(x, y + amt, z);
     }
 
-    public BetterBlockPos down() {
+    public BetterBlockPos downMinusY() {
         // see comment in up()
         return new BetterBlockPos(x, y - 1, z);
     }
 
-    public BetterBlockPos down(int amt) {
+    public BetterBlockPos downMinusY(int amt) {
         // see comment in up()
         return amt == 0 ? this : new BetterBlockPos(x, y - amt, z);
     }
 
-    public BetterBlockPos north() {
+    public BetterBlockPos northMinusZ() {
         return new BetterBlockPos(x, y, z - 1);
     }
 
-    public BetterBlockPos north(int amt) {
+    public BetterBlockPos northMinusZ(int amt) {
         return amt == 0 ? this : new BetterBlockPos(x, y, z - amt);
     }
 
-    public BetterBlockPos south() {
+    public BetterBlockPos southPlusZ() {
         return new BetterBlockPos(x, y, z + 1);
     }
 
-    public BetterBlockPos south(int amt) {
+    public BetterBlockPos southPlusZ(int amt) {
         return amt == 0 ? this : new BetterBlockPos(x, y, z + amt);
     }
 
-    public BetterBlockPos east() {
+    public BetterBlockPos eastPlusX() {
         return new BetterBlockPos(x + 1, y, z);
     }
 
-    public BetterBlockPos east(int amt) {
+    public BetterBlockPos eastPlusX(int amt) {
         return amt == 0 ? this : new BetterBlockPos(x + amt, y, z);
     }
 
-    public BetterBlockPos west() {
+    public BetterBlockPos westMinusX() {
         return new BetterBlockPos(x - 1, y, z);
     }
 
-    public BetterBlockPos west(int amt) {
+    public BetterBlockPos westMinusX(int amt) {
         return amt == 0 ? this : new BetterBlockPos(x - amt, y, z);
     }
 
