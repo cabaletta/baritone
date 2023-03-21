@@ -4,8 +4,6 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSets;
 
-import java.util.*;
-
 /**
  * Implements an undirected graph with dynamic connectivity. It supports adding and removing edges and determining
  * whether two vertices are connected - whether there is a path between them. Adding and removing edges take O(log^2 N)
@@ -924,7 +922,7 @@ public class ConnGraph {
         if (info != null) {
             return info.edges.keySet();
         } else {
-            return LongSets.emptySet();
+            return LongSets.EMPTY_SET;
         }
     }
 
