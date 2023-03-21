@@ -19,13 +19,29 @@ public class NavigableSurface {
         this.sizeY = y;
         this.sizeZ = z;
         this.blocks = new boolean[x][y][z];
-        this.connGraph = new ConnGraph((a, b) -> (Integer) a + (Integer) b);
+        this.connGraph = new ConnGraph(Attachment::new);
+    }
+
+    public static class Attachment {
+        public final int surfaceSize;
+
+        public Attachment(Object a, Object b) {
+            this((Attachment) a, (Attachment) b);
+        }
+
+        public Attachment(Attachment a, Attachment b) {
+            this.surfaceSize = a.surfaceSize + b.surfaceSize;
+        }
+
+        public Attachment() {
+            this.surfaceSize = 1;
+        }
     }
 
     public OptionalInt surfaceSize(BetterBlockPos pos) { // how big is the navigable surface from here? how many distinct coordinates can i walk to (in the future, the augmentation will probably have a list of those coordinates or something?)
         Object data = connGraph.getComponentAugmentation(pos.toLong());
         if (data != null) { // i disagree with the intellij suggestion here i think it makes it worse
-            return OptionalInt.of((Integer) data);
+            return OptionalInt.of(((Attachment) data).surfaceSize);
         } else {
             return OptionalInt.empty();
         }
@@ -45,7 +61,7 @@ public class NavigableSurface {
             boolean currentlyAllowed = canPlayerStandIn(couldHaveChanged);
             if (currentlyAllowed) {
                 // i'm sure this will get more complicated later
-                connGraph.setVertexAugmentation(couldHaveChanged.toLong(), 1);
+                connGraph.setVertexAugmentation(couldHaveChanged.toLong(), new Attachment());
             } else {
                 connGraph.removeVertexAugmentation(couldHaveChanged.toLong());
             }
