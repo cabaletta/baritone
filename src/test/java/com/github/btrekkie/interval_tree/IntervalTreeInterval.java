@@ -1,13 +1,22 @@
+/*
+ * This file was originally written by btrekkie under the MIT license, which is compatible with the LGPL license for this usage within Baritone
+ * https://github.com/btrekkie/RedBlackNode/
+ */
+
 package com.github.btrekkie.interval_tree;
 
 /**
  * An inclusive range of values [start, end].  Two intervals are equal if they have the same starting and ending values.
  */
 public class IntervalTreeInterval {
-    /** The smallest value in the range. */
+    /**
+     * The smallest value in the range.
+     */
     public final double start;
 
-    /** The largest value in the range. */
+    /**
+     * The largest value in the range.
+     */
     public final double end;
 
     public IntervalTreeInterval(double start, double end) {
@@ -22,7 +31,7 @@ public class IntervalTreeInterval {
         if (!(obj instanceof IntervalTreeInterval)) {
             return false;
         }
-        IntervalTreeInterval interval = (IntervalTreeInterval)obj;
+        IntervalTreeInterval interval = (IntervalTreeInterval) obj;
         return start == interval.start && end == interval.end;
     }
 }

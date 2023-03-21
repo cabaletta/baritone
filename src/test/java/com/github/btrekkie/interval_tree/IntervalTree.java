@@ -1,3 +1,8 @@
+/*
+ * This file was originally written by btrekkie under the MIT license, which is compatible with the LGPL license for this usage within Baritone
+ * https://github.com/btrekkie/RedBlackNode/
+ */
+
 package com.github.btrekkie.interval_tree;
 
 /**
@@ -8,16 +13,21 @@ package com.github.btrekkie.interval_tree;
  * interval.  Each node is augmented with the maximum ending value of an interval in the subtree rooted at the node.
  */
 public class IntervalTree {
-    /** The root node of the tree. */
+    /**
+     * The root node of the tree.
+     */
     private IntervalTreeNode root = IntervalTreeNode.LEAF;
 
-    /** Adds the specified interval to this. */
+    /**
+     * Adds the specified interval to this.
+     */
     public void addInterval(IntervalTreeInterval interval) {
         root = root.insert(new IntervalTreeNode(interval), true, null);
     }
 
     /**
      * Removes the specified interval from this, if it is present.
+     *
      * @param interval The interval.
      * @return Whether the interval was present.
      */

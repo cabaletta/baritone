@@ -1,19 +1,25 @@
+/*
+ * This file was originally written by btrekkie under the MIT license, which is compatible with the LGPL license for this usage within Baritone
+ * https://github.com/btrekkie/RedBlackNode/
+ */
+
 package com.github.btrekkie.arbitrary_order_collection.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import com.github.btrekkie.arbitrary_order_collection.ArbitraryOrderCollection;
+import com.github.btrekkie.arbitrary_order_collection.ArbitraryOrderValue;
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.junit.Test;
-
-import com.github.btrekkie.arbitrary_order_collection.ArbitraryOrderCollection;
-import com.github.btrekkie.arbitrary_order_collection.ArbitraryOrderValue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class ArbitraryOrderCollectionTest {
-    /** Tests ArbitraryOrderCollection. */
+    /**
+     * Tests ArbitraryOrderCollection.
+     */
     @Test
     public void test() {
         ArbitraryOrderCollection collection = new ArbitraryOrderCollection();

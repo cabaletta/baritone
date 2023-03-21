@@ -1,3 +1,8 @@
+/*
+ * This file was originally written by btrekkie under the MIT license, which is compatible with the LGPL license for this usage within Baritone
+ * https://github.com/btrekkie/RedBlackNode/
+ */
+
 package com.github.btrekkie.arbitrary_order_collection;
 
 /**
@@ -5,7 +10,9 @@ package com.github.btrekkie.arbitrary_order_collection;
  * compareTo.
  */
 public class ArbitraryOrderValue implements Comparable<ArbitraryOrderValue> {
-    /** The node that establishes this value's relative position. */
+    /**
+     * The node that establishes this value's relative position.
+     */
     final ArbitraryOrderNode node;
 
     ArbitraryOrderValue(ArbitraryOrderNode node) {

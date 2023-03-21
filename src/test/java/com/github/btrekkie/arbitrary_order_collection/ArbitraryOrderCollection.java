@@ -1,3 +1,8 @@
+/*
+ * This file was originally written by btrekkie under the MIT license, which is compatible with the LGPL license for this usage within Baritone
+ * https://github.com/btrekkie/RedBlackNode/
+ */
+
 package com.github.btrekkie.arbitrary_order_collection;
 
 import java.util.Comparator;
@@ -11,7 +16,9 @@ import java.util.Comparator;
 /* We implement an ArbitraryOrderCollection using a red-black tree.  We order the nodes arbitrarily.
  */
 public class ArbitraryOrderCollection {
-    /** The Comparator for ordering ArbitraryOrderNodes. */
+    /**
+     * The Comparator for ordering ArbitraryOrderNodes.
+     */
     private static final Comparator<ArbitraryOrderNode> NODE_COMPARATOR = new Comparator<ArbitraryOrderNode>() {
         @Override
         public int compare(ArbitraryOrderNode node1, ArbitraryOrderNode node2) {
@@ -19,10 +26,14 @@ public class ArbitraryOrderCollection {
         }
     };
 
-    /** The root node of the tree. */
+    /**
+     * The root node of the tree.
+     */
     private ArbitraryOrderNode root = new ArbitraryOrderNode();
 
-    /** Adds and returns a new value for ordering. */
+    /**
+     * Adds and returns a new value for ordering.
+     */
     public ArbitraryOrderValue createValue() {
         ArbitraryOrderNode node = new ArbitraryOrderNode();
         root = root.insert(node, true, NODE_COMPARATOR);

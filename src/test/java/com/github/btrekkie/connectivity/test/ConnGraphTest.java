@@ -1,3 +1,8 @@
+/*
+ * This file was originally written by btrekkie under the MIT license, which is compatible with the LGPL license for this usage within Baritone
+ * https://github.com/btrekkie/dynamic-connectivity/
+ */
+
 package com.github.btrekkie.connectivity.test;
 
 import baritone.builder.EulerTourForest;

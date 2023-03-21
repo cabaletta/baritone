@@ -1,13 +1,19 @@
+/*
+ * This file was originally written by btrekkie under the MIT license, which is compatible with the LGPL license for this usage within Baritone
+ * https://github.com/btrekkie/RedBlackNode/
+ */
+
 package com.github.btrekkie.sub_array_min.test;
+
+import com.github.btrekkie.sub_array_min.SubArrayMin;
+import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-import org.junit.Test;
-
-import com.github.btrekkie.sub_array_min.SubArrayMin;
-
 public class SubArrayMinTest {
-    /** Tests SubArrayMin. */
+    /**
+     * Tests SubArrayMin.
+     */
     @Test
     public void test() {
         SubArrayMin sam = new SubArrayMin();

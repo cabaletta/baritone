@@ -1,11 +1,12 @@
-package com.github.btrekkie.red_black_node;
+/*
+ * This file was originally written by btrekkie under the MIT license, which is compatible with the LGPL license for this usage within Baritone
+ * https://github.com/btrekkie/RedBlackNode/
+ */
+
+package baritone.builder.utils.com.github.btrekkie.red_black_node;
 
 import java.lang.reflect.Array;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
 
 /**
  * A node in a red-black tree ( https://en.wikipedia.org/wiki/Red%E2%80%93black_tree ). Compared to a class like Java's
@@ -13,20 +14,20 @@ import java.util.Set;
  * clients to directly observe and manipulate the structure of the tree. This gives clients flexibility, although it
  * also enables them to violate the red-black or BST properties. The RedBlackNode class provides methods for performing
  * various standard operations, such as insertion and removal.
- *
+ * <p>
  * Unlike most implementations of binary search trees, RedBlackNode supports arbitrary augmentation. By subclassing
  * RedBlackNode, clients can add arbitrary data and augmentation information to each node. For example, if we were to
  * use a RedBlackNode subclass to implement a sorted set, the subclass would have a field storing an element in the set.
  * If we wanted to keep track of the number of non-leaf nodes in each subtree, we would store this as a "size" field and
  * override augment() to update this field. All RedBlackNode methods (such as "insert" and remove()) call augment() as
  * necessary to correctly maintain the augmentation information, unless otherwise indicated.
- *
+ * <p>
  * The values of the tree are stored in the non-leaf nodes. RedBlackNode does not support use cases where values must be
  * stored in the leaf nodes. It is recommended that all of the leaf nodes in a given tree be the same (black)
  * RedBlackNode instance, to save space. The root of an empty tree is a leaf node, as opposed to null.
- *
+ * <p>
  * For reference, a red-black tree is a binary search tree satisfying the following properties:
- *
+ * <p>
  * - Every node is colored red or black.
  * - The leaf nodes, which are dummy nodes that do not store any values, are colored black.
  * - The root is black.
@@ -34,11 +35,13 @@ import java.util.Set;
  * - Every path from the root to a leaf contains the same number of black nodes.
  *
  * @param <N> The type of node in the tree. For example, we might have
- *     "class FooNode<T> extends RedBlackNode<FooNode<T>>".
+ *            "class FooNode<T> extends RedBlackNode<FooNode<T>>".
  * @author Bill Jacobs
  */
 public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Comparable<N> {
-    /** A Comparator that compares Comparable elements using their natural order. */
+    /**
+     * A Comparator that compares Comparable elements using their natural order.
+     */
     private static final Comparator<Comparable<Object>> NATURAL_ORDER = new Comparator<Comparable<Object>>() {
         @Override
         public int compare(Comparable<Object> value1, Comparable<Object> value2) {
@@ -46,16 +49,24 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
         }
     };
 
-    /** The parent of this node, if any.  "parent" is null if this is a leaf node. */
+    /**
+     * The parent of this node, if any.  "parent" is null if this is a leaf node.
+     */
     public N parent;
 
-    /** The left child of this node.  "left" is null if this is a leaf node. */
+    /**
+     * The left child of this node.  "left" is null if this is a leaf node.
+     */
     public N left;
 
-    /** The right child of this node.  "right" is null if this is a leaf node. */
+    /**
+     * The right child of this node.  "right" is null if this is a leaf node.
+     */
     public N right;
 
-    /** Whether the node is colored red, as opposed to black. */
+    /**
+     * Whether the node is colored red, as opposed to black.
+     */
     public boolean isRed;
 
     /**
@@ -63,12 +74,12 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
      * example, if we augment each node by subtree size (the number of non-leaf nodes in the subtree), this method would
      * set the size field of this node to be equal to the size field of the left child plus the size field of the right
      * child plus one.
-     *
+     * <p>
      * "Augmentation information" is information that we can compute about a subtree rooted at some node, preferably
      * based only on the augmentation information in the node's two children and the information in the node.  Examples
      * of augmentation information are the sum of the values in a subtree and the number of non-leaf nodes in a subtree.
      * Augmentation information may not depend on the colors of the nodes.
-     *
+     * <p>
      * This method returns whether the augmentation information in any of the ancestors of this node might have been
      * affected by changes in this subtree since the last call to augment().  In the usual case, where the augmentation
      * information depends only on the information in this node and the augmentation information in its immediate
@@ -77,7 +88,7 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
      * calling augment() differed from the size field of the left child plus the size field of the right child plus one.
      * False positives are permitted.  The return value is unspecified if we have not called augment() on this node
      * before.
-     *
+     * <p>
      * This method may assume that this is not a leaf node.  It may not assume that the augmentation information stored
      * in any of the tree's nodes is correct.  However, if the augmentation information stored in all of the node's
      * descendants is correct, then the augmentation information stored in this node must be correct after calling
@@ -92,7 +103,7 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
      * of RedBlackNode.  For example, if this stores the size of the subtree rooted at this node, this should throw a
      * RuntimeException if the size field of this is not equal to the size field of the left child plus the size field
      * of the right child plus one.  Note that we may call this on a leaf node.
-     *
+     * <p>
      * assertSubtreeIsValid() calls assertNodeIsValid() on each node, or at least starts to do so until it detects a
      * problem.  assertNodeIsValid() should assume the node is in a tree that satisfies all properties common to all
      * red-black trees, as assertSubtreeIsValid() is responsible for such checks.  assertNodeIsValid() should be
@@ -105,58 +116,68 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
 
     }
 
-    /** Returns whether this is a leaf node. */
+    /**
+     * Returns whether this is a leaf node.
+     */
     public boolean isLeaf() {
         return left == null;
     }
 
-    /** Returns the root of the tree that contains this node. */
+    /**
+     * Returns the root of the tree that contains this node.
+     */
     public N root() {
         @SuppressWarnings("unchecked")
-        N node = (N)this;
+        N node = (N) this;
         while (node.parent != null) {
             node = node.parent;
         }
         return node;
     }
 
-    /** Returns the first node in the subtree rooted at this node, if any. */
+    /**
+     * Returns the first node in the subtree rooted at this node, if any.
+     */
     public N min() {
         if (isLeaf()) {
             return null;
         }
         @SuppressWarnings("unchecked")
-        N node = (N)this;
+        N node = (N) this;
         while (!node.left.isLeaf()) {
             node = node.left;
         }
         return node;
     }
 
-    /** Returns the last node in the subtree rooted at this node, if any. */
+    /**
+     * Returns the last node in the subtree rooted at this node, if any.
+     */
     public N max() {
         if (isLeaf()) {
             return null;
         }
         @SuppressWarnings("unchecked")
-        N node = (N)this;
+        N node = (N) this;
         while (!node.right.isLeaf()) {
             node = node.right;
         }
         return node;
     }
 
-    /** Returns the node immediately before this in the tree that contains this node, if any. */
+    /**
+     * Returns the node immediately before this in the tree that contains this node, if any.
+     */
     public N predecessor() {
         if (!left.isLeaf()) {
             N node;
-            for (node = left; !node.right.isLeaf(); node = node.right);
+            for (node = left; !node.right.isLeaf(); node = node.right) ;
             return node;
         } else if (parent == null) {
             return null;
         } else {
             @SuppressWarnings("unchecked")
-            N node = (N)this;
+            N node = (N) this;
             while (node.parent != null && node.parent.left == node) {
                 node = node.parent;
             }
@@ -164,17 +185,19 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
         }
     }
 
-    /** Returns the node immediately after this in the tree that contains this node, if any. */
+    /**
+     * Returns the node immediately after this in the tree that contains this node, if any.
+     */
     public N successor() {
         if (!right.isLeaf()) {
             N node;
-            for (node = right; !node.left.isLeaf(); node = node.left);
+            for (node = right; !node.left.isLeaf(); node = node.left) ;
             return node;
         } else if (parent == null) {
             return null;
         } else {
             @SuppressWarnings("unchecked")
-            N node = (N)this;
+            N node = (N) this;
             while (node.parent != null && node.parent.right == node) {
                 node = node.parent;
             }
@@ -186,6 +209,7 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
      * Performs a left rotation about this node. This method assumes that !isLeaf() && !right.isLeaf(). It calls
      * augment() on this node and on its resulting parent. However, it does not call augment() on any of the resulting
      * parent's ancestors, because that is normally the responsibility of the caller.
+     *
      * @return The return value from calling augment() on the resulting parent.
      */
     public boolean rotateLeft() {
@@ -195,7 +219,7 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
         N newParent = right;
         right = newParent.left;
         @SuppressWarnings("unchecked")
-        N nThis = (N)this;
+        N nThis = (N) this;
         if (!right.isLeaf()) {
             right.parent = nThis;
         }
@@ -217,6 +241,7 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
      * Performs a right rotation about this node. This method assumes that !isLeaf() && !left.isLeaf(). It calls
      * augment() on this node and on its resulting parent. However, it does not call augment() on any of the resulting
      * parent's ancestors, because that is normally the responsibility of the caller.
+     *
      * @return The return value from calling augment() on the resulting parent.
      */
     public boolean rotateRight() {
@@ -226,7 +251,7 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
         N newParent = left;
         left = newParent.right;
         @SuppressWarnings("unchecked")
-        N nThis = (N)this;
+        N nThis = (N) this;
         if (!left.isLeaf()) {
             left.parent = nThis;
         }
@@ -250,6 +275,7 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
      * red.  node.isRed must initially be true.  This method assumes that this is not a leaf node.  The method performs
      * any rotations by calling rotateLeft() and rotateRight().  This method is more efficient than fixInsertion if
      * "augment" is false or augment() might return false.
+     *
      * @param augment Whether to set the augmentation information for "node" and its ancestors, by calling augment().
      */
     public void fixInsertionWithoutGettingRoot(boolean augment) {
@@ -337,6 +363,7 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
      * of red-black trees, except that this may be a red child of a red node, and if this is the root, the root may be
      * red.  node.isRed must initially be true.  This method assumes that this is not a leaf node.  The method performs
      * any rotations by calling rotateLeft() and rotateRight().
+     *
      * @param augment Whether to set the augmentation information for "node" and its ancestors, by calling augment().
      * @return The root of the resulting tree.
      */
@@ -350,6 +377,7 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
      * of red-black trees, except that this may be a red child of a red node, and if this is the root, the root may be
      * red.  node.isRed must initially be true.  This method assumes that this is not a leaf node.  The method performs
      * any rotations by calling rotateLeft() and rotateRight().
+     *
      * @return The root of the resulting tree.
      */
     public N fixInsertion() {
@@ -357,27 +385,29 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
         return root();
     }
 
-    /** Returns a Comparator that compares instances of N using their natural order, as in N.compareTo. */
+    /**
+     * Returns a Comparator that compares instances of N using their natural order, as in N.compareTo.
+     */
     @SuppressWarnings({"rawtypes", "unchecked"})
     private Comparator<N> naturalOrder() {
-        Comparator comparator = (Comparator)NATURAL_ORDER;
-        return (Comparator<N>)comparator;
+        Comparator comparator = (Comparator) NATURAL_ORDER;
+        return (Comparator<N>) comparator;
     }
 
     /**
      * Inserts the specified node into the tree rooted at this node. Assumes this is the root. We treat newNode as a
      * solitary node that does not belong to any tree, and we ignore its initial "parent", "left", "right", and isRed
      * fields.
-     *
+     * <p>
      * If it is not efficient or convenient to find the location for a node using a Comparator, then you should manually
      * add the node to the appropriate location, color it red, and call fixInsertion().
      *
-     * @param newNode The node to insert.
+     * @param newNode         The node to insert.
      * @param allowDuplicates Whether to insert newNode if there is an equal node in the tree. To check whether we
-     *     inserted newNode, check whether newNode.parent is null and the return value differs from newNode.
-     * @param comparator A comparator indicating where to put the node. If this is null, we use the nodes' natural
-     *     order, as in N.compareTo. If you are passing null, then you must override the compareTo method, because the
-     *     default implementation requires the nodes to already be in the same tree.
+     *                        inserted newNode, check whether newNode.parent is null and the return value differs from newNode.
+     * @param comparator      A comparator indicating where to put the node. If this is null, we use the nodes' natural
+     *                        order, as in N.compareTo. If you are passing null, then you must override the compareTo method, because the
+     *                        default implementation requires the nodes to already be in the same tree.
      * @return The root of the resulting tree.
      */
     public N insert(N newNode, boolean allowDuplicates, Comparator<? super N> comparator) {
@@ -385,7 +415,7 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
             throw new IllegalArgumentException("This is not the root of a tree");
         }
         @SuppressWarnings("unchecked")
-        N nThis = (N)this;
+        N nThis = (N) this;
         if (isLeaf()) {
             newNode.isRed = false;
             newNode.left = nThis;
@@ -434,6 +464,7 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
     /**
      * Moves this node to its successor's former position in the tree and vice versa, i.e. sets the "left", "right",
      * "parent", and isRed fields of each.  This method assumes that this is not a leaf node.
+     *
      * @return The node with which we swapped.
      */
     private N swapWithSuccessor() {
@@ -456,7 +487,7 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
         }
 
         @SuppressWarnings("unchecked")
-        N nThis = (N)this;
+        N nThis = (N) this;
         isRed = oldReplacementIsRed;
         left = oldReplacementLeft;
         right = oldReplacementRight;
@@ -573,7 +604,7 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
      * Removes this node from the tree that contains it.  The effect of this method on the fields of this node is
      * unspecified.  This method assumes that this is not a leaf node.  This method is more efficient than remove() if
      * augment() might return false.
-     *
+     * <p>
      * If the node has two children, we begin by moving the node's successor to its former position, by changing the
      * successor's "left", "right", "parent", and isRed fields.
      */
@@ -663,7 +694,7 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
     /**
      * Removes this node from the tree that contains it.  The effect of this method on the fields of this node is
      * unspecified.  This method assumes that this is not a leaf node.
-     *
+     * <p>
      * If the node has two children, we begin by moving the node's successor to its former position, by changing the
      * successor's "left", "right", "parent", and isRed fields.
      *
@@ -695,13 +726,14 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
      * "iterator", in iteration order.  This method is responsible for setting the "left", "right", "parent", and isRed
      * fields of the nodes, and calling augment() as appropriate.  It ignores the initial values of the "left", "right",
      * "parent", and isRed fields.
+     *
      * @param iterator The nodes.
-     * @param size The number of nodes.
-     * @param height The "height" of the subtree's root node above the deepest leaf in the tree that contains it.  Since
-     *     insertion fixup is slow if there are too many red nodes and deleteion fixup is slow if there are too few red
-     *     nodes, we compromise and have red nodes at every fourth level.  We color a node red iff its "height" is equal
-     *     to 1 mod 4.
-     * @param leaf The leaf node.
+     * @param size     The number of nodes.
+     * @param height   The "height" of the subtree's root node above the deepest leaf in the tree that contains it.  Since
+     *                 insertion fixup is slow if there are too many red nodes and deleteion fixup is slow if there are too few red
+     *                 nodes, we compromise and have red nodes at every fourth level.  We color a node red iff its "height" is equal
+     *                 to 1 mod 4.
+     * @param leaf     The leaf node.
      * @return The root of the subtree.
      */
     private static <N extends RedBlackNode<N>> N createTree(
@@ -733,8 +765,9 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
      * method is responsible for setting the "left", "right", "parent", and isRed fields of the nodes (excluding
      * "leaf"), and calling augment() as appropriate. It ignores the initial values of the "left", "right", "parent",
      * and isRed fields.
+     *
      * @param nodes The nodes.
-     * @param leaf The leaf node.
+     * @param leaf  The leaf node.
      * @return The root of the tree.
      */
     public static <N extends RedBlackNode<N>> N createTree(Collection<? extends N> nodes, N leaf) {
@@ -760,7 +793,7 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
      * all of these nodes.  This method destroys the trees rooted at "this" and "last".  We treat "pivot" as a solitary
      * node that does not belong to any tree, and we ignore its initial "parent", "left", "right", and isRed fields.
      * This method assumes that this node and "last" are the roots of their respective trees.
-     *
+     * <p>
      * This method takes O(log N) time.  It is more efficient than inserting "pivot" and then calling concatenate(last).
      * It is considerably more efficient than inserting "pivot" and all of the nodes in "last".
      */
@@ -781,7 +814,7 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
         // Compute the black height of the trees
         int firstBlackHeight = 0;
         @SuppressWarnings("unchecked")
-        N first = (N)this;
+        N first = (N) this;
         for (N node = first; node != null; node = node.right) {
             if (!node.isRed) {
                 firstBlackHeight++;
@@ -866,7 +899,7 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
             return last;
         } else if (last.isLeaf()) {
             @SuppressWarnings("unchecked")
-            N nThis = (N)this;
+            N nThis = (N) this;
             return nThis;
         } else {
             N node = last.min();
@@ -882,6 +915,7 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
      * destructive, meaning it does not preserve the original tree. It assumes that this node is the root and is in the
      * same tree as splitNode. It takes O(log N) time. It is considerably more efficient than removing all of the
      * nodes at or after splitNode and then creating a new tree from those nodes.
+     *
      * @param The node at which to split the tree.
      * @return An array consisting of the resulting trees.
      */
@@ -927,7 +961,7 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
         }
 
         @SuppressWarnings("unchecked")
-        N node = (N)this;
+        N node = (N) this;
         N first = null;
         N firstParent = null;
         N last = null;
@@ -1080,7 +1114,7 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
         last.augment();
 
         @SuppressWarnings("unchecked")
-        N[] result = (N[])Array.newInstance(getClass(), 2);
+        N[] result = (N[]) Array.newInstance(getClass(), 2);
         result[0] = first;
         result[1] = last;
         return result;
@@ -1090,7 +1124,7 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
      * Returns the lowest common ancestor of this node and "other" - the node that is an ancestor of both and is not the
      * parent of a node that is an ancestor of both. Assumes that this is in the same tree as "other". Assumes that
      * neither "this" nor "other" is a leaf node. This method may return "this" or "other".
-     *
+     * <p>
      * Note that while it is possible to compute the lowest common ancestor in O(P) time, where P is the length of the
      * path from this node to "other", the "lca" method is not guaranteed to take O(P) time. If your application
      * requires this, then you should write your own lowest common ancestor method.
@@ -1112,7 +1146,7 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
 
         // Go up to nodes of the same depth
         @SuppressWarnings("unchecked")
-        N parent = (N)this;
+        N parent = (N) this;
         N otherParent = other;
         if (depth <= otherDepth) {
             for (int i = otherDepth; i > depth; i--) {
@@ -1140,10 +1174,10 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
      * Returns an integer comparing the position of this node in the tree that contains it with that of "other". Returns
      * a negative number if this is earlier, a positive number if this is later, and 0 if this is at the same position.
      * Assumes that this is in the same tree as "other". Assumes that neither "this" nor "other" is a leaf node.
-     *
+     * <p>
      * The base class's implementation takes O(log N) time. If a RedBlackNode subclass stores a value used to order the
      * nodes, then it could override compareTo to compare the nodes' values, which would take O(1) time.
-     *
+     * <p>
      * Note that while it is possible to compare the positions of two nodes in O(P) time, where P is the length of the
      * path from this node to "other", the default implementation of compareTo is not guaranteed to take O(P) time. If
      * your application requires this, then you should write your own comparison method.
@@ -1222,7 +1256,9 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
         }
     }
 
-    /** Throws a RuntimeException if the RedBlackNode fields of this are not correct for a leaf node. */
+    /**
+     * Throws a RuntimeException if the RedBlackNode fields of this are not correct for a leaf node.
+     */
     private void assertIsValidLeaf() {
         if (left != null || right != null || parent != null || isRed) {
             throw new RuntimeException("A leaf node's \"left\", \"right\", \"parent\", or isRed field is incorrect");
@@ -1232,14 +1268,15 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
     /**
      * Throws a RuntimeException if the subtree rooted at this node does not satisfy the red-black properties, excluding
      * the requirement that the root be black, or it contains a repeated node other than a leaf node.
+     *
      * @param blackHeight The required number of black nodes in each path from this to a leaf node, including this and
-     *     the leaf node.
-     * @param visited The nodes we have reached thus far, other than leaf nodes. This method adds the non-leaf nodes in
-     *     the subtree rooted at this node to "visited".
+     *                    the leaf node.
+     * @param visited     The nodes we have reached thus far, other than leaf nodes. This method adds the non-leaf nodes in
+     *                    the subtree rooted at this node to "visited".
      */
     private void assertSubtreeIsValidRedBlack(int blackHeight, Set<Reference<N>> visited) {
         @SuppressWarnings("unchecked")
-        N nThis = (N)this;
+        N nThis = (N) this;
         if (left == null || right == null) {
             assertIsValidLeaf();
             if (blackHeight != 1) {
@@ -1274,7 +1311,9 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
         }
     }
 
-    /** Calls assertNodeIsValid() on every node in the subtree rooted at this node. */
+    /**
+     * Calls assertNodeIsValid() on every node in the subtree rooted at this node.
+     */
     private void assertNodesAreValid() {
         assertNodeIsValid();
         if (left != null) {
@@ -1302,7 +1341,7 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
             Set<Reference<N>> nodes = new HashSet<Reference<N>>();
             int blackHeight = 0;
             @SuppressWarnings("unchecked")
-            N node = (N)this;
+            N node = (N) this;
             while (node != null) {
                 if (!nodes.add(new Reference<N>(node))) {
                     throw new RuntimeException("The tree contains a repeated non-leaf node");
@@ -1331,14 +1370,15 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
      * Throws a RuntimeException if the nodes in the subtree rooted at this node are not in the specified order or they
      * do not lie in the specified range.  Assumes that the subtree rooted at this node is a valid binary tree, i.e. it
      * has no repeated nodes other than leaf nodes.
+     *
      * @param comparator A comparator indicating how the nodes should be ordered.
-     * @param start The lower limit for nodes in the subtree, if any.
-     * @param end The upper limit for nodes in the subtree, if any.
+     * @param start      The lower limit for nodes in the subtree, if any.
+     * @param end        The upper limit for nodes in the subtree, if any.
      */
     private void assertOrderIsValid(Comparator<? super N> comparator, N start, N end) {
         if (!isLeaf()) {
             @SuppressWarnings("unchecked")
-            N nThis = (N)this;
+            N nThis = (N) this;
             if (start != null && comparator.compare(nThis, start) < 0) {
                 throw new RuntimeException("The nodes are not ordered correctly");
             }
@@ -1357,8 +1397,9 @@ public abstract class RedBlackNode<N extends RedBlackNode<N>> implements Compara
      * Assumes that this is a valid binary tree, i.e. there are no repeated nodes other than leaf nodes.  This method is
      * useful for debugging.  RedBlackNode subclasses may want to override assertSubtreeIsValid() to call
      * assertOrderIsValid.
+     *
      * @param comparator A comparator indicating how the nodes should be ordered.  If this is null, we use the nodes'
-     *     natural order, as in N.compareTo.
+     *                   natural order, as in N.compareTo.
      */
     public void assertOrderIsValid(Comparator<? super N> comparator) {
         if (comparator == null) {

@@ -1,19 +1,34 @@
+/*
+ * This file was originally written by btrekkie under the MIT license, which is compatible with the LGPL license for this usage within Baritone
+ * https://github.com/btrekkie/RedBlackNode/
+ */
+
 package com.github.btrekkie.sub_array_min;
 
-import com.github.btrekkie.red_black_node.RedBlackNode;
+import baritone.builder.utils.com.github.btrekkie.red_black_node.RedBlackNode;
 
-/** A node in a SubArrayMin object.  See the comments for the implementation of that class. */
+/**
+ * A node in a SubArrayMin object.  See the comments for the implementation of that class.
+ */
 class SubArrayMinNode extends RedBlackNode<SubArrayMinNode> {
-    /** The dummy leaf node. */
+    /**
+     * The dummy leaf node.
+     */
     public static final SubArrayMinNode LEAF = new SubArrayMinNode();
 
-    /** The element stored in the node.  The value is unspecified if this is a leaf node. */
+    /**
+     * The element stored in the node.  The value is unspecified if this is a leaf node.
+     */
     public final int value;
 
-    /** The number of elements in the subtree rooted at this node. */
+    /**
+     * The number of elements in the subtree rooted at this node.
+     */
     public int size;
 
-    /** The minimum element in the subtree rooted at this node.  This is Integer.MAX_VALUE if this is a leaf node. */
+    /**
+     * The minimum element in the subtree rooted at this node.  This is Integer.MAX_VALUE if this is a leaf node.
+     */
     public int min;
 
     public SubArrayMinNode(int value) {

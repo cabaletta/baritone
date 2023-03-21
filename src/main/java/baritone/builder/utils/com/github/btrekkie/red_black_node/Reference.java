@@ -1,12 +1,20 @@
-package com.github.btrekkie.red_black_node;
+/*
+ * This file was originally written by btrekkie under the MIT license, which is compatible with the LGPL license for this usage within Baritone
+ * https://github.com/btrekkie/RedBlackNode/
+ */
+
+package baritone.builder.utils.com.github.btrekkie.red_black_node;
 
 /**
  * Wraps a value using reference equality.  In other words, two references are equal only if their values are the same
  * object instance, as in ==.
+ *
  * @param <T> The type of value.
  */
 class Reference<T> {
-    /** The value this wraps. */
+    /**
+     * The value this wraps.
+     */
     private final T value;
 
     public Reference(T value) {
@@ -17,7 +25,7 @@ class Reference<T> {
         if (!(obj instanceof Reference)) {
             return false;
         }
-        Reference<?> reference = (Reference<?>)obj;
+        Reference<?> reference = (Reference<?>) obj;
         return value == reference.value;
     }
 

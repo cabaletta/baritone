@@ -1,17 +1,20 @@
+/*
+ * This file was originally written by btrekkie under the MIT license, which is compatible with the LGPL license for this usage within Baritone
+ * https://github.com/btrekkie/RedBlackNode/
+ */
+
 package com.github.btrekkie.interval_tree.test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
-import org.junit.Test;
 
 import com.github.btrekkie.interval_tree.IntervalTree;
 import com.github.btrekkie.interval_tree.IntervalTreeInterval;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
 
 public class IntervalTreeTest {
-    /** Tests IntervalTree. */
+    /**
+     * Tests IntervalTree.
+     */
     @Test
     public void test() {
         IntervalTree tree = new IntervalTree();

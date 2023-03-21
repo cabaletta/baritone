@@ -1,11 +1,16 @@
+/*
+ * This file was originally written by btrekkie under the MIT license, which is compatible with the LGPL license for this usage within Baritone
+ * https://github.com/btrekkie/RedBlackNode/
+ */
+
 package com.github.btrekkie.red_black_node.test;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import org.junit.Test;
 
 import java.util.Comparator;
 
-import org.junit.Test;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests RedBlackNode.  Most of the testing for RedBlackNode takes place in TreeListTest, IntervalTreeTest,
@@ -30,8 +35,9 @@ public class RedBlackNodeTest {
     /**
      * Returns whether the nodes in the subtree rooted at the specified node are ordered correctly, as in
      * TestRedBlackNode.assertOrderIsValid.
+     *
      * @param comparator A comparator indicating how the nodes should be ordered.  If this is null, we use the nodes'
-     *     natural ordering, as in TestRedBlackNode.compare.
+     *                   natural ordering, as in TestRedBlackNode.compare.
      */
     private boolean isOrderValid(TestRedBlackNode node, Comparator<TestRedBlackNode> comparator) {
         try {
@@ -42,7 +48,9 @@ public class RedBlackNodeTest {
         }
     }
 
-    /** Tests RedBlackNode.assertSubtreeIsValid() and RedBlackNode.assertOrderIsValid. */
+    /**
+     * Tests RedBlackNode.assertSubtreeIsValid() and RedBlackNode.assertOrderIsValid.
+     */
     @Test
     public void testAssertIsValid() {
         // Create a perfectly balanced tree of height 3
@@ -129,12 +137,12 @@ public class RedBlackNodeTest {
         node2.value = 3;
         assertFalse(isOrderValid(node3, null));
         assertFalse(
-            isOrderValid(node3, new Comparator<TestRedBlackNode>() {
-                @Override
-                public int compare(TestRedBlackNode node1, TestRedBlackNode node2) {
-                    return node1.value - node2.value;
-                }
-            }));
+                isOrderValid(node3, new Comparator<TestRedBlackNode>() {
+                    @Override
+                    public int compare(TestRedBlackNode node1, TestRedBlackNode node2) {
+                        return node1.value - node2.value;
+                    }
+                }));
         node3.value = 3;
         node2.value = 2;
 
@@ -161,11 +169,11 @@ public class RedBlackNodeTest {
         assertTrue(isOrderValid(node0, null));
         assertTrue(isOrderValid(TestRedBlackNode.LEAF, null));
         assertTrue(
-            isOrderValid(node3, new Comparator<TestRedBlackNode>() {
-                @Override
-                public int compare(TestRedBlackNode node1, TestRedBlackNode node2) {
-                    return node1.value - node2.value;
-                }
-            }));
+                isOrderValid(node3, new Comparator<TestRedBlackNode>() {
+                    @Override
+                    public int compare(TestRedBlackNode node1, TestRedBlackNode node2) {
+                        return node1.value - node2.value;
+                    }
+                }));
     }
 }

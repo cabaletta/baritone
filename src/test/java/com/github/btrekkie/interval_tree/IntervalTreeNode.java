@@ -1,19 +1,30 @@
+/*
+ * This file was originally written by btrekkie under the MIT license, which is compatible with the LGPL license for this usage within Baritone
+ * https://github.com/btrekkie/RedBlackNode/
+ */
+
 package com.github.btrekkie.interval_tree;
 
-import com.github.btrekkie.red_black_node.RedBlackNode;
+import baritone.builder.utils.com.github.btrekkie.red_black_node.RedBlackNode;
 
 /**
  * A node in an IntervalTree.  See the comments for the implementation of IntervalTree.  Its compareTo method orders
  * nodes as suggested in the comments for the implementation of IntervalTree.
  */
 class IntervalTreeNode extends RedBlackNode<IntervalTreeNode> {
-    /** The dummy leaf node. */
+    /**
+     * The dummy leaf node.
+     */
     public static final IntervalTreeNode LEAF = new IntervalTreeNode();
 
-    /** The interval stored in this node. */
+    /**
+     * The interval stored in this node.
+     */
     public IntervalTreeInterval interval;
 
-    /** The maximum ending value of an interval in the subtree rooted at this node. */
+    /**
+     * The maximum ending value of an interval in the subtree rooted at this node.
+     */
     public double maxEnd;
 
     public IntervalTreeNode(IntervalTreeInterval interval) {
@@ -21,7 +32,9 @@ class IntervalTreeNode extends RedBlackNode<IntervalTreeNode> {
         maxEnd = interval.end;
     }
 
-    /** Constructs a new dummy leaf node. */
+    /**
+     * Constructs a new dummy leaf node.
+     */
     private IntervalTreeNode() {
         interval = null;
         maxEnd = Double.NEGATIVE_INFINITY;
