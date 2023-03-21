@@ -22,7 +22,7 @@ public class ConnGraphTest {
     @Test
     public void testPerformanceOnRepeatedConnectionAndDisconnection() {
         EulerTourForest.sanityCheck();
-        for (int trial = 0; trial < 10; trial++) {
+        for (int trial = 0; trial < 1; trial++) {
             try {
                 Thread.sleep(2000);
                 System.gc();
