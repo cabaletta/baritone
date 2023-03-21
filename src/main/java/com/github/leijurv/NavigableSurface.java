@@ -1,5 +1,6 @@
 package com.github.leijurv;
 
+import baritone.api.utils.BetterBlockPos;
 import com.github.btrekkie.connectivity.ConnGraph;
 
 import java.util.OptionalInt;
@@ -57,7 +58,7 @@ public class NavigableSurface {
         blocks[where.x][where.y][where.z] = place;
         // first let's set some vertex info for where the player can and cannot stand
         for (int dy = -1; dy <= 1; dy++) {
-            BetterBlockPos couldHaveChanged = where.upPlusY(dy);
+            BetterBlockPos couldHaveChanged = where.up(dy);
             boolean currentlyAllowed = canPlayerStandIn(couldHaveChanged);
             if (currentlyAllowed) {
                 // i'm sure this will get more complicated later
@@ -69,29 +70,29 @@ public class NavigableSurface {
         // then let's set the edges
         for (int dy = -2; dy <= 1; dy++) { // -2 because of the jump condition for ascending
             // i guess some of these can be skipped based on whether "place" is false or true, but, whatever this is just for testing
-            BetterBlockPos couldHaveChanged = where.upPlusY(dy);
+            BetterBlockPos couldHaveChanged = where.up(dy);
             computePossibleMoves(couldHaveChanged);
         }
     }
 
     public boolean canPlayerStandIn(BetterBlockPos where) {
-        return getBlockOrAir(where.downMinusY()) && !getBlockOrAir(where) && !getBlockOrAir(where.upPlusY());
+        return getBlockOrAir(where.down()) && !getBlockOrAir(where) && !getBlockOrAir(where.up());
     }
 
     public void computePossibleMoves(BetterBlockPos feet) {
         boolean anySuccess = canPlayerStandIn(feet);
         // even if all are fail, need to remove those edges from the graph, so don't return early
         for (int[] move : MOVES) {
-            BetterBlockPos newFeet = feet.eastPlusX(move[0]).upPlusY(move[1]).southPlusZ(move[2]);
+            BetterBlockPos newFeet = new BetterBlockPos(feet.x + move[0], feet.y + move[1], feet.z + move[2]);
             boolean thisSuccess = anySuccess;
             thisSuccess &= canPlayerStandIn(newFeet);
             if (move[1] == -1) {
                 // descend movement requires the player head to move through one extra block (newFeet must be 3 high not 2 high)
-                thisSuccess &= !getBlockOrAir(newFeet.upPlusY(2));
+                thisSuccess &= !getBlockOrAir(newFeet.up(2));
             }
             if (move[1] == 1) {
                 // same idea but ascending instead of descending
-                thisSuccess &= !getBlockOrAir(feet.upPlusY(2));
+                thisSuccess &= !getBlockOrAir(feet.up(2));
             }
             if (thisSuccess) {
                 if (connGraph.addEdge(feet.toLong(), newFeet.toLong())) {

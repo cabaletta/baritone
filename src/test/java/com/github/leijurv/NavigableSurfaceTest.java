@@ -1,5 +1,6 @@
 package com.github.leijurv;
 
+import baritone.api.utils.BetterBlockPos;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -149,7 +150,7 @@ public class NavigableSurfaceTest {
                 }
                 // let's try placing
                 surface.placeBlock(candidate);
-                if (surface.connected(candidate.upPlusY(), maintainConnectionTo)) {
+                if (surface.connected(candidate.up(), maintainConnectionTo)) {
                     // success, placed a block while retaining the path down to the ground
                     continue outer;
                 }
