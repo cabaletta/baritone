@@ -1,6 +1,6 @@
 package com.github.btrekkie.interval_tree;
 
-import com.github.btrekkie.red_black_node.RedBlackNode;
+import baritone.builder.utils.com.github.btrekkie.red_black_node.RedBlackNode;
 
 /**
  * A node in an IntervalTree.  See the comments for the implementation of IntervalTree.  Its compareTo method orders

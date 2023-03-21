@@ -1,4 +1,9 @@
-package com.github.btrekkie.connectivity;
+/*
+ * This file was originally written by btrekkie under the MIT license, which is compatible with the LGPL license for this usage within Baritone
+ * https://github.com/btrekkie/dynamic-connectivity/
+ */
+
+package baritone.builder.utils.com.github.btrekkie.connectivity;
 
 /**
  * Represents an edge in a ConnGraph, at the level of the edge (i.e. at the lowest level i for which G_i contains the

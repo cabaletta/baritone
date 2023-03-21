@@ -1,6 +1,9 @@
-// from: https://github.com/btrekkie/RedBlackNode/blob/master/src/main/java/com/github/btrekkie/red_black_node/RedBlackNode.java
-// also MIT: https://github.com/btrekkie/RedBlackNode/blob/master/LICENSE
-package com.github.btrekkie.red_black_node;
+/*
+ * This file was originally written by btrekkie under the MIT license, which is compatible with the LGPL license for this usage within Baritone
+ * https://github.com/btrekkie/RedBlackNode/blob/master/src/main/java/com/github/btrekkie/red_black_node/RedBlackNode.java
+ */
+
+package baritone.builder.utils.com.github.btrekkie.red_black_node;
 
 import java.lang.reflect.Array;
 import java.util.*;

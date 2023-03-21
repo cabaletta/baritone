@@ -1,4 +1,9 @@
-package com.github.btrekkie.connectivity;
+/*
+ * This file was originally written by btrekkie under the MIT license, which is compatible with the LGPL license for this usage within Baritone
+ * https://github.com/btrekkie/dynamic-connectivity/
+ */
+
+package baritone.builder.utils.com.github.btrekkie.connectivity;
 
 /**
  * A combining function for taking the augmentations associated with a set of ConnVertices and reducing them to a single

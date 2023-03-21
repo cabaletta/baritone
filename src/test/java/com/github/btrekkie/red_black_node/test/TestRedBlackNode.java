@@ -1,6 +1,6 @@
 package com.github.btrekkie.red_black_node.test;
 
-import com.github.btrekkie.red_black_node.RedBlackNode;
+import baritone.builder.utils.com.github.btrekkie.red_black_node.RedBlackNode;
 
 /**
  * A RedBlackNode for RedBlackNodeTest.

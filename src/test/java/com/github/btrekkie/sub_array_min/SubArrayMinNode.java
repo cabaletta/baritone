@@ -1,6 +1,6 @@
 package com.github.btrekkie.sub_array_min;
 
-import com.github.btrekkie.red_black_node.RedBlackNode;
+import baritone.builder.utils.com.github.btrekkie.red_black_node.RedBlackNode;
 
 /**
  * A node in a SubArrayMin object.  See the comments for the implementation of that class.

@@ -1,6 +1,11 @@
-package com.github.btrekkie.connectivity;
+/*
+ * This file was originally written by btrekkie under the MIT license, which is compatible with the LGPL license for this usage within Baritone
+ * https://github.com/btrekkie/dynamic-connectivity/
+ */
 
-import com.github.btrekkie.red_black_node.RedBlackNode;
+package baritone.builder.utils.com.github.btrekkie.connectivity;
+
+import baritone.builder.utils.com.github.btrekkie.red_black_node.RedBlackNode;
 
 /**
  * A node in an Euler tour tree for ConnGraph (at some particular level i). See the comments for the implementation of

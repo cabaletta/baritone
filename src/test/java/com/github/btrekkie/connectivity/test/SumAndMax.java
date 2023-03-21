@@ -1,6 +1,6 @@
 package com.github.btrekkie.connectivity.test;
 
-import com.github.btrekkie.connectivity.Augmentation;
+import baritone.builder.utils.com.github.btrekkie.connectivity.Augmentation;
 
 /**
  * Stores two values: a sum and a maximum. Used for testing augmentation in ConnGraph.

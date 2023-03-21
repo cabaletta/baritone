@@ -1,4 +1,9 @@
-package com.github.btrekkie.connectivity;
+/*
+ * This file was originally written by btrekkie under the MIT license, which is compatible with the LGPL license for this usage within Baritone
+ * https://github.com/btrekkie/dynamic-connectivity/
+ */
+
+package baritone.builder.utils.com.github.btrekkie.connectivity;
 
 import java.util.Random;
 
@@ -41,7 +46,7 @@ public class ConnVertex {
         throw new UnsupportedOperationException();
     }
 
-    public long getIdentity(){
+    public long getIdentity() {
         return hash;
     }
 }

@@ -1,4 +1,9 @@
-package com.github.btrekkie.connectivity;
+/*
+ * This file was originally written by btrekkie under the MIT license, which is compatible with the LGPL license for this usage within Baritone
+ * https://github.com/btrekkie/dynamic-connectivity/
+ */
+
+package baritone.builder.utils.com.github.btrekkie.connectivity;
 
 /**
  * The representation of a forest edge in some Euler tour forest F_i at some particular level i. Each forest edge has

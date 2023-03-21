@@ -1,8 +1,8 @@
 package com.github.btrekkie.connectivity.test;
 
-import com.github.btrekkie.connectivity.ConnGraph;
-import com.github.btrekkie.connectivity.ConnVertex;
-import com.github.leijurv.EulerTourForest;
+import baritone.builder.EulerTourForest;
+import baritone.builder.utils.com.github.btrekkie.connectivity.ConnGraph;
+import baritone.builder.utils.com.github.btrekkie.connectivity.ConnVertex;
 import org.junit.Test;
 
 import java.util.ArrayList;
