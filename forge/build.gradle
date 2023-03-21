@@ -29,15 +29,8 @@ minecraft {
         mixinConfig = ["mixins.baritone.json"]
     }
 
-    launches.client = {
+    launcher.client = {
         args.addAll(["--tweakClass", "org.spongepowered.asm.launch.MixinTweaker"])
-        // old mixin (0.7.11) uses a different flag for specifying configs
-        // in the launch args
-        for (int i = 0; i < args.size(); i++) {
-            if (args[i] == "-mixin.config") {
-                args[i] = "--mixin"
-            }
-        }
     }
 }
 
