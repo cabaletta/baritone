@@ -54,6 +54,23 @@ public class NavigableSurface {
         public Attachment() {
             this.surfaceSize = 1;
         }
+
+        @Override
+        public boolean equals(Object o) { // used as performance optimization in RedBlackNode to avoid augmenting unchanged attachments
+            if (this == o) {
+                return true;
+            }
+            if (!(o instanceof Attachment)) {
+                return false;
+            }
+            Attachment that = (Attachment) o;
+            return surfaceSize == that.surfaceSize;
+        }
+
+        @Override
+        public int hashCode() {
+            return surfaceSize;
+        }
     }
 
     public OptionalInt surfaceSize(BetterBlockPos pos) { // how big is the navigable surface from here? how many distinct coordinates can i walk to (in the future, the augmentation will probably have a list of those coordinates or something?)
