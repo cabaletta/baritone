@@ -244,6 +244,9 @@ public class PlayerPhysics {
         if (voxelUp >= 0) {
             // fundamentally a step upwards, from X to B instead of X to C
             // too high?
+            if (A.collidesWithPlayer || U.collidesWithPlayer) {
+                return Collision.BLOCKED;
+            }
             if (protrudesIntoThirdBlock(voxelUp) && (E.collidesWithPlayer || F.collidesWithPlayer)) {
                 return Collision.BLOCKED;
             }

@@ -32,7 +32,7 @@ public class PlayerPhysicsTest {
         normal.feet = BlockStateCachedData.AIR;
         normal.head = BlockStateCachedData.AIR;
         normal.above = BlockStateCachedData.AIR;
-        normal.aboveAbove = BlockStateCachedData.AIR;
+        normal.aboveAbove = BlockStateCachedData.SCAFFOLDING;
         normal.init();
 
         Column up = new Column();
@@ -40,7 +40,7 @@ public class PlayerPhysicsTest {
         up.feet = BlockStateCachedData.SCAFFOLDING;
         up.head = BlockStateCachedData.AIR;
         up.above = BlockStateCachedData.AIR;
-        up.aboveAbove = BlockStateCachedData.AIR;
+        up.aboveAbove = BlockStateCachedData.SCAFFOLDING;
         up.init();
 
         assertEquals(PlayerPhysics.Collision.VOXEL_LEVEL, PlayerPhysics.playerTravelCollides(normal, normal));
@@ -97,42 +97,64 @@ public class PlayerPhysicsTest {
     }
 
     @Test
-    public void testAscDesc() {
+    public void testPlayerPhysics() {
         for (int startHeight = 0; startHeight < Blip.FULL_BLOCK; startHeight++) {
-            BlockStateCachedData[] fromCol = makeColToHeight(startHeight);
-            Column from = toCol(fromCol);
-            assertEquals(startHeight, (int) from.feetBlips);
-
-            for (int endHeight = startHeight - Blip.JUMP - 10; endHeight <= startHeight + Blip.JUMP + 10; endHeight++) {
-                BlockStateCachedData[] toCol = makeColToHeight(endHeight);
-                Column to = toCol(toCol);
-                int endVoxel = (endHeight + Blip.FULL_BLOCK * 10) / Blip.FULL_BLOCK - 10; // hate negative division rounding to zero, punch negative division rounding to zero
-
-                PlayerPhysics.Collision col = PlayerPhysics.playerTravelCollides(from, to);
-                Integer dy = PlayerPhysics.bidirectionalPlayerTravel(from, to, toCol[1], toCol[0]);
-                assertEquals(col == PlayerPhysics.Collision.BLOCKED, endHeight > startHeight + Blip.JUMP);
-                assertEquals(col == PlayerPhysics.Collision.FALL, endVoxel < 0);
-                assertEquals(dy == null, endHeight > startHeight + Blip.JUMP || endHeight < startHeight - Blip.JUMP);
-
-                if (dy != null) {
-                    Integer reverse = -dy;
-                    BlockStateCachedData[] shiftedTo = shift(toCol, reverse);
-                    BlockStateCachedData[] shiftedFrom = shift(fromCol, reverse);
-                    // make sure it's actually bidirectional
-                    assertEquals(reverse, PlayerPhysics.bidirectionalPlayerTravel(toCol(shiftedTo), toCol(shiftedFrom), shiftedFrom[1], shiftedFrom[0]));
+            for (int startCeil = 5; startCeil <= 7; startCeil++) {
+                BlockStateCachedData[] fromCol = makeColToHeight(startHeight);
+                if (startCeil < fromCol.length) {
+                    fromCol[startCeil] = BlockStateCachedData.SCAFFOLDING;
                 }
-                if (col != PlayerPhysics.Collision.BLOCKED && col != PlayerPhysics.Collision.FALL) {
-                    assertEquals(col.voxelVerticalOffset(), endVoxel);
-                    assertEquals(endVoxel, (int) dy);
-                    assertEquals(col.requiresJump(), endHeight > startHeight + Blip.HALF_BLOCK);
+                Column from = toCol(fromCol);
+                assertEquals(!from.standing(), startCeil == 5 && startHeight > 3);
+                if (!from.standing()) {
+                    System.out.println("Not standing " + startHeight + " " + startCeil);
+                    continue;
                 }
-                System.out.println(startHeight + " " + (endHeight - startHeight) + " " + col + " " + endVoxel + " " + dy);
+
+                for (int endHeight = startHeight - 3 * Blip.PER_BLOCK; endHeight <= startHeight + 3 * Blip.PER_BLOCK; endHeight++) {
+                    for (int endCeil = 5; endCeil <= 7; endCeil++) {
+                        BlockStateCachedData[] toCol = makeColToHeight(endHeight);
+                        if (endCeil < toCol.length) {
+                            toCol[endCeil] = BlockStateCachedData.SCAFFOLDING;
+                        }
+                        Column to = toCol(toCol);
+                        int endVoxel = (endHeight + Blip.FULL_BLOCK * 10) / Blip.FULL_BLOCK - 10; // hate negative division rounding to zero, punch negative division rounding to zero
+
+                        PlayerPhysics.Collision col = PlayerPhysics.playerTravelCollides(from, to);
+                        Integer dy = PlayerPhysics.bidirectionalPlayerTravel(from, to, toCol[1], toCol[0]);
+                        System.out.println(startHeight + " " + startCeil + " " + endCeil + " " + (endHeight - startHeight) + " " + col + " " + endVoxel + " " + dy);
+
+                        int minCeilRelative = Math.min(startCeil, endCeil) - 3;
+                        int maxBlip = Math.max(startHeight, endHeight);
+                        if (maxBlip + Blip.PLAYER_HEIGHT_SLIGHT_OVERESTIMATE > minCeilRelative * Blip.PER_BLOCK) {
+                            assertEquals(PlayerPhysics.Collision.BLOCKED, col);
+                            continue;
+                        }
+
+                        assertEquals(col == PlayerPhysics.Collision.BLOCKED, endHeight > startHeight + Blip.JUMP);
+                        assertEquals(col == PlayerPhysics.Collision.FALL, endVoxel < 0);
+                        assertEquals(dy == null, endHeight > startHeight + Blip.JUMP || endHeight < startHeight - Blip.JUMP);
+
+                        if (dy != null) {
+                            assertEquals(endVoxel, (int) dy);
+                            Integer reverse = -dy;
+                            BlockStateCachedData[] shiftedTo = shift(toCol, reverse);
+                            BlockStateCachedData[] shiftedFrom = shift(fromCol, reverse);
+                            // make sure it's actually bidirectional
+                            assertEquals(reverse, PlayerPhysics.bidirectionalPlayerTravel(toCol(shiftedTo), toCol(shiftedFrom), shiftedFrom[1], shiftedFrom[0]));
+                        }
+                        if (col != PlayerPhysics.Collision.BLOCKED && col != PlayerPhysics.Collision.FALL) {
+                            assertEquals(col.voxelVerticalOffset(), endVoxel);
+                            assertEquals(col.requiresJump(), endHeight > startHeight + Blip.HALF_BLOCK);
+                        }
+                    }
+                }
             }
         }
     }
 
     private static BlockStateCachedData[] shift(BlockStateCachedData[] col, int dy) {
-        BlockStateCachedData[] ret = new BlockStateCachedData[7];
+        BlockStateCachedData[] ret = new BlockStateCachedData[col.length];
         for (int i = 0; i < ret.length; i++) {
             int j = i - dy;
             if (j >= 0 && j < col.length) {
