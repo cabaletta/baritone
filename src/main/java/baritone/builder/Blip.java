@@ -35,10 +35,11 @@ public class Blip {
     public static final double RATIO = 0.0625;
     public static final int HALF_BLOCK = 8;
     public static final int PLAYER_HEIGHT_SLIGHT_UNDERESTIMATE = 28;
-    public static final int PLAYER_HEIGHT_SLIGHT_OVERESTIMATE = PLAYER_HEIGHT_SLIGHT_UNDERESTIMATE + 1;
+    public static final int PLAYER_HEIGHT_SLIGHT_OVERESTIMATE = 29;
     public static final int TWO_BLOCKS = 2 * FULL_BLOCK;
     public static final int FEET_TO_EYE_APPROX = (int) (IPlayerContext.eyeHeight(false) / RATIO);
     public static final int JUMP = 20; // 1.25
+    public static final int TALLEST_BLOCK = FULL_BLOCK + HALF_BLOCK; // 24
 
     public static double playerEyeFromFeetBlips(int feetBlips, boolean sneaking) {
         return feetBlips * RATIO + IPlayerContext.eyeHeight(sneaking);
@@ -46,7 +47,7 @@ public class Blip {
 
     static {
         double realPlayerHeight = 1.8;
-        if (PLAYER_HEIGHT_SLIGHT_OVERESTIMATE * RATIO <= realPlayerHeight || PLAYER_HEIGHT_SLIGHT_UNDERESTIMATE * RATIO >= realPlayerHeight) {
+        if (PLAYER_HEIGHT_SLIGHT_OVERESTIMATE * RATIO <= realPlayerHeight || PLAYER_HEIGHT_SLIGHT_UNDERESTIMATE * RATIO >= realPlayerHeight || PLAYER_HEIGHT_SLIGHT_OVERESTIMATE != PLAYER_HEIGHT_SLIGHT_UNDERESTIMATE + 1) {
             throw new IllegalStateException();
         }
         if (PER_BLOCK * RATIO != 1) {

@@ -86,7 +86,7 @@ public class BlockStateCachedDataBuilder {
      * Should be 1 for trapdoors because when they're open, they touch the top face of the voxel
      */
     public BlockStateCachedDataBuilder collisionHeight(double y) {
-        for (int h = 0; h <= Blip.PER_BLOCK + Blip.HALF_BLOCK; h++) {
+        for (int h = 0; h <= Blip.TALLEST_BLOCK; h++) { // max height of
             if (y == h * Blip.RATIO) {
                 collisionHeightBlips = h;
                 return this;
@@ -263,7 +263,7 @@ public class BlockStateCachedDataBuilder {
         if ((playerMustBeHorizontalFacingInOrderToPlaceMe != null || playerMustBeEntityFacingInOrderToPlaceMe != null) && mustBePlacedAgainst == null) {
             throw new IllegalStateException();
         }
-        if (collisionHeightBlips != null && (collisionHeightBlips > Blip.FULL_BLOCK + Blip.HALF_BLOCK || collisionHeightBlips < 0)) { // playerphysics assumes this is never true
+        if (collisionHeightBlips != null && (collisionHeightBlips > Blip.TALLEST_BLOCK || collisionHeightBlips < 0)) { // playerphysics assumes this is never true
             throw new IllegalStateException();
         }
         if (collidesWithPlayer ^ collisionHeightBlips != null) {

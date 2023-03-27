@@ -93,6 +93,9 @@ public class PlayerPhysics {
     }
 
     public static Collision playerTravelCollides(Column within, Column into) {
+        if (Main.DEBUG && within.head.collidesWithPlayer) {
+            throw new IllegalStateException();
+        }
         return playerTravelCollides(within.feetBlips,
                 within.above,
                 into.above,
@@ -103,6 +106,89 @@ public class PlayerPhysics {
                 within.feet,
                 within.aboveAbove,
                 into.aboveAbove);
+    }
+
+
+    /**
+     * Is there a movement (ascend, level, descend) that the player can do AND UNDO?
+     * This is basically the same as playerTravelCollides, but, it's okay to fall, but only as long as you don't fall further than what can be jumped back up
+     *
+     * @return the integer change in voxel Y, or null if there is no such option
+     */
+    public static Integer bidirectionalPlayerTravel(
+            Column within,
+            Column into,
+            BlockStateCachedData underUnderneathInto,
+            BlockStateCachedData underUnderUnderneathInto
+    ) {
+        switch (playerTravelCollides(within, into)) {
+
+            case BLOCKED:
+                return null;
+
+            case JUMP_TO_VOXEL_TWO_UP:
+                return 2;
+            case VOXEL_UP:
+            case JUMP_TO_VOXEL_UP:
+                return 1;
+            case VOXEL_LEVEL:
+            case JUMP_TO_VOXEL_LEVEL:
+                return 0;
+
+            case FALL:
+                if (Main.DEBUG && (canPlayerStand(into.underneath, into.feet) != VoxelResidency.FLOATING || !into.playerCanExistAtFootBlip(within.feetBlips))) {
+                    throw new IllegalStateException();
+                }
+                VoxelResidency downOne = canPlayerStand(underUnderneathInto, into.underneath);
+                switch (downOne) {
+                    case PREVENTED_BY_UNDERNEATH:
+                    case PREVENTED_BY_WITHIN:
+                        return null; // a block we aren't allowed to stand on
+                    case UNDERNEATH_PROTRUDES_AT_OR_ABOVE_FULL_BLOCK:
+                    case STANDARD_WITHIN_SUPPORT:
+                        int fallBy = within.feetBlips + Blip.FULL_BLOCK - determinePlayerRealSupportLevel(underUnderneathInto, into.underneath, downOne);
+                        if (fallBy < 1) {
+                            throw new IllegalStateException();
+                        }
+                        if (fallBy <= Blip.JUMP) {
+                            return -1; // we could jump back! yay!
+                        }
+                        return null; // one-way trip
+                    default:
+                        throw new IllegalStateException();
+                    case FLOATING:
+                        break;
+                }
+                // ^ as shown, we are floating in downOne, so let's try downTwo
+                // but first let's make sure it's possible
+                int highestBlipsWithinUnderUnderUnder = Blip.FULL_BLOCK - 1; // 15
+                int highestJumpFromTwoUnder = highestBlipsWithinUnderUnderUnder + Blip.JUMP; // 35
+                int highestJumpIntoThisVoxel = highestJumpFromTwoUnder - Blip.TWO_BLOCKS; // 3
+                if (within.feetBlips > highestJumpIntoThisVoxel) {
+                    return null;
+                }
+                VoxelResidency downTwo = canPlayerStand(underUnderUnderneathInto, underUnderneathInto);
+                switch (downTwo) {
+                    case UNDERNEATH_PROTRUDES_AT_OR_ABOVE_FULL_BLOCK: // tallest block is 24 blips, which is less than 29, so this case is impossible
+                    case PREVENTED_BY_UNDERNEATH:
+                    case PREVENTED_BY_WITHIN:
+                    case FLOATING:
+                        return null;
+                    case STANDARD_WITHIN_SUPPORT:
+                        int fallBy = within.feetBlips + Blip.TWO_BLOCKS - determinePlayerRealSupportLevel(underUnderUnderneathInto, underUnderneathInto, downTwo);
+                        if (fallBy < Blip.FULL_BLOCK + 1) {
+                            throw new IllegalStateException();
+                        }
+                        if (fallBy <= Blip.JUMP) {
+                            return -2; // we could jump back! yay!
+                        }
+                        return null; // one-way trip
+                    default:
+                        throw new IllegalStateException();
+                }
+            default:
+                throw new IllegalStateException();
+        }
     }
 
     /**
@@ -150,7 +236,7 @@ public class PlayerPhysics {
                 return Collision.JUMP_TO_VOXEL_TWO_UP;
             }
         }
-        if (alreadyWithinU && A.collidesWithPlayer) {
+        if (alreadyWithinU && A.collidesWithPlayer) { // now that voxel two up, the result within A, is eliminated, we can't proceed if A would block at head level
             return Collision.BLOCKED; // we are too tall. bonk!
         }
         // D cannot prevent us from doing anything because it cant be higher than 1.5. therefore, makes sense to check CB before DC.
@@ -169,7 +255,7 @@ public class PlayerPhysics {
                 return Collision.JUMP_TO_VOXEL_UP;
             } // else this is possible!
             if (Main.DEBUG && (U.collidesWithPlayer || A.collidesWithPlayer || !alreadyWithinU)) {
-                // must already be colliding with U because in order for this step to be even possible, feet must be at least HALF_BLOCK
+                // must already be colliding with U because in order for this non-jump voxel-up step to be even possible, feet must be at least HALF_BLOCK
                 throw new IllegalStateException();
             }
             // B can collide with player here, such as if X is soul sand, C is full block, and B is carpet
@@ -177,7 +263,7 @@ public class PlayerPhysics {
         }
         // voxelUp is impossible. pessimistically, this means B is colliding. optimistically, this means B and C are air.
         if (B.collidesWithPlayer) {
-            // AB can no longer be possible since it was checked with E and F
+            // voxel up and voxel two up are both eliminated, so...
             return Collision.BLOCKED; // we have ruled out stepping on top of B, so now if B is still colliding there is no way forward
         }
         int stayLevel = determinePlayerRealSupportLevel(D, C);
@@ -192,10 +278,11 @@ public class PlayerPhysics {
                 }
             }
             if (stayLevel > couldStepUpTo) { // staying within the same voxel means that a jump will always succeed
+                // aka. the jump might headbonk but not in a way that prevents the action. also TODO this is an example of where Collision.INADVISABLE could come in such as if E/F/U/A were like lava or something
                 return Collision.JUMP_TO_VOXEL_LEVEL;
             }
-            return Collision.VOXEL_LEVEL;
-        }
+            return Collision.VOXEL_LEVEL; // btw it's possible that stayLevel < feetBlips, since a small fall is sorta ignored and treated as a VOXEL_LEVEL
+        } // voxel_level (C within, D underneath) is eliminated, only remaining possibilities are blocked or fall
         if (C.collidesWithPlayer) {
             return Collision.BLOCKED;
         }
@@ -212,7 +299,7 @@ public class PlayerPhysics {
         }
     }
 
-    public static boolean protrudesIntoThirdBlock(int feet) {
+    public static boolean protrudesIntoThirdBlock(int feet) { // only false for feet between 0 and 3. true for 4 and up
         return feet > Blip.TWO_BLOCKS - Blip.PLAYER_HEIGHT_SLIGHT_OVERESTIMATE; // > and not >= because the player height is a slight overestimate
     }
 
@@ -220,10 +307,14 @@ public class PlayerPhysics {
         if (Blip.PLAYER_HEIGHT_SLIGHT_OVERESTIMATE >= Blip.TWO_BLOCKS || Blip.PLAYER_HEIGHT_SLIGHT_OVERESTIMATE + Blip.HALF_BLOCK <= Blip.TWO_BLOCKS) {
             throw new IllegalStateException("Assumptions made in playerTravelCollides");
         }
-        int maxFeet = Blip.FULL_BLOCK - 1;
-        int couldJumpUpTo = maxFeet + Blip.JUMP;
-        int maxWithinAB = couldJumpUpTo - Blip.TWO_BLOCKS;
+        if (Blip.TALLEST_BLOCK - Blip.FULL_BLOCK + Blip.JUMP - Blip.TWO_BLOCKS >= 0) {
+            throw new IllegalStateException("Assumption made in bidirectionalPlayerTravel");
+        }
+        int maxFeet = Blip.FULL_BLOCK - 1; // 15
+        int couldJumpUpTo = maxFeet + Blip.JUMP; // 35
+        int maxWithinAB = couldJumpUpTo - Blip.TWO_BLOCKS; // 3
         if (protrudesIntoThirdBlock(maxWithinAB)) {
+            // btw this is literally only 1 blip away from being true lol
             throw new IllegalStateException("Oh no, if this is true then playerTravelCollides needs to check another layer above EF");
         }
     }
@@ -281,7 +372,7 @@ public class PlayerPhysics {
             }
             VoxelResidency res = canPlayerStand(engineInput.at(under, worldState), engineInput.at(support, worldState));
             if (Main.DEBUG && descent == 0 && res != VoxelResidency.FLOATING) {
-                throw new IllegalStateException(); // CD shouldn't collide, it should be D and the one beneath...
+                throw new IllegalStateException(); // CD shouldn't collide, it should be D and the one beneath... (playerTravelCollides would have returned BLOCKED or VOXEL_LEVEL)
             }
             switch (res) {
                 case FLOATING:
@@ -292,9 +383,6 @@ public class PlayerPhysics {
                 case UNDERNEATH_PROTRUDES_AT_OR_ABOVE_FULL_BLOCK:
                 case STANDARD_WITHIN_SUPPORT:
                     // found our landing spot
-                    if (Main.DEBUG && descent <= 0) {
-                        throw new IllegalStateException();
-                    }
                     return descent;
                 default:
                     throw new IllegalStateException();

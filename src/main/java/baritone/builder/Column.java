@@ -25,13 +25,14 @@ import static baritone.api.utils.BetterBlockPos.Y_MASK;
 import static baritone.api.utils.BetterBlockPos.Y_SHIFT;
 
 /**
- * A mutable class representing a 1x5x1 column of blocks
+ * A mutable class representing a 1x6x1 column of blocks
  * <p>
  * Mutable because allocations are not on the table for the core solver loop
  */
 public class Column {
 
     public long pos;
+    //public BlockStateCachedData underUnderneath;
     public BlockStateCachedData underneath;
     public BlockStateCachedData feet;
     public BlockStateCachedData head;
@@ -42,13 +43,22 @@ public class Column {
 
     public void initFrom(long pos, WorldState worldState, SolverEngineInput engineInput) {
         this.pos = pos;
+        //this.underUnderneath = engineInput.at((pos + DOWN_2) & BetterBlockPos.POST_ADDITION_MASK, worldState);
         this.underneath = engineInput.at((pos + DOWN_1) & BetterBlockPos.POST_ADDITION_MASK, worldState);
         this.feet = engineInput.at(pos, worldState);
         this.head = engineInput.at((pos + UP_1) & BetterBlockPos.POST_ADDITION_MASK, worldState);
         this.above = engineInput.at((pos + UP_2) & BetterBlockPos.POST_ADDITION_MASK, worldState);
         this.aboveAbove = engineInput.at((pos + UP_3) & BetterBlockPos.POST_ADDITION_MASK, worldState);
+        init();
+    }
+
+    public void init() {
         this.voxelResidency = PlayerPhysics.canPlayerStand(underneath, feet);
         this.feetBlips = boxNullable(PlayerPhysics.determinePlayerRealSupportLevel(underneath, feet, voxelResidency));
+        if (feetBlips != null && !playerCanExistAtFootBlip(feetBlips)) { // TODO is this the correct way to handle head collision?
+            voxelResidency = PlayerPhysics.VoxelResidency.IMPOSSIBLE_WITHOUT_SUFFOCATING; // TODO this is a misuse of this enum value i think
+            feetBlips = null;
+        }
     }
 
     public boolean playerCanExistAtFootBlip(int blipWithinFeet) {
@@ -70,12 +80,16 @@ public class Column {
         return feetBlips != null;
     }
 
+    private static final long DOWN_2 = (Y_MASK - 1) << Y_SHIFT;
     private static final long DOWN_1 = Y_MASK << Y_SHIFT;
     private static final long UP_1 = 1L << Y_SHIFT;
     private static final long UP_2 = 2L << Y_SHIFT;
     private static final long UP_3 = 3L << Y_SHIFT;
 
     static {
+        if (DOWN_2 != BetterBlockPos.toLong(0, -2, 0)) {
+            throw new IllegalStateException();
+        }
         if (DOWN_1 != BetterBlockPos.toLong(0, -1, 0)) {
             throw new IllegalStateException();
         }
@@ -85,7 +99,7 @@ public class Column {
         if (UP_2 != BetterBlockPos.toLong(0, 2, 0)) {
             throw new IllegalStateException();
         }
-        if (UP_3 != BetterBlockPos.toLong(0, 4, 0)) {
+        if (UP_3 != BetterBlockPos.toLong(0, 3, 0)) {
             throw new IllegalStateException();
         }
     }

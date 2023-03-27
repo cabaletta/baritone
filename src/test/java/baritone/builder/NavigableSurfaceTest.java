@@ -825,6 +825,8 @@ public class NavigableSurfaceTest {
                 "XXXXXXXXXXXXXXXXXXX|XXXXXXXXXXXXXXXXXXX|X XXXXXXXXXXXXXXXXX|XXXXXXXXXXXXXXXX  X\n" +
                 "XXXXXXXXXXXXXXXXXXX|XXXXXXXXXXXXXXXXXXX|XXXXXXXXXXXXXXXXXXX|XXXXXXXXXXXXXXXXX  \n" +
                 "XXXXXXXXXXXXXXXXXXX|XXXXXXXXXXXXXXXXXXX|XXXXXXXXXXXXXXXXXXX|XXXXXXXXXXXXXXXXXXX\n";
+        // basically the story is that i saw THIS ^^^ weird ass shape, then i spent the next few hours figuring out exactly what happened and convincing myself that it actually is accurate and I don't have any bugs causing this incorrectly
+        // because i mean what are the odds lol, it looks crazy
         assertEquals(shouldBeWeird, reportAllFourWalls(surface3));
     }
 
