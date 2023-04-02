@@ -19,22 +19,18 @@ package baritone.api.utils;
 
 import baritone.api.utils.accessor.IItemStack;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.netty.util.concurrent.ThreadPerTaskExecutor;
-import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.*;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.packs.*;
-import net.minecraft.server.packs.metadata.pack.PackMetadataSection;
+import net.minecraft.server.packs.PackResources;
+import net.minecraft.server.packs.PackType;
+import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.server.packs.repository.ServerPacksSource;
-import net.minecraft.server.packs.resources.MultiPackResourceManager;
 import net.minecraft.server.packs.resources.ReloadableResourceManager;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Unit;
-import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
@@ -46,8 +42,6 @@ import net.minecraft.world.level.storage.loot.PredicateManager;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.Vec3;
-import org.apache.logging.log4j.core.jmx.Server;
-
 import javax.annotation.Nonnull;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -169,16 +163,17 @@ public final class BlockOptionalMeta {
 
     public static LootTables getManager() {
         if (manager == null) {
-            MultiPackResourceManager resources = new MultiPackResourceManager(PackType.SERVER_DATA, List.of(getVanillaServerPack()));
+            PackRepository rpl = new PackRepository(PackType.SERVER_DATA, new ServerPacksSource());
+            rpl.reload();
+            PackResources thePack = rpl.getAvailablePacks().iterator().next().open();
             ReloadableResourceManager resourceManager = new ReloadableResourceManager(PackType.SERVER_DATA);
             manager = new LootTables(predicate);
             resourceManager.registerReloadListener(manager);
             try {
-                resourceManager.createReload(new ThreadPerTaskExecutor(Thread::new), new ThreadPerTaskExecutor(Thread::new), CompletableFuture.completedFuture(Unit.INSTANCE), resources.listPacks().toList()).done().get();
+                resourceManager.createReload(new ThreadPerTaskExecutor(Thread::new), new ThreadPerTaskExecutor(Thread::new), CompletableFuture.completedFuture(Unit.INSTANCE), Collections.singletonList(thePack)).done().get();
             } catch (Exception exception) {
                 throw new RuntimeException(exception);
             }
-
         }
         return manager;
     }
@@ -197,7 +192,7 @@ public final class BlockOptionalMeta {
 
                 // the other overload for generate doesnt work in forge because forge adds code that requires a non null world
                 getManager().get(lootTableLocation).getRandomItems(
-                        new LootContext.Builder((ServerLevel null)
+                        new LootContext.Builder((ServerLevel) null)
                                 .withRandom(RandomSource.create())
                                 .withParameter(LootContextParams.ORIGIN, Vec3.atLowerCornerOf(BlockPos.ZERO))
                                 .withParameter(LootContextParams.TOOL, ItemStack.EMPTY)

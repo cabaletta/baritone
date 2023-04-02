@@ -42,6 +42,23 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class MixinClientPlayerEntity {
 
     @Inject(
+            method = "sendChat(Ljava/lang/String;Lnet/minecraft/network/chat/Component;)V",
+            at = @At("HEAD"),
+            cancellable = true
+    )
+    private void sendChatMessage(String string, Component component, CallbackInfo ci) {
+        ChatEvent event = new ChatEvent(string);
+        IBaritone baritone = BaritoneAPI.getProvider().getBaritoneForPlayer((LocalPlayer) (Object) this);
+        if (baritone == null) {
+            return;
+        }
+        baritone.getGameEventHandler().onSendChatMessage(event);
+        if (event.isCancelled()) {
+            ci.cancel();
+        }
+    }
+
+    @Inject(
             method = "tick",
             at = @At(
                     value = "INVOKE",

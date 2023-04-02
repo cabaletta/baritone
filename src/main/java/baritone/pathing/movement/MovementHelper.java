@@ -724,7 +724,7 @@ public interface MovementHelper extends ActionCosts, Helper {
 
     static boolean isBlockNormalCube(BlockState state) {
         Block block = state.getBlock();
-        if (block instanceof BambooStalkBlock
+        if (block instanceof BambooBlock
                 || block instanceof MovingPistonBlock
                 || block instanceof ScaffoldingBlock
                 || block instanceof ShulkerBoxBlock
