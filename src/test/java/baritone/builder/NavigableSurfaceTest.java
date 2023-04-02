@@ -216,11 +216,11 @@ public class NavigableSurfaceTest {
     }
 
     private String reportBottomToTop(NavigableSurface surface) {
-        int len = surface.sizeY * ((surface.sizeX + 1) * surface.sizeZ + 1);
+        int len = surface.bounds.sizeY * ((surface.bounds.sizeX + 1) * surface.bounds.sizeZ + 1);
         StringBuilder report = new StringBuilder(len);
-        for (int y = 0; y < surface.sizeY; y++) {
-            for (int z = 0; z < surface.sizeZ; z++) {
-                for (int x = 0; x < surface.sizeX; x++) {
+        for (int y = 0; y < surface.bounds.sizeY; y++) {
+            for (int z = 0; z < surface.bounds.sizeZ; z++) {
+                for (int x = 0; x < surface.bounds.sizeX; x++) {
                     report.append(surface.getBlock(new BetterBlockPos(x, y, z)) ? 'X' : ' ');
                 }
                 report.append('\n');
@@ -234,10 +234,10 @@ public class NavigableSurfaceTest {
     }
 
     private String reportSlice(NavigableSurface surface, int y) {
-        int len = (surface.sizeX + 1) * surface.sizeZ;
+        int len = (surface.bounds.sizeX + 1) * surface.bounds.sizeZ;
         StringBuilder report = new StringBuilder(len);
-        for (int z = 0; z < surface.sizeZ; z++) {
-            for (int x = 0; x < surface.sizeX; x++) {
+        for (int z = 0; z < surface.bounds.sizeZ; z++) {
+            for (int x = 0; x < surface.bounds.sizeX; x++) {
                 report.append(surface.getBlock(new BetterBlockPos(x, y, z)) ? 'X' : ' ');
             }
             report.append('\n');
@@ -249,20 +249,20 @@ public class NavigableSurfaceTest {
     }
 
     private static List<BetterBlockPos> genReportedWallOrder(NavigableSurface surface, int y) {
-        List<BetterBlockPos> ret = new ArrayList<>((surface.sizeX + surface.sizeZ) * 2);
-        for (int x = 0; x < surface.sizeX; x++) {
+        List<BetterBlockPos> ret = new ArrayList<>((surface.bounds.sizeX + surface.bounds.sizeZ) * 2);
+        for (int x = 0; x < surface.bounds.sizeX; x++) {
             ret.add(new BetterBlockPos(x, y, 0));
         }
         // start at 1 not 0 so that we don't repeat the last iteration of the previous loop (that would make the report look bad because the staircase would repeat one column for no reason)
-        for (int z = 1; z < surface.sizeZ; z++) {
-            ret.add(new BetterBlockPos(surface.sizeX - 1, y, z));
+        for (int z = 1; z < surface.bounds.sizeZ; z++) {
+            ret.add(new BetterBlockPos(surface.bounds.sizeX - 1, y, z));
         }
         // same deal for starting at -2 rather than -1
-        for (int x = surface.sizeX - 2; x >= 0; x--) {
-            ret.add(new BetterBlockPos(x, y, surface.sizeZ - 1));
+        for (int x = surface.bounds.sizeX - 2; x >= 0; x--) {
+            ret.add(new BetterBlockPos(x, y, surface.bounds.sizeZ - 1));
         }
         // and same again
-        for (int z = surface.sizeZ - 2; z > 0; z--) {
+        for (int z = surface.bounds.sizeZ - 2; z > 0; z--) {
             ret.add(new BetterBlockPos(0, y, z));
         }
         return ret;
@@ -277,23 +277,23 @@ public class NavigableSurfaceTest {
     }
 
     private String reportAllFourWalls(NavigableSurface surface) {
-        int len = surface.sizeY * (surface.sizeX + surface.sizeZ) * 2;
+        int len = surface.bounds.sizeY * (surface.bounds.sizeX + surface.bounds.sizeZ) * 2;
         StringBuilder report = new StringBuilder(len);
-        for (int y = surface.sizeY - 1; y >= 0; y--) {
+        for (int y = surface.bounds.sizeY - 1; y >= 0; y--) {
             // make a report of what all four walls look like
-            for (int x = 0; x < surface.sizeX - 1; x++) {
+            for (int x = 0; x < surface.bounds.sizeX - 1; x++) {
                 report.append(surface.getBlock(new BetterBlockPos(x, y, 0)) ? 'X' : ' ');
             }
             report.append('|');
-            for (int z = 0; z < surface.sizeZ - 1; z++) {
-                report.append(surface.getBlock(new BetterBlockPos(surface.sizeX - 1, y, z)) ? 'X' : ' ');
+            for (int z = 0; z < surface.bounds.sizeZ - 1; z++) {
+                report.append(surface.getBlock(new BetterBlockPos(surface.bounds.sizeX - 1, y, z)) ? 'X' : ' ');
             }
             report.append('|');
-            for (int x = surface.sizeX - 1; x > 0; x--) {
-                report.append(surface.getBlock(new BetterBlockPos(x, y, surface.sizeZ - 1)) ? 'X' : ' ');
+            for (int x = surface.bounds.sizeX - 1; x > 0; x--) {
+                report.append(surface.getBlock(new BetterBlockPos(x, y, surface.bounds.sizeZ - 1)) ? 'X' : ' ');
             }
             report.append('|');
-            for (int z = surface.sizeZ - 1; z > 0; z--) {
+            for (int z = surface.bounds.sizeZ - 1; z > 0; z--) {
                 report.append(surface.getBlock(new BetterBlockPos(0, y, z)) ? 'X' : ' ');
             }
             report.append('\n');

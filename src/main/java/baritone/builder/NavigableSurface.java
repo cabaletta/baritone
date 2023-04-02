@@ -20,23 +20,22 @@ package baritone.builder;
 import baritone.api.utils.BetterBlockPos;
 import baritone.builder.utils.com.github.btrekkie.connectivity.ConnGraph;
 
+import java.util.Arrays;
 import java.util.OptionalInt;
 
 public class NavigableSurface {
     // the encapsulation / separation of concerns is not great, but this is better for testing purposes than the fully accurate stuff in https://github.com/cabaletta/baritone/tree/builder-2/src/main/java/baritone/builder lol
-    public final int sizeX;
-    public final int sizeY;
-    public final int sizeZ;
+    public final CuboidBounds bounds;
 
-    private final boolean[][][] blocks;
+    private final BlockStateCachedData[] blocks;
 
     private final ConnGraph connGraph;
 
     public NavigableSurface(int x, int y, int z) {
-        this.sizeX = x;
-        this.sizeY = y;
-        this.sizeZ = z;
-        this.blocks = new boolean[x][y][z];
+        this.bounds = new CuboidBounds(x, y, z);
+        this.blocks = new BlockStateCachedData[bounds.volume()];
+        Arrays.fill(blocks, BlockStateCachedData.AIR);
+
         this.connGraph = new ConnGraph(Attachment::new);
     }
 
@@ -89,7 +88,7 @@ public class NavigableSurface {
         if (previously == place) {
             return; // this is already the case
         }
-        blocks[where.x][where.y][where.z] = place;
+        blocks[bounds.toIndex(where.x, where.y, where.z)] = place ? BlockStateCachedData.SCAFFOLDING : BlockStateCachedData.AIR;
         // first let's set some vertex info for where the player can and cannot stand
         for (int dy = -1; dy <= 1; dy++) {
             BetterBlockPos couldHaveChanged = where.up(dy);
@@ -144,16 +143,12 @@ public class NavigableSurface {
         return surfaceSize(new BetterBlockPos(x, y, z)).getAsInt();
     }
 
-    public boolean inRange(int x, int y, int z) {
-        return (x | y | z | (sizeX - (x + 1)) | (sizeY - (y + 1)) | (sizeZ - (z + 1))) >= 0; // ">= 0" is used here in the sense of "most significant bit is not set"
-    }
-
     public boolean getBlock(BetterBlockPos where) {
-        return blocks[where.x][where.y][where.z];
+        return blocks[bounds.toIndex(where.x, where.y, where.z)].collidesWithPlayer;
     }
 
     public boolean getBlockOrAir(BetterBlockPos where) {
-        if (!inRange(where.x, where.y, where.z)) {
+        if (!bounds.inRange(where.x, where.y, where.z)) {
             return false;
         }
         return getBlock(where);

@@ -35,8 +35,8 @@ import java.util.stream.Stream;
 public class Main {
 
     public static final boolean DEBUG = true;
-    public static final boolean SLOW_DEBUG = true;
-    public static final boolean VERY_SLOW_DEBUG = true;
+    public static final boolean SLOW_DEBUG = false;
+    public static final boolean VERY_SLOW_DEBUG = false;
 
     /**
      * If true, many different parts of the builder switch to a more efficient mode where blocks can only be placed adjacent or upwards, never downwards

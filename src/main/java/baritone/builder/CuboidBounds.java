@@ -44,7 +44,7 @@ public class CuboidBounds implements Bounds {
         this.sizeZMinusOne = sizeZ - 1;
         this.size = sizeX * sizeY * sizeZ;
         this.sizeMinusOne = size - 1;
-        if (Main.DEBUG) {
+        if (Main.SLOW_DEBUG) {
             sanityCheck();
         }
     }
