@@ -214,6 +214,7 @@ public class BlockStateCachedDataBuilder {
 
     protected PlaceAgainstData placeAgainstFace(Face face) {
         // TODO this makes the stair/slab assumption that the same half is the mustBePlacedAgainst as the faces offered for placement... counterexample is daylight sensor
+        // note that this is actually correct behavior for stairs - you can place against the top half of a upside down stair and against the bottom half of a normal stair
         if (mustBePlacedAgainst == Half.TOP && face == Face.DOWN) {
             return null;
         }
