@@ -25,7 +25,6 @@ import net.minecraft.resources.*;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PackType;
-import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.server.packs.repository.ServerPacksSource;
 import net.minecraft.server.packs.resources.ReloadableResourceManager;
@@ -43,8 +42,6 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.Vec3;
 import javax.annotation.Nonnull;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.regex.MatchResult;
@@ -139,23 +136,6 @@ public final class BlockOptionalMeta {
     public BlockState getAnyBlockState() {
         if (blockstates.size() > 0) {
             return blockstates.iterator().next();
-        }
-
-        return null;
-    }
-
-    private static Method getVanillaServerPack;
-
-    private static VanillaPackResources getVanillaServerPack() {
-        if (getVanillaServerPack == null) {
-            getVanillaServerPack = Arrays.stream(ServerPacksSource.class.getDeclaredMethods()).filter(field -> field.getReturnType() == VanillaPackResources.class).findFirst().orElseThrow();
-            getVanillaServerPack.setAccessible(true);
-        }
-
-        try {
-            return (VanillaPackResources) getVanillaServerPack.invoke(null);
-        } catch (Exception e) {
-            e.printStackTrace();
         }
 
         return null;
