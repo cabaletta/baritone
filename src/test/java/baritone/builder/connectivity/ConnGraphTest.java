@@ -43,6 +43,7 @@ public class ConnGraphTest {
 
     @Test
     public void testPerformanceOnRepeatedConnectionAndDisconnection() {
+        EulerTourForest.sanityCheck2();
         EulerTourForest.sanityCheck();
         for (int trial = 0; trial < 1; trial++) {
             try {

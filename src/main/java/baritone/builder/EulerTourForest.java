@@ -519,6 +519,63 @@ public class EulerTourForest {
         }
     }
 
+    public static void sanityCheck2() {
+        for (int i = 0; i < 9; i++) {
+            int mode = i % 3;
+            int SZ = 700;
+            TreeEdge[] up = new TreeEdge[SZ * SZ];
+            TreeEdge[] right = new TreeEdge[SZ * SZ];
+            EulerTourForest forest = new EulerTourForest(SZ * SZ);
+            for (int y = 0; y < SZ; y++) {
+                for (int x = 0; x < SZ; x++) {
+                    if (y != SZ - 1) {
+                        try {
+                            up[x * SZ + y] = forest.link(x * SZ + y, x * SZ + (y + 1));
+                        } catch (IllegalStateException ex) {} // ignore if already linked
+                    }
+                    if (x != SZ - 1) {
+                        try {
+                            right[x * SZ + y] = forest.link(x * SZ + y, (x + 1) * SZ + y);
+                        } catch (IllegalStateException ex) {} // ignore if already linked
+                    }
+                }
+            }
+            Random rand = new Random(5021);
+            for (int x = 0; x < SZ; x++) {
+                int y = SZ / 2;
+                forest.cut(up[x * SZ + y]);
+                //System.out.println("Sz " + forest.size(x * SZ + y));
+            }
+            if (mode == 1) {
+                for (int j = 0; j < SZ * SZ * 2; j++) { // *2 for a fair comparison to during connection, since that one splays both sides of each test
+                    ((EulerTourForest.SplayNode) forest.loopbacks[rand.nextInt(SZ * SZ)]).splay();
+                }
+            }
+            long a = System.currentTimeMillis();
+            parentCalls = 0; // reset metrics
+            parentWalks = 0;
+            for (int checks = 0; checks < SZ * SZ; checks++) {
+                int v1 = rand.nextInt(SZ * SZ);
+                int v2 = rand.nextInt(SZ * SZ);
+                forest.connected(v1, v2);
+                if (mode == 2) {
+                    ((SplayNode) forest.loopbacks[v1]).splay();
+                    ((SplayNode) forest.loopbacks[v2]).splay();
+                }
+            }
+            forest.checkForest(false);
+            if (mode == 0) {
+                System.out.println("WITHOUT random accesses");
+            } else if (mode == 1) {
+                System.out.println("WITH pre-connection random accesses");
+            } else {
+                System.out.println("WITH random accesses during connection");
+            }
+            System.out.println("Walk ancestor was called " + parentCalls + " times, and it traversed " + parentWalks + " in total, implying an average height of " + (parentWalks / (float) parentCalls));
+            System.out.println("Time: " + (System.currentTimeMillis() - a));
+        }
+    }
+
     public static void sanityCheck() {
         for (Direction dir : Direction.values()) {
             System.out.println("Testing zig " + dir);
