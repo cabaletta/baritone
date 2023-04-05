@@ -47,7 +47,7 @@ public class BlockStatePropertiesExtractor {
             }
             if (block instanceof BlockStairs) {
                 boolean rightsideUp = state.getValue(BlockStairs.HALF) == BlockStairs.EnumHalf.BOTTOM; // true if normal stair, false if upside down stair
-                Face facing = Face.fromMC(state.getValue(BlockStairs.FACING));
+                Face facing = fromMC(state.getValue(BlockStairs.FACING));
                 BlockStateCachedDataBuilder stairBuilder = new BlockStateCachedDataBuilder() {
                     @Override
                     protected PlaceAgainstData placeAgainstFace(Face face) {
@@ -82,7 +82,7 @@ public class BlockStatePropertiesExtractor {
             }
             if (block instanceof BlockTrapDoor) {
                 boolean bottom = state.getValue(BlockTrapDoor.HALF) == BlockTrapDoor.DoorHalf.BOTTOM;
-                Face facing = Face.fromMC(state.getValue(BlockTrapDoor.FACING));
+                Face facing = fromMC(state.getValue(BlockTrapDoor.FACING));
                 return new BlockStateCachedDataBuilder() {
                     @Override
                     public List<BlockStatePlacementOption> howCanIBePlaced() {
@@ -144,14 +144,14 @@ public class BlockStatePropertiesExtractor {
 
             // rotated clockwise about the Y axis
             if (block instanceof BlockAnvil) {
-                builder.playerMustBeHorizontalFacingInOrderToPlaceMe(Face.fromMC(state.getValue(BlockAnvil.FACING).rotateYCCW()));
+                builder.playerMustBeHorizontalFacingInOrderToPlaceMe(fromMC(state.getValue(BlockAnvil.FACING).rotateYCCW()));
             }
 
             // unchanged
             if (block instanceof BlockChest
                 // it is not right || block instanceof BlockSkull // TODO is this right?? skull can be any facing?
             ) { // TODO fence gate and lever
-                builder.playerMustBeHorizontalFacingInOrderToPlaceMe(Face.fromMC(state.getValue(BlockHorizontal.FACING)));
+                builder.playerMustBeHorizontalFacingInOrderToPlaceMe(fromMC(state.getValue(BlockHorizontal.FACING)));
             }
 
             // opposite
@@ -163,7 +163,7 @@ public class BlockStatePropertiesExtractor {
                     || block instanceof BlockPumpkin
                     || block instanceof BlockRedstoneDiode // both repeater and comparator
             ) {
-                builder.playerMustBeHorizontalFacingInOrderToPlaceMe(Face.fromMC(state.getValue(BlockHorizontal.FACING)).opposite());
+                builder.playerMustBeHorizontalFacingInOrderToPlaceMe(fromMC(state.getValue(BlockHorizontal.FACING)).opposite());
             }
         }
         // ladder
@@ -178,11 +178,11 @@ public class BlockStatePropertiesExtractor {
         if (block instanceof BlockCommandBlock
                 || block instanceof BlockDispenser // dropper extends from dispenser
                 || block instanceof BlockPistonBase) {
-            builder.playerMustBeEntityFacingInOrderToPlaceMe(Face.fromMC(state.getValue(BlockDirectional.FACING)));
+            builder.playerMustBeEntityFacingInOrderToPlaceMe(fromMC(state.getValue(BlockDirectional.FACING)));
         }
 
         if (block instanceof BlockObserver) {
-            builder.playerMustBeEntityFacingInOrderToPlaceMe(Face.fromMC(state.getValue(BlockDirectional.FACING)).opposite());
+            builder.playerMustBeEntityFacingInOrderToPlaceMe(fromMC(state.getValue(BlockDirectional.FACING)).opposite());
         }
 
         // fully passable blocks
@@ -229,12 +229,12 @@ public class BlockStatePropertiesExtractor {
         }
 
         if (block instanceof BlockTorch) { // includes redstone torch
-            builder.canOnlyPlaceAgainst(Face.fromMC(state.getValue(BlockTorch.FACING)).opposite());
+            builder.canOnlyPlaceAgainst(fromMC(state.getValue(BlockTorch.FACING)).opposite());
             fullyUnderstood = true;
         }
 
         if (block instanceof BlockShulkerBox) {
-            builder.canOnlyPlaceAgainst(Face.fromMC(state.getValue(BlockShulkerBox.FACING)).opposite());
+            builder.canOnlyPlaceAgainst(fromMC(state.getValue(BlockShulkerBox.FACING)).opposite());
             builder.collisionHeight(1); // TODO should this be 1.5 because sometimes the shulker is open?
             fullyUnderstood = true;
             if (state.getValue(BlockShulkerBox.FACING) == EnumFacing.DOWN && Main.STRICT_Y) {
@@ -299,5 +299,9 @@ public class BlockStatePropertiesExtractor {
         } else {
             return null;
         }
+    }
+
+    public static Face fromMC(EnumFacing facing) {
+        return Face.VALUES[facing.getIndex()];
     }
 }

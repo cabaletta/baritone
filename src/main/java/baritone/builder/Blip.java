@@ -39,7 +39,7 @@ public class Blip {
     public static final int TWO_BLOCKS = 2 * FULL_BLOCK;
     public static final int FEET_TO_EYE_APPROX = (int) (IPlayerContext.eyeHeight(false) / RATIO);
     public static final int JUMP = 20; // 1.25
-    public static final int TALLEST_BLOCK = FULL_BLOCK + HALF_BLOCK; // 24
+    public static final int TALLEST_BLOCK = FULL_BLOCK + HALF_BLOCK; // 24, 1.5 blocks tall, the fence / wall has the highest collision box
 
     public static double playerEyeFromFeetBlips(int feetBlips, boolean sneaking) {
         return feetBlips * RATIO + IPlayerContext.eyeHeight(sneaking);

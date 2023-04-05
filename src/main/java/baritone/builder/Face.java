@@ -63,10 +63,6 @@ public enum Face {
         return EnumFacing.byIndex(index);
     }
 
-    public static Face fromMC(EnumFacing facing) {
-        return VALUES[facing.getIndex()];
-    }
-
     public final Face opposite() {
         return VALUES[oppositeIndex];
     }

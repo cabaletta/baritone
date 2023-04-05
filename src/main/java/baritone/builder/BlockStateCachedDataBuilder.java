@@ -44,7 +44,12 @@ public class BlockStateCachedDataBuilder {
     private Face playerMustBeHorizontalFacingInOrderToPlaceMe;
     private Integer collisionHeightBlips;
     private Face canOnlyPlaceAgainst;
-    private boolean fakeLessThanFullHeight; // snow layers and soul sand
+    /**
+     * Blocks that have a collision height lower than their placement bounding box height.
+     * aka snow layers and soul sand.
+     * e.g. soul sand only collides with the player 0.875 high, but the BLOCK is 1.000 high, i.e. you can place against it at height 0.9 even though the player stands at height 0.875
+     */
+    private boolean fakeLessThanFullHeight;
     private boolean placementLogicNotImplementedYet;
     private Face playerMustBeEntityFacingInOrderToPlaceMe;
 

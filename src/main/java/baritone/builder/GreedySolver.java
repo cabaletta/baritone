@@ -82,7 +82,7 @@ public class GreedySolver {
         int relativeY = blipsWithinVoxel + Blip.FULL_BLOCK * (BetterBlockPos.YfromLong(vpos) - BetterBlockPos.YfromLong(blockGoesAt));
         int relativeZ = BetterBlockPos.ZfromLong(vpos) - BetterBlockPos.ZfromLong(blockGoesAt);
         BlockStateCachedData blockBeingPlaced = engineInput.graph.data(blockGoesAt);
-        for (BlockStatePlacementOption option : blockBeingPlaced.options) {
+        for (BlockStatePlacementOption option : blockBeingPlaced.placeMe) {
             long maybePlaceAgainst = option.against.offset(blockGoesAt);
             if (!bounds.inRangePos(maybePlaceAgainst)) {
                 continue;

@@ -24,37 +24,44 @@ import static org.junit.Assert.*;
 public class PlayerPhysicsTest {
 
     @Test
+    public void testAssumptions() {
+        if (Blip.PLAYER_HEIGHT_SLIGHT_OVERESTIMATE >= Blip.TWO_BLOCKS || Blip.PLAYER_HEIGHT_SLIGHT_OVERESTIMATE + Blip.HALF_BLOCK <= Blip.TWO_BLOCKS) {
+            throw new IllegalStateException("Assumptions made in playerTravelCollides");
+        }
+        if (Blip.TALLEST_BLOCK - Blip.FULL_BLOCK + Blip.JUMP - Blip.TWO_BLOCKS >= 0) {
+            throw new IllegalStateException("Assumption made in bidirectionalPlayerTravel");
+        }
+        int maxFeet = Blip.FULL_BLOCK - 1; // 15
+        int couldJumpUpTo = maxFeet + Blip.JUMP; // 35
+        int maxWithinAB = couldJumpUpTo - Blip.TWO_BLOCKS; // 3
+        if (PlayerPhysics.protrudesIntoThirdBlock(maxWithinAB)) {
+            // btw this is literally only 1 blip away from being true lol
+            throw new IllegalStateException("Oh no, if this is true then playerTravelCollides needs to check another layer above EF");
+        }
+    }
+
+    @Test
     public void testBasic() {
-        assertEquals(16, PlayerPhysics.highestCollision(BlockStateCachedData.SCAFFOLDING, BlockStateCachedData.SCAFFOLDING));
+        assertEquals(16, PlayerPhysics.highestCollision(FakeStates.SCAFFOLDING, FakeStates.SCAFFOLDING));
 
         Column normal = new Column();
-        normal.underneath = BlockStateCachedData.SCAFFOLDING;
-        normal.feet = BlockStateCachedData.AIR;
-        normal.head = BlockStateCachedData.AIR;
-        normal.above = BlockStateCachedData.AIR;
-        normal.aboveAbove = BlockStateCachedData.SCAFFOLDING;
+        normal.underneath = FakeStates.SCAFFOLDING;
+        normal.feet = FakeStates.AIR;
+        normal.head = FakeStates.AIR;
+        normal.above = FakeStates.AIR;
+        normal.aboveAbove = FakeStates.SCAFFOLDING;
         normal.init();
 
         Column up = new Column();
-        up.underneath = BlockStateCachedData.SCAFFOLDING;
-        up.feet = BlockStateCachedData.SCAFFOLDING;
-        up.head = BlockStateCachedData.AIR;
-        up.above = BlockStateCachedData.AIR;
-        up.aboveAbove = BlockStateCachedData.SCAFFOLDING;
+        up.underneath = FakeStates.SCAFFOLDING;
+        up.feet = FakeStates.SCAFFOLDING;
+        up.head = FakeStates.AIR;
+        up.above = FakeStates.AIR;
+        up.aboveAbove = FakeStates.SCAFFOLDING;
         up.init();
 
         assertEquals(PlayerPhysics.Collision.VOXEL_LEVEL, PlayerPhysics.playerTravelCollides(normal, normal));
         assertEquals(PlayerPhysics.Collision.JUMP_TO_VOXEL_UP, PlayerPhysics.playerTravelCollides(normal, up));
-    }
-
-    private static final BlockStateCachedData[] BY_HEIGHT;
-
-    static {
-        BY_HEIGHT = new BlockStateCachedData[Blip.FULL_BLOCK + 1];
-        for (int height = 1; height <= Blip.FULL_BLOCK; height++) {
-            BY_HEIGHT[height] = new BlockStateCachedData(new BlockStateCachedDataBuilder().collidesWithPlayer(true).fullyWalkableTop().collisionHeight(height * Blip.RATIO));
-        }
-        BY_HEIGHT[0] = BlockStateCachedData.AIR;
     }
 
     private static BlockStateCachedData[] makeColToHeight(int height) {
@@ -65,11 +72,11 @@ public class PlayerPhysicsTest {
         int fullBlocks = height / Blip.FULL_BLOCK;
         BlockStateCachedData[] ret = new BlockStateCachedData[7];
         for (int i = 0; i < fullBlocks; i++) {
-            ret[i] = BlockStateCachedData.SCAFFOLDING;
+            ret[i] = FakeStates.SCAFFOLDING;
         }
-        ret[fullBlocks] = BY_HEIGHT[height % Blip.FULL_BLOCK];
+        ret[fullBlocks] = FakeStates.BY_HEIGHT[height % Blip.FULL_BLOCK];
         for (int i = fullBlocks + 1; i < ret.length; i++) {
-            ret[i] = BlockStateCachedData.AIR;
+            ret[i] = FakeStates.AIR;
         }
         return ret;
     }
@@ -102,7 +109,7 @@ public class PlayerPhysicsTest {
             for (int startCeil = 5; startCeil <= 7; startCeil++) {
                 BlockStateCachedData[] fromCol = makeColToHeight(startHeight);
                 if (startCeil < fromCol.length) {
-                    fromCol[startCeil] = BlockStateCachedData.SCAFFOLDING;
+                    fromCol[startCeil] = FakeStates.SCAFFOLDING;
                 }
                 Column from = toCol(fromCol);
                 assertEquals(!from.standing(), startCeil == 5 && startHeight > 3);
@@ -115,7 +122,7 @@ public class PlayerPhysicsTest {
                     for (int endCeil = 5; endCeil <= 7; endCeil++) {
                         BlockStateCachedData[] toCol = makeColToHeight(endHeight);
                         if (endCeil < toCol.length) {
-                            toCol[endCeil] = BlockStateCachedData.SCAFFOLDING;
+                            toCol[endCeil] = FakeStates.SCAFFOLDING;
                         }
                         Column to = toCol(toCol);
                         int endVoxel = (endHeight + Blip.FULL_BLOCK * 10) / Blip.FULL_BLOCK - 10; // hate negative division rounding to zero, punch negative division rounding to zero
@@ -160,7 +167,7 @@ public class PlayerPhysicsTest {
             if (j >= 0 && j < col.length) {
                 ret[i] = col[j];
             } else {
-                ret[i] = BlockStateCachedData.OUT_OF_BOUNDS;
+                ret[i] = FakeStates.OUT_OF_BOUNDS;
             }
         }
         return ret;

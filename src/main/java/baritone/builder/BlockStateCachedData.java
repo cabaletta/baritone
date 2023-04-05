@@ -17,7 +17,6 @@
 
 package baritone.builder;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -27,38 +26,17 @@ import java.util.List;
  * There will be exactly one of these per valid IBlockState in the game
  */
 public final class BlockStateCachedData {
-
-    private static final BlockStateCachedData[] PER_STATE = Main.DATA_PROVIDER.allNullable();
-    public static final BlockStateCachedData SCAFFOLDING = new BlockStateCachedData(new BlockStateCachedDataBuilder().collidesWithPlayer(true).fullyWalkableTop().collisionHeight(1).canPlaceAgainstMe());
-    public static final BlockStateCachedData AIR = new BlockStateCachedData(new BlockStateCachedDataBuilder().setAir());
-    public static final BlockStateCachedData OUT_OF_BOUNDS = new BlockStateCachedData(new BlockStateCachedDataBuilder().collidesWithPlayer(true).collisionHeight(1));
-
-    static {
-        if (!AIR.isAir) {
-            throw new IllegalStateException();
-        }
-    }
-
     public final boolean fullyWalkableTop;
     private final int collisionHeightBlips;
     public final boolean isAir;
 
     public final boolean collidesWithPlayer;
 
-
     public final boolean mustSneakWhenPlacingAgainstMe;
 
-    public final List<BlockStatePlacementOption> options;
+    public final List<BlockStatePlacementOption> placeMe; // list because of unknown size with no obvious indexing
 
-    public final PlaceAgainstData[] againstMe;
-
-    public static BlockStateCachedData get(int state) {
-        return PER_STATE[state];
-    }
-
-    public static List<BlockStateCachedData> getAllStates() {
-        return Collections.unmodifiableList(Arrays.asList(PER_STATE));
-    }
+    public final PlaceAgainstData[] placeAgainstMe; // array because of fixed size with obvious indexing (no more than one per face, so, index per face)
 
     public BlockStateCachedData(BlockStateCachedDataBuilder builder) {
         builder.sanityCheck();
@@ -72,9 +50,9 @@ public final class BlockStateCachedData {
         }
 
         this.mustSneakWhenPlacingAgainstMe = builder.isMustSneakWhenPlacingAgainstMe();
-        this.options = Collections.unmodifiableList(builder.howCanIBePlaced());
+        this.placeMe = Collections.unmodifiableList(builder.howCanIBePlaced());
 
-        this.againstMe = builder.placeAgainstMe();
+        this.placeAgainstMe = builder.placeAgainstMe();
     }
 
     public int collisionHeightBlips() {
@@ -88,12 +66,12 @@ public final class BlockStateCachedData {
         if (Main.fakePlacementForPerformanceTesting) {
             return Main.RAND.nextInt(10) < 8;
         }
-        PlaceAgainstData against = againstMe[placement.against.oppositeIndex];
+        PlaceAgainstData against = againstMe(placement);
         return against != null && possible(placement, against);
     }
 
     public PlaceAgainstData againstMe(BlockStatePlacementOption placement) {
-        return againstMe[placement.against.oppositeIndex];
+        return placeAgainstMe[placement.against.oppositeIndex];
     }
 
     public static boolean possible(BlockStatePlacementOption placement, PlaceAgainstData against) {

@@ -45,7 +45,7 @@ public class Main {
 
     public static final boolean fakePlacementForPerformanceTesting = false;
 
-    public static final IBlockStateDataProvider DATA_PROVIDER = new VanillaBlockStateDataProvider();
+    public static final BlockData DATA = new BlockData(new VanillaBlockStateDataProvider());
 
     public static final Random RAND = new Random(5021);
 
@@ -122,7 +122,7 @@ public class Main {
                     Arrays.fill(arr2, based);
                 }
             }*/
-            PackedBlockStateCuboid states = new PackedBlockStateCuboid(test);
+            PackedBlockStateCuboid states = new PackedBlockStateCuboid(test, DATA);
             PlaceOrderDependencyGraph graph = new PlaceOrderDependencyGraph(states);
             long aa = System.currentTimeMillis();
             /*DependencyGraphAnalyzer.prevalidate(graph);
@@ -174,12 +174,6 @@ public class Main {
                     .flatMap(ignored -> IntStream.range(200, 300).boxed())
                     .collect(Collectors.toList()).parallelStream()
                     .forEach(x -> System.out.println(x + ""));
-        }
-        {
-            BlockStateCachedData.get(0);
-        }
-        {
-            BlockStatePlacementOption.sanityCheck();
         }
         for (int aaaa = 0; aaaa < 0; aaaa++) {
             /*Raytracer.raytraceMode++;
@@ -452,7 +446,7 @@ Branchy took 124ms
                     }
                 }
             };
-            PackedBlockStateCuboid states = new PackedBlockStateCuboid(test);
+            PackedBlockStateCuboid states = new PackedBlockStateCuboid(test, DATA);
             PlaceOrderDependencyGraph graph = new PlaceOrderDependencyGraph(states);
             System.out.println("N " + Face.NORTH.z);
             System.out.println("S " + Face.SOUTH.z);

@@ -129,7 +129,7 @@ public class CuboidBounds implements Bounds {
         }
     }
 
-    private void sanityCheck() {
+    public void sanityCheck() {
         if (sizeY > 256) {
             throw new IllegalStateException();
         }

@@ -86,13 +86,4 @@ public class Vec3d {
     public String toString() {
         return "Vec3d{" + x + "," + y + "," + z + "}";
     }
-
-    static {
-        for (Face face : Face.HORIZONTALS) {
-            Face flat = new Vec3d(face.x, face.y, face.z).flatDirection();
-            if (flat != face) {
-                throw new IllegalStateException();
-            }
-        }
-    }
 }

@@ -306,22 +306,6 @@ public class PlayerPhysics {
         return feet > Blip.TWO_BLOCKS - Blip.PLAYER_HEIGHT_SLIGHT_OVERESTIMATE; // > and not >= because the player height is a slight overestimate
     }
 
-    static {
-        if (Blip.PLAYER_HEIGHT_SLIGHT_OVERESTIMATE >= Blip.TWO_BLOCKS || Blip.PLAYER_HEIGHT_SLIGHT_OVERESTIMATE + Blip.HALF_BLOCK <= Blip.TWO_BLOCKS) {
-            throw new IllegalStateException("Assumptions made in playerTravelCollides");
-        }
-        if (Blip.TALLEST_BLOCK - Blip.FULL_BLOCK + Blip.JUMP - Blip.TWO_BLOCKS >= 0) {
-            throw new IllegalStateException("Assumption made in bidirectionalPlayerTravel");
-        }
-        int maxFeet = Blip.FULL_BLOCK - 1; // 15
-        int couldJumpUpTo = maxFeet + Blip.JUMP; // 35
-        int maxWithinAB = couldJumpUpTo - Blip.TWO_BLOCKS; // 3
-        if (protrudesIntoThirdBlock(maxWithinAB)) {
-            // btw this is literally only 1 blip away from being true lol
-            throw new IllegalStateException("Oh no, if this is true then playerTravelCollides needs to check another layer above EF");
-        }
-    }
-
     public enum Collision {
         // TODO maybe we need another option that is like "you could do it, but you shouldn't". like, "if you hit W, you would walk forward, but you wouldn't like the outcome" such as cactus or lava or something
 

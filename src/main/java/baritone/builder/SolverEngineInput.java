@@ -132,10 +132,10 @@ public class SolverEngineInput {
             if (inWorldState.blockExists(pos)) {
                 return graph.data(pos);
             } else {
-                return BlockStateCachedData.AIR;
+                return FakeStates.AIR;
             }
         } else {
-            return BlockStateCachedData.OUT_OF_BOUNDS;
+            return FakeStates.OUT_OF_BOUNDS;
         }
     }
 }

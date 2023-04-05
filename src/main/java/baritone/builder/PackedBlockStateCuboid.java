@@ -20,15 +20,32 @@ package baritone.builder;
 public class PackedBlockStateCuboid {
 
     public final Bounds bounds;
-    private final int[] states;
+    private final BlockStateCachedData[] states;
+    private final BlockStateCachedData[] statesWithScaffolding;
 
-    public PackedBlockStateCuboid(int[][][] blockStates) {
-        this.bounds = new CuboidBounds(blockStates.length, blockStates[0].length, blockStates[0][0].length);
-        this.states = new int[bounds.volume()];
-        bounds.forEach((x, y, z) -> states[bounds.toIndex(x, y, z)] = blockStates[x][y][z]);
+    private PackedBlockStateCuboid(int x, int y, int z) {
+        this.bounds = new CuboidBounds(x, y, z);
+        this.states = new BlockStateCachedData[bounds.volume()];
+        this.statesWithScaffolding = new BlockStateCachedData[bounds.volume()];
     }
 
-    public int get(int index) {
+    public PackedBlockStateCuboid(int[][][] blockStates, BlockData data) {
+        this(blockStates.length, blockStates[0].length, blockStates[0][0].length);
+        bounds.forEach((x, y, z) -> states[bounds.toIndex(x, y, z)] = data.get(blockStates[x][y][z]));
+        genScaffoldVariant();
+    }
+
+    private void genScaffoldVariant() {
+        for (int i = 0; i < states.length; i++) {
+            statesWithScaffolding[i] = states[i].isAir ? FakeStates.SCAFFOLDING : states[i];
+        }
+    }
+
+    public BlockStateCachedData get(int index) {
         return states[index];
+    }
+
+    public BlockStateCachedData getScaffoldingVariant(int index) {
+        return statesWithScaffolding[index];
     }
 }

@@ -38,7 +38,7 @@ public class PlaceOptions {
                 if (overlay.outgoingEdge(blockPos, againstToPlace)) {
                     long placingBlockAt = againstToPlace.offset(blockPos);
                     BlockStateCachedData blockBeingPlaced = overlay.data(placingBlockAt);
-                    for (BlockStatePlacementOption option : blockBeingPlaced.options) {
+                    for (BlockStatePlacementOption option : blockBeingPlaced.placeMe) {
                         if (option.against == placeToAgainst) {
                             PlaceAgainstData againstData = placingAgainst.againstMe(option);
                             int relativeX = playerX - BetterBlockPos.XfromLong(placingBlockAt);

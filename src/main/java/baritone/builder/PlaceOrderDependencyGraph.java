@@ -27,10 +27,6 @@ package baritone.builder;
  */
 public class PlaceOrderDependencyGraph {
 
-    private static final BlockStateCachedData[] PER_STATE_WITH_SCAFFOLDING = BlockStateCachedData.getAllStates().stream().map(
-            state -> state != null && treatAsScaffolding(state) ? BlockStateCachedData.SCAFFOLDING : state
-    ).toArray(BlockStateCachedData[]::new);
-
     private final PackedBlockStateCuboid states;
     private final byte[] edges;
 
@@ -43,7 +39,7 @@ public class PlaceOrderDependencyGraph {
 
     private void compute(long pos) {
         byte val = 0;
-        for (BlockStatePlacementOption option : data(pos).options) {
+        for (BlockStatePlacementOption option : data(pos).placeMe) {
             if (Main.STRICT_Y && option.against == Face.UP) {
                 throw new IllegalStateException();
             }
@@ -52,7 +48,7 @@ public class PlaceOrderDependencyGraph {
             if (inRange(againstPos)) {
                 against = data(againstPos);
             } else {
-                against = BlockStateCachedData.SCAFFOLDING;
+                against = FakeStates.SCAFFOLDING;
             }
             if (against.possibleAgainstMe(option)) {
                 val |= 1 << option.against.index;
@@ -62,7 +58,7 @@ public class PlaceOrderDependencyGraph {
     }
 
     public BlockStateCachedData data(long pos) {
-        return PER_STATE_WITH_SCAFFOLDING[state(pos)];
+        return states.getScaffoldingVariant(bounds().toIndex(pos));
     }
 
     // example: dirt at 0,0,0 torch at 0,1,0. outgoingEdge(0,0,0,UP) returns true, incomingEdge(0,1,0,DOWN) returns true
@@ -89,14 +85,7 @@ public class PlaceOrderDependencyGraph {
     }
 
     public boolean airTreatedAsScaffolding(long pos) {
-        // alternate valid implementations of this could be:
-        // return BlockStateCachedData.getScaffoldingVariant(state(pos)) == BlockStateCachedData.SCAFFOLDING;
-        // return data(pos) == BlockStateCachedData.SCAFFOLDING;
-        return treatAsScaffolding(BlockStateCachedData.get(state(pos)));
-    }
-
-    private int state(long pos) {
-        return states.get(bounds().toIndex(pos));
+        return data(pos) == FakeStates.SCAFFOLDING;
     }
 
     private boolean inRange(long pos) {
@@ -105,9 +94,5 @@ public class PlaceOrderDependencyGraph {
 
     public Bounds bounds() {
         return states.bounds;
-    }
-
-    public static boolean treatAsScaffolding(BlockStateCachedData state) {
-        return state.isAir;
     }
 }

@@ -61,9 +61,9 @@ public class BlockStatePlacementOption {
     /**
      * This value must be greater than the face projections.
      * <p>
-     * Otherwise certain stair placements would not work. This is verified in this class's sanityCheck.
+     * Otherwise certain stair placements would not work. This is verified in the test
      */
-    private static final double LOOSE_CENTER_DISTANCE = 0.15;
+    public static final double LOOSE_CENTER_DISTANCE = 0.15;
 
     public List<Raytracer.Raytrace> computeTraceOptions(PlaceAgainstData placingAgainst, int playerSupportingX, int playerFeetBlips, int playerSupportingZ, PlayerVantage vantage, double blockReachDistance) {
         if (!BlockStateCachedData.possible(this, placingAgainst)) {
@@ -126,7 +126,7 @@ public class BlockStatePlacementOption {
         } else if (hit.y == 0.1) {
             return half == Half.BOTTOM;
         } else if (hit.y == 0.5) {
-            return false;
+            return false; // ambiguous, so force it to pick either down or up
         } else if (hit.y == 0.9) {
             return half == Half.TOP;
         } else {
@@ -153,7 +153,7 @@ public class BlockStatePlacementOption {
             }
             Face entFace = playerMustBeEntityFacing.get();
             // see EnumFacing.getDirectionFromEntityLiving
-            double dx = Math.abs(eye.x - 0.5);
+            double dx = Math.abs(eye.x - 0.5); // TODO this is changed between 1.12 and 1.19, in 1.19 this should be eye.x-hit.x
             double dz = Math.abs(eye.z - 0.5);
             if (dx < 2 - ENTITY_FACING_TOLERANCE && dz < 2 - ENTITY_FACING_TOLERANCE) { // < 1.99
                 if (eye.y < 0) { // eye below placement level = it will be facing down, so this is only okay if we want that
@@ -199,17 +199,6 @@ public class BlockStatePlacementOption {
         }
     }
 
-    static {
-        for (int i = 0; i < Face.OPTS.size(); i++) {
-            if (Face.OPTS.indexOf(Face.OPTS.get(i)) != i) {
-                throw new IllegalStateException();
-            }
-            if (Face.OPTS.get(i).map(face -> face.index).orElse(Face.NUM_FACES) != i) {
-                throw new IllegalStateException();
-            }
-        }
-    }
-
     private void validate(Face against, Half half, Optional<Face> playerMustBeHorizontalFacing, Optional<Face> playerMustBeEntityFacing) {
         if (playerMustBeEntityFacing.isPresent() && playerMustBeHorizontalFacing.isPresent()) {
             throw new IllegalStateException();
@@ -236,53 +225,6 @@ public class BlockStatePlacementOption {
                 throw new IllegalStateException();
             }
         });
-    }
-
-    static {
-        if (Main.DEBUG) {
-            sanityCheck();
-        }
-    }
-
-    public static void sanityCheck() {
-        // standing at 1,0,0
-        // block to be placed at 0,0,0
-        // placing against 0,0,-1
-
-        // eye is at 1, 1.62, 0
-        // north or west
-
-        StringBuilder sanity = new StringBuilder();
-        for (PlayerVantage vantage : new PlayerVantage[]{PlayerVantage.STRICT_CENTER, PlayerVantage.LOOSE_CENTER}) {
-            for (Face playerFacing : new Face[]{Face.NORTH, Face.EAST, Face.WEST}) {
-                sanity.append(vantage).append(playerFacing);
-                List<Raytracer.Raytrace> traces = BlockStatePlacementOption.get(Face.NORTH, Half.BOTTOM, Optional.of(playerFacing), Optional.empty()).computeTraceOptions(new PlaceAgainstData(Face.SOUTH, Half.EITHER, false), 1, 0, 0, vantage, 4);
-                sanity.append(traces.size());
-                sanity.append(" ");
-                if (!traces.isEmpty()) {
-                    for (double d : new double[]{traces.get(0).playerEye.x, traces.get(0).playerEye.z}) {
-                        double base = d > 1 ? 1.5 : 0.5;
-                        boolean a = d == base - LOOSE_CENTER_DISTANCE;
-                        boolean b = d == base;
-                        boolean c = d == base + LOOSE_CENTER_DISTANCE;
-                        if (!a && !b && !c) {
-                            throw new IllegalStateException("Wrong " + d);
-                        }
-                        sanity.append(a).append(" ").append(b).append(" ").append(c).append(" ");
-                    }
-                }
-                sanity.append(traces.stream().mapToDouble(Raytracer.Raytrace::centerDistApprox).distinct().count());
-                sanity.append(";");
-            }
-        }
-
-        String res = sanity.toString();
-        String should = "STRICT_CENTERNORTH0 0;STRICT_CENTEREAST0 0;STRICT_CENTERWEST3 false true false false true false 1;LOOSE_CENTERNORTH2 true false false false true false 1;LOOSE_CENTEREAST0 0;LOOSE_CENTERWEST13 false true false false true false 2;";
-        if (!res.equals(should)) {
-            System.out.println(res);
-            System.out.println(should);
-            throw new IllegalStateException(res);
-        }
     }
 
     private static List<Raytracer.Raytrace> sanityCheckTraces(List<Raytracer.Raytrace> traces) {

@@ -34,7 +34,7 @@ public class NavigableSurface {
     public NavigableSurface(int x, int y, int z) {
         this.bounds = new CuboidBounds(x, y, z);
         this.blocks = new BlockStateCachedData[bounds.volume()];
-        Arrays.fill(blocks, BlockStateCachedData.AIR);
+        Arrays.fill(blocks, FakeStates.AIR);
 
         this.connGraph = new ConnGraph(Attachment::new);
     }
@@ -88,7 +88,7 @@ public class NavigableSurface {
         if (previously == place) {
             return; // this is already the case
         }
-        blocks[bounds.toIndex(where.x, where.y, where.z)] = place ? BlockStateCachedData.SCAFFOLDING : BlockStateCachedData.AIR;
+        blocks[bounds.toIndex(where.x, where.y, where.z)] = place ? FakeStates.SCAFFOLDING : FakeStates.AIR;
         // first let's set some vertex info for where the player can and cannot stand
         for (int dy = -1; dy <= 1; dy++) {
             BetterBlockPos couldHaveChanged = where.up(dy);

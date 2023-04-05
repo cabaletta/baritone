@@ -17,6 +17,7 @@
 
 package baritone.builder.mc;
 
+import baritone.builder.BlockData;
 import baritone.builder.BlockStateCachedData;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -30,10 +31,11 @@ public class DebugStates {
     public static void debug() {
         Map<Block, List<IBlockState>> bts = new HashMap<>();
         Map<String, List<IBlockState>> byString = new HashMap<>();
+        BlockData data = new BlockData(new VanillaBlockStateDataProvider());
         for (IBlockState state : Block.BLOCK_STATE_IDS) {
             //System.out.println(state);
             bts.computeIfAbsent(state.getBlock(), $ -> new ArrayList<>()).add(state);
-            String str = toString(BlockStateCachedData.get(Block.BLOCK_STATE_IDS.get(state)));
+            String str = toString(data.get(Block.BLOCK_STATE_IDS.get(state)));
             byString.computeIfAbsent(str, $ -> new ArrayList<>()).add(state);
         }
         for (String key : (Iterable<String>) byString.keySet().stream().sorted()::iterator) {
@@ -100,9 +102,9 @@ public class DebugStates {
         }
         props.put("collides", "" + data.collidesWithPlayer);
         props.put("walkabletop", "" + data.fullyWalkableTop);
-        props.put("placeme", "" + data.options.size());
+        props.put("placeme", "" + data.placeMe.size());
         props.put("sneak", "" + data.mustSneakWhenPlacingAgainstMe);
-        props.put("againstme", "" + Stream.of(data.againstMe).filter(Objects::nonNull).count());
+        props.put("againstme", "" + Stream.of(data.placeAgainstMe).filter(Objects::nonNull).count());
         if (data.collidesWithPlayer) {
             props.put("y", "" + data.collisionHeightBlips());
         }
