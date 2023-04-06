@@ -37,7 +37,7 @@ public enum Face {
     public final int x = toMC().getXOffset();
     public final int y = toMC().getYOffset();
     public final int z = toMC().getZOffset();
-    public final long offset = BetterBlockPos.toLong(x, y, z);
+    public final long offset = BetterBlockPos.toLong(x, y, z); // both the previous three lines (avoidably) and this one (unavoidably due to BlockPos superclass of BetterBlockPos) mess up test timing / profiling because it calls the <clinit> of both EnumFacing and BlockPos which does some Log4j bs lol
     public final int[] vec = new int[]{x, y, z};
     public final boolean vertical = y != 0;
     public final int horizontalIndex = x & 1 | (x | z) & 2;

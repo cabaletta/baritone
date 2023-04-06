@@ -17,6 +17,7 @@
 
 package baritone.builder;
 
+import baritone.api.utils.BetterBlockPos;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -28,5 +29,20 @@ public class FaceTest {
             assertEquals(i, Face.OPTS.indexOf(Face.OPTS.get(i)));
             assertEquals(i, (int) Face.OPTS.get(i).map(face -> face.index).orElse(Face.NUM_FACES));
         }
+    }
+
+    @Test
+    public void ensureValid() {
+        for (Face face : Face.VALUES) {
+            assertEquals(face.x, face.toMC().getXOffset());
+            assertEquals(face.y, face.toMC().getYOffset());
+            assertEquals(face.z, face.toMC().getZOffset());
+        }
+        assertEquals(Face.UP.offset, BetterBlockPos.toLong(0, 1, 0));
+        assertEquals(Face.DOWN.offset, BetterBlockPos.toLong(0, -1, 0));
+        assertEquals(Face.NORTH.offset, BetterBlockPos.toLong(0, 0, -1));
+        assertEquals(Face.SOUTH.offset, BetterBlockPos.toLong(0, 0, 1));
+        assertEquals(Face.EAST.offset, BetterBlockPos.toLong(1, 0, 0));
+        assertEquals(Face.WEST.offset, BetterBlockPos.toLong(-1, 0, 0));
     }
 }

@@ -85,7 +85,7 @@ public class PlaceOrderDependencyGraph {
     }
 
     public boolean airTreatedAsScaffolding(long pos) {
-        return data(pos) == FakeStates.SCAFFOLDING;
+        return treatedAsScaffolding(data(pos));
     }
 
     private boolean inRange(long pos) {
@@ -94,5 +94,9 @@ public class PlaceOrderDependencyGraph {
 
     public Bounds bounds() {
         return states.bounds;
+    }
+
+    public static boolean treatedAsScaffolding(BlockStateCachedData data) {
+        return data == FakeStates.SCAFFOLDING;
     }
 }

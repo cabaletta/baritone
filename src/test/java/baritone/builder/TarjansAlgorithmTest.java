@@ -19,9 +19,32 @@ package baritone.builder;
 
 import org.junit.Test;
 
+import java.util.Random;
+
 public class TarjansAlgorithmTest {
     @Test
     public void test() {
         // the correctness test is already in there just gotta ask for it
+        Random RAND = new Random(5021);
+        for (int i = 0; i < 100; i++) {
+            BlockStateCachedData[][][] test = new BlockStateCachedData[20][20][20];
+            for (int x = 0; x < test.length; x++) {
+                for (int y = 0; y < test[0].length; y++) {
+                    for (int z = 0; z < test[0][0].length; z++) {
+                        if (RAND.nextInt(10) < 3) {
+                            test[x][y][z] = FakeStates.probablyCanBePlaced(RAND);
+                        } else {
+                            test[x][y][z] = FakeStates.AIR;
+                        }
+                    }
+
+                }
+            }
+            PackedBlockStateCuboid states = new PackedBlockStateCuboid(test);
+            PlaceOrderDependencyGraph graph = new PlaceOrderDependencyGraph(states);
+            DependencyGraphScaffoldingOverlay overlay = new DependencyGraphScaffoldingOverlay(graph); // this runs tarjan's twice, but the alternative ruins the abstraction layers too much :)
+            TarjansAlgorithm.TarjansResult result = TarjansAlgorithm.run(overlay);
+            TarjansAlgorithm.sanityCheckResult(overlay, result);
+        }
     }
 }

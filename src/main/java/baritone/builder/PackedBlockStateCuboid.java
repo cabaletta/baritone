@@ -35,8 +35,17 @@ public class PackedBlockStateCuboid {
         genScaffoldVariant();
     }
 
+    public PackedBlockStateCuboid(BlockStateCachedData[][][] blockStates) {
+        this(blockStates.length, blockStates[0].length, blockStates[0][0].length);
+        bounds.forEach((x, y, z) -> states[bounds.toIndex(x, y, z)] = blockStates[x][y][z]);
+        genScaffoldVariant();
+    }
+
     private void genScaffoldVariant() {
         for (int i = 0; i < states.length; i++) {
+            if (PlaceOrderDependencyGraph.treatedAsScaffolding(states[i])) {
+                throw new IllegalStateException("including FakeStates.SCAFFOLDING will confuse the place order dependency graph. use an alternate block like FakeStates.SOLID");
+            }
             statesWithScaffolding[i] = states[i].isAir ? FakeStates.SCAFFOLDING : states[i];
         }
     }

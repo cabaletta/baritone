@@ -47,7 +47,7 @@ public class TarjansAlgorithm {
         this.tarjanCallStack = new ArrayDeque<>();
     }
 
-    private LongSet sanityCheckResultFrom(long start) {
+    private static LongSet sanityCheckResultFrom(DependencyGraphScaffoldingOverlay graph, long start) {
         if (graph.air(start)) {
             throw new IllegalStateException();
         }
@@ -69,7 +69,7 @@ public class TarjansAlgorithm {
         return ret;
     }
 
-    private void sanityCheck() {
+    public static void sanityCheckResult(DependencyGraphScaffoldingOverlay graph, TarjansResult result) {
         // this is a much slower (O(n^2) at least instead of O(n)) implementation of finding strongly connected components
         Int2ObjectOpenHashMap<LongSet> checkedCids = new Int2ObjectOpenHashMap<>();
         LongSet claimedAlready = new LongOpenHashSet();
@@ -77,7 +77,7 @@ public class TarjansAlgorithm {
             int cid = result.getComponent(pos);
             LongSet componentShouldBe = checkedCids.get(cid);
             if (componentShouldBe == null) {
-                componentShouldBe = sanityCheckResultFrom(pos);
+                componentShouldBe = sanityCheckResultFrom(graph, pos);
                 checkedCids.put(cid, componentShouldBe);
                 LongIterator it = componentShouldBe.iterator();
                 while (it.hasNext()) {
@@ -96,7 +96,7 @@ public class TarjansAlgorithm {
         TarjansAlgorithm algo = new TarjansAlgorithm(overlayedGraph);
         algo.run();
         if (Main.VERY_SLOW_DEBUG) {
-            algo.sanityCheck();
+            sanityCheckResult(overlayedGraph, algo.result);
         }
         return algo.result;
     }

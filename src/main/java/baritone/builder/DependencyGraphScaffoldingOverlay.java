@@ -165,7 +165,7 @@ public class DependencyGraphScaffoldingOverlay {
                     }
                 }
             });
-            if (Main.DEBUG) {
+            if (Main.SLOW_DEBUG) {
                 sanityCheck();
             }
         }
@@ -254,7 +254,7 @@ public class DependencyGraphScaffoldingOverlay {
                     }
                 }
                 // can't run sanityCheck after each mergeInto because it could leave a 2-way connection between components as an intermediary state while collapsing
-                if (Main.DEBUG) {
+                if (Main.SLOW_DEBUG) {
                     sanityCheck();
                 }
                 return;
@@ -294,7 +294,7 @@ public class DependencyGraphScaffoldingOverlay {
             CollapsedDependencyGraphComponent component = addComponent();
             component.positions.add(pos);
             posToComponent.put(pos, component);
-            if (Main.DEBUG) {
+            if (Main.SLOW_DEBUG) {
                 sanityCheck();
             }
             //System.out.println("Incremental " + pos);
@@ -309,7 +309,7 @@ public class DependencyGraphScaffoldingOverlay {
                     incrementalEdgeAddition(face.offset(pos), pos);
                 }
             }
-            if (Main.DEBUG) {
+            if (Main.SLOW_DEBUG) {
                 sanityCheck();
             }
         }

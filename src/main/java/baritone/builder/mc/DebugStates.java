@@ -86,7 +86,7 @@ public class DebugStates {
         }
     }
 
-    private static String toString(BlockStateCachedData data) {
+    public static String toString(BlockStateCachedData data) {
         if (data == null) {
             return "UNKNOWN";
         }
