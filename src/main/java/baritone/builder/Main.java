@@ -43,8 +43,6 @@ public class Main {
      */
     public static final boolean STRICT_Y = true;
 
-    public static final boolean fakePlacementForPerformanceTesting = false;
-
     public static final BlockData DATA = new BlockData(new VanillaBlockStateDataProvider());
 
     public static final Random RAND = new Random(5021);
@@ -347,9 +345,6 @@ Branchy took 124ms
             }
         }
         {
-            if (fakePlacementForPerformanceTesting) {
-                throw new IllegalStateException("not compatible with this test");
-            }
             int[][][] test = new int[8][8][8];
             int dirt = Block.BLOCK_STATE_IDS.get(Blocks.DIRT.getDefaultState());
             System.out.println("D " + dirt);

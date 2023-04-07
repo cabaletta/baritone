@@ -63,9 +63,6 @@ public final class BlockStateCachedData {
     }
 
     public boolean possibleAgainstMe(BlockStatePlacementOption placement) {
-        if (Main.fakePlacementForPerformanceTesting) {
-            return Main.RAND.nextInt(10) < 8;
-        }
         PlaceAgainstData against = againstMe(placement);
         return against != null && possible(placement, against);
     }
