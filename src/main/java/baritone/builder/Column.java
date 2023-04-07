@@ -31,7 +31,7 @@ import static baritone.api.utils.BetterBlockPos.Y_SHIFT;
  */
 public class Column {
 
-    public long pos;
+    public long pos; // TODO this isn't set?
     //public BlockStateCachedData underUnderneath;
     public BlockStateCachedData underneath;
     public BlockStateCachedData feet;
@@ -80,13 +80,17 @@ public class Column {
         return feetBlips != null;
     }
 
-    private static final long DOWN_2 = (Y_MASK - 1) << Y_SHIFT;
-    private static final long DOWN_1 = Y_MASK << Y_SHIFT;
-    private static final long UP_1 = 1L << Y_SHIFT;
-    private static final long UP_2 = 2L << Y_SHIFT;
-    private static final long UP_3 = 3L << Y_SHIFT;
+    public static final long DOWN_3 = (Y_MASK - 2) << Y_SHIFT;
+    public static final long DOWN_2 = (Y_MASK - 1) << Y_SHIFT;
+    public static final long DOWN_1 = Y_MASK << Y_SHIFT;
+    public static final long UP_1 = 1L << Y_SHIFT;
+    public static final long UP_2 = 2L << Y_SHIFT;
+    public static final long UP_3 = 3L << Y_SHIFT;
 
     static {
+        if (DOWN_3 != BetterBlockPos.toLong(0, -3, 0)) {
+            throw new IllegalStateException();
+        }
         if (DOWN_2 != BetterBlockPos.toLong(0, -2, 0)) {
             throw new IllegalStateException();
         }

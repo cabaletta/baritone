@@ -176,7 +176,7 @@ public class NavigableSurfaceTest {
         outer:
         while (true) {
             for (BetterBlockPos candidate : iterationOrder) {
-                if (surface.getBlock(candidate)) {
+                if (surface.hasBlock(candidate)) {
                     continue; // already placed
                 }
                 allowed:
@@ -221,7 +221,7 @@ public class NavigableSurfaceTest {
         for (int y = 0; y < surface.bounds().sizeY; y++) {
             for (int z = 0; z < surface.bounds().sizeZ; z++) {
                 for (int x = 0; x < surface.bounds().sizeX; x++) {
-                    report.append(surface.getBlock(new BetterBlockPos(x, y, z)) ? 'X' : ' ');
+                    report.append(surface.hasBlock(new BetterBlockPos(x, y, z)) ? 'X' : ' ');
                 }
                 report.append('\n');
             }
@@ -238,7 +238,7 @@ public class NavigableSurfaceTest {
         StringBuilder report = new StringBuilder(len);
         for (int z = 0; z < surface.bounds().sizeZ; z++) {
             for (int x = 0; x < surface.bounds().sizeX; x++) {
-                report.append(surface.getBlock(new BetterBlockPos(x, y, z)) ? 'X' : ' ');
+                report.append(surface.hasBlock(new BetterBlockPos(x, y, z)) ? 'X' : ' ');
             }
             report.append('\n');
         }
@@ -282,19 +282,19 @@ public class NavigableSurfaceTest {
         for (int y = surface.bounds().sizeY - 1; y >= 0; y--) {
             // make a report of what all four walls look like
             for (int x = 0; x < surface.bounds().sizeX - 1; x++) {
-                report.append(surface.getBlock(new BetterBlockPos(x, y, 0)) ? 'X' : ' ');
+                report.append(surface.hasBlock(new BetterBlockPos(x, y, 0)) ? 'X' : ' ');
             }
             report.append('|');
             for (int z = 0; z < surface.bounds().sizeZ - 1; z++) {
-                report.append(surface.getBlock(new BetterBlockPos(surface.bounds().sizeX - 1, y, z)) ? 'X' : ' ');
+                report.append(surface.hasBlock(new BetterBlockPos(surface.bounds().sizeX - 1, y, z)) ? 'X' : ' ');
             }
             report.append('|');
             for (int x = surface.bounds().sizeX - 1; x > 0; x--) {
-                report.append(surface.getBlock(new BetterBlockPos(x, y, surface.bounds().sizeZ - 1)) ? 'X' : ' ');
+                report.append(surface.hasBlock(new BetterBlockPos(x, y, surface.bounds().sizeZ - 1)) ? 'X' : ' ');
             }
             report.append('|');
             for (int z = surface.bounds().sizeZ - 1; z > 0; z--) {
-                report.append(surface.getBlock(new BetterBlockPos(0, y, z)) ? 'X' : ' ');
+                report.append(surface.hasBlock(new BetterBlockPos(0, y, z)) ? 'X' : ' ');
             }
             report.append('\n');
         }

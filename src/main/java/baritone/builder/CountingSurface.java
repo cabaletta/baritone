@@ -71,4 +71,24 @@ public class CountingSurface extends NavigableSurface {
     public int requireSurfaceSize(int x, int y, int z) {
         return surfaceSize(new BetterBlockPos(x, y, z)).getAsInt();
     }
+
+    private void placeOrRemoveBlock(BetterBlockPos where, boolean place) {
+        setBlock(where, place ? FakeStates.SOLID : FakeStates.AIR);
+    }
+
+    public void placeBlock(BetterBlockPos where) {
+        placeOrRemoveBlock(where, true);
+    }
+
+    public void placeBlock(int x, int y, int z) {
+        placeBlock(new BetterBlockPos(x, y, z));
+    }
+
+    public void removeBlock(BetterBlockPos where) {
+        placeOrRemoveBlock(where, false);
+    }
+
+    public void removeBlock(int x, int y, int z) {
+        removeBlock(new BetterBlockPos(x, y, z));
+    }
 }

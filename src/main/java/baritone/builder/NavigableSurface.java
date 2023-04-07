@@ -28,11 +28,14 @@ public class NavigableSurface {
 
     private final CuboidBounds bounds;
 
-    private final BlockStateCachedData[] blocks;
+    private final BlockStateCachedData[] blocks; // TODO switch to xzy ordering so columnFrom is faster
 
     private final ConnGraph connGraph;
 
     private final Function<BetterBlockPos, Object> genVertexAugmentation;
+
+    private final Column col1 = new Column();
+    private final Column col2 = new Column();
 
     public NavigableSurface(int x, int y, int z, Augmentation augmentation, Function<BetterBlockPos, Object> genVertexAugmentation) {
         this.bounds = new CuboidBounds(x, y, z);
@@ -40,61 +43,51 @@ public class NavigableSurface {
         Arrays.fill(blocks, FakeStates.AIR);
         this.genVertexAugmentation = genVertexAugmentation;
         this.connGraph = new ConnGraph(augmentation);
+
+        if (!genVertexAugmentation.apply(new BetterBlockPos(0, 0, 0)).equals(genVertexAugmentation.apply(new BetterBlockPos(0, 0, 0)))) {
+            throw new IllegalStateException("RedBlackNode optimization requires correct impl of .equals on the attachment, to avoid percolating up spurious augmentation non-updates");
+        }
     }
 
-    // so the idea is that as blocks are added and removed, we'll maintain where the player can stand, and what connections that has to other places
-    public void placeOrRemoveBlock(BetterBlockPos where, boolean place) {
-        // i think it makes sense to only have a single function, as both placing and breaking blocks can create/remove places the player could stand, as well as creating/removing connections between those places
-        boolean previously = getBlock(where);
-        if (previously == place) {
-            return; // this is already the case
-        }
-        blocks[bounds.toIndex(where.x, where.y, where.z)] = place ? FakeStates.SCAFFOLDING : FakeStates.AIR;
-        // first let's set some vertex info for where the player can and cannot stand
-        for (int dy = -1; dy <= 1; dy++) {
-            BetterBlockPos couldHaveChanged = where.up(dy);
-            boolean currentlyAllowed = canPlayerStandIn(couldHaveChanged);
+    private void columnFrom(Column column, long pos) {
+        column.underneath = getBlockOrAir((pos + Column.DOWN_1) & BetterBlockPos.POST_ADDITION_MASK);
+        column.feet = getBlockOrAir(pos);
+        column.head = getBlockOrAir((pos + Column.UP_1) & BetterBlockPos.POST_ADDITION_MASK);
+        column.above = getBlockOrAir((pos + Column.UP_2) & BetterBlockPos.POST_ADDITION_MASK);
+        column.aboveAbove = getBlockOrAir((pos + Column.UP_3) & BetterBlockPos.POST_ADDITION_MASK);
+        column.init();
+    }
+
+    protected void setBlock(BetterBlockPos where, BlockStateCachedData data) {
+        blocks[bounds.toIndex(where.x, where.y, where.z)] = data;
+        for (int dy = -2; dy <= 1; dy++) {
+            long couldHaveChanged = where.up(dy).toLong();
+            columnFrom(col1, couldHaveChanged);
+            boolean currentlyAllowed = col1.standing();
             if (currentlyAllowed) {
-                // i'm sure this will get more complicated later
-                connGraph.setVertexAugmentation(couldHaveChanged.toLong(), genVertexAugmentation.apply(couldHaveChanged));
-            } else {
-                connGraph.removeVertexAugmentation(couldHaveChanged.toLong());
-            }
-        }
-        // then let's set the edges
-        for (int dy = -2; dy <= 1; dy++) { // -2 because of the jump condition for ascending
-            // i guess some of these can be skipped based on whether "place" is false or true, but, whatever this is just for testing
-            BetterBlockPos couldHaveChanged = where.up(dy);
-            computePossibleMoves(couldHaveChanged);
-        }
-    }
+                // TODO skip the next line if it already has an augmentation?
+                connGraph.setVertexAugmentation(couldHaveChanged, genVertexAugmentation.apply(BetterBlockPos.fromLong(couldHaveChanged)));
 
-    private boolean canPlayerStandIn(BetterBlockPos where) {
-        return getBlockOrAir(where.down()) && !getBlockOrAir(where) && !getBlockOrAir(where.up());
-    }
-
-    private void computePossibleMoves(BetterBlockPos feet) {
-        boolean anySuccess = canPlayerStandIn(feet);
-        // even if all are fail, need to remove those edges from the graph, so don't return early
-        for (int[] move : MOVES) {
-            BetterBlockPos newFeet = new BetterBlockPos(feet.x + move[0], feet.y + move[1], feet.z + move[2]);
-            boolean thisSuccess = anySuccess;
-            thisSuccess &= canPlayerStandIn(newFeet);
-            if (move[1] == -1) {
-                // descend movement requires the player head to move through one extra block (newFeet must be 3 high not 2 high)
-                thisSuccess &= !getBlockOrAir(newFeet.up(2));
-            }
-            if (move[1] == 1) {
-                // same idea but ascending instead of descending
-                thisSuccess &= !getBlockOrAir(feet.up(2));
-            }
-            if (thisSuccess) {
-                if (connGraph.addEdge(feet.toLong(), newFeet.toLong())) {
-                    //System.out.println("Player can now move between " + feet + " and " + newFeet);
+                for (Face dir : Face.HORIZONTALS) {
+                    long adj = dir.offset(couldHaveChanged);
+                    columnFrom(col2, adj);
+                    Integer connDy = PlayerPhysics.bidirectionalPlayerTravel(col1, col2, getBlockOrAir((adj + Column.DOWN_2) & BetterBlockPos.POST_ADDITION_MASK), getBlockOrAir((adj + Column.DOWN_3) & BetterBlockPos.POST_ADDITION_MASK));
+                    for (int fakeDy = -2; fakeDy <= 2; fakeDy++) {
+                        long neighbor = BetterBlockPos.offsetBy(adj, 0, fakeDy, 0);
+                        if (((Integer) fakeDy).equals(connDy)) {
+                            connGraph.addEdge(couldHaveChanged, neighbor);
+                        } else {
+                            connGraph.removeEdge(couldHaveChanged, neighbor);
+                        }
+                    }
                 }
             } else {
-                if (connGraph.removeEdge(feet.toLong(), newFeet.toLong())) {
-                    //System.out.println("Player can no longer move between " + feet + " and " + newFeet);
+                connGraph.removeVertexAugmentation(couldHaveChanged);
+                for (Face dir : Face.HORIZONTALS) {
+                    long adj = dir.offset(couldHaveChanged);
+                    for (int fakeDy = -2; fakeDy <= 2; fakeDy++) {
+                        connGraph.removeEdge(couldHaveChanged, BetterBlockPos.offsetBy(adj, 0, fakeDy, 0));
+                    }
                 }
             }
         }
@@ -104,15 +97,19 @@ public class NavigableSurface {
         return bounds;
     }
 
-    public boolean getBlock(BetterBlockPos where) {
-        return blocks[bounds.toIndex(where.x, where.y, where.z)].collidesWithPlayer;
+    public BlockStateCachedData getBlock(long pos) {
+        return blocks[bounds.toIndex(pos)];
     }
 
-    public boolean getBlockOrAir(BetterBlockPos where) {
-        if (!bounds.inRange(where.x, where.y, where.z)) {
-            return false;
+    public BlockStateCachedData getBlockOrAir(long pos) {
+        if (!bounds.inRangePos(pos)) {
+            return FakeStates.AIR;
         }
-        return getBlock(where);
+        return getBlock(pos);
+    }
+
+    public boolean hasBlock(BetterBlockPos pos) {
+        return getBlockOrAir(pos.toLong()).collidesWithPlayer;
     }
 
     public boolean connected(BetterBlockPos a, BetterBlockPos b) {
@@ -122,37 +119,4 @@ public class NavigableSurface {
     public Object getComponentAugmentation(BetterBlockPos pos) { // maybe should be protected? subclass defines it anyway
         return connGraph.getComponentAugmentation(pos.toLong());
     }
-
-    public void placeBlock(BetterBlockPos where) {
-        placeOrRemoveBlock(where, true);
-    }
-
-    public void placeBlock(int x, int y, int z) {
-        placeBlock(new BetterBlockPos(x, y, z));
-    }
-
-    public void removeBlock(BetterBlockPos where) {
-        placeOrRemoveBlock(where, false);
-    }
-
-    public void removeBlock(int x, int y, int z) {
-        removeBlock(new BetterBlockPos(x, y, z));
-    }
-
-    private static final int[][] MOVES = {
-            {1, -1, 0},
-            {-1, -1, 0},
-            {0, -1, 1},
-            {0, -1, -1},
-
-            {1, 0, 0},
-            {-1, 0, 0},
-            {0, 0, 1},
-            {0, 0, -1},
-
-            {1, 1, 0},
-            {-1, 1, 0},
-            {0, 1, 1},
-            {0, 1, -1},
-    };
 }
