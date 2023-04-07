@@ -18,67 +18,28 @@
 package baritone.builder;
 
 import baritone.api.utils.BetterBlockPos;
+import baritone.builder.utils.com.github.btrekkie.connectivity.Augmentation;
 import baritone.builder.utils.com.github.btrekkie.connectivity.ConnGraph;
 
 import java.util.Arrays;
-import java.util.OptionalInt;
+import java.util.function.Function;
 
 public class NavigableSurface {
-    // the encapsulation / separation of concerns is not great, but this is better for testing purposes than the fully accurate stuff in https://github.com/cabaletta/baritone/tree/builder-2/src/main/java/baritone/builder lol
-    public final CuboidBounds bounds;
+
+    private final CuboidBounds bounds;
 
     private final BlockStateCachedData[] blocks;
 
     private final ConnGraph connGraph;
 
-    public NavigableSurface(int x, int y, int z) {
+    private final Function<BetterBlockPos, Object> genVertexAugmentation;
+
+    public NavigableSurface(int x, int y, int z, Augmentation augmentation, Function<BetterBlockPos, Object> genVertexAugmentation) {
         this.bounds = new CuboidBounds(x, y, z);
         this.blocks = new BlockStateCachedData[bounds.volume()];
         Arrays.fill(blocks, FakeStates.AIR);
-
-        this.connGraph = new ConnGraph(Attachment::new);
-    }
-
-    public static class Attachment {
-        public final int surfaceSize;
-
-        public Attachment(Object a, Object b) {
-            this((Attachment) a, (Attachment) b);
-        }
-
-        public Attachment(Attachment a, Attachment b) {
-            this.surfaceSize = a.surfaceSize + b.surfaceSize;
-        }
-
-        public Attachment() {
-            this.surfaceSize = 1;
-        }
-
-        @Override
-        public boolean equals(Object o) { // used as performance optimization in RedBlackNode to avoid augmenting unchanged attachments
-            if (this == o) {
-                return true;
-            }
-            if (!(o instanceof Attachment)) {
-                return false;
-            }
-            Attachment that = (Attachment) o;
-            return surfaceSize == that.surfaceSize;
-        }
-
-        @Override
-        public int hashCode() {
-            return surfaceSize;
-        }
-    }
-
-    public OptionalInt surfaceSize(BetterBlockPos pos) { // how big is the navigable surface from here? how many distinct coordinates can i walk to (in the future, the augmentation will probably have a list of those coordinates or something?)
-        Object data = connGraph.getComponentAugmentation(pos.toLong());
-        if (data != null) { // i disagree with the intellij suggestion here i think it makes it worse
-            return OptionalInt.of(((Attachment) data).surfaceSize);
-        } else {
-            return OptionalInt.empty();
-        }
+        this.genVertexAugmentation = genVertexAugmentation;
+        this.connGraph = new ConnGraph(augmentation);
     }
 
     // so the idea is that as blocks are added and removed, we'll maintain where the player can stand, and what connections that has to other places
@@ -95,7 +56,7 @@ public class NavigableSurface {
             boolean currentlyAllowed = canPlayerStandIn(couldHaveChanged);
             if (currentlyAllowed) {
                 // i'm sure this will get more complicated later
-                connGraph.setVertexAugmentation(couldHaveChanged.toLong(), new Attachment());
+                connGraph.setVertexAugmentation(couldHaveChanged.toLong(), genVertexAugmentation.apply(couldHaveChanged));
             } else {
                 connGraph.removeVertexAugmentation(couldHaveChanged.toLong());
             }
@@ -108,11 +69,11 @@ public class NavigableSurface {
         }
     }
 
-    public boolean canPlayerStandIn(BetterBlockPos where) {
+    private boolean canPlayerStandIn(BetterBlockPos where) {
         return getBlockOrAir(where.down()) && !getBlockOrAir(where) && !getBlockOrAir(where.up());
     }
 
-    public void computePossibleMoves(BetterBlockPos feet) {
+    private void computePossibleMoves(BetterBlockPos feet) {
         boolean anySuccess = canPlayerStandIn(feet);
         // even if all are fail, need to remove those edges from the graph, so don't return early
         for (int[] move : MOVES) {
@@ -139,8 +100,8 @@ public class NavigableSurface {
         }
     }
 
-    public int requireSurfaceSize(int x, int y, int z) {
-        return surfaceSize(new BetterBlockPos(x, y, z)).getAsInt();
+    public CuboidBounds bounds() {
+        return bounds;
     }
 
     public boolean getBlock(BetterBlockPos where) {
@@ -156,6 +117,10 @@ public class NavigableSurface {
 
     public boolean connected(BetterBlockPos a, BetterBlockPos b) {
         return connGraph.connected(a.toLong(), b.toLong());
+    }
+
+    public Object getComponentAugmentation(BetterBlockPos pos) { // maybe should be protected? subclass defines it anyway
+        return connGraph.getComponentAugmentation(pos.toLong());
     }
 
     public void placeBlock(BetterBlockPos where) {

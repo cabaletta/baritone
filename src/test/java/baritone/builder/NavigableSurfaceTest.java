@@ -31,7 +31,7 @@ import static org.junit.Assert.assertEquals;
 public class NavigableSurfaceTest {
     @Test
     public void testBasic() {
-        NavigableSurface surface = new NavigableSurface(10, 10, 10);
+        CountingSurface surface = new CountingSurface(10, 10, 10);
         surface.placeBlock(0, 0, 0);
         assertEquals(OptionalInt.empty(), surface.surfaceSize(new BetterBlockPos(0, 0, 0)));
         assertEquals(1, surface.requireSurfaceSize(0, 1, 0));
@@ -108,8 +108,8 @@ public class NavigableSurfaceTest {
         assertEquals(4, surface.requireSurfaceSize(2, 1, 0));
     }
 
-    private NavigableSurface makeFlatSurface(int width, int height) {
-        NavigableSurface surface = new NavigableSurface(width, height, width);
+    private CountingSurface makeFlatSurface(int width, int height) {
+        CountingSurface surface = new CountingSurface(width, height, width);
         for (int x = 0; x < width; x++) {
             for (int z = 0; z < width; z++) {
                 surface.placeBlock(new BetterBlockPos(x, 0, z));
@@ -119,7 +119,7 @@ public class NavigableSurfaceTest {
         return surface;
     }
 
-    private NavigableSurface makeFlatSurface(int SZ) {
+    private CountingSurface makeFlatSurface(int SZ) {
         return makeFlatSurface(SZ, SZ);
     }
 
@@ -143,7 +143,7 @@ public class NavigableSurfaceTest {
     public void testStep() {
         int SZ = 100;
         int lineAt = SZ / 2;
-        NavigableSurface surface = makeFlatSurface(SZ);
+        CountingSurface surface = makeFlatSurface(SZ);
         for (int x = 0; x < SZ; x++) {
             surface.placeBlock(x, 1, lineAt); // doesn't block the player since you can step over 1 block
         }
@@ -154,7 +154,7 @@ public class NavigableSurfaceTest {
     public void testBlocked() {
         int SZ = 100;
         int lineAt = SZ / 2;
-        NavigableSurface surface = makeFlatSurface(SZ);
+        CountingSurface surface = makeFlatSurface(SZ);
         for (int x = 0; x < SZ; x++) {
             surface.placeBlock(x, 2, lineAt); // does block the player since you can't step over 2 blocks
         }
@@ -163,15 +163,15 @@ public class NavigableSurfaceTest {
         assertEquals(SZ, surface.requireSurfaceSize(0, 3, lineAt));
     }
 
-    private void fillSurfaceInOrderMaintainingConnection(NavigableSurface surface, BetterBlockPos maintainConnectionTo, List<BetterBlockPos> iterationOrder) {
+    private void fillSurfaceInOrderMaintainingConnection(CountingSurface surface, BetterBlockPos maintainConnectionTo, List<BetterBlockPos> iterationOrder) {
         fillSurfaceInOrderMaintainingConnection(surface, maintainConnectionTo, iterationOrder, false, false);
     }
 
-    private void fillSurfaceInOrderMaintainingConnection(NavigableSurface surface, BetterBlockPos maintainConnectionTo, List<BetterBlockPos> iterationOrder, boolean requirePathToPlacement, boolean allowSideSneakPlace) {
+    private void fillSurfaceInOrderMaintainingConnection(CountingSurface surface, BetterBlockPos maintainConnectionTo, List<BetterBlockPos> iterationOrder, boolean requirePathToPlacement, boolean allowSideSneakPlace) {
         fillSurfaceInOrderMaintainingConnection(surface, maintainConnectionTo, iterationOrder, requirePathToPlacement, allowSideSneakPlace, Integer.MAX_VALUE);
     }
 
-    private void fillSurfaceInOrderMaintainingConnection(NavigableSurface surface, BetterBlockPos maintainConnectionTo, List<BetterBlockPos> iterationOrder, boolean requirePathToPlacement, boolean allowSideSneakPlace, int stopAfter) {
+    private void fillSurfaceInOrderMaintainingConnection(CountingSurface surface, BetterBlockPos maintainConnectionTo, List<BetterBlockPos> iterationOrder, boolean requirePathToPlacement, boolean allowSideSneakPlace, int stopAfter) {
         int qty = 0;
         outer:
         while (true) {
@@ -215,12 +215,12 @@ public class NavigableSurfaceTest {
         }
     }
 
-    private String reportBottomToTop(NavigableSurface surface) {
-        int len = surface.bounds.sizeY * ((surface.bounds.sizeX + 1) * surface.bounds.sizeZ + 1);
+    private String reportBottomToTop(CountingSurface surface) {
+        int len = surface.bounds().sizeY * ((surface.bounds().sizeX + 1) * surface.bounds().sizeZ + 1);
         StringBuilder report = new StringBuilder(len);
-        for (int y = 0; y < surface.bounds.sizeY; y++) {
-            for (int z = 0; z < surface.bounds.sizeZ; z++) {
-                for (int x = 0; x < surface.bounds.sizeX; x++) {
+        for (int y = 0; y < surface.bounds().sizeY; y++) {
+            for (int z = 0; z < surface.bounds().sizeZ; z++) {
+                for (int x = 0; x < surface.bounds().sizeX; x++) {
                     report.append(surface.getBlock(new BetterBlockPos(x, y, z)) ? 'X' : ' ');
                 }
                 report.append('\n');
@@ -233,11 +233,11 @@ public class NavigableSurfaceTest {
         return report.toString();
     }
 
-    private String reportSlice(NavigableSurface surface, int y) {
-        int len = (surface.bounds.sizeX + 1) * surface.bounds.sizeZ;
+    private String reportSlice(CountingSurface surface, int y) {
+        int len = (surface.bounds().sizeX + 1) * surface.bounds().sizeZ;
         StringBuilder report = new StringBuilder(len);
-        for (int z = 0; z < surface.bounds.sizeZ; z++) {
-            for (int x = 0; x < surface.bounds.sizeX; x++) {
+        for (int z = 0; z < surface.bounds().sizeZ; z++) {
+            for (int x = 0; x < surface.bounds().sizeX; x++) {
                 report.append(surface.getBlock(new BetterBlockPos(x, y, z)) ? 'X' : ' ');
             }
             report.append('\n');
@@ -248,21 +248,21 @@ public class NavigableSurfaceTest {
         return report.toString();
     }
 
-    private static List<BetterBlockPos> genReportedWallOrder(NavigableSurface surface, int y) {
-        List<BetterBlockPos> ret = new ArrayList<>((surface.bounds.sizeX + surface.bounds.sizeZ) * 2);
-        for (int x = 0; x < surface.bounds.sizeX; x++) {
+    private static List<BetterBlockPos> genReportedWallOrder(CountingSurface surface, int y) {
+        List<BetterBlockPos> ret = new ArrayList<>((surface.bounds().sizeX + surface.bounds().sizeZ) * 2);
+        for (int x = 0; x < surface.bounds().sizeX; x++) {
             ret.add(new BetterBlockPos(x, y, 0));
         }
         // start at 1 not 0 so that we don't repeat the last iteration of the previous loop (that would make the report look bad because the staircase would repeat one column for no reason)
-        for (int z = 1; z < surface.bounds.sizeZ; z++) {
-            ret.add(new BetterBlockPos(surface.bounds.sizeX - 1, y, z));
+        for (int z = 1; z < surface.bounds().sizeZ; z++) {
+            ret.add(new BetterBlockPos(surface.bounds().sizeX - 1, y, z));
         }
         // same deal for starting at -2 rather than -1
-        for (int x = surface.bounds.sizeX - 2; x >= 0; x--) {
-            ret.add(new BetterBlockPos(x, y, surface.bounds.sizeZ - 1));
+        for (int x = surface.bounds().sizeX - 2; x >= 0; x--) {
+            ret.add(new BetterBlockPos(x, y, surface.bounds().sizeZ - 1));
         }
         // and same again
-        for (int z = surface.bounds.sizeZ - 2; z > 0; z--) {
+        for (int z = surface.bounds().sizeZ - 2; z > 0; z--) {
             ret.add(new BetterBlockPos(0, y, z));
         }
         return ret;
@@ -276,24 +276,24 @@ public class NavigableSurfaceTest {
         return ret;
     }
 
-    private String reportAllFourWalls(NavigableSurface surface) {
-        int len = surface.bounds.sizeY * (surface.bounds.sizeX + surface.bounds.sizeZ) * 2;
+    private String reportAllFourWalls(CountingSurface surface) {
+        int len = surface.bounds().sizeY * (surface.bounds().sizeX + surface.bounds().sizeZ) * 2;
         StringBuilder report = new StringBuilder(len);
-        for (int y = surface.bounds.sizeY - 1; y >= 0; y--) {
+        for (int y = surface.bounds().sizeY - 1; y >= 0; y--) {
             // make a report of what all four walls look like
-            for (int x = 0; x < surface.bounds.sizeX - 1; x++) {
+            for (int x = 0; x < surface.bounds().sizeX - 1; x++) {
                 report.append(surface.getBlock(new BetterBlockPos(x, y, 0)) ? 'X' : ' ');
             }
             report.append('|');
-            for (int z = 0; z < surface.bounds.sizeZ - 1; z++) {
-                report.append(surface.getBlock(new BetterBlockPos(surface.bounds.sizeX - 1, y, z)) ? 'X' : ' ');
+            for (int z = 0; z < surface.bounds().sizeZ - 1; z++) {
+                report.append(surface.getBlock(new BetterBlockPos(surface.bounds().sizeX - 1, y, z)) ? 'X' : ' ');
             }
             report.append('|');
-            for (int x = surface.bounds.sizeX - 1; x > 0; x--) {
-                report.append(surface.getBlock(new BetterBlockPos(x, y, surface.bounds.sizeZ - 1)) ? 'X' : ' ');
+            for (int x = surface.bounds().sizeX - 1; x > 0; x--) {
+                report.append(surface.getBlock(new BetterBlockPos(x, y, surface.bounds().sizeZ - 1)) ? 'X' : ' ');
             }
             report.append('|');
-            for (int z = surface.bounds.sizeZ - 1; z > 0; z--) {
+            for (int z = surface.bounds().sizeZ - 1; z > 0; z--) {
                 report.append(surface.getBlock(new BetterBlockPos(0, y, z)) ? 'X' : ' ');
             }
             report.append('\n');
@@ -309,7 +309,7 @@ public class NavigableSurfaceTest {
         // build a single wall, but, never place a block that disconnects the surface
         // (we expect to see a triangle)
         int SZ = 20;
-        NavigableSurface surface = makeFlatSurface(SZ);
+        CountingSurface surface = makeFlatSurface(SZ);
         BetterBlockPos someOtherBlock = new BetterBlockPos(0, 1, 1); // won't be involved in the wall (since z=1)
         List<BetterBlockPos> order = new ArrayList<>();
         for (int y = 0; y < SZ; y++) {
@@ -343,11 +343,11 @@ public class NavigableSurfaceTest {
                 "XXXXXXXXXXXXXXXXXXX|XXXXXXXXXXXXXXXXXXX|XXXXXXXXXXXXXXXXXXX|XXXXXXXXXXXXXXXXXXX\n";
         assertEquals(shouldBe, reportAllFourWalls(surface));
 
-        NavigableSurface surface2 = makeFlatSurface(SZ);
+        CountingSurface surface2 = makeFlatSurface(SZ);
         fillSurfaceInOrderMaintainingConnection(surface2, someOtherBlock, order, true, false); // this one also works in strict jump placement mode
         assertEquals(shouldBe, reportAllFourWalls(surface2));
 
-        NavigableSurface surface3 = makeFlatSurface(SZ);
+        CountingSurface surface3 = makeFlatSurface(SZ);
         fillSurfaceInOrderMaintainingConnection(surface3, someOtherBlock, order, true, true); // sneak doesn't help either
         assertEquals(shouldBe, reportAllFourWalls(surface3));
     }
@@ -357,7 +357,7 @@ public class NavigableSurfaceTest {
         // build four walls, but, never place a block that disconnects the surface
         // (we expect to see a carved path for the player from bottom to top)
         int SZ = 20;
-        NavigableSurface surface = makeFlatSurface(SZ);
+        CountingSurface surface = makeFlatSurface(SZ);
         BetterBlockPos someOtherBlock = new BetterBlockPos(SZ / 2, 1, SZ / 2); // center of the courtyard
         List<BetterBlockPos> order = new ArrayList<>();
         for (int y = 0; y < SZ; y++) {
@@ -398,7 +398,7 @@ public class NavigableSurfaceTest {
                 "XXXXXXXXXXXXXXXXXXX|XXXXXXXXXXXXXXXXXXX|XXXXXXXXXXXXXXXXXXX|XXXXXXXXXXXXXXXXXXX\n";
         assertEquals(shouldBe, reportAllFourWalls(surface));
 
-        NavigableSurface surface2 = makeFlatSurface(SZ);
+        CountingSurface surface2 = makeFlatSurface(SZ);
         fillSurfaceInOrderMaintainingConnection(surface2, someOtherBlock, order, true, false);
         String shouldBeWithJump = "" +
                 "XXXXXXXXXXXXXXXXXXX|XXXXXXXXXXXXXXXXXX |                 XX|XXXXXXXXXXXXXXXXXXX\n" + // if we're only allowed to jump place, the overhang is no longer possible (since it requires sneak side place)
@@ -423,7 +423,7 @@ public class NavigableSurfaceTest {
                 "XXXXXXXXXXXXXXXXXXX|XXXXXXXXXXXXXXXXXXX|XXXXXXXXXXXXXXXXXXX|XXXXXXXXXXXXXXXXXXX\n";
         assertEquals(shouldBeWithJump, reportAllFourWalls(surface2));
 
-        NavigableSurface surface3 = makeFlatSurface(SZ);
+        CountingSurface surface3 = makeFlatSurface(SZ);
         fillSurfaceInOrderMaintainingConnection(surface3, someOtherBlock, order, true, true);
         assertEquals(shouldBe /* but if side place is allowed, we can make the full shape! */, reportAllFourWalls(surface3));
     }
@@ -431,7 +431,7 @@ public class NavigableSurfaceTest {
     @Test
     public void testCastleFourWallsLoopOrder() {
         int SZ = 20;
-        NavigableSurface surface = makeFlatSurface(SZ);
+        CountingSurface surface = makeFlatSurface(SZ);
         BetterBlockPos someOtherBlock = new BetterBlockPos(SZ / 2, 1, SZ / 2); // center of the courtyard
         List<BetterBlockPos> order = new ArrayList<>();
         for (int y = 0; y < SZ; y++) {
@@ -471,7 +471,7 @@ public class NavigableSurfaceTest {
         // this creates a cool shape :)
         int SZ = 20;
         for (int heightTest = 0; heightTest < 3; heightTest++) {
-            NavigableSurface surface = makeFlatSurface(SZ);
+            CountingSurface surface = makeFlatSurface(SZ);
             BetterBlockPos someOtherBlock = new BetterBlockPos(SZ / 2, 1, SZ / 2); // center of the courtyard
             List<BetterBlockPos> order = new ArrayList<>();
             for (int y = SZ - 1 - heightTest; y >= 0; y--) {
@@ -551,7 +551,7 @@ public class NavigableSurfaceTest {
                 continue;
             }
 
-            NavigableSurface surface2 = makeFlatSurface(SZ);
+            CountingSurface surface2 = makeFlatSurface(SZ);
             fillSurfaceInOrderMaintainingConnection(surface2, someOtherBlock, order, true, false);
             String shouldBeV = "" +
                     "XXXXXXXXXXXXXXXXXXX|XXXXXXXXXXXXXXXXXXX|XXXXXXXXXXXXXXXXXXX|X                  \n" +
@@ -577,7 +577,7 @@ public class NavigableSurfaceTest {
             assertEquals(shouldBeV, reportAllFourWalls(surface2));
 
 
-            NavigableSurface surface3 = makeFlatSurface(SZ);
+            CountingSurface surface3 = makeFlatSurface(SZ);
             fillSurfaceInOrderMaintainingConnection(surface3, someOtherBlock, order, true, true, 69);
             // PARTIAL FILL, purely to demonstrate the order
             String shouldBeStaircasePartial69 = "" +
@@ -658,7 +658,7 @@ public class NavigableSurfaceTest {
     public void testCastleFourWallsTopToBottom() {
         // same as previous except in Z X iteration order, this causes some FUNKY shapes to appear and I think it's cool
         int SZ = 20;
-        NavigableSurface surface = makeFlatSurface(SZ);
+        CountingSurface surface = makeFlatSurface(SZ);
         BetterBlockPos someOtherBlock = new BetterBlockPos(SZ / 2, 1, SZ / 2); // center of the courtyard
         List<BetterBlockPos> order = new ArrayList<>();
         for (int y = SZ - 1; y >= 0; y--) {
@@ -701,7 +701,7 @@ public class NavigableSurfaceTest {
         // waow, so cool!
         assertEquals(shouldBe, reportAllFourWalls(surface));
 
-        NavigableSurface surface2 = makeFlatSurface(SZ);
+        CountingSurface surface2 = makeFlatSurface(SZ);
         fillSurfaceInOrderMaintainingConnection(surface2, someOtherBlock, order, true, false, 500);
         String shouldBeVPartial500 = "" +
                 "XXXXXXXXXXXXX      |                   |                   |                   \n" + // you can see how the iteration order causes it to fill in from both side, eventually causing a V in the middle
@@ -774,7 +774,7 @@ public class NavigableSurfaceTest {
                 "XXXXXXXXXXXXXXXXXXX|XXXXXXXXXXXXXXXXXXX|XXXXXXXXXXXXXXXXXXX|XXXXXXXXXXXXXXXXXXX\n";
         assertEquals(shouldBeV, reportAllFourWalls(surface2));
 
-        NavigableSurface surface3 = makeFlatSurface(SZ);
+        CountingSurface surface3 = makeFlatSurface(SZ);
         fillSurfaceInOrderMaintainingConnection(surface3, someOtherBlock, order, true, true, 500);
         String shouldBeWeirdPartial500 = "" +
                 "XXXXXXXXXXXXXXXXXXX|XXXXXXXXXXXXXXXXXXX|XXXXXXXXXXXXXXXXXXX|XXX   XXXXXXXXXXXXX\n" +
@@ -835,7 +835,7 @@ public class NavigableSurfaceTest {
         // just a small variant with no corner, so there's no wraparound
         // not that interesting
         int SZ = 20;
-        NavigableSurface surface = makeFlatSurface(SZ);
+        CountingSurface surface = makeFlatSurface(SZ);
         BetterBlockPos someOtherBlock = new BetterBlockPos(SZ / 2, 1, SZ / 2); // center of the courtyard
         List<BetterBlockPos> order = new ArrayList<>();
         for (int y = SZ - 1; y >= 0; y--) {
@@ -879,7 +879,7 @@ public class NavigableSurfaceTest {
                 "XXXXXXXXXXXXXXXXXXX|XXXXXXXXXXXXXXXXXXX|XXXXXXXXXXXXXXXXXXX|XXXXXXXXXXXXXXXXXXX\n";
         assertEquals(shouldBe, reportAllFourWalls(surface));
 
-        NavigableSurface surface2 = makeFlatSurface(SZ);
+        CountingSurface surface2 = makeFlatSurface(SZ);
         fillSurfaceInOrderMaintainingConnection(surface2, someOtherBlock, order, true, false);
         String shouldBeV = "" +
                 " XXXXXXXXXXXXXXXXXX|XXX                |                   |XXXXXXXXXXXXXXXXXXX\n" +
@@ -905,7 +905,7 @@ public class NavigableSurfaceTest {
         //       ^  notice how the left column is gone
         assertEquals(shouldBeV, reportAllFourWalls(surface2));
 
-        NavigableSurface surface3 = makeFlatSurface(SZ);
+        CountingSurface surface3 = makeFlatSurface(SZ);
         fillSurfaceInOrderMaintainingConnection(surface3, someOtherBlock, order, true, true);
         assertEquals(shouldBeV /* sneak doesn't help without loop around through {x=0 z=0} corner*/, reportAllFourWalls(surface3));
     }
@@ -917,7 +917,7 @@ public class NavigableSurfaceTest {
         // but also an interior ring at y=8, filled afterwards
         // because it's filled afterwards, it only allows for one extra block to be placed at y=9
         int SZ = 20;
-        NavigableSurface surface = makeFlatSurface(SZ);
+        CountingSurface surface = makeFlatSurface(SZ);
         BetterBlockPos someOtherBlock = new BetterBlockPos(SZ / 2, 1, SZ / 2); // center of the courtyard
         List<BetterBlockPos> order = new ArrayList<>();
         for (int y = 0; y < SZ; y++) {
@@ -975,7 +975,7 @@ public class NavigableSurfaceTest {
         // (we expect to see a zigzag cut out)
         // but also an interior ring at y=8, filled beforehand
         int SZ = 20;
-        NavigableSurface surface = makeFlatSurface(SZ);
+        CountingSurface surface = makeFlatSurface(SZ);
         BetterBlockPos someOtherBlock = new BetterBlockPos(SZ / 2, 1, SZ / 2); // center of the courtyard
         List<BetterBlockPos> order = new ArrayList<>();
         for (int x = 0; x < SZ; x++) {
@@ -1033,7 +1033,7 @@ public class NavigableSurfaceTest {
         // (we expect to see a zigzag cut out)
         // but also an interior # shape at y=8, filled afterwards
         int SZ = 20;
-        NavigableSurface surface = makeFlatSurface(SZ);
+        CountingSurface surface = makeFlatSurface(SZ);
         BetterBlockPos someOtherBlock = new BetterBlockPos(SZ / 2, 1, SZ / 2); // center of the courtyard
         List<BetterBlockPos> order = new ArrayList<>();
         for (int x = 0; x < SZ; x++) {
@@ -1112,7 +1112,7 @@ public class NavigableSurfaceTest {
     public void testFullCube() {
         int width = 10;
         int height = 30;
-        NavigableSurface surface = makeFlatSurface(width, height);
+        CountingSurface surface = makeFlatSurface(width, height);
         BetterBlockPos someOtherBlock = new BetterBlockPos(0, 1, width / 2);
         List<BetterBlockPos> order = new ArrayList<>();
         for (int y = 0; y < height; y++) {
@@ -1174,7 +1174,7 @@ public class NavigableSurfaceTest {
     @Test
     public void testFullCubeRandom() {
         int SZ = 10;
-        NavigableSurface surface = makeFlatSurface(SZ);
+        CountingSurface surface = makeFlatSurface(SZ);
         BetterBlockPos someOtherBlock = new BetterBlockPos(0, 1, 0);
         List<BetterBlockPos> order = new ArrayList<>();
         for (int y = 0; y < SZ; y++) {
