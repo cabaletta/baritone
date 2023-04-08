@@ -73,7 +73,7 @@ public class CountingSurface extends NavigableSurface {
     }
 
     private void placeOrRemoveBlock(BetterBlockPos where, boolean place) {
-        setBlock(where, place ? FakeStates.SOLID : FakeStates.AIR);
+        setBlock(where.toLong(), place ? FakeStates.SOLID : FakeStates.AIR);
     }
 
     public void placeBlock(BetterBlockPos where) {

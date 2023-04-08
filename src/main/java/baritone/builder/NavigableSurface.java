@@ -58,10 +58,10 @@ public class NavigableSurface {
         column.init();
     }
 
-    protected void setBlock(BetterBlockPos where, BlockStateCachedData data) {
-        blocks[bounds.toIndex(where.x, where.y, where.z)] = data;
+    protected void setBlock(long pos, BlockStateCachedData data) {
+        blocks[bounds.toIndex(pos)] = data;
         for (int dy = -2; dy <= 1; dy++) {
-            long couldHaveChanged = where.up(dy).toLong();
+            long couldHaveChanged = BetterBlockPos.offsetBy(pos, 0, dy, 0);
             columnFrom(col1, couldHaveChanged);
             boolean currentlyAllowed = col1.standing();
             if (currentlyAllowed) {
@@ -91,6 +91,10 @@ public class NavigableSurface {
                 }
             }
         }
+    }
+
+    protected void setBlock(int x, int y, int z, BlockStateCachedData data) {
+        setBlock(BetterBlockPos.toLong(x, y, z), data);
     }
 
     public CuboidBounds bounds() {
