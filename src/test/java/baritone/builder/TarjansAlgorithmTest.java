@@ -28,10 +28,11 @@ public class TarjansAlgorithmTest {
         Random RAND = new Random(5021);
         for (int i = 0; i < 100; i++) {
             BlockStateCachedData[][][] test = new BlockStateCachedData[20][20][20];
+            int density = i <= 10 ? i : i % 4; // high density is slow so only do them once
             for (int x = 0; x < test.length; x++) {
                 for (int y = 0; y < test[0].length; y++) {
                     for (int z = 0; z < test[0][0].length; z++) {
-                        if (RAND.nextInt(10) < 3) {
+                        if (RAND.nextInt(10) < density) {
                             test[x][y][z] = FakeStates.probablyCanBePlaced(RAND);
                         } else {
                             test[x][y][z] = FakeStates.AIR;
