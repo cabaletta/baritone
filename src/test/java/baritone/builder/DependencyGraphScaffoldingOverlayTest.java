@@ -28,70 +28,65 @@ public class DependencyGraphScaffoldingOverlayTest {
     @Test
     public void testLarge() throws InterruptedException {
         Random RAND = new Random(5021);
-        for (int i = 0; i < 1; i++) {
-            long aaa = System.currentTimeMillis();
-            //int[][][] test = new int[64][64][64];
-            BlockStateCachedData[][][] test = new BlockStateCachedData[64][64][64];
-            int numRealBlocks = 0;
-            for (int x = 0; x < test.length; x++) {
-                for (int y = 0; y < test[0].length; y++) {
-                    for (int z = 0; z < test[0][0].length; z++) {
-                        //if ((x + y + z) % 2 == 0) {
-                        if (RAND.nextInt(10) < 2) {
-                            test[x][y][z] = FakeStates.probablyCanBePlaced(RAND);
-                            numRealBlocks++;
-                        } else {
-                            test[x][y][z] = FakeStates.AIR;
-                        }
+        long aaa = System.currentTimeMillis();
+        BlockStateCachedData[][][] test = new BlockStateCachedData[64][64][64];
+        int numRealBlocks = 0;
+        for (int x = 0; x < test.length; x++) {
+            for (int y = 0; y < test[0].length; y++) {
+                for (int z = 0; z < test[0][0].length; z++) {
+                    if (RAND.nextInt(10) < 2) {
+                        test[x][y][z] = FakeStates.probablyCanBePlaced(RAND);
+                        numRealBlocks++;
+                    } else {
+                        test[x][y][z] = FakeStates.AIR;
                     }
+                }
 
-                }
             }
-            /*for (int[][] arr : test) {
-                for (int[] arr2 : arr) {
-                    Arrays.fill(arr2, based);
-                }
-            }*/
-            PackedBlockStateCuboid states = new PackedBlockStateCuboid(test);
-            PlaceOrderDependencyGraph graph = new PlaceOrderDependencyGraph(states);
-            long aa = System.currentTimeMillis();
-            /*DependencyGraphAnalyzer.prevalidate(graph);
-            for (int i = 0; i < 1; i++) {
-                long a = System.currentTimeMillis();
-                DependencyGraphAnalyzer.prevalidateExternalToInteriorSearch(graph);
-                long b = System.currentTimeMillis();
-                System.out.println((b - a) + "ms");
-                Thread.sleep(500);
-                System.gc();
-                Thread.sleep(500);
-            }*/
-            DependencyGraphScaffoldingOverlay scaffolding = new DependencyGraphScaffoldingOverlay(graph);
-            long a = System.currentTimeMillis();
-            System.out.println(scaffolding.getCollapsedGraph().getComponents().size());
-            int goal = numRealBlocks + 200000;
-            while (numRealBlocks < goal) {
-                //System.out.println(numRealBlocks + " " + scaffolding.getCollapsedGraph().getComponents().size());
-                int x = RAND.nextInt(((CuboidBounds) scaffolding.bounds()).sizeX);
-                int y = RAND.nextInt(((CuboidBounds) scaffolding.bounds()).sizeY);
-                int z = RAND.nextInt(((CuboidBounds) scaffolding.bounds()).sizeZ);
-                long pos = BetterBlockPos.toLong(x, y, z);
-                if (scaffolding.air(pos)) {
-                    //System.out.println("Setting to scaffolding " + BetterBlockPos.fromLong(pos) + " " + pos);
-                    scaffolding.enable(pos);
-                    numRealBlocks++;
-                    if (numRealBlocks % 10000 == 0) {
-                        System.out.println(numRealBlocks + " " + scaffolding.getCollapsedGraph().getComponents().size());
-                        scaffolding.recheckEntireCollapsedGraph();
-                    }
-                }
-            }
-            System.out.println(scaffolding.getCollapsedGraph().getComponents().size());
-            System.out.println("Done " + (System.currentTimeMillis() - a) + "ms after " + (a - aa) + "ms after " + (aa - aaa) + "ms");
-            assertEquals(238, scaffolding.getCollapsedGraph().getComponents().size());
-            /*Thread.sleep(500);
-            System.gc();
-            Thread.sleep(500);*/
-            //scaffolding.enable(0);
         }
+        PackedBlockStateCuboid states = new PackedBlockStateCuboid(test);
+        PlaceOrderDependencyGraph graph = new PlaceOrderDependencyGraph(states);
+        long aa = System.currentTimeMillis();
+        DependencyGraphScaffoldingOverlay scaffolding = new DependencyGraphScaffoldingOverlay(graph);
+        long a = System.currentTimeMillis();
+        StringBuilder report = new StringBuilder(scaffolding.getCollapsedGraph().getComponents().size() + "\n");
+        int goal = numRealBlocks + 200000;
+        while (numRealBlocks < goal) {
+            int x = RAND.nextInt(((CuboidBounds) scaffolding.bounds()).sizeX);
+            int y = RAND.nextInt(((CuboidBounds) scaffolding.bounds()).sizeY);
+            int z = RAND.nextInt(((CuboidBounds) scaffolding.bounds()).sizeZ);
+            long pos = BetterBlockPos.toLong(x, y, z);
+            if (scaffolding.air(pos)) {
+                scaffolding.enable(pos);
+                numRealBlocks++;
+                if (numRealBlocks % 10000 == 0) {
+                    report.append(numRealBlocks).append(' ').append(scaffolding.getCollapsedGraph().getComponents().size()).append('\n');
+                    scaffolding.recheckEntireCollapsedGraph();
+                }
+            }
+        }
+        assertEquals("38832\n" +
+                "60000 41471\n" +
+                "70000 43558\n" +
+                "80000 44176\n" +
+                "90000 43575\n" +
+                "100000 41808\n" +
+                "110000 39108\n" +
+                "120000 35351\n" +
+                "130000 30807\n" +
+                "140000 25772\n" +
+                "150000 20387\n" +
+                "160000 15149\n" +
+                "170000 10482\n" +
+                "180000 7067\n" +
+                "190000 4767\n" +
+                "200000 3155\n" +
+                "210000 2011\n" +
+                "220000 1281\n" +
+                "230000 755\n" +
+                "240000 439\n" +
+                "250000 270\n", report.toString());
+        System.out.println("Done " + (System.currentTimeMillis() - a) + "ms after " + (a - aa) + "ms after " + (aa - aaa) + "ms");
+        assertEquals(238, scaffolding.getCollapsedGraph().getComponents().size());
     }
 }
