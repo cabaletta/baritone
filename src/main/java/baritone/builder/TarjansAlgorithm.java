@@ -47,51 +47,6 @@ public class TarjansAlgorithm {
         this.tarjanCallStack = new ArrayDeque<>();
     }
 
-    private static LongSet sanityCheckResultFrom(DependencyGraphScaffoldingOverlay graph, long start) {
-        if (graph.air(start)) {
-            throw new IllegalStateException();
-        }
-        LongList startList = new LongArrayList(Collections.singletonList(start));
-        LongSet reachableForward = DependencyGraphAnalyzer.searchGraph(startList, graph::outgoingEdge);
-        LongSet reachableBackward = DependencyGraphAnalyzer.searchGraph(startList, graph::incomingEdge);
-        // correct iff the intersection of reachableForward and reachableBackward is exactly the component containing start
-        LongSet ret = new LongOpenHashSet();
-        boolean selection = reachableForward.size() < reachableBackward.size();
-        LongSet toIterate = selection ? reachableForward : reachableBackward;
-        LongSet toCheck = selection ? reachableBackward : reachableForward;
-        LongIterator it = toIterate.iterator();
-        while (it.hasNext()) {
-            long pos = it.nextLong();
-            if (toCheck.contains(pos)) {
-                ret.add(pos);
-            }
-        }
-        return ret;
-    }
-
-    public static void sanityCheckResult(DependencyGraphScaffoldingOverlay graph, TarjansResult result) {
-        // this is a much slower (O(n^2) at least instead of O(n)) implementation of finding strongly connected components
-        Int2ObjectOpenHashMap<LongSet> checkedCids = new Int2ObjectOpenHashMap<>();
-        LongSet claimedAlready = new LongOpenHashSet();
-        graph.forEachReal(pos -> {
-            int cid = result.getComponent(pos);
-            LongSet componentShouldBe = checkedCids.get(cid);
-            if (componentShouldBe == null) {
-                componentShouldBe = sanityCheckResultFrom(graph, pos);
-                checkedCids.put(cid, componentShouldBe);
-                LongIterator it = componentShouldBe.iterator();
-                while (it.hasNext()) {
-                    if (!claimedAlready.add(it.nextLong())) {
-                        throw new IllegalStateException();
-                    }
-                }
-            }
-            if (!componentShouldBe.contains(pos)) {
-                throw new IllegalStateException();
-            }
-        });
-    }
-
     public static TarjansResult run(DependencyGraphScaffoldingOverlay overlayedGraph) {
         TarjansAlgorithm algo = new TarjansAlgorithm(overlayedGraph);
         algo.run();
@@ -229,5 +184,50 @@ public class TarjansAlgorithm {
         private boolean doneWithMainLoop;
         private long recursingInto = -1;
         private int facesCompleted;
+    }
+
+    public static void sanityCheckResult(DependencyGraphScaffoldingOverlay graph, TarjansResult result) {
+        // this is a much slower (O(n^2) at least instead of O(n)) implementation of finding strongly connected components
+        Int2ObjectOpenHashMap<LongSet> checkedCids = new Int2ObjectOpenHashMap<>();
+        LongSet claimedAlready = new LongOpenHashSet();
+        graph.forEachReal(pos -> {
+            int cid = result.getComponent(pos);
+            LongSet componentShouldBe = checkedCids.get(cid);
+            if (componentShouldBe == null) {
+                componentShouldBe = sanityCheckResultFrom(graph, pos);
+                checkedCids.put(cid, componentShouldBe);
+                LongIterator it = componentShouldBe.iterator();
+                while (it.hasNext()) {
+                    if (!claimedAlready.add(it.nextLong())) {
+                        throw new IllegalStateException();
+                    }
+                }
+            }
+            if (!componentShouldBe.contains(pos)) {
+                throw new IllegalStateException();
+            }
+        });
+    }
+
+    private static LongSet sanityCheckResultFrom(DependencyGraphScaffoldingOverlay graph, long start) {
+        if (graph.air(start)) {
+            throw new IllegalStateException();
+        }
+        LongList startList = new LongArrayList(Collections.singletonList(start));
+        LongSet reachableForward = DependencyGraphAnalyzer.searchGraph(startList, graph::outgoingEdge);
+        LongSet reachableBackward = DependencyGraphAnalyzer.searchGraph(startList, graph::incomingEdge);
+        // correct iff the intersection of reachableForward and reachableBackward is exactly the component containing start
+        LongSet ret = new LongOpenHashSet();
+        boolean selection = reachableForward.size() < reachableBackward.size();
+        LongSet toIterate = selection ? reachableForward : reachableBackward;
+        LongSet toCheck = selection ? reachableBackward : reachableForward;
+        LongIterator it = toIterate.iterator();
+        while (it.hasNext()) {
+            long pos = it.nextLong();
+            if (toCheck.contains(pos)) {
+                ret.add(pos);
+            }
+        }
+        return ret;
     }
 }
