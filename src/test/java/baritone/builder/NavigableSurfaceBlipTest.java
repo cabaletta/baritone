@@ -73,10 +73,10 @@ public class NavigableSurfaceBlipTest {
     }
 
     private static void fillColumnToHeight(CountingSurface surface, int x, int z, int yHeightBlips) {
-        for (int i = 0; i < yHeightBlips / Blip.PER_BLOCK; i++) {
+        for (int i = 0; i < yHeightBlips / Blip.FULL_BLOCK; i++) {
             surface.setBlock(x, i, z, FakeStates.SOLID);
         }
-        surface.setBlock(x, yHeightBlips / Blip.PER_BLOCK, z, FakeStates.BY_HEIGHT[yHeightBlips % Blip.PER_BLOCK]);
+        surface.setBlock(x, yHeightBlips / Blip.FULL_BLOCK, z, FakeStates.BY_HEIGHT[yHeightBlips % Blip.FULL_BLOCK]);
     }
 
     @Test
@@ -90,7 +90,7 @@ public class NavigableSurfaceBlipTest {
             int y = startY;
             while (true) {
                 fillColumnToHeight(surface, x, 0, y);
-                if (!surface.connected(new BetterBlockPos(0, 1, 1), new BetterBlockPos(x, y / Blip.PER_BLOCK, 0))) {
+                if (!surface.connected(new BetterBlockPos(0, 1, 1), new BetterBlockPos(x, y / Blip.FULL_BLOCK, 0))) {
                     fillColumnToHeight(surface, x, 0, y - step);
                     y -= step;
                     break;
@@ -112,7 +112,7 @@ public class NavigableSurfaceBlipTest {
             int y = startY;
             while (true) {
                 fillColumnToHeight(surface, x, 0, y);
-                if (!surface.connected(new BetterBlockPos(0, 1, 1), new BetterBlockPos(x, y / Blip.PER_BLOCK, 0))) {
+                if (!surface.connected(new BetterBlockPos(0, 1, 1), new BetterBlockPos(x, y / Blip.FULL_BLOCK, 0))) {
                     fillColumnToHeight(surface, x, 0, y - 1);
                     y--;
                     break;

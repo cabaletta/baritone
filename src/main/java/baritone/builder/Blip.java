@@ -30,8 +30,7 @@ import baritone.api.utils.IPlayerContext;
  */
 public class Blip {
 
-    public static final int PER_BLOCK = 16;
-    public static final int FULL_BLOCK = PER_BLOCK;
+    public static final int FULL_BLOCK = 16;
     public static final double RATIO = 0.0625;
     public static final int HALF_BLOCK = 8;
     public static final int PLAYER_HEIGHT_SLIGHT_UNDERESTIMATE = 28;
@@ -50,7 +49,7 @@ public class Blip {
         if (PLAYER_HEIGHT_SLIGHT_OVERESTIMATE * RATIO <= realPlayerHeight || PLAYER_HEIGHT_SLIGHT_UNDERESTIMATE * RATIO >= realPlayerHeight || PLAYER_HEIGHT_SLIGHT_OVERESTIMATE != PLAYER_HEIGHT_SLIGHT_UNDERESTIMATE + 1) {
             throw new IllegalStateException();
         }
-        if (PER_BLOCK * RATIO != 1) {
+        if (FULL_BLOCK * RATIO != 1) {
             throw new IllegalStateException();
         }
     }

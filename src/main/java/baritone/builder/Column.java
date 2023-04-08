@@ -108,7 +108,7 @@ public class Column {
         }
     }
 
-    private static final Integer[] BLIPS = IntStream.range(-1, Blip.PER_BLOCK).boxed().toArray(Integer[]::new);
+    private static final Integer[] BLIPS = IntStream.range(-1, Blip.FULL_BLOCK).boxed().toArray(Integer[]::new);
 
     static {
         BLIPS[0] = null;

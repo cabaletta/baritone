@@ -118,7 +118,7 @@ public class PlayerPhysicsTest {
                     continue;
                 }
 
-                for (int endHeight = startHeight - 3 * Blip.PER_BLOCK; endHeight <= startHeight + 3 * Blip.PER_BLOCK; endHeight++) {
+                for (int endHeight = startHeight - 3 * Blip.FULL_BLOCK; endHeight <= startHeight + 3 * Blip.FULL_BLOCK; endHeight++) {
                     for (int endCeil = 5; endCeil <= 7; endCeil++) {
                         BlockStateCachedData[] toCol = makeColToHeight(endHeight);
                         if (endCeil < toCol.length) {
@@ -133,7 +133,7 @@ public class PlayerPhysicsTest {
 
                         int minCeilRelative = Math.min(startCeil, endCeil) - 3;
                         int maxBlip = Math.max(startHeight, endHeight);
-                        if (maxBlip + Blip.PLAYER_HEIGHT_SLIGHT_OVERESTIMATE > minCeilRelative * Blip.PER_BLOCK) {
+                        if (maxBlip + Blip.PLAYER_HEIGHT_SLIGHT_OVERESTIMATE > minCeilRelative * Blip.FULL_BLOCK) {
                             assertEquals(PlayerPhysics.Collision.BLOCKED, col);
                             continue;
                         }
