@@ -44,7 +44,7 @@ import java.util.stream.Stream;
 
 public class PatrolCommand extends Command {
 
-    private List<Goal> goalList = new ArrayList<>();
+    private static List<Goal> goalList = new ArrayList<>();
 
     public PatrolCommand(IBaritone baritone) {
         super(baritone, "patrol");
@@ -116,6 +116,7 @@ public class PatrolCommand extends Command {
                 break;
             case EXECUTE:
                 //logDirect("case execute");
+                verifyGoalList();
                 if (goalList.isEmpty()) {
                     logDirect("No waypoints on patrol route");
                 } else {
@@ -124,7 +125,7 @@ public class PatrolCommand extends Command {
                         mode = GoalPatrol.Mode.getByNameOrDefault(args.getString());
                     }
                     logDirect("Now patrolling. Mode: " + mode.name());
-                    baritone.getCustomGoalProcess().setGoalAndPath(new GoalPatrol(goalList, mode, 0));
+                    baritone.getCustomGoalProcess().setGoalAndPath(new GoalPatrol(new ArrayList<>(goalList), mode, 0));
                 }
                 break;
             /*case MODE:
@@ -217,6 +218,30 @@ public class PatrolCommand extends Command {
                 s.equalsIgnoreCase("exe") ||
                 s.equalsIgnoreCase("e") ||
                 s.equalsIgnoreCase("patrol"));
+    }
+
+    public static void addWaypoint(Goal goal) {
+        goalList.add(goal);
+    }
+
+    //todo this does not work correctly
+    //the same block pos can be present multiple times but not in succession or at the start and the end
+    private void verifyGoalList() {
+        Iterator<Goal> iterator = goalList.listIterator();
+        GoalBlock first = (GoalBlock) iterator.next();
+        GoalBlock previus = first;
+        GoalBlock next;
+        while (iterator.hasNext()) {
+            next = (GoalBlock)iterator.next();
+            if (first.getGoalPos().equals(next.getGoalPos())) {
+                iterator.remove();
+            } else {
+                previus = next;
+            }
+        }
+        if (previus.getGoalPos().equals(first.getGoalPos()) && previus != first) {
+            goalList.remove(previus);
+        }
     }
 
     enum Action {

@@ -67,7 +67,7 @@ public class GoalPatrol implements Goal{
     }
 
     private boolean getNextOrReturnTrue() {
-        if(mode == Mode.ONEWAY && index == waypoints.size()-1) {
+        if(mode == Mode.ONEWAY && index == waypoints.size()-1 || waypoints.size() == 1) { //if we move oneway and are at the last waypoint or if we only have 1 waypoint we stop
             return true;
         } else {
             switch (mode) {

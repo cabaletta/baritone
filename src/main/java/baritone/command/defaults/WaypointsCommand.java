@@ -311,6 +311,10 @@ public class WaypointsCommand extends Command {
                     Goal goal = new GoalBlock(waypoint.getLocation());
                     baritone.getCustomGoalProcess().setGoalAndPath(goal);
                     logDirect(String.format("Going to: %s", goal));
+                } else if (action == Action.ADDTOPATROLROUTE) {
+                    Goal goal = new GoalBlock(waypoint.getLocation());
+                    PatrolCommand.addWaypoint(goal);
+                    logDirect(String.format("Waypoint added: %s", goal));
                 }
             }
         }
@@ -375,7 +379,8 @@ public class WaypointsCommand extends Command {
                 "> wp <restore> <n> - Restore the last n deleted waypoints.",
                 "> wp <c/clear> <tag> - Delete all waypoints with the specified tag.",
                 "> wp <g/goal> <tag/name> - Set a goal to a waypoint by tag or name.",
-                "> wp <goto> <tag/name> - Set a goal to a waypoint by tag or name and start pathing."
+                "> wp <goto> <tag/name> - Set a goal to a waypoint by tag or name and start pathing.",
+                "> wp <addPatrol> <tag/name> - Add a waypoint to a Patrol route."
         );
     }
 
@@ -387,7 +392,8 @@ public class WaypointsCommand extends Command {
         DELETE("delete", "d"),
         RESTORE("restore"),
         GOAL("goal", "g"),
-        GOTO("goto");
+        GOTO("goto"),
+        ADDTOPATROLROUTE("addPatrol");
         private final String[] names;
 
         Action(String... names) {
