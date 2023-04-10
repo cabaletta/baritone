@@ -70,11 +70,7 @@ public class Scaffolder {
     private List<CollapsedDependencyGraphComponent> calcRoots() {
         // since the components form a DAG (because all strongly connected components, and therefore all cycles, have been collapsed)
         // we can locate all root components by simply finding the ones with no incoming edges
-        return components
-                .values()
-                .stream()
-                .filter(component -> component.getIncoming().isEmpty())
-                .collect(Collectors.toCollection(ArrayList::new)); // ensure arraylist since we will be mutating the list
+        return components.values().stream().filter(component -> component.getIncoming().isEmpty()).collect(Collectors.toCollection(ArrayList::new)); // ensure arraylist since we will be mutating the list
     }
 
     private void loop() {
@@ -96,31 +92,15 @@ public class Scaffolder {
             if (root.getPositions().contains(path.get(0))) {
                 throw new IllegalStateException();
             }
-            if (!componentLocations.containsKey(path.get(0))) {
-                throw new IllegalStateException();
-            }
-            for (int i = 1; i < path.size(); i++) {
-                if (!overlayGraph.hypotheticalScaffoldingIncomingEdge(path.get(i), Face.between(path.get(i), path.get(i - 1)))) {
-                    throw new IllegalStateException();
-                }
-            }
-            enable(path.subList(1, path.size() - 1));
+            internalEnable(path);
             return;
         }
         throw new IllegalStateException("unconnectable");
     }
 
-    private void enable(LongList positions) {
-        positions.forEach(pos -> {
-            if (componentLocations.containsKey(pos)) {
-                throw new IllegalStateException();
-            }
-        });
-        System.out.println("Enabling " + positions.stream().map(BetterBlockPos::fromLong).collect(Collectors.toList()));
+    private void internalEnable(LongList path) {
         int cid = collapsedGraph.lastComponentID().getAsInt();
-
-        positions.forEach(overlayGraph::enable); // TODO more performant to enable in reverse order maybe?
-
+        applyScaffoldingConnection(overlayGraph, path);
         int newCID = collapsedGraph.lastComponentID().getAsInt();
         for (int i = cid + 1; i <= newCID; i++) {
             if (components.get(i) != null && components.get(i).getIncoming().isEmpty()) {
@@ -161,12 +141,40 @@ public class Scaffolder {
         }
     }
 
+    public static void applyScaffoldingConnection(DependencyGraphScaffoldingOverlay overlayGraph, LongList path) {
+        CollapsedDependencyGraph collapsedGraph = overlayGraph.getCollapsedGraph();
+        Long2ObjectMap<CollapsedDependencyGraphComponent> componentLocations = collapsedGraph.getComponentLocations();
+        if (!componentLocations.containsKey(path.getLong(0))) {
+            throw new IllegalStateException();
+        }
+        if (!componentLocations.containsKey(path.getLong(path.size() - 1))) {
+            throw new IllegalStateException();
+        }
+        if (componentLocations.get(path.getLong(0)) == componentLocations.get(path.getLong(path.size() - 1))) {
+            throw new IllegalStateException();
+        }
+        if (!componentLocations.get(path.getLong(path.size() - 1)).getIncoming().isEmpty()) {
+            throw new IllegalStateException();
+        }
+        // componentLocations.get(path.getLong(path.size() - 1)).getIncoming() can be either empty or nonempty
+        for (int i = 1; i < path.size(); i++) {
+            if (!overlayGraph.hypotheticalScaffoldingIncomingEdge(path.getLong(i), Face.between(path.getLong(i), path.getLong(i - 1)))) {
+                throw new IllegalStateException();
+            }
+        }
+        LongList positions = path.subList(1, path.size() - 1);
+        positions.forEach(pos -> {
+            if (componentLocations.containsKey(pos)) {
+                throw new IllegalStateException();
+            }
+        });
+        System.out.println("Enabling " + positions.stream().map(BetterBlockPos::fromLong).collect(Collectors.toList()));
+        positions.forEach(overlayGraph::enable); // TODO more performant to enable in reverse order maybe?
+    }
+
     public class Output {
         public void enableAncillaryScaffoldingAndRecomputeRoot(LongList positions) {
-            getRoot();
-            enable(positions);
-            getRoot();
-            throw new UnsupportedOperationException("TODO: should ancillary scaffolding even recompute the components? that scaffolding doesn't NEED to part of any component, and having all components be mutable even after the scaffolder is done is sketchy");
+            throw new UnsupportedOperationException("mutable components after scaffolding is not worth it");
         }
 
         public CollapsedDependencyGraphComponent getRoot() { // TODO this should probably return a new class that is not mutable in-place

@@ -76,7 +76,7 @@ public enum DijkstraScaffolder implements IScaffolderStrategy {
                         // any position in the initial frontier is clearly in the node map, but also any node that has already been considered
                         // this prevents useless cycling of equivalent paths
                         // this is okay because all paths are equivalent, so there is no possible way to find a better path (because currently it's a fixed value for horizontal / vertical movements)
-                        if (existingNode.costSoFar > newCost && !root.getPositions().contains(node.pos)) { // initialization nodes will have costSoFar = 0 as a base case
+                        if (existingNode.costSoFar > newCost) { // initialization nodes will have costSoFar = 0 as a base case
                             // note that obviously there is a loopback possibility: search one block north then one block south, you'll run into the same node again. that's fine - "costSoFar < newCost" doesn't mean anything
                             // same for diagonals: one block north then one block down, versus one block down then one block north. that's also fine - "costSoFar == newCost" doesn't mean anything
                             System.out.println(BetterBlockPos.fromLong(node.pos) + " to " + BetterBlockPos.fromLong(neighborPos) + " " + existingNode.costSoFar + " " + newCost + " " + root.getPositions().contains(node.pos) + " " + root.getPositions().contains(neighborPos) + " " + reconstructPathTo(node).stream().map(BetterBlockPos::fromLong).collect(Collectors.toList()) + " " + reconstructPathTo(existingNode).stream().map(BetterBlockPos::fromLong).collect(Collectors.toList()));
@@ -112,7 +112,7 @@ public enum DijkstraScaffolder implements IScaffolderStrategy {
         return path;
     }
 
-    private static int edgeCost(Face face) {
+    public static int edgeCost(Face face) {
         if (Main.STRICT_Y && face == Face.UP) {
             throw new IllegalStateException();
         }
@@ -122,7 +122,7 @@ public enum DijkstraScaffolder implements IScaffolderStrategy {
         if (face.y == 0) {
             return 1;
         }
-        return 1;
+        return 2;
     }
 
     private static class ScaffoldingSearchNode {

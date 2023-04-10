@@ -17,6 +17,8 @@
 
 package baritone.builder;
 
+import java.util.Arrays;
+
 public class PackedBlockStateCuboid {
 
     public final Bounds bounds;
@@ -39,6 +41,14 @@ public class PackedBlockStateCuboid {
         this(blockStates.length, blockStates[0].length, blockStates[0][0].length);
         bounds.forEach((x, y, z) -> states[bounds.toIndex(x, y, z)] = blockStates[x][y][z]);
         genScaffoldVariant();
+    }
+
+    public static void fillWithAir(BlockStateCachedData[][][] states) {
+        for (BlockStateCachedData[][] layer : states) {
+            for (BlockStateCachedData[] slice : layer) {
+                Arrays.fill(slice, FakeStates.AIR);
+            }
+        }
     }
 
     private void genScaffoldVariant() {

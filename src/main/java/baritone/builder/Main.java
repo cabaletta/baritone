@@ -23,11 +23,8 @@ import baritone.builder.mc.DebugStates;
 import baritone.builder.mc.VanillaBlockStateDataProvider;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
-import net.minecraft.block.Block;
-import net.minecraft.init.Blocks;
 
 import java.util.Random;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -343,56 +340,6 @@ Branchy took 124ms
                 System.out.println(SneakPosition.decode(SneakPosition.encode(0, sneak)));
                 System.out.println(SneakPosition.decode(SneakPosition.encode(BetterBlockPos.POST_ADDITION_MASK, sneak)));
             }
-        }
-        {
-            int[][][] test = new int[8][8][8];
-            int dirt = Block.BLOCK_STATE_IDS.get(Blocks.DIRT.getDefaultState());
-            System.out.println("D " + dirt);
-            for (int x = 0; x < test.length; x++) {
-                for (int z = 0; z < test[0][0].length; z++) {
-                    test[x][0][z] = dirt;
-                    test[x][1][z] = dirt;
-                }
-            }
-            test[5][5][5] = dirt;
-            test[5][5][6] = dirt;
-            test[0][5][5] = dirt;
-            Consumer<DependencyGraphScaffoldingOverlay> debug = dgso -> {
-                for (int y = 0; y < test[0].length; y++) {
-                    System.out.println("Layer " + y);
-                    for (int x = 0; x < test.length; x++) {
-                        for (int z = 0; z < test[0][0].length; z++) {
-                            long pos = BetterBlockPos.toLong(x, y, z);
-                            if (dgso.real(pos)) {
-                                System.out.print(dgso.getCollapsedGraph().getComponentLocations().get(pos).deletedIntoRecursive());
-                            } else {
-                                System.out.print(" ");
-                            }
-                        }
-                        System.out.println();
-                    }
-                }
-            };
-            PackedBlockStateCuboid states = new PackedBlockStateCuboid(test, DATA);
-            PlaceOrderDependencyGraph graph = new PlaceOrderDependencyGraph(states);
-            System.out.println("N " + Face.NORTH.z);
-            System.out.println("S " + Face.SOUTH.z);
-            for (int z = 0; z < test[0][0].length; z++) {
-                //System.out.println(states.get(states.bounds.toIndex(0, 0, z)));
-                System.out.println(z + " " + graph.outgoingEdge(BetterBlockPos.toLong(0, 0, z), Face.NORTH) + " " + graph.outgoingEdge(BetterBlockPos.toLong(0, 0, z), Face.SOUTH));
-            }
-            DependencyGraphAnalyzer.prevalidate(graph);
-            DependencyGraphAnalyzer.prevalidateExternalToInteriorSearch(graph);
-            DependencyGraphScaffoldingOverlay scaffolding = new DependencyGraphScaffoldingOverlay(graph);
-            System.out.println("Hewwo");
-            scaffolding.getCollapsedGraph().getComponents().forEach((key, value) -> {
-                System.out.println(key);
-                System.out.println(value.getPositions().stream().map(BetterBlockPos::fromLong).collect(Collectors.toList()));
-            });
-            System.out.println();
-            debug.accept(scaffolding);
-            Scaffolder.Output out = Scaffolder.run(graph, DijkstraScaffolder.INSTANCE);
-            debug.accept(out.secretInternalForTesting());
         }
         System.exit(0);
     }

@@ -196,7 +196,7 @@ public class DependencyGraphScaffoldingOverlay {
             if (child == parent) {
                 throw new IllegalStateException();
             }
-            if (child.positions.size() > parent.positions.size()) {
+            if (child.positions.size() > parent.positions.size() || (child.positions.size() == parent.positions.size() && child.id < parent.id)) {
                 return mergeInto(parent, child);
             }
             if (Main.DEBUG) {
@@ -358,7 +358,7 @@ public class DependencyGraphScaffoldingOverlay {
                 if (!deleted()) {
                     return this;
                 }
-                return deletedInto.deletedIntoRecursive();
+                return deletedInto = deletedInto.deletedIntoRecursive();
             }
 
             public LongSet getPositions() {
