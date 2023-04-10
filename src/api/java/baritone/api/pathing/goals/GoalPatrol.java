@@ -20,15 +20,12 @@ package baritone.api.pathing.goals;
 import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.process.ICustomGoalProcess;
-import baritone.api.utils.Helper;
+import baritone.api.utils.interfaces.IGoalRenderPos;
 import net.minecraft.util.math.BlockPos;
 
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
-public class GoalPatrol implements Goal{
+public class GoalPatrol implements Goal, IGoalRenderPos {
 
     private List<Goal> waypoints;
     private Mode mode;
@@ -38,13 +35,6 @@ public class GoalPatrol implements Goal{
         this.waypoints = waypoints;
         this.mode = mode;
         this.index = index;
-    }
-    public GoalPatrol(List<Goal> waypoints, Mode mode) {
-        new GoalPatrol(waypoints, mode, 0);
-    }
-
-    public GoalPatrol(List<Goal> waypoints) {
-        new GoalPatrol(waypoints, Mode.ONEWAY, 0);
     }
 
     @Override
@@ -67,19 +57,14 @@ public class GoalPatrol implements Goal{
     }
 
     private boolean getNextOrReturnTrue() {
-        if(mode == Mode.ONEWAY && index == waypoints.size()-1 || waypoints.size() == 1) { //if we move oneway and are at the last waypoint or if we only have 1 waypoint we stop
+        if(waypoints.size() == 1) {
             return true;
         } else {
             switch (mode) {
                 case ONEWAY:
-                    index++;
+                    waypoints.remove(0);
                     break;
                 case CIRCLE:
-                    /*if (index >= waypoints.size() - 1) {
-                        index = 0;
-                    } else {
-                        index++;
-                    }/**/
                     index++;
                     index = index >= waypoints.size() ? 0 : index;
                     break;
@@ -103,35 +88,11 @@ public class GoalPatrol implements Goal{
             return false;
         }
     }
-    public void setIndex(int Index) {
-        this.index = index;
-    }
-    public void setMode(String name) {
-        mode = Mode.getByNameOrDefault(name);
-    }
-
-    public Mode getMode() {
-        return mode;
-    }
-
-    public void setWaypoints(List<Goal> waypoints) {
-        this.waypoints = waypoints;
-    }
-
-    /*@Override
-    public boolean isInGoal(BlockPos pos) {
-        return Goal.super.isInGoal(pos);
-    }
 
     @Override
-    public double heuristic(BlockPos pos) {
-        return Goal.super.heuristic(pos);
+    public BlockPos getGoalPos() {
+        return ((GoalBlock)waypoints.get(index)).getGoalPos();
     }
-
-    @Override
-    public double heuristic() {
-        return Goal.super.heuristic();
-    }/**/
 
     public enum Mode {
         ONEWAY("oneway"),
@@ -164,15 +125,6 @@ public class GoalPatrol implements Goal{
             } else {
                 return "";
             }
-        }
-
-        public static String[] getAllNames() {
-            Set<String> names = new HashSet<>();
-            for (Mode mode : Mode.values()) {
-                names.addAll(Arrays.asList(mode.names));
-            }
-            String[] adfs = names.toArray(new String[0]);
-            return adfs;
         }
     }
 }

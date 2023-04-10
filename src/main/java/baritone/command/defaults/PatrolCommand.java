@@ -17,26 +17,19 @@
 
 package baritone.command.defaults;
 
-import baritone.Baritone;
 import baritone.api.IBaritone;
 import baritone.api.cache.IWaypoint;
-import baritone.api.cache.Waypoint;
 import baritone.api.command.Command;
 import baritone.api.command.argument.IArgConsumer;
-import baritone.api.command.datatypes.ForBlockOptionalMeta;
 import baritone.api.command.datatypes.ForWaypoints;
 import baritone.api.command.datatypes.RelativeCoordinate;
-import baritone.api.command.datatypes.RelativeGoal;
 import baritone.api.command.exception.CommandException;
+import baritone.api.command.exception.CommandInvalidTypeException;
 import baritone.api.command.exception.CommandNotEnoughArgumentsException;
 import baritone.api.command.helpers.TabCompleteHelper;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalBlock;
 import baritone.api.pathing.goals.GoalPatrol;
-import baritone.api.process.ICustomGoalProcess;
-import baritone.api.utils.BetterBlockPos;
-import baritone.api.utils.BlockOptionalMeta;
-import baritone.process.CustomGoalProcess;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.*;
@@ -52,95 +45,34 @@ public class PatrolCommand extends Command {
 
     @Override
     public void execute(String label, IArgConsumer args) throws CommandException {
-        Action action;
+        Action action = Action.LIST;
         if (args.hasAny()) {
-            action = Action.getByName(args.getString());
-        } else { //todo should argumetnt less case be list or execute?
-            action = Action.LIST;
-        }
-        if(action == null) {
-            getLongDesc().forEach(this::logDirect);
+            action = Action.getByNameOrDefault(args.getString());
         }
 
         switch (action) {
             case ADD:
-                //logDirect("case add");
-                if (args.has(3)) { //expect a <x y z> blockpos
-                    int x = args.peekString().equals("~") ? getPlayerPosAndUseArg(args, baritone.getPlayerContext().playerFeet().x) : args.getAs(Integer.class);
-                    int y = args.peekString().equals("~") ? getPlayerPosAndUseArg(args, baritone.getPlayerContext().playerFeet().y) : args.getAs(Integer.class);
-                    int z = args.peekString().equals("~") ? getPlayerPosAndUseArg(args, baritone.getPlayerContext().playerFeet().z) : args.getAs(Integer.class);
-                    GoalBlock goal = new GoalBlock(x, y, z);
-                    logDirect("Waypoint added: " + goal.toString());
-                    goalList.add(goal);
-                } else if (args.has(1)) { //expect a waypoint name
-                    //IWaypoint.Tag tag = IWaypoint.Tag.getByName(args.getString());
-                    String name = args.getString();
-                    IWaypoint[] waypoints = ForWaypoints.getWaypoints(this.baritone);
-                    for (IWaypoint wp : waypoints) {
-                        if (wp.getName().equals(name)) {
-                            logDirect(String.format("Waypoint added: " + wp.getLocation().toString()));
-                            goalList.add(new GoalBlock(wp.getLocation()));
-                        }
-                    }
-                } else {
-                    logDirect("Expecting a block-pos or a waypoint name.");
-                }
+                addWaypointFromArgs(args);
                 break;
             case REMOVE:
-                //logDirect("case remove");
-                if (args.hasAny()) {
-                    int removeMe = args.getAs(Integer.class);
-                    if (removeMe < 0 || removeMe >= goalList.size()) {
-                        throw new IllegalArgumentException("Index out of range.");
-                    } else{
-                        logDirect(String.format("Waypoint %s removed: " + goalList.get(removeMe).toString(), removeMe));
-                        goalList.remove(removeMe);
-                    }
-                } else {
-                    logDirect("Expecting a index to remove a waypoint.");
-                }
+                removeWaypoint(args);
                 break;
             case CLEAR:
-                //logDirect("case clear");
                 goalList.clear();
                 break;
             case LIST:
-                //logDirect("case list");
-                if (goalList.isEmpty()) {
-                    logDirect("No waypoints on patrol route");
-                } else {
-                    for (int i = 0; i < goalList.size(); i++) {
-                        logDirect(String.format("%s: "+goalList.get(i).toString(), i));
-                    }
-                }
+                listWaypoints();
                 break;
             case EXECUTE:
-                //logDirect("case execute");
                 verifyGoalList();
-                if (goalList.isEmpty()) {
-                    logDirect("No waypoints on patrol route");
-                } else {
-                    GoalPatrol.Mode mode = GoalPatrol.Mode.ONEWAY;
-                    if (args.has(1)) {
-                        mode = GoalPatrol.Mode.getByNameOrDefault(args.getString());
-                    }
-                    logDirect("Now patrolling. Mode: " + mode.name());
-                    baritone.getCustomGoalProcess().setGoalAndPath(new GoalPatrol(new ArrayList<>(goalList), mode, 0));
-                }
+                startPatrolling(getMode(args));
                 break;
-            /*case MODE:
-                if (args.hasAny()) {
-                    try {
-                        GoalPatrol goal = (GoalPatrol) baritone.getCustomGoalProcess().getGoal();
-                        logDirect("Previus Mode: " + goal.getMode().name());
-                        goal.setMode(args.getString());
-                        logDirect("New Mode: " + goal.getMode().name());
-                    } catch (Exception e) {
-                        logDirect("something went wrong");
-                        logDirect(e.toString());
-                    }
-                }
-                break;/**/
+            case VERIFY:
+                verifyGoalList();
+                listWaypoints();
+                break;
+            case HELP:
+                printHelp();
             default:
                 logDirect("fallback to default case. no action taken.");
                 logDirect(action.name());
@@ -151,7 +83,7 @@ public class PatrolCommand extends Command {
     public Stream<String> tabComplete(String label, IArgConsumer args) throws CommandException {
         TabCompleteHelper helper = new TabCompleteHelper();
         if (args.hasExactlyOne()) {
-            helper.append("add", "remove", "clear", "list", "execute", "patrol");
+            helper.append(Action.getNames());
         } else {
             if (args.hasAtMost(4) && (args.peekString().equalsIgnoreCase("a") || args.peekString().equalsIgnoreCase("add"))) {
                 while (args.has(2)) {
@@ -197,8 +129,10 @@ public class PatrolCommand extends Command {
                 "",
                 "Usage:",
                 "> patrol - lists your current waypoints",
+                "> patrol <add/a> - add the player position as a waypoint.",
                 "> patrol <add/a> <x> <y> <z> - add a single new waypoint.",
                 "> patrol <add/a> <waypoint name> - add all waypoints with that name.",
+                "> patrol <remove/rem/r> - removes the last added waypoint.",
                 "> patrol <remove/rem/r> <#> - removes the # waypoint from the list.",
                 "> patrol <clear/c> - clears all waypoints.",
                 "> patrol <list/l> - lists all waypoints on the patrol route.",
@@ -208,9 +142,100 @@ public class PatrolCommand extends Command {
         );
     }
 
+    private void addWaypointFromArgs(IArgConsumer args) throws CommandNotEnoughArgumentsException, CommandInvalidTypeException {
+        if (args.has(3)) { //expect a <x y z> blockpos
+            int x = args.peekString().equals("~") ? getPlayerPosAndUseArg(args, baritone.getPlayerContext().playerFeet().x) : args.getAs(Integer.class);
+            int y = args.peekString().equals("~") ? getPlayerPosAndUseArg(args, baritone.getPlayerContext().playerFeet().y) : args.getAs(Integer.class);
+            int z = args.peekString().equals("~") ? getPlayerPosAndUseArg(args, baritone.getPlayerContext().playerFeet().z) : args.getAs(Integer.class);
+            GoalBlock goal = new GoalBlock(x, y, z);
+            logDirect("Waypoint added: " + goal);
+            goalList.add(goal);
+        } else if (args.has(1)) { //expect a waypoint name
+            String name = args.getString();
+            IWaypoint[] waypoints = ForWaypoints.getWaypoints(this.baritone);
+            for (IWaypoint wp : waypoints) {
+                if (wp.getName().equals(name)) {
+                    logDirect(String.format("Waypoint added: " + wp.getLocation().toString()));
+                    goalList.add(new GoalBlock(wp.getLocation()));
+                }
+            }
+        } else {
+            GoalBlock goal = new GoalBlock(baritone.getPlayerContext().playerFeet());
+            logDirect("Waypoint added: " + goal);
+            goalList.add(goal);
+        }
+    }
+
     private int getPlayerPosAndUseArg(IArgConsumer args, int pos) throws CommandNotEnoughArgumentsException {
         args.get();
         return pos;
+    }
+
+    private void removeWaypoint(IArgConsumer args) throws CommandInvalidTypeException, CommandNotEnoughArgumentsException {
+        if (args.hasAny()) {
+            int removeMe = args.getAs(Integer.class);
+            if (removeMe < 0 || removeMe >= goalList.size()) {
+                throw new IllegalArgumentException("Index out of range.");
+            } else {
+                logDirect(String.format("Waypoint %s removed: " + goalList.get(removeMe).toString(), removeMe));
+                goalList.remove(removeMe);
+            }
+        } else {
+            if (goalList.isEmpty()) {
+                logDirect(listEmptyMSG());
+            } else {
+                goalList.remove(goalList.size() - 1);
+            }
+        }
+    }
+
+    private void listWaypoints() {
+        if (goalList.isEmpty()) {
+            logDirect(listEmptyMSG());
+        } else {
+            for (int i = 0; i < goalList.size(); i++) {
+                logDirect(String.format("%s: "+goalList.get(i).toString(), i));
+            }
+        }
+    }
+
+    private void verifyGoalList() {
+        if (!goalList.isEmpty()) {
+            List<Goal> helperList = new ArrayList<>();
+            helperList.add(goalList.get(0));
+            for (Goal goal : goalList) {
+                BlockPos posA = ((GoalBlock) helperList.get(helperList.size() - 1)).getGoalPos();
+                BlockPos posB = ((GoalBlock) goal).getGoalPos();
+                if (posA.getX() != posB.getX() || posA.getY() != posB.getY() || posA.getZ() != posB.getZ()) {
+                    helperList.add(goal);
+                }
+            }
+            goalList = helperList;
+        }
+    }
+
+    private void startPatrolling(GoalPatrol.Mode mode) {
+        if (goalList.isEmpty()) {
+            logDirect(listEmptyMSG());
+        } else {
+            logDirect("Now patrolling. Mode: " + mode.getName());
+            baritone.getCustomGoalProcess().setGoalAndPath(new GoalPatrol(new ArrayList<>(goalList), mode, 0));
+        }
+    }
+    private GoalPatrol.Mode getMode(IArgConsumer args) throws CommandNotEnoughArgumentsException {
+        GoalPatrol.Mode mode = GoalPatrol.Mode.ONEWAY;
+        if (args.has(1)) {
+            mode = GoalPatrol.Mode.getByNameOrDefault(args.getString());
+        }
+        return mode;
+    }
+
+    private void printHelp() {
+        getLongDesc().forEach(this::logDirect);
+    }
+
+    private String listEmptyMSG() {
+        return "No waypoints on patrol route.";
     }
 
     private boolean isExecuteAction(String s) {
@@ -224,36 +249,14 @@ public class PatrolCommand extends Command {
         goalList.add(goal);
     }
 
-    //todo this does not work correctly
-    //the same block pos can be present multiple times but not in succession or at the start and the end
-    private void verifyGoalList() {
-        Iterator<Goal> iterator = goalList.listIterator();
-        GoalBlock first = (GoalBlock) iterator.next();
-        GoalBlock previus = first;
-        GoalBlock next;
-        while (iterator.hasNext()) {
-            next = (GoalBlock)iterator.next();
-            if (first.getGoalPos().equals(next.getGoalPos())) {
-                iterator.remove();
-            } else {
-                previus = next;
-            }
-        }
-        if (previus.getGoalPos().equals(first.getGoalPos()) && previus != first) {
-            goalList.remove(previus);
-        }
-    }
-
     enum Action {
         ADD("add", "a"),
         REMOVE("remove", "rem", "r"),
         CLEAR("clear", "c"),
         LIST("list","l"),
         EXECUTE("execute", "exe", "e", "start", "patrol"),
-        MODE("mode","m"),
         HELP("help", "hlp", "?", "h"),
-        MOVE("move", "mv", "m"),
-        EDIT("edit");
+        VERIFY("verify","v");
 
         private final String[] names;
 
@@ -261,7 +264,7 @@ public class PatrolCommand extends Command {
             this.names = names;
         }
 
-        public static Action getByName(String name) {
+        public static Action getByNameOrDefault(String name) {
             for (Action action : Action.values()) {
                 for (String alias : action.names) {
                     if (alias.equalsIgnoreCase(name)) {
@@ -269,13 +272,13 @@ public class PatrolCommand extends Command {
                     }
                 }
             }
-            return null;
+            return Action.HELP;
         }
 
-        public static String[] getAllNames() {
+        public static String[] getNames() {
             Set<String> names = new HashSet<>();
             for (PatrolCommand.Action action : PatrolCommand.Action.values()) {
-                names.addAll(Arrays.asList(action.names));
+                names.add(action.names[0]);
             }
             return names.toArray(new String[0]);
         }
