@@ -17,36 +17,15 @@
 
 package baritone.api.process;
 
-import baritone.api.pathing.goals.Goal;
+import baritone.api.command.ICommand;
+import baritone.api.command.argument.IArgConsumer;
+import baritone.api.command.exception.CommandException;
 
-public interface ICustomGoalProcess extends IBaritoneProcess {
+public interface ICommandQueueProcess extends IBaritoneProcess {
 
-    void setTicksToWait(int i);
-
-    /**
-     * Sets the pathing goal
-     *
-     * @param goal The new goal
-     */
-    void setGoal(Goal goal);
-
-    /**
-     * Starts path calculation and execution.
-     */
-    void path();
-
-    /**
-     * @return The current goal
-     */
-    Goal getGoal();
-
-    /**
-     * Sets the goal and begins the path execution.
-     *
-     * @param goal The new goal
-     */
-    default void setGoalAndPath(Goal goal) {
-        this.setGoal(goal);
-        this.path();
-    }
+    void addNewCommand(ICommand command, IArgConsumer args);
+    void removeCommand(int i);
+    //void removeCommand(ICommand command);
+    void ExecuteNext() throws CommandException;
+    void clearQueue();
 }

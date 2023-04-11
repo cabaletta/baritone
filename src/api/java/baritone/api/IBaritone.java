@@ -82,6 +82,8 @@ public interface IBaritone {
      */
     ICustomGoalProcess getCustomGoalProcess();
 
+    ICommandQueueProcess getCommandQueueProcess();
+
     /**
      * @return The {@link IGetToBlockProcess} instance
      * @see IGetToBlockProcess

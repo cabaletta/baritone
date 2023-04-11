@@ -19,6 +19,7 @@ package baritone.process;
 
 import baritone.Baritone;
 import baritone.api.pathing.goals.Goal;
+import baritone.api.pathing.goals.GoalBlock;
 import baritone.api.process.ICustomGoalProcess;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
@@ -43,8 +44,15 @@ public final class CustomGoalProcess extends BaritoneProcessHelper implements IC
      */
     private State state;
 
+    private int ticksToWait;
+
     public CustomGoalProcess(Baritone baritone) {
         super(baritone);
+    }
+
+    public void setTicksToWait(int i) {
+        ticksToWait = i;
+        state = State.WAITING;
     }
 
     @Override
@@ -75,32 +83,41 @@ public final class CustomGoalProcess extends BaritoneProcessHelper implements IC
 
     @Override
     public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
-        switch (this.state) {
-            case GOAL_SET:
-                return new PathingCommand(this.goal, PathingCommandType.CANCEL_AND_SET_GOAL);
-            case PATH_REQUESTED:
-                // return FORCE_REVALIDATE_GOAL_AND_PATH just once
-                PathingCommand ret = new PathingCommand(this.goal, PathingCommandType.FORCE_REVALIDATE_GOAL_AND_PATH);
-                this.state = State.EXECUTING;
-                return ret;
-            case EXECUTING:
-                if (calcFailed) {
-                    onLostControl();
+        if (ticksToWait >= 1) {
+            if (ticksToWait == 1) {
+                state = State.NONE;
+            }
+            //logDirect("waiting. remaining ticks: " + ticksToWait);
+            ticksToWait--;
+            return new PathingCommand(new GoalBlock(ctx.playerFeet()), PathingCommandType.CANCEL_AND_SET_GOAL);
+        } else {
+            switch (this.state) {
+                case GOAL_SET:
                     return new PathingCommand(this.goal, PathingCommandType.CANCEL_AND_SET_GOAL);
-                }
-                if (this.goal == null || (this.goal.isInGoal(ctx.playerFeet()) && this.goal.isInGoal(baritone.getPathingBehavior().pathStart()))) {
-                    onLostControl(); // we're there xd
-                    if (Baritone.settings().disconnectOnArrival.value) {
-                        ctx.world().sendQuittingDisconnectingPacket();
+                case PATH_REQUESTED:
+                    // return FORCE_REVALIDATE_GOAL_AND_PATH just once
+                    PathingCommand ret = new PathingCommand(this.goal, PathingCommandType.FORCE_REVALIDATE_GOAL_AND_PATH);
+                    this.state = State.EXECUTING;
+                    return ret;
+                case EXECUTING:
+                    if (calcFailed) {
+                        onLostControl();
+                        return new PathingCommand(this.goal, PathingCommandType.CANCEL_AND_SET_GOAL);
                     }
-                    if (Baritone.settings().notificationOnPathComplete.value) {
-                        logNotification("Pathing complete", false);
+                    if (this.goal == null || (this.goal.isInGoal(ctx.playerFeet()) && this.goal.isInGoal(baritone.getPathingBehavior().pathStart()))) {
+                        onLostControl(); // we're there xd
+                        if (Baritone.settings().disconnectOnArrival.value) {
+                            ctx.world().sendQuittingDisconnectingPacket();
+                        }
+                        if (Baritone.settings().notificationOnPathComplete.value) {
+                            logNotification("Pathing complete", false);
+                        }
+                        return new PathingCommand(this.goal, PathingCommandType.CANCEL_AND_SET_GOAL);
                     }
-                    return new PathingCommand(this.goal, PathingCommandType.CANCEL_AND_SET_GOAL);
-                }
-                return new PathingCommand(this.goal, PathingCommandType.SET_GOAL_AND_PATH);
-            default:
-                throw new IllegalStateException();
+                    return new PathingCommand(this.goal, PathingCommandType.SET_GOAL_AND_PATH);
+                default:
+                    throw new IllegalStateException();
+            }
         }
     }
 
@@ -119,6 +136,7 @@ public final class CustomGoalProcess extends BaritoneProcessHelper implements IC
         NONE,
         GOAL_SET,
         PATH_REQUESTED,
-        EXECUTING
+        EXECUTING,
+        WAITING
     }
 }
