@@ -43,13 +43,13 @@ If another one of your Forge mods has a Baritone integration, you want `baritone
 ## Command Line
 On Mac OSX and Linux, use `./gradlew` instead of `gradlew`.
 
-If you have errors with a package missing please make sure you have setup your environment, and are using Oracle JDK 8 for 1.12.2-1.16.5, JDK 16 for 1.17.1, and JDK 17 for 1.18.1.
+If you have errors with a package missing please make sure you have setup your environment, and are using Oracle JDK 8 for 1.12.2-1.16.5, JDK 16+ for 1.17.1, and JDK 17+ for 1.18.1.
 
 To check which java you are using do 
 `java -version` in a command prompt or terminal.
 If you are using anything above OpenJDK 8 for 1.12.2-1.16.5, it might not work because the Java distributions above JDK 8 using may not have the needed javax classes.
 
-Open JDK download: https://openjdk.java.net/install/
+Download java: https://adoptium.net/
 #### macOS guide
 In order to get JDK 8, Try running the following command:
 `% /usr/libexec/java_home -V`
@@ -66,68 +66,13 @@ In order to get JDK 8 running in the **current terminal window** you will have t
 
 To add OpenJDK 8 to your PATH add the export line to the end of your `.zshrc / .bashrc` if you want it to apply to each new terminal. If you're using bash change the .bachrc and if you're using zsh change the .zshrc
 
-Setting up the Environment:
+### Building Baritone
 
-```
-$ gradlew setupDecompWorkspace
-$ gradlew --refresh-dependencies
-```
+These tasks depend on the minecraft version, but are (for the most part) standard for building mods.
 
-Building Baritone: 
-
-```
-$ gradlew build
-```
-
-For minecraft 1.15.2+, run the following instead to include the Forge jars:
-
-```
-$ gradlew build -Pbaritone.forge_build
-```
-
-Do this instead for Fabric jars:
-
-```
-$ gradlew build -Pbaritone.fabric_build
-```
-
-Running Baritone:
-
-```
-$ gradlew runClient
-```
-
-For information on how to build baritone, see [Building Baritone](#building-baritone)
+for more details, see [the build ci action](/.github/workflows/gradle_build.yml)
 
 ## IntelliJ
 - Open the project in IntelliJ as a Gradle project
-  
-  ![Image](https://i.imgur.com/jw7Q6vY.png)
-
-- Run the Gradle tasks `setupDecompWorkspace` then `genIntellijRuns`
-  
-  ![Image](https://i.imgur.com/QEfVvWP.png)
-
 - Refresh the Gradle project (or, to be safe, just restart IntelliJ)
-  
-  ![Image](https://i.imgur.com/3V7EdWr.png)
-
-- Select the "Minecraft Client" launch config
-  
-  ![Image](https://i.imgur.com/1qz2QGV.png)
-
-- Click on ``Edit Configurations...`` from the same dropdown and select the "Minecraft Client" config
-  
-  ![Image](https://i.imgur.com/s4ly0ZF.png)
-
-- In `Edit Configurations...` you need to select `baritone_launch` for `Use classpath of module:`.
-  
-  ![Image](https://i.imgur.com/hrLhG9u.png)
-
-## IntelliJ
-
-- Navigate to the gradle tasks on the right tab as follows
-
-  ![Image](https://i.imgur.com/PE6r9iN.png)
-
-- Double click on **build** to run it
+- depending on the minecraft version, you may need to run `setupDecompWorkspace` or `genIntellijRuns` in order to get everything working
