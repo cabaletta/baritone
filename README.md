@@ -61,6 +61,7 @@ Baritone is the pathfinding system used in [Impact](https://impactclient.net/) s
 | [1.16.5 Forge](https://github.com/cabaletta/baritone/releases/download/v1.6.4/baritone-api-forge-1.6.4.jar)   | [1.16.5 Fabric](https://github.com/cabaletta/baritone/releases/download/v1.6.4/baritone-api-fabric-1.6.4.jar) |
 | [1.17.1 Forge](https://github.com/cabaletta/baritone/releases/download/v1.7.3/baritone-api-forge-1.7.3.jar)   | [1.17.1 Fabric](https://github.com/cabaletta/baritone/releases/download/v1.7.3/baritone-api-fabric-1.7.3.jar) |
 | [1.18.2 Forge](https://github.com/cabaletta/baritone/releases/download/v1.8.4/baritone-api-forge-1.8.4.jar)   | [1.18.2 Fabric](https://github.com/cabaletta/baritone/releases/download/v1.8.4/baritone-api-fabric-1.8.4.jar) |
+| [1.19.2 Forge](https://github.com/cabaletta/baritone/releases/download/v1.9.4/baritone-api-forge-1.9.4.jar)   | [1.19.2 Fabric](https://github.com/cabaletta/baritone/releases/download/v1.9.4/baritone-api-fabric-1.9.4.jar) |
 | [1.19.3 Forge](https://github.com/cabaletta/baritone/releases/download/v1.9.1/baritone-api-forge-1.9.1.jar)   | [1.19.3 Fabric](https://github.com/cabaletta/baritone/releases/download/v1.9.1/baritone-api-fabric-1.9.1.jar) |
 | [1.19.4 Forge](https://github.com/cabaletta/baritone/releases/download/v1.9.3/baritone-api-forge-1.9.3.jar)   | [1.19.4 Fabric](https://github.com/cabaletta/baritone/releases/download/v1.9.3/baritone-api-fabric-1.9.3.jar) |
 
