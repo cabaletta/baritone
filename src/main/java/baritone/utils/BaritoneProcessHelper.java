@@ -34,6 +34,11 @@ public abstract class BaritoneProcessHelper implements IBaritoneProcess, Helper 
 
     @Override
     public boolean isTemporary() {
-        return false;
+        //When executed from the CommandQueueProcess the new "child" process should be temporary. I think however that
+        // this isn't the correct solution. I haven't tested it, but I think if the queue is filled and therefor the
+        // CommandQueueProcess is active, all normally executed Processes also would become temporary. This would mean
+        // you could bypass the waiting queue and overwrite the current "child" process but after your process is
+        // finished the queue would continue as before. I don't think that is the desired behavior.
+        return baritone.getCommandQueueProcess().isActive();
     }
 }

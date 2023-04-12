@@ -18,15 +18,15 @@
 package baritone.process;
 
 import baritone.Baritone;
-import baritone.api.command.Command;
 import baritone.api.command.ICommand;
 import baritone.api.command.argument.IArgConsumer;
 import baritone.api.command.exception.CommandException;
+import baritone.api.pathing.calc.IPathingControlManager;
+import baritone.api.process.IBaritoneProcess;
 import baritone.api.process.ICommandQueueProcess;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
 import baritone.utils.BaritoneProcessHelper;
-import baritone.utils.accessor.IAnvilChunkLoader;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,7 +35,11 @@ import java.util.Map;
 
 public class CommandQueueProcess extends BaritoneProcessHelper  implements ICommandQueueProcess {
 
-    private List<Map<ICommand, IArgConsumer>> commandQueue;
+    /**
+     * Command waiting list.
+     */
+    private List<Map<ICommand, IArgConsumer>> commandQueue = new ArrayList<>();
+    private boolean active = false;
 
     public CommandQueueProcess(Baritone baritone) {
         super(baritone);
@@ -43,17 +47,22 @@ public class CommandQueueProcess extends BaritoneProcessHelper  implements IComm
 
     @Override
     public boolean isActive() {
-        return !commandQueue.isEmpty();
+        return active;
     }
 
     @Override
     public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
-
+        IBaritoneProcess process = baritone.getPathingControlManager().mostRecentInControl().orElse(null);
+        if (process == null) {
+            logDirect("executing next: " + executeNext());
+        }
         return new PathingCommand(null, PathingCommandType.DEFER);
     }
 
     @Override
     public void onLostControl() {
+        clearQueue();
+        active = false; //not strictly necessary as with the next call of onTick() the empty queue would be detected and active would be set to false.
 
     }
 
@@ -77,6 +86,7 @@ public class CommandQueueProcess extends BaritoneProcessHelper  implements IComm
         Map<ICommand, IArgConsumer> commandArgMap = new HashMap<>();
         commandArgMap.put(command, args);
         commandQueue.add(commandArgMap);
+        active = true;
     }
 
     @Override
@@ -88,15 +98,21 @@ public class CommandQueueProcess extends BaritoneProcessHelper  implements IComm
         }
     }
 
-    @Override
-    public void ExecuteNext() throws CommandException {
-        commandQueue.remove(0);
+    private String executeNext() {
         if (!commandQueue.isEmpty()) {
             Map<ICommand, IArgConsumer> map = commandQueue.get(0);
-            ICommand command = ((ICommand)map.keySet().toArray()[0]);
-            command.execute(command.getNames().get(0),map.get(command));
+            ICommand command = ((ICommand) map.keySet().toArray()[0]);
+            try {
+                command.execute(command.getNames().get(0), map.get(command));
+            } catch (CommandException e) {
+                logDirect("faulty command skipped");
+            } finally {
+                commandQueue.remove(0);
+            }
+            return command.getNames().get(0);
         } else {
-            logDirect("command queue empty");
+            active = false;
+            return "END OF QUEUE";
         }
     }
 

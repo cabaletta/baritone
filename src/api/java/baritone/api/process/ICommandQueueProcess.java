@@ -19,13 +19,11 @@ package baritone.api.process;
 
 import baritone.api.command.ICommand;
 import baritone.api.command.argument.IArgConsumer;
-import baritone.api.command.exception.CommandException;
 
 public interface ICommandQueueProcess extends IBaritoneProcess {
 
     void addNewCommand(ICommand command, IArgConsumer args);
     void removeCommand(int i);
     //void removeCommand(ICommand command);
-    void ExecuteNext() throws CommandException;
     void clearQueue();
 }
