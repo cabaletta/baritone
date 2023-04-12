@@ -25,6 +25,7 @@ import baritone.api.pathing.goals.GoalComposite;
 import baritone.api.process.IFarmProcess;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
+import baritone.api.utils.BlockOptionalMetaLookup;
 import baritone.api.utils.RayTraceUtils;
 import baritone.api.utils.Rotation;
 import baritone.api.utils.RotationUtils;
@@ -48,18 +49,20 @@ import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 public final class FarmProcess extends BaritoneProcessHelper implements IFarmProcess {
 
     private boolean active;
-
     private List<BlockPos> locations;
     private int tickCount;
+    private BlockOptionalMetaLookup blacklistBlocks;
+
+    private static final BlockOptionalMetaLookup FILTER = new BlockOptionalMetaLookup(Arrays.stream(Harvest.values())
+            .map(harvest -> harvest.block)
+            .collect(Collectors.toList()));
 
     private int range;
     private BlockPos center;
@@ -165,7 +168,7 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
     }
 
     private boolean isPlantable(ItemStack stack) {
-        return FARMLAND_PLANTABLE.contains(stack.getItem());
+        return FARMLAND_PLANTABLE.contains(stack.getItem()) && !blacklistBlocks.has(stack);
     }
 
     private boolean isBoneMeal(ItemStack stack) {
@@ -178,6 +181,26 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
 
     @Override
     public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
+        Set<Item> validDrops = new HashSet<>(PICKUP_DROPPED);
+        // Ignoring Pumpkin and melon seeds for inventory Handling
+        validDrops.remove(Items.MELON_SEEDS);
+        validDrops.remove(Items.PUMPKIN_SEEDS);
+        blacklistBlocks = new BlockOptionalMetaLookup();
+        List<Item> blacklistDrops = new ArrayList<>();
+        if (Baritone.settings().checkInventory.value && isInventoryFull()) {
+            OUTER:
+            for (Item item : PICKUP_DROPPED) {
+                for (ItemStack stack : notFullStacks(validDrops)) {
+                    if (item.equals(stack.getItem())) {
+                        continue OUTER;
+                    }
+                }
+                blacklistDrops.add(item);
+            }
+            blacklistBlocks = getBlacklistBlocks(notFullStacks(validDrops), FILTER);
+        }
+        PathingCommand command = handleInventory(isSafeToCancel, validDrops);
+        if (command != null) return command;
         ArrayList<Block> scan = new ArrayList<>();
         for (Harvest harvest : Harvest.values()) {
             scan.add(harvest.block);
@@ -220,12 +243,14 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
                 continue;
             }
             if (readyForHarvest(ctx.world(), pos, state)) {
-                toBreak.add(pos);
+                if (!blacklistBlocks.has(state.getBlock())) {
+                    toBreak.add(pos);
+                }
                 continue;
             }
             if (state.getBlock() instanceof IGrowable) {
                 IGrowable ig = (IGrowable) state.getBlock();
-                if (ig.canGrow(ctx.world(), pos, state, true) && ig.canUseBonemeal(ctx.world(), ctx.world().rand, pos, state)) {
+                if (ig.canGrow(ctx.world(), pos, state, true) && ig.canUseBonemeal(ctx.world(), ctx.world().rand, pos, state) && !blacklistBlocks.has(state.getBlock())) {
                     bonemealable.add(pos);
                 }
             }
@@ -276,6 +301,9 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
                 logNotification("Farm failed", true);
             }
             onLostControl();
+            if (Baritone.settings().goHome.value) {
+                returnHome();
+            }
             return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
         }
 
@@ -301,7 +329,7 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
         for (Entity entity : ctx.world().loadedEntityList) {
             if (entity instanceof EntityItem && entity.onGround) {
                 EntityItem ei = (EntityItem) entity;
-                if (PICKUP_DROPPED.contains(ei.getItem().getItem())) {
+                if (PICKUP_DROPPED.contains(ei.getItem().getItem()) && !blacklistDrops.contains(ei.getItem().getItem())) {
                     // +0.1 because of farmland's 0.9375 dummy height lol
                     goalz.add(new GoalBlock(new BlockPos(entity.posX, entity.posY + 0.1, entity.posZ)));
                 }

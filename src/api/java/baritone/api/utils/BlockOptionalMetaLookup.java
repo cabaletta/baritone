@@ -33,6 +33,10 @@ public class BlockOptionalMetaLookup {
     private final Set<IBlockState> blockStateSet;
     private final BlockOptionalMeta[] boms;
 
+    public BlockOptionalMetaLookup() {
+        this.boms = new BlockOptionalMeta[0];
+    }
+
     public BlockOptionalMetaLookup(BlockOptionalMeta... boms) {
         this.boms = boms;
         Set<Block> blocks = new HashSet<>();

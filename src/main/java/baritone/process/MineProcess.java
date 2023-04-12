@@ -38,6 +38,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.init.Blocks;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 
@@ -56,6 +57,8 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
     private static final int ORE_LOCATIONS_COUNT = 64;
 
     private BlockOptionalMetaLookup filter;
+    private Set<Item> validDrops;
+    private BlockOptionalMetaLookup blacklistBlocks;
     private List<BlockPos> knownOreLocations;
     private List<BlockPos> blacklist; // inaccessible
     private Map<BlockPos, Long> anticipatedDrops;
@@ -75,6 +78,12 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
 
     @Override
     public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
+        blacklistBlocks = new BlockOptionalMetaLookup();
+        if (Baritone.settings().checkInventory.value && isInventoryFull()) {
+            blacklistBlocks = getBlacklistBlocks(notFullStacks(validDrops), filter);
+        }
+        PathingCommand result = handleInventory(isSafeToCancel, validDrops);
+        if (result != null) return result;
         if (desiredQuantity > 0) {
             int curr = ctx.player().inventory.mainInventory.stream()
                     .filter(stack -> filter.has(stack))
@@ -98,6 +107,10 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
                 logDirect("Unable to find any path to " + filter + ", canceling mine");
                 if (Baritone.settings().notificationOnMineFail.value) {
                     logNotification("Unable to find any path to " + filter + ", canceling mine", true);
+                }
+                logDirect("Unable to find any path to " + filter + ", canceling Mine");
+                if (Baritone.settings().goHome.value) {
+                    returnHome();
                 }
                 cancel();
                 return null;
@@ -142,6 +155,9 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         if (command == null) {
             // none in range
             // maybe say something in chat? (ahem impact)
+            if (Baritone.settings().goHome.value) {
+                returnHome();
+            }
             cancel();
             return null;
         }
@@ -187,6 +203,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
             CalculationContext context = new CalculationContext(baritone);
             List<BlockPos> locs2 = prune(context, new ArrayList<>(locs), filter, ORE_LOCATIONS_COUNT, blacklist, droppedItemsScan());
             // can't reassign locs, gotta make a new var locs2, because we use it in a lambda right here, and variables you use in a lambda must be effectively final
+            locs2.removeIf(pos -> blacklistBlocks.has(ctx.world().getBlockState(pos).getBlock()));
             Goal goal = new GoalComposite(locs2.stream().map(loc -> coalesce(loc, locs2, context)).toArray(Goal[]::new));
             knownOreLocations = locs2;
             return new PathingCommand(goal, legit ? PathingCommandType.FORCE_REVALIDATE_GOAL_AND_PATH : PathingCommandType.REVALIDATE_GOAL_AND_PATH);
@@ -241,9 +258,13 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
             if (Baritone.settings().notificationOnMineFail.value) {
                 logNotification("No locations for " + filter + " known, cancelling", true);
             }
+            if (Baritone.settings().goHome.value) {
+                returnHome();
+            }
             cancel();
             return;
         }
+        locs.removeIf(pos -> blacklistBlocks.has(ctx.world().getBlockState(pos).getBlock()));
         knownOreLocations = locs;
     }
 
@@ -329,7 +350,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         for (Entity entity : ctx.world().loadedEntityList) {
             if (entity instanceof EntityItem) {
                 EntityItem ei = (EntityItem) entity;
-                if (filter.has(ei.getItem())) {
+                if (filter.has(ei.getItem()) && !blacklistBlocks.has(ei.getItem())) {
                     ret.add(new BlockPos(entity));
                 }
             }
@@ -490,7 +511,16 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         this.branchPoint = null;
         this.branchPointRunaway = null;
         this.anticipatedDrops = new HashMap<>();
+        this.validDrops = new HashSet<>();
+        this.blacklistBlocks = new BlockOptionalMetaLookup();
         if (filter != null) {
+            for (BlockOptionalMeta bom : filter.blocks()) {
+                Block block = bom.getBlock();
+                Item item = block.getItemDropped(block.getDefaultState(), new Random(), 0);
+                Item ore = Item.getItemFromBlock(block);
+                this.validDrops.add(item);
+                this.validDrops.add(ore);
+            }
             rescan(new ArrayList<>(), new CalculationContext(baritone));
         }
     }
