@@ -21,7 +21,6 @@ import baritone.Baritone;
 import baritone.api.command.ICommand;
 import baritone.api.command.argument.IArgConsumer;
 import baritone.api.command.exception.CommandException;
-import baritone.api.pathing.calc.IPathingControlManager;
 import baritone.api.process.IBaritoneProcess;
 import baritone.api.process.ICommandQueueProcess;
 import baritone.api.process.PathingCommand;

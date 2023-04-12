@@ -19,7 +19,6 @@ package baritone.process;
 
 import baritone.Baritone;
 import baritone.api.pathing.goals.Goal;
-import baritone.api.pathing.goals.GoalBlock;
 import baritone.api.process.ICustomGoalProcess;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
