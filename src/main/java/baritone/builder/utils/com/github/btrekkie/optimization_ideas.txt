@@ -31,12 +31,12 @@ Thoughts concerning optimization:
   (but interestingly, not O(log log N)). However, I think this would be
   significantly slower than a B-tree in practice.
 - If I don't implement the B-tree optimization, there are a couple of small
-  optimizations I could try. First, I could move the field
-  EulerTourNode.augmentationFunc to EulerTourVertex, in order to save a little
-  bit of space. Second, I could create EulerTourNode and EulerTourVertex
-  subclasses specifically for the top level, and offload the fields related to
-  user augmentation to those subclasses. These changes seem inelegant, but it
-  might be worth checking the effect they have on performance.
+  optimizations I could try. First, I could move the field EulerTourNode.graph
+  to EulerTourVertex, in order to save a little bit of space. Second, I could
+  create EulerTourNode and EulerTourVertex subclasses specifically for the top
+  level, and offload the fields related to user augmentation to those
+  subclasses. These changes seem inelegant, but it might be worth checking the
+  effect they have on performance.
 - I looked at the heuristics recommended in
   http://people.csail.mit.edu/karger/Papers/impconn.pdf (Iyer, et al. (2001): An
   Experimental Study of Poly-Logarithmic Fully-Dynamic Connectivity Algorithms).

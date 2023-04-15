@@ -23,6 +23,7 @@
 package baritone.builder.connectivity;
 
 import baritone.builder.utils.com.github.btrekkie.connectivity.Augmentation;
+import baritone.builder.utils.com.github.btrekkie.connectivity.MutatingAugmentation;
 
 /**
  * Stores two values: a sum and a maximum. Used for testing augmentation in ConnGraph.
@@ -40,9 +41,35 @@ class SumAndMax {
         }
     };
 
-    public final int sum;
+    /**
+     * A MutatingAugmentation that combines two SumAndMaxes into one.
+     */
+    public static final MutatingAugmentation MUTATING_AUGMENTATION = new MutatingAugmentation() {
+        @Override
+        public void combine(Object value1, Object value2, Object result) {
+            SumAndMax sumAndMax1 = (SumAndMax) value1;
+            SumAndMax sumAndMax2 = (SumAndMax) value2;
+            SumAndMax sumAndMaxResult = (SumAndMax) result;
+            sumAndMaxResult.sum = sumAndMax1.sum + sumAndMax2.sum;
+            sumAndMaxResult.max = Math.max(sumAndMax1.max, sumAndMax2.max);
+        }
 
-    public final int max;
+        @Override
+        public Object newAugmentation() {
+            return new SumAndMax();
+        }
+    };
+
+    public int sum;
+
+    public int max;
+
+    /**
+     * Constructs a new SumAndMax with an arbitrary sum and max.
+     */
+    public SumAndMax() {
+
+    }
 
     public SumAndMax(int sum, int max) {
         this.sum = sum;

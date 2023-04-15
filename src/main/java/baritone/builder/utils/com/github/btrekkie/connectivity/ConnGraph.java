@@ -121,7 +121,12 @@ public class ConnGraph {
     /**
      * The augmentation function for the graph, if any.
      */
-    private final Augmentation augmentation;
+    final Augmentation augmentation;
+
+    /**
+     * The AugmentationReleaseListener listening to release of ownership of augmentation objects, if any.
+     */
+    final AugmentationReleaseListener augmentationReleaseListener;
 
     /**
      * A map from each vertex in this graph to information about the vertex in this graph. If a vertex has no adjacent
@@ -142,13 +147,93 @@ public class ConnGraph {
      */
     public ConnGraph() {
         augmentation = null;
+        augmentationReleaseListener = null;
+    }
+
+    /**
+     * Constructs an augmented ConnGraph, using the specified function to combine augmentation values. See
+     * ConnGraph(MutatingAugmentation) regarding an alternative that may be more performant.
+     */
+    public ConnGraph(Augmentation augmentation) {
+        this.augmentation = augmentation;
+        augmentationReleaseListener = null;
     }
 
     /**
      * Constructs an augmented ConnGraph, using the specified function to combine augmentation values.
+     * <p>
+     * While ConnGraph(Augmentation) is a little more convenient and elegant, ConnGraph(MutatingAugmentation) should be
+     * more performant, provided that the Augmentation constructs a new object every time "combine" is called. This is
+     * because ConnGraph(MutatingAugmentation) is able to recycle (or "pool") augmentation objects that are no longer in
+     * use, thereby reducing the number of object allocations.
+     * <p>
+     * However, not all Augmentations construct a new object every time "combine" is called. If the augmentation objects
+     * are Booleans, then an Augmentation would return a cached Boolean object each time "combine" is called (assuming
+     * it uses normal Java boxing conversions). So ConnGraph(Augmentation) is actually more efficient in the case of
+     * Booleans. In the case of Integers, Augmentation.combine may or may not return a cached Integer object,
+     * considering that the Integer class caches Integer objects for the range from -128 to 127. So
+     * ConnGraph(MutatingAugmentation) may or may not be more performant in the case of Integers. It is possible to
+     * combine the benefits of caching and object reuse by using the ConnGraph(Augmentation,
+     * AugmentationReleaseListener) constructor.
+     * <p>
+     * Note that combined augmentation values returned by getComponentAugmentation may later be recycled and their
+     * contents changed. A return value of getComponentAugmentation should only be considered valid until the next time
+     * the graph is mutated or optimize() is called on it.
+     * <p>
+     * Only combined augmentation objects are automatically recycled. Vertex augmentation objects passed to
+     * setVertexAugmentation are not. If you want to reduce the number of objects allocated for setting vertex
+     * augmentations, you can do so manually. For example:
+     * <p>
+     * class IntWrapper {
+     * public int value;
+     * }
+     * <p>
+     * class ThingThatUsesConnGraph {
+     * private IntWrapper augmentation;
+     * <p>
+     * private void setVertexAugmentation(ConnGraph graph, ConnVertex vertex, int value) {
+     * if (augmentation == null) {
+     * augmentation = new IntWrapper();
+     * }
+     * augmentation.value = value;
+     * augmentation = (IntWrapper)graph.setVertexAugmentation(vertex, augmentation);
+     * }
+     * <p>
+     * ...
+     * }
      */
-    public ConnGraph(Augmentation augmentation) {
+    public ConnGraph(MutatingAugmentation mutatingAugmentation) {
+        AugmentationPool pool = new AugmentationPool(mutatingAugmentation);
+        augmentation = pool;
+        augmentationReleaseListener = pool;
+    }
+
+    /**
+     * Constructs an augmented ConnGraph, using the specified function to combine augmentation values.
+     * <p>
+     * The AugmentationReleaseListener can be used to track when an augmentation object is no longer stored in this
+     * graph and the object may be recycled. For example, if we are augmenting vertices with integers, we could create
+     * an IntWrapper class with an int field to store the augmentations. The first time Augmentation.combine is called,
+     * we would construct a new IntWrapper instance and return that. Later on, the AugmentationReleaseListener might
+     * tell us that the ConnGraph no longer needs the IntWrapper object. So in a subsequent call to
+     * Augmentation.combine, instead of constructing a new IntWrapper, we could set the old IntWrapper instance's int
+     * field and return that IntWrapper.
+     * <p>
+     * Note that once an augmentation object is recycled, its old contents are lost. For example, if we are recycling
+     * combined augmentation objects, then normally, we should only consider a return value of getComponentAugmentation
+     * to be valid until the next time the graph is mutated or optimize() is called. After that point, the contents of
+     * the return value of getComponentAugmentation may have changed.
+     * <p>
+     * ConnGraph(Augmentation, AugmentationReleaseListener) can be used to improve performance by minimizing the number
+     * of object allocations. Compared to ConnGraph(MutatingAugmentation), ConnGraph(Augmentation,
+     * AugmentationReleaseListener) offers more control, so it may be possible to improve performance using
+     * ConnGraph(Augmentation, AugmentationReleaseListener). For example, this constructor could be used to combine
+     * caching and object reuse techniques, as suggested in the comments for ConnGraph(MutatingAugmentation).
+     */
+    // TODO: Is this useful enough to be worth exposing publicly?
+    public ConnGraph(Augmentation augmentation, AugmentationReleaseListener augmentationReleaseListener) {
         this.augmentation = augmentation;
+        this.augmentationReleaseListener = augmentationReleaseListener;
     }
 
     /**
@@ -158,7 +243,7 @@ public class ConnGraph {
         if (augmentation == null) {
             throw new RuntimeException(
                     "You may only call augmentation-related methods on ConnGraph if the graph is augmented, i.e. if an " +
-                            "Augmentation was passed to the constructor");
+                            "Augmentation or MutatingAugmentation was passed to the constructor");
         }
     }
 
@@ -180,7 +265,7 @@ public class ConnGraph {
         }
 
         EulerTourVertex eulerTourVertex = new EulerTourVertex();
-        EulerTourNode node = new EulerTourNode(eulerTourVertex, augmentation);
+        EulerTourNode node = new EulerTourNode(eulerTourVertex, this);
         eulerTourVertex.arbitraryVisit = node;
         node.left = EulerTourNode.LEAF;
         node.right = EulerTourNode.LEAF;
@@ -483,7 +568,7 @@ public class ConnGraph {
             root = max.remove();
             EulerTourNode[] splitRoots = root.split(vertex2.arbitraryVisit);
             root = splitRoots[1].concatenate(splitRoots[0]);
-            EulerTourNode newNode = new EulerTourNode(vertex2, root.augmentationFunc);
+            EulerTourNode newNode = new EulerTourNode(vertex2, root.graph);
             newNode.left = EulerTourNode.LEAF;
             newNode.right = EulerTourNode.LEAF;
             newNode.isRed = true;
@@ -497,7 +582,7 @@ public class ConnGraph {
         EulerTourNode[] splitRoots = vertex1.arbitraryVisit.root().split(vertex1.arbitraryVisit);
         EulerTourNode before = splitRoots[0];
         EulerTourNode after = splitRoots[1];
-        EulerTourNode newNode = new EulerTourNode(vertex1, root.augmentationFunc);
+        EulerTourNode newNode = new EulerTourNode(vertex1, root.graph);
         before.concatenate(root, newNode).concatenate(after);
         return new EulerTourEdge(newNode, max);
     }
@@ -960,6 +1045,12 @@ public class ConnGraph {
                 }
             }
         }
+
+        if (augmentationReleaseListener != null && oldAugmentation != null) {
+            // Note that oldAugmentation must be released after the calls to augment() earlier in the method, in order
+            // to ensure that we do not change its contents before returning it
+            augmentationReleaseListener.vertexAugmentationReleased(oldAugmentation);
+        }
         return oldAugmentation;
     }
 
@@ -994,6 +1085,12 @@ public class ConnGraph {
                     break;
                 }
             }
+        }
+
+        if (augmentationReleaseListener != null && oldAugmentation != null) {
+            // Note that oldAugmentation must be released after the calls to augment() earlier in the method, in order
+            // to ensure that we do not change its contents before returning it
+            augmentationReleaseListener.vertexAugmentationReleased(oldAugmentation);
         }
         return oldAugmentation;
     }
@@ -1076,10 +1173,38 @@ public class ConnGraph {
     }
 
     /**
+     * Releases ownership of all of the augmentation values stored in this graph, by calling
+     * combinedAugmentationReleased and vertexAugmentationReleased on augmentationReleaseListener. This assumes that
+     * augmentationReleaseListener is non-null.
+     */
+    private void releaseAugmentations() {
+        for (VertexInfo info : vertexInfo.values()) {
+            if (info.vertex.augmentation != null) {
+                augmentationReleaseListener.vertexAugmentationReleased(info.vertex.augmentation);
+            }
+
+            EulerTourNode node = info.vertex.arbitraryVisit;
+            do {
+                if (node.ownsAugmentation) {
+                    augmentationReleaseListener.combinedAugmentationReleased(node.augmentation);
+                }
+                node = node.successor();
+                if (node == null) {
+                    node = info.vertex.arbitraryVisit.root().min();
+                }
+            } while (node.vertex.arbitraryVisit != node);
+        }
+    }
+
+    /**
      * Clears this graph, by removing all edges and vertices, and removing all augmentation information from the
      * vertices.
      */
     public void clear() {
+        if (augmentationReleaseListener != null && augmentation != null) {
+            releaseAugmentations();
+        }
+
         // Note that we construct a new HashMap rather than calling vertexInfo.clear() in order to ensure a reduction in
         // space
         vertexInfo = new Long2ObjectOpenHashMap<>();
