@@ -28,16 +28,13 @@ class EulerTourNode extends RedBlackNode<EulerTourNode> {
      */
     public boolean hasForestEdge;
 
-    /**
-     * The combining function for combining user-provided augmentations. augmentationFunc is null if this node is not in
-     * the highest level.
-     */
-    public final Augmentation augmentationFunc;
+    /** The graph this belongs to. "graph" is null instead if this node is not in the highest level. */
+    public final ConnGraph graph;
 
     /**
      * The combined augmentation for the subtree rooted at this node. This is the result of combining the augmentation
      * values node.vertex.augmentation for all nodes "node" in the subtree rooted at this node for which
-     * node.vertex.arbitraryVisit == node, using augmentationFunc. This is null if hasAugmentation is false.
+     * node.vertex.arbitraryVisit == node, using graph.augmentation. This is null if hasAugmentation is false.
      */
     public Object augmentation;
 
@@ -48,9 +45,17 @@ class EulerTourNode extends RedBlackNode<EulerTourNode> {
      */
     public boolean hasAugmentation;
 
-    public EulerTourNode(EulerTourVertex vertex, Augmentation augmentationFunc) {
+    /**
+     * Whether this node "owns" "augmentation", with respect to graph.augmentationReleaseListener. A node owns a
+     * combined augmentation if the node obtained it by calling Augmentation.combine, as opposed to copying a reference
+     * to vertex.augmentation, left.augmentation, or right.augmentation. This is false if
+     * graph.augmentationReleaseListener or "augmentation" is null.
+     */
+    public boolean ownsAugmentation;
+
+    public EulerTourNode(EulerTourVertex vertex, ConnGraph graph) {
         this.vertex = vertex;
-        this.augmentationFunc = augmentationFunc;
+        this.graph = graph;
     }
 
     /** Like augment(), but only updates the augmentation fields hasGraphEdge and hasForestEdge. */
@@ -73,40 +78,71 @@ class EulerTourNode extends RedBlackNode<EulerTourNode> {
     public boolean augment() {
         int newSize = left.size + right.size + 1;
         boolean augmentedFlags = augmentFlags();
-
-        Object newAugmentation = null;
-        boolean newHasAugmentation = false;
-        if (augmentationFunc != null) {
-            if (left.hasAugmentation) {
-                newAugmentation = left.augmentation;
-                newHasAugmentation = true;
-            }
-            if (vertex.hasAugmentation && vertex.arbitraryVisit == this) {
-                if (newHasAugmentation) {
-                    newAugmentation = augmentationFunc.combine(newAugmentation, vertex.augmentation);
-                } else {
-                    newAugmentation = vertex.augmentation;
-                    newHasAugmentation = true;
-                }
-            }
-            if (right.hasAugmentation) {
-                if (newHasAugmentation) {
-                    newAugmentation = augmentationFunc.combine(newAugmentation, right.augmentation);
-                } else {
-                    newAugmentation = right.augmentation;
-                    newHasAugmentation = true;
-                }
+        if (graph == null || graph.augmentation == null) {
+            if (newSize == size && !augmentedFlags) {
+                return false;
+            } else {
+                size = newSize;
+                return true;
             }
         }
 
+        AugmentationReleaseListener releaseListener = graph.augmentationReleaseListener;
+        Object newAugmentation = null;
+        int valueCount = 0;
+        if (left.hasAugmentation) {
+            newAugmentation = left.augmentation;
+            valueCount = 1;
+        }
+        if (vertex.hasAugmentation && vertex.arbitraryVisit == this) {
+            if (valueCount == 0) {
+                newAugmentation = vertex.augmentation;
+            } else {
+                newAugmentation = graph.augmentation.combine(newAugmentation, vertex.augmentation);
+            }
+            valueCount++;
+        }
+        if (right.hasAugmentation) {
+            if (valueCount == 0) {
+                newAugmentation = right.augmentation;
+            } else {
+                Object tempAugmentation = newAugmentation;
+                newAugmentation = graph.augmentation.combine(newAugmentation, right.augmentation);
+                if (valueCount >= 2 && releaseListener != null && tempAugmentation != null) {
+                    releaseListener.combinedAugmentationReleased(tempAugmentation);
+                }
+            }
+            valueCount++;
+        }
+
+        boolean newHasAugmentation = valueCount > 0;
+        boolean newOwnsAugmentation = valueCount >= 2 && releaseListener != null && newAugmentation != null;
         if (newSize == size && !augmentedFlags && hasAugmentation == newHasAugmentation &&
                 (newAugmentation != null ? newAugmentation.equals(augmentation) : augmentation == null)) {
+            if (newOwnsAugmentation) {
+                releaseListener.combinedAugmentationReleased(newAugmentation);
+            }
             return false;
         } else {
+            if (ownsAugmentation) {
+                releaseListener.combinedAugmentationReleased(augmentation);
+            }
             size = newSize;
             augmentation = newAugmentation;
             hasAugmentation = newHasAugmentation;
+            ownsAugmentation = newOwnsAugmentation;
             return true;
+        }
+    }
+
+    @Override
+    public void removeWithoutGettingRoot() {
+        super.removeWithoutGettingRoot();
+        if (ownsAugmentation) {
+            graph.augmentationReleaseListener.combinedAugmentationReleased(augmentation);
+            augmentation = null;
+            hasAugmentation = false;
+            ownsAugmentation = false;
         }
     }
 }

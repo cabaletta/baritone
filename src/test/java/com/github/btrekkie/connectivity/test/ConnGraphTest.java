@@ -234,10 +234,11 @@ public class ConnGraphTest {
         assertFalse(graph.componentHasAugmentation(vertices.get(6).get(4)));
     }
 
-    /** Tests a graph with a hub-and-spokes subgraph and a clique subgraph. */
-    @Test
-    public void testWheelAndClique() {
-        ConnGraph graph = new ConnGraph(SumAndMax.AUGMENTATION);
+    /**
+     * Tests the specified ConnGraph with a hub-and-spokes subgraph and a clique subgraph. The graph must be empty and
+     * be augmented with SumAndMax objects.
+     */
+    private void checkWheelAndClique(ConnGraph graph) {
         Random random = new Random(6170);
         ConnVertex hub = new ConnVertex(random);
         List<ConnVertex> spokes1 = new ArrayList<ConnVertex>(10);
@@ -350,6 +351,23 @@ public class ConnGraphTest {
         assertTrue(graph.connected(clique.get(5), clique.get(5)));
         assertNull(graph.getComponentAugmentation(hub));
         assertNull(graph.getVertexAugmentation(spokes2.get(8)));
+    }
+
+    /** Tests a graph with a hub-and-spokes subgraph and a clique subgraph. */
+    @Test
+    public void testWheelAndClique() {
+        checkWheelAndClique(new ConnGraph(SumAndMax.AUGMENTATION));
+
+        ConnGraph graph1 = new ConnGraph(SumAndMax.MUTATING_AUGMENTATION);
+        checkWheelAndClique(graph1);
+        graph1.clear();
+        checkWheelAndClique(graph1);
+
+        SumAndMaxPoolAndCache pool = new SumAndMaxPoolAndCache();
+        ConnGraph graph2 = new ConnGraph(pool, pool);
+        checkWheelAndClique(graph2);
+        graph2.clear();
+        checkWheelAndClique(graph2);
     }
 
     /**
@@ -467,10 +485,11 @@ public class ConnGraphTest {
         checkPermutation(graph, vertices, 7, new int[]{5, 2, 0, 6, 4, 7, 3, 1});
     }
 
-    /** Tests a graph based on the United States. */
-    @Test
-    public void testUnitedStates() {
-        ConnGraph graph = new ConnGraph(SumAndMax.AUGMENTATION);
+    /**
+     * Tests the specified ConnGraph with a graph based on the United States. The graph must be empty and be augmented
+     * with SumAndMax objects.
+     */
+    private void checkUnitedStates(ConnGraph graph) {
         Random random = new Random(6170);
         ConnVertex alabama = new ConnVertex(random);
         assertNull(graph.setVertexAugmentation(alabama, new SumAndMax(7, 1819)));
@@ -874,6 +893,13 @@ public class ConnGraphTest {
         assertFalse(graph.connected(alaska, connecticut));
         assertNull(graph.getComponentAugmentation(southDakota));
         assertNull(graph.getComponentAugmentation(arkansas));
+    }
+
+    /** Tests a graph based on the United States. */
+    @Test
+    public void testUnitedStates() {
+        checkUnitedStates(new ConnGraph(SumAndMax.AUGMENTATION));
+        checkUnitedStates(new ConnGraph(SumAndMax.MUTATING_AUGMENTATION));
     }
 
     /** Tests ConnectivityGraph on the graph for a dodecahedron. */
