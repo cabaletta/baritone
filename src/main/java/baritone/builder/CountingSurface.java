@@ -18,27 +18,34 @@
 package baritone.builder;
 
 import baritone.api.utils.BetterBlockPos;
+import baritone.builder.utils.com.github.btrekkie.connectivity.MutatingAugmentation;
 
 import java.util.OptionalInt;
 
 public class CountingSurface extends NavigableSurface {
     public CountingSurface(int x, int y, int z) {
-        super(x, y, z, Attachment::new, $ -> new Attachment());
+        super(x, y, z, new MutatingAugmentation() {
+            @Override
+            public void combine(Object value1, Object value2, Object result) {
+                ((Attachment) result).combine((Attachment) value1, (Attachment) value2);
+            }
+
+            @Override
+            public Object newAugmentation() {
+                return new Attachment();
+            }
+        }, $ -> new Attachment());
     }
 
     private static class Attachment {
-        public final int surfaceSize;
-
-        public Attachment(Object a, Object b) {
-            this((Attachment) a, (Attachment) b);
-        }
-
-        public Attachment(Attachment a, Attachment b) {
-            this.surfaceSize = a.surfaceSize + b.surfaceSize;
-        }
+        public int surfaceSize;
 
         public Attachment() {
             this.surfaceSize = 1;
+        }
+
+        public void combine(Attachment child1, Attachment child2) {
+            surfaceSize = child1.surfaceSize + child2.surfaceSize;
         }
 
         @Override

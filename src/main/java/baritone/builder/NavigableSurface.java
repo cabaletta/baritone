@@ -18,8 +18,8 @@
 package baritone.builder;
 
 import baritone.api.utils.BetterBlockPos;
-import baritone.builder.utils.com.github.btrekkie.connectivity.Augmentation;
 import baritone.builder.utils.com.github.btrekkie.connectivity.ConnGraph;
+import baritone.builder.utils.com.github.btrekkie.connectivity.MutatingAugmentation;
 
 import java.util.Arrays;
 import java.util.function.Function;
@@ -37,7 +37,7 @@ public class NavigableSurface {
     private final Column col1 = new Column();
     private final Column col2 = new Column();
 
-    public NavigableSurface(int x, int y, int z, Augmentation augmentation, Function<BetterBlockPos, Object> genVertexAugmentation) {
+    public NavigableSurface(int x, int y, int z, MutatingAugmentation augmentation, Function<BetterBlockPos, Object> genVertexAugmentation) {
         this.bounds = new CuboidBounds(x, y, z);
         this.blocks = new BlockStateCachedData[bounds.volume()];
         Arrays.fill(blocks, FakeStates.AIR);
