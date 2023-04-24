@@ -854,6 +854,11 @@ public final class Settings {
     public final Setting<Integer> minYLevelWhileMining = new Setting<>(0);
 
     /**
+     * Sets the maximum y level to mine ores at.
+     */
+    public final Setting<Integer> maxYLevelWhileMining = new Setting<>(255); // 1.17+ defaults to maximum possible world height
+
+    /**
      * This will only allow baritone to mine exposed ores, can be used to stop ore obfuscators on servers that use them.
      */
     public final Setting<Boolean> allowOnlyExposedOres = new Setting<>(false);
