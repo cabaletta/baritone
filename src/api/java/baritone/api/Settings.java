@@ -907,6 +907,13 @@ public final class Settings {
     public final Setting<Boolean> extendCacheOnThreshold = new Setting<>(false);
 
     /**
+     * When enabled the main thread will not be used for world scanning.
+     * This trades correctness for performance so do not enable this unless you
+     * really need it and do not report bugs if it causes problems.
+     */
+    public final Setting<Boolean> scanAsynchronously = new Setting<>(false);
+
+    /**
      * Don't consider the next layer in builder until the current one is done
      */
     public final Setting<Boolean> buildInLayers = new Setting<>(false);

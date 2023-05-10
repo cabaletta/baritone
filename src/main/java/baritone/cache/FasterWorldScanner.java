@@ -178,6 +178,25 @@ public enum FasterWorldScanner implements IWorldScanner {
     }
 
     private void visitSection(BlockOptionalMetaLookup lookup, ExtendedBlockStorage section, List<BlockPos> blocks, long chunkX, long chunkZ) {
+        RuntimeException exception = null;
+        for (int i = 0; i < 3; ++i) {
+            try {
+                tryVisitSection(lookup, section, blocks, chunkX, chunkZ);
+                return;
+            } catch (ArrayIndexOutOfBoundsException e) {
+                // thread safety problem. Keep the exception and try again
+                if (exception == null) {
+                    exception = e;
+                } else {
+                    exception.addSuppressed(e);
+                }
+            }
+        }
+        // Three times is too much, maybe we got a bigger problem?
+        throw exception;
+    }
+
+    private void tryVisitSection(BlockOptionalMetaLookup lookup, ExtendedBlockStorage section, List<BlockPos> blocks, long chunkX, long chunkZ) {
         if (section == null || section.isEmpty()) {
             return;
         }
