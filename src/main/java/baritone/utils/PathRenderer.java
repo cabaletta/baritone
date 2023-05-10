@@ -88,7 +88,7 @@ public final class PathRenderer implements IRenderer, Helper {
 
         Entity renderView = Helper.mc.getCameraEntity();
 
-        if (renderView.level != BaritoneAPI.getProvider().getPrimaryBaritone().getPlayerContext().world()) {
+        if (renderView.level() != BaritoneAPI.getProvider().getPrimaryBaritone().getPlayerContext().world()) {
             System.out.println("I have no idea what's going on");
             System.out.println("The primary baritone is in a different world than the render view entity");
             System.out.println("Not rendering the path");
@@ -209,7 +209,7 @@ public final class PathRenderer implements IRenderer, Helper {
 
         positions.forEach(pos -> {
             BlockState state = bsi.get0(pos);
-            VoxelShape shape = state.getShape(player.level, pos);
+            VoxelShape shape = state.getShape(player.level(), pos);
             AABB toDraw = shape.isEmpty() ? Shapes.block().bounds() : shape.bounds();
             toDraw = toDraw.move(pos);
             IRenderer.drawAABB(stack, toDraw, .002D);
@@ -272,7 +272,7 @@ public final class PathRenderer implements IRenderer, Helper {
                         TEXTURE_BEACON_BEAM,
                         settings.renderGoalAnimated.value ? partialTicks : 0,
                         1.0F,
-                        settings.renderGoalAnimated.value ? player.level.getGameTime() : 0,
+                        settings.renderGoalAnimated.value ? player.level().getGameTime() : 0,
                         0,
                         256,
                         color.getColorComponents(null),

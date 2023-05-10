@@ -45,8 +45,8 @@ import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraft.world.level.storage.ServerLevelData;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.level.storage.loot.LootContext;
-import net.minecraft.world.level.storage.loot.LootTables;
-import net.minecraft.world.level.storage.loot.PredicateManager;
+import net.minecraft.world.level.storage.loot.LootDataManager;
+import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.Vec3;
@@ -69,8 +69,7 @@ public final class BlockOptionalMeta {
     private final ImmutableSet<Integer> stateHashes;
     private final ImmutableSet<Integer> stackHashes;
     private static final Pattern pattern = Pattern.compile("^(.+?)(?::(\\d+))?$");
-    private static LootTables lootTables;
-    private static PredicateManager predicate = new PredicateManager();
+    private static LootDataManager lootTables;
     private static Map<Block, List<Item>> drops = new HashMap<>();
 
     public BlockOptionalMeta(@Nonnull Block block) {
@@ -172,11 +171,11 @@ public final class BlockOptionalMeta {
         return null;
     }
 
-    public static LootTables getManager() {
+    public static LootDataManager getManager() {
         if (lootTables == null) {
             MultiPackResourceManager resources = new MultiPackResourceManager(PackType.SERVER_DATA, List.of(getVanillaServerPack()));
             ReloadableResourceManager resourceManager = new ReloadableResourceManager(PackType.SERVER_DATA);
-            lootTables = new LootTables(predicate);
+            lootTables = new LootDataManager();
             resourceManager.registerReloadListener(lootTables);
             try {
                 resourceManager.createReload(new ThreadPerTaskExecutor(Thread::new), new ThreadPerTaskExecutor(Thread::new), CompletableFuture.completedFuture(Unit.INSTANCE), resources.listPacks().toList()).done().get();
@@ -188,10 +187,6 @@ public final class BlockOptionalMeta {
         return lootTables;
     }
 
-    public static PredicateManager getPredicateManager() {
-        return predicate;
-    }
-
     private static synchronized List<Item> drops(Block b) {
         return drops.computeIfAbsent(b, block -> {
             ResourceLocation lootTableLocation = block.getLootTable();
@@ -200,14 +195,17 @@ public final class BlockOptionalMeta {
             } else {
                 List<Item> items = new ArrayList<>();
                 try {
-                    getManager().get(lootTableLocation).getRandomItems(
-                        new LootContext.Builder(ServerLevelStub.fastCreate())
-                            .withRandom(RandomSource.create())
-                            .withParameter(LootContextParams.ORIGIN, Vec3.atLowerCornerOf(BlockPos.ZERO))
-                            .withParameter(LootContextParams.TOOL, ItemStack.EMPTY)
-                            .withOptionalParameter(LootContextParams.BLOCK_ENTITY, null)
-                            .withParameter(LootContextParams.BLOCK_STATE, block.defaultBlockState())
-                            .create(LootContextParamSets.BLOCK),
+
+                    getManager().getLootTable(lootTableLocation).getRandomItemsRaw(
+                        new LootContext.Builder(
+                                new LootParams.Builder(ServerLevelStub.fastCreate())
+                                    .withParameter(LootContextParams.ORIGIN, Vec3.atLowerCornerOf(BlockPos.ZERO))
+                                    .withParameter(LootContextParams.TOOL, ItemStack.EMPTY)
+                                    .withOptionalParameter(LootContextParams.BLOCK_ENTITY, null)
+                                    .withParameter(LootContextParams.BLOCK_STATE, block.defaultBlockState())
+                                    .create(LootContextParamSets.BLOCK)
+                            ).withOptionalRandomSeed(1L)
+                            .create(null),
                         stack -> items.add(stack.getItem())
                     );
                 } catch (Exception e) {
