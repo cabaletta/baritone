@@ -29,6 +29,7 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.Minecraft;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.BitArray;
 import net.minecraft.util.ObjectIntIdentityMap;
@@ -57,7 +58,8 @@ public enum FasterWorldScanner implements IWorldScanner {
 
     @Override
     public List<BlockPos> scanChunk(IPlayerContext ctx, BlockOptionalMetaLookup filter, ChunkPos pos, int max, int yLevelThreshold) {
-        Stream<BlockPos> stream = scanChunkInternal(ctx, filter, pos);
+        boolean isAsync = Minecraft.getMinecraft().isCallingFromMinecraftThread();
+        Stream<BlockPos> stream = scanChunkInternal(ctx, filter, pos, isAsync);
         if (max >= 0) {
             stream = stream.limit(max);
         }
@@ -126,10 +128,11 @@ public enum FasterWorldScanner implements IWorldScanner {
     }
 
     private List<BlockPos> scanChunksInternal(IPlayerContext ctx, BlockOptionalMetaLookup lookup, List<ChunkPos> chunkPositions, int maxBlocks) {
+        boolean isAsync = Minecraft.getMinecraft().isCallingFromMinecraftThread();
         assert ctx.world() != null;
         try {
             // p -> scanChunkInternal(ctx, lookup, p)
-            Stream<BlockPos> posStream = chunkPositions.parallelStream().flatMap(p -> scanChunkInternal(ctx, lookup, p));
+            Stream<BlockPos> posStream = chunkPositions.parallelStream().flatMap(p -> scanChunkInternal(ctx, lookup, p, isAsync));
             if (maxBlocks >= 0) {
                 // WARNING: this can be expensive if maxBlocks is large...
                 // see limit's javadoc
@@ -142,7 +145,7 @@ public enum FasterWorldScanner implements IWorldScanner {
         }
     }
 
-    private Stream<BlockPos> scanChunkInternal(IPlayerContext ctx, BlockOptionalMetaLookup lookup, ChunkPos pos) {
+    private Stream<BlockPos> scanChunkInternal(IPlayerContext ctx, BlockOptionalMetaLookup lookup, ChunkPos pos, boolean isAsync) {
         IChunkProvider chunkProvider = ctx.world().getChunkProvider();
         // if chunk is not loaded, return empty stream
         if (!chunkProvider.isChunkGeneratedAt(pos.x, pos.z)) {
@@ -154,12 +157,12 @@ public enum FasterWorldScanner implements IWorldScanner {
 
         int playerSectionY = ctx.playerFeet().y >> 4;
 
-        return collectChunkSections(lookup, chunkProvider.getLoadedChunk(pos.x, pos.z), chunkX, chunkZ, playerSectionY).stream();
+        return collectChunkSections(lookup, chunkProvider.getLoadedChunk(pos.x, pos.z), chunkX, chunkZ, playerSectionY, isAsync).stream();
     }
 
 
 
-    private List<BlockPos> collectChunkSections(BlockOptionalMetaLookup lookup, Chunk chunk, long chunkX, long chunkZ, int playerSection) {
+    private List<BlockPos> collectChunkSections(BlockOptionalMetaLookup lookup, Chunk chunk, long chunkX, long chunkZ, int playerSection, boolean isAsync) {
         // iterate over sections relative to player
         List<BlockPos> blocks = new ArrayList<>();
         ExtendedBlockStorage[] sections = chunk.getBlockStorageArray();
@@ -168,16 +171,20 @@ public enum FasterWorldScanner implements IWorldScanner {
         int j = playerSection;
         for (; i >= 0 || j < l; ++j, --i) {
             if (j < l) {
-                visitSection(lookup, sections[j], blocks, chunkX, chunkZ);
+                visitSection(lookup, sections[j], blocks, chunkX, chunkZ, isAsync);
             }
             if (i >= 0) {
-                visitSection(lookup, sections[i], blocks, chunkX, chunkZ);
+                visitSection(lookup, sections[i], blocks, chunkX, chunkZ, isAsync);
             }
         }
         return blocks;
     }
 
-    private void visitSection(BlockOptionalMetaLookup lookup, ExtendedBlockStorage section, List<BlockPos> blocks, long chunkX, long chunkZ) {
+    private void visitSection(BlockOptionalMetaLookup lookup, ExtendedBlockStorage section, List<BlockPos> blocks, long chunkX, long chunkZ, boolean isAsync) {
+        if (!isAsync) {
+            tryVisitSection(lookup, section, blocks, chunkX, chunkZ);
+            return;
+        }
         RuntimeException exception = null;
         for (int i = 0; i < 3; ++i) {
             try {
