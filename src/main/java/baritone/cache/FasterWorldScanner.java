@@ -58,7 +58,7 @@ public enum FasterWorldScanner implements IWorldScanner {
 
     @Override
     public List<BlockPos> scanChunk(IPlayerContext ctx, BlockOptionalMetaLookup filter, ChunkPos pos, int max, int yLevelThreshold) {
-        boolean isAsync = Minecraft.getMinecraft().isCallingFromMinecraftThread();
+        boolean isAsync = !Minecraft.getMinecraft().isCallingFromMinecraftThread();
         Stream<BlockPos> stream = scanChunkInternal(ctx, filter, pos, isAsync);
         if (max >= 0) {
             stream = stream.limit(max);
@@ -128,7 +128,7 @@ public enum FasterWorldScanner implements IWorldScanner {
     }
 
     private List<BlockPos> scanChunksInternal(IPlayerContext ctx, BlockOptionalMetaLookup lookup, List<ChunkPos> chunkPositions, int maxBlocks) {
-        boolean isAsync = Minecraft.getMinecraft().isCallingFromMinecraftThread();
+        boolean isAsync = !Minecraft.getMinecraft().isCallingFromMinecraftThread();
         assert ctx.world() != null;
         try {
             // p -> scanChunkInternal(ctx, lookup, p)
