@@ -41,8 +41,9 @@ public class CraftCommand extends Command {
 
     @Override
     public void execute(String label, IArgConsumer args) throws CommandException {
-        destination = minecraft:crafting_table 
-        baritone.getGetToBlockProcess().getToBlock(destination);
+        logDirect("Crafting");
+        table = minecraft:crafting_table 
+        baritone.getGetToBlockProcess().getToBlock(table);
     }
   
     @Override
