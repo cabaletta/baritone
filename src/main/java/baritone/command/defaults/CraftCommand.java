@@ -53,7 +53,8 @@ public class CraftCommand extends Command {
     @Override
     public List<String> getLongDesc() {
         return Arrays.asList(
-                "The craft command tells Baritone to head towards the closest crafting table, then begin crafting",
+                "The craft command tells Baritone to head towards the closest crafting table, then begin crafting. ",
+                "Requires allowInventory to be true",
                 "",
                 "Usage:",
                 "> craft - Go to a crafting table, wherever it is in the world",
