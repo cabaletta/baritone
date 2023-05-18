@@ -68,6 +68,11 @@ public final class Settings {
      * Allow Baritone to move items in your inventory to your hotbar
      */
     public final Setting<Boolean> allowInventory = new Setting<>(false);
+    
+    /**
+     * Allow Baritone to auto craft items with "craft command is called.
+     */
+    public final Setting<Boolean> allowAutoCraft = new Setting<>(false);
 
     /**
      * Wait this many ticks between InventoryBehavior moving inventory items
