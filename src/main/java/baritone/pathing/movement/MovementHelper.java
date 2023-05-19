@@ -510,14 +510,14 @@ public interface MovementHelper extends ActionCosts, Helper {
 
     static boolean canUseFrostWalker(CalculationContext context, BlockState state) {
         return context.frostWalker != 0
-                && state.getBlock() == Blocks.WATER
+                && state == FrostedIceBlock.meltsInto()
                 && ((Integer) state.getValue(LiquidBlock.LEVEL)) == 0;
     }
 
     static boolean canUseFrostWalker(IPlayerContext ctx, BlockPos pos) {
         BlockState state = BlockStateInterface.get(ctx, pos);
         return EnchantmentHelper.hasFrostWalker(ctx.player())
-                && state.getBlock() == Blocks.WATER
+                && state == FrostedIceBlock.meltsInto()
                 && ((Integer) state.getValue(LiquidBlock.LEVEL)) == 0;
     }
 
