@@ -1298,23 +1298,37 @@ public final class Settings {
     /**
      * A map of lowercase setting field names to their respective setting
      */
-    public final Map<String, Setting<?>> byLowerName;
+    public Map<String, Setting<?>> byLowerName;
 
     /**
      * A list of all settings
      */
-    public final List<Setting<?>> allSettings;
+    public List<Setting<?>> allSettings;
 
-    public final Map<Setting<?>, Type> settingTypes;
+    /**
+     * A map of lowercase settings to their respective setting type
+     */
+    public static Map<Setting<?>, Type> settingTypes;
 
-    public final class Setting<T> {
+    /**
+     * A setting represents a configurable value within the settings framework.
+     * It holds the current value, default value, and other relevant information for the setting.
+     *
+     * @param <T> the type of the setting value
+     */
+    public static final class Setting<T> {
 
         public T value;
         public final T defaultValue;
         private String name;
 
-        @SuppressWarnings("unchecked")
-        private Setting(T value) {
+        /**
+         * Constructs a new setting with the specified initial value.
+         *
+         * @param value the initial value of the setting
+         * @throws IllegalArgumentException if the initial value is null
+         */
+        public Setting(T value) {
             if (value == null) {
                 throw new IllegalArgumentException("Cannot determine value type class from null");
             }
@@ -1323,43 +1337,65 @@ public final class Settings {
         }
 
         /**
-         * Deprecated! Please use .value directly instead
+         * Deprecated! Please use .value directly instead.
          *
-         * @return the current setting value
+         * @return the current value of the setting
+         * @deprecated Use `.value` directly to access the current value.
          */
         @Deprecated
         public final T get() {
             return value;
         }
 
+        /**
+         * Returns the name of the setting.
+         *
+         * @return the name of the setting
+         */
         public final String getName() {
             return name;
         }
 
+        /**
+         * Returns the class of the setting value.
+         *
+         * @return the class of the setting value
+         */
         public Class<T> getValueClass() {
             // noinspection unchecked
             return (Class<T>) TypeUtils.resolveBaseClass(getType());
         }
 
+        /**
+         * Returns a string representation of the setting.
+         *
+         * @return a string representation of the setting
+         */
         @Override
         public String toString() {
             return SettingsUtil.settingToString(this);
         }
 
         /**
-         * Reset this setting to its default value
+         * Reset this setting to its default value.
          */
         public void reset() {
             value = defaultValue;
         }
 
+        /**
+         * Returns the type of the setting.
+         *
+         * @return the type of the setting
+         */
         public final Type getType() {
             return settingTypes.get(this);
         }
     }
 
-    // here be dragons
-
+    /**
+     * Here be Dragons!
+     */
     Settings() {
         Field[] temp = getClass().getFields();
 
@@ -1390,14 +1426,82 @@ public final class Settings {
         settingTypes = Collections.unmodifiableMap(tmpSettingTypes);
     }
 
+    /**
+     * Register a new setting.
+     *
+     * @param name         the name of the setting
+     * @param defaultValue the default value of the setting
+     * @param <T>          the type of the setting value
+     * @return the newly registered setting
+     */
+    public <T> Setting<T> registerSetting(String name, T defaultValue) {
+        Setting<T> setting = new Setting<>(defaultValue);
+        setting.name = name;
+        return superSecretRegisterSetting(setting, name.toLowerCase(), defaultValue.getClass());
+    }
+
+    /**
+     * Register settings from the fields of the given class.
+     *
+     * @param inputClass the class containing the settings fields
+     */
+    public void registerSettingsFromClass(Class<?> inputClass) {
+        Field[] fields = inputClass.getDeclaredFields();
+
+        for (Field field : fields) {
+            if (field.getType().equals(Setting.class)) {
+                try {
+                    field.setAccessible(true);
+                    Setting<?> setting = (Setting<?>) field.get(this);
+                    String name = field.getName();
+                    setting.name = name;
+                    String lowercaseName = name.toLowerCase();
+                    superSecretRegisterSetting(setting, lowercaseName, ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[0]);
+                } catch (IllegalAccessException e) {
+                    throw new IllegalStateException("Error accessing setting field", e);
+                }
+            }
+        }
+    }
+
+    /**
+     * Retrieves a list of settings of a specific type.
+     *
+     * @param <T>   the type of the settings to retrieve
+     * @param clazz the class representing the type of settings
+     * @return a list of settings of the specified type
+     */
     @SuppressWarnings("unchecked")
-    public <T> List<Setting<T>> getAllValuesByType(Class<T> cla$$) {
+    public <T> List<Setting<T>> getAllValuesByType(Class<T> clazz) {
         List<Setting<T>> result = new ArrayList<>();
         for (Setting<?> setting : allSettings) {
-            if (setting.getValueClass().equals(cla$$)) {
+            if (setting.getValueClass().equals(clazz)) {
                 result.add((Setting<T>) setting);
             }
         }
         return result;
+    }
+
+    /**
+     * Registers a new setting with the provided parameters. This method is intended for internal use only.
+     */
+    private <T> Setting<T> superSecretRegisterSetting(Setting<T> setting, String lowercaseName, Type type) {
+        if (byLowerName.containsKey(lowercaseName)) {
+            throw new IllegalStateException("Duplicate setting name");
+        }
+
+        Map<String, Setting<?>> updatedByLowerName = new HashMap<>(byLowerName);
+        updatedByLowerName.put(lowercaseName, setting);
+        byLowerName = Collections.unmodifiableMap(updatedByLowerName);
+
+        List<Setting<?>> updatedAllSettings = new ArrayList<>(allSettings);
+        updatedAllSettings.add(setting);
+        allSettings = Collections.unmodifiableList(updatedAllSettings);
+
+        Map<Setting<?>, Type> updatedSettingTypes = new HashMap<>(settingTypes);
+        updatedSettingTypes.put(setting, type);
+        settingTypes = Collections.unmodifiableMap(updatedSettingTypes);
+
+        return setting;
     }
 }
