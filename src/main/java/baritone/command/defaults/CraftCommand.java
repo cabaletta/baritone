@@ -20,14 +20,8 @@ package baritone.command.defaults;
 import baritone.api.IBaritone;
 import baritone.api.command.Command;
 import baritone.api.command.argument.IArgConsumer;
-import baritone.api.command.datatypes.BlockById;
-import baritone.api.command.datatypes.ForBlockOptionalMeta;
-import baritone.api.command.datatypes.RelativeCoordinate;
-import baritone.api.command.datatypes.RelativeGoal;
 import baritone.api.command.exception.CommandException;
-import baritone.api.pathing.goals.Goal;
-import baritone.api.utils.BetterBlockPos;
-import baritone.api.utils.BlockOptionalMeta;
+import net.minecraft.item.Item;
 
 import java.util.Arrays;
 import java.util.List;
@@ -41,24 +35,43 @@ public class CraftCommand extends Command {
 
     @Override
     public void execute(String label, IArgConsumer args) throws CommandException {
-        logDirect("Crafting");
-        table = minecraft:crafting_table 
-        baritone.getGetToBlockProcess().getToBlock(table);
+        //todo works for simple items like "stick" but items like "granite" aren't parsed because they are stone:1
+        Item item = Item.getByNameOrId(args.getString());
+
+        int amount = args.hasAny() ? args.getAs(Integer.class) : 1;
+
+        if (item == null) {
+            logDirect("invalid Item");
+        } else if (!baritone.getCraftingProcess().hasCraftingRecipe(item)) {
+            logDirect("no crafting recipe for "+item.getTranslationKey()+" found.");
+            /*todo missing feature check if we can craft before we walk to a crafting table
+        } else if (BaritoneAPI.getSettings().allowAutoCraft.value && !baritone.getCraftingProcess().canCraft(item, amount)) {
+            logDirect("trying to craft "+ item.getTranslationKey());
+            logDirect("not enough resources in inventory");
+            /**/
+        } else {
+            baritone.getCraftingProcess().craft(item, amount);
+        }
+    }
+
+    @Override
+    public Stream<String> tabComplete(String label, IArgConsumer args) throws CommandException {
+        //todo add autocomplete for items
+        return null;
     }
   
     @Override
     public String getShortDesc() {
-        return "Go to a crafting table";
+        return "Craft a item.";
     }
 
     @Override
     public List<String> getLongDesc() {
         return Arrays.asList(
-                "The craft command tells Baritone to head towards the closest crafting table, then begin crafting. ",
-                "Requires allowInventory to be true",
+                "Go to a crafting table and craft a item.",
                 "",
                 "Usage:",
-                "> craft - Go to a crafting table, wherever it is in the world",
+                "> craft <item> <amount> - Go to a crafting table, and craft a item."
         );
     }
 }

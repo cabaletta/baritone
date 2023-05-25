@@ -80,6 +80,7 @@ public class Baritone implements IBaritone {
     private ExploreProcess exploreProcess;
     private BackfillProcess backfillProcess;
     private FarmProcess farmProcess;
+    private CraftingProcess craftingProcess;
     private InventoryPauserProcess inventoryPauserProcess;
 
     private PathingControlManager pathingControlManager;
@@ -116,6 +117,7 @@ public class Baritone implements IBaritone {
             this.pathingControlManager.registerProcess(exploreProcess = new ExploreProcess(this));
             this.pathingControlManager.registerProcess(backfillProcess = new BackfillProcess(this));
             this.pathingControlManager.registerProcess(farmProcess = new FarmProcess(this));
+            this.pathingControlManager.registerProcess(craftingProcess = new CraftingProcess(this));
             this.pathingControlManager.registerProcess(inventoryPauserProcess = new InventoryPauserProcess(this));
         }
 
@@ -146,6 +148,11 @@ public class Baritone implements IBaritone {
     @Override
     public GetToBlockProcess getGetToBlockProcess() {
         return this.getToBlockProcess;
+    }
+
+    @Override
+    public CraftingProcess getCraftingProcess() {
+        return this.craftingProcess;
     }
 
     @Override

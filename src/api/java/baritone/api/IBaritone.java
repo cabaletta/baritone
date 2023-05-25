@@ -89,6 +89,12 @@ public interface IBaritone {
     IGetToBlockProcess getGetToBlockProcess();
 
     /**
+     * @return The {@link IGetToBlockProcess} instance
+     * @see IGetToBlockProcess
+     */
+    ICraftingProcess getCraftingProcess();
+
+    /**
      * @return The {@link IWorldProvider} instance
      * @see IWorldProvider
      */
