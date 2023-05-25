@@ -17,8 +17,6 @@
 
 package baritone.api.process;
 
-import baritone.api.utils.BlockOptionalMeta;
-import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.crafting.IRecipe;
 
@@ -28,17 +26,6 @@ import java.util.ArrayList;
  * but it rescans the world every once in a while so it doesn't get fooled by its cache
  */
 public interface ICraftingProcess extends IBaritoneProcess {
-
-    //todo this is a copy paste of the IgetToBlockProcess and hasnt been cleand up
-
-
-    void getToBlock(BlockOptionalMeta block);
-
-    default void getToBlock(Block block) {
-        getToBlock(new BlockOptionalMeta(block));
-    }
-
-    boolean blacklistClosest();
 
     /**
      * @param item that should be crafted
