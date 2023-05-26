@@ -22,6 +22,8 @@ import baritone.api.process.ICraftingProcess;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
 import baritone.utils.BaritoneProcessHelper;
+import baritone.utils.accessor.IMixinGuiRecipeBook;
+import baritone.utils.accessor.IMixinRecipeBookPage;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.inventory.GuiCrafting;
 import net.minecraft.client.gui.recipebook.RecipeList;
@@ -34,7 +36,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.CraftingManager;
 import net.minecraft.item.crafting.IRecipe;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public final class CraftingProcess extends BaritoneProcessHelper implements ICraftingProcess {
 
@@ -127,10 +130,10 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
     }
 
     @Override
-    public ArrayList<IRecipe> getCraftingRecipes(Item item) {
-        ((GuiCrafting)mc.currentScreen).func_194310_f().getSearchBar().setText("itemname");
-        List<RecipeList> recipeLists = ((GuiCrafting)mc.currentScreen).func_194310_f().getRecipeBookPage().getRecipeLists();
-        return (ArrayList<IRecipe>) recipeLists.get(0).getRecipes();
+    public List<IRecipe> getCraftingRecipes(Item item) {
+        ((IMixinGuiRecipeBook)((GuiCrafting)mc.currentScreen).func_194310_f()).getSearchBar().setText("itemname");
+        List<RecipeList> recipeLists = ((IMixinRecipeBookPage)((IMixinGuiRecipeBook)((GuiCrafting)mc.currentScreen).func_194310_f()).getRecipeBookPage()).getRecipeLists();
+        return recipeLists.get(0).getRecipes();
     }
 
     @Override

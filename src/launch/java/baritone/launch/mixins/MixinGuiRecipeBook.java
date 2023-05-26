@@ -22,24 +22,14 @@ import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.gui.recipebook.GuiRecipeBook;
 import net.minecraft.client.gui.recipebook.RecipeBookPage;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.gen.Accessor;
 
 @Mixin(GuiRecipeBook.class)
-public class MixinGuiRecipeBook implements IMixinGuiRecipeBook {
+public abstract class MixinGuiRecipeBook implements IMixinGuiRecipeBook{
 
-    @Shadow
-    private GuiTextField searchBar;
+    @Accessor("searchBar")
+    public abstract GuiTextField getSearchBar();
 
-    @Shadow
-    private RecipeBookPage recipeBookPage;
-
-    @Override
-    public GuiTextField getSearchBar() {
-        return searchBar;
-    }
-
-    @Override
-    public RecipeBookPage getRecipeBookPage() {
-        return recipeBookPage;
-    }
+    @Accessor("recipeBookPage")
+    public abstract RecipeBookPage getRecipeBookPage();
 }

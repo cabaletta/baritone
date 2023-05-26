@@ -15,18 +15,15 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.launch.mixins;
+package baritone.utils.accessor;
 
+import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.gui.recipebook.RecipeBookPage;
 import net.minecraft.client.gui.recipebook.RecipeList;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.gen.Accessor;
 
 import java.util.List;
 
-@Mixin(RecipeBookPage.class)
-public abstract class MixinRecipeBookPage {
+public interface IMixinRecipeBookPage {
 
-    @Accessor("recipeLists")
-    public abstract List<RecipeList> getRecipeLists();
+    List<RecipeList> getRecipeLists();
 }

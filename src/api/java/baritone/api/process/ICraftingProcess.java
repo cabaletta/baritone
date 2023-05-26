@@ -20,7 +20,7 @@ package baritone.api.process;
 import net.minecraft.item.Item;
 import net.minecraft.item.crafting.IRecipe;
 
-import java.util.ArrayList;
+import java.util.List;
 
 /**
  * but it rescans the world every once in a while so it doesn't get fooled by its cache
@@ -37,7 +37,7 @@ public interface ICraftingProcess extends IBaritoneProcess {
      * @param item that should be crafted
      * @return List of all recipies that result in the provided Item.
      */
-    ArrayList<IRecipe> getCraftingRecipes(Item item);
+    List<IRecipe> getCraftingRecipes(Item item);
 
     /**
      * Checks if the requested item can be crafted the requested amount of times.
