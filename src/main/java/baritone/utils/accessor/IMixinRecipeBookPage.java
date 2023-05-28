@@ -17,8 +17,6 @@
 
 package baritone.utils.accessor;
 
-import net.minecraft.client.gui.GuiTextField;
-import net.minecraft.client.gui.recipebook.RecipeBookPage;
 import net.minecraft.client.gui.recipebook.RecipeList;
 
 import java.util.List;

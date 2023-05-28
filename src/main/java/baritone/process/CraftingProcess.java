@@ -22,11 +22,8 @@ import baritone.api.process.ICraftingProcess;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
 import baritone.utils.BaritoneProcessHelper;
-import baritone.utils.accessor.IMixinGuiRecipeBook;
-import baritone.utils.accessor.IMixinRecipeBookPage;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.inventory.GuiCrafting;
-import net.minecraft.client.gui.recipebook.RecipeList;
 import net.minecraft.client.util.RecipeItemHelper;
 import net.minecraft.init.Blocks;
 import net.minecraft.inventory.ClickType;
@@ -37,7 +34,6 @@ import net.minecraft.item.crafting.CraftingManager;
 import net.minecraft.item.crafting.IRecipe;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public final class CraftingProcess extends BaritoneProcessHelper implements ICraftingProcess {
 
@@ -86,22 +82,24 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
                     amount = amount - (outputCount * inputCount);
 
                     if (amount <= 0) {
+                        logDirect("done");
                         //we finished crafting
                         ctx.player().closeScreen();
                         onLostControl();
                     }
                 }
                 if (mc.currentScreen instanceof GuiCrafting) {
-                    if (canCraft(item, amount)) {
+                    //if (canCraft(item, amount)) {
                         moveItemsToCraftingGrid();
-                    } else {
+                    /*} else {
                         logDirect("we cant craft"); //this should be a more meaning full message also if we check craftability beforehand we should never run out of resources mid crafting
                         mc.player.closeScreen();
                         onLostControl();
-                    }
+                    }/**/
                 }
             } catch (Exception e) {
                 //you probably closed the crafting window while crafting process was still running.
+                logDirect("error");
                 onLostControl();
             }
             return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
@@ -120,43 +118,36 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
 
     @Override
     public boolean hasCraftingRecipe(Item item) {
+        ArrayList<IRecipe> recipes = getCraftingRecipes(item);
+        return !recipes.isEmpty();
+    }
+
+    @Override
+    public ArrayList<IRecipe> getCraftingRecipes(Item item) {
         ArrayList<IRecipe> recipes = new ArrayList<>();
         for (IRecipe recipe : CraftingManager.REGISTRY) {
             if (recipe.getRecipeOutput().getItem().equals(item)) {
                 recipes.add(recipe);
             }
         }
-        return !recipes.isEmpty();
-    }
-
-    @Override
-    public List<IRecipe> getCraftingRecipes(Item item) {
-        ((IMixinGuiRecipeBook)((GuiCrafting)mc.currentScreen).func_194310_f()).getSearchBar().setText("itemname");
-        List<RecipeList> recipeLists = ((IMixinRecipeBookPage)((IMixinGuiRecipeBook)((GuiCrafting)mc.currentScreen).func_194310_f()).getRecipeBookPage()).getRecipeLists();
-        return recipeLists.get(0).getRecipes();
+        return recipes;
     }
 
     @Override
     public boolean canCraft(Item item, int amount) {
         RecipeItemHelper recipeItemHelper = new RecipeItemHelper();
-        IRecipe recipe = getCraftingRecipes(item).stream().findAny().get();
-        return recipeItemHelper.canCraft(recipe, null, amount);
+        IRecipe recipe = getCraftingRecipes(item).get(0);
+        boolean canDo = recipeItemHelper.canCraft(recipe, null, amount);
+        return canDo;
     }
 
     @Override
     public void craft(Item item, int amount) {
-        //book = BaritoneAPI.getProvider().getPrimaryBaritone().getPlayerContext().player().getRecipeBook();
         this.item = item;
         this.amount = amount;
         //todo check for crafting tables that are close. if none are found place one. else gotoBlock.
         baritone.getGetToBlockProcess().getToBlock(Blocks.CRAFTING_TABLE);
-        //todo once we are at the crafting table start crafting
-
-        //todo check if crafting gui is open
-        //book.setGuiOpen(true);
-        //book.setFilteringCraftable(true);
-        //RecipeItemHelper recipeItemHelper = new RecipeItemHelper();
-        logDirect("im totaly crafting right now");
+        logDirect("im totally crafting right now");
     }
 
     @Override

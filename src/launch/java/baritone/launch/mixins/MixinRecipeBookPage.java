@@ -17,6 +17,7 @@
 
 package baritone.launch.mixins;
 
+import baritone.utils.accessor.IMixinRecipeBookPage;
 import net.minecraft.client.gui.recipebook.RecipeBookPage;
 import net.minecraft.client.gui.recipebook.RecipeList;
 import org.spongepowered.asm.mixin.Mixin;
@@ -25,7 +26,7 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 import java.util.List;
 
 @Mixin(RecipeBookPage.class)
-public abstract class MixinRecipeBookPage {
+public abstract class MixinRecipeBookPage implements IMixinRecipeBookPage {
 
     @Accessor("recipeLists")
     public abstract List<RecipeList> getRecipeLists();
