@@ -50,7 +50,6 @@ public class SettingsUtil {
 
     public static final String SETTINGS_DEFAULT_NAME = "settings.txt";
     private static final Pattern SETTING_PATTERN = Pattern.compile("^(?<setting>[^ ]+) +(?<value>.+)"); // key and value split by the first space
-    private static final String[] JAVA_ONLY_SETTINGS = {"logger", "notifier", "toaster"};
 
     private static boolean isComment(String line) {
         return line.startsWith("#") || line.startsWith("//");
@@ -116,7 +115,7 @@ public class SettingsUtil {
                 System.out.println("NULL SETTING?" + setting.getName());
                 continue;
             }
-            if (javaOnlySetting(setting)) {
+            if (setting.isJavaOnly()) {
                 continue; // NO
             }
             if (setting.value == setting.defaultValue) {
@@ -170,7 +169,7 @@ public class SettingsUtil {
     }
 
     public static String settingToString(Settings.Setting setting) throws IllegalStateException {
-        if (javaOnlySetting(setting)) {
+        if (setting.isJavaOnly()) {
             return setting.getName();
         }
 
@@ -178,18 +177,14 @@ public class SettingsUtil {
     }
 
     /**
-     * This should always be the same as whether the setting can be parsed from or serialized to a string
+     * Deprecated. Use {@link Settings.Setting#isJavaOnly()} instead.
      *
      * @param setting The Setting
      * @return true if the setting can not be set or read by the user
      */
+    @Deprecated
     public static boolean javaOnlySetting(Settings.Setting setting) {
-        for (String name : JAVA_ONLY_SETTINGS) { // no JAVA_ONLY_SETTINGS.contains(...) because that would be case sensitive
-            if (setting.getName().equalsIgnoreCase(name)) {
-                return true;
-            }
-        }
-        return false;
+        return setting.isJavaOnly();
     }
 
     public static void parseAndApply(Settings settings, String settingName, String settingValue) throws IllegalStateException, NumberFormatException {
