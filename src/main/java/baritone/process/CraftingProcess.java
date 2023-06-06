@@ -99,7 +99,7 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
                 }
             } catch (Exception e) {
                 //you probably closed the crafting window while crafting process was still running.
-                logDirect("error");
+                logDirect("Error! Did you close the crafting window while crafting process was still running?");
                 onLostControl();
             }
             return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
