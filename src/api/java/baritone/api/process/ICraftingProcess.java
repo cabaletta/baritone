@@ -40,9 +40,17 @@ public interface ICraftingProcess extends IBaritoneProcess {
     List<IRecipe> getCraftingRecipes(Item item);
 
     /**
-     * Checks if the requested item can be crafted the requested amount of times.
+     * Checks if the recipe can craft the requested amount of output.
+     * @param recipe that should be crafted
+     * @param amount how much output is wanted
+     * @return
+     */
+    boolean canCraft(IRecipe recipe, int amount);
+
+    /**
+     * Checks if the item can be crafted the requested amount of times.
      * @param item that should be crafted
-     * @param amount how much of that item is wanted.
+     * @param amount how much of this item should be crafted
      * @return
      */
     boolean canCraft(Item item, int amount);
@@ -52,5 +60,12 @@ public interface ICraftingProcess extends IBaritoneProcess {
      * @param item that should be crafted
      * @param amount how much of that item is wanted.
      */
-    void craft(Item item, int amount);
+    void craftItem(Item item, int amount);
+
+    /**
+     * Executes the crafting of the requested recipe the requested amount of times.
+     * @param recipe recipe that should be used.
+     * @param amount how many result items are wanted.
+     */
+    void craftRecipe(IRecipe recipe, int amount);
 }

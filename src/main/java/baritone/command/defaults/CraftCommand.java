@@ -50,7 +50,7 @@ public class CraftCommand extends Command {
             logDirect("not enough resources in inventory");
             /**/
         } else {
-            baritone.getCraftingProcess().craft(item, amount);
+            baritone.getCraftingProcess().craftItem(item, amount);
         }
     }
 
