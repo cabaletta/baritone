@@ -388,9 +388,10 @@ public class SelCommand extends Command {
                     return new CylinderSchematic(fill, true);
                 case HCYLINDER:
                     return new CylinderSchematic(fill, false);
+                default:
+                    // Silent fail
+                    return fill;
             }
-            // Silent fail
-            return fill;
         }
     }
 

@@ -24,27 +24,30 @@ import net.minecraft.block.state.IBlockState;
  */
 public class CylinderSchematic extends MaskSchematic {
 
-    private final double cx, cz, rx, rz;
+    private final double centerX;
+    private final double centerZ;
+    private final double radiusSqX;
+    private final double radiusSqZ;
     private final boolean filled;
 
     public CylinderSchematic(ISchematic schematic, boolean filled) {
         super(schematic);
-        this.cx = schematic.widthX() / 2.0;
-        this.cz = schematic.lengthZ() / 2.0;
-        this.rx = this.cx * this.cx;
-        this.rz = this.cz * this.cz;
+        this.centerX = schematic.widthX() / 2.0;
+        this.centerZ = schematic.lengthZ() / 2.0;
+        this.radiusSqX = this.centerX * this.centerX;
+        this.radiusSqZ = this.centerZ * this.centerZ;
         this.filled = filled;
     }
 
     @Override
     protected boolean partOfMask(int x, int y, int z, IBlockState currentState) {
-        double dx = Math.abs((x + 0.5) - this.cx);
-        double dz = Math.abs((z + 0.5) - this.cz);
+        double dx = Math.abs((x + 0.5) - this.centerX);
+        double dz = Math.abs((z + 0.5) - this.centerZ);
         return !this.outside(dx, dz)
                 && (this.filled || outside(dx + 1, dz) || outside(dx, dz + 1));
     }
 
     private boolean outside(double dx, double dz) {
-        return dx * dx / this.rx + dz * dz / this.rz > 1;
+        return dx * dx / this.radiusSqX + dz * dz / this.radiusSqZ > 1;
     }
 }
