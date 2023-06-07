@@ -58,50 +58,63 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
         } else {
             //we no longer pathing so it's time to craft
             try {
-                //todo if we cant craft more because of stack limit or lack of resources grab result and either throw low resource exception or continue crafting
-                int outputCount = ((ContainerWorkbench) baritone.getPlayerContext().player().openContainer).craftResult.getStackInSlot(420).getCount(); //items per crafting cycle
-                int inputCount = 0;
-                //todo this should, in order to consider low or non stackable items, search for the lowest non zero stack count
-                for (int i = 0; i < 9; i++) {
-                    ItemStack itemStack = ((ContainerWorkbench) baritone.getPlayerContext().player().openContainer).craftMatrix.getStackInSlot(i);
-                    if (itemStack.getItem() != Item.getItemFromBlock(Blocks.AIR)) {
-                        inputCount = itemStack.getCount();
-                        break;
-                    }
-                }
+                int outputCount = getOutputCount(); //items per crafting cycle
+                int inputCount = getInputCount();
+                boolean inputStackLimitReached = inputCount >= getLowestMaxStackSize();
 
-                //if we have enought or reached stack limit on a input stack grab the result and subtract it from the target amount.
-                // todo dynamicly check input stack limit based on lowest stackable item
-                if (outputCount * inputCount >= amount || inputCount == 64) {
-                    int windowId = ctx.player().openContainer.windowId;
-                    int slotID = 0; //slot id. for crafting table output it is 0
-                    int randomIntWeDontNeedButHaveToProvide = 0; //idk isnt used
-                    mc.playerController.windowClick(windowId, slotID, randomIntWeDontNeedButHaveToProvide, ClickType.QUICK_MOVE, ctx.player());
-                    amount = amount - (outputCount * inputCount);
-
-                    if (amount <= 0) {
-                        logDirect("done");
-                        //we finished crafting
-                        ctx.player().closeScreen();
-                        onLostControl();
-                    }
-                }
+                takeResultFromOutput(outputCount, inputCount, inputStackLimitReached);
                 if (mc.currentScreen instanceof GuiCrafting) {
-                    if (canCraft(recipe, amount)) {
-                        moveItemsToCraftingGrid();
-                    } else {
-                        logDirect("we cant craft"); //this should be a more meaning full message also if we check craftability beforehand we should never run out of resources mid crafting
-                        mc.player.closeScreen();
-                        onLostControl();
-                    }/**/
+                    moveItemsToCraftingGrid();
                 }
             } catch (Exception e) {
-                //you probably closed the crafting window while crafting process was still running.
                 logDirect("Error! Did you close the crafting window while crafting process was still running?");
                 onLostControl();
             }
             return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
         }
+    }
+
+    private void takeResultFromOutput(int outputCount, int inputCount, boolean inputStackLimitReached) {
+        if (outputCount * inputCount >= amount || inputStackLimitReached) {
+            int windowId = ctx.player().openContainer.windowId;
+            int slotID = 0; //slot id. for crafting table output it is 0
+            int randomIntWeDontNeedButHaveToProvide = 0; //idk isnt used
+            mc.playerController.windowClick(windowId, slotID, randomIntWeDontNeedButHaveToProvide, ClickType.QUICK_MOVE, ctx.player());
+            amount = amount - (outputCount * inputCount);
+
+            if (amount <= 0) {
+                logDirect("done");
+                //we finished crafting
+                ctx.player().closeScreen();
+                onLostControl();
+            }
+        }
+    }
+
+    private int getOutputCount() {
+        return ((ContainerWorkbench) baritone.getPlayerContext().player().openContainer).craftResult.getStackInSlot(420).getCount();
+    }
+
+    private int getInputCount() {
+        int stackSize = Integer.MAX_VALUE;
+        for (int i = 0; i < 9; i++) {
+            ItemStack itemStack = ((ContainerWorkbench) baritone.getPlayerContext().player().openContainer).craftMatrix.getStackInSlot(i);
+            if (itemStack.getItem() != Item.getItemFromBlock(Blocks.AIR)) {
+                stackSize = Math.min(itemStack.getCount(), stackSize);
+            }
+        }
+        return stackSize;
+    }
+
+    private int getLowestMaxStackSize() {
+        int maxStackSize = Integer.MAX_VALUE;
+        for (int i = 0; i < 9; i++) {
+            ItemStack itemStack = ((ContainerWorkbench) baritone.getPlayerContext().player().openContainer).craftMatrix.getStackInSlot(i);
+            if (itemStack.getItem() != Item.getItemFromBlock(Blocks.AIR)) {
+                maxStackSize = Math.min(itemStack.getMaxStackSize(), maxStackSize);
+            }
+        }
+        return maxStackSize;
     }
 
     private void moveItemsToCraftingGrid() {
@@ -113,12 +126,14 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
     }
 
     @Override
+    //should this be in a helper class?
     public boolean hasCraftingRecipe(Item item) {
         ArrayList<IRecipe> recipes = getCraftingRecipes(item);
         return !recipes.isEmpty();
     }
 
     @Override
+    //should this be in a helper class?
     public ArrayList<IRecipe> getCraftingRecipes(Item item) {
         ArrayList<IRecipe> recipes = new ArrayList<>();
         for (IRecipe recipe : CraftingManager.REGISTRY) {
@@ -130,6 +145,7 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
     }
 
     @Override
+    //should this be in a helper class?
     public boolean canCraft(IRecipe recipe, int amount) {
         RecipeItemHelper recipeItemHelper = new RecipeItemHelper();
         for (ItemStack stack : ctx.player().inventory.mainInventory) {
@@ -139,6 +155,7 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
     }
 
     @Override
+    //should this be in a helper class?
     public boolean canCraft(Item item, int amount) {
         List<IRecipe> recipeList = getCraftingRecipes(item);
         for (IRecipe recipe : recipeList) {
