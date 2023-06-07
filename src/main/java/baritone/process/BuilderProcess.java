@@ -34,6 +34,7 @@ import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.RayTraceUtils;
 import baritone.api.utils.Rotation;
 import baritone.api.utils.RotationUtils;
+import baritone.api.utils.VecUtils;
 import baritone.api.utils.input.Input;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
@@ -261,6 +262,9 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         if (state.getBlock() == Blocks.AIR) {
             return null;
         }
+        if (!MovementHelper.canWalkOn(new BlockStateInterface(ctx),x,y,z,state)) { // throwaways have to be canWalkOn so we have to place a wrong block here, air is separate because it is so common
+            return null;
+        }
         return state;
     }
 
@@ -323,7 +327,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                     }
                     IBlockState curr = bcc.bsi.get0(x, y, z);
                     if (MovementHelper.isReplaceable(x, y, z, curr, bcc.bsi) && !valid(curr, desired, false)) {
-                        if (dy == 1 && bcc.bsi.get0(x, y + 1, z).getBlock() == Blocks.AIR) {
+                        if (dy == 1 && MovementHelper.canWalkThrough(bcc.bsi, x, y + 1, z) && !MovementHelper.canWalkThrough(bcc.bsi, x, y, z, desired)) {
                             continue;
                         }
                         desirableOnHotbar.add(desired);
@@ -586,6 +590,18 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                 return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
             }
         }
+        if (!baritone.getPathingBehavior().hasPath() && goal.isInGoal(ctx.playerFeet())) {
+            // We are where we want to be but can't place or break, we are likely standing partially inside a block we want to place
+            // This moves us fully onto our supporting block, either into or out of the block we want to place
+            // Afterwards we can place or pathing will move us to a supported position from where we can place
+            BetterBlockPos pathStart = baritone.getPathingBehavior().pathStart();
+            if (VecUtils.entityFlatDistanceToCenter(ctx.player(), pathStart) > 0.1) { // don't jitter if the builder refuses to place for some reason
+                float yaw = RotationUtils.calcRotationFromVec3d(ctx.playerHead(), VecUtils.getBlockPosCenter(pathStart), ctx.playerRotations()).getYaw();
+                Rotation target = new Rotation(yaw, ctx.player().rotationPitch);
+                baritone.getLookBehavior().updateTarget(target, false);
+                baritone.getInputOverrideHandler().setInputForceState(Input.MOVE_FORWARD, true);
+            }
+        }
         return new PathingCommandContext(goal, PathingCommandType.FORCE_REVALIDATE_GOAL_AND_PATH, bcc);
     }
 
@@ -793,13 +809,19 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         }
         boolean allowSameLevel = ctx.world().getBlockState(pos.up()).getBlock() != Blocks.AIR;
         IBlockState current = ctx.world().getBlockState(pos);
+        IBlockState desired = bcc.getSchematic(pos.getX(), pos.getY(), pos.getZ(), current);
+        boolean allowOnTop = MovementHelper.canWalkOn(bcc.bsi, pos.getX(), pos.getY(), pos.getZ(), desired);
         for (EnumFacing facing : Movement.HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP) {
             //noinspection ConstantConditions
-            if (MovementHelper.canPlaceAgainst(ctx, pos.offset(facing)) && ctx.world().mayPlace(bcc.getSchematic(pos.getX(), pos.getY(), pos.getZ(), current).getBlock(), pos, false, facing, null)) {
-                return new GoalAdjacent(pos, pos.offset(facing), allowSameLevel);
+            if (MovementHelper.canPlaceAgainst(ctx, pos.offset(facing)) && ctx.world().mayPlace(desired.getBlock(), pos, false, facing, null)) {
+                return new GoalAdjacent(pos, pos.offset(facing), allowSameLevel, allowOnTop);
             }
         }
-        return new GoalPlace(pos);
+        if (allowOnTop) {
+            return new GoalPlace(pos);
+        } else {
+            return new GoalAdjacent(pos, null, true, false);
+        }
     }
 
     private Goal breakGoal(BlockPos pos, BuilderCalculationContext bcc) {
@@ -819,23 +841,28 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
 
     public static class GoalAdjacent extends GoalGetToBlock {
 
+        private boolean allowOnTop;
         private boolean allowSameLevel;
         private BlockPos no;
 
-        public GoalAdjacent(BlockPos pos, BlockPos no, boolean allowSameLevel) {
+        public GoalAdjacent(BlockPos pos, BlockPos no, boolean allowSameLevel, boolean allowOnTop) {
             super(pos);
             this.no = no;
             this.allowSameLevel = allowSameLevel;
+            this.allowOnTop = allowOnTop;
         }
 
         public boolean isInGoal(int x, int y, int z) {
             if (x == this.x && y == this.y && z == this.z) {
                 return false;
             }
-            if (x == no.getX() && y == no.getY() && z == no.getZ()) {
+            if (no != null && x == no.getX() && y == no.getY() && z == no.getZ()) {
                 return false;
             }
             if (!allowSameLevel && y == this.y - 1) {
+                return false;
+            }
+            if (!allowOnTop && x == this.x && y == this.y + 1 && z == this.z) {
                 return false;
             }
             if (y < this.y - 1) {
@@ -991,7 +1018,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                     // this won't be a schematic block, this will be a throwaway
                     return placeBlockCost * 2; // we're going to have to break it eventually
                 }
-                if (placeable.contains(sch)) {
+                if (placeable.contains(sch) && MovementHelper.canWalkOn(bsi,x,y,z,sch)) { // we can only allow placing canWalkOn blocks because of how MovementAscend breaks canWalkThrough blocks
                     return 0; // thats right we gonna make it FREE to place a block where it should go in a structure
                     // no place block penalty at all 😎
                     // i'm such an idiot that i just tried to copy and paste the epic gamer moment emoji too
