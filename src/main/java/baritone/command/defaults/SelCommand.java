@@ -117,7 +117,7 @@ public class SelCommand extends Command {
                     logDirect("Undid pos2");
                 }
             }
-        } else if (action == Action.SET || action == Action.WALLS || action == Action.SHELL || action == Action.CLEARAREA || action == Action.REPLACE) {
+        } else if (action.isFillAction()) {
             BlockOptionalMeta type = action == Action.CLEARAREA
                     ? new BlockOptionalMeta(Blocks.AIR)
                     : args.getDatatypeFor(ForBlockOptionalMeta.INSTANCE);
@@ -151,14 +151,10 @@ public class SelCommand extends Command {
             for (ISelection selection : selections) {
                 Vec3i size = selection.size();
                 BetterBlockPos min = selection.min();
-                ISchematic schematic = new FillSchematic(size.getX(), size.getY(), size.getZ(), type);
-                if (action == Action.WALLS) {
-                    schematic = new WallsSchematic(schematic);
-                } else if (action == Action.SHELL) {
-                    schematic = new ShellSchematic(schematic);
-                } else if (action == Action.REPLACE) {
-                    schematic = new ReplaceSchematic(schematic, replaces);
-                }
+                ISchematic schematic = action.createFillMask(
+                        new FillSchematic(size.getX(), size.getY(), size.getZ(), type),
+                        replaces
+                );
                 composite.put(schematic, min.x - origin.x, min.y - origin.y, min.z - origin.z);
             }
             baritone.getBuilderProcess().build("Fill", composite, origin);
@@ -254,7 +250,7 @@ public class SelCommand extends Command {
                     if (args.hasAtMost(3)) {
                         return args.tabCompleteDatatype(RelativeBlockPos.INSTANCE);
                     }
-                } else if (action == Action.SET || action == Action.WALLS || action == Action.CLEARAREA || action == Action.REPLACE) {
+                } else if (action.isFillAction()) {
                     if (args.hasExactlyOne() || action == Action.REPLACE) {
                         while (args.has(2)) {
                             args.get();
@@ -305,6 +301,10 @@ public class SelCommand extends Command {
                 "> sel set/fill/s/f [block] - Completely fill all selections with a block.",
                 "> sel walls/w [block] - Fill in the walls of the selection with a specified block.",
                 "> sel shell/shl [block] - The same as walls, but fills in a ceiling and floor too.",
+                "> sel sphere/sph [block] - Fills the selection with a sphere bounded by the sides.",
+                "> sel hsphere/hsph [block] - The same as sphere, but hollow.",
+                "> sel cylinder/cyl [block] - Fills the selection with a cylinder bounded by the sides.",
+                "> sel hcylinder/hcyl [block] - The same as cylinder, but hollow.",
                 "> sel cleararea/ca - Basically 'set air'.",
                 "> sel replace/r <blocks...> <with> - Replaces blocks with another block.",
                 "> sel copy/cp <x> <y> <z> - Copy the selected area relative to the specified or your position.",
@@ -324,6 +324,10 @@ public class SelCommand extends Command {
         SET("set", "fill", "s", "f"),
         WALLS("walls", "w"),
         SHELL("shell", "shl"),
+        SPHERE("sphere", "sph"),
+        HSPHERE("hsphere", "hsph"),
+        CYLINDER("cylinder", "cyl"),
+        HCYLINDER("hcylinder", "hcyl"),
         CLEARAREA("cleararea", "ca"),
         REPLACE("replace", "r"),
         EXPAND("expand", "ex"),
@@ -354,6 +358,39 @@ public class SelCommand extends Command {
                 names.addAll(Arrays.asList(action.names));
             }
             return names.toArray(new String[0]);
+        }
+
+        public final boolean isFillAction() {
+            return this == SET
+                    || this == WALLS
+                    || this == SHELL
+                    || this == SPHERE
+                    || this == HSPHERE
+                    || this == CYLINDER
+                    || this == HCYLINDER
+                    || this == CLEARAREA
+                    || this == REPLACE;
+        }
+
+        public final ISchematic createFillMask(ISchematic fill, BlockOptionalMetaLookup replaces) {
+            switch (this) {
+                case WALLS:
+                    return new WallsSchematic(fill);
+                case SHELL:
+                    return new ShellSchematic(fill);
+                case REPLACE:
+                    return new ReplaceSchematic(fill, replaces);
+                case SPHERE:
+                    return new SphereSchematic(fill, true);
+                case HSPHERE:
+                    return new SphereSchematic(fill, false);
+                case CYLINDER:
+                    return new CylinderSchematic(fill, true);
+                case HCYLINDER:
+                    return new CylinderSchematic(fill, false);
+            }
+            // Silent fail
+            return fill;
         }
     }
 
