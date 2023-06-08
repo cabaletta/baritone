@@ -50,6 +50,7 @@ import java.awt.*;
 import java.util.List;
 import java.util.*;
 import java.util.function.Function;
+import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
 public class SelCommand extends Command {
@@ -121,7 +122,7 @@ public class SelCommand extends Command {
             BlockOptionalMeta type = action == Action.CLEARAREA
                     ? new BlockOptionalMeta(Blocks.AIR)
                     : args.getDatatypeFor(ForBlockOptionalMeta.INSTANCE);
-            BlockOptionalMetaLookup replaces = null;
+            BlockOptionalMetaLookup replaces;
             if (action == Action.REPLACE) {
                 args.requireMin(1);
                 List<BlockOptionalMeta> replacesList = new ArrayList<>();
@@ -133,6 +134,7 @@ public class SelCommand extends Command {
                 replaces = new BlockOptionalMetaLookup(replacesList.toArray(new BlockOptionalMeta[0]));
             } else {
                 args.requireMax(0);
+                replaces = null;
             }
             ISelection[] selections = manager.getSelections();
             if (selections.length == 0) {
@@ -151,10 +153,31 @@ public class SelCommand extends Command {
             for (ISelection selection : selections) {
                 Vec3i size = selection.size();
                 BetterBlockPos min = selection.min();
-                ISchematic schematic = action.createFillMask(
-                        new FillSchematic(size.getX(), size.getY(), size.getZ(), type),
-                        replaces
-                );
+
+                // Java 8 so no switch expressions 😿
+                UnaryOperator<ISchematic> create = fill -> {
+                    switch (action) {
+                        case WALLS:
+                            return new WallsSchematic(fill);
+                        case SHELL:
+                            return new ShellSchematic(fill);
+                        case REPLACE:
+                            return new ReplaceSchematic(fill, replaces);
+                        case SPHERE:
+                            return new SphereSchematic(fill, true);
+                        case HSPHERE:
+                            return new SphereSchematic(fill, false);
+                        case CYLINDER:
+                            return new CylinderSchematic(fill, true);
+                        case HCYLINDER:
+                            return new CylinderSchematic(fill, false);
+                        default:
+                            // Silent fail
+                            return fill;
+                    }
+                };
+
+                ISchematic schematic = create.apply(new FillSchematic(size.getX(), size.getY(), size.getZ(), type));
                 composite.put(schematic, min.x - origin.x, min.y - origin.y, min.z - origin.z);
             }
             baritone.getBuilderProcess().build("Fill", composite, origin);
@@ -370,28 +393,6 @@ public class SelCommand extends Command {
                     || this == HCYLINDER
                     || this == CLEARAREA
                     || this == REPLACE;
-        }
-
-        public final ISchematic createFillMask(ISchematic fill, BlockOptionalMetaLookup replaces) {
-            switch (this) {
-                case WALLS:
-                    return new WallsSchematic(fill);
-                case SHELL:
-                    return new ShellSchematic(fill);
-                case REPLACE:
-                    return new ReplaceSchematic(fill, replaces);
-                case SPHERE:
-                    return new SphereSchematic(fill, true);
-                case HSPHERE:
-                    return new SphereSchematic(fill, false);
-                case CYLINDER:
-                    return new CylinderSchematic(fill, true);
-                case HCYLINDER:
-                    return new CylinderSchematic(fill, false);
-                default:
-                    // Silent fail
-                    return fill;
-            }
         }
     }
 
