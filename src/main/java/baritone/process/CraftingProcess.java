@@ -62,6 +62,10 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
             onLostControl();
         }
         if (goal != null) {
+            if (goal.isInGoal(ctx.playerFeet())) {
+                //rightClick();
+                goal = null;
+            }
             //we are pathing to a table and therefor have to wait.
             return new PathingCommand(goal, PathingCommandType.SET_GOAL_AND_PATH);
         } else if (placeAt != null) {
@@ -86,6 +90,7 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
         recipe = null;
         goal = null;
         placeAt = null;
+        baritone.getInputOverrideHandler().clearAllKeys();
     }
 
     @Override
