@@ -18,9 +18,12 @@
 package baritone.process;
 
 import baritone.Baritone;
+import baritone.api.pathing.goals.*;
 import baritone.api.process.ICraftingProcess;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
+import baritone.api.utils.BlockOptionalMetaLookup;
+import baritone.pathing.movement.CalculationContext;
 import baritone.utils.BaritoneProcessHelper;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.util.RecipeItemHelper;
@@ -31,13 +34,17 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.CraftingManager;
 import net.minecraft.item.crafting.IRecipe;
+import net.minecraft.util.math.BlockPos;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public final class CraftingProcess extends BaritoneProcessHelper implements ICraftingProcess {
     private int amount;
     private IRecipe recipe;
+    private Goal goal;
+    private BlockPos placeAt;
 
     public CraftingProcess(Baritone baritone) {
         super(baritone);
@@ -50,9 +57,16 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
 
     @Override
     public synchronized PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
-        if (baritone.getGetToBlockProcess().isActive()) {
+        if (calcFailed) {
+            logDirect("path calculation failed");
+            onLostControl();
+        }
+        if (goal != null) {
             //we are pathing to a table and therefor have to wait.
-            return new PathingCommand(null, PathingCommandType.DEFER);
+            return new PathingCommand(goal, PathingCommandType.SET_GOAL_AND_PATH);
+        } else if (placeAt != null) {
+
+            return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
         } else {
             //we no longer pathing so it's time to craft
             try {
@@ -70,6 +84,8 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
     public synchronized void onLostControl() {
         amount = 0;
         recipe = null;
+        goal = null;
+        placeAt = null;
     }
 
     @Override
@@ -81,9 +97,8 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
     public void craftItem(Item item, int amount) {
         if (canCraft(item, amount)) {
             this.amount = amount;
-            //todo check for crafting tables that are close. if none are found place one. else gotoBlock.
-            baritone.getGetToBlockProcess().getToBlock(Blocks.CRAFTING_TABLE);
             logDirect("Crafting now " + amount + "x [" + recipe.getRecipeOutput().getDisplayName() + "]");
+            getACraftingTable();
         } else {
             logDirect("Insufficient resources.");
         }
@@ -94,46 +109,9 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
         if (canCraft(recipe, amount)) {
             this.recipe = recipe;
             this.amount = amount;
-            baritone.getGetToBlockProcess().getToBlock(Blocks.CRAFTING_TABLE);
+            getACraftingTable();
         } else {
-            logDirect("this recipe is not craftable with the available resources.");
-        }
-    }
-
-    private int getInputCount() {
-        int stackSize = Integer.MAX_VALUE;
-        for (int i = 0; i < 9; i++) {
-            ItemStack itemStack = ((ContainerWorkbench) baritone.getPlayerContext().player().openContainer).craftMatrix.getStackInSlot(i);
-            if (itemStack.getItem() != Item.getItemFromBlock(Blocks.AIR)) {
-                stackSize = Math.min(itemStack.getCount(), stackSize);
-            }
-        }
-        return stackSize == Integer.MAX_VALUE ? 0 : stackSize;
-    }
-
-    private void takeResultFromOutput() {
-        int inputCount = getInputCount();
-        if (inputCount > 0) {
-            int windowId = ctx.player().openContainer.windowId;
-            int slotID = 0; //slot id. for crafting table output it is 0
-            int randomIntWeDontNeedButHaveToProvide = 0; //idk isnt used
-            mc.playerController.windowClick(windowId, slotID, randomIntWeDontNeedButHaveToProvide, ClickType.QUICK_MOVE, ctx.player());
-            amount = amount - (recipe.getRecipeOutput().getCount() * inputCount);
-        }
-
-        if (amount <= 0) {
-            logDirect("Done");
-            //we finished crafting
-            ctx.player().closeScreen();
-            onLostControl();
-        }
-    }
-
-    private void moveItemsToCraftingGrid() {
-        int windowId = baritone.getPlayerContext().player().openContainer.windowId;
-        //try to put the recipe the required amount of times in to the crafting grid.
-        for (int i = 0; i * recipe.getRecipeOutput().getCount() < amount; i++) {
-            mc.playerController.func_194338_a(windowId, recipe, GuiScreen.isShiftKeyDown(), ctx.player());
+            logDirect("Insufficient resources.");
         }
     }
 
@@ -184,9 +162,75 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
         return recipeItemHelper.canCraft(recipe, null, times);
     }
 
-
     @Override
     public boolean canCraftInInventory(IRecipe recipe) {
         return recipe.canFit(2,2);
+    }
+
+    private int getInputCount() {
+        int stackSize = Integer.MAX_VALUE;
+        for (int i = 0; i < 9; i++) {
+            ItemStack itemStack = ((ContainerWorkbench) baritone.getPlayerContext().player().openContainer).craftMatrix.getStackInSlot(i);
+            if (itemStack.getItem() != Item.getItemFromBlock(Blocks.AIR)) {
+                stackSize = Math.min(itemStack.getCount(), stackSize);
+            }
+        }
+        return stackSize == Integer.MAX_VALUE ? 0 : stackSize;
+    }
+
+    private void takeResultFromOutput() {
+        int inputCount = getInputCount();
+        if (inputCount > 0) {
+            int windowId = ctx.player().openContainer.windowId;
+            int slotID = 0; //slot id. for crafting table output it is 0
+            int randomIntWeDontNeedButHaveToProvide = 0; //idk isnt used
+            mc.playerController.windowClick(windowId, slotID, randomIntWeDontNeedButHaveToProvide, ClickType.QUICK_MOVE, ctx.player());
+            amount = amount - (recipe.getRecipeOutput().getCount() * inputCount);
+        }
+
+        if (amount <= 0) {
+            logDirect("Done");
+            //we finished crafting
+            ctx.player().closeScreen();
+            onLostControl();
+        }
+    }
+
+    private void moveItemsToCraftingGrid() {
+        int windowId = ctx.player().openContainer.windowId;
+        //try to put the recipe the required amount of times in to the crafting grid.
+        for (int i = 0; i * recipe.getRecipeOutput().getCount() < amount; i++) {
+            mc.playerController.func_194338_a(windowId, recipe, GuiScreen.isShiftKeyDown(), ctx.player());
+        }
+    }
+
+    private void getACraftingTable() {
+        List<BlockPos> knownLocations = MineProcess.searchWorld(new CalculationContext(baritone, false), new BlockOptionalMetaLookup(Blocks.CRAFTING_TABLE), 1, Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
+        if (knownLocations.isEmpty()) {
+            logDirect("no crafting table found");
+            if (hasCraftingTable()) {
+                logDirect("but player has one in inventory");
+                placeAt = ctx.playerFeet().north();
+            } else {
+                logDirect("No CraftingTable.");
+                onLostControl();
+            }
+        } else {
+            logDirect("crafting table found");
+            goal = new GoalComposite(knownLocations.stream().map(this::createGoal).toArray(Goal[]::new));
+        }
+    }
+
+    private boolean hasCraftingTable() {
+        for (ItemStack itemstack : ctx.player().inventory.mainInventory) {
+            if (itemstack.getItem() == Item.getItemFromBlock(Blocks.CRAFTING_TABLE)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private Goal createGoal(BlockPos pos) {
+        return new GoalGetToBlock(pos);
     }
 }
