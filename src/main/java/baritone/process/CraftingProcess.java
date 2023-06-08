@@ -23,7 +23,6 @@ import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
 import baritone.utils.BaritoneProcessHelper;
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.gui.inventory.GuiCrafting;
 import net.minecraft.client.util.RecipeItemHelper;
 import net.minecraft.init.Blocks;
 import net.minecraft.inventory.ClickType;
@@ -44,7 +43,6 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
         super(baritone);
     }
 
-
     @Override
     public boolean isActive() {
         return recipe != null && amount >= 1;
@@ -58,14 +56,8 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
         } else {
             //we no longer pathing so it's time to craft
             try {
-                int outputCount = getOutputCount(); //items per crafting cycle
-                int inputCount = getInputCount();
-                boolean inputStackLimitReached = inputCount >= getLowestMaxStackSize();
-
-                takeResultFromOutput(outputCount, inputCount, inputStackLimitReached);
-                if (mc.currentScreen instanceof GuiCrafting) {
-                    moveItemsToCraftingGrid();
-                }
+                moveItemsToCraftingGrid();
+                takeResultFromOutput();
             } catch (Exception e) {
                 logDirect("Error! Did you close the crafting window while crafting process was still running?");
                 onLostControl();
@@ -74,25 +66,38 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
         }
     }
 
-    private void takeResultFromOutput(int outputCount, int inputCount, boolean inputStackLimitReached) {
-        if (outputCount * inputCount >= amount || inputStackLimitReached) {
-            int windowId = ctx.player().openContainer.windowId;
-            int slotID = 0; //slot id. for crafting table output it is 0
-            int randomIntWeDontNeedButHaveToProvide = 0; //idk isnt used
-            mc.playerController.windowClick(windowId, slotID, randomIntWeDontNeedButHaveToProvide, ClickType.QUICK_MOVE, ctx.player());
-            amount = amount - (outputCount * inputCount);
+    @Override
+    public synchronized void onLostControl() {
+        amount = 0;
+        recipe = null;
+    }
 
-            if (amount <= 0) {
-                logDirect("done");
-                //we finished crafting
-                ctx.player().closeScreen();
-                onLostControl();
-            }
+    @Override
+    public String displayName0() {
+        return "Crafting " + amount + "x " + recipe.getRecipeOutput().getDisplayName();
+    }
+
+    @Override
+    public void craftItem(Item item, int amount) {
+        if (canCraft(item, amount)) {
+            this.amount = amount;
+            //todo check for crafting tables that are close. if none are found place one. else gotoBlock.
+            baritone.getGetToBlockProcess().getToBlock(Blocks.CRAFTING_TABLE);
+            logDirect("Crafting now " + amount + "x [" + recipe.getRecipeOutput().getDisplayName() + "]");
+        } else {
+            logDirect("Insufficient resources.");
         }
     }
 
-    private int getOutputCount() {
-        return ((ContainerWorkbench) baritone.getPlayerContext().player().openContainer).craftResult.getStackInSlot(420).getCount();
+    @Override
+    public void craftRecipe(IRecipe recipe, int amount) {
+        if (canCraft(recipe, amount)) {
+            this.recipe = recipe;
+            this.amount = amount;
+            baritone.getGetToBlockProcess().getToBlock(Blocks.CRAFTING_TABLE);
+        } else {
+            logDirect("this recipe is not craftable with the available resources.");
+        }
     }
 
     private int getInputCount() {
@@ -103,25 +108,32 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
                 stackSize = Math.min(itemStack.getCount(), stackSize);
             }
         }
-        return stackSize;
+        return stackSize == Integer.MAX_VALUE ? 0 : stackSize;
     }
 
-    private int getLowestMaxStackSize() {
-        int maxStackSize = Integer.MAX_VALUE;
-        for (int i = 0; i < 9; i++) {
-            ItemStack itemStack = ((ContainerWorkbench) baritone.getPlayerContext().player().openContainer).craftMatrix.getStackInSlot(i);
-            if (itemStack.getItem() != Item.getItemFromBlock(Blocks.AIR)) {
-                maxStackSize = Math.min(itemStack.getMaxStackSize(), maxStackSize);
-            }
+    private void takeResultFromOutput() {
+        int inputCount = getInputCount();
+        if (inputCount > 0) {
+            int windowId = ctx.player().openContainer.windowId;
+            int slotID = 0; //slot id. for crafting table output it is 0
+            int randomIntWeDontNeedButHaveToProvide = 0; //idk isnt used
+            mc.playerController.windowClick(windowId, slotID, randomIntWeDontNeedButHaveToProvide, ClickType.QUICK_MOVE, ctx.player());
+            amount = amount - (recipe.getRecipeOutput().getCount() * inputCount);
         }
-        return maxStackSize;
+
+        if (amount <= 0) {
+            logDirect("Done");
+            //we finished crafting
+            ctx.player().closeScreen();
+            onLostControl();
+        }
     }
 
     private void moveItemsToCraftingGrid() {
         int windowId = baritone.getPlayerContext().player().openContainer.windowId;
         //try to put the recipe the required amount of times in to the crafting grid.
-        for (int i = 0; i*recipe.getRecipeOutput().getCount() < amount; i++) {
-            mc.playerController.func_194338_a(windowId,recipe, GuiScreen.isShiftKeyDown(), ctx.player());
+        for (int i = 0; i * recipe.getRecipeOutput().getCount() < amount; i++) {
+            mc.playerController.func_194338_a(windowId, recipe, GuiScreen.isShiftKeyDown(), ctx.player());
         }
     }
 
@@ -146,6 +158,21 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
 
     @Override
     //should this be in a helper class?
+    public boolean canCraft(Item item, int amount) {
+        List<IRecipe> recipeList = getCraftingRecipes(item);
+        for (IRecipe recipe : recipeList) {
+            if (canCraft(recipe, amount)) {
+                this.recipe = recipe;
+                return true;
+            }
+        }
+        return false;
+        //we maybe still be able to craft but need to mix ingredients.
+        //example we have 1 oak plank and 1 spruce plank and want to make sticks. this statement could be wrong.
+    }
+
+    @Override
+    //should this be in a helper class?
     public boolean canCraft(IRecipe recipe, int amount) {
         RecipeItemHelper recipeItemHelper = new RecipeItemHelper();
         for (ItemStack stack : ctx.player().inventory.mainInventory) {
@@ -157,53 +184,9 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
         return recipeItemHelper.canCraft(recipe, null, times);
     }
 
-    @Override
-    //should this be in a helper class?
-    public boolean canCraft(Item item, int amount) {
-        List<IRecipe> recipeList = getCraftingRecipes(item);
-        for (IRecipe recipe : recipeList) {
-            if(canCraft(recipe, amount)) {
-                this.recipe = recipe;
-                return true;
-            }
-        }
-        return false;
-        //we maybe still be able to craft but need to mix ingredients.
-        //example we have 1 oak plank and 1 spruce plank and want to make sticks. this statement could be wrong.
-    }
 
     @Override
-    public void craftItem(Item item, int amount) {
-        if(canCraft(item, amount)) {
-            this.amount = amount;
-            //todo check for crafting tables that are close. if none are found place one. else gotoBlock.
-            baritone.getGetToBlockProcess().getToBlock(Blocks.CRAFTING_TABLE);
-            logDirect("im totally crafting right now");
-        } else {
-            logDirect("unable to find a craftable recipe. do you have the necessary resources?");
-        }
-    }
-
-    @Override
-    //this is intended for use over the api
-    public void craftRecipe(IRecipe recipe, int amount) {
-        if(canCraft(recipe,amount)) {
-            this.recipe = recipe;
-            this.amount = amount;
-            baritone.getGetToBlockProcess().getToBlock(Blocks.CRAFTING_TABLE);
-        } else {
-            logDirect("this recipe is not craftable with the available resources.");
-        }
-    }
-
-    @Override
-    public synchronized void onLostControl() {
-        amount = 0;
-        recipe = null;
-    }
-
-    @Override
-    public String displayName0() {
-        return "Crafting "+amount+"x "+recipe.getRecipeOutput().getDisplayName();
+    public boolean canCraftInInventory(IRecipe recipe) {
+        return recipe.canFit(2,2);
     }
 }
