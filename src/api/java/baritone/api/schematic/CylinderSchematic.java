@@ -17,37 +17,30 @@
 
 package baritone.api.schematic;
 
-import net.minecraft.block.state.IBlockState;
-
 /**
  * @author Brady
  */
-public class CylinderSchematic extends MaskSchematic {
-
-    private final double centerX;
-    private final double centerZ;
-    private final double radiusSqX;
-    private final double radiusSqZ;
-    private final boolean filled;
+public final class CylinderSchematic extends CachedMaskSchematic {
 
     public CylinderSchematic(ISchematic schematic, boolean filled) {
-        super(schematic);
-        this.centerX = schematic.widthX() / 2.0;
-        this.centerZ = schematic.lengthZ() / 2.0;
-        this.radiusSqX = this.centerX * this.centerX;
-        this.radiusSqZ = this.centerZ * this.centerZ;
-        this.filled = filled;
-    }
+        super(schematic, new StaticMaskFunction() {
 
-    @Override
-    protected boolean partOfMask(int x, int y, int z, IBlockState currentState) {
-        double dx = Math.abs((x + 0.5) - this.centerX);
-        double dz = Math.abs((z + 0.5) - this.centerZ);
-        return !this.outside(dx, dz)
-                && (this.filled || outside(dx + 1, dz) || outside(dx, dz + 1));
-    }
+            private final double centerX = schematic.widthX() / 2.0;
+            private final double centerZ = schematic.lengthZ() / 2.0;
+            private final double radiusSqX = this.centerX * this.centerX;
+            private final double radiusSqZ = this.centerZ * this.centerZ;
 
-    private boolean outside(double dx, double dz) {
-        return dx * dx / this.radiusSqX + dz * dz / this.radiusSqZ > 1;
+            @Override
+            public boolean partOfMask(int x, int y, int z) {
+                double dx = Math.abs((x + 0.5) - this.centerX);
+                double dz = Math.abs((z + 0.5) - this.centerZ);
+                return !this.outside(dx, dz)
+                        && (filled || outside(dx + 1, dz) || outside(dx, dz + 1));
+            }
+
+            private boolean outside(double dx, double dz) {
+                return dx * dx / this.radiusSqX + dz * dz / this.radiusSqZ > 1;
+            }
+        });
     }
 }

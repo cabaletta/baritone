@@ -17,42 +17,33 @@
 
 package baritone.api.schematic;
 
-import net.minecraft.block.state.IBlockState;
-
 /**
  * @author Brady
  */
-public class SphereSchematic extends MaskSchematic {
-
-    private final double centerX;
-    private final double centerY;
-    private final double centerZ;
-    private final double radiusSqX;
-    private final double radiusSqY;
-    private final double radiusSqZ;
-    private final boolean filled;
+public final class SphereSchematic extends CachedMaskSchematic {
 
     public SphereSchematic(ISchematic schematic, boolean filled) {
-        super(schematic);
-        this.centerX = schematic.widthX() / 2.0;
-        this.centerY = schematic.heightY() / 2.0;
-        this.centerZ = schematic.lengthZ() / 2.0;
-        this.radiusSqX = this.centerX * this.centerX;
-        this.radiusSqY = this.centerY * this.centerY;
-        this.radiusSqZ = this.centerZ * this.centerZ;
-        this.filled = filled;
-    }
+        super(schematic, new StaticMaskFunction() {
 
-    @Override
-    protected boolean partOfMask(int x, int y, int z, IBlockState currentState) {
-        double dx = Math.abs((x + 0.5) - this.centerX);
-        double dy = Math.abs((y + 0.5) - this.centerY);
-        double dz = Math.abs((z + 0.5) - this.centerZ);
-        return !this.outside(dx, dy, dz)
-                && (this.filled || outside(dx + 1, dy, dz) || outside(dx, dy + 1, dz) || outside(dx, dy, dz + 1));
-    }
+            private final double centerX = schematic.widthX() / 2.0;
+            private final double centerY = schematic.heightY() / 2.0;
+            private final double centerZ = schematic.lengthZ() / 2.0;
+            private final double radiusSqX = this.centerX * this.centerX;
+            private final double radiusSqY = this.centerY * this.centerY;
+            private final double radiusSqZ = this.centerZ * this.centerZ;
 
-    private boolean outside(double dx,double dy, double dz) {
-        return dx * dx / this.radiusSqX + dy * dy / this.radiusSqY + dz * dz / this.radiusSqZ > 1;
+            @Override
+            public boolean partOfMask(int x, int y, int z) {
+                double dx = Math.abs((x + 0.5) - this.centerX);
+                double dy = Math.abs((y + 0.5) - this.centerY);
+                double dz = Math.abs((z + 0.5) - this.centerZ);
+                return !this.outside(dx, dy, dz)
+                        && (filled || outside(dx + 1, dy, dz) || outside(dx, dy + 1, dz) || outside(dx, dy, dz + 1));
+            }
+
+            private boolean outside(double dx,double dy, double dz) {
+                return dx * dx / this.radiusSqX + dy * dy / this.radiusSqY + dz * dz / this.radiusSqZ > 1;
+            }
+        });
     }
 }
