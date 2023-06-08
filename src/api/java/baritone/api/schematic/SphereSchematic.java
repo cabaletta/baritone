@@ -37,11 +37,16 @@ public final class SphereSchematic extends CachedMaskSchematic {
                 double dx = Math.abs((x + 0.5) - this.centerX);
                 double dy = Math.abs((y + 0.5) - this.centerY);
                 double dz = Math.abs((z + 0.5) - this.centerZ);
-                return !this.outside(dx, dy, dz)
-                        && (filled || outside(dx + 1, dy, dz) || outside(dx, dy + 1, dz) || outside(dx, dy, dz + 1));
+                if (this.outside(dx, dy, dz)) {
+                    return false;
+                }
+                return filled
+                        || this.outside(dx + 1, dy, dz)
+                        || this.outside(dx, dy + 1, dz)
+                        || this.outside(dx, dy, dz + 1);
             }
 
-            private boolean outside(double dx,double dy, double dz) {
+            private boolean outside(double dx, double dy, double dz) {
                 return dx * dx / this.radiusSqX + dy * dy / this.radiusSqY + dz * dz / this.radiusSqZ > 1;
             }
         });

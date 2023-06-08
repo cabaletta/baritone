@@ -36,8 +36,12 @@ public final class CylinderSchematic extends CachedMaskSchematic {
             public boolean partOfMask(int x, int y, int z) {
                 double da = Math.abs((this.getA(x, y) + 0.5) - this.centerA);
                 double db = Math.abs((this.getB(y, z) + 0.5) - this.centerB);
-                return !this.outside(da, db)
-                        && (filled || outside(da + 1, db) || outside(da, db + 1));
+                if (this.outside(da, db)) {
+                    return false;
+                }
+                return filled
+                        || this.outside(da + 1, db)
+                        || this.outside(da, db + 1);
             }
 
             private boolean outside(double da, double db) {
