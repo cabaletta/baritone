@@ -151,7 +151,10 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
         for (ItemStack stack : ctx.player().inventory.mainInventory) {
             recipeItemHelper.accountStack(stack);
         }
-        return recipeItemHelper.canCraft(recipe, null, amount);
+        //could be inlined but i think that would be not very readable
+        int outputCount = recipe.getRecipeOutput().getCount();
+        int times = amount % outputCount == 0 ? amount / outputCount : (amount / outputCount) + 1;
+        return recipeItemHelper.canCraft(recipe, null, times);
     }
 
     @Override
