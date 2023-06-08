@@ -175,10 +175,6 @@ public final class GetToBlockProcess extends BaritoneProcessHelper implements IG
         return (diffX + diffY + diffZ) == 1;
     }
 
-    public boolean isTemporary() {
-        return baritone.getCraftingProcess().isActive();
-    }
-
     @Override
     public synchronized void onLostControl() {
         gettingTo = null;
