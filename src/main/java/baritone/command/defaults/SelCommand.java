@@ -21,6 +21,7 @@ import baritone.Baritone;
 import baritone.api.IBaritone;
 import baritone.api.command.Command;
 import baritone.api.command.argument.IArgConsumer;
+import baritone.api.command.datatypes.ForAxis;
 import baritone.api.command.datatypes.ForBlockOptionalMeta;
 import baritone.api.command.datatypes.ForEnumFacing;
 import baritone.api.command.datatypes.RelativeBlockPos;
@@ -122,7 +123,9 @@ public class SelCommand extends Command {
             BlockOptionalMeta type = action == Action.CLEARAREA
                     ? new BlockOptionalMeta(Blocks.AIR)
                     : args.getDatatypeFor(ForBlockOptionalMeta.INSTANCE);
-            BlockOptionalMetaLookup replaces;
+
+            final BlockOptionalMetaLookup replaces; // Action.REPLACE
+            final EnumFacing.Axis alignment;        // Action.(H)CYLINDER
             if (action == Action.REPLACE) {
                 args.requireMin(1);
                 List<BlockOptionalMeta> replacesList = new ArrayList<>();
@@ -132,9 +135,15 @@ public class SelCommand extends Command {
                 }
                 type = args.getDatatypeFor(ForBlockOptionalMeta.INSTANCE);
                 replaces = new BlockOptionalMetaLookup(replacesList.toArray(new BlockOptionalMeta[0]));
+                alignment = null;
+            } else if (action == Action.CYLINDER || action == Action.HCYLINDER) {
+                args.requireMax(1);
+                alignment = args.hasAny() ? args.getDatatypeFor(ForAxis.INSTANCE) : EnumFacing.Axis.Y;
+                replaces = null;
             } else {
                 args.requireMax(0);
                 replaces = null;
+                alignment = null;
             }
             ISelection[] selections = manager.getSelections();
             if (selections.length == 0) {
@@ -168,9 +177,9 @@ public class SelCommand extends Command {
                         case HSPHERE:
                             return new SphereSchematic(fill, false);
                         case CYLINDER:
-                            return new CylinderSchematic(fill, true);
+                            return new CylinderSchematic(fill, true, alignment);
                         case HCYLINDER:
-                            return new CylinderSchematic(fill, false);
+                            return new CylinderSchematic(fill, false, alignment);
                         default:
                             // Silent fail
                             return fill;
@@ -279,6 +288,12 @@ public class SelCommand extends Command {
                             args.get();
                         }
                         return args.tabCompleteDatatype(ForBlockOptionalMeta.INSTANCE);
+                    } else if (action == Action.CYLINDER || action == Action.HCYLINDER) {
+                        if (args.hasExactly(2)) {
+                            if (args.getDatatypeForOrNull(ForBlockOptionalMeta.INSTANCE) != null) {
+                                return args.tabCompleteDatatype(ForAxis.INSTANCE);
+                            }
+                        }
                     }
                 } else if (action == Action.EXPAND || action == Action.CONTRACT || action == Action.SHIFT) {
                     if (args.hasExactlyOne()) {
@@ -326,8 +341,8 @@ public class SelCommand extends Command {
                 "> sel shell/shl [block] - The same as walls, but fills in a ceiling and floor too.",
                 "> sel sphere/sph [block] - Fills the selection with a sphere bounded by the sides.",
                 "> sel hsphere/hsph [block] - The same as sphere, but hollow.",
-                "> sel cylinder/cyl [block] - Fills the selection with a cylinder bounded by the sides.",
-                "> sel hcylinder/hcyl [block] - The same as cylinder, but hollow.",
+                "> sel cylinder/cyl [block] <axis> - Fills the selection with a cylinder bounded by the sides, oriented about the given axis. (default=y)",
+                "> sel hcylinder/hcyl [block] <axis> - The same as cylinder, but hollow.",
                 "> sel cleararea/ca - Basically 'set air'.",
                 "> sel replace/r <blocks...> <with> - Replaces blocks with another block.",
                 "> sel copy/cp <x> <y> <z> - Copy the selected area relative to the specified or your position.",
