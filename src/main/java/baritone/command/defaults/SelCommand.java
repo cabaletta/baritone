@@ -32,6 +32,8 @@ import baritone.api.command.helpers.TabCompleteHelper;
 import baritone.api.event.events.RenderEvent;
 import baritone.api.event.listener.AbstractGameEventListener;
 import baritone.api.schematic.*;
+import baritone.api.schematic.mask.shape.CylinderMask;
+import baritone.api.schematic.mask.shape.SphereMask;
 import baritone.api.selection.ISelection;
 import baritone.api.selection.ISelectionManager;
 import baritone.api.utils.BetterBlockPos;
@@ -173,13 +175,13 @@ public class SelCommand extends Command {
                         case REPLACE:
                             return new ReplaceSchematic(fill, replaces);
                         case SPHERE:
-                            return new SphereSchematic(fill, true);
+                            return MaskSchematic.create(fill, new SphereMask(size.getX(), size.getY(), size.getZ(), true).compute());
                         case HSPHERE:
-                            return new SphereSchematic(fill, false);
+                            return MaskSchematic.create(fill, new SphereMask(size.getX(), size.getY(), size.getZ(), false).compute());
                         case CYLINDER:
-                            return new CylinderSchematic(fill, true, alignment);
+                            return MaskSchematic.create(fill, new CylinderMask(size.getX(), size.getY(), size.getZ(), true, alignment).compute());
                         case HCYLINDER:
-                            return new CylinderSchematic(fill, false, alignment);
+                            return MaskSchematic.create(fill, new CylinderMask(size.getX(), size.getY(), size.getZ(), false, alignment).compute());
                         default:
                             // Silent fail
                             return fill;
