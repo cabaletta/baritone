@@ -47,7 +47,6 @@ dependencies {
     implementation "org.ow2.asm:asm-util:9.3"
     implementation "org.ow2.asm:asm-analysis:9.3"
 
-
     implementation 'com.github.ImpactDevelopment:SimpleTweaker:1.2'
     implementation('net.minecraft:launchwrapper:of-2.3') {
         exclude module: 'lwjgl'
