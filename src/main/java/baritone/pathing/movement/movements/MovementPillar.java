@@ -190,9 +190,9 @@ public class MovementPillar extends Movement {
         boolean vine = fromDown.getBlock() == Blocks.VINE;
         Rotation rotation = RotationUtils.calcRotationFromVec3d(ctx.playerHead(),
                 VecUtils.getBlockPosCenter(positionToPlace),
-                new Rotation(ctx.player().rotationYaw, ctx.player().rotationPitch));
+                ctx.playerRotations());
         if (!ladder) {
-            state.setTarget(new MovementState.MovementTarget(new Rotation(ctx.player().rotationYaw, rotation.getPitch()), true));
+            state.setTarget(new MovementState.MovementTarget(ctx.playerRotations().withPitch(rotation.getPitch()), true));
         }
 
         boolean blockIsThere = MovementHelper.canWalkOn(ctx, src) || ladder;

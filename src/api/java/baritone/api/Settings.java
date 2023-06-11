@@ -724,6 +724,11 @@ public final class Settings {
     public final Setting<Boolean> freeLook = new Setting<>(true);
 
     /**
+     * Break and place blocks without having to force the client-sided rotations
+     */
+    public final Setting<Boolean> blockFreeLook = new Setting<>(true);
+
+    /**
      * Will cause some minor behavioral differences to ensure that Baritone works on anticheats.
      * <p>
      * At the moment this will silently set the player's rotations when using freeLook so you're not sprinting in

@@ -162,7 +162,8 @@ public final class RotationUtils {
 
     public static Optional<Rotation> reachable(EntityPlayerSP entity, BlockPos pos, double blockReachDistance, boolean wouldSneak) {
         IBaritone baritone = BaritoneAPI.getProvider().getBaritoneForPlayer(entity);
-        if (baritone.getPlayerContext().isLookingAt(pos)) {
+        IPlayerContext ctx = baritone.getPlayerContext();
+        if (ctx.isLookingAt(pos)) {
             /*
              * why add 0.0001?
              * to indicate that we actually have a desired pitch
@@ -173,7 +174,7 @@ public final class RotationUtils {
              *
              * or if you're a normal person literally all this does it ensure that we don't nudge the pitch to a normal level
              */
-            Rotation hypothetical = new Rotation(entity.rotationYaw, entity.rotationPitch + 0.0001F);
+            Rotation hypothetical = ctx.playerRotations().add(new Rotation(0, 0.0001F));
             if (wouldSneak) {
                 // the concern here is: what if we're looking at it now, but as soon as we start sneaking we no longer are
                 RayTraceResult result = RayTraceUtils.rayTraceTowards(entity, hypothetical, blockReachDistance, true);
@@ -217,6 +218,7 @@ public final class RotationUtils {
      */
     public static Optional<Rotation> reachableOffset(Entity entity, BlockPos pos, Vec3d offsetPos, double blockReachDistance, boolean wouldSneak) {
         Vec3d eyes = wouldSneak ? RayTraceUtils.inferSneakingEyePosition(entity) : entity.getPositionEyes(1.0F);
+        // TODO: pr/feature/blockFreeLook - Use playerRotations() here?
         Rotation rotation = calcRotationFromVec3d(eyes, offsetPos, new Rotation(entity.rotationYaw, entity.rotationPitch));
         RayTraceResult result = RayTraceUtils.rayTraceTowards(entity, rotation, blockReachDistance, wouldSneak);
         //System.out.println(result);

@@ -22,6 +22,7 @@ import baritone.api.Settings;
 import baritone.api.behavior.ILookBehavior;
 import baritone.api.event.events.PlayerUpdateEvent;
 import baritone.api.event.events.RotationMoveEvent;
+import baritone.api.event.events.type.EventState;
 import baritone.api.utils.Rotation;
 
 public final class LookBehavior extends Behavior implements ILookBehavior {
@@ -34,17 +35,19 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
      */
     private Rotation target;
 
+    private Rotation serverAngles;
+
     /**
      * Whether or not rotations are currently being forced
      */
     private boolean force;
 
     /**
-     * The last player yaw angle. Used when free looking
+     * The last player angles. Used when free looking
      *
      * @see Settings#freeLook
      */
-    private float lastYaw;
+    private Rotation prevAngles;
 
     public LookBehavior(Baritone baritone) {
         super(baritone);
@@ -53,11 +56,14 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
     @Override
     public void updateTarget(Rotation target, boolean force) {
         this.target = target;
-        this.force = force || !Baritone.settings().freeLook.value;
+        this.force = !Baritone.settings().blockFreeLook.value && (force || !Baritone.settings().freeLook.value);
     }
 
     @Override
     public void onPlayerUpdate(PlayerUpdateEvent event) {
+        if (event.getState() == EventState.POST) {
+            this.serverAngles = new Rotation(ctx.player().rotationYaw, ctx.player().rotationPitch);
+        }
         if (this.target == null) {
             return;
         }
@@ -80,14 +86,16 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
                     this.target = null;
                 }
                 if (silent) {
-                    this.lastYaw = ctx.player().rotationYaw;
+                    this.prevAngles = new Rotation(ctx.player().rotationYaw, ctx.player().rotationPitch);
                     ctx.player().rotationYaw = this.target.getYaw();
+                    ctx.player().rotationPitch = this.target.getPitch();
                 }
                 break;
             }
             case POST: {
                 if (silent) {
-                    ctx.player().rotationYaw = this.lastYaw;
+                    ctx.player().rotationYaw = this.prevAngles.getYaw();
+                    ctx.player().rotationPitch = this.prevAngles.getPitch();
                     this.target = null;
                 }
                 break;
@@ -101,6 +109,10 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
         if (this.target != null) {
             ctx.player().rotationYaw = this.target.getYaw();
         }
+    }
+
+    public Rotation getEffectiveAngles() {
+        return this.serverAngles;
     }
 
     @Override
