@@ -167,6 +167,10 @@ public class SelCommand extends Command {
 
                 // Java 8 so no switch expressions 😿
                 UnaryOperator<ISchematic> create = fill -> {
+                    final int w = fill.widthX();
+                    final int h = fill.heightY();
+                    final int l = fill.lengthZ();
+
                     switch (action) {
                         case WALLS:
                             return new WallsSchematic(fill);
@@ -175,13 +179,13 @@ public class SelCommand extends Command {
                         case REPLACE:
                             return new ReplaceSchematic(fill, replaces);
                         case SPHERE:
-                            return MaskSchematic.create(fill, new SphereMask(size.getX(), size.getY(), size.getZ(), true).compute());
+                            return MaskSchematic.create(fill, new SphereMask(w, h, l, true).compute());
                         case HSPHERE:
-                            return MaskSchematic.create(fill, new SphereMask(size.getX(), size.getY(), size.getZ(), false).compute());
+                            return MaskSchematic.create(fill, new SphereMask(w, h, l, false).compute());
                         case CYLINDER:
-                            return MaskSchematic.create(fill, new CylinderMask(size.getX(), size.getY(), size.getZ(), true, alignment).compute());
+                            return MaskSchematic.create(fill, new CylinderMask(w, h, l, true, alignment).compute());
                         case HCYLINDER:
-                            return MaskSchematic.create(fill, new CylinderMask(size.getX(), size.getY(), size.getZ(), false, alignment).compute());
+                            return MaskSchematic.create(fill, new CylinderMask(w, h, l, false, alignment).compute());
                         default:
                             // Silent fail
                             return fill;
