@@ -78,6 +78,12 @@ public class Elytra extends Behavior implements Helper {
         baritone.getInputOverrideHandler().clearAllKeys();
 
         if (ctx.player().isElytraFlying()) {
+            if (ctx.player().collidedHorizontally) {
+                logDirect("hbonk");
+            }
+            if (ctx.player().collidedVertically) {
+                logDirect("vbonk");
+            }
             Vec3d start = ctx.playerFeetAsVec();
             boolean firework = firework();
             sinceFirework++;
@@ -97,12 +103,26 @@ public class Elytra extends Behavior implements Helper {
                 boolean requireClear = relaxation == 0;
                 int steps = relaxation < 2 ? Baritone.settings().elytraSimulationTicks.value : 3;
                 int lookahead = relaxation == 0 ? 2 : 3; // ideally this would be expressed as a distance in blocks, rather than a number of voxel steps
-                for (int dy : heights) {
-                    for (int i = Math.min(playerNear + 20, path.size()); i >= playerNear; i--) {
+                //int minStep = Math.max(0, playerNear - relaxation);
+                int minStep = playerNear;
+                for (int i = Math.min(playerNear + 20, path.size()); i >= minStep; i--) {
+                    for (int dy : heights) {
                         Vec3d dest = new Vec3d(path.get(i)).add(0, dy, 0);
-                        if (dy != 0 && (i + lookahead >= path.size() || (!clearView(dest, new Vec3d(path.get(i + lookahead)).add(0, dy, 0)) || !clearView(dest, new Vec3d(path.get(i + lookahead)))))) {
-                            // aka: don't go upwards if doing so would prevent us from being able to see the next position **OR** the modified next position
-                            continue;
+                        if (dy != 0) {
+                            if (i + lookahead >= path.size()) {
+                                continue;
+                            }
+                            if (start.distanceTo(dest) < 40) {
+                                if (!clearView(dest, new Vec3d(path.get(i + lookahead)).add(0, dy, 0)) || !clearView(dest, new Vec3d(path.get(i + lookahead)))) {
+                                    // aka: don't go upwards if doing so would prevent us from being able to see the next position **OR** the modified next position
+                                    continue;
+                                }
+                            } else {
+                                // but if it's far away, allow gaining altitude if we could lose it again by the time we get there
+                                if (!clearView(dest, new Vec3d(path.get(i)))) {
+                                    continue;
+                                }
+                            }
                         }
                         if (requireClear ? isClear(start, dest) : clearView(start, dest)) {
                             Rotation rot = RotationUtils.calcRotationFromVec3d(start, dest, ctx.playerRotations());
@@ -163,14 +183,17 @@ public class Elytra extends Behavior implements Helper {
             Vec3d totalMotion = new Vec3d(0, 0, 0);
             for (int i = 0; i < steps; i++) {
                 stepped = step(stepped, pitch, good.getYaw(), firework);
+                Vec3d actualPositionPrevTick = ctx.playerFeetAsVec().add(totalMotion);
                 totalMotion = totalMotion.add(stepped);
-
                 Vec3d actualPosition = ctx.playerFeetAsVec().add(totalMotion);
-                if (bsi.get0(MathHelper.floor(actualPosition.x), MathHelper.floor(actualPosition.y), MathHelper.floor(actualPosition.z)).getMaterial() != Material.AIR) {
-                    continue outer;
-                }
-                if (bsi.get0(MathHelper.floor(actualPosition.x), MathHelper.floor(actualPosition.y) + 1, MathHelper.floor(actualPosition.z)).getMaterial() != Material.AIR) {
-                    continue outer;
+                for (int x = MathHelper.floor(Math.min(actualPosition.x, actualPositionPrevTick.x) - 0.31); x <= Math.max(actualPosition.x, actualPositionPrevTick.x) + 0.31; x++) {
+                    for (int y = MathHelper.floor(Math.min(actualPosition.y, actualPositionPrevTick.y) - 0.2); y <= Math.max(actualPosition.y, actualPositionPrevTick.y) + 0.8; y++) {
+                        for (int z = MathHelper.floor(Math.min(actualPosition.z, actualPositionPrevTick.z) - 0.31); z <= Math.max(actualPosition.z, actualPositionPrevTick.z) + 0.31; z++) {
+                            if (bsi.get0(x, y, z).getMaterial() != Material.AIR) {
+                                continue outer;
+                            }
+                        }
+                    }
                 }
             }
             double directionalGoodness = goalDirection.dotProduct(totalMotion.normalize());
@@ -193,6 +216,11 @@ public class Elytra extends Behavior implements Helper {
         float pitchBase = -MathHelper.cos(-rotationPitch * 0.017453292F);
         float pitchHeight = MathHelper.sin(-rotationPitch * 0.017453292F);
         Vec3d lookDirection = new Vec3d(flatX * pitchBase, pitchHeight, flatZ * pitchBase);
+        if (firework) {
+            motionX += lookDirection.x * 0.1 + (lookDirection.x * 1.5 - motionX) * 0.5;
+            motionY += lookDirection.y * 0.1 + (lookDirection.y * 1.5 - motionY) * 0.5;
+            motionZ += lookDirection.z * 0.1 + (lookDirection.z * 1.5 - motionZ) * 0.5;
+        }
         float pitchRadians = rotationPitch * 0.017453292F;
         double pitchBase2 = Math.sqrt(lookDirection.x * lookDirection.x + lookDirection.z * lookDirection.z);
         double flatMotion = Math.sqrt(motionX * motionX + motionZ * motionZ);
@@ -223,11 +251,7 @@ public class Elytra extends Behavior implements Helper {
         motionY *= 0.98;
         motionZ *= 0.99;
         //System.out.println(motionX + " " + motionY + " " + motionZ);
-        if (firework) {
-            motionX += lookDirection.x * 0.1 + (lookDirection.x * 1.5 - motionX) * 0.5;
-            motionY += lookDirection.y * 0.1 + (lookDirection.y * 1.5 - motionY) * 0.5;
-            motionZ += lookDirection.z * 0.1 + (lookDirection.z * 1.5 - motionZ) * 0.5;
-        }
+
         return new Vec3d(motionX, motionY, motionZ);
     }
 
