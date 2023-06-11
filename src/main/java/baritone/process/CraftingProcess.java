@@ -292,6 +292,8 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
     }
 
     private void placeCraftingtableNearby() { //this code is so buggy im amazed that there are special cases where it works
+        //todo if crafting table isnt in hotbar move it to the hot bar.
+        //todo search and look at a position where the table can be placed
         for (int i = 0; i < 9; i++) {
             ItemStack stack = ctx.player().inventory.mainInventory.get(i);
             if (stack.getItem() == Item.getItemFromBlock(Blocks.CRAFTING_TABLE)) {
