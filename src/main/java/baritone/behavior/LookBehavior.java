@@ -23,6 +23,7 @@ import baritone.api.behavior.ILookBehavior;
 import baritone.api.event.events.PlayerUpdateEvent;
 import baritone.api.event.events.RotationMoveEvent;
 import baritone.api.event.events.type.EventState;
+import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.Rotation;
 
 public final class LookBehavior extends Behavior implements ILookBehavior {
@@ -32,14 +33,17 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
      */
     private Target target;
 
+    /**
+     * The rotation known to the server. Returned by {@link #getEffectiveRotation()} for use in {@link IPlayerContext}.
+     */
     private Rotation serverRotation;
 
     /**
-     * The last player angles. Used when free looking
+     * The last player rotation. Used when free looking
      *
      * @see Settings#freeLook
      */
-    private Rotation prevAngles;
+    private Rotation prevRotation;
 
     public LookBehavior(Baritone baritone) {
         super(baritone);
@@ -81,8 +85,8 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
                         break;
                     }
                     case SERVER: {
-                        // Copy the player's actual angles
-                        this.prevAngles = new Rotation(ctx.player().rotationYaw, ctx.player().rotationPitch);
+                        // Copy the player's actual rotation
+                        this.prevRotation = new Rotation(ctx.player().rotationYaw, ctx.player().rotationPitch);
                         ctx.player().rotationYaw = this.target.rotation.getYaw();
                         ctx.player().rotationPitch = this.target.rotation.getPitch();
                         break;
@@ -95,8 +99,8 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
             case POST: {
                 // Reset the player's rotations back to their original values
                 if (this.target.mode == Target.Mode.SERVER) {
-                    ctx.player().rotationYaw = this.prevAngles.getYaw();
-                    ctx.player().rotationPitch = this.prevAngles.getPitch();
+                    ctx.player().rotationYaw = this.prevRotation.getYaw();
+                    ctx.player().rotationPitch = this.prevRotation.getPitch();
                 }
                 // The target is done being used for this game tick, so it can be invalidated
                 this.target = null;
@@ -113,7 +117,7 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
         }
     }
 
-    public Rotation getEffectiveAngles() {
+    public Rotation getEffectiveRotation() {
         return this.serverRotation;
     }
 
@@ -147,17 +151,17 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
 
         enum Mode {
             /**
-             * Angles will be set client-side and are visual to the player
+             * Rotation will be set client-side and is visual to the player
              */
             CLIENT,
 
             /**
-             * Angles will be set server-side and are silent to the player
+             * Rotation will be set server-side and is silent to the player
              */
             SERVER,
 
             /**
-             * Angles will remain unaffected on both the client and server
+             * Rotation will remain unaffected on both the client and server
              */
             NONE;
 
@@ -169,7 +173,13 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
 
                 if (!freeLook && !blockFreeLook) return CLIENT;
                 if (!blockFreeLook && blockInteract) return CLIENT;
+
+                // Regardless of if antiCheatCompatibility is enabled, if a blockInteract is requested then the player
+                // rotation needs to be set somehow, otherwise Baritone will halt since objectMouseOver() will just be
+                // whatever the player is mousing over visually. Let's just settle for setting it silently.
                 if (antiCheat || blockInteract) return SERVER;
+
+                // Pathing regularly without antiCheatCompatibility, don't set the player rotation
                 return NONE;
             }
         }

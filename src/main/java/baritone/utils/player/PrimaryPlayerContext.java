@@ -58,7 +58,7 @@ public enum PrimaryPlayerContext implements IPlayerContext, Helper {
 
     @Override
     public Rotation playerRotations() {
-        final Rotation lbTarget = ((LookBehavior) BaritoneAPI.getProvider().getPrimaryBaritone().getLookBehavior()).getEffectiveAngles();
+        final Rotation lbTarget = ((LookBehavior) BaritoneAPI.getProvider().getPrimaryBaritone().getLookBehavior()).getEffectiveRotation();
         if (lbTarget == null || !Baritone.settings().blockFreeLook.value) {
             return IPlayerContext.super.playerRotations();
         }
