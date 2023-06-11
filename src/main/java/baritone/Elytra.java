@@ -128,7 +128,7 @@ public class Elytra extends Behavior implements Helper {
                             Rotation rot = RotationUtils.calcRotationFromVec3d(start, dest, ctx.playerRotations());
                             ctx.player().rotationYaw = rot.getYaw();
                             long a = System.currentTimeMillis();
-                            Float pitch = solvePitch(dest.subtract(start), steps);
+                            Float pitch = solvePitch(dest.subtract(start), steps, relaxation == 2);
                             if (pitch == null) {
                                 continue;
                             }
@@ -164,7 +164,7 @@ public class Elytra extends Behavior implements Helper {
         return result == null || result.typeOfHit == RayTraceResult.Type.MISS;
     }
 
-    private Float solvePitch(Vec3d goalDirection, int steps) {
+    private Float solvePitch(Vec3d goalDirection, int steps, boolean desperate) {
         // we are at a certain velocity, but we have a target velocity
         // what pitch would get us closest to our target velocity?
         // yaw is easy so we only care about pitch
@@ -177,8 +177,10 @@ public class Elytra extends Behavior implements Helper {
         double bestDot = Double.NEGATIVE_INFINITY;
         Vec3d motion = new Vec3d(ctx.player().motionX, ctx.player().motionY, ctx.player().motionZ);
         BlockStateInterface bsi = new BlockStateInterface(ctx);
+        float minPitch = desperate ? -90 : Math.max(good.getPitch() - Baritone.settings().elytraPitchRange.value, -89);
+        float maxPitch = desperate ? 90 : Math.min(good.getPitch() + Baritone.settings().elytraPitchRange.value, 89);
         outer:
-        for (float pitch = Math.max(good.getPitch() - Baritone.settings().elytraPitchRange.value, -89); pitch < Math.min(good.getPitch() + Baritone.settings().elytraPitchRange.value, 89); pitch++) {
+        for (float pitch = minPitch; pitch <= maxPitch; pitch++) {
             Vec3d stepped = motion;
             Vec3d totalMotion = new Vec3d(0, 0, 0);
             for (int i = 0; i < steps; i++) {
