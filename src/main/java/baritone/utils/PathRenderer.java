@@ -17,9 +17,9 @@
 
 package baritone.utils;
 
+import baritone.Elytra;
 import baritone.api.BaritoneAPI;
 import baritone.api.event.events.RenderEvent;
-import baritone.api.pathing.calc.IPath;
 import baritone.api.pathing.goals.*;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.Helper;
@@ -96,33 +96,37 @@ public final class PathRenderer implements IRenderer {
         // Render the current path, if there is one
         if (current != null && current.getPath() != null) {
             int renderBegin = Math.max(current.getPosition() - 3, 0);
-            drawPath(current.getPath(), renderBegin, settings.colorCurrentPath.value, settings.fadePath.value, 10, 20);
+            drawPath(current.getPath().positions(), renderBegin, settings.colorCurrentPath.value, settings.fadePath.value, 10, 20);
         }
 
         if (next != null && next.getPath() != null) {
-            drawPath(next.getPath(), 0, settings.colorNextPath.value, settings.fadePath.value, 10, 20);
+            drawPath(next.getPath().positions(), 0, settings.colorNextPath.value, settings.fadePath.value, 10, 20);
+        }
+
+        drawPath(Elytra.path.subList(Math.max(behavior.baritone.elytra.playerNear - 30, 0), Math.min(behavior.baritone.elytra.playerNear + 30, Elytra.path.size())), 0, Color.RED, false, 0, 0);
+        if (behavior.baritone.elytra.goal != null) {
+            drawDankLitGoalBox(renderView, new GoalBlock(behavior.baritone.elytra.goal), partialTicks, Color.GREEN);
         }
 
         // If there is a path calculation currently running, render the path calculation process
         behavior.getInProgress().ifPresent(currentlyRunning -> {
             currentlyRunning.bestPathSoFar().ifPresent(p -> {
-                drawPath(p, 0, settings.colorBestPathSoFar.value, settings.fadePath.value, 10, 20);
+                drawPath(p.positions(), 0, settings.colorBestPathSoFar.value, settings.fadePath.value, 10, 20);
             });
 
             currentlyRunning.pathToMostRecentNodeConsidered().ifPresent(mr -> {
-                drawPath(mr, 0, settings.colorMostRecentConsidered.value, settings.fadePath.value, 10, 20);
+                drawPath(mr.positions(), 0, settings.colorMostRecentConsidered.value, settings.fadePath.value, 10, 20);
                 drawManySelectionBoxes(renderView, Collections.singletonList(mr.getDest()), settings.colorMostRecentConsidered.value);
             });
         });
     }
 
-    public static void drawPath(IPath path, int startIndex, Color color, boolean fadeOut, int fadeStart0, int fadeEnd0) {
+    public static void drawPath(List<BetterBlockPos> positions, int startIndex, Color color, boolean fadeOut, int fadeStart0, int fadeEnd0) {
         IRenderer.startLines(color, settings.pathRenderLineWidthPixels.value, settings.renderPathIgnoreDepth.value);
 
         int fadeStart = fadeStart0 + startIndex;
         int fadeEnd = fadeEnd0 + startIndex;
 
-        List<BetterBlockPos> positions = path.positions();
         for (int i = startIndex, next; i < positions.size() - 1; i = next) {
             BetterBlockPos start = positions.get(i);
             BetterBlockPos end = positions.get(next = i + 1);
@@ -131,12 +135,12 @@ public final class PathRenderer implements IRenderer {
             int dirY = end.y - start.y;
             int dirZ = end.z - start.z;
 
-            while (next + 1 < positions.size() && (!fadeOut || next + 1 < fadeStart) &&
+            /*while (next + 1 < positions.size() && (!fadeOut || next + 1 < fadeStart) &&
                     (dirX == positions.get(next + 1).x - end.x &&
                             dirY == positions.get(next + 1).y - end.y &&
                             dirZ == positions.get(next + 1).z - end.z)) {
                 end = positions.get(++next);
-            }
+            }*/
 
             if (fadeOut) {
                 float alpha;

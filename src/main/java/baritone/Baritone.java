@@ -88,6 +88,7 @@ public class Baritone implements IBaritone {
 
     private IPlayerContext playerContext;
     private WorldProvider worldProvider;
+    public Elytra elytra;
 
     public BlockStateInterface bsi;
 
@@ -100,6 +101,7 @@ public class Baritone implements IBaritone {
         {
             // the Behavior constructor calls baritone.registerBehavior(this) so this populates the behaviors arraylist
             pathingBehavior = new PathingBehavior(this);
+            elytra = new Elytra(this);
             lookBehavior = new LookBehavior(this);
             inventoryBehavior = new InventoryBehavior(this);
             inputOverrideHandler = new InputOverrideHandler(this);
