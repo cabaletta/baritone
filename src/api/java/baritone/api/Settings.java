@@ -69,7 +69,6 @@ public final class Settings {
      */
     public final Setting<Boolean> allowInventory = new Setting<>(false);
 
-
     /**
      * Wait this many ticks between InventoryBehavior moving inventory items
      */
