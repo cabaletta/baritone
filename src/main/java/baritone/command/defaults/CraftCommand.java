@@ -20,8 +20,11 @@ package baritone.command.defaults;
 import baritone.api.IBaritone;
 import baritone.api.command.Command;
 import baritone.api.command.argument.IArgConsumer;
+import baritone.api.command.datatypes.ItemById;
 import baritone.api.command.exception.CommandException;
 import net.minecraft.item.Item;
+import net.minecraft.item.crafting.CraftingManager;
+import net.minecraft.item.crafting.IRecipe;
 
 import java.util.Arrays;
 import java.util.List;
@@ -35,20 +38,22 @@ public class CraftCommand extends Command {
 
     @Override
     public void execute(String label, IArgConsumer args) throws CommandException {
-        //todo works for simple items like "stick" but items like "granite" aren't parsed because they are stone:1
-        Item item = Item.getByNameOrId(args.getString());
+        String itemName = args.getString();
+        Item item = Item.getByNameOrId(itemName);
 
         int amount = args.hasAny() ? args.getAs(Integer.class) : 1;
 
-        if (item == null) {
+        if (item == null) {//this is hacky, but it gets the job done for now. also we arnt interested in non craft-able items anyway
+            itemName = itemName.replace("_", " ");
+            for (IRecipe recipe : CraftingManager.REGISTRY) {
+                if (recipe.getRecipeOutput().getDisplayName().equalsIgnoreCase(itemName)) {
+                    baritone.getCraftingProcess().craftRecipe(recipe, amount);
+                    return;
+                }
+            }
             logDirect("invalid Item");
         } else if (!baritone.getCraftingProcess().hasCraftingRecipe(item)) {
             logDirect("no crafting recipe for "+item.getTranslationKey()+" found.");
-            /*todo missing feature check if we can craft before we walk to a crafting table
-        } else if (BaritoneAPI.getSettings().allowAutoCraft.value && !baritone.getCraftingProcess().canCraft(item, amount)) {
-            logDirect("trying to craft "+ item.getTranslationKey());
-            logDirect("not enough resources in inventory");
-            /**/
         } else {
             baritone.getCraftingProcess().craftItem(item, amount);
         }
@@ -56,8 +61,13 @@ public class CraftCommand extends Command {
 
     @Override
     public Stream<String> tabComplete(String label, IArgConsumer args) throws CommandException {
-        //todo add autocomplete for items
-        return null;
+        while (args.has(2)) {
+            if (args.peekDatatypeOrNull(ItemById.INSTANCE) == null) {
+                return Stream.empty();
+            }
+            args.get();
+        }
+        return args.tabCompleteDatatype(ItemById.INSTANCE);
     }
   
     @Override
@@ -71,7 +81,10 @@ public class CraftCommand extends Command {
                 "Go to a crafting table and craft a item.",
                 "",
                 "Usage:",
-                "> craft <item> <amount> - Go to a crafting table, and craft a item."
+                "> craft [item] <amount> - Go to a crafting table, and craft a item.",
+                "Examples:",
+                "> craft planks 17 -> will craft 20 planks of any logs you have.",
+                "> craft oak_wood_planks -> will craft 4 oak wood planks."
         );
     }
 }
