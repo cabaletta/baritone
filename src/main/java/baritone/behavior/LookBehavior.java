@@ -28,19 +28,11 @@ import baritone.api.utils.Rotation;
 public final class LookBehavior extends Behavior implements ILookBehavior {
 
     /**
-     * Target's values are as follows:
-     * <p>
-     * getFirst() -> yaw
-     * getSecond() -> pitch
+     * The current look target, may be {@code null}.
      */
-    private Rotation target;
+    private Target target;
 
-    private Rotation serverAngles;
-
-    /**
-     * Whether or not rotations are currently being forced
-     */
-    private boolean force;
+    private Rotation serverRotation;
 
     /**
      * The last player angles. Used when free looking
@@ -54,50 +46,60 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
     }
 
     @Override
-    public void updateTarget(Rotation target, boolean force) {
-        this.target = target;
-        this.force = !Baritone.settings().blockFreeLook.value && (force || !Baritone.settings().freeLook.value);
+    public void updateTarget(Rotation rotation, boolean blockInteract) {
+        this.target = new Target(rotation, blockInteract);
     }
 
     @Override
     public void onPlayerUpdate(PlayerUpdateEvent event) {
+        // Capture the player rotation before it's reset to determine the rotation the server knows
+        // Alternatively, this could be done with a packet event... Maybe that's a better idea.
         if (event.getState() == EventState.POST) {
-            this.serverAngles = new Rotation(ctx.player().rotationYaw, ctx.player().rotationPitch);
+            this.serverRotation = new Rotation(ctx.player().rotationYaw, ctx.player().rotationPitch);
         }
+
+        // There's nothing left to be done if there isn't a set target
         if (this.target == null) {
             return;
         }
 
-        // Whether or not we're going to silently set our angles
-        boolean silent = Baritone.settings().antiCheatCompatibility.value && !this.force;
-
         switch (event.getState()) {
             case PRE: {
-                if (this.force) {
-                    ctx.player().rotationYaw = this.target.getYaw();
-                    float oldPitch = ctx.player().rotationPitch;
-                    float desiredPitch = this.target.getPitch();
-                    ctx.player().rotationPitch = desiredPitch;
-                    ctx.player().rotationYaw += (Math.random() - 0.5) * Baritone.settings().randomLooking.value;
-                    ctx.player().rotationPitch += (Math.random() - 0.5) * Baritone.settings().randomLooking.value;
-                    if (desiredPitch == oldPitch && !Baritone.settings().freeLook.value) {
-                        nudgeToLevel();
+                switch (this.target.mode) {
+                    case CLIENT: {
+                        ctx.player().rotationYaw = this.target.rotation.getYaw();
+                        float oldPitch = ctx.player().rotationPitch;
+                        float desiredPitch = this.target.rotation.getPitch();
+                        ctx.player().rotationPitch = desiredPitch;
+                        ctx.player().rotationYaw += (Math.random() - 0.5) * Baritone.settings().randomLooking.value;
+                        ctx.player().rotationPitch += (Math.random() - 0.5) * Baritone.settings().randomLooking.value;
+                        if (desiredPitch == oldPitch && !Baritone.settings().freeLook.value) {
+                            nudgeToLevel();
+                        }
+                        // The target can be invalidated now since it won't be needed for RotationMoveEvent
+                        this.target = null;
+                        break;
                     }
-                    this.target = null;
-                }
-                if (silent) {
-                    this.prevAngles = new Rotation(ctx.player().rotationYaw, ctx.player().rotationPitch);
-                    ctx.player().rotationYaw = this.target.getYaw();
-                    ctx.player().rotationPitch = this.target.getPitch();
+                    case SERVER: {
+                        // Copy the player's actual angles
+                        this.prevAngles = new Rotation(ctx.player().rotationYaw, ctx.player().rotationPitch);
+                        ctx.player().rotationYaw = this.target.rotation.getYaw();
+                        ctx.player().rotationPitch = this.target.rotation.getPitch();
+                        break;
+                    }
+                    default:
+                        break;
                 }
                 break;
             }
             case POST: {
-                if (silent) {
+                // Reset the player's rotations back to their original values
+                if (this.target.mode == Target.Mode.SERVER) {
                     ctx.player().rotationYaw = this.prevAngles.getYaw();
                     ctx.player().rotationPitch = this.prevAngles.getPitch();
-                    this.target = null;
                 }
+                // The target is done being used for this game tick, so it can be invalidated
+                this.target = null;
                 break;
             }
             default:
@@ -107,25 +109,18 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
 
     public void pig() {
         if (this.target != null) {
-            ctx.player().rotationYaw = this.target.getYaw();
+            ctx.player().rotationYaw = this.target.rotation.getYaw();
         }
     }
 
     public Rotation getEffectiveAngles() {
-        return this.serverAngles;
+        return this.serverRotation;
     }
 
     @Override
     public void onPlayerRotationMove(RotationMoveEvent event) {
         if (this.target != null) {
-
-            event.setYaw(this.target.getYaw());
-
-            // If we have antiCheatCompatibility on, we're going to use the target value later in onPlayerUpdate()
-            // Also the type has to be MOTION_UPDATE because that is called after JUMP
-            if (!Baritone.settings().antiCheatCompatibility.value && event.getType() == RotationMoveEvent.Type.MOTION_UPDATE && !this.force) {
-                this.target = null;
-            }
+            event.setYaw(this.target.rotation.getYaw());
         }
     }
 
@@ -137,6 +132,46 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
             ctx.player().rotationPitch++;
         } else if (ctx.player().rotationPitch > 10) {
             ctx.player().rotationPitch--;
+        }
+    }
+
+    private static class Target {
+
+        public final Rotation rotation;
+        public final Mode mode;
+
+        public Target(Rotation rotation, boolean blockInteract) {
+            this.rotation = rotation;
+            this.mode = Mode.resolve(blockInteract);
+        }
+
+        enum Mode {
+            /**
+             * Angles will be set client-side and are visual to the player
+             */
+            CLIENT,
+
+            /**
+             * Angles will be set server-side and are silent to the player
+             */
+            SERVER,
+
+            /**
+             * Angles will remain unaffected on both the client and server
+             */
+            NONE;
+
+            static Mode resolve(boolean blockInteract) {
+                final Settings settings = Baritone.settings();
+                final boolean antiCheat = settings.antiCheatCompatibility.value;
+                final boolean blockFreeLook = settings.blockFreeLook.value;
+                final boolean freeLook = settings.freeLook.value;
+
+                if (!freeLook && !blockFreeLook) return CLIENT;
+                if (!blockFreeLook && blockInteract) return CLIENT;
+                if (antiCheat || blockInteract) return SERVER;
+                return NONE;
+            }
         }
     }
 }

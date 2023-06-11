@@ -724,7 +724,8 @@ public final class Settings {
     public final Setting<Boolean> freeLook = new Setting<>(true);
 
     /**
-     * Break and place blocks without having to force the client-sided rotations
+     * Break and place blocks without having to force the client-sided rotations. Having this setting enabled implies
+     * {@link #freeLook}.
      */
     public final Setting<Boolean> blockFreeLook = new Setting<>(false);
 
