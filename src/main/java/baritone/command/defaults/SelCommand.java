@@ -294,12 +294,9 @@ public class SelCommand extends Command {
                             args.get();
                         }
                         return args.tabCompleteDatatype(ForBlockOptionalMeta.INSTANCE);
-                    } else if (action == Action.CYLINDER || action == Action.HCYLINDER) {
-                        if (args.hasExactly(2)) {
-                            if (args.getDatatypeForOrNull(ForBlockOptionalMeta.INSTANCE) != null) {
-                                return args.tabCompleteDatatype(ForAxis.INSTANCE);
-                            }
-                        }
+                    } else if (args.hasExactly(2) && (action == Action.CYLINDER || action == Action.HCYLINDER)) {
+                        args.get();
+                        return args.tabCompleteDatatype(ForAxis.INSTANCE);
                     }
                 } else if (action == Action.EXPAND || action == Action.CONTRACT || action == Action.SHIFT) {
                     if (args.hasExactlyOne()) {
