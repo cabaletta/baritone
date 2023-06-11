@@ -216,10 +216,10 @@ public final class RotationUtils {
      * @param blockReachDistance The block reach distance of the entity
      * @return The optional rotation
      */
-    public static Optional<Rotation> reachableOffset(Entity entity, BlockPos pos, Vec3d offsetPos, double blockReachDistance, boolean wouldSneak) {
+    public static Optional<Rotation> reachableOffset(EntityPlayerSP entity, BlockPos pos, Vec3d offsetPos, double blockReachDistance, boolean wouldSneak) {
+        IPlayerContext ctx = BaritoneAPI.getProvider().getBaritoneForPlayer(entity).getPlayerContext();
         Vec3d eyes = wouldSneak ? RayTraceUtils.inferSneakingEyePosition(entity) : entity.getPositionEyes(1.0F);
-        // TODO: pr/feature/blockFreeLook - Use playerRotations() here?
-        Rotation rotation = calcRotationFromVec3d(eyes, offsetPos, new Rotation(entity.rotationYaw, entity.rotationPitch));
+        Rotation rotation = calcRotationFromVec3d(eyes, offsetPos, ctx.playerRotations());
         RayTraceResult result = RayTraceUtils.rayTraceTowards(entity, rotation, blockReachDistance, wouldSneak);
         //System.out.println(result);
         if (result != null && result.typeOfHit == RayTraceResult.Type.BLOCK) {
@@ -242,7 +242,7 @@ public final class RotationUtils {
      * @param blockReachDistance The block reach distance of the entity
      * @return The optional rotation
      */
-    public static Optional<Rotation> reachableCenter(Entity entity, BlockPos pos, double blockReachDistance, boolean wouldSneak) {
+    public static Optional<Rotation> reachableCenter(EntityPlayerSP entity, BlockPos pos, double blockReachDistance, boolean wouldSneak) {
         return reachableOffset(entity, pos, VecUtils.calculateBlockCenter(entity.world, pos), blockReachDistance, wouldSneak);
     }
 }
