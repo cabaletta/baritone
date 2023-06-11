@@ -18,7 +18,9 @@
 package baritone.process;
 
 import baritone.Baritone;
-import baritone.api.pathing.goals.*;
+import baritone.api.pathing.goals.Goal;
+import baritone.api.pathing.goals.GoalComposite;
+import baritone.api.pathing.goals.GoalGetToBlock;
 import baritone.api.process.ICraftingProcess;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
@@ -112,7 +114,9 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
         if (canCraft(item, amount)) {
             this.amount = amount;
             logDirect("Crafting now " + amount + "x [" + recipe.getRecipeOutput().getDisplayName() + "]");
-            getACraftingTable();
+            if (!canCraftInInventory(recipe)) {
+                getACraftingTable();
+            }
         } else {
             logDirect("Insufficient resources.");
         }
@@ -123,7 +127,10 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
         if (canCraft(recipe, amount)) {
             this.recipe = recipe;
             this.amount = amount;
-            getACraftingTable();
+            logDirect("Crafting now " + amount + "x [" + recipe.getRecipeOutput().getDisplayName() + "]");
+            if (!canCraftInInventory(recipe)) {
+                getACraftingTable();
+            }
         } else {
             logDirect("Insufficient resources.");
         }
@@ -159,8 +166,6 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
             }
         }
         return false;
-        //we maybe still be able to craft but need to mix ingredients.
-        //example we have 1 oak plank and 1 spruce plank and want to make sticks. this statement could be wrong.
     }
 
     @Override
@@ -170,7 +175,6 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
         for (ItemStack stack : ctx.player().inventory.mainInventory) {
             recipeItemHelper.accountStack(stack);
         }
-        //could be inlined but i think that would be not very readable
         int outputCount = recipe.getRecipeOutput().getCount();
         int times = amount % outputCount == 0 ? amount / outputCount : (amount / outputCount) + 1;
         return recipeItemHelper.canCraft(recipe, null, times);
@@ -178,7 +182,7 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
 
     @Override
     public boolean canCraftInInventory(IRecipe recipe) {
-        return recipe.canFit(2,2);
+        return recipe.canFit(2,2) && !ctx.player().isCreative();
     }
 
     private void moveItemsToCraftingGrid() {
@@ -203,7 +207,6 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
 
         if (amount <= 0) {
             logDirect("Done");
-            //we finished crafting
             ctx.player().closeScreen();
             onLostControl();
         }
@@ -211,11 +214,22 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
 
     private int getInputCount() {
         int stackSize = Integer.MAX_VALUE;
-        for (int i = 0; i < 9; i++) {
-            ItemStack itemStack = ((ContainerWorkbench) baritone.getPlayerContext().player().openContainer).craftMatrix.getStackInSlot(i);
-            if (itemStack.getItem() != Item.getItemFromBlock(Blocks.AIR)) {
-                stackSize = Math.min(itemStack.getCount(), stackSize);
+        if (ctx.player().openContainer instanceof ContainerPlayer) {
+            for (int i = 0; i < 4; i++) {
+                ItemStack itemStack = ((ContainerPlayer) ctx.player().openContainer).craftMatrix.getStackInSlot(i);
+                if (itemStack.getItem() != Item.getItemFromBlock(Blocks.AIR)) {
+                    stackSize = Math.min(itemStack.getCount(), stackSize);
+                }
             }
+        } else if (ctx.player().openContainer instanceof ContainerWorkbench) {
+            for (int i = 0; i < 9; i++) {
+                ItemStack itemStack = ((ContainerWorkbench) ctx.player().openContainer).craftMatrix.getStackInSlot(i);
+                if (itemStack.getItem() != Item.getItemFromBlock(Blocks.AIR)) {
+                    stackSize = Math.min(itemStack.getCount(), stackSize);
+                }
+            }
+        } else {
+            throw new RuntimeException("Expected a crafting Inventory");
         }
         return stackSize == Integer.MAX_VALUE ? 0 : stackSize;
     }
@@ -223,16 +237,13 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
     private void getACraftingTable() {
         List<BlockPos> knownLocations = MineProcess.searchWorld(new CalculationContext(baritone, false), new BlockOptionalMetaLookup(Blocks.CRAFTING_TABLE), 64, Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
         if (knownLocations.isEmpty()) {
-            //logDirect("There are no crafting tables nearby,");
             if (hasCraftingTable()) {
-                //logDirect("but player has crafting table in inventory.");
                 placeAt = ctx.playerFeet().north();
             } else {
-                //logDirect("cant do shit.");
+                logDirect("Recipe requires a crafting table.");
                 onLostControl();
             }
         } else {
-            //logDirect("Pathing now to crafting table");
             goal = new GoalComposite(knownLocations.stream().map(this::createGoal).toArray(Goal[]::new));
         }
     }
@@ -289,7 +300,6 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
             }
         }
         baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
-        //do placing
 
         placeAt = null;
         getACraftingTable();
