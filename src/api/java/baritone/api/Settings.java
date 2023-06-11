@@ -726,7 +726,7 @@ public final class Settings {
     /**
      * Break and place blocks without having to force the client-sided rotations
      */
-    public final Setting<Boolean> blockFreeLook = new Setting<>(true);
+    public final Setting<Boolean> blockFreeLook = new Setting<>(false);
 
     /**
      * Will cause some minor behavioral differences to ensure that Baritone works on anticheats.
