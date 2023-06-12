@@ -29,7 +29,6 @@ import baritone.pathing.path.PathExecutor;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.tileentity.TileEntityBeaconRenderer;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.AxisAlignedBB;
@@ -37,6 +36,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 
 import java.awt.*;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -76,7 +76,7 @@ public final class PathRenderer implements IRenderer {
         }
 
         if (goal != null && settings.renderGoal.value) {
-            drawDankLitGoalBox(renderView, goal, partialTicks, settings.colorGoalBox.value);
+            drawGoal(renderView, goal, partialTicks, settings.colorGoalBox.value);
         }
 
         if (!settings.renderPath.value) {
@@ -153,26 +153,28 @@ public final class PathRenderer implements IRenderer {
                 IRenderer.glColor(color, alpha);
             }
 
-            drawLine(start.x, start.y, start.z, end.x, end.y, end.z);
-
-            tessellator.draw();
+            emitLine(start.x, start.y, start.z, end.x, end.y, end.z);
         }
 
         IRenderer.endLines(settings.renderPathIgnoreDepth.value);
     }
 
-    public static void drawLine(double x1, double y1, double z1, double x2, double y2, double z2) {
+    public static void emitLine(double x1, double y1, double z1, double x2, double y2, double z2) {
         double vpX = renderManager.viewerPosX;
         double vpY = renderManager.viewerPosY;
         double vpZ = renderManager.viewerPosZ;
         boolean renderPathAsFrickinThingy = !settings.renderPathAsLine.value;
 
-        buffer.begin(renderPathAsFrickinThingy ? GL_LINE_STRIP : GL_LINES, DefaultVertexFormats.POSITION);
         buffer.pos(x1 + 0.5D - vpX, y1 + 0.5D - vpY, z1 + 0.5D - vpZ).endVertex();
         buffer.pos(x2 + 0.5D - vpX, y2 + 0.5D - vpY, z2 + 0.5D - vpZ).endVertex();
 
         if (renderPathAsFrickinThingy) {
+            buffer.pos(x2 + 0.5D - vpX, y2 + 0.5D - vpY, z2 + 0.5D - vpZ).endVertex();
             buffer.pos(x2 + 0.5D - vpX, y2 + 0.53D - vpY, z2 + 0.5D - vpZ).endVertex();
+
+            buffer.pos(x2 + 0.5D - vpX, y2 + 0.53D - vpY, z2 + 0.5D - vpZ).endVertex();
+            buffer.pos(x1 + 0.5D - vpX, y1 + 0.53D - vpY, z1 + 0.5D - vpZ).endVertex();
+
             buffer.pos(x1 + 0.5D - vpX, y1 + 0.53D - vpY, z1 + 0.5D - vpZ).endVertex();
             buffer.pos(x1 + 0.5D - vpX, y1 + 0.5D - vpY, z1 + 0.5D - vpZ).endVertex();
         }
@@ -194,13 +196,17 @@ public final class PathRenderer implements IRenderer {
                 toDraw = state.getSelectedBoundingBox(player.world, pos);
             }
 
-            IRenderer.drawAABB(toDraw, .002D);
+            IRenderer.emitAABB(toDraw, .002D);
         });
 
         IRenderer.endLines(settings.renderSelectionBoxesIgnoreDepth.value);
     }
 
-    public static void drawDankLitGoalBox(Entity player, Goal goal, float partialTicks, Color color) {
+    public static void drawGoal(Entity player, Goal goal, float partialTicks, Color color) {
+        drawGoal(player, goal, partialTicks, color, true);
+    }
+
+    public static void drawGoal(Entity player, Goal goal, float partialTicks, Color color, boolean setupRender) {
         double renderPosX = renderManager.viewerPosX;
         double renderPosY = renderManager.viewerPosY;
         double renderPosZ = renderManager.viewerPosZ;
@@ -232,6 +238,7 @@ public final class PathRenderer implements IRenderer {
                 y2 -= 0.5;
                 maxY--;
             }
+            drawDankLitGoalBox(color, minX, maxX, minZ, maxZ, minY, maxY, y1, y2, setupRender);
         } else if (goal instanceof GoalXZ) {
             GoalXZ goalPos = (GoalXZ) goal;
 
@@ -273,14 +280,22 @@ public final class PathRenderer implements IRenderer {
             y2 = 0;
             minY = 0 - renderPosY;
             maxY = 256 - renderPosY;
+            drawDankLitGoalBox(color, minX, maxX, minZ, maxZ, minY, maxY, y1, y2, setupRender);
         } else if (goal instanceof GoalComposite) {
-            for (Goal g : ((GoalComposite) goal).goals()) {
-                drawDankLitGoalBox(player, g, partialTicks, color);
+            // Simple way to determine if goals can be batched, without having some sort of GoalRenderer
+            boolean batch = Arrays.stream(((GoalComposite) goal).goals()).allMatch(IGoalRenderPos.class::isInstance);
+
+            if (batch) {
+                IRenderer.startLines(color, settings.goalRenderLineWidthPixels.value, settings.renderGoalIgnoreDepth.value);
             }
-            return;
+            for (Goal g : ((GoalComposite) goal).goals()) {
+                drawGoal(player, g, partialTicks, color, !batch);
+            }
+            if (batch) {
+                IRenderer.endLines(settings.renderGoalIgnoreDepth.value);
+            }
         } else if (goal instanceof GoalInverted) {
-            drawDankLitGoalBox(player, ((GoalInverted) goal).origin, partialTicks, settings.colorInvertedGoalBox.value);
-            return;
+            drawGoal(player, ((GoalInverted) goal).origin, partialTicks, settings.colorInvertedGoalBox.value);
         } else if (goal instanceof GoalYLevel) {
             GoalYLevel goalpos = (GoalYLevel) goal;
             minX = player.posX - settings.yLevelBoxSize.value - renderPosX;
@@ -291,16 +306,18 @@ public final class PathRenderer implements IRenderer {
             maxY = minY + 2;
             y1 = 1 + y + goalpos.level - renderPosY;
             y2 = 1 - y + goalpos.level - renderPosY;
-        } else {
-            return;
+            drawDankLitGoalBox(color, minX, maxX, minZ, maxZ, minY, maxY, y1, y2, setupRender);
         }
+    }
 
-        IRenderer.startLines(color, settings.goalRenderLineWidthPixels.value, settings.renderGoalIgnoreDepth.value);
+    private static void drawDankLitGoalBox(Color color, double minX, double maxX, double minZ, double maxZ, double minY, double maxY, double y1, double y2, boolean setupRender) {
+        if (setupRender) {
+            IRenderer.startLines(color, settings.goalRenderLineWidthPixels.value, settings.renderGoalIgnoreDepth.value);
+        }
 
         renderHorizontalQuad(minX, maxX, minZ, maxZ, y1);
         renderHorizontalQuad(minX, maxX, minZ, maxZ, y2);
 
-        buffer.begin(GL_LINES, DefaultVertexFormats.POSITION);
         buffer.pos(minX, minY, minZ).endVertex();
         buffer.pos(minX, maxY, minZ).endVertex();
         buffer.pos(maxX, minY, minZ).endVertex();
@@ -309,19 +326,25 @@ public final class PathRenderer implements IRenderer {
         buffer.pos(maxX, maxY, maxZ).endVertex();
         buffer.pos(minX, minY, maxZ).endVertex();
         buffer.pos(minX, maxY, maxZ).endVertex();
-        tessellator.draw();
 
-        IRenderer.endLines(settings.renderGoalIgnoreDepth.value);
+        if (setupRender) {
+            IRenderer.endLines(settings.renderGoalIgnoreDepth.value);
+        }
     }
 
     private static void renderHorizontalQuad(double minX, double maxX, double minZ, double maxZ, double y) {
         if (y != 0) {
-            buffer.begin(GL_LINE_LOOP, DefaultVertexFormats.POSITION);
             buffer.pos(minX, y, minZ).endVertex();
             buffer.pos(maxX, y, minZ).endVertex();
+
+            buffer.pos(maxX, y, minZ).endVertex();
+            buffer.pos(maxX, y, maxZ).endVertex();
+
             buffer.pos(maxX, y, maxZ).endVertex();
             buffer.pos(minX, y, maxZ).endVertex();
-            tessellator.draw();
+
+            buffer.pos(minX, y, maxZ).endVertex();
+            buffer.pos(minX, y, minZ).endVertex();
         }
     }
 }
