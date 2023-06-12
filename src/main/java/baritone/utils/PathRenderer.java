@@ -252,6 +252,8 @@ public final class PathRenderer implements IRenderer, Helper {
             }
         } else if (goal instanceof GoalXZ) {
             GoalXZ goalPos = (GoalXZ) goal;
+            minY = mc.level.getMinBuildHeight();
+            maxY = mc.level.getMaxBuildHeight();
 
             if (settings.renderGoalXZBeacon.value) {
                 glPushAttrib(GL_LIGHTING_BIT);
@@ -273,8 +275,8 @@ public final class PathRenderer implements IRenderer, Helper {
                         settings.renderGoalAnimated.value ? partialTicks : 0,
                         1.0F,
                         settings.renderGoalAnimated.value ? player.level.getGameTime() : 0,
-                        0,
-                        256,
+                        (int) minY,
+                        (int) maxY,
                         color.getColorComponents(null),
 
                         // Arguments filled by the private method lol
@@ -299,8 +301,8 @@ public final class PathRenderer implements IRenderer, Helper {
 
             y1 = 0;
             y2 = 0;
-            minY = 0 - renderPosY;
-            maxY = 256 - renderPosY;
+            minY -= renderPosY;
+            maxY -= renderPosY;
         } else if (goal instanceof GoalComposite) {
             for (Goal g : ((GoalComposite) goal).goals()) {
                 drawDankLitGoalBox(stack, player, g, partialTicks, color);
