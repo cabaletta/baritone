@@ -54,6 +54,7 @@ public interface IRenderer {
         if (ignoreDepth) {
             GlStateManager.disableDepth();
         }
+        buffer.begin(GL_LINES, DefaultVertexFormats.POSITION);
     }
 
     static void startLines(Color color, float lineWidth, boolean ignoreDepth) {
@@ -61,6 +62,7 @@ public interface IRenderer {
     }
 
     static void endLines(boolean ignoredDepth) {
+        tessellator.draw();
         if (ignoredDepth) {
             GlStateManager.enableDepth();
         }
@@ -70,10 +72,9 @@ public interface IRenderer {
         GlStateManager.disableBlend();
     }
 
-    static void drawAABB(AxisAlignedBB aabb) {
+    static void emitAABB(AxisAlignedBB aabb) {
         AxisAlignedBB toDraw = aabb.offset(-renderManager.viewerPosX, -renderManager.viewerPosY, -renderManager.viewerPosZ);
 
-        buffer.begin(GL_LINES, DefaultVertexFormats.POSITION);
         // bottom
         buffer.pos(toDraw.minX, toDraw.minY, toDraw.minZ).endVertex();
         buffer.pos(toDraw.maxX, toDraw.minY, toDraw.minZ).endVertex();
@@ -101,10 +102,15 @@ public interface IRenderer {
         buffer.pos(toDraw.maxX, toDraw.maxY, toDraw.maxZ).endVertex();
         buffer.pos(toDraw.minX, toDraw.minY, toDraw.maxZ).endVertex();
         buffer.pos(toDraw.minX, toDraw.maxY, toDraw.maxZ).endVertex();
-        tessellator.draw();
     }
 
-    static void drawAABB(AxisAlignedBB aabb, double expand) {
-        drawAABB(aabb.grow(expand, expand, expand));
+    static void emitAABB(AxisAlignedBB aabb, double expand) {
+        emitAABB(aabb.grow(expand, expand, expand));
+    }
+
+    static void drawAABB(AxisAlignedBB aabb) {
+        buffer.begin(GL_LINES, DefaultVertexFormats.POSITION);
+        emitAABB(aabb);
+        tessellator.draw();
     }
 }
