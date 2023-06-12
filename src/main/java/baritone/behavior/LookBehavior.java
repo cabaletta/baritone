@@ -20,11 +20,13 @@ package baritone.behavior;
 import baritone.Baritone;
 import baritone.api.Settings;
 import baritone.api.behavior.ILookBehavior;
+import baritone.api.event.events.PacketEvent;
 import baritone.api.event.events.PlayerUpdateEvent;
 import baritone.api.event.events.RotationMoveEvent;
-import baritone.api.event.events.type.EventState;
+import baritone.api.event.events.WorldEvent;
 import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.Rotation;
+import net.minecraft.network.play.client.CPacketPlayer;
 
 public final class LookBehavior extends Behavior implements ILookBehavior {
 
@@ -56,17 +58,9 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
 
     @Override
     public void onPlayerUpdate(PlayerUpdateEvent event) {
-        // Capture the player rotation before it's reset to determine the rotation the server knows
-        // Alternatively, this could be done with a packet event... Maybe that's a better idea.
-        if (event.getState() == EventState.POST) {
-            this.serverRotation = new Rotation(ctx.player().rotationYaw, ctx.player().rotationPitch);
-        }
-
-        // There's nothing left to be done if there isn't a set target
         if (this.target == null) {
             return;
         }
-
         switch (event.getState()) {
             case PRE: {
                 switch (this.target.mode) {
@@ -109,6 +103,24 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
             default:
                 break;
         }
+    }
+
+    @Override
+    public void onSendPacket(PacketEvent event) {
+        if (!(event.getPacket() instanceof CPacketPlayer)) {
+            return;
+        }
+
+        final CPacketPlayer packet = (CPacketPlayer) event.getPacket();
+        if (packet instanceof CPacketPlayer.Rotation || packet instanceof CPacketPlayer.PositionRotation) {
+            this.serverRotation = new Rotation(packet.getYaw(0.0f), packet.getPitch(0.0f));
+        }
+    }
+
+    @Override
+    public void onWorldEvent(WorldEvent event) {
+        this.serverRotation = null;
+        this.target = null;
     }
 
     public void pig() {
