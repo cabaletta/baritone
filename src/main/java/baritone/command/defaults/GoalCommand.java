@@ -51,8 +51,7 @@ public class GoalCommand extends Command {
             }
         } else {
             args.requireMax(3);
-            BetterBlockPos origin = baritone.getPlayerContext().playerFeet();
-            Goal goal = args.getDatatypePost(RelativeGoal.INSTANCE, origin);
+            Goal goal = args.getDatatypePost(RelativeGoal.INSTANCE, ctx.playerView());
             goalProcess.setGoal(goal);
             logDirect(String.format("Goal: %s", goal.toString()));
         }
