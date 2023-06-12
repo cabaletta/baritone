@@ -66,12 +66,15 @@ public class GoalXZ implements Goal {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
         GoalXZ goal = (GoalXZ) o;
-        if (x != goal.x) return false;
-        return z == goal.z;
+        return x == goal.x && z == goal.z;
     }
 
     @Override

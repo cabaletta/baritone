@@ -54,8 +54,12 @@ public class GoalInverted implements Goal {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
         GoalInverted goal = (GoalInverted) o;
         return Objects.equals(origin, goal.origin);

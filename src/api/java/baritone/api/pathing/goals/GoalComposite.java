@@ -69,8 +69,12 @@ public class GoalComposite implements Goal {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
         GoalComposite goal = (GoalComposite) o;
         return Arrays.equals(goals, goal.goals);

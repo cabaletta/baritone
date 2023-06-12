@@ -71,15 +71,19 @@ public class GoalStrictDirection implements Goal {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
         GoalStrictDirection goal = (GoalStrictDirection) o;
-        if (x != goal.x) return false;
-        if (y != goal.y) return false;
-        if (z != goal.z) return false;
-        if (dx != goal.dx) return false;
-        return dz == goal.dz;
+        return x == goal.x
+                && y != goal.y
+                && z == goal.z
+                && dx == goal.dx
+                && dz == goal.dz;
     }
 
     @Override

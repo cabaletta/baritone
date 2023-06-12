@@ -127,13 +127,17 @@ public class GoalRunAway implements Goal {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
         GoalRunAway goal = (GoalRunAway) o;
-        if (distanceSq != goal.distanceSq) return false;
-        if (!Arrays.equals(from, goal.from)) return false;
-        return Objects.equals(maintainY, goal.maintainY);
+        return distanceSq == goal.distanceSq
+                && Arrays.equals(from, goal.from)
+                && Objects.equals(maintainY, goal.maintainY);
     }
 
     @Override

@@ -763,12 +763,16 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
 
             JankyGoalComposite goal = (JankyGoalComposite) o;
-            if (!Objects.equals(primary, goal.primary)) return false;
-            return Objects.equals(fallback, goal.fallback);
+            return Objects.equals(primary, goal.primary)
+                    && Objects.equals(fallback, goal.fallback);
         }
 
         @Override
@@ -870,11 +874,13 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
 
         @Override
         public boolean equals(Object o) {
-            if (!super.equals(o)) return false;
+            if (!super.equals(o)) {
+                return false;
+            }
 
             GoalAdjacent goal = (GoalAdjacent) o;
-            if (allowSameLevel != goal.allowSameLevel) return false;
-            return Objects.equals(no, goal.no);
+            return allowSameLevel == goal.allowSameLevel
+                    && Objects.equals(no, goal.no);
         }
 
         @Override

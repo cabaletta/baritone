@@ -88,14 +88,18 @@ public class GoalNear implements Goal, IGoalRenderPos {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
         GoalNear goal = (GoalNear) o;
-        if (x != goal.x) return false;
-        if (y != goal.y) return false;
-        if (z != goal.z) return false;
-        return rangeSq == goal.rangeSq;
+        return x == goal.x
+                && y == goal.y
+                && z == goal.z
+                && rangeSq == goal.rangeSq;
     }
 
     @Override
