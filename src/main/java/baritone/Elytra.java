@@ -24,6 +24,7 @@ import baritone.api.utils.Rotation;
 import baritone.api.utils.RotationUtils;
 import baritone.behavior.Behavior;
 import baritone.utils.BlockStateInterface;
+import com.mojang.realmsclient.util.Pair;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.item.EntityFireworkRocket;
 import net.minecraft.util.EnumHand;
@@ -64,6 +65,9 @@ public class Elytra extends Behavior implements Helper {
     public int sinceFirework;
     public BlockPos goal;
 
+
+    public List<Pair<Vec3d, Vec3d>> lines = new ArrayList<>();
+
     protected Elytra(Baritone baritone) {
         super(baritone);
     }
@@ -76,7 +80,7 @@ public class Elytra extends Behavior implements Helper {
         }
         fixNearPlayer();
         baritone.getInputOverrideHandler().clearAllKeys();
-
+        lines.clear();
         if (ctx.player().isElytraFlying()) {
             if (ctx.player().collidedHorizontally) {
                 logDirect("hbonk");
@@ -89,7 +93,7 @@ public class Elytra extends Behavior implements Helper {
             sinceFirework++;
             if (!firework
                     && sinceFirework > 10
-                    && ctx.player().posY < path.get(goingTo).y + 5 // don't firework if trying to descend
+                    && (Baritone.settings().wasteFireworks.value && ctx.player().posY < path.get(goingTo).y + 5) // don't firework if trying to descend
                     && (ctx.player().posY < path.get(goingTo).y - 5 || ctx.playerFeetAsVec().distanceTo(new Vec3d(path.get(goingTo).x, ctx.player().posY, path.get(goingTo).z)) > 5) // UGH!!!!!!!
                     && new Vec3d(ctx.player().motionX, ctx.player().posY < path.get(goingTo).y ? Math.max(0, ctx.player().motionY) : ctx.player().motionY, ctx.player().motionZ).length() < Baritone.settings().elytraFireworkSpeed.value // ignore y component if we are BOTH below where we want to be AND descending
             ) {
@@ -101,7 +105,7 @@ public class Elytra extends Behavior implements Helper {
             for (int relaxation = 0; relaxation < 3; relaxation++) { // try for a strict solution first, then relax more and more (if we're in a corner or near some blocks, it will have to relax its constraints a bit)
                 int[] heights = firework ? new int[]{20, 10, 5, 0} : new int[]{0}; // attempt to gain height, if we can, so as not to waste the boost
                 boolean requireClear = relaxation == 0;
-                int steps = relaxation < 2 ? Baritone.settings().elytraSimulationTicks.value : 3;
+                int steps = relaxation < 2 ? firework ? 5 : Baritone.settings().elytraSimulationTicks.value : 3;
                 int lookahead = relaxation == 0 ? 2 : 3; // ideally this would be expressed as a distance in blocks, rather than a number of voxel steps
                 //int minStep = Math.max(0, playerNear - relaxation);
                 int minStep = playerNear;
@@ -160,6 +164,7 @@ public class Elytra extends Behavior implements Helper {
     }
 
     private boolean clearView(Vec3d start, Vec3d dest) {
+        lines.add(Pair.of(start, dest));
         RayTraceResult result = ctx.world().rayTraceBlocks(start, dest, true, false, true);
         return result == null || result.typeOfHit == RayTraceResult.Type.MISS;
     }

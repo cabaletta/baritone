@@ -17,6 +17,7 @@
 
 package baritone.utils;
 
+import baritone.Baritone;
 import baritone.Elytra;
 import baritone.api.BaritoneAPI;
 import baritone.api.event.events.RenderEvent;
@@ -26,6 +27,7 @@ import baritone.api.utils.Helper;
 import baritone.api.utils.interfaces.IGoalRenderPos;
 import baritone.behavior.PathingBehavior;
 import baritone.pathing.path.PathExecutor;
+import com.mojang.realmsclient.util.Pair;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.tileentity.TileEntityBeaconRenderer;
@@ -35,6 +37,7 @@ import net.minecraft.init.Blocks;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
 
 import java.awt.*;
 import java.util.Collection;
@@ -107,6 +110,18 @@ public final class PathRenderer implements IRenderer {
         if (behavior.baritone.elytra.goal != null) {
             drawDankLitGoalBox(renderView, new GoalBlock(behavior.baritone.elytra.goal), partialTicks, Color.GREEN);
         }
+        if (!behavior.baritone.elytra.lines.isEmpty() && Baritone.settings().renderRaytraces.value) {
+            IRenderer.startLines(Color.BLUE, settings.pathRenderLineWidthPixels.value, settings.renderPathIgnoreDepth.value);
+            boolean orig = settings.renderPathAsLine.value;
+            settings.renderPathAsLine.value = true;
+            for (Pair<Vec3d, Vec3d> line : behavior.baritone.elytra.lines) {
+                drawLine(line.first().x, line.first().y, line.first().z, line.second().x, line.second().y, line.second().z);
+                tessellator.draw();
+            }
+            settings.renderPathAsLine.value = orig;
+            IRenderer.endLines(settings.renderPathIgnoreDepth.value);
+        }
+
 
         // If there is a path calculation currently running, render the path calculation process
         behavior.getInProgress().ifPresent(currentlyRunning -> {
