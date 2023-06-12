@@ -93,7 +93,7 @@ public class Elytra extends Behavior implements Helper {
             sinceFirework++;
             if (!firework
                     && sinceFirework > 10
-                    && (Baritone.settings().wasteFireworks.value && ctx.player().posY < path.get(goingTo).y + 5) // don't firework if trying to descend
+                    && (Baritone.settings().wasteFireworks.value || ctx.player().posY < path.get(goingTo).y + 5) // don't firework if trying to descend
                     && (ctx.player().posY < path.get(goingTo).y - 5 || ctx.playerFeetAsVec().distanceTo(new Vec3d(path.get(goingTo).x, ctx.player().posY, path.get(goingTo).z)) > 5) // UGH!!!!!!!
                     && new Vec3d(ctx.player().motionX, ctx.player().posY < path.get(goingTo).y ? Math.max(0, ctx.player().motionY) : ctx.player().motionY, ctx.player().motionZ).length() < Baritone.settings().elytraFireworkSpeed.value // ignore y component if we are BOTH below where we want to be AND descending
             ) {
