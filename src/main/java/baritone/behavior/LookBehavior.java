@@ -58,43 +58,37 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
 
     @Override
     public void onPlayerUpdate(PlayerUpdateEvent event) {
-        if (this.target == null) {
+        if (this.target == null || this.target.mode == Target.Mode.NONE) {
             return;
         }
         switch (event.getState()) {
             case PRE: {
-                switch (this.target.mode) {
-                    case CLIENT: {
-                        ctx.player().rotationYaw = this.target.rotation.getYaw();
-                        float oldPitch = ctx.player().rotationPitch;
-                        float desiredPitch = this.target.rotation.getPitch();
-                        ctx.player().rotationPitch = desiredPitch;
-                        ctx.player().rotationYaw += (Math.random() - 0.5) * Baritone.settings().randomLooking.value;
-                        ctx.player().rotationPitch += (Math.random() - 0.5) * Baritone.settings().randomLooking.value;
-                        if (desiredPitch == oldPitch && !Baritone.settings().freeLook.value) {
-                            nudgeToLevel();
-                        }
-                        // The target can be invalidated now since it won't be needed for RotationMoveEvent
-                        this.target = null;
-                        break;
-                    }
-                    case SERVER: {
-                        // Copy the player's actual rotation
-                        this.prevRotation = new Rotation(ctx.player().rotationYaw, ctx.player().rotationPitch);
-                        ctx.player().rotationYaw = this.target.rotation.getYaw();
-                        ctx.player().rotationPitch = this.target.rotation.getPitch();
-                        break;
-                    }
-                    default:
-                        break;
+                if (this.target.mode == Target.Mode.SERVER) {
+                    this.prevRotation = new Rotation(ctx.player().rotationYaw, ctx.player().rotationPitch);
+                }
+
+                ctx.player().rotationYaw = this.target.rotation.getYaw();
+                float oldPitch = ctx.playerRotations().getPitch();
+                float desiredPitch = this.target.rotation.getPitch();
+                ctx.player().rotationPitch = desiredPitch;
+                ctx.player().rotationYaw += (Math.random() - 0.5) * Baritone.settings().randomLooking.value;
+                ctx.player().rotationPitch += (Math.random() - 0.5) * Baritone.settings().randomLooking.value;
+                if (desiredPitch == oldPitch) {
+                    nudgeToLevel();
+                }
+
+                if (this.target.mode == Target.Mode.CLIENT) {
+                    // The target can be invalidated now since it won't be needed for RotationMoveEvent
+                    this.target = null;
                 }
                 break;
             }
             case POST: {
                 // Reset the player's rotations back to their original values
-                if (this.target.mode == Target.Mode.SERVER) {
+                if (this.prevRotation != null) {
                     ctx.player().rotationYaw = this.prevRotation.getYaw();
                     ctx.player().rotationPitch = this.prevRotation.getPitch();
+                    this.prevRotation = null;
                 }
                 // The target is done being used for this game tick, so it can be invalidated
                 this.target = null;
