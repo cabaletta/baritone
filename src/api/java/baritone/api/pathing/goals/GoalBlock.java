@@ -77,7 +77,7 @@ public class GoalBlock implements Goal, IGoalRenderPos {
 
         GoalBlock goal = (GoalBlock) o;
         return x == goal.x
-                && y != goal.y
+                && y == goal.y
                 && z == goal.z;
     }
 

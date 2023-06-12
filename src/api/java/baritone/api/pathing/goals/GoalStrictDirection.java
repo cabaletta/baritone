@@ -80,7 +80,7 @@ public class GoalStrictDirection implements Goal {
 
         GoalStrictDirection goal = (GoalStrictDirection) o;
         return x == goal.x
-                && y != goal.y
+                && y == goal.y
                 && z == goal.z
                 && dx == goal.dx
                 && dz == goal.dz;
