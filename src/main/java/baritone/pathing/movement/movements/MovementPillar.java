@@ -251,7 +251,7 @@ public class MovementPillar extends Movement {
                 Block fr = frState.getBlock();
                 // TODO: Evaluate usage of getMaterial().isReplaceable()
                 if (!(fr instanceof BlockAir || frState.getMaterial().isReplaceable())) {
-                    RotationUtils.reachable(ctx.player(), src, ctx.playerController().getBlockReachDistance())
+                    RotationUtils.reachable(ctx, src, ctx.playerController().getBlockReachDistance())
                             .map(rot -> new MovementState.MovementTarget(rot, true))
                             .ifPresent(state::setTarget);
                     state.setInput(Input.JUMP, false); // breaking is like 5x slower when you're jumping
