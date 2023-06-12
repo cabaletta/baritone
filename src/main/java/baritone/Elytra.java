@@ -109,7 +109,7 @@ public class Elytra extends Behavior implements Helper {
                 int lookahead = relaxation == 0 ? 2 : 3; // ideally this would be expressed as a distance in blocks, rather than a number of voxel steps
                 //int minStep = Math.max(0, playerNear - relaxation);
                 int minStep = playerNear;
-                for (int i = Math.min(playerNear + 20, path.size()); i >= minStep; i--) {
+                for (int i = Math.min(playerNear + 20, path.size() - 1); i >= minStep; i--) {
                     for (int dy : heights) {
                         Vec3d dest = new Vec3d(path.get(i)).add(0, dy, 0);
                         if (dy != 0) {
