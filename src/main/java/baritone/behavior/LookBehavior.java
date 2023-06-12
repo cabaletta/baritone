@@ -58,11 +58,14 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
 
     @Override
     public void onPlayerUpdate(PlayerUpdateEvent event) {
-        if (this.target == null || this.target.mode == Target.Mode.NONE) {
+        if (this.target == null) {
             return;
         }
         switch (event.getState()) {
             case PRE: {
+                if (this.target.mode == Target.Mode.NONE) {
+                    return;
+                }
                 if (this.target.mode == Target.Mode.SERVER) {
                     this.prevRotation = new Rotation(ctx.player().rotationYaw, ctx.player().rotationPitch);
                 }
