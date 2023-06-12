@@ -70,6 +70,19 @@ public class GoalStrictDirection implements Goal {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        GoalStrictDirection goal = (GoalStrictDirection) o;
+        if (x != goal.x) return false;
+        if (y != goal.y) return false;
+        if (z != goal.z) return false;
+        if (dx != goal.dx) return false;
+        return dz == goal.dz;
+    }
+
+    @Override
     public String toString() {
         return String.format(
                 "GoalStrictDirection{x=%s, y=%s, z=%s, dx=%s, dz=%s}",
