@@ -28,6 +28,8 @@ import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.Rotation;
 import net.minecraft.network.play.client.CPacketPlayer;
 
+import java.util.Optional;
+
 public final class LookBehavior extends Behavior implements ILookBehavior {
 
     /**
@@ -70,9 +72,9 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
                     this.prevRotation = new Rotation(ctx.player().rotationYaw, ctx.player().rotationPitch);
                 }
 
-                ctx.player().rotationYaw = this.target.rotation.getYaw();
                 float oldPitch = ctx.playerRotations().getPitch();
                 float desiredPitch = this.target.rotation.getPitch();
+                ctx.player().rotationYaw = this.target.rotation.getYaw();
                 ctx.player().rotationPitch = desiredPitch;
                 ctx.player().rotationYaw += (Math.random() - 0.5) * Baritone.settings().randomLooking.value;
                 ctx.player().rotationPitch += (Math.random() - 0.5) * Baritone.settings().randomLooking.value;
@@ -126,8 +128,12 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
         }
     }
 
-    public Rotation getEffectiveRotation() {
-        return this.serverRotation;
+    public Optional<Rotation> getEffectiveRotation() {
+        if (Baritone.settings().freeLook.value || Baritone.settings().blockFreeLook.value) {
+            return Optional.of(this.serverRotation);
+        }
+        // If neither of the freeLook settings are on, just defer to the player's actual rotations
+        return Optional.empty();
     }
 
     @Override
