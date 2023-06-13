@@ -24,6 +24,7 @@ import baritone.api.event.events.PacketEvent;
 import baritone.api.event.events.PlayerUpdateEvent;
 import baritone.api.event.events.RotationMoveEvent;
 import baritone.api.event.events.WorldEvent;
+import baritone.api.utils.Helper;
 import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.Rotation;
 import net.minecraft.network.play.client.CPacketPlayer;
@@ -72,6 +73,7 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
                     this.prevRotation = new Rotation(ctx.player().rotationYaw, ctx.player().rotationPitch);
                 }
 
+                final float oldYaw = ctx.playerRotations().getYaw();
                 final float oldPitch = ctx.playerRotations().getPitch();
 
                 float desiredYaw = this.target.rotation.getYaw();
@@ -86,8 +88,8 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
                 desiredYaw += (Math.random() - 0.5) * Baritone.settings().randomLooking.value;
                 desiredPitch += (Math.random() - 0.5) * Baritone.settings().randomLooking.value;
 
-                ctx.player().rotationYaw = desiredYaw;
-                ctx.player().rotationPitch = desiredPitch;
+                ctx.player().rotationYaw = calculateMouseMove(oldYaw, desiredYaw);
+                ctx.player().rotationPitch = calculateMouseMove(oldPitch, desiredPitch);
 
                 if (this.target.mode == Target.Mode.CLIENT) {
                     // The target can be invalidated now since it won't be needed for RotationMoveEvent
@@ -153,13 +155,29 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
     /**
      * Nudges the player's pitch to a regular level. (Between {@code -20} and {@code 10}, increments are by {@code 1})
      */
-    private float nudgeToLevel(float pitch) {
+    private static float nudgeToLevel(float pitch) {
         if (pitch < -20) {
             return pitch + 1;
         } else if (pitch > 10) {
             return pitch - 1;
         }
         return pitch;
+    }
+
+    private static float calculateMouseMove(float current, float target) {
+        final float delta = target - current;
+        final int deltaPx = angleToMouse(delta);
+        return current + mouseToAngle(deltaPx);
+    }
+
+    private static int angleToMouse(float angleDelta) {
+        final float minAngleChange = mouseToAngle(1);
+        return Math.round(angleDelta / minAngleChange);
+    }
+
+    private static float mouseToAngle(int mouseDelta) {
+        final float f = Helper.mc.gameSettings.mouseSensitivity * 0.6f + 0.2f;
+        return mouseDelta * f * f * f * 8.0f * 0.15f;
     }
 
     private static class Target {
