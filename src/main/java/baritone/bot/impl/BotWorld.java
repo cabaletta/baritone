@@ -15,7 +15,7 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.bot.spec;
+package baritone.bot.impl;
 
 import it.unimi.dsi.fastutil.ints.*;
 import net.minecraft.client.multiplayer.WorldClient;

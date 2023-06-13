@@ -19,10 +19,10 @@ package baritone.bot.handler;
 
 import baritone.api.utils.Helper;
 import baritone.bot.BaritoneUser;
-import baritone.bot.spec.BotEntity;
-import baritone.bot.spec.BotMinecraft;
-import baritone.bot.spec.BotPlayerController;
-import baritone.bot.spec.BotWorld;
+import baritone.bot.impl.BotEntity;
+import baritone.bot.impl.BotMinecraft;
+import baritone.bot.impl.BotPlayerController;
+import baritone.bot.impl.BotWorld;
 import baritone.utils.accessor.INetHandlerPlayClient;
 import com.mojang.authlib.GameProfile;
 import io.netty.buffer.Unpooled;

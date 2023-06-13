@@ -17,7 +17,7 @@
 
 package baritone.bot;
 
-import baritone.bot.spec.BotWorld;
+import baritone.bot.impl.BotWorld;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import net.minecraft.world.GameType;

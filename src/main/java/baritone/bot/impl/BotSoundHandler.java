@@ -15,12 +15,10 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.bot.spec;
+package baritone.bot.impl;
 
 import net.minecraft.client.audio.ISound;
 import net.minecraft.client.audio.SoundHandler;
-import net.minecraft.client.resources.IResourceManager;
-import net.minecraft.client.settings.GameSettings;
 
 import javax.annotation.Nonnull;
 

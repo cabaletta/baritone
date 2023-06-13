@@ -15,7 +15,7 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.bot.spec;
+package baritone.bot.impl;
 
 import net.minecraft.client.particle.ParticleManager;
 import net.minecraft.entity.Entity;

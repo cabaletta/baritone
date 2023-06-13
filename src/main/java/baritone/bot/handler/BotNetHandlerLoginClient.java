@@ -18,7 +18,7 @@
 package baritone.bot.handler;
 
 import baritone.bot.BaritoneUser;
-import baritone.bot.spec.BotMinecraft;
+import baritone.bot.impl.BotMinecraft;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.network.NetHandlerLoginClient;
 import net.minecraft.network.EnumConnectionState;
