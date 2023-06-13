@@ -25,6 +25,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.mojang.authlib.minecraft.MinecraftSessionService;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.SoundHandler;
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.toasts.GuiToast;
 import net.minecraft.client.main.GameConfiguration;
 import net.minecraft.client.settings.GameSettings;
@@ -35,6 +36,7 @@ import net.minecraft.util.EnumHandSide;
 import net.minecraft.util.Session;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.HashSet;
 import java.util.concurrent.Callable;
 
@@ -62,12 +64,12 @@ public final class BotMinecraft extends Minecraft implements Helper {
     }
 
     @Override
-    public MinecraftSessionService getSessionService() {
+    public @Nonnull MinecraftSessionService getSessionService() {
         return mc.getSessionService();
     }
 
     @Override
-    public <V> ListenableFuture<V> addScheduledTask(Callable<V> callableToSchedule) {
+    public <V> @Nonnull ListenableFuture<V> addScheduledTask(@Nonnull Callable<V> callableToSchedule) {
         return mc.addScheduledTask(callableToSchedule);
     }
 
@@ -92,6 +94,11 @@ public final class BotMinecraft extends Minecraft implements Helper {
     @Override
     public GuiToast getToastGui() {
         return this.toastGui;
+    }
+
+    @Override
+    public void displayGuiScreen(@Nullable GuiScreen guiScreenIn) {
+        // do nothing
     }
 
     public static BotMinecraft allocate(IBaritoneUser user) {
