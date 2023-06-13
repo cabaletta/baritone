@@ -17,7 +17,6 @@
 
 package baritone.utils.player;
 
-import baritone.Baritone;
 import baritone.api.BaritoneAPI;
 import baritone.api.cache.IWorldData;
 import baritone.api.utils.*;

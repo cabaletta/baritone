@@ -72,15 +72,22 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
                     this.prevRotation = new Rotation(ctx.player().rotationYaw, ctx.player().rotationPitch);
                 }
 
-                float oldPitch = ctx.playerRotations().getPitch();
+                final float oldPitch = ctx.playerRotations().getPitch();
+
+                float desiredYaw = this.target.rotation.getYaw();
                 float desiredPitch = this.target.rotation.getPitch();
-                ctx.player().rotationYaw = this.target.rotation.getYaw();
-                ctx.player().rotationPitch = desiredPitch;
-                ctx.player().rotationYaw += (Math.random() - 0.5) * Baritone.settings().randomLooking.value;
-                ctx.player().rotationPitch += (Math.random() - 0.5) * Baritone.settings().randomLooking.value;
+
+                // In other words, the target doesn't care about the pitch, so it used playerRotations().getPitch()
+                // and it's safe to adjust it to a normal level
                 if (desiredPitch == oldPitch) {
-                    nudgeToLevel();
+                    desiredPitch = nudgeToLevel(desiredPitch);
                 }
+
+                desiredYaw += (Math.random() - 0.5) * Baritone.settings().randomLooking.value;
+                desiredPitch += (Math.random() - 0.5) * Baritone.settings().randomLooking.value;
+
+                ctx.player().rotationYaw = desiredYaw;
+                ctx.player().rotationPitch = desiredPitch;
 
                 if (this.target.mode == Target.Mode.CLIENT) {
                     // The target can be invalidated now since it won't be needed for RotationMoveEvent
@@ -130,7 +137,7 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
 
     public Optional<Rotation> getEffectiveRotation() {
         if (Baritone.settings().freeLook.value || Baritone.settings().blockFreeLook.value) {
-            return Optional.of(this.serverRotation);
+            return Optional.ofNullable(this.serverRotation);
         }
         // If neither of the freeLook settings are on, just defer to the player's actual rotations
         return Optional.empty();
@@ -146,12 +153,13 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
     /**
      * Nudges the player's pitch to a regular level. (Between {@code -20} and {@code 10}, increments are by {@code 1})
      */
-    private void nudgeToLevel() {
-        if (ctx.player().rotationPitch < -20) {
-            ctx.player().rotationPitch++;
-        } else if (ctx.player().rotationPitch > 10) {
-            ctx.player().rotationPitch--;
+    private float nudgeToLevel(float pitch) {
+        if (pitch < -20) {
+            return pitch + 1;
+        } else if (pitch > 10) {
+            return pitch - 1;
         }
+        return pitch;
     }
 
     private static class Target {
