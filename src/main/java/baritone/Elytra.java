@@ -26,6 +26,7 @@ import baritone.behavior.Behavior;
 import baritone.utils.BlockStateInterface;
 import com.mojang.realmsclient.util.Pair;
 import net.minecraft.block.material.Material;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.item.EntityFireworkRocket;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
@@ -36,10 +37,7 @@ import net.minecraft.util.math.Vec3d;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Elytra extends Behavior implements Helper {
 
@@ -65,6 +63,139 @@ public class Elytra extends Behavior implements Helper {
     public int sinceFirework;
     public BlockPos goal;
 
+    private void pathfindAroundObstacles() {
+        outer:
+        while (true) {
+            int rangeStartIncl = playerNear;
+            int rangeEndExcl = playerNear;
+            while (rangeEndExcl < path.size() && ctx.world().isBlockLoaded(path.get(rangeEndExcl), false)) {
+                rangeEndExcl++;
+            }
+            if (rangeStartIncl >= rangeEndExcl) {
+                // not loaded yet?
+                return;
+            }
+            if (!passable(ctx.world().getBlockState(path.get(rangeStartIncl)))) {
+                // we're in a wall
+                return; // previous iterations of this function SHOULD have fixed this by now :rage_cat:
+            }
+            for (int i = rangeStartIncl; i < rangeEndExcl - 1; i++) {
+                if (!clearView(pathAt(i), pathAt(i + 1))) {
+                    // obstacle. where do we return to pathing?
+                    // find the next valid segment
+                    for (int j = i + 1; j < rangeEndExcl - 1; j++) {
+                        if (clearView(pathAt(j), pathAt(j + 1))) {
+                            // found it
+                            // path from i to j
+                            List<BetterBlockPos> newPath = simplePathfind(path.get(i), path.get(j));
+                            if (newPath == null) {
+                                logDirect("no path");
+                                return;
+                            }
+                            path.subList(i + 1, j).clear();
+                            for (int k = newPath.size() - 1; k >= 0; k--) {
+                                path.add(i + 1, newPath.get(k));
+                            }
+                            logDirect("replaced path starting at " + path.get(i));
+                            removeBacktracks();
+                            break outer; // eventually "continue outer"
+                        }
+                    }
+                }
+            }
+            break;
+        }
+    }
+
+    private int manhattanDist(BlockPos start, BlockPos dest) {
+        return Math.abs(start.getX() - dest.getX()) + Math.abs(start.getY() - dest.getY()) + Math.abs(start.getZ() - dest.getZ());
+    }
+
+    private class SearchNode {
+        BetterBlockPos pos;
+        int dist;
+        int heuristic;
+        SearchNode prev;
+        boolean canceled;
+
+        public SearchNode(BetterBlockPos pos, int dist, int heuristic, SearchNode prev) {
+            this.pos = pos;
+            this.dist = dist;
+            this.heuristic = heuristic;
+            this.prev = prev;
+        }
+    }
+
+    private List<BetterBlockPos> simplePathfind(BetterBlockPos start, BetterBlockPos dest) {
+        Map<BetterBlockPos, SearchNode> map = new HashMap<>();
+        PriorityQueue<SearchNode> queue = new PriorityQueue<>(Comparator.comparingInt(node -> node.dist + node.heuristic));
+        SearchNode origin = new SearchNode(start, 0, manhattanDist(start, dest) * 10, null);
+        map.put(start, origin);
+        queue.add(origin);
+        int count = 0;
+        while (!queue.isEmpty()) {
+            if (count++ > 10000) {
+                logDirect("oopsie");
+                return null;
+            }
+            SearchNode node = queue.poll();
+            if (node.canceled) {
+                continue;
+            }
+            if (node.pos.equals(dest)) {
+                List<BetterBlockPos> path = new ArrayList<>();
+                while (node != null) {
+                    path.add(node.pos);
+                    node = node.prev;
+                }
+                Collections.reverse(path);
+                return simplify(path);
+            }
+            BetterBlockPos[] adjs = new BetterBlockPos[]{node.pos.up(), node.pos.down(), node.pos.north(), node.pos.south(), node.pos.east(), node.pos.west()};
+            boolean nearAWall = false;
+            for (BetterBlockPos adj : adjs) {
+                if (!passable(ctx.world().getBlockState(adj))) {
+                    nearAWall = true;
+                    break;
+                }
+            }
+            for (BetterBlockPos adj : adjs) {
+                if (!passable(ctx.world().getBlockState(adj))) {
+                    continue;
+                }
+                int cost = node.dist + (nearAWall ? 11 : 10);
+                if (map.containsKey(adj)) {
+                    if (map.get(adj).dist <= cost) {
+                        continue;
+                    }
+                    map.get(adj).canceled = true;
+                }
+                map.put(adj, new SearchNode(adj, cost, manhattanDist(adj, dest) * 10, node));
+                queue.add(map.get(adj));
+            }
+        }
+        return null;
+    }
+
+    private List<BetterBlockPos> simplify(List<BetterBlockPos> path) {
+        List<BetterBlockPos> simplified = new ArrayList<>(path);
+        for (int i = 0; i < simplified.size() - 2; i++) {
+            BlockPos dir = simplified.get(i + 1).subtract(simplified.get(i));
+            while (i + 2 < simplified.size()) {
+                if (simplified.get(i + 2).subtract(simplified.get(i + 1)).equals(dir)) {
+                    simplified.remove(i + 1);
+                } else {
+                    break;
+                }
+            }
+        }
+        return simplified;
+    }
+
+    private Vec3d pathAt(int i) {
+        return new Vec3d(path.get(i).x + 0.5, path.get(i).y + 0.5, path.get(i).z + 0.5);
+    }
+
 
     public List<Pair<Vec3d, Vec3d>> lines = new ArrayList<>();
 
@@ -81,6 +212,7 @@ public class Elytra extends Behavior implements Helper {
         fixNearPlayer();
         baritone.getInputOverrideHandler().clearAllKeys();
         lines.clear();
+        pathfindAroundObstacles();
         if (ctx.player().isElytraFlying()) {
             if (ctx.player().collidedHorizontally) {
                 logDirect("hbonk");
@@ -94,7 +226,7 @@ public class Elytra extends Behavior implements Helper {
             if (!firework
                     && sinceFirework > 10
                     && (Baritone.settings().wasteFireworks.value || ctx.player().posY < path.get(goingTo).y + 5) // don't firework if trying to descend
-                    && (ctx.player().posY < path.get(goingTo).y - 5 || ctx.playerFeetAsVec().distanceTo(new Vec3d(path.get(goingTo).x, ctx.player().posY, path.get(goingTo).z)) > 5) // UGH!!!!!!!
+                    && (ctx.player().posY < path.get(goingTo).y - 5 || ctx.playerFeetAsVec().distanceTo(new Vec3d(path.get(goingTo).x + 0.5, ctx.player().posY, path.get(goingTo).z + 0.5)) > 5) // UGH!!!!!!!
                     && new Vec3d(ctx.player().motionX, ctx.player().posY < path.get(goingTo).y ? Math.max(0, ctx.player().motionY) : ctx.player().motionY, ctx.player().motionZ).length() < Baritone.settings().elytraFireworkSpeed.value // ignore y component if we are BOTH below where we want to be AND descending
             ) {
                 logDirect("firework");
@@ -111,19 +243,19 @@ public class Elytra extends Behavior implements Helper {
                 int minStep = playerNear;
                 for (int i = Math.min(playerNear + 20, path.size() - 1); i >= minStep; i--) {
                     for (int dy : heights) {
-                        Vec3d dest = new Vec3d(path.get(i)).add(0, dy, 0);
+                        Vec3d dest = pathAt(i).add(0, dy, 0);
                         if (dy != 0) {
                             if (i + lookahead >= path.size()) {
                                 continue;
                             }
                             if (start.distanceTo(dest) < 40) {
-                                if (!clearView(dest, new Vec3d(path.get(i + lookahead)).add(0, dy, 0)) || !clearView(dest, new Vec3d(path.get(i + lookahead)))) {
+                                if (!clearView(dest, pathAt(i + lookahead).add(0, dy, 0)) || !clearView(dest, pathAt(i + lookahead))) {
                                     // aka: don't go upwards if doing so would prevent us from being able to see the next position **OR** the modified next position
                                     continue;
                                 }
                             } else {
                                 // but if it's far away, allow gaining altitude if we could lose it again by the time we get there
-                                if (!clearView(dest, new Vec3d(path.get(i)))) {
+                                if (!clearView(dest, pathAt(i))) {
                                     continue;
                                 }
                             }
@@ -196,7 +328,7 @@ public class Elytra extends Behavior implements Helper {
                 for (int x = MathHelper.floor(Math.min(actualPosition.x, actualPositionPrevTick.x) - 0.31); x <= Math.max(actualPosition.x, actualPositionPrevTick.x) + 0.31; x++) {
                     for (int y = MathHelper.floor(Math.min(actualPosition.y, actualPositionPrevTick.y) - 0.2); y <= Math.max(actualPosition.y, actualPositionPrevTick.y) + 0.8; y++) {
                         for (int z = MathHelper.floor(Math.min(actualPosition.z, actualPositionPrevTick.z) - 0.31); z <= Math.max(actualPosition.z, actualPositionPrevTick.z) + 0.31; z++) {
-                            if (bsi.get0(x, y, z).getMaterial() != Material.AIR) {
+                            if (!passable(bsi.get0(x, y, z))) {
                                 continue outer;
                             }
                         }
@@ -212,6 +344,10 @@ public class Elytra extends Behavior implements Helper {
             }
         }
         return bestPitch;
+    }
+
+    private static boolean passable(IBlockState state) {
+        return state.getMaterial() == Material.AIR;
     }
 
     public static Vec3d step(Vec3d motion, float rotationPitch, float rotationYaw, boolean firework) {
