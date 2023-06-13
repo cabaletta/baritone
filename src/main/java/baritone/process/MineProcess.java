@@ -109,11 +109,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         List<BlockPos> curr = new ArrayList<>(knownOreLocations);
         if (mineGoalUpdateInterval != 0 && tickCount++ % mineGoalUpdateInterval == 0) { // big brain
             CalculationContext context = new CalculationContext(baritone, true);
-            if (Baritone.settings().scanAsynchronously.value) {
-                Baritone.getExecutor().execute(() -> rescan(curr, context));
-            } else {
-                rescan(curr, context);
-            }
+            Baritone.executeScan(() -> rescan(curr, context));
         }
         if (Baritone.settings().legitMine.value) {
             if (!addNearby()) {

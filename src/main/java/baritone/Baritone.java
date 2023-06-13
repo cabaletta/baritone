@@ -235,4 +235,12 @@ public class Baritone implements IBaritone {
     public static Executor getExecutor() {
         return threadPool;
     }
+
+    public static void executeScan(Runnable func) {
+        if (settings().scanAsynchronously.value) {
+            getExecutor().execute(func);
+        } else {
+            func.run();
+        }
+    }
 }
