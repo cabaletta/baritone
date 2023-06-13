@@ -23,10 +23,10 @@ import baritone.api.cache.IWorldScanner;
 import baritone.api.command.ICommandSystem;
 import baritone.api.schematic.ISchematicSystem;
 import baritone.cache.FasterWorldScanner;
-import baritone.cache.WorldScanner;
 import baritone.command.CommandSystem;
 import baritone.command.ExampleBaritoneControl;
 import baritone.utils.schematic.SchematicSystem;
+import net.minecraft.client.Minecraft;
 
 import java.util.Collections;
 import java.util.List;
@@ -41,7 +41,7 @@ public final class BaritoneProvider implements IBaritoneProvider {
     private final List<IBaritone> all;
 
     {
-        this.primary = new Baritone();
+        this.primary = new Baritone(Minecraft.getMinecraft());
         this.all = Collections.singletonList(this.primary);
 
         // Setup chat control, just for the primary instance

@@ -17,10 +17,11 @@
 
 package baritone.utils.player;
 
-import baritone.api.BaritoneAPI;
+import baritone.Baritone;
 import baritone.api.cache.IWorldData;
 import baritone.api.utils.*;
 import baritone.behavior.LookBehavior;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
@@ -31,33 +32,41 @@ import net.minecraft.world.World;
  * @author Brady
  * @since 11/12/2018
  */
-public enum PrimaryPlayerContext implements IPlayerContext, Helper {
+public final class BaritonePlayerContext implements IPlayerContext {
 
-    INSTANCE;
+    private final Baritone baritone;
+    private final Minecraft mc;
+    private final IPlayerController playerController;
+
+    public BaritonePlayerContext(Baritone baritone) {
+        this.baritone = baritone;
+        this.mc = baritone.getMinecraft();
+        this.playerController = new BaritonePlayerController(baritone);
+    }
 
     @Override
     public EntityPlayerSP player() {
-        return mc.player;
+        return this.mc.player;
     }
 
     @Override
     public IPlayerController playerController() {
-        return PrimaryPlayerController.INSTANCE;
+        return this.playerController;
     }
 
     @Override
     public World world() {
-        return mc.world;
+        return this.mc.world;
     }
 
     @Override
     public IWorldData worldData() {
-        return BaritoneAPI.getProvider().getPrimaryBaritone().getWorldProvider().getCurrentWorld();
+        return this.baritone.getWorldProvider().getCurrentWorld();
     }
 
     @Override
     public Rotation playerRotations() {
-        return ((LookBehavior) BaritoneAPI.getProvider().getPrimaryBaritone().getLookBehavior()).getEffectiveRotation()
+        return ((LookBehavior) this.baritone.getLookBehavior()).getEffectiveRotation()
                 .orElseGet(IPlayerContext.super::playerRotations);
     }
 

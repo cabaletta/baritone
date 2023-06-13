@@ -21,7 +21,6 @@ import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.Settings;
 import baritone.api.event.listener.IEventBus;
-import baritone.api.utils.Helper;
 import baritone.api.utils.IPlayerContext;
 import baritone.behavior.*;
 import baritone.cache.WorldProvider;
@@ -33,7 +32,7 @@ import baritone.utils.BlockStateInterface;
 import baritone.utils.GuiClick;
 import baritone.utils.InputOverrideHandler;
 import baritone.utils.PathingControlManager;
-import baritone.utils.player.PrimaryPlayerContext;
+import baritone.utils.player.BaritonePlayerContext;
 import net.minecraft.client.Minecraft;
 
 import java.io.File;
@@ -64,6 +63,8 @@ public class Baritone implements IBaritone {
         }
     }
 
+    private final Minecraft mc;
+
     private GameEventHandler gameEventHandler;
 
     private PathingBehavior pathingBehavior;
@@ -91,11 +92,12 @@ public class Baritone implements IBaritone {
 
     public BlockStateInterface bsi;
 
-    Baritone() {
+    Baritone(Minecraft mc) {
+        this.mc = mc;
         this.gameEventHandler = new GameEventHandler(this);
 
         // Define this before behaviors try and get it, or else it will be null and the builds will fail!
-        this.playerContext = PrimaryPlayerContext.INSTANCE;
+        this.playerContext = new BaritonePlayerContext(this);
 
         {
             // the Behavior constructor calls baritone.registerBehavior(this) so this populates the behaviors arraylist
@@ -119,7 +121,7 @@ public class Baritone implements IBaritone {
             this.pathingControlManager.registerProcess(inventoryPauserProcess = new InventoryPauserProcess(this));
         }
 
-        this.worldProvider = new WorldProvider();
+        this.worldProvider = new WorldProvider(this);
         this.selectionManager = new SelectionManager(this);
         this.commandManager = new CommandManager(this);
     }
@@ -219,9 +221,13 @@ public class Baritone implements IBaritone {
         new Thread(() -> {
             try {
                 Thread.sleep(100);
-                Helper.mc.addScheduledTask(() -> Helper.mc.displayGuiScreen(new GuiClick()));
+                mc.addScheduledTask(() -> mc.displayGuiScreen(new GuiClick()));
             } catch (Exception ignored) {}
         }).start();
+    }
+
+    public Minecraft getMinecraft() {
+        return this.mc;
     }
 
     public static Settings settings() {
