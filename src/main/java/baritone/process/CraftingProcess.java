@@ -71,7 +71,8 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
         }
         if (goal != null) {
             if (goal.isInGoal(ctx.playerFeet())) {
-                if (rightClick()) {
+                rightClick();
+                if (ctx.player().openContainer instanceof ContainerWorkbench) {
                     goal = null;
                 }
             }
@@ -228,8 +229,6 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
                     stackSize = Math.min(itemStack.getCount(), stackSize);
                 }
             }
-        } else {
-            throw new RuntimeException("Expected a crafting Inventory");
         }
         return stackSize == Integer.MAX_VALUE ? 0 : stackSize;
     }
@@ -292,18 +291,27 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
     }
 
     private void placeCraftingtableNearby() { //this code is so buggy im amazed that there are special cases where it works
-        //todo if crafting table isnt in hotbar move it to the hot bar.
+        selectCraftingTable();
         //todo search and look at a position where the table can be placed
-        for (int i = 0; i < 9; i++) {
-            ItemStack stack = ctx.player().inventory.mainInventory.get(i);
-            if (stack.getItem() == Item.getItemFromBlock(Blocks.CRAFTING_TABLE)) {
-                ctx.player().inventory.currentItem = i;
-                break;
-            }
-        }
+        baritone.getInputOverrideHandler().setInputForceState(Input.SNEAK, true);
         baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
 
         placeAt = null;
         getACraftingTable();
+    }
+
+    private void selectCraftingTable() {
+        for (int i = 0; i < 36; i++) {
+            ItemStack stack = ctx.player().inventory.mainInventory.get(i);
+            if (stack.getItem() == Item.getItemFromBlock(Blocks.CRAFTING_TABLE)) {
+                if (i < 9) {
+                    ctx.player().inventory.currentItem = i;
+                    return;
+                } else {
+                    baritone.getInventoryBehavior().attemptToPutOnHotbar(i, null);
+                    i=0;
+                }
+            }
+        }
     }
 }
