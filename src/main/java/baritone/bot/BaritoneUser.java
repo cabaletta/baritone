@@ -43,6 +43,7 @@ import net.minecraft.util.Session;
  */
 public final class BaritoneUser implements IBaritoneUser {
 
+    private final BotMinecraft mc;
     private final UserManager manager;
     private final NetworkManager networkManager;
     private final Session session;
@@ -50,7 +51,6 @@ public final class BaritoneUser implements IBaritoneUser {
 
     private GameProfile profile;
     private NetHandlerPlayClient netHandlerPlayClient;
-    private BotMinecraft mc;
     private BotWorld world;
     private BotEntity player;
     private IPlayerController playerController;
@@ -75,7 +75,8 @@ public final class BaritoneUser implements IBaritoneUser {
 
         this.mc.player = this.player = player;
         this.mc.world = this.world = world;
-        this.playerController = new WrappedPlayerController(this.mc.playerController = controller);
+        this.mc.playerController = controller;
+        this.playerController = new WrappedPlayerController(controller);
 
         this.baritone.getGameEventHandler().onWorldEvent(new WorldEvent(world, EventState.POST));
     }
@@ -122,7 +123,7 @@ public final class BaritoneUser implements IBaritoneUser {
 
     @Override
     public IBaritone getBaritone() {
-        return baritone;
+        return this.baritone;
     }
 
     public BotMinecraft getMinecraft() {
