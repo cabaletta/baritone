@@ -599,9 +599,9 @@ public interface MovementHelper extends ActionCosts, Helper {
 
     static void moveTowards(IPlayerContext ctx, MovementState state, BlockPos pos) {
         state.setTarget(new MovementTarget(
-                new Rotation(RotationUtils.calcRotationFromVec3d(ctx.playerHead(),
+                RotationUtils.calcRotationFromVec3d(ctx.playerHead(),
                         VecUtils.getBlockPosCenter(pos),
-                        ctx.playerRotations()).getYaw(), ctx.player().rotationPitch),
+                        ctx.playerRotations()).withPitch(ctx.playerRotations().getPitch()),
                 false
         )).setInput(Input.MOVE_FORWARD, true);
     }

@@ -26,14 +26,11 @@ import baritone.api.utils.Rotation;
 public interface ILookBehavior extends IBehavior {
 
     /**
-     * Updates the current {@link ILookBehavior} target to target
-     * the specified rotations on the next tick. If force is {@code true},
-     * then freeLook will be overriden and angles will be set regardless.
-     * If any sort of block interaction is required, force should be {@code true},
-     * otherwise, it should be {@code false};
+     * Updates the current {@link ILookBehavior} target to target the specified rotations on the next tick. If any sort
+     * of block interaction is required, {@code blockInteract} should be {@code true}.
      *
-     * @param rotation The target rotations
-     * @param force    Whether or not to "force" the rotations
+     * @param rotation      The target rotations
+     * @param blockInteract Whether the target rotations are needed for a block interaction
      */
-    void updateTarget(Rotation rotation, boolean force);
+    void updateTarget(Rotation rotation, boolean blockInteract);
 }
