@@ -20,7 +20,6 @@ package baritone.utils;
 import baritone.Baritone;
 import baritone.api.BaritoneAPI;
 import baritone.api.pathing.goals.GoalBlock;
-import baritone.api.pathing.goals.GoalTwoBlocks;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.Helper;
 import net.minecraft.client.gui.GuiScreen;
@@ -43,8 +42,8 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.Collections;
 
-import static org.lwjgl.opengl.GL11.*;
 import static baritone.api.command.IBaritoneChatControl.FORCE_COMMAND_PREFIX;
+import static org.lwjgl.opengl.GL11.*;
 
 public class GuiClick extends GuiScreen {
 
@@ -79,24 +78,26 @@ public class GuiClick extends GuiScreen {
 
     @Override
     protected void mouseReleased(int mouseX, int mouseY, int mouseButton) {
-        if (mouseButton == 0) {
-            if (clickStart != null && !clickStart.equals(currentMouseOver)) {
-                BaritoneAPI.getProvider().getPrimaryBaritone().getSelectionManager().removeAllSelections();
-                BaritoneAPI.getProvider().getPrimaryBaritone().getSelectionManager().addSelection(BetterBlockPos.from(clickStart), BetterBlockPos.from(currentMouseOver));
-                ITextComponent component = new TextComponentString("Selection made! For usage: " + Baritone.settings().prefix.value + "help sel");
-                component.getStyle()
-                        .setColor(TextFormatting.WHITE)
-                        .setClickEvent(new ClickEvent(
-                                ClickEvent.Action.RUN_COMMAND,
-                                FORCE_COMMAND_PREFIX + "help sel"
-                        ));
-                Helper.HELPER.logDirect(component);
-                clickStart = null;
-            } else {
-                BaritoneAPI.getProvider().getPrimaryBaritone().getCustomGoalProcess().setGoalAndPath(new GoalTwoBlocks(currentMouseOver));
+        if (currentMouseOver != null) { //Catch this, or else a click into void will result in a crash
+            if (mouseButton == 0) {
+                if (clickStart != null && !clickStart.equals(currentMouseOver)) {
+                    BaritoneAPI.getProvider().getPrimaryBaritone().getSelectionManager().removeAllSelections();
+                    BaritoneAPI.getProvider().getPrimaryBaritone().getSelectionManager().addSelection(BetterBlockPos.from(clickStart), BetterBlockPos.from(currentMouseOver));
+                    ITextComponent component = new TextComponentString("Selection made! For usage: " + Baritone.settings().prefix.value + "help sel");
+                    component.getStyle()
+                            .setColor(TextFormatting.WHITE)
+                            .setClickEvent(new ClickEvent(
+                                    ClickEvent.Action.RUN_COMMAND,
+                                    FORCE_COMMAND_PREFIX + "help sel"
+                            ));
+                    Helper.HELPER.logDirect(component);
+                    clickStart = null;
+                } else {
+                    BaritoneAPI.getProvider().getPrimaryBaritone().getCustomGoalProcess().setGoalAndPath(new GoalBlock(currentMouseOver));
+                }
+            } else if (mouseButton == 1) {
+                BaritoneAPI.getProvider().getPrimaryBaritone().getCustomGoalProcess().setGoalAndPath(new GoalBlock(currentMouseOver.up()));
             }
-        } else if (mouseButton == 1) {
-            BaritoneAPI.getProvider().getPrimaryBaritone().getCustomGoalProcess().setGoalAndPath(new GoalBlock(currentMouseOver.up()));
         }
         clickStart = null;
     }

@@ -101,6 +101,10 @@ public class MovementPillar extends Movement {
             // if we're standing on water and assumeWalkOnWater is false, we must have ascended to here, or sneak backplaced, so it is possible to pillar again
             return COST_INF;
         }
+        if ((from == Blocks.WATERLILY || from == Blocks.CARPET) && fromDown.getBlock() instanceof BlockLiquid) {
+            // to ascend here we'd have to break the block we are standing on
+            return COST_INF;
+        }
         double hardness = MovementHelper.getMiningDurationTicks(context, x, y + 2, z, toBreak, true);
         if (hardness >= COST_INF) {
             return COST_INF;
@@ -120,7 +124,7 @@ public class MovementPillar extends Movement {
                     }
                 }
                 // this is commented because it may have had a purpose, but it's very unclear what it was. it's from the minebot era.
-                //if (!MovementHelper.canWalkOn(chkPos, check) || MovementHelper.canWalkThrough(chkPos, check)) {//if the block above where we want to break is not a full block, don't do it
+                //if (!MovementHelper.canWalkOn(context, chkPos, check) || MovementHelper.canWalkThrough(context, chkPos, check)) {//if the block above where we want to break is not a full block, don't do it
                 // TODO why does canWalkThrough mean this action is COST_INF?
                 // BlockFalling makes sense, and !canWalkOn deals with weird cases like if it were lava
                 // but I don't understand why canWalkThrough makes it impossible

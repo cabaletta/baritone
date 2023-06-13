@@ -65,6 +65,19 @@ public class GoalXZ implements Goal {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        GoalXZ goal = (GoalXZ) o;
+        return x == goal.x && z == goal.z;
+    }
+
+    @Override
     public String toString() {
         return String.format(
                 "GoalXZ{x=%s,z=%s}",

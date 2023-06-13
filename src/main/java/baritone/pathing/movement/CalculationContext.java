@@ -21,6 +21,7 @@ import baritone.Baritone;
 import baritone.api.IBaritone;
 import baritone.api.pathing.movement.ActionCosts;
 import baritone.cache.WorldData;
+import baritone.pathing.precompute.PrecomputedData;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.ToolSet;
 import baritone.utils.pathing.BetterWorldBorder;
@@ -29,10 +30,14 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.player.InventoryPlayer;
+import net.minecraft.init.Enchantments;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static baritone.api.pathing.movement.ActionCosts.COST_INF;
 
@@ -55,11 +60,13 @@ public class CalculationContext {
     public final boolean canSprint;
     protected final double placeBlockCost; // protected because you should call the function instead
     public final boolean allowBreak;
+    public final List<Block> allowBreakAnyway;
     public final boolean allowParkour;
     public final boolean allowParkourPlace;
     public final boolean allowJumpAt256;
     public final boolean allowParkourAscend;
     public final boolean assumeWalkOnWater;
+    public final int frostWalker;
     public final boolean allowDiagonalDescend;
     public final boolean allowDiagonalAscend;
     public final boolean allowDownward;
@@ -72,11 +79,14 @@ public class CalculationContext {
     public final double walkOnWaterOnePenalty;
     public final BetterWorldBorder worldBorder;
 
+    public final PrecomputedData precomputedData;
+
     public CalculationContext(IBaritone baritone) {
         this(baritone, false);
     }
 
     public CalculationContext(IBaritone baritone, boolean forUseOnAnotherThread) {
+        this.precomputedData = new PrecomputedData();
         this.safeForThreadedUse = forUseOnAnotherThread;
         this.baritone = baritone;
         EntityPlayerSP player = baritone.getPlayerContext().player();
@@ -89,11 +99,13 @@ public class CalculationContext {
         this.canSprint = Baritone.settings().allowSprint.value && player.getFoodStats().getFoodLevel() > 6;
         this.placeBlockCost = Baritone.settings().blockPlacementPenalty.value;
         this.allowBreak = Baritone.settings().allowBreak.value;
+        this.allowBreakAnyway = new ArrayList<>(Baritone.settings().allowBreakAnyway.value);
         this.allowParkour = Baritone.settings().allowParkour.value;
         this.allowParkourPlace = Baritone.settings().allowParkourPlace.value;
         this.allowJumpAt256 = Baritone.settings().allowJumpAt256.value;
         this.allowParkourAscend = Baritone.settings().allowParkourAscend.value;
         this.assumeWalkOnWater = Baritone.settings().assumeWalkOnWater.value;
+        this.frostWalker = EnchantmentHelper.getMaxEnchantmentLevel(Enchantments.FROST_WALKER, baritone.getPlayerContext().player());
         this.allowDiagonalDescend = Baritone.settings().allowDiagonalDescend.value;
         this.allowDiagonalAscend = Baritone.settings().allowDiagonalAscend.value;
         this.allowDownward = Baritone.settings().allowDownward.value;
@@ -143,14 +155,13 @@ public class CalculationContext {
             return COST_INF;
         }
         if (!worldBorder.canPlaceAt(x, z)) {
-            // TODO perhaps MovementHelper.canPlaceAgainst could also use this?
             return COST_INF;
         }
         return placeBlockCost;
     }
 
     public double breakCostMultiplierAt(int x, int y, int z, IBlockState current) {
-        if (!allowBreak) {
+        if (!allowBreak && !allowBreakAnyway.contains(current.getBlock())) {
             return COST_INF;
         }
         if (isPossiblyProtected(x, y, z)) {

@@ -17,13 +17,14 @@
 
 package baritone.command.defaults;
 
+import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
-import baritone.api.utils.BlockOptionalMeta;
 import baritone.api.command.Command;
+import baritone.api.command.argument.IArgConsumer;
 import baritone.api.command.datatypes.BlockById;
 import baritone.api.command.datatypes.ForBlockOptionalMeta;
 import baritone.api.command.exception.CommandException;
-import baritone.api.command.argument.IArgConsumer;
+import baritone.api.utils.BlockOptionalMeta;
 import baritone.cache.WorldScanner;
 
 import java.util.ArrayList;
@@ -45,7 +46,7 @@ public class MineCommand extends Command {
         while (args.hasAny()) {
             boms.add(args.getDatatypeFor(ForBlockOptionalMeta.INSTANCE));
         }
-        WorldScanner.INSTANCE.repack(ctx);
+        BaritoneAPI.getProvider().getWorldScanner().repack(ctx);
         logDirect(String.format("Mining %s", boms.toString()));
         baritone.getMineProcess().mine(quantity, boms.toArray(new BlockOptionalMeta[0]));
     }

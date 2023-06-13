@@ -24,6 +24,7 @@ import baritone.bot.BotPlayerContext;
 import baritone.utils.accessor.IAnvilChunkLoader;
 import baritone.utils.accessor.IChunkProviderServer;
 import net.minecraft.server.integrated.IntegratedServer;
+import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import org.apache.commons.lang3.SystemUtils;
 
@@ -46,6 +47,7 @@ public class WorldProvider implements IWorldProvider, Helper {
 
     private Baritone baritone;
     private WorldData currentWorld;
+    private World mcWorld; // this let's us detect a broken load/unload hook
 
     public WorldProvider(Baritone baritone) {
         this.baritone = baritone;
@@ -53,6 +55,7 @@ public class WorldProvider implements IWorldProvider, Helper {
 
     @Override
     public final WorldData getCurrentWorld() {
+        detectAndHandleBrokenLoading();
         return this.currentWorld;
     }
 
@@ -83,7 +86,16 @@ public class WorldProvider implements IWorldProvider, Helper {
             directory = new File(directory, "baritone");
             readme = directory;
         } else { // Otherwise, the server must be remote...
-            String folderName = mc.getCurrentServerData().serverIP;
+            String folderName;
+            if (mc.getCurrentServerData() != null) {
+                folderName = mc.getCurrentServerData().serverIP;
+            } else {
+                //replaymod causes null currentServerData and false singleplayer.
+                System.out.println("World seems to be a replay. Not loading Baritone cache.");
+                currentWorld = null;
+                mcWorld = mc.world;
+                return;
+            }
             if (SystemUtils.IS_OS_WINDOWS) {
                 folderName = folderName.replace(":", "_");
             }
@@ -113,11 +125,13 @@ public class WorldProvider implements IWorldProvider, Helper {
         synchronized (worldCache) {
             this.currentWorld = worldCache.computeIfAbsent(dir, d -> new WorldData(d, dimension));
         }
+        this.mcWorld = mc.world;
     }
 
     public final void closeWorld() {
         WorldData world = this.currentWorld;
         this.currentWorld = null;
+        this.mcWorld = null;
         if (world == null) {
             return;
         }
@@ -125,8 +139,25 @@ public class WorldProvider implements IWorldProvider, Helper {
     }
 
     public final void ifWorldLoaded(Consumer<WorldData> currentWorldConsumer) {
+        detectAndHandleBrokenLoading();
         if (this.currentWorld != null) {
             currentWorldConsumer.accept(this.currentWorld);
+        }
+    }
+
+    private final void detectAndHandleBrokenLoading() {
+        if (this.mcWorld != mc.world) {
+            if (this.currentWorld != null) {
+                System.out.println("mc.world unloaded unnoticed! Unloading Baritone cache now.");
+                closeWorld();
+            }
+            if (mc.world != null) {
+                System.out.println("mc.world loaded unnoticed! Loading Baritone cache now.");
+                initWorld(mc.world.provider.getDimensionType().getId());
+            }
+        } else if (currentWorld == null && mc.world != null && (mc.isSingleplayer() || mc.getCurrentServerData() != null)) {
+            System.out.println("Retrying to load Baritone cache");
+            initWorld(mc.world.provider.getDimensionType().getId());
         }
     }
 }

@@ -17,6 +17,8 @@
 
 package baritone.api.pathing.goals;
 
+import java.util.Objects;
+
 /**
  * Invert any goal.
  * <p>
@@ -43,6 +45,24 @@ public class GoalInverted implements Goal {
     @Override
     public double heuristic(int x, int y, int z) {
         return -origin.heuristic(x, y, z);
+    }
+
+    @Override
+    public double heuristic() {
+        return Double.NEGATIVE_INFINITY;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        GoalInverted goal = (GoalInverted) o;
+        return Objects.equals(origin, goal.origin);
     }
 
     @Override

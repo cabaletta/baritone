@@ -17,8 +17,8 @@
 
 package baritone.api.command.datatypes;
 
-import baritone.api.command.helpers.TabCompleteHelper;
 import baritone.api.command.exception.CommandException;
+import baritone.api.command.helpers.TabCompleteHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.util.ResourceLocation;
@@ -32,7 +32,19 @@ public enum EntityClassById implements IDatatypeFor<Class<? extends Entity>> {
     public Class<? extends Entity> get(IDatatypeContext ctx) throws CommandException {
         ResourceLocation id = new ResourceLocation(ctx.getConsumer().getString());
         Class<? extends Entity> entity;
-        if ((entity = EntityList.REGISTRY.getObject(id)) == null) {
+        try {
+            entity = EntityList.REGISTRY.getObject(id);
+        } catch (NoSuchFieldError e) {
+            // Forge removes EntityList.REGISTRY field and provides the getClass method as a replacement
+            // See https://github.com/MinecraftForge/MinecraftForge/blob/1.12.x/patches/minecraft/net/minecraft/entity/EntityList.java.patch
+            try {
+                entity = (Class<? extends Entity>) EntityList.class.getMethod("getClass", ResourceLocation.class).invoke(null, id);
+            } catch (Exception ex) {
+                throw new RuntimeException("EntityList.REGISTRY does not exist and failed to call the Forge-replacement method", ex);
+            }
+        }
+
+        if (entity == null) {
             throw new IllegalArgumentException("no entity found by that id");
         }
         return entity;

@@ -17,10 +17,11 @@
 
 package baritone.command.defaults;
 
+import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.command.Command;
-import baritone.api.command.exception.CommandException;
 import baritone.api.command.argument.IArgConsumer;
+import baritone.api.command.exception.CommandException;
 import baritone.api.process.ICustomGoalProcess;
 import baritone.cache.WorldScanner;
 
@@ -38,7 +39,7 @@ public class PathCommand extends Command {
     public void execute(String label, IArgConsumer args) throws CommandException {
         ICustomGoalProcess customGoalProcess = baritone.getCustomGoalProcess();
         args.requireMax(0);
-        WorldScanner.INSTANCE.repack(ctx);
+        BaritoneAPI.getProvider().getWorldScanner().repack(ctx);
         customGoalProcess.path();
         logDirect("Now pathing");
     }

@@ -123,7 +123,7 @@ public final class ChunkPacker {
                 return PathingBlockType.AVOID;
             }
             if (x == 0 || x == 15 || z == 0 || z == 15) {
-                if (BlockLiquid.getSlopeAngle(chunk.getWorld(), new BlockPos(x + chunk.x << 4, y, z + chunk.z << 4), state.getMaterial(), state) == -1000.0F) {
+                if (BlockLiquid.getSlopeAngle(chunk.getWorld(), new BlockPos(x + (chunk.x << 4), y, z + (chunk.z << 4)), state.getMaterial(), state) == -1000.0F) {
                     return PathingBlockType.WATER;
                 }
                 return PathingBlockType.AVOID;

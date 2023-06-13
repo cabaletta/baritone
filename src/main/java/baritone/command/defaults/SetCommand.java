@@ -20,13 +20,14 @@ package baritone.command.defaults;
 import baritone.Baritone;
 import baritone.api.IBaritone;
 import baritone.api.Settings;
-import baritone.api.utils.SettingsUtil;
 import baritone.api.command.Command;
-import baritone.api.command.exception.CommandException;
-import baritone.api.command.exception.CommandInvalidTypeException;
 import baritone.api.command.argument.IArgConsumer;
+import baritone.api.command.exception.CommandException;
+import baritone.api.command.exception.CommandInvalidStateException;
+import baritone.api.command.exception.CommandInvalidTypeException;
 import baritone.api.command.helpers.Paginator;
 import baritone.api.command.helpers.TabCompleteHelper;
+import baritone.api.utils.SettingsUtil;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
@@ -39,9 +40,8 @@ import java.util.Locale;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static baritone.api.utils.SettingsUtil.settingTypeToString;
-import static baritone.api.utils.SettingsUtil.settingValueToString;
 import static baritone.api.command.IBaritoneChatControl.FORCE_COMMAND_PREFIX;
+import static baritone.api.utils.SettingsUtil.*;
 
 public class SetCommand extends Command {
 
@@ -57,6 +57,18 @@ public class SetCommand extends Command {
             logDirect("Settings saved");
             return;
         }
+        if (Arrays.asList("load", "ld").contains(arg)) {
+            String file = SETTINGS_DEFAULT_NAME;
+            if (args.hasAny()) {
+                file = args.getString();
+            }
+            // reset to defaults
+            SettingsUtil.modifiedSettings(Baritone.settings()).forEach(Settings.Setting::reset);
+            // then load from disk
+            SettingsUtil.readAndApply(Baritone.settings(), file);
+            logDirect("Settings reloaded from " + file);
+            return;
+        }
         boolean viewModified = Arrays.asList("m", "mod", "modified").contains(arg);
         boolean viewAll = Arrays.asList("all", "l", "list").contains(arg);
         boolean paginate = viewModified || viewAll;
@@ -65,7 +77,7 @@ public class SetCommand extends Command {
             args.requireMax(1);
             List<? extends Settings.Setting> toPaginate =
                     (viewModified ? SettingsUtil.modifiedSettings(Baritone.settings()) : Baritone.settings().allSettings).stream()
-                            .filter(s -> !s.getName().equals("logger"))
+                            .filter(s -> !s.isJavaOnly())
                             .filter(s -> s.getName().toLowerCase(Locale.US).contains(search.toLowerCase(Locale.US)))
                             .sorted((s1, s2) -> String.CASE_INSENSITIVE_ORDER.compare(s1.getName(), s2.getName()))
                             .collect(Collectors.toList());
@@ -88,6 +100,7 @@ public class SetCommand extends Command {
                         hoverComponent.appendText(setting.getName());
                         hoverComponent.appendText(String.format("\nType: %s", settingTypeToString(setting)));
                         hoverComponent.appendText(String.format("\n\nValue:\n%s", settingValueToString(setting)));
+                        hoverComponent.appendText(String.format("\n\nDefault Value:\n%s", settingDefaultToString(setting)));
                         String commandSuggestion = Baritone.settings().prefix.value + String.format("set %s ", setting.getName());
                         ITextComponent component = new TextComponentString(setting.getName());
                         component.getStyle().setColor(TextFormatting.GRAY);
@@ -128,6 +141,12 @@ public class SetCommand extends Command {
         if (setting == null) {
             throw new CommandInvalidTypeException(args.consumed(), "a valid setting");
         }
+        if (setting.isJavaOnly()) {
+            // ideally it would act as if the setting didn't exist
+            // but users will see it in Settings.java or its javadoc
+            // so at some point we have to tell them or they will see it as a bug
+            throw new CommandInvalidStateException(String.format("Setting %s can only be used via the api.", setting.getName()));
+        }
         if (!doingSomething && !args.hasAny()) {
             logDirect(String.format("Value of setting %s:", setting.getName()));
             logDirect(settingValueToString(setting));
@@ -140,7 +159,8 @@ public class SetCommand extends Command {
                     throw new CommandInvalidTypeException(args.consumed(), "a toggleable setting", "some other setting");
                 }
                 //noinspection unchecked
-                ((Settings.Setting<Boolean>) setting).value ^= true;
+                Settings.Setting<Boolean> asBoolSetting = (Settings.Setting<Boolean>) setting;
+                asBoolSetting.value ^= true;
                 logDirect(String.format(
                         "Toggled setting %s to %s",
                         setting.getName(),
@@ -220,7 +240,7 @@ public class SetCommand extends Command {
                 return new TabCompleteHelper()
                         .addSettings()
                         .sortAlphabetically()
-                        .prepend("list", "modified", "reset", "toggle", "save")
+                        .prepend("list", "modified", "reset", "toggle", "save", "load")
                         .filterPrefix(arg)
                         .stream();
             }
@@ -247,7 +267,9 @@ public class SetCommand extends Command {
                 "> set reset all - Reset ALL SETTINGS to their defaults",
                 "> set reset <setting> - Reset a setting to its default",
                 "> set toggle <setting> - Toggle a boolean setting",
-                "> set save - Save all settings (this is automatic tho)"
+                "> set save - Save all settings (this is automatic tho)",
+                "> set load - Load settings from settings.txt",
+                "> set load [filename] - Load settings from another file in your minecraft/baritone"
         );
     }
 }

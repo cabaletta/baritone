@@ -19,6 +19,7 @@ package baritone.api.utils;
 
 import baritone.api.utils.accessor.IItemStack;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableMap;
 import net.minecraft.block.*;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.IBlockState;
@@ -36,21 +37,24 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public final class BlockOptionalMeta {
+    // id:meta or id[] or id[properties] where id and properties are any text with at least one character and meta is a one or two digit number
+    private static final Pattern PATTERN = Pattern.compile("^(?<id>.+?)(?::(?<meta>\\d\\d?)|\\[(?<properties>.+?)?\\])?$");
 
     private final Block block;
     private final int meta;
     private final boolean noMeta;
+    private final String propertiesDescription; // exists so toString() can return something more useful than a list of all blockstates
     private final Set<IBlockState> blockstates;
-    private final ImmutableSet<Integer> stateHashes;
-    private final ImmutableSet<Integer> stackHashes;
-    private static final Pattern pattern = Pattern.compile("^(.+?)(?::(\\d+))?$");
+    private final Set<Integer> stateHashes;
+    private final Set<Integer> stackHashes;
     private static final Map<Object, Object> normalizations;
 
     public BlockOptionalMeta(@Nonnull Block block, @Nullable Integer meta) {
         this.block = block;
         this.noMeta = meta == null;
         this.meta = noMeta ? 0 : meta;
-        this.blockstates = getStates(block, meta);
+        this.propertiesDescription = "{}";
+        this.blockstates = getStates(block, meta, Collections.emptyMap());
         this.stateHashes = getStateHashes(blockstates);
         this.stackHashes = getStackHashes(blockstates);
     }
@@ -60,24 +64,27 @@ public final class BlockOptionalMeta {
     }
 
     public BlockOptionalMeta(@Nonnull String selector) {
-        Matcher matcher = pattern.matcher(selector);
+        Matcher matcher = PATTERN.matcher(selector);
 
         if (!matcher.find()) {
             throw new IllegalArgumentException("invalid block selector");
         }
 
-        MatchResult matchResult = matcher.toMatchResult();
-        noMeta = matchResult.group(2) == null;
+        noMeta = matcher.group("meta") == null;
 
-        ResourceLocation id = new ResourceLocation(matchResult.group(1));
+        ResourceLocation id = new ResourceLocation(matcher.group("id"));
 
         if (!Block.REGISTRY.containsKey(id)) {
             throw new IllegalArgumentException("Invalid block ID");
         }
-
         block = Block.REGISTRY.getObject(id);
-        meta = noMeta ? 0 : Integer.parseInt(matchResult.group(2));
-        blockstates = getStates(block, getMeta());
+
+        String props = matcher.group("properties");
+        Map<IProperty<?>, ?> properties = props == null || props.equals("") ? Collections.emptyMap() : parseProperties(block, props);
+
+        propertiesDescription = props == null ? "{}" : "{" + props.replace("=", ":") + "}";
+        meta = noMeta ? 0 : Integer.parseInt(matcher.group("meta"));
+        blockstates = getStates(block, getMeta(), properties);
         stateHashes = getStateHashes(blockstates);
         stackHashes = getStackHashes(blockstates);
     }
@@ -234,19 +241,41 @@ public final class BlockOptionalMeta {
     /**
      * Evaluate the target meta value for the specified state. The target meta value is
      * most often that which is influenced by the variant/color property of the block state.
-     * 
-     * @see #normalize(IBlockState) 
-     * 
+     *
      * @param state The state to check
      * @return The target meta of the state
+     * @see #normalize(IBlockState)
      */
     public static int stateMeta(IBlockState state) {
         return state.getBlock().getMetaFromState(normalize(state));
     }
 
-    private static Set<IBlockState> getStates(@Nonnull Block block, @Nullable Integer meta) {
+    private static Map<IProperty<?>, ?> parseProperties(Block block, String raw) {
+        ImmutableMap.Builder<IProperty<?>, Object> builder = ImmutableMap.builder();
+        for (String pair : raw.split(",")) {
+            String[] parts = pair.split("=");
+            if (parts.length != 2) {
+                throw new IllegalArgumentException(String.format("\"%s\" is not a valid property-value pair", pair));
+            }
+            String rawKey = parts[0];
+            String rawValue = parts[1];
+            IProperty<?> key = block.getBlockState().getProperty(rawKey);
+            Comparable<?> value = castToIProperty(key).parseValue(rawValue)
+                    .toJavaUtil().orElseThrow(() -> new IllegalArgumentException(String.format(
+                            "\"%s\" is not a valid value for %s on %s",
+                            rawValue, key, block
+                    )));
+            builder.put(key, value);
+        }
+        return builder.build();
+    }
+
+    private static Set<IBlockState> getStates(@Nonnull Block block, @Nullable Integer meta, @Nonnull Map<IProperty<?>, ?> properties) {
         return block.getBlockState().getValidStates().stream()
                 .filter(blockstate -> meta == null || stateMeta(blockstate) == meta)
+                .filter(blockstate -> properties.entrySet().stream().allMatch(entry ->
+                        blockstate.getValue(entry.getKey()) == entry.getValue()
+                ))
                 .collect(Collectors.toSet());
     }
 
@@ -275,6 +304,7 @@ public final class BlockOptionalMeta {
         return block;
     }
 
+    @Deprecated // deprecated because getMeta() == null no longer implies that this BOM only cares about the block
     public Integer getMeta() {
         return noMeta ? null : meta;
     }
@@ -301,7 +331,11 @@ public final class BlockOptionalMeta {
 
     @Override
     public String toString() {
-        return String.format("BlockOptionalMeta{block=%s,meta=%s}", block, getMeta());
+        if (noMeta) {
+            return String.format("BlockOptionalMeta{block=%s,properties=%s}", block, propertiesDescription);
+        } else {
+            return String.format("BlockOptionalMeta{block=%s,meta=%s}", block, getMeta());
+        }
     }
 
     public static IBlockState blockStateFromStack(ItemStack stack) {
@@ -315,5 +349,13 @@ public final class BlockOptionalMeta {
         }
 
         return null;
+    }
+
+    public Set<IBlockState> getAllBlockStates() {
+        return blockstates;
+    }
+
+    public Set<Integer> stackHashes() {
+        return stackHashes;
     }
 }

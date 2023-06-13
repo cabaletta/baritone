@@ -18,9 +18,12 @@
 package baritone.api.pathing.goals;
 
 import baritone.api.utils.SettingsUtil;
+import it.unimi.dsi.fastutil.doubles.DoubleIterator;
+import it.unimi.dsi.fastutil.doubles.DoubleOpenHashSet;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 /**
  * Useful for automated combat (retreating specifically)
@@ -31,7 +34,7 @@ public class GoalRunAway implements Goal {
 
     private final BlockPos[] from;
 
-    private final double distanceSq;
+    private final int distanceSq;
 
     private final Integer maintainY;
 
@@ -44,7 +47,7 @@ public class GoalRunAway implements Goal {
             throw new IllegalArgumentException();
         }
         this.from = from;
-        this.distanceSq = distance * distance;
+        this.distanceSq = (int) (distance * distance);
         this.maintainY = maintainY;
     }
 
@@ -56,7 +59,7 @@ public class GoalRunAway implements Goal {
         for (BlockPos p : from) {
             int diffX = x - p.getX();
             int diffZ = z - p.getZ();
-            double distSq = diffX * diffX + diffZ * diffZ;
+            int distSq = diffX * diffX + diffZ * diffZ;
             if (distSq < distanceSq) {
                 return false;
             }
@@ -65,7 +68,7 @@ public class GoalRunAway implements Goal {
     }
 
     @Override
-    public double heuristic(int x, int y, int z) {//mostly copied from GoalBlock
+    public double heuristic(int x, int y, int z) {// mostly copied from GoalBlock
         double min = Double.MAX_VALUE;
         for (BlockPos p : from) {
             double h = GoalXZ.calculate(p.getX() - x, p.getZ() - z);
@@ -78,6 +81,63 @@ public class GoalRunAway implements Goal {
             min = min * 0.6 + GoalYLevel.calculate(maintainY, y) * 1.5;
         }
         return min;
+    }
+
+    @Override
+    public double heuristic() {// TODO less hacky solution
+        int distance = (int) Math.ceil(Math.sqrt(distanceSq));
+        int minX = Integer.MAX_VALUE;
+        int minY = Integer.MAX_VALUE;
+        int minZ = Integer.MAX_VALUE;
+        int maxX = Integer.MIN_VALUE;
+        int maxY = Integer.MIN_VALUE;
+        int maxZ = Integer.MIN_VALUE;
+        for (BlockPos p : from) {
+            minX = Math.min(minX, p.getX() - distance);
+            minY = Math.min(minY, p.getY() - distance);
+            minZ = Math.min(minZ, p.getZ() - distance);
+            maxX = Math.max(minX, p.getX() + distance);
+            maxY = Math.max(minY, p.getY() + distance);
+            maxZ = Math.max(minZ, p.getZ() + distance);
+        }
+        DoubleOpenHashSet maybeAlwaysInside = new DoubleOpenHashSet(); // see pull request #1978
+        double minOutside = Double.POSITIVE_INFINITY;
+        for (int x = minX; x <= maxX; x++) {
+            for (int y = minY; y <= maxY; y++) {
+                for (int z = minZ; z <= maxZ; z++) {
+                    double h = heuristic(x, y, z);
+                    if (h < minOutside && isInGoal(x, y, z)) {
+                        maybeAlwaysInside.add(h);
+                    } else {
+                        minOutside = Math.min(minOutside, h);
+                    }
+                }
+            }
+        }
+        double maxInside = Double.NEGATIVE_INFINITY;
+        DoubleIterator it = maybeAlwaysInside.iterator();
+        while (it.hasNext()) {
+            double inside = it.nextDouble();
+            if (inside < minOutside) {
+                maxInside = Math.max(maxInside, inside);
+            }
+        }
+        return maxInside;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        GoalRunAway goal = (GoalRunAway) o;
+        return distanceSq == goal.distanceSq
+                && Arrays.equals(from, goal.from)
+                && Objects.equals(maintainY, goal.maintainY);
     }
 
     @Override

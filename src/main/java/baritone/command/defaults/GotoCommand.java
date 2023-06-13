@@ -19,12 +19,12 @@ package baritone.command.defaults;
 
 import baritone.api.IBaritone;
 import baritone.api.command.Command;
+import baritone.api.command.argument.IArgConsumer;
 import baritone.api.command.datatypes.BlockById;
 import baritone.api.command.datatypes.ForBlockOptionalMeta;
 import baritone.api.command.datatypes.RelativeCoordinate;
 import baritone.api.command.datatypes.RelativeGoal;
 import baritone.api.command.exception.CommandException;
-import baritone.api.command.argument.IArgConsumer;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.BlockOptionalMeta;
@@ -46,7 +46,7 @@ public class GotoCommand extends Command {
         // is no need to handle the case of empty arguments.
         if (args.peekDatatypeOrNull(RelativeCoordinate.INSTANCE) != null) {
             args.requireMax(3);
-            BetterBlockPos origin = baritone.getPlayerContext().playerFeet();
+            BetterBlockPos origin = ctx.playerFeet();
             Goal goal = args.getDatatypePost(RelativeGoal.INSTANCE, origin);
             logDirect(String.format("Going to: %s", goal.toString()));
             baritone.getCustomGoalProcess().setGoalAndPath(goal);
@@ -72,7 +72,7 @@ public class GotoCommand extends Command {
     @Override
     public List<String> getLongDesc() {
         return Arrays.asList(
-                "The got command tells Baritone to head towards a given goal or block.",
+                "The goto command tells Baritone to head towards a given goal or block.",
                 "",
                 "Wherever a coordinate is expected, you can use ~ just like in regular Minecraft commands. Or, you can just use regular numbers.",
                 "",

@@ -65,6 +65,28 @@ public class GoalStrictDirection implements Goal {
     }
 
     @Override
+    public double heuristic() {
+        return Double.NEGATIVE_INFINITY;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        GoalStrictDirection goal = (GoalStrictDirection) o;
+        return x == goal.x
+                && y == goal.y
+                && z == goal.z
+                && dx == goal.dx
+                && dz == goal.dz;
+    }
+
+    @Override
     public String toString() {
         return String.format(
                 "GoalStrictDirection{x=%s, y=%s, z=%s, dx=%s, dz=%s}",

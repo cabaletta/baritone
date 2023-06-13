@@ -15,25 +15,21 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.api.cache;
+package baritone.launch.mixins;
 
-import net.minecraft.item.ItemStack;
-
-import java.util.List;
+import baritone.utils.accessor.INBTTagLongArray;
+import net.minecraft.nbt.NBTTagLongArray;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.gen.Accessor;
 
 /**
- * @author Brady
- * @since 9/23/2018
+ * @author rycbar
+ * @since 26.09.2022
  */
-public interface IRememberedInventory {
+@Mixin(NBTTagLongArray.class)
+public abstract class MixinNBTTagLongArray implements INBTTagLongArray {
 
-    /**
-     * @return The contents of this inventory
-     */
-    List<ItemStack> getContents();
-
-    /**
-     * @return The number of slots in this inventory
-     */
-    int getSize();
+    @Accessor("data")
+    @Override
+    public abstract long[] getLongArray();
 }

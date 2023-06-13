@@ -18,15 +18,15 @@
 package baritone.command.defaults;
 
 import baritone.api.IBaritone;
-import baritone.api.pathing.goals.Goal;
-import baritone.api.process.ICustomGoalProcess;
-import baritone.api.utils.BetterBlockPos;
 import baritone.api.command.Command;
+import baritone.api.command.argument.IArgConsumer;
 import baritone.api.command.datatypes.RelativeCoordinate;
 import baritone.api.command.datatypes.RelativeGoal;
 import baritone.api.command.exception.CommandException;
-import baritone.api.command.argument.IArgConsumer;
 import baritone.api.command.helpers.TabCompleteHelper;
+import baritone.api.pathing.goals.Goal;
+import baritone.api.process.ICustomGoalProcess;
+import baritone.api.utils.BetterBlockPos;
 
 import java.util.Arrays;
 import java.util.List;
@@ -51,7 +51,7 @@ public class GoalCommand extends Command {
             }
         } else {
             args.requireMax(3);
-            BetterBlockPos origin = baritone.getPlayerContext().playerFeet();
+            BetterBlockPos origin = ctx.playerFeet();
             Goal goal = args.getDatatypePost(RelativeGoal.INSTANCE, origin);
             goalProcess.setGoal(goal);
             logDirect(String.format("Goal: %s", goal.toString()));

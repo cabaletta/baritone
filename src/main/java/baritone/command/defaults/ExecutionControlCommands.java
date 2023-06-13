@@ -56,6 +56,7 @@ public class ExecutionControlCommands {
 
                     @Override
                     public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
+                        baritone.getInputOverrideHandler().clearAllKeys();
                         return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
                     }
 
@@ -79,7 +80,7 @@ public class ExecutionControlCommands {
                     }
                 }
         );
-        pauseCommand = new Command(baritone, "pause") {
+        pauseCommand = new Command(baritone, "pause", "p", "paws") {
             @Override
             public void execute(String label, IArgConsumer args) throws CommandException {
                 args.requireMax(0);
@@ -112,7 +113,7 @@ public class ExecutionControlCommands {
                 );
             }
         };
-        resumeCommand = new Command(baritone, "resume") {
+        resumeCommand = new Command(baritone, "resume", "r", "unpause", "unpaws") {
             @Override
             public void execute(String label, IArgConsumer args) throws CommandException {
                 args.requireMax(0);
@@ -171,7 +172,7 @@ public class ExecutionControlCommands {
                 );
             }
         };
-        cancelCommand = new Command(baritone, "cancel", "stop") {
+        cancelCommand = new Command(baritone, "cancel", "c", "stop") {
             @Override
             public void execute(String label, IArgConsumer args) throws CommandException {
                 args.requireMax(0);

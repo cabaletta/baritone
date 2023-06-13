@@ -18,6 +18,7 @@
 package baritone.process;
 
 import baritone.Baritone;
+import baritone.api.BaritoneAPI;
 import baritone.api.pathing.goals.*;
 import baritone.api.process.IMineProcess;
 import baritone.api.process.PathingCommand;
@@ -88,19 +89,21 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         if (calcFailed) {
             if (!knownOreLocations.isEmpty() && Baritone.settings().blacklistClosestOnFailure.value) {
                 logDirect("Unable to find any path to " + filter + ", blacklisting presumably unreachable closest instance...");
+                if (Baritone.settings().notificationOnMineFail.value) {
+                    logNotification("Unable to find any path to " + filter + ", blacklisting presumably unreachable closest instance...", true);
+                }
                 knownOreLocations.stream().min(Comparator.comparingDouble(ctx.player()::getDistanceSq)).ifPresent(blacklist::add);
                 knownOreLocations.removeIf(blacklist::contains);
             } else {
                 logDirect("Unable to find any path to " + filter + ", canceling mine");
+                if (Baritone.settings().notificationOnMineFail.value) {
+                    logNotification("Unable to find any path to " + filter + ", canceling mine", true);
+                }
                 cancel();
                 return null;
             }
         }
-        if (!Baritone.settings().allowBreak.value) {
-            logDirect("Unable to mine when allowBreak is false!");
-            cancel();
-            return null;
-        }
+
         updateLoucaSystem();
         int mineGoalUpdateInterval = Baritone.settings().mineGoalUpdateInterval.value;
         List<BlockPos> curr = new ArrayList<>(knownOreLocations);
@@ -109,7 +112,10 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
             Baritone.getExecutor().execute(() -> rescan(curr, context));
         }
         if (Baritone.settings().legitMine.value) {
-            addNearby();
+            if (!addNearby()) {
+                cancel();
+                return null;
+            }
         }
         Optional<BlockPos> shaft = curr.stream()
                 .filter(pos -> pos.getX() == ctx.playerFeet().getX() && pos.getZ() == ctx.playerFeet().getZ())
@@ -170,6 +176,11 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
     }
 
     private PathingCommand updateGoal() {
+        BlockOptionalMetaLookup filter = filterFilter();
+        if (filter == null) {
+            return null;
+        }
+
         boolean legit = Baritone.settings().legitMine.value;
         List<BlockPos> locs = knownOreLocations;
         if (!locs.isEmpty()) {
@@ -181,10 +192,10 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
             return new PathingCommand(goal, legit ? PathingCommandType.FORCE_REVALIDATE_GOAL_AND_PATH : PathingCommandType.REVALIDATE_GOAL_AND_PATH);
         }
         // we don't know any ore locations at the moment
-        if (!legit) {
+        if (!legit && !Baritone.settings().exploreForBlocks.value) {
             return null;
         }
-        // only in non-Xray mode (aka legit mode) do we do this
+        // only when we should explore for blocks or are in legit mode we do this
         int y = Baritone.settings().legitMineYLevel.value;
         if (branchPoint == null) {
             /*if (!baritone.getPathingBehavior().isPathing() && playerFeet().y == y) {
@@ -204,12 +215,18 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
                 public boolean isInGoal(int x, int y, int z) {
                     return false;
                 }
+
+                @Override
+                public double heuristic() {
+                    return Double.NEGATIVE_INFINITY;
+                }
             };
         }
         return new PathingCommand(branchPointRunaway, PathingCommandType.REVALIDATE_GOAL_AND_PATH);
     }
 
     private void rescan(List<BlockPos> already, CalculationContext context) {
+        BlockOptionalMetaLookup filter = filterFilter();
         if (filter == null) {
             return;
         }
@@ -219,8 +236,11 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         List<BlockPos> dropped = droppedItemsScan();
         List<BlockPos> locs = searchWorld(context, filter, ORE_LOCATIONS_COUNT, already, blacklist, dropped);
         locs.addAll(dropped);
-        if (locs.isEmpty()) {
+        if (locs.isEmpty() && !Baritone.settings().exploreForBlocks.value) {
             logDirect("No locations for " + filter + " known, cancelling");
+            if (Baritone.settings().notificationOnMineFail.value) {
+                logNotification("No locations for " + filter + " known, cancelling", true);
+            }
             cancel();
             return;
         }
@@ -299,6 +319,21 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
             int zDiff = z - this.z;
             return GoalBlock.calculate(xDiff, yDiff < -1 ? yDiff + 2 : yDiff == -1 ? 0 : yDiff, zDiff);
         }
+
+        @Override
+        public boolean equals(Object o) {
+            return super.equals(o);
+        }
+
+        @Override
+        public String toString() {
+            return String.format(
+                    "GoalThreeBlocks{x=%s,y=%s,z=%s}",
+                    SettingsUtil.maybeCensor(x),
+                    SettingsUtil.maybeCensor(y),
+                    SettingsUtil.maybeCensor(z)
+            );
+        }
     }
 
     public List<BlockPos> droppedItemsScan() {
@@ -342,7 +377,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         locs = prune(ctx, locs, filter, max, blacklist, dropped);
 
         if (!untracked.isEmpty() || (Baritone.settings().extendCacheOnThreshold.value && locs.size() < max)) {
-            locs.addAll(WorldScanner.INSTANCE.scanChunkRadius(
+            locs.addAll(BaritoneAPI.getProvider().getWorldScanner().scanChunkRadius(
                     ctx.getBaritone().getPlayerContext(),
                     filter,
                     max,
@@ -356,11 +391,18 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         return prune(ctx, locs, filter, max, blacklist, dropped);
     }
 
-    private void addNearby() {
+    private boolean addNearby() {
         List<BlockPos> dropped = droppedItemsScan();
         knownOreLocations.addAll(dropped);
         BlockPos playerFeet = ctx.playerFeet();
         BlockStateInterface bsi = new BlockStateInterface(ctx);
+
+
+        BlockOptionalMetaLookup filter = filterFilter();
+        if (filter == null) {
+            return false;
+        }
+
         int searchDist = 10;
         double fakedBlockReachDistance = 20; // at least 10 * sqrt(3) with some extra space to account for positioning within the block
         for (int x = playerFeet.getX() - searchDist; x <= playerFeet.getX() + searchDist; x++) {
@@ -378,6 +420,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
             }
         }
         knownOreLocations = prune(new CalculationContext(baritone), knownOreLocations, filter, ORE_LOCATIONS_COUNT, blacklist, dropped);
+        return true;
     }
 
     private static List<BlockPos> prune(CalculationContext ctx, List<BlockPos> locs2, BlockOptionalMetaLookup filter, int max, List<BlockPos> blacklist, List<BlockPos> dropped) {
@@ -399,6 +442,18 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
                 // remove any that are implausible to mine (encased in bedrock, or touching lava)
                 .filter(pos -> MineProcess.plausibleToBreak(ctx, pos))
 
+                .filter(pos -> {
+                    if (Baritone.settings().allowOnlyExposedOres.value) {
+                        return isNextToAir(ctx, pos);
+                    } else {
+                        return true;
+                    }
+                })
+
+                .filter(pos -> pos.getY() >= Baritone.settings().minYLevelWhileMining.value)
+
+                .filter(pos -> pos.getY() <= Baritone.settings().maxYLevelWhileMining.value)
+
                 .filter(pos -> !blacklist.contains(pos))
 
                 .sorted(Comparator.comparingDouble(ctx.getBaritone().getPlayerContext().player()::getDistanceSq))
@@ -409,6 +464,22 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         }
         return locs;
     }
+
+    public static boolean isNextToAir(CalculationContext ctx, BlockPos pos) {
+        int radius = Baritone.settings().allowOnlyExposedOresDistance.value;
+        for (int dx = -radius; dx <= radius; dx++) {
+            for (int dy = -radius; dy <= radius; dy++) {
+                for (int dz = -radius; dz <= radius; dz++) {
+                    if (Math.abs(dx) + Math.abs(dy) + Math.abs(dz) <= radius
+                            && MovementHelper.isTransparent(ctx.getBlock(pos.getX() + dx, pos.getY() + dy, pos.getZ() + dz))) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
 
     public static boolean plausibleToBreak(CalculationContext ctx, BlockPos pos) {
         if (MovementHelper.getMiningDurationTicks(ctx, pos.getX(), pos.getY(), pos.getZ(), ctx.bsi.get0(pos), true) >= COST_INF) {
@@ -427,10 +498,8 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
     @Override
     public void mine(int quantity, BlockOptionalMetaLookup filter) {
         this.filter = filter;
-        if (filter != null && !Baritone.settings().allowBreak.value) {
-            logDirect("Unable to mine when allowBreak is false!");
-            this.mine(quantity, (BlockOptionalMetaLookup) null);
-            return;
+        if (this.filterFilter() == null) {
+            this.filter = null;
         }
         this.desiredQuantity = quantity;
         this.knownOreLocations = new ArrayList<>();
@@ -441,5 +510,23 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         if (filter != null) {
             rescan(new ArrayList<>(), new CalculationContext(baritone));
         }
+    }
+
+    private BlockOptionalMetaLookup filterFilter() {
+        if (this.filter == null) {
+            return null;
+        }
+        if (!Baritone.settings().allowBreak.value) {
+            BlockOptionalMetaLookup f = new BlockOptionalMetaLookup(this.filter.blocks()
+                    .stream()
+                    .filter(e -> Baritone.settings().allowBreakAnyway.value.contains(e.getBlock()))
+                    .toArray(BlockOptionalMeta[]::new));
+            if (f.blocks().isEmpty()) {
+                logDirect("Unable to mine when allowBreak is false and target block is not in allowBreakAnyway!");
+                return null;
+            }
+            return f;
+        }
+        return filter;
     }
 }

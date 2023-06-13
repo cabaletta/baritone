@@ -20,20 +20,20 @@ package baritone.command;
 import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.Settings;
-import baritone.utils.accessor.IGuiScreen;
+import baritone.api.command.argument.ICommandArgument;
+import baritone.api.command.exception.CommandNotEnoughArgumentsException;
+import baritone.api.command.exception.CommandNotFoundException;
+import baritone.api.command.helpers.TabCompleteHelper;
+import baritone.api.command.manager.ICommandManager;
 import baritone.api.event.events.ChatEvent;
 import baritone.api.event.events.TabCompleteEvent;
 import baritone.api.event.listener.AbstractGameEventListener;
 import baritone.api.utils.Helper;
 import baritone.api.utils.SettingsUtil;
-import baritone.api.command.argument.ICommandArgument;
-import baritone.api.command.exception.CommandNotEnoughArgumentsException;
-import baritone.api.command.exception.CommandNotFoundException;
 import baritone.command.argument.ArgConsumer;
-import baritone.api.command.helpers.TabCompleteHelper;
-import baritone.api.command.manager.ICommandManager;
 import baritone.command.argument.CommandArguments;
 import baritone.command.manager.CommandManager;
+import baritone.utils.accessor.IGuiScreen;
 import net.minecraft.util.Tuple;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
@@ -49,12 +49,12 @@ import java.util.stream.Stream;
 
 import static baritone.api.command.IBaritoneChatControl.FORCE_COMMAND_PREFIX;
 
-public class BaritoneChatControl implements Helper, AbstractGameEventListener {
+public class ExampleBaritoneControl implements Helper, AbstractGameEventListener {
 
     private static final Settings settings = BaritoneAPI.getSettings();
     private final ICommandManager manager;
 
-    public BaritoneChatControl(IBaritone baritone) {
+    public ExampleBaritoneControl(IBaritone baritone) {
         this.manager = baritone.getCommandManager();
         baritone.getGameEventHandler().registerEventListener(this);
     }
@@ -124,7 +124,7 @@ public class BaritoneChatControl implements Helper, AbstractGameEventListener {
             }
         } else if (argc.hasExactlyOne()) {
             for (Settings.Setting setting : settings.allSettings) {
-                if (setting.getName().equals("logger")) {
+                if (setting.isJavaOnly()) {
                     continue;
                 }
                 if (setting.getName().equalsIgnoreCase(pair.getFirst())) {
@@ -177,7 +177,7 @@ public class BaritoneChatControl implements Helper, AbstractGameEventListener {
                             .stream();
                 }
                 Settings.Setting setting = settings.byLowerName.get(argc.getString().toLowerCase(Locale.US));
-                if (setting != null) {
+                if (setting != null && !setting.isJavaOnly()) {
                     if (setting.getValueClass() == Boolean.class) {
                         TabCompleteHelper helper = new TabCompleteHelper();
                         if ((Boolean) setting.value) {

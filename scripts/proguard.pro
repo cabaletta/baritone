@@ -1,5 +1,6 @@
 -keepattributes Signature
 -keepattributes *Annotation*
+-keepattributes InnerClasses
 
 -optimizationpasses 5
 -verbose
@@ -22,6 +23,14 @@
 -keep class baritone.api.IBaritoneProvider
 
 -keep class baritone.api.utils.MyChunkPos { *; } # even in standalone we need to keep this for gson reflect
+-keepname class baritone.api.utils.BlockOptionalMeta # this name is exposed to the user, so we need to keep it in all builds
+
+# Keep any class or member annotated with @KeepName so we dont have to put everything in the script
+-keep,allowobfuscation @interface baritone.KeepName
+-keep @baritone.KeepName class *
+-keepclassmembers class * {
+    @baritone.KeepName *;
+}
 
 # setting names are reflected from field names, so keep field names
 -keepclassmembers class baritone.api.Settings {
@@ -33,8 +42,10 @@
 
 #try to keep usage of schematica in separate classes
 -keep class baritone.utils.schematic.schematica.**
+-keep class baritone.utils.schematic.litematica.**
 #proguard doesnt like it when it cant find our fake schematica classes
 -dontwarn baritone.utils.schematic.schematica.**
+-dontwarn baritone.utils.schematic.litematica.**
 
 # copy all necessary libraries into tempLibraries to build
 
@@ -74,7 +85,7 @@
 
 -libraryjars 'tempLibraries/netty-all-4.1.9.Final.jar'
 -libraryjars 'tempLibraries/oshi-core-1.1.jar'
--libraryjars 'tempLibraries/patchy-1.1.jar'
+-libraryjars 'tempLibraries/patchy-1.3.9.jar'
 -libraryjars 'tempLibraries/platform-3.4.0.jar'
 -libraryjars 'tempLibraries/realms-1.10.22.jar'
 -libraryjars 'tempLibraries/soundsystem-20120107.jar'
@@ -374,3 +385,5 @@
     public java.lang.String substring(int);
     public java.lang.String substring(int,int);
 }
+
+-printmapping mapping.txt

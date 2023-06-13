@@ -17,6 +17,7 @@
 
 package baritone.pathing.movement.movements;
 
+import baritone.Baritone;
 import baritone.api.IBaritone;
 import baritone.api.pathing.movement.MovementStatus;
 import baritone.api.utils.BetterBlockPos;
@@ -74,7 +75,7 @@ public class MovementParkour extends Movement {
             return;
         }
         IBlockState adj = context.get(x + xDiff, y - 1, z + zDiff);
-        if (MovementHelper.canWalkOn(context.bsi, x + xDiff, y - 1, z + zDiff, adj)) { // don't parkour if we could just traverse (for now)
+        if (MovementHelper.canWalkOn(context, x + xDiff, y - 1, z + zDiff, adj)) { // don't parkour if we could just traverse (for now)
             // second most common case -- we could just traverse not parkour
             return;
         }
@@ -91,8 +92,15 @@ public class MovementParkour extends Movement {
             return;
         }
         IBlockState standingOn = context.get(x, y - 1, z);
-        if (standingOn.getBlock() == Blocks.VINE || standingOn.getBlock() == Blocks.LADDER || standingOn.getBlock() instanceof BlockStairs || MovementHelper.isBottomSlab(standingOn) || standingOn.getBlock() instanceof BlockLiquid) {
+        if (standingOn.getBlock() == Blocks.VINE || standingOn.getBlock() == Blocks.LADDER || standingOn.getBlock() instanceof BlockStairs || MovementHelper.isBottomSlab(standingOn)) {
             return;
+        }
+        // we can't jump from (frozen) water with assumeWalkOnWater because we can't be sure it will be frozen
+        if (context.assumeWalkOnWater && standingOn.getBlock() instanceof BlockLiquid) {
+            return;
+        }
+        if (context.getBlock(x, y, z) instanceof BlockLiquid) {
+            return; // can't jump out of water
         }
         int maxJump;
         if (standingOn.getBlock() == Blocks.SOUL_SAND) {
@@ -104,73 +112,91 @@ public class MovementParkour extends Movement {
                 maxJump = 3;
             }
         }
+
+        // check parkour jumps from smallest to largest for obstacles/walls and landing positions
+        int verifiedMaxJump = 1; // i - 1 (when i = 2)
         for (int i = 2; i <= maxJump; i++) {
             int destX = x + xDiff * i;
             int destZ = z + zDiff * i;
+
+            // check head/feet
             if (!MovementHelper.fullyPassable(context, destX, y + 1, destZ)) {
-                return;
+                break;
             }
             if (!MovementHelper.fullyPassable(context, destX, y + 2, destZ)) {
-                return;
+                break;
             }
+
+            // check for ascend landing position
             IBlockState destInto = context.bsi.get0(destX, y, destZ);
-            if (!MovementHelper.fullyPassable(context.bsi.access, context.bsi.isPassableBlockPos.setPos(destX, y, destZ), destInto)) {
-                if (i <= 3 && context.allowParkourAscend && context.canSprint && MovementHelper.canWalkOn(context.bsi, destX, y, destZ, destInto) && checkOvershootSafety(context.bsi, destX + xDiff, y + 1, destZ + zDiff)) {
+            if (!MovementHelper.fullyPassable(context, destX, y, destZ, destInto)) {
+                if (i <= 3 && context.allowParkourAscend && context.canSprint && MovementHelper.canWalkOn(context, destX, y, destZ, destInto) && checkOvershootSafety(context.bsi, destX + xDiff, y + 1, destZ + zDiff)) {
                     res.x = destX;
                     res.y = y + 1;
                     res.z = destZ;
                     res.cost = i * SPRINT_ONE_BLOCK_COST + context.jumpPenalty;
+                    return;
                 }
-                return;
+                break;
             }
+
+            // check for flat landing position
             IBlockState landingOn = context.bsi.get0(destX, y - 1, destZ);
-            // farmland needs to be canwalkon otherwise farm can never work at all, but we want to specifically disallow ending a jumy on farmland haha
-            if (landingOn.getBlock() != Blocks.FARMLAND && MovementHelper.canWalkOn(context.bsi, destX, y - 1, destZ, landingOn)) {
+            // farmland needs to be canWalkOn otherwise farm can never work at all, but we want to specifically disallow ending a jump on farmland haha
+            // frostwalker works here because we can't jump from possibly unfrozen water
+            if ((landingOn.getBlock() != Blocks.FARMLAND && MovementHelper.canWalkOn(context, destX, y - 1, destZ, landingOn))
+                    || (Math.min(16, context.frostWalker + 2) >= i && MovementHelper.canUseFrostWalker(context, landingOn))
+            ) {
                 if (checkOvershootSafety(context.bsi, destX + xDiff, y, destZ + zDiff)) {
                     res.x = destX;
                     res.y = y;
                     res.z = destZ;
                     res.cost = costFromJumpDistance(i) + context.jumpPenalty;
+                    return;
                 }
-                return;
+                break;
             }
+
             if (!MovementHelper.fullyPassable(context, destX, y + 3, destZ)) {
-                return;
+                break;
             }
+
+            verifiedMaxJump = i;
         }
-        if (maxJump != 4) {
-            return;
-        }
+
+        // parkour place starts here
         if (!context.allowParkourPlace) {
             return;
         }
-        // time 2 pop off with that dank skynet parkour place
-        int destX = x + 4 * xDiff;
-        int destZ = z + 4 * zDiff;
-        IBlockState toReplace = context.get(destX, y - 1, destZ);
-        double placeCost = context.costOfPlacingAt(destX, y - 1, destZ, toReplace);
-        if (placeCost >= COST_INF) {
-            return;
-        }
-        if (!MovementHelper.isReplaceable(destX, y - 1, destZ, toReplace, context.bsi)) {
-            return;
-        }
-        if (!checkOvershootSafety(context.bsi, destX + xDiff, y, destZ + zDiff)) {
-            return;
-        }
-        for (int i = 0; i < 5; i++) {
-            int againstX = destX + HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP[i].getXOffset();
-            int againstY = y - 1 + HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP[i].getYOffset();
-            int againstZ = destZ + HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP[i].getZOffset();
-            if (againstX == x + xDiff * 3 && againstZ == z + zDiff * 3) { // we can't turn around that fast
+        // check parkour jumps from largest to smallest for positions to place blocks
+        for (int i = verifiedMaxJump; i > 1; i--) {
+            int destX = x + i * xDiff;
+            int destZ = z + i * zDiff;
+            IBlockState toReplace = context.get(destX, y - 1, destZ);
+            double placeCost = context.costOfPlacingAt(destX, y - 1, destZ, toReplace);
+            if (placeCost >= COST_INF) {
                 continue;
             }
-            if (MovementHelper.canPlaceAgainst(context.bsi, againstX, againstY, againstZ)) {
-                res.x = destX;
-                res.y = y;
-                res.z = destZ;
-                res.cost = costFromJumpDistance(4) + placeCost + context.jumpPenalty;
-                return;
+            if (!MovementHelper.isReplaceable(destX, y - 1, destZ, toReplace, context.bsi)) {
+                continue;
+            }
+            if (!checkOvershootSafety(context.bsi, destX + xDiff, y, destZ + zDiff)) {
+                continue;
+            }
+            for (int j = 0; j < 5; j++) {
+                int againstX = destX + HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP[j].getXOffset();
+                int againstY = y - 1 + HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP[j].getYOffset();
+                int againstZ = destZ + HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP[j].getZOffset();
+                if (againstX == destX - xDiff && againstZ == destZ - zDiff) { // we can't turn around that fast
+                    continue;
+                }
+                if (MovementHelper.canPlaceAgainst(context.bsi, againstX, againstY, againstZ)) {
+                    res.x = destX;
+                    res.y = y;
+                    res.z = destZ;
+                    res.cost = costFromJumpDistance(i) + placeCost + context.jumpPenalty;
+                    return;
+                }
             }
         }
     }
@@ -250,7 +276,12 @@ public class MovementParkour extends Movement {
             }
         } else if (!ctx.playerFeet().equals(src)) {
             if (ctx.playerFeet().equals(src.offset(direction)) || ctx.player().posY - src.y > 0.0001) {
-                if (!MovementHelper.canWalkOn(ctx, dest.down()) && !ctx.player().onGround && MovementHelper.attemptToPlaceABlock(state, baritone, dest.down(), true, false) == PlaceResult.READY_TO_PLACE) {
+                if (Baritone.settings().allowPlace.value // see PR #3775
+                        && ((Baritone) baritone).getInventoryBehavior().hasGenericThrowaway()
+                        && !MovementHelper.canWalkOn(ctx, dest.down())
+                        && !ctx.player().onGround
+                        && MovementHelper.attemptToPlaceABlock(state, baritone, dest.down(), true, false) == PlaceResult.READY_TO_PLACE
+                ) {
                     // go in the opposite order to check DOWN before all horizontals -- down is preferable because you don't have to look to the side while in midair, which could mess up the trajectory
                     state.setInput(Input.CLICK_RIGHT, true);
                 }

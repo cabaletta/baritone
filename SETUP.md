@@ -2,7 +2,7 @@
 
 The easiest way to install Baritone is to install [Impact](https://impactclient.net/), which comes with Baritone.
 
-For 1.14.4, [click here](https://www.dropbox.com/s/rkml3hjokd3qv0m/1.14.4-Baritone.zip?dl=1).
+You can also use a custom version json for Minecraft, with the [1.14.4](https://www.dropbox.com/s/rkml3hjokd3qv0m/1.14.4-Baritone.zip?dl=1) version or the [1.15.2](https://www.dropbox.com/s/8rx6f0kts9hvd4f/1.15.2-Baritone.zip?dl=1) version or the [1.16.5](https://www.dropbox.com/s/i6f292o2i7o9acp/1.16.5-Baritone.zip?dl=1) version.
 
 Once Baritone is installed, look [here](USAGE.md) for instructions on how to use it.
 
@@ -11,9 +11,9 @@ These releases are not always completely up to date with latest features, and ar
 
 Link to the releases page: [Releases](https://github.com/cabaletta/baritone/releases)
 
-v1.2.* is for 1.12.2, v1.3.* is for 1.13.2
+v1.2.* is for 1.12.2, v1.3.* is for 1.13.2, v1.4.* is for 1.14.4, v1.5.* is for 1.15.2, v1.6.* is for 1.16.5, v1.7.* is for 1.17.1, v1.8.* is for 1.18.1
 
-Any official release will be GPG signed by leijurv (44A3EA646EADAC6A) and ZeroMemes (73A788379A197567). Please verify that the hash of the file you download is in `checksums.txt` and that `checksums_signed.asc` is a valid signature by those two public keys of `checksums.txt`. 
+Any official release will be GPG signed by leijurv (44A3EA646EADAC6A). Please verify that the hash of the file you download is in `checksums.txt` and that `checksums_signed.asc` is a valid signature by that public keys of `checksums.txt`. 
 
 The build is fully deterministic and reproducible, and you can verify Travis did it properly by running `docker build --no-cache -t cabaletta/baritone .` yourself and comparing the shasum. This works identically on Travis, Mac, and Linux (if you have docker on Windows, I'd be grateful if you could let me know if it works there too).
 
@@ -22,20 +22,16 @@ The build is fully deterministic and reproducible, and you can verify Travis did
 
 Building Baritone will result in 5 artifacts created in the ``dist`` directory. These are the same as the artifacts created in the [releases](https://github.com/cabaletta/baritone/releases).
 
-**The Forge release can simply be added as a Forge mod.**
+**The Forge and Fabric releases can simply be added as a Forge/Fabric mods.**
 
 If another one of your Forge mods has a Baritone integration, you want `baritone-api-forge-VERSION.jar`. Otherwise, you want `baritone-standalone-forge-VERSION.jar`
 
 - **API**: Only the non-api packages are obfuscated. This should be used in environments where other mods would like to use Baritone's features.
-- **Forge API**: Same as API, but packaged for Forge. This should be used where another mod has a Baritone integration.
+- **Forge/Fabric API**: Same as API, but packaged for Forge/Fabric. This should be used where another mod has a Baritone integration.
 - **Standalone**: Everything is obfuscated. This should be used in environments where there are no other mods present that would like to use Baritone's features.
-- **Forge Standalone**: Same as Standalone, but packaged for Forge. This should be used when Baritone is your only Forge mod, or none of your other Forge mods integrate with Baritone.
+- **Forge/Fabric Standalone**: Same as Standalone, but packaged for Forge/Fabric. This should be used when Baritone is your only Forge/Fabric mod, or none of your other Forge/Fabric mods integrate with Baritone.
 - **Unoptimized**: Nothing is obfuscated. This shouldn't be used ever in production.
-
-## More Info
-To replace out Impact 4.5's Baritone build with a customized one, build Baritone as above then copy & **rename** `dist/baritone-api-$VERSION$.jar` into `minecraft/libraries/cabaletta/baritone-api/1.2/baritone-api-1.2.jar`, replacing the jar that was previously there. You also need to edit `minecraft/versions/1.12.2-Impact_4.5/1.12.2-Impact_4.5.json`, find the line `"name": "cabaletta:baritone-api:1.2"`, remove the comma from the end, and **entirely remove the NEXT line** (starts with `"url"`). **Restart your launcher** then load as normal. 
-
-You can verify whether or not it worked by running `.b version` in chat (only valid in Impact). It should print out the version that you downloaded. Note: The version that comes with 4.5 is `v1.2.3`.
+- **Forge/Fabric Unoptimized**: Same as Unoptimized, but packaged for Forge/Fabric.
 
 ## Build it yourself
 - Clone or download Baritone
@@ -47,58 +43,36 @@ You can verify whether or not it worked by running `.b version` in chat (only va
 ## Command Line
 On Mac OSX and Linux, use `./gradlew` instead of `gradlew`.
 
-If you have errors with a package missing please make sure you have setup your environment, and are using Oracle JDK 8.
+If you have errors with a package missing please make sure you have setup your environment, and are using Oracle JDK 8 for 1.12.2-1.16.5, JDK 16+ for 1.17.1, and JDK 17+ for 1.18.1.
 
-Setting up the Environment:
+To check which java you are using do 
+`java -version` in a command prompt or terminal.
+If you are using anything above OpenJDK 8 for 1.12.2-1.16.5, it might not work because the Java distributions above JDK 8 using may not have the needed javax classes.
 
-```
-$ gradlew setupDecompWorkspace
-$ gradlew --refresh-dependencies
-```
+Download java: https://adoptium.net/
+#### macOS guide
+In order to get JDK 8, Try running the following command:
+`% /usr/libexec/java_home -V`
+If it doesn't work try this guide: https://stackoverflow.com/questions/46513639/how-to-downgrade-java-from-9-to-8-on-a-macos-eclipse-is-not-running-with-java-9
 
-Building Baritone: 
+If you see something like
 
-```
-$ gradlew build
-```
+`% 1.8.0_VERSION, x86_64:	"Java SE 8"	/Library/Java/JavaVirtualMachines/jdk1.8.0_VERSION.jdk/Contents/Home`
 
-Running Baritone:
+in the list then you've got JDK 8 installed. 
+In order to get JDK 8 running in the **current terminal window** you will have to run this command: 
 
-```
-$ gradlew runClient
-```
+`% export JAVA_HOME=$(/usr/libexec/java_home -v 1.8)`
 
-For information on how to build baritone, see [Building Baritone](#building-baritone)
+To add OpenJDK 8 to your PATH add the export line to the end of your `.zshrc / .bashrc` if you want it to apply to each new terminal. If you're using bash change the .bachrc and if you're using zsh change the .zshrc
+
+### Building Baritone
+
+These tasks depend on the minecraft version, but are (for the most part) standard for building mods.
+
+for more details, see [the build ci action](/.github/workflows/gradle_build.yml)
 
 ## IntelliJ
 - Open the project in IntelliJ as a Gradle project
-  
-  ![Image](https://i.imgur.com/jw7Q6vY.png)
-
-- Run the Gradle tasks `setupDecompWorkspace` then `genIntellijRuns`
-  
-  ![Image](https://i.imgur.com/QEfVvWP.png)
-
 - Refresh the Gradle project (or, to be safe, just restart IntelliJ)
-  
-  ![Image](https://i.imgur.com/3V7EdWr.png)
-
-- Select the "Minecraft Client" launch config
-  
-  ![Image](https://i.imgur.com/1qz2QGV.png)
-
-- Click on ``Edit Configurations...`` from the same dropdown and select the "Minecraft Client" config
-  
-  ![Image](https://i.imgur.com/s4ly0ZF.png)
-
-- In `Edit Configurations...` you need to select `baritone_launch` for `Use classpath of module:`.
-  
-  ![Image](https://i.imgur.com/hrLhG9u.png)
-
-## IntelliJ
-
-- Navigate to the gradle tasks on the right tab as follows
-
-  ![Image](https://i.imgur.com/PE6r9iN.png)
-
-- Double click on **build** to run it
+- depending on the minecraft version, you may need to run `setupDecompWorkspace` or `genIntellijRuns` in order to get everything working

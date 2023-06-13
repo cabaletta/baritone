@@ -87,7 +87,7 @@ public interface ICommandArgument {
      *
      * @param type The class to parse this argument into
      * @return An instance of the specified type
-     * @throws CommandInvalidTypeException     If the parsing failed
+     * @throws CommandInvalidTypeException If the parsing failed
      */
     <T, S> T getAs(Class<T> type, Class<S> stateType, S state) throws CommandInvalidTypeException;
 

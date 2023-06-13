@@ -74,6 +74,11 @@ public interface ISchematic {
     IBlockState desiredState(int x, int y, int z, IBlockState current, List<IBlockState> approxPlaceable);
 
     /**
+     * Resets possible caches to avoid wrong behavior when moving the schematic around
+     */
+    default void reset() {}
+
+    /**
      * @return The width (X axis length) of this schematic
      */
     int widthX();

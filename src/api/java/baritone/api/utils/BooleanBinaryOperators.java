@@ -15,30 +15,24 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.api.cache;
-
-import net.minecraft.util.math.BlockPos;
-
-import java.util.Map;
+package baritone.api.utils;
 
 /**
  * @author Brady
- * @since 9/23/2018
  */
-public interface IContainerMemory {
+public enum BooleanBinaryOperators implements BooleanBinaryOperator {
+    OR((a, b) -> a || b),
+    AND((a, b) -> a && b),
+    XOR((a, b) -> a ^ b);
 
-    /**
-     * Gets a remembered inventory by its block position.
-     *
-     * @param pos The position of the container block
-     * @return The remembered inventory
-     */
-    IRememberedInventory getInventoryByPos(BlockPos pos);
+    private final BooleanBinaryOperator op;
 
-    /**
-     * Gets the map of all block positions to their remembered inventories.
-     *
-     * @return Map of block positions to their respective remembered inventories
-     */
-    Map<BlockPos, IRememberedInventory> getRememberedInventories();
+    BooleanBinaryOperators(BooleanBinaryOperator op) {
+        this.op = op;
+    }
+
+    @Override
+    public boolean applyAsBoolean(boolean a, boolean b) {
+        return this.op.applyAsBoolean(a, b);
+    }
 }

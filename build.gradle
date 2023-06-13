@@ -16,7 +16,7 @@
  */
 
 group 'baritone'
-version '1.2.11'
+version '1.2.17'
 
 buildscript {
     repositories {
@@ -26,7 +26,7 @@ buildscript {
         }
         maven {
             name = 'SpongePowered'
-            url = 'http://repo.spongepowered.org/maven'
+            url = 'https://repo.spongepowered.org/repository/maven-public/'
         }
         jcenter()
     }
@@ -42,6 +42,7 @@ import baritone.gradle.task.CreateDistTask
 import baritone.gradle.task.ProguardTask
 
 apply plugin: 'java'
+apply plugin: 'maven'
 apply plugin: 'net.minecraftforge.gradle.tweaker-client'
 apply plugin: 'org.spongepowered.mixin'
 
@@ -80,7 +81,7 @@ repositories {
 
     maven {
         name = 'spongepowered-repo'
-        url = 'http://repo.spongepowered.org/maven/'
+        url = 'https://repo.spongepowered.org/repository/maven-public/'
     }
 
     maven {
@@ -117,6 +118,12 @@ javadoc {
 
 jar {
     from sourceSets.launch.output, sourceSets.api.output
+
+    if (!getProject().hasProperty("baritone.forge_build")) {
+        exclude "**/BaritoneForgeModXD.class"
+        exclude "**/mods.toml"
+    }
+
     preserveFileTimestamps = false
     reproducibleFileOrder = true
 
@@ -138,3 +145,25 @@ task proguard(type: ProguardTask) {
 task createDist(type: CreateDistTask, dependsOn: proguard)
 
 build.finalizedBy(createDist)
+
+install {
+    def jarApiName = String.format("%s-api-%s", rootProject.name, version.toString())
+    def jarApiForgeName = String.format("%s-api-forge-%s", rootProject.name, version.toString())
+    def jarSAName = String.format("%s-standalone-%s", rootProject.name, version.toString())
+    def jarSAForgeName = String.format("%s-standalone-forge-%s", rootProject.name, version.toString())
+
+    artifacts {
+        archives file("$buildDir/libs/"+jarApiName+".jar")
+        archives file("$buildDir/libs/"+jarApiForgeName+".jar")
+        archives file("$buildDir/libs/"+jarSAName+".jar")
+        archives file("$buildDir/libs/"+jarSAForgeName+".jar")
+    }
+    repositories.mavenInstaller {
+		addFilter('api') { artifact, file -> artifact.name == "baritone-api" }
+		addFilter('api-forge') { artifact, file -> artifact.name == "baritone-api-forge" }
+		addFilter('standalone') { artifact, file -> artifact.name == "baritone-standalone" }
+		addFilter('standalone-forge') { artifact, file -> artifact.name == "baritone-standalone-forge" }
+    }
+}
+
+install.dependsOn(build)

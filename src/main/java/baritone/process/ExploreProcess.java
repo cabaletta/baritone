@@ -83,12 +83,18 @@ public final class ExploreProcess extends BaritoneProcessHelper implements IExpl
     public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
         if (calcFailed) {
             logDirect("Failed");
+            if (Baritone.settings().notificationOnExploreFinished.value) {
+                logNotification("Exploration failed", true);
+            }
             onLostControl();
             return null;
         }
         IChunkFilter filter = calcFilter();
         if (!Baritone.settings().disableCompletionCheck.value && filter.countRemain() == 0) {
             logDirect("Explored all chunks");
+            if (Baritone.settings().notificationOnExploreFinished.value) {
+                logNotification("Explored all chunks", false);
+            }
             onLostControl();
             return null;
         }

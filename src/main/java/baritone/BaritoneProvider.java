@@ -23,9 +23,9 @@ import baritone.api.bot.IBaritoneUser;
 import baritone.api.bot.IUserManager;
 import baritone.api.cache.IWorldScanner;
 import baritone.api.command.ICommandSystem;
-import baritone.bot.UserManager;
 import baritone.api.schematic.ISchematicSystem;
-import baritone.cache.WorldScanner;
+import baritone.bot.UserManager;
+import baritone.cache.FasterWorldScanner;
 import baritone.command.CommandSystem;
 import baritone.utils.player.PrimaryPlayerContext;
 import baritone.utils.schematic.SchematicSystem;
@@ -62,7 +62,7 @@ public final class BaritoneProvider implements IBaritoneProvider {
 
     @Override
     public IWorldScanner getWorldScanner() {
-        return WorldScanner.INSTANCE;
+        return FasterWorldScanner.INSTANCE;
     }
 
     @Override

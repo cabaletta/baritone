@@ -61,6 +61,21 @@ public class GoalGetToBlock implements Goal, IGoalRenderPos {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        GoalGetToBlock goal = (GoalGetToBlock) o;
+        return x == goal.x
+                && y == goal.y
+                && z == goal.z;
+    }
+
+    @Override
     public String toString() {
         return String.format(
                 "GoalGetToBlock{x=%s,y=%s,z=%s}",
