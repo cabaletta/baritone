@@ -45,17 +45,28 @@ public class CraftCommand extends Command {
 
         if (item == null) {//this is hacky, but it gets the job done for now. also we arnt interested in non craft-able items anyway
             itemName = itemName.replace("_", " ");
+            boolean recipeExists = false;
             for (IRecipe recipe : CraftingManager.REGISTRY) {
                 if (recipe.getRecipeOutput().getDisplayName().equalsIgnoreCase(itemName)) {
-                    baritone.getCraftingProcess().craftRecipe(recipe, amount);
-                    return;
+                    if (baritone.getCraftingProcess().canCraft(recipe, amount)) {
+                        baritone.getCraftingProcess().craftRecipe(recipe, amount);
+                        return;
+                    } else { //a recipe exists but we cant craft it
+                        recipeExists = true;
+                    }
                 }
             }
-            logDirect("invalid Item");
+            if (recipeExists) {
+                logDirect("Insufficient Resources");
+            } else {
+                logDirect("Invalid Item");
+            }
         } else if (!baritone.getCraftingProcess().hasCraftingRecipe(item)) {
             logDirect("no crafting recipe for "+item.getTranslationKey()+" found.");
-        } else {
+        } else if (baritone.getCraftingProcess().canCraft(item, amount)){
             baritone.getCraftingProcess().craftItem(item, amount);
+        } else {
+            logDirect("Insufficient Resources");
         }
     }
 

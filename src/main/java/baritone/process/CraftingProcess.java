@@ -70,13 +70,13 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
             onLostControl();
         }
         if (goal != null) {
+            //we are pathing to a table and therefor have to wait.
             if (goal.isInGoal(ctx.playerFeet())) {
                 rightClick();
                 if (ctx.player().openContainer instanceof ContainerWorkbench) {
                     goal = null;
                 }
             }
-            //we are pathing to a table and therefor have to wait.
             return new PathingCommand(goal, PathingCommandType.SET_GOAL_AND_PATH);
         } else if (placeAt != null) {
             placeCraftingtableNearby();
@@ -269,25 +269,27 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
                     bp = ((GoalGetToBlock)goal).getGoalPos();
                     break;
                 }
-                logDirect("error rightclick was called without being next to goal. will throw nullpointer & crash mc");
             }
         } else {
             bp = ((GoalGetToBlock)goal).getGoalPos();
         }
-        Optional<Rotation> reachable = RotationUtils.reachable(ctx.player(), bp, ctx.playerController().getBlockReachDistance());
-        if (reachable.isPresent()) {
-            baritone.getLookBehavior().updateTarget(reachable.get(), true);
-            if (bp.equals(ctx.getSelectedBlock().orElse(null))) {
-                baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
-                System.out.println(ctx.player().openContainer);
-                if (!(ctx.player().openContainer instanceof ContainerPlayer)) {
-                    baritone.getInputOverrideHandler().clearAllKeys();
-                    return true;
+        if (bp != null) {
+            Optional<Rotation> reachable = RotationUtils.reachable(ctx.player(), bp, ctx.playerController().getBlockReachDistance());
+            if (reachable.isPresent()) {
+                baritone.getLookBehavior().updateTarget(reachable.get(), true);
+                if (bp.equals(ctx.getSelectedBlock().orElse(null))) {
+                    baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
+                    System.out.println(ctx.player().openContainer);
+                    if (!(ctx.player().openContainer instanceof ContainerPlayer)) {
+                        baritone.getInputOverrideHandler().clearAllKeys();
+                        return true;
+                    }
                 }
+                return false;
             }
-            return false;
+            return true;
         }
-        return true;
+        return false;
     }
 
     private void placeCraftingtableNearby() { //this code is so buggy im amazed that there are special cases where it works
