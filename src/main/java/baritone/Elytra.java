@@ -28,6 +28,8 @@ import com.mojang.realmsclient.util.Pair;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.item.EntityFireworkRocket;
+import net.minecraft.init.Blocks;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
@@ -297,7 +299,7 @@ public class Elytra extends Behavior implements Helper {
 
     private boolean clearView(Vec3d start, Vec3d dest) {
         lines.add(Pair.of(start, dest));
-        RayTraceResult result = ctx.world().rayTraceBlocks(start, dest, true, false, true);
+        RayTraceResult result = rayTraceBlocks(start, dest);
         return result == null || result.typeOfHit == RayTraceResult.Type.MISS;
     }
 
@@ -437,5 +439,99 @@ public class Elytra extends Behavior implements Helper {
                 positionFirstSeen.put(pos, i);
             }
         }
+    }
+
+    public RayTraceResult rayTraceBlocks(Vec3d start, Vec3d end) {
+        int x1 = MathHelper.floor(end.x);
+        int y1 = MathHelper.floor(end.y);
+        int z1 = MathHelper.floor(end.z);
+        int x2 = MathHelper.floor(start.x);
+        int y2 = MathHelper.floor(start.y);
+        int z2 = MathHelper.floor(start.z);
+        BlockPos blockpos = new BlockPos(x2, y2, z2);
+        IBlockState iblockstate = ctx.world().getBlockState(blockpos);
+        if (!passable(iblockstate)) {
+            return Blocks.DIRT.getDefaultState().collisionRayTrace(ctx.world(), blockpos, start, end);
+        }
+        int steps = 200;
+        while (steps-- >= 0) {
+            if (Double.isNaN(start.x) || Double.isNaN(start.y) || Double.isNaN(start.z)) {
+                return null;
+            }
+            if (x2 == x1 && y2 == y1 && z2 == z1) {
+                return null;
+            }
+            boolean hitX = true;
+            boolean hitY = true;
+            boolean hitZ = true;
+            double nextX = 999.0D;
+            double nextY = 999.0D;
+            double nextZ = 999.0D;
+            if (x1 > x2) {
+                nextX = (double) x2 + 1.0D;
+            } else if (x1 < x2) {
+                nextX = (double) x2 + 0.0D;
+            } else {
+                hitX = false;
+            }
+            if (y1 > y2) {
+                nextY = (double) y2 + 1.0D;
+            } else if (y1 < y2) {
+                nextY = (double) y2 + 0.0D;
+            } else {
+                hitY = false;
+            }
+            if (z1 > z2) {
+                nextZ = (double) z2 + 1.0D;
+            } else if (z1 < z2) {
+                nextZ = (double) z2 + 0.0D;
+            } else {
+                hitZ = false;
+            }
+            double stepX = 999.0D;
+            double stepY = 999.0D;
+            double stepZ = 999.0D;
+            double dirX = end.x - start.x;
+            double dirY = end.y - start.y;
+            double dirZ = end.z - start.z;
+            if (hitX) {
+                stepX = (nextX - start.x) / dirX;
+            }
+            if (hitY) {
+                stepY = (nextY - start.y) / dirY;
+            }
+            if (hitZ) {
+                stepZ = (nextZ - start.z) / dirZ;
+            }
+            if (stepX == -0.0D) {
+                stepX = -1.0E-4D;
+            }
+            if (stepY == -0.0D) {
+                stepY = -1.0E-4D;
+            }
+            if (stepZ == -0.0D) {
+                stepZ = -1.0E-4D;
+            }
+            EnumFacing dir;
+            if (stepX < stepY && stepX < stepZ) {
+                dir = x1 > x2 ? EnumFacing.WEST : EnumFacing.EAST;
+                start = new Vec3d(nextX, start.y + dirY * stepX, start.z + dirZ * stepX);
+            } else if (stepY < stepZ) {
+                dir = y1 > y2 ? EnumFacing.DOWN : EnumFacing.UP;
+                start = new Vec3d(start.x + dirX * stepY, nextY, start.z + dirZ * stepY);
+            } else {
+                dir = z1 > z2 ? EnumFacing.NORTH : EnumFacing.SOUTH;
+                start = new Vec3d(start.x + dirX * stepZ, start.y + dirY * stepZ, nextZ);
+            }
+            x2 = MathHelper.floor(start.x) - (dir == EnumFacing.EAST ? 1 : 0);
+            y2 = MathHelper.floor(start.y) - (dir == EnumFacing.UP ? 1 : 0);
+            z2 = MathHelper.floor(start.z) - (dir == EnumFacing.SOUTH ? 1 : 0);
+            blockpos = new BlockPos(x2, y2, z2);
+            IBlockState iblockstate1 = ctx.world().getBlockState(blockpos);
+            if (!passable(iblockstate1)) {
+                return Blocks.DIRT.getDefaultState().collisionRayTrace(ctx.world(), blockpos, start, end);
+            }
+        }
+        return null;
     }
 }
