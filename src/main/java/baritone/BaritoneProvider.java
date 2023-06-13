@@ -30,7 +30,7 @@ import baritone.command.CommandSystem;
 import baritone.utils.player.PrimaryPlayerContext;
 import baritone.utils.schematic.SchematicSystem;
 
-import java.util.ArrayList;
+import java.util.AbstractList;
 import java.util.List;
 
 /**
@@ -39,25 +39,22 @@ import java.util.List;
  */
 public final class BaritoneProvider implements IBaritoneProvider {
 
-    private final Baritone primary;
+    private final IBaritone primary;
+    private final List<IBaritone> all;
 
-    {
+    public BaritoneProvider() {
         this.primary = new Baritone(PrimaryPlayerContext.INSTANCE);
+        this.all = this.new BaritoneList();
     }
 
     @Override
     public IBaritone getPrimaryBaritone() {
-        return primary;
+        return this.primary;
     }
 
     @Override
     public List<IBaritone> getAllBaritones() {
-        List<IBaritone> baritones = new ArrayList<>();
-        baritones.add(getPrimaryBaritone());
-        for (IBaritoneUser ibu : UserManager.INSTANCE.getUsers()) {
-            baritones.add(ibu.getBaritone());
-        }
-        return baritones;
+        return this.all;
     }
 
     @Override
@@ -78,5 +75,28 @@ public final class BaritoneProvider implements IBaritoneProvider {
     @Override
     public ISchematicSystem getSchematicSystem() {
         return SchematicSystem.INSTANCE;
+    }
+
+    private final class BaritoneList extends AbstractList<IBaritone> {
+
+        @Override
+        public int size() {
+            return 1 + this.getUsers().size();
+        }
+
+        @Override
+        public IBaritone get(int index) {
+            if (index < 0 || index >= this.size()) {
+                throw new IndexOutOfBoundsException();
+            }
+            if (index == 0) {
+                return BaritoneProvider.this.primary;
+            }
+            return this.getUsers().get(index - 1).getBaritone();
+        }
+
+        private List<IBaritoneUser> getUsers() {
+            return BaritoneProvider.this.getUserManager().getUsers();
+        }
     }
 }
