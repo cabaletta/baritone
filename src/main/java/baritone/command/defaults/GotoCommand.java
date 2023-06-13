@@ -46,7 +46,7 @@ public class GotoCommand extends Command {
         // is no need to handle the case of empty arguments.
         if (args.peekDatatypeOrNull(RelativeCoordinate.INSTANCE) != null) {
             args.requireMax(3);
-            BetterBlockPos origin = baritone.getPlayerContext().playerFeet();
+            BetterBlockPos origin = ctx.playerFeet();
             Goal goal = args.getDatatypePost(RelativeGoal.INSTANCE, origin);
             logDirect(String.format("Going to: %s", goal.toString()));
             baritone.getCustomGoalProcess().setGoalAndPath(goal);
