@@ -21,15 +21,19 @@ import baritone.Baritone;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalComposite;
 import baritone.api.pathing.goals.GoalGetToBlock;
+import baritone.api.pathing.goals.GoalRunAway;
 import baritone.api.process.ICraftingProcess;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
-import baritone.api.utils.BlockOptionalMetaLookup;
-import baritone.api.utils.Rotation;
-import baritone.api.utils.RotationUtils;
+import baritone.api.schematic.FillSchematic;
+import baritone.api.schematic.ISchematic;
+import baritone.api.utils.*;
 import baritone.api.utils.input.Input;
 import baritone.pathing.movement.CalculationContext;
+import baritone.pathing.movement.MovementHelper;
 import baritone.utils.BaritoneProcessHelper;
+import baritone.utils.BlockStateInterface;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.util.RecipeItemHelper;
 import net.minecraft.init.Blocks;
@@ -37,21 +41,23 @@ import net.minecraft.inventory.ClickType;
 import net.minecraft.inventory.ContainerPlayer;
 import net.minecraft.inventory.ContainerWorkbench;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.CraftingManager;
 import net.minecraft.item.crafting.IRecipe;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.Vec3d;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public final class CraftingProcess extends BaritoneProcessHelper implements ICraftingProcess {
     private int amount;
     private IRecipe recipe;
     private Goal goal;
-    private BlockPos placeAt;
+    private boolean placeCraftingTable = false;
     private boolean clearToPush = true;
 
     public CraftingProcess(Baritone baritone) {
@@ -69,7 +75,7 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
             logDirect("path calculation failed");
             onLostControl();
         }
-        if (goal != null) {
+        if (goal != null && !(goal instanceof GoalRunAway)) {
             //we are pathing to a table and therefor have to wait.
             if (goal.isInGoal(ctx.playerFeet())) {
                 rightClick();
@@ -78,7 +84,7 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
                 }
             }
             return new PathingCommand(goal, PathingCommandType.SET_GOAL_AND_PATH);
-        } else if (placeAt != null) {
+        } else if (placeCraftingTable) {
             placeCraftingtableNearby();
             return new PathingCommand(goal, PathingCommandType.SET_GOAL_AND_PATH);
         } else {
@@ -101,7 +107,7 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
         amount = 0;
         recipe = null;
         goal = null;
-        placeAt = null;
+        placeCraftingTable = false;
         baritone.getInputOverrideHandler().clearAllKeys();
     }
 
@@ -237,7 +243,7 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
         List<BlockPos> knownLocations = MineProcess.searchWorld(new CalculationContext(baritone, false), new BlockOptionalMetaLookup(Blocks.CRAFTING_TABLE), 64, Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
         if (knownLocations.isEmpty()) {
             if (hasCraftingTable()) {
-                placeAt = ctx.playerFeet().north();
+                placeCraftingTable = true;
             } else {
                 logDirect("Recipe requires a crafting table.");
                 onLostControl();
@@ -294,12 +300,25 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
 
     private void placeCraftingtableNearby() { //this code is so buggy im amazed that there are special cases where it works
         selectCraftingTable();
-        //todo search and look at a position where the table can be placed
-        baritone.getInputOverrideHandler().setInputForceState(Input.SNEAK, true);
-        baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
 
-        placeAt = null;
-        getACraftingTable();
+        ISchematic schematic = new FillSchematic(5, 4, 5, Blocks.CRAFTING_TABLE.getDefaultState());
+
+        List<IBlockState> desirableOnHotbar = new ArrayList<>();
+        Optional<Placement> toPlace = searchForPlaceables(schematic, desirableOnHotbar);
+
+        if (toPlace.isPresent()) {
+            Rotation rot = toPlace.get().rot;
+            baritone.getLookBehavior().updateTarget(rot, true);
+            ctx.player().inventory.currentItem = toPlace.get().hotbarSelection;
+            baritone.getInputOverrideHandler().setInputForceState(Input.SNEAK, true);
+            if ((ctx.isLookingAt(toPlace.get().placeAgainst) && ctx.objectMouseOver().sideHit.equals(toPlace.get().side)) || ctx.playerRotations().isReallyCloseTo(rot)) {
+                baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
+                placeCraftingTable = false;
+                getACraftingTable();
+            }
+        } else {
+            goal = new GoalRunAway(5, ctx.playerFeet());
+        }
     }
 
     private void selectCraftingTable() {
@@ -314,6 +333,135 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
                     i=0;
                 }
             }
+        }
+    }
+
+    private Optional<Placement> searchForPlaceables(ISchematic schematic, List<IBlockState> desirableOnHotbar) {
+        BetterBlockPos center = ctx.playerFeet();
+        for (int dx = -5; dx <= 5; dx++) {
+            for (int dy = -5; dy <= 1; dy++) {
+                for (int dz = -5; dz <= 5; dz++) {
+                    int x = center.x + dx;
+                    int y = center.y + dy;
+                    int z = center.z + dz;
+                    List<IBlockState> approxPlacable = new ArrayList<>();
+                    approxPlacable.add(Blocks.CRAFTING_TABLE.getDefaultState());
+                    IBlockState desired = schematic.desiredState(x, y, z, baritone.bsi.get0(x, y, z), approxPlacable);
+                    if (desired == null) {
+                        continue; // irrelevant
+                    }
+                    IBlockState curr = baritone.bsi.get0(x, y, z);
+                    if (MovementHelper.isReplaceable(x, y, z, curr, baritone.bsi) && !valid(curr, desired, false)) {
+                        if (dy == 1 && baritone.bsi.get0(x, y + 1, z).getBlock() == Blocks.AIR) {
+                            continue;
+                        }
+                        desirableOnHotbar.add(desired);
+                        Optional<Placement> opt = possibleToPlace(desired, x, y, z, baritone.bsi);
+                        if (opt.isPresent()) {
+                            return opt;
+                        }
+                    }
+                }
+            }
+        }
+        return Optional.empty();
+    }
+
+    private boolean valid(IBlockState current, IBlockState desired, boolean itemVerify) {
+        if (desired == null) {
+            return true;
+        }
+        return current.equals(desired);
+    }
+
+    private Optional<Placement> possibleToPlace(IBlockState toPlace, int x, int y, int z, BlockStateInterface bsi) {
+        for (EnumFacing against : EnumFacing.values()) {
+            BetterBlockPos placeAgainstPos = new BetterBlockPos(x, y, z).offset(against);
+            IBlockState placeAgainstState = bsi.get0(placeAgainstPos);
+            if (MovementHelper.isReplaceable(placeAgainstPos.x, placeAgainstPos.y, placeAgainstPos.z, placeAgainstState, bsi)) {
+                continue;
+            }
+            if (!ctx.world().mayPlace(toPlace.getBlock(), new BetterBlockPos(x, y, z), false, against, null)) {
+                continue;
+            }
+            AxisAlignedBB aabb = placeAgainstState.getBoundingBox(ctx.world(), placeAgainstPos);
+            for (Vec3d placementMultiplier : aabbSideMultipliers(against)) {
+                double placeX = placeAgainstPos.x + aabb.minX * placementMultiplier.x + aabb.maxX * (1 - placementMultiplier.x);
+                double placeY = placeAgainstPos.y + aabb.minY * placementMultiplier.y + aabb.maxY * (1 - placementMultiplier.y);
+                double placeZ = placeAgainstPos.z + aabb.minZ * placementMultiplier.z + aabb.maxZ * (1 - placementMultiplier.z);
+                Rotation rot = RotationUtils.calcRotationFromVec3d(RayTraceUtils.inferSneakingEyePosition(ctx.player()), new Vec3d(placeX, placeY, placeZ), ctx.playerRotations());
+                RayTraceResult result = RayTraceUtils.rayTraceTowards(ctx.player(), rot, ctx.playerController().getBlockReachDistance(), true);
+                if (result != null && result.typeOfHit == RayTraceResult.Type.BLOCK && result.getBlockPos().equals(placeAgainstPos) && result.sideHit == against.getOpposite()) {
+                    OptionalInt hotbar = hasAnyItemThatWouldPlace(toPlace, result, rot);
+                    if (hotbar.isPresent()) {
+                        return Optional.of(new Placement(hotbar.getAsInt(), placeAgainstPos, against.getOpposite(), rot));
+                    }
+                }
+            }
+        }
+        return Optional.empty();
+    }
+
+    private static Vec3d[] aabbSideMultipliers(EnumFacing side) {
+        switch (side) {
+            case UP:
+                return new Vec3d[]{new Vec3d(0.5, 1, 0.5), new Vec3d(0.1, 1, 0.5), new Vec3d(0.9, 1, 0.5), new Vec3d(0.5, 1, 0.1), new Vec3d(0.5, 1, 0.9)};
+            case DOWN:
+                return new Vec3d[]{new Vec3d(0.5, 0, 0.5), new Vec3d(0.1, 0, 0.5), new Vec3d(0.9, 0, 0.5), new Vec3d(0.5, 0, 0.1), new Vec3d(0.5, 0, 0.9)};
+            case NORTH:
+            case SOUTH:
+            case EAST:
+            case WEST:
+                double x = side.getXOffset() == 0 ? 0.5 : (1 + side.getXOffset()) / 2D;
+                double z = side.getZOffset() == 0 ? 0.5 : (1 + side.getZOffset()) / 2D;
+                return new Vec3d[]{new Vec3d(x, 0.25, z), new Vec3d(x, 0.75, z)};
+            default: // null
+                throw new IllegalStateException();
+        }
+    }
+
+    private OptionalInt hasAnyItemThatWouldPlace(IBlockState desired, RayTraceResult result, Rotation rot) {
+        for (int i = 0; i < 9; i++) {
+            ItemStack stack = ctx.player().inventory.mainInventory.get(i);
+            if (stack.isEmpty() || !(stack.getItem() instanceof ItemBlock)) {
+                continue;
+            }
+            float originalYaw = ctx.player().rotationYaw;
+            float originalPitch = ctx.player().rotationPitch;
+            // the state depends on the facing of the player sometimes
+            ctx.player().rotationYaw = rot.getYaw();
+            ctx.player().rotationPitch = rot.getPitch();
+            IBlockState wouldBePlaced = ((ItemBlock) stack.getItem()).getBlock().getStateForPlacement(
+                    ctx.world(),
+                    result.getBlockPos().offset(result.sideHit),
+                    result.sideHit,
+                    (float) result.hitVec.x - result.getBlockPos().getX(), // as in PlayerControllerMP
+                    (float) result.hitVec.y - result.getBlockPos().getY(),
+                    (float) result.hitVec.z - result.getBlockPos().getZ(),
+                    stack.getItem().getMetadata(stack.getMetadata()),
+                    ctx.player()
+            );
+            ctx.player().rotationYaw = originalYaw;
+            ctx.player().rotationPitch = originalPitch;
+            if (valid(wouldBePlaced, desired, true)) {
+                return OptionalInt.of(i);
+            }
+        }
+        return OptionalInt.empty();
+    }
+
+    public static class Placement {
+
+        private final int hotbarSelection;
+        private final BlockPos placeAgainst;
+        private final EnumFacing side;
+        private final Rotation rot;
+
+        public Placement(int hotbarSelection, BlockPos placeAgainst, EnumFacing side, Rotation rot) {
+            this.hotbarSelection = hotbarSelection;
+            this.placeAgainst = placeAgainst;
+            this.side = side;
+            this.rot = rot;
         }
     }
 }
