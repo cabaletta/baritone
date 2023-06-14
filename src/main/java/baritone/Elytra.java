@@ -48,7 +48,7 @@ public class Elytra extends Behavior implements Helper {
     static {
 
         try {
-            DataInputStream in = new DataInputStream(new FileInputStream(new File("/Users/leijurv/Dropbox/nether-pathfinder/build/test")));
+            DataInputStream in = new DataInputStream(new FileInputStream(new File("E:/Brady/Documents/Java/baritone/test")));
             int count = in.readInt();
             System.out.println("Count: " + count);
             for (int i = 0; i < count; i++) {
@@ -264,7 +264,6 @@ public class Elytra extends Behavior implements Helper {
                         }
                         if (requireClear ? isClear(start, dest) : clearView(start, dest)) {
                             Rotation rot = RotationUtils.calcRotationFromVec3d(start, dest, ctx.playerRotations());
-//                            ctx.player().rotationYaw = rot.getYaw();
                             long a = System.currentTimeMillis();
                             Float pitch = solvePitch(dest.subtract(start), steps, relaxation == 2);
                             if (pitch == null) {
@@ -272,7 +271,6 @@ public class Elytra extends Behavior implements Helper {
                                 continue;
                             }
                             long b = System.currentTimeMillis();
-//                            ctx.player().rotationPitch = pitch;
                             System.out.println("Solved pitch in " + (b - a) + " total time " + (b - t));
                             goingTo = i;
                             goal = path.get(i).add(0, dy, 0);

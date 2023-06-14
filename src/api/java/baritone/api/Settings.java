@@ -53,6 +53,7 @@ public final class Settings {
     public final Setting<Double> elytraFireworkSpeed = new Setting<>(0.6);
     public final Setting<Boolean> wasteFireworks = new Setting<>(false);
     public final Setting<Boolean> renderRaytraces = new Setting<>(false);
+    public final Setting<Boolean> elytraFreeLook = new Setting<>(false);
 
     /**
      * Allow Baritone to break blocks

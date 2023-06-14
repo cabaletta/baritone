@@ -98,6 +98,8 @@ public class MixinMinecraft {
     private void postUpdateEntities(CallbackInfo ci) {
         IBaritone baritone = BaritoneAPI.getProvider().getBaritoneForPlayer(this.player);
         if (baritone != null) {
+            // Intentionally call this after all entities have been updated. That way, any modification to rotations
+            // can be recognized by other entity code. (Fireworks and Pigs, for example)
             baritone.getGameEventHandler().onPlayerUpdate(new PlayerUpdateEvent(EventState.POST));
         }
     }
