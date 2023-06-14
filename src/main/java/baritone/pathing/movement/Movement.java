@@ -24,12 +24,14 @@ import baritone.api.pathing.movement.MovementStatus;
 import baritone.api.utils.*;
 import baritone.api.utils.input.Input;
 import baritone.behavior.PathingBehavior;
+import baritone.pathing.movement.movements.MovementTraverse;
 import baritone.utils.BlockStateInterface;
-import java.util.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.item.FallingBlockEntity;
 import net.minecraft.world.phys.AABB;
+
+import java.util.*;
 
 public abstract class Movement implements IMovement, MovementHelper {
 
@@ -123,7 +125,7 @@ public abstract class Movement implements IMovement, MovementHelper {
     public MovementStatus update() {
         ctx.player().getAbilities().flying = false;
         currentState = updateState(currentState);
-        if (MovementHelper.isLiquid(ctx, ctx.playerFeet()) && ctx.player().position().y < dest.y + 0.6) {
+        if ((MovementHelper.isLiquid(ctx, ctx.playerFeet()) && ctx.player().position().y < dest.y + 0.6) && !(Baritone.settings().swimInWater.value && this instanceof MovementTraverse)) {
             currentState.setInput(Input.JUMP, true);
         }
         if (ctx.player().isInWall()) {

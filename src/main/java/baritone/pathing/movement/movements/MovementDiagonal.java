@@ -21,6 +21,7 @@ import baritone.Baritone;
 import baritone.api.IBaritone;
 import baritone.api.pathing.movement.MovementStatus;
 import baritone.api.utils.BetterBlockPos;
+import baritone.api.utils.Rotation;
 import baritone.api.utils.input.Input;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
@@ -29,15 +30,16 @@ import baritone.pathing.movement.MovementState;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.pathing.MutableMoveResult;
 import com.google.common.collect.ImmutableSet;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 public class MovementDiagonal extends Movement {
 
@@ -271,6 +273,10 @@ public class MovementDiagonal extends Movement {
             state.setInput(Input.SPRINT, true);
         }
         MovementHelper.moveTowards(ctx, state, dest);
+        if (ctx.player().isSwimming() && Baritone.settings().swimInWater.value) {
+            state.setInput(Input.SPRINT, true);
+            state.setTarget(new MovementState.MovementTarget(new Rotation(state.getTarget().getRotation().get().getYaw(), -30), true));
+        }
         return state;
     }
 
