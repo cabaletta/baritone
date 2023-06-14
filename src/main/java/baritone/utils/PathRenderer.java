@@ -108,14 +108,14 @@ public final class PathRenderer implements IRenderer {
 
         drawPath(Elytra.path.subList(Math.max(behavior.baritone.elytra.playerNear - 30, 0), Math.min(behavior.baritone.elytra.playerNear + 30, Elytra.path.size())), 0, Color.RED, false, 0, 0);
         if (behavior.baritone.elytra.goal != null) {
-            drawDankLitGoalBox(renderView, new GoalBlock(behavior.baritone.elytra.goal), partialTicks, Color.GREEN);
+            drawGoal(renderView, new GoalBlock(behavior.baritone.elytra.goal), partialTicks, Color.GREEN);
         }
         if (!behavior.baritone.elytra.lines.isEmpty() && Baritone.settings().renderRaytraces.value) {
             IRenderer.startLines(Color.BLUE, settings.pathRenderLineWidthPixels.value, settings.renderPathIgnoreDepth.value);
             boolean orig = settings.renderPathAsLine.value;
             settings.renderPathAsLine.value = true;
             for (Pair<Vec3d, Vec3d> line : behavior.baritone.elytra.lines) {
-                drawLine(line.first().x, line.first().y, line.first().z, line.second().x, line.second().y, line.second().z);
+                emitLine(line.first().x, line.first().y, line.first().z, line.second().x, line.second().y, line.second().z);
                 tessellator.draw();
             }
             settings.renderPathAsLine.value = orig;
