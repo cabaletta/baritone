@@ -176,7 +176,7 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
     }
 
     private float mouseToAngle(int mouseDelta) {
-        final float f = baritone.getMinecraft().gameSettings.mouseSensitivity * 0.6f + 0.2f;
+        final float f = ctx.minecraft().gameSettings.mouseSensitivity * 0.6f + 0.2f;
         return mouseDelta * f * f * f * 8.0f * 0.15f;
     }
 

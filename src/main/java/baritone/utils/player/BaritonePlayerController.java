@@ -44,8 +44,8 @@ public final class BaritonePlayerController implements IPlayerController {
 
     private final Minecraft mc;
 
-    public BaritonePlayerController(Baritone baritone) {
-        this.mc = baritone.getMinecraft();
+    public BaritonePlayerController(Minecraft mc) {
+        this.mc = mc;
     }
 
     @Override

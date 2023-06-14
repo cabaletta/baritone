@@ -19,6 +19,7 @@ package baritone.api.utils;
 
 import baritone.api.cache.IWorldData;
 import net.minecraft.block.BlockSlab;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
@@ -32,6 +33,8 @@ import java.util.Optional;
  * @since 11/12/2018
  */
 public interface IPlayerContext {
+
+    Minecraft minecraft();
 
     EntityPlayerSP player();
 

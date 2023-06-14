@@ -97,7 +97,7 @@ public class Baritone implements IBaritone {
         this.gameEventHandler = new GameEventHandler(this);
 
         // Define this before behaviors try and get it, or else it will be null and the builds will fail!
-        this.playerContext = new BaritonePlayerContext(this);
+        this.playerContext = new BaritonePlayerContext(this, mc);
 
         {
             // the Behavior constructor calls baritone.registerBehavior(this) so this populates the behaviors arraylist
@@ -224,10 +224,6 @@ public class Baritone implements IBaritone {
                 mc.addScheduledTask(() -> mc.displayGuiScreen(new GuiClick()));
             } catch (Exception ignored) {}
         }).start();
-    }
-
-    public Minecraft getMinecraft() {
-        return this.mc;
     }
 
     public static Settings settings() {

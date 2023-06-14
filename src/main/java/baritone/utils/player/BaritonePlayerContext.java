@@ -37,10 +37,15 @@ public final class BaritonePlayerContext implements IPlayerContext {
     private final Minecraft mc;
     private final IPlayerController playerController;
 
-    public BaritonePlayerContext(Baritone baritone) {
+    public BaritonePlayerContext(Baritone baritone, Minecraft mc) {
         this.baritone = baritone;
-        this.mc = baritone.getMinecraft();
-        this.playerController = new BaritonePlayerController(baritone);
+        this.mc = mc;
+        this.playerController = new BaritonePlayerController(mc);
+    }
+
+    @Override
+    public Minecraft minecraft() {
+        return this.mc;
     }
 
     @Override

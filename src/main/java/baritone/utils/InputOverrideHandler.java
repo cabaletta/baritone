@@ -99,7 +99,7 @@ public final class InputOverrideHandler extends Behavior implements IInputOverri
             }
         } else {
             if (ctx.player().movementInput.getClass() == PlayerMovementInput.class) { // allow other movement inputs that aren't this one, e.g. for a freecam
-                ctx.player().movementInput = new MovementInputFromOptions(baritone.getMinecraft().gameSettings);
+                ctx.player().movementInput = new MovementInputFromOptions(ctx.minecraft().gameSettings);
             }
         }
         // only set it if it was previously incorrect

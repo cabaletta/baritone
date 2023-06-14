@@ -238,14 +238,13 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
     @Override
     public void onPlayerUpdate(PlayerUpdateEvent event) {
         if (current != null) {
-            final GameSettings settings = baritone.getMinecraft().gameSettings;
             switch (event.getState()) {
                 case PRE:
-                    lastAutoJump = settings.autoJump;
-                    settings.autoJump = false;
+                    lastAutoJump = ctx.minecraft().gameSettings.autoJump;
+                    ctx.minecraft().gameSettings.autoJump = false;
                     break;
                 case POST:
-                    settings.autoJump = lastAutoJump;
+                    ctx.minecraft().gameSettings.autoJump = lastAutoJump;
                     break;
                 default:
                     break;
