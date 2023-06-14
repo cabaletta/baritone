@@ -77,10 +77,13 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
             return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
         } else if (goal != null && !(goal instanceof GoalRunAway)) {
             //we are pathing to a table and therefor have to wait.
+            if (baritone.getInputOverrideHandler().isInputForcedDown(Input.SNEAK)) {
+                baritone.getInputOverrideHandler().setInputForceState(Input.SNEAK, false);
+            }
+            if (baritone.getInputOverrideHandler().isInputForcedDown(Input.CLICK_RIGHT)) {
+                baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, false);
+            }
             if (goal.isInGoal(ctx.playerFeet())) {
-                if (baritone.getInputOverrideHandler().isInputForcedDown(Input.SNEAK)) {
-                    baritone.getInputOverrideHandler().setInputForceState(Input.SNEAK, false);
-                }
                 rightClick();
                 if (ctx.player().openContainer instanceof ContainerWorkbench) {
                     goal = null;
@@ -301,7 +304,7 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
         return false;
     }
 
-    private void placeCraftingtableNearby() { //this code is so buggy im amazed that there are special cases where it works
+    private void placeCraftingtableNearby() {
         selectCraftingTable();
 
         ISchematic schematic = new FillSchematic(5, 4, 5, Blocks.CRAFTING_TABLE.getDefaultState());
@@ -319,7 +322,6 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
                 placeCraftingTable = false;
                 getACraftingTable();
             }
-            baritone.getInputOverrideHandler().setInputForceState(Input.SNEAK, false);
         } else {
             goal = new GoalRunAway(5, ctx.playerFeet());
         }
@@ -342,9 +344,9 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
 
     private Optional<Placement> searchForPlaceables(ISchematic schematic, List<IBlockState> desirableOnHotbar) {
         BetterBlockPos center = ctx.playerFeet();
-        for (int dx = -5; dx <= 5; dx++) {
-            for (int dy = -5; dy <= 1; dy++) {
-                for (int dz = -5; dz <= 5; dz++) {
+        for (int dx = -2; dx <= 2; dx++) {
+            for (int dy = -2; dy <= 2; dy++) {
+                for (int dz = -2; dz <= 2; dz++) {
                     int x = center.x + dx;
                     int y = center.y + dy;
                     int z = center.z + dz;
