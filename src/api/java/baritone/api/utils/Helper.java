@@ -42,7 +42,8 @@ public interface Helper {
     Helper HELPER = new Helper() {};
 
     /**
-     * Instance of the game
+     * The main game instance returned by {@link Minecraft#getMinecraft()}.
+     * Deprecated since {@link IPlayerContext#minecraft()} should be used instead (In the majority of cases).
      */
     @Deprecated
     Minecraft mc = Minecraft.getMinecraft();
