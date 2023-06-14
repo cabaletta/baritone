@@ -268,7 +268,7 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
         both.addAll(openSoulsand);
         for (BlockPos pos : both) {
             boolean soulsand = openSoulsand.contains(pos);
-            Optional<Rotation> rot = RotationUtils.reachableOffset(ctx.player(), pos, new Vec3d(pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5), ctx.playerController().getBlockReachDistance(), false);
+            Optional<Rotation> rot = RotationUtils.reachableOffset(ctx, pos, new Vec3d(pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5), ctx.playerController().getBlockReachDistance(), false);
             if (rot.isPresent() && isSafeToCancel && baritone.getInventoryBehavior().throwaway(true, soulsand ? this::isNetherWart : this::isPlantable)) {
                 RayTraceResult result = RayTraceUtils.rayTraceTowards(ctx.player(), rot.get(), ctx.playerController().getBlockReachDistance());
                 if (result.typeOfHit == RayTraceResult.Type.BLOCK && result.sideHit == EnumFacing.UP) {
@@ -286,7 +286,7 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
                     continue;
                 }
                 Vec3d faceCenter = new Vec3d(pos).add(0.5, 0.5, 0.5).add(new Vec3d(dir.getDirectionVec()).scale(0.5));
-                Optional<Rotation> rot = RotationUtils.reachableOffset(ctx.player(), pos, faceCenter, ctx.playerController().getBlockReachDistance(), false);
+                Optional<Rotation> rot = RotationUtils.reachableOffset(ctx, pos, faceCenter, ctx.playerController().getBlockReachDistance(), false);
                 if (rot.isPresent() && isSafeToCancel && baritone.getInventoryBehavior().throwaway(true, this::isCocoa)) {
                     RayTraceResult result = RayTraceUtils.rayTraceTowards(ctx.player(), rot.get(), ctx.playerController().getBlockReachDistance());
                     if (result.typeOfHit == RayTraceResult.Type.BLOCK && result.sideHit == dir) {

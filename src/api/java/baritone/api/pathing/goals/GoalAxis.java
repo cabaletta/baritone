@@ -43,6 +43,11 @@ public class GoalAxis implements Goal {
     }
 
     @Override
+    public boolean equals(Object o) {
+        return o.getClass() == GoalAxis.class;
+    }
+
+    @Override
     public String toString() {
         return "GoalAxis";
     }

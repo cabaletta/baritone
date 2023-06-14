@@ -210,7 +210,7 @@ public final class GetToBlockProcess extends BaritoneProcessHelper implements IG
 
     private boolean rightClick() {
         for (BlockPos pos : knownLocations) {
-            Optional<Rotation> reachable = RotationUtils.reachable(ctx.player(), pos, ctx.playerController().getBlockReachDistance());
+            Optional<Rotation> reachable = RotationUtils.reachable(ctx, pos, ctx.playerController().getBlockReachDistance());
             if (reachable.isPresent()) {
                 baritone.getLookBehavior().updateTarget(reachable.get(), true);
                 if (knownLocations.contains(ctx.getSelectedBlock().orElse(null))) {

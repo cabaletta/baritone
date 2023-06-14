@@ -23,27 +23,27 @@ public class SelectionRenderer implements IRenderer, AbstractGameEventListener {
         boolean ignoreDepth = settings.renderSelectionIgnoreDepth.value;
         float lineWidth = settings.selectionLineWidth.value;
 
-        if (!settings.renderSelection.value) {
+        if (!settings.renderSelection.value || selections.length == 0) {
             return;
         }
 
         IRenderer.startLines(settings.colorSelection.value, opacity, lineWidth, ignoreDepth);
 
         for (ISelection selection : selections) {
-            IRenderer.drawAABB(selection.aabb(), SELECTION_BOX_EXPANSION);
+            IRenderer.emitAABB(selection.aabb(), SELECTION_BOX_EXPANSION);
         }
 
         if (settings.renderSelectionCorners.value) {
             IRenderer.glColor(settings.colorSelectionPos1.value, opacity);
 
             for (ISelection selection : selections) {
-                IRenderer.drawAABB(new AxisAlignedBB(selection.pos1(), selection.pos1().add(1, 1, 1)));
+                IRenderer.emitAABB(new AxisAlignedBB(selection.pos1(), selection.pos1().add(1, 1, 1)));
             }
 
             IRenderer.glColor(settings.colorSelectionPos2.value, opacity);
 
             for (ISelection selection : selections) {
-                IRenderer.drawAABB(new AxisAlignedBB(selection.pos2(), selection.pos2().add(1, 1, 1)));
+                IRenderer.emitAABB(new AxisAlignedBB(selection.pos2(), selection.pos2().add(1, 1, 1)));
             }
         }
 

@@ -15,22 +15,35 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.api.behavior;
-
-import baritone.api.utils.Rotation;
+package baritone.api.schematic.mask;
 
 /**
  * @author Brady
- * @since 9/23/2018
  */
-public interface ILookBehavior extends IBehavior {
+public abstract class AbstractMask implements Mask {
 
-    /**
-     * Updates the current {@link ILookBehavior} target to target the specified rotations on the next tick. If any sort
-     * of block interaction is required, {@code blockInteract} should be {@code true}.
-     *
-     * @param rotation      The target rotations
-     * @param blockInteract Whether the target rotations are needed for a block interaction
-     */
-    void updateTarget(Rotation rotation, boolean blockInteract);
+    private final int widthX;
+    private final int heightY;
+    private final int lengthZ;
+
+    public AbstractMask(int widthX, int heightY, int lengthZ) {
+        this.widthX = widthX;
+        this.heightY = heightY;
+        this.lengthZ = lengthZ;
+    }
+
+    @Override
+    public int widthX() {
+        return this.widthX;
+    }
+
+    @Override
+    public int heightY() {
+        return this.heightY;
+    }
+
+    @Override
+    public int lengthZ() {
+        return this.lengthZ;
+    }
 }
