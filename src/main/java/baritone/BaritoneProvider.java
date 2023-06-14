@@ -28,7 +28,7 @@ import baritone.command.ExampleBaritoneControl;
 import baritone.utils.schematic.SchematicSystem;
 import net.minecraft.client.Minecraft;
 
-import java.util.Collections;
+import java.util.AbstractList;
 import java.util.List;
 
 /**
@@ -42,7 +42,7 @@ public final class BaritoneProvider implements IBaritoneProvider {
 
     {
         this.primary = new Baritone(Minecraft.getMinecraft());
-        this.all = Collections.singletonList(this.primary);
+        this.all = this.new BaritoneList();
 
         // Setup chat control, just for the primary instance
         this.primary.registerBehavior(ExampleBaritoneControl::new);
@@ -50,12 +50,12 @@ public final class BaritoneProvider implements IBaritoneProvider {
 
     @Override
     public IBaritone getPrimaryBaritone() {
-        return primary;
+        return this.primary;
     }
 
     @Override
     public List<IBaritone> getAllBaritones() {
-        return all;
+        return this.all;
     }
 
     @Override
@@ -71,5 +71,21 @@ public final class BaritoneProvider implements IBaritoneProvider {
     @Override
     public ISchematicSystem getSchematicSystem() {
         return SchematicSystem.INSTANCE;
+    }
+
+    private final class BaritoneList extends AbstractList<IBaritone> {
+
+        @Override
+        public int size() {
+            return 1;
+        }
+
+        @Override
+        public IBaritone get(int index) {
+            if (index == 0) {
+                return BaritoneProvider.this.primary;
+            }
+            throw new IndexOutOfBoundsException();
+        }
     }
 }
