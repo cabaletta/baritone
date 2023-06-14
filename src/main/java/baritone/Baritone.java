@@ -35,9 +35,9 @@ import baritone.utils.PathingControlManager;
 import baritone.utils.player.BaritonePlayerContext;
 import net.minecraft.client.Minecraft;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.concurrent.Executor;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -50,20 +50,13 @@ import java.util.concurrent.TimeUnit;
 public class Baritone implements IBaritone {
 
     private static final ThreadPoolExecutor threadPool;
-    private static final File dir;
 
     static {
         threadPool = new ThreadPoolExecutor(4, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<>());
-
-        dir = new File(Minecraft.getMinecraft().gameDir, "baritone");
-        if (!Files.exists(dir.toPath())) {
-            try {
-                Files.createDirectories(dir.toPath());
-            } catch (IOException ignored) {}
-        }
     }
 
     private final Minecraft mc;
+    private final Path directory;
 
     private final GameEventHandler gameEventHandler;
 
@@ -95,6 +88,13 @@ public class Baritone implements IBaritone {
     Baritone(Minecraft mc) {
         this.mc = mc;
         this.gameEventHandler = new GameEventHandler(this);
+
+        this.directory = mc.gameDir.toPath().resolve("baritone");
+        if (!Files.exists(this.directory)) {
+            try {
+                Files.createDirectories(this.directory);
+            } catch (IOException ignored) {}
+        }
 
         // Define this before behaviors try and get it, or else it will be null and the builds will fail!
         this.playerContext = new BaritonePlayerContext(this, mc);
@@ -226,12 +226,12 @@ public class Baritone implements IBaritone {
         }).start();
     }
 
-    public static Settings settings() {
-        return BaritoneAPI.getSettings();
+    public Path getDirectory() {
+        return this.directory;
     }
 
-    public static File getDir() {
-        return dir;
+    public static Settings settings() {
+        return BaritoneAPI.getSettings();
     }
 
     public static Executor getExecutor() {

@@ -17,7 +17,6 @@
 
 package baritone.utils.player;
 
-import baritone.Baritone;
 import baritone.api.utils.IPlayerController;
 import baritone.utils.accessor.IPlayerControllerMP;
 import net.minecraft.client.Minecraft;
