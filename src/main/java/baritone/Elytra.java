@@ -48,7 +48,7 @@ public class Elytra extends Behavior implements Helper {
     static {
 
         try {
-            DataInputStream in = new DataInputStream(new FileInputStream(new File("E:/Brady/Documents/Java/baritone/test")));
+            DataInputStream in = new DataInputStream(new FileInputStream(new File("/Users/leijurv/Dropbox/nether-pathfinder/build/test")));
             int count = in.readInt();
             System.out.println("Count: " + count);
             for (int i = 0; i < count; i++) {
