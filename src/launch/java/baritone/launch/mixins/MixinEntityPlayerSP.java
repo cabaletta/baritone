@@ -61,9 +61,8 @@ public class MixinEntityPlayerSP {
             method = "onUpdate",
             at = @At(
                     value = "INVOKE",
-                    target = "net/minecraft/client/entity/EntityPlayerSP.isRiding()Z",
-                    shift = At.Shift.BY,
-                    by = -3
+                    target = "net/minecraft/client/entity/AbstractClientPlayer.onUpdate()V",
+                    shift = At.Shift.AFTER
             )
     )
     private void onPreUpdate(CallbackInfo ci) {
