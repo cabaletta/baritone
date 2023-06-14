@@ -256,7 +256,7 @@ public class MovementPillar extends Movement {
                 BlockState frState = BlockStateInterface.get(ctx, src);
                 Block fr = frState.getBlock();
                 // TODO: Evaluate usage of getMaterial().isReplaceable()
-                if (!(fr instanceof AirBlock || frState.getMaterial().isReplaceable())) {
+                if (!(fr instanceof AirBlock || frState.canBeReplaced())) {
                     RotationUtils.reachable(ctx.player(), src, ctx.playerController().getBlockReachDistance())
                             .map(rot -> new MovementState.MovementTarget(rot, true))
                             .ifPresent(state::setTarget);

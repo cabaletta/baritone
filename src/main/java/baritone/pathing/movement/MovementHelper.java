@@ -43,7 +43,6 @@ import net.minecraft.world.level.material.FlowingFluid;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.material.FluidState;
-import net.minecraft.world.level.material.Material;
 import net.minecraft.world.level.material.WaterFluid;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.BlockHitResult;
@@ -327,7 +326,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         if (block == Blocks.LARGE_FERN || block == Blocks.TALL_GRASS) {
             return true;
         }
-        return state.getMaterial().isReplaceable();
+        return state.canBeReplaced();
     }
 
     @Deprecated
@@ -511,14 +510,14 @@ public interface MovementHelper extends ActionCosts, Helper {
 
     static boolean canUseFrostWalker(CalculationContext context, BlockState state) {
         return context.frostWalker != 0
-                && state.getMaterial() == Material.WATER
+                && state == FrostedIceBlock.meltsInto()
                 && ((Integer) state.getValue(LiquidBlock.LEVEL)) == 0;
     }
 
     static boolean canUseFrostWalker(IPlayerContext ctx, BlockPos pos) {
         BlockState state = BlockStateInterface.get(ctx, pos);
         return EnchantmentHelper.hasFrostWalker(ctx.player())
-                && state.getMaterial() == Material.WATER
+                && state == FrostedIceBlock.meltsInto()
                 && ((Integer) state.getValue(LiquidBlock.LEVEL)) == 0;
     }
 

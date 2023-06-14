@@ -126,8 +126,7 @@ jar {
 }
 
 remapJar {
-    targetNamespace = "named"
-    fallbackTargetNamespace = "intermediary"
+    target = "mojmap"
 }
 
 javadoc {
