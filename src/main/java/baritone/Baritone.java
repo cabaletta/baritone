@@ -20,7 +20,9 @@ package baritone;
 import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.Settings;
+import baritone.api.behavior.IBehavior;
 import baritone.api.event.listener.IEventBus;
+import baritone.api.process.IBaritoneProcess;
 import baritone.api.utils.IPlayerContext;
 import baritone.behavior.*;
 import baritone.cache.WorldProvider;
@@ -64,7 +66,6 @@ public class Baritone implements IBaritone {
     private final PathingBehavior pathingBehavior;
     private final LookBehavior lookBehavior;
     private final InventoryBehavior inventoryBehavior;
-    private final WaypointBehavior waypointBehavior;
     private final InputOverrideHandler inputOverrideHandler;
 
     private final FollowProcess followProcess;
@@ -73,7 +74,6 @@ public class Baritone implements IBaritone {
     private final CustomGoalProcess customGoalProcess;
     private final BuilderProcess builderProcess;
     private final ExploreProcess exploreProcess;
-    private final BackfillProcess backfillProcess;
     private final FarmProcess farmProcess;
     private final InventoryPauserProcess inventoryPauserProcess;
 
@@ -101,24 +101,24 @@ public class Baritone implements IBaritone {
         this.playerContext = new BaritonePlayerContext(this, mc);
 
         {
-            pathingBehavior      = this.registerBehavior(PathingBehavior::new);
-            lookBehavior         = this.registerBehavior(LookBehavior::new);
-            inventoryBehavior    = this.registerBehavior(InventoryBehavior::new);
-            inputOverrideHandler = this.registerBehavior(InputOverrideHandler::new);
-            waypointBehavior     = this.registerBehavior(WaypointBehavior::new);
+            this.pathingBehavior      = this.registerBehavior(PathingBehavior::new);
+            this.lookBehavior         = this.registerBehavior(LookBehavior::new);
+            this.inventoryBehavior    = this.registerBehavior(InventoryBehavior::new);
+            this.inputOverrideHandler = this.registerBehavior(InputOverrideHandler::new);
+            this.registerBehavior(WaypointBehavior::new);
         }
 
         this.pathingControlManager = new PathingControlManager(this);
         {
-            this.pathingControlManager.registerProcess(followProcess = new FollowProcess(this));
-            this.pathingControlManager.registerProcess(mineProcess = new MineProcess(this));
-            this.pathingControlManager.registerProcess(customGoalProcess = new CustomGoalProcess(this)); // very high iq
-            this.pathingControlManager.registerProcess(getToBlockProcess = new GetToBlockProcess(this));
-            this.pathingControlManager.registerProcess(builderProcess = new BuilderProcess(this));
-            this.pathingControlManager.registerProcess(exploreProcess = new ExploreProcess(this));
-            this.pathingControlManager.registerProcess(backfillProcess = new BackfillProcess(this));
-            this.pathingControlManager.registerProcess(farmProcess = new FarmProcess(this));
-            this.pathingControlManager.registerProcess(inventoryPauserProcess = new InventoryPauserProcess(this));
+            this.followProcess           = this.registerProcess(FollowProcess::new);
+            this.mineProcess             = this.registerProcess(MineProcess::new);
+            this.customGoalProcess       = this.registerProcess(CustomGoalProcess::new); // very high iq
+            this.getToBlockProcess       = this.registerProcess(GetToBlockProcess::new);
+            this.builderProcess          = this.registerProcess(BuilderProcess::new);
+            this.exploreProcess          = this.registerProcess(ExploreProcess::new);
+            this.farmProcess             = this.registerProcess(FarmProcess::new);
+            this.inventoryPauserProcess  = this.registerProcess(InventoryPauserProcess::new);
+            this.registerProcess(BackfillProcess::new);
         }
 
         this.worldProvider = new WorldProvider(this);
@@ -126,13 +126,19 @@ public class Baritone implements IBaritone {
         this.commandManager = new CommandManager(this);
     }
 
-    public void registerBehavior(Behavior behavior) {
+    public void registerBehavior(IBehavior behavior) {
         this.gameEventHandler.registerEventListener(behavior);
     }
 
-    public <T extends Behavior> T registerBehavior(Function<Baritone, T> constructor) {
+    public <T extends IBehavior> T registerBehavior(Function<Baritone, T> constructor) {
         final T behavior = constructor.apply(this);
         this.registerBehavior(behavior);
+        return behavior;
+    }
+
+    public <T extends IBaritoneProcess> T registerProcess(Function<Baritone, T> constructor) {
+        final T behavior = constructor.apply(this);
+        this.pathingControlManager.registerProcess(behavior);
         return behavior;
     }
 
