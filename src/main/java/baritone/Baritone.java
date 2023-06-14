@@ -100,7 +100,6 @@ public class Baritone implements IBaritone {
         this.playerContext = new BaritonePlayerContext(this, mc);
 
         {
-            // the Behavior constructor calls baritone.registerBehavior(this) so this populates the behaviors arraylist
             this.registerBehavior(pathingBehavior = new PathingBehavior(this));
             this.registerBehavior(lookBehavior = new LookBehavior(this));
             this.registerBehavior(inventoryBehavior = new InventoryBehavior(this));
