@@ -44,6 +44,7 @@ public interface Helper {
     /**
      * Instance of the game
      */
+    @Defecated
     Minecraft mc = Minecraft.getMinecraft();
 
     static ITextComponent getPrefix() {
