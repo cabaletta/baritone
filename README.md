@@ -4,16 +4,16 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/cabaletta/baritone/tree/master"><img src="https://img.shields.io/badge/MC-1.12.2-brightgreen.svg" alt="Minecraft"/></a>
-  <a href="https://github.com/cabaletta/baritone/tree/1.13.2"><img src="https://img.shields.io/badge/MC-1.13.2-yellow.svg" alt="Minecraft"/></a>
-  <a href="https://github.com/cabaletta/baritone/tree/1.14.4"><img src="https://img.shields.io/badge/MC-1.14.4-yellow.svg" alt="Minecraft"/></a>
-  <a href="https://github.com/cabaletta/baritone/tree/1.15.2"><img src="https://img.shields.io/badge/MC-1.15.2-yellow.svg" alt="Minecraft"/></a>
-  <a href="https://github.com/cabaletta/baritone/tree/1.16.5"><img src="https://img.shields.io/badge/MC-1.16.5-brightgreen.svg" alt="Minecraft"/></a>
-  <a href="https://github.com/cabaletta/baritone/tree/1.17.1"><img src="https://img.shields.io/badge/MC-1.17.1-yellow.svg" alt="Minecraft"/></a>
-  <a href="https://github.com/cabaletta/baritone/tree/1.18.2"><img src="https://img.shields.io/badge/MC-1.18.2-brightgreen.svg" alt="Minecraft"/></a>
-  <a href="https://github.com/cabaletta/baritone/tree/1.19.2"><img src="https://img.shields.io/badge/MC-1.19.2-brightgreen.svg" alt="Minecraft"/></a>
-  <a href="https://github.com/cabaletta/baritone/tree/1.19.4"><img src="https://img.shields.io/badge/MC-1.19.4-brightgreen.svg" alt="Minecraft"/></a>
-  <a href="https://github.com/cabaletta/baritone/tree/1.20.1"><img src="https://img.shields.io/badge/MC-1.20.1-brightgreen.svg" alt="Minecraft"/></a>
+  <img src="https://img.shields.io/badge/MC-1.12.2-brightgreen.svg" alt="Minecraft"/>
+  <img src="https://img.shields.io/badge/MC-1.13.2-yellow.svg" alt="Minecraft"/>
+  <img src="https://img.shields.io/badge/MC-1.14.4-yellow.svg" alt="Minecraft"/>
+  <img src="https://img.shields.io/badge/MC-1.15.2-yellow.svg" alt="Minecraft"/>
+  <img src="https://img.shields.io/badge/MC-1.16.5-brightgreen.svg" alt="Minecraft"/>
+  <img src="https://img.shields.io/badge/MC-1.17.1-yellow.svg" alt="Minecraft"/>
+  <img src="https://img.shields.io/badge/MC-1.18.2-brightgreen.svg" alt="Minecraft"/>
+  <img src="https://img.shields.io/badge/MC-1.19.2-brightgreen.svg" alt="Minecraft"/>
+  <img src="https://img.shields.io/badge/MC-1.19.4-brightgreen.svg" alt="Minecraft"/>
+  <img src="https://img.shields.io/badge/MC-1.20.1-brightgreen.svg" alt="Minecraft"/>
 </p>
 
 <p align="center">
