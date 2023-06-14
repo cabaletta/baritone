@@ -36,7 +36,6 @@ import baritone.pathing.path.PathExecutor;
 import baritone.utils.PathRenderer;
 import baritone.utils.PathingCommandContext;
 import baritone.utils.pathing.Favoring;
-import net.minecraft.client.settings.GameSettings;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.ArrayList;
