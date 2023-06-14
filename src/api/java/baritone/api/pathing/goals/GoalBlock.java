@@ -67,6 +67,21 @@ public class GoalBlock implements Goal, IGoalRenderPos {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        GoalBlock goal = (GoalBlock) o;
+        return x == goal.x
+                && y == goal.y
+                && z == goal.z;
+    }
+
+    @Override
     public String toString() {
         return String.format(
                 "GoalBlock{x=%s,y=%s,z=%s}",
