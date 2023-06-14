@@ -71,13 +71,16 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
 
     @Override
     public synchronized PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
-        if (calcFailed) { //is this correct?
+        if (calcFailed) {
             logDirect("path calculation failed");
             onLostControl();
-        }
-        if (goal != null && !(goal instanceof GoalRunAway)) {
+            return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
+        } else if (goal != null && !(goal instanceof GoalRunAway)) {
             //we are pathing to a table and therefor have to wait.
             if (goal.isInGoal(ctx.playerFeet())) {
+                if (baritone.getInputOverrideHandler().isInputForcedDown(Input.SNEAK)) {
+                    baritone.getInputOverrideHandler().setInputForceState(Input.SNEAK, false);
+                }
                 rightClick();
                 if (ctx.player().openContainer instanceof ContainerWorkbench) {
                     goal = null;
@@ -316,6 +319,7 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
                 placeCraftingTable = false;
                 getACraftingTable();
             }
+            baritone.getInputOverrideHandler().setInputForceState(Input.SNEAK, false);
         } else {
             goal = new GoalRunAway(5, ctx.playerFeet());
         }
