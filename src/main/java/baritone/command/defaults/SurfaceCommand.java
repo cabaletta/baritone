@@ -38,13 +38,13 @@ public class SurfaceCommand extends Command {
 
     @Override
     public void execute(String label, IArgConsumer args) throws CommandException {
-        final BetterBlockPos playerPos = baritone.getPlayerContext().playerFeet();
-        final int surfaceLevel = baritone.getPlayerContext().world().getSeaLevel();
-        final int worldHeight = baritone.getPlayerContext().world().getActualHeight();
+        final BetterBlockPos playerPos = ctx.playerFeet();
+        final int surfaceLevel = ctx.world().getSeaLevel();
+        final int worldHeight = ctx.world().getActualHeight();
 
         // Ensure this command will not run if you are above the surface level and the block above you is air
         // As this would imply that your are already on the open surface
-        if (playerPos.getY() > surfaceLevel && mc.world.getBlockState(playerPos.up()).getBlock() instanceof BlockAir) {
+        if (playerPos.getY() > surfaceLevel && ctx.world().getBlockState(playerPos.up()).getBlock() instanceof BlockAir) {
             logDirect("Already at surface");
             return;
         }

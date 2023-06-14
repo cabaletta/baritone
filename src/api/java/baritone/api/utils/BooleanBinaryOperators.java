@@ -15,22 +15,24 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.api.behavior;
-
-import baritone.api.utils.Rotation;
+package baritone.api.utils;
 
 /**
  * @author Brady
- * @since 9/23/2018
  */
-public interface ILookBehavior extends IBehavior {
+public enum BooleanBinaryOperators implements BooleanBinaryOperator {
+    OR((a, b) -> a || b),
+    AND((a, b) -> a && b),
+    XOR((a, b) -> a ^ b);
 
-    /**
-     * Updates the current {@link ILookBehavior} target to target the specified rotations on the next tick. If any sort
-     * of block interaction is required, {@code blockInteract} should be {@code true}.
-     *
-     * @param rotation      The target rotations
-     * @param blockInteract Whether the target rotations are needed for a block interaction
-     */
-    void updateTarget(Rotation rotation, boolean blockInteract);
+    private final BooleanBinaryOperator op;
+
+    BooleanBinaryOperators(BooleanBinaryOperator op) {
+        this.op = op;
+    }
+
+    @Override
+    public boolean applyAsBoolean(boolean a, boolean b) {
+        return this.op.applyAsBoolean(a, b);
+    }
 }

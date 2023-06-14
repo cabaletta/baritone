@@ -15,22 +15,30 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.api.behavior;
-
-import baritone.api.utils.Rotation;
+package baritone.api.schematic.mask;
 
 /**
  * @author Brady
- * @since 9/23/2018
  */
-public interface ILookBehavior extends IBehavior {
+final class PreComputedMask extends AbstractMask implements StaticMask {
 
-    /**
-     * Updates the current {@link ILookBehavior} target to target the specified rotations on the next tick. If any sort
-     * of block interaction is required, {@code blockInteract} should be {@code true}.
-     *
-     * @param rotation      The target rotations
-     * @param blockInteract Whether the target rotations are needed for a block interaction
-     */
-    void updateTarget(Rotation rotation, boolean blockInteract);
+    private final boolean[][][] mask;
+
+    public PreComputedMask(StaticMask mask) {
+        super(mask.widthX(), mask.heightY(), mask.lengthZ());
+
+        this.mask = new boolean[this.heightY()][this.lengthZ()][this.widthX()];
+        for (int y = 0; y < this.heightY(); y++) {
+            for (int z = 0; z < this.lengthZ(); z++) {
+                for (int x = 0; x < this.widthX(); x++) {
+                    this.mask[y][z][x] = mask.partOfMask(x, y, z);
+                }
+            }
+        }
+    }
+
+    @Override
+    public boolean partOfMask(int x, int y, int z) {
+        return this.mask[y][z][x];
+    }
 }
