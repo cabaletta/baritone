@@ -36,6 +36,7 @@ import baritone.pathing.path.PathExecutor;
 import baritone.utils.PathRenderer;
 import baritone.utils.PathingCommandContext;
 import baritone.utils.pathing.Favoring;
+import net.minecraft.client.settings.GameSettings;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.ArrayList;
@@ -237,13 +238,14 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
     @Override
     public void onPlayerUpdate(PlayerUpdateEvent event) {
         if (current != null) {
+            final GameSettings settings = baritone.getMinecraft().gameSettings;
             switch (event.getState()) {
                 case PRE:
-                    lastAutoJump = mc.gameSettings.autoJump;
-                    mc.gameSettings.autoJump = false;
+                    lastAutoJump = settings.autoJump;
+                    settings.autoJump = false;
                     break;
                 case POST:
-                    mc.gameSettings.autoJump = lastAutoJump;
+                    settings.autoJump = lastAutoJump;
                     break;
                 default:
                     break;

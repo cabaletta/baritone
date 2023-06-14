@@ -20,7 +20,6 @@ package baritone.utils.player;
 import baritone.Baritone;
 import baritone.api.cache.IWorldData;
 import baritone.api.utils.*;
-import baritone.behavior.LookBehavior;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.util.math.RayTraceResult;
@@ -66,8 +65,7 @@ public final class BaritonePlayerContext implements IPlayerContext {
 
     @Override
     public Rotation playerRotations() {
-        return ((LookBehavior) this.baritone.getLookBehavior()).getEffectiveRotation()
-                .orElseGet(IPlayerContext.super::playerRotations);
+        return this.baritone.getLookBehavior().getEffectiveRotation().orElseGet(IPlayerContext.super::playerRotations);
     }
 
     @Override

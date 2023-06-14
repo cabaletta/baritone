@@ -44,7 +44,7 @@ public class WorldProvider implements IWorldProvider, Helper {
 
     private static final Map<Path, WorldData> worldCache = new HashMap<>(); // this is how the bots have the same cached world
 
-    private Baritone baritone;
+    private final Baritone baritone;
     private WorldData currentWorld;
     private World mcWorld; // this let's us detect a broken load/unload hook
 
