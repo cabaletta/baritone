@@ -264,17 +264,19 @@ public class Elytra extends Behavior implements Helper {
                         }
                         if (requireClear ? isClear(start, dest) : clearView(start, dest)) {
                             Rotation rot = RotationUtils.calcRotationFromVec3d(start, dest, ctx.playerRotations());
-                            ctx.player().rotationYaw = rot.getYaw();
+//                            ctx.player().rotationYaw = rot.getYaw();
                             long a = System.currentTimeMillis();
                             Float pitch = solvePitch(dest.subtract(start), steps, relaxation == 2);
                             if (pitch == null) {
+                                baritone.getLookBehavior().updateTarget(new Rotation(rot.getYaw(), ctx.playerRotations().getPitch()), false);
                                 continue;
                             }
                             long b = System.currentTimeMillis();
-                            ctx.player().rotationPitch = pitch;
+//                            ctx.player().rotationPitch = pitch;
                             System.out.println("Solved pitch in " + (b - a) + " total time " + (b - t));
                             goingTo = i;
                             goal = path.get(i).add(0, dy, 0);
+                            baritone.getLookBehavior().updateTarget(new Rotation(rot.getYaw(), pitch), false);
                             return;
                         }
                     }
