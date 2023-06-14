@@ -54,7 +54,7 @@ public class SurfaceCommand extends Command {
         for (int currentIteratedY = startingYPos; currentIteratedY < worldHeight; currentIteratedY++) {
             final BetterBlockPos newPos = new BetterBlockPos(playerPos.getX(), currentIteratedY, playerPos.getZ());
 
-            if (!(mc.world.getBlockState(newPos).getBlock() instanceof BlockAir) && newPos.getY() > playerPos.getY()) {
+            if (!(ctx.world().getBlockState(newPos).getBlock() instanceof BlockAir) && newPos.getY() > playerPos.getY()) {
                 Goal goal = new GoalBlock(newPos.up());
                 logDirect(String.format("Going to: %s", goal.toString()));
                 baritone.getCustomGoalProcess().setGoalAndPath(goal);

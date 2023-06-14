@@ -42,6 +42,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 
 /**
  * @author Brady
@@ -100,11 +101,11 @@ public class Baritone implements IBaritone {
         this.playerContext = new BaritonePlayerContext(this, mc);
 
         {
-            this.registerBehavior(pathingBehavior = new PathingBehavior(this));
-            this.registerBehavior(lookBehavior = new LookBehavior(this));
-            this.registerBehavior(inventoryBehavior = new InventoryBehavior(this));
-            this.registerBehavior(inputOverrideHandler = new InputOverrideHandler(this));
-            this.registerBehavior(waypointBehavior = new WaypointBehavior(this));
+            pathingBehavior      = this.registerBehavior(PathingBehavior::new);
+            lookBehavior         = this.registerBehavior(LookBehavior::new);
+            inventoryBehavior    = this.registerBehavior(InventoryBehavior::new);
+            inputOverrideHandler = this.registerBehavior(InputOverrideHandler::new);
+            waypointBehavior     = this.registerBehavior(WaypointBehavior::new);
         }
 
         this.pathingControlManager = new PathingControlManager(this);
@@ -125,13 +126,19 @@ public class Baritone implements IBaritone {
         this.commandManager = new CommandManager(this);
     }
 
+    public void registerBehavior(Behavior behavior) {
+        this.gameEventHandler.registerEventListener(behavior);
+    }
+
+    public <T extends Behavior> T registerBehavior(Function<Baritone, T> constructor) {
+        final T behavior = constructor.apply(this);
+        this.registerBehavior(behavior);
+        return behavior;
+    }
+
     @Override
     public PathingControlManager getPathingControlManager() {
         return this.pathingControlManager;
-    }
-
-    public void registerBehavior(Behavior behavior) {
-        this.gameEventHandler.registerEventListener(behavior);
     }
 
     @Override
@@ -173,6 +180,7 @@ public class Baritone implements IBaritone {
         return this.lookBehavior;
     }
 
+    @Override
     public ExploreProcess getExploreProcess() {
         return this.exploreProcess;
     }
@@ -182,6 +190,7 @@ public class Baritone implements IBaritone {
         return this.mineProcess;
     }
 
+    @Override
     public FarmProcess getFarmProcess() {
         return this.farmProcess;
     }

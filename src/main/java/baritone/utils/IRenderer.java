@@ -19,11 +19,12 @@ package baritone.utils;
 
 import baritone.api.BaritoneAPI;
 import baritone.api.Settings;
-import baritone.api.utils.Helper;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.entity.RenderManager;
+import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.math.AxisAlignedBB;
 
@@ -35,7 +36,8 @@ public interface IRenderer {
 
     Tessellator tessellator = Tessellator.getInstance();
     BufferBuilder buffer = tessellator.getBuffer();
-    RenderManager renderManager = Helper.mc.getRenderManager();
+    RenderManager renderManager = Minecraft.getMinecraft().getRenderManager();
+    TextureManager textureManager = Minecraft.getMinecraft().getTextureManager();
     Settings settings = BaritoneAPI.getSettings();
 
     float[] color = new float[] {1.0F, 1.0F, 1.0F, 255.0F};

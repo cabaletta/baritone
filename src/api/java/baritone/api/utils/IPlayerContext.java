@@ -75,6 +75,8 @@ public interface IPlayerContext {
         return new Vec3d(player().posX, player().posY + player().getEyeHeight(), player().posZ);
     }
 
+    BetterBlockPos viewerPos();
+
     default Rotation playerRotations() {
         return new Rotation(player().rotationYaw, player().rotationPitch);
     }

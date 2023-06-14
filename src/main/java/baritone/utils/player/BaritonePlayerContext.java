@@ -22,7 +22,10 @@ import baritone.api.cache.IWorldData;
 import baritone.api.utils.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraft.entity.Entity;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 /**
@@ -66,6 +69,12 @@ public final class BaritonePlayerContext implements IPlayerContext {
     @Override
     public IWorldData worldData() {
         return this.baritone.getWorldProvider().getCurrentWorld();
+    }
+
+    @Override
+    public BetterBlockPos viewerPos() {
+        final Entity entity = this.mc.getRenderViewEntity();
+        return entity == null ? this.playerFeet() : BetterBlockPos.from(new BlockPos(entity));
     }
 
     @Override

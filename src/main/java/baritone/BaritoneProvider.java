@@ -45,7 +45,7 @@ public final class BaritoneProvider implements IBaritoneProvider {
         this.all = Collections.singletonList(this.primary);
 
         // Setup chat control, just for the primary instance
-        new ExampleBaritoneControl(this.primary);
+        this.primary.registerBehavior(ExampleBaritoneControl::new);
     }
 
     @Override
