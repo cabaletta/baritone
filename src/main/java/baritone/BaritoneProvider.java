@@ -28,8 +28,9 @@ import baritone.command.ExampleBaritoneControl;
 import baritone.utils.schematic.SchematicSystem;
 import net.minecraft.client.Minecraft;
 
-import java.util.AbstractList;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * @author Brady
@@ -37,25 +38,40 @@ import java.util.List;
  */
 public final class BaritoneProvider implements IBaritoneProvider {
 
-    private final Baritone primary;
     private final List<IBaritone> all;
+    private final List<IBaritone> allView;
 
-    {
-        this.primary = new Baritone(Minecraft.getMinecraft());
-        this.all = this.new BaritoneList();
+    public BaritoneProvider() {
+        this.all = new CopyOnWriteArrayList<>();
+        this.allView = Collections.unmodifiableList(this.all);
 
         // Setup chat control, just for the primary instance
-        this.primary.registerBehavior(ExampleBaritoneControl::new);
+        final Baritone primary = (Baritone) this.createBaritone(Minecraft.getMinecraft());
+        primary.registerBehavior(ExampleBaritoneControl::new);
     }
 
     @Override
     public IBaritone getPrimaryBaritone() {
-        return this.primary;
+        return this.all.get(0);
     }
 
     @Override
     public List<IBaritone> getAllBaritones() {
-        return this.all;
+        return this.allView;
+    }
+
+    @Override
+    public synchronized IBaritone createBaritone(Minecraft minecraft) {
+        IBaritone baritone = this.getBaritoneForMinecraft(minecraft);
+        if (baritone == null) {
+            this.all.add(baritone = new Baritone(minecraft));
+        }
+        return baritone;
+    }
+
+    @Override
+    public synchronized boolean destroyBaritone(IBaritone baritone) {
+        return baritone != this.getPrimaryBaritone() && this.all.remove(baritone);
     }
 
     @Override
@@ -71,21 +87,5 @@ public final class BaritoneProvider implements IBaritoneProvider {
     @Override
     public ISchematicSystem getSchematicSystem() {
         return SchematicSystem.INSTANCE;
-    }
-
-    private final class BaritoneList extends AbstractList<IBaritone> {
-
-        @Override
-        public int size() {
-            return 1;
-        }
-
-        @Override
-        public IBaritone get(int index) {
-            if (index == 0) {
-                return BaritoneProvider.this.primary;
-            }
-            throw new IndexOutOfBoundsException();
-        }
     }
 }
