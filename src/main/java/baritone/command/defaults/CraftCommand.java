@@ -38,35 +38,34 @@ public class CraftCommand extends Command {
 
     @Override
     public void execute(String label, IArgConsumer args) throws CommandException {
-        String itemName = args.getString();
-        Item item = Item.getByNameOrId(itemName);
+        int amount = args.getAsOrDefault(Integer.class, 1);
 
-        int amount = args.hasAny() ? args.getAs(Integer.class) : 1;
+        Item item = args.getAsOrNull(Item.class);
 
-        if (item == null) {//this is hacky, but it gets the job done for now. also we arnt interested in non craft-able items anyway
-            itemName = itemName.replace("_", " ");
-            boolean recipeExists = false;
+        if (item == null) {
+            String itemName = args.rawRest();
+            //boolean recipeExists = false;
             for (IRecipe recipe : CraftingManager.REGISTRY) {
                 if (recipe.getRecipeOutput().getDisplayName().equalsIgnoreCase(itemName)) {
                     if (baritone.getCraftingProcess().canCraft(recipe, amount)) {
                         baritone.getCraftingProcess().craftRecipe(recipe, amount);
                         return;
-                    } else { //a recipe exists but we cant craft it
+                    } /*else { //a recipe exists but we cant craft it
                         recipeExists = true;
-                    }
+                    }/**/
                 }
-            }
+            }/*
             if (recipeExists) {
                 logDirect("Insufficient Resources");
             } else {
                 logDirect("Invalid Item");
-            }
+            }/**/
         } else if (!baritone.getCraftingProcess().hasCraftingRecipe(item)) {
             logDirect("no crafting recipe for "+item.getTranslationKey()+" found.");
-        } else if (baritone.getCraftingProcess().canCraft(item, amount)){
-            baritone.getCraftingProcess().craftItem(item, amount);
-        } else {
+        } else if (!baritone.getCraftingProcess().canCraft(item, amount)){
             logDirect("Insufficient Resources");
+        } else {
+            baritone.getCraftingProcess().craftItem(item, amount);
         }
     }
 
@@ -92,10 +91,10 @@ public class CraftCommand extends Command {
                 "Go to a crafting table and craft a item.",
                 "",
                 "Usage:",
-                "> craft [item] <amount> - Go to a crafting table, and craft a item.",
+                "> craft [quantity] <item>  - Go to a crafting table, and craft a item.",
                 "Examples:",
-                "> craft planks 17 -> will craft 20 planks of any logs you have.",
-                "> craft oak_wood_planks -> will craft 4 oak wood planks."
+                "> craft 17 planks -> will craft 20 planks out of any logs you have.",
+                "> craft oak wood planks -> will craft 4 oak wood planks."
         );
     }
 }
