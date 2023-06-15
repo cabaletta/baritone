@@ -45,6 +45,7 @@ import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.CraftingManager;
 import net.minecraft.item.crafting.IRecipe;
+import net.minecraft.network.play.client.CPacketPlaceRecipe;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
@@ -58,7 +59,9 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
     private IRecipe recipe;
     private Goal goal;
     private boolean placeCraftingTable = false;
-    private boolean clearToPush = true;
+    private boolean clearToPush;
+    List<BlockPos> knownLocations;
+    private int tickCount;
 
     public CraftingProcess(Baritone baritone) {
         super(baritone);
@@ -77,12 +80,7 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
             return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
         } else if (goal != null && !(goal instanceof GoalRunAway)) {
             //we are pathing to a table and therefor have to wait.
-            if (baritone.getInputOverrideHandler().isInputForcedDown(Input.SNEAK)) {
-                baritone.getInputOverrideHandler().setInputForceState(Input.SNEAK, false);
-            }
-            if (baritone.getInputOverrideHandler().isInputForcedDown(Input.CLICK_RIGHT)) {
-                baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, false);
-            }
+            baritone.getInputOverrideHandler().clearAllKeys();
             if (goal.isInGoal(ctx.playerFeet())) {
                 rightClick();
                 if (ctx.player().openContainer instanceof ContainerWorkbench) {
@@ -114,6 +112,7 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
         recipe = null;
         goal = null;
         placeCraftingTable = false;
+        knownLocations = null;
         baritone.getInputOverrideHandler().clearAllKeys();
     }
 
@@ -125,9 +124,12 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
     @Override
     public void craftItem(Item item, int amount) {
         if (canCraft(item, amount)) {
+            this.recipe = getCraftingRecipeForItem(item, amount);
             this.amount = amount;
+            clearToPush = true;
             logDirect("Crafting now " + amount + "x [" + recipe.getRecipeOutput().getDisplayName() + "]");
             if (!canCraftInInventory(recipe)) {
+                knownLocations = MineProcess.searchWorld(new CalculationContext(baritone, false), new BlockOptionalMetaLookup(Blocks.CRAFTING_TABLE), 64, Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
                 getACraftingTable();
             }
         } else {
@@ -140,8 +142,10 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
         if (canCraft(recipe, amount)) {
             this.recipe = recipe;
             this.amount = amount;
+            clearToPush = true;
             logDirect("Crafting now " + amount + "x [" + recipe.getRecipeOutput().getDisplayName() + "]");
             if (!canCraftInInventory(recipe)) {
+                knownLocations = MineProcess.searchWorld(new CalculationContext(baritone, false), new BlockOptionalMetaLookup(Blocks.CRAFTING_TABLE), 64, Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
                 getACraftingTable();
             }
         } else {
@@ -174,7 +178,6 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
         List<IRecipe> recipeList = getCraftingRecipes(item);
         for (IRecipe recipe : recipeList) {
             if (canCraft(recipe, amount)) {
-                this.recipe = recipe;
                 return true;
             }
         }
@@ -195,7 +198,17 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
 
     @Override
     public boolean canCraftInInventory(IRecipe recipe) {
-        return recipe.canFit(2,2) && !ctx.player().isCreative();
+        return recipe.canFit(2, 2) && !ctx.player().isCreative();
+    }
+
+    private IRecipe getCraftingRecipeForItem(Item item, int amount) {
+        List<IRecipe> recipeList = getCraftingRecipes(item);
+        for (IRecipe recipe : recipeList) {
+            if (canCraft(recipe, amount)) {
+                return recipe;
+            }
+        }
+        return null;
     }
 
     private void moveItemsToCraftingGrid() {
@@ -203,7 +216,7 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
         int windowId = ctx.player().openContainer.windowId;
         //try to put the recipe the required amount of times in to the crafting grid.
         for (int i = 0; i * recipe.getRecipeOutput().getCount() < amount; i++) {
-            mc.playerController.func_194338_a(windowId, recipe, GuiScreen.isShiftKeyDown(), ctx.player());
+            ctx.player().connection.sendPacket(new CPacketPlaceRecipe(windowId, recipe, GuiScreen.isShiftKeyDown()));
         }
     }
 
@@ -212,8 +225,8 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
         if (inputCount > 0) {
             int windowId = ctx.player().openContainer.windowId;
             int slotID = 0; //slot id. for crafting table output it is 0
-            int randomIntWeDontNeedButHaveToProvide = 0; //idk isnt used
-            mc.playerController.windowClick(windowId, slotID, randomIntWeDontNeedButHaveToProvide, ClickType.QUICK_MOVE, ctx.player());
+            int mouseButton = 0; //idk isnt used
+            ctx.playerController().windowClick(windowId, slotID, mouseButton, ClickType.QUICK_MOVE, ctx.player());
             amount = amount - (recipe.getRecipeOutput().getCount() * inputCount);
             clearToPush = true;
         }
@@ -246,9 +259,12 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
     }
 
     private void getACraftingTable() {
-        List<BlockPos> knownLocations = MineProcess.searchWorld(new CalculationContext(baritone, false), new BlockOptionalMetaLookup(Blocks.CRAFTING_TABLE), 64, Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
+        int mineGoalUpdateInterval = Baritone.settings().mineGoalUpdateInterval.value;
+        if (mineGoalUpdateInterval != 0 && tickCount++ % mineGoalUpdateInterval == 0) {
+            knownLocations = MineProcess.searchWorld(new CalculationContext(baritone, false), new BlockOptionalMetaLookup(Blocks.CRAFTING_TABLE), 64, Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
+        }
         if (knownLocations.isEmpty()) {
-            if (hasCraftingTable()) {
+            if (baritone.getInventoryBehavior().throwaway(false, this::isCraftingTable)) {
                 placeCraftingTable = true;
             } else {
                 logDirect("Recipe requires a crafting table.");
@@ -259,13 +275,8 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
         }
     }
 
-    private boolean hasCraftingTable() {
-        for (ItemStack itemstack : ctx.player().inventory.mainInventory) {
-            if (itemstack.getItem() == Item.getItemFromBlock(Blocks.CRAFTING_TABLE)) {
-                return true;
-            }
-        }
-        return false;
+    private boolean isCraftingTable(ItemStack itemStack) {
+        return itemStack.getItem() == Item.getItemFromBlock(Blocks.CRAFTING_TABLE);
     }
 
     private Goal createGoal(BlockPos pos) {
@@ -275,15 +286,15 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
     private boolean rightClick() { //shamelessly copied from go to block process
         BlockPos bp = null;
         if (goal instanceof GoalComposite) {
-            Goal[] goals = ((GoalComposite)goal).goals();
+            Goal[] goals = ((GoalComposite) goal).goals();
             for (Goal goal : goals) {
                 if (goal.isInGoal(ctx.playerFeet()) && goal instanceof GoalGetToBlock) {
-                    bp = ((GoalGetToBlock)goal).getGoalPos();
+                    bp = ((GoalGetToBlock) goal).getGoalPos();
                     break;
                 }
             }
         } else {
-            bp = ((GoalGetToBlock)goal).getGoalPos();
+            bp = ((GoalGetToBlock) goal).getGoalPos();
         }
         if (bp != null) {
             Optional<Rotation> reachable = RotationUtils.reachable(ctx.player(), bp, ctx.playerController().getBlockReachDistance());
@@ -305,7 +316,7 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
     }
 
     private void placeCraftingtableNearby() {
-        selectCraftingTable();
+        baritone.getInventoryBehavior().throwaway(true, this::isCraftingTable);
 
         ISchematic schematic = new FillSchematic(5, 4, 5, Blocks.CRAFTING_TABLE.getDefaultState());
 
@@ -324,21 +335,6 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
             }
         } else {
             goal = new GoalRunAway(5, ctx.playerFeet());
-        }
-    }
-
-    private void selectCraftingTable() {
-        for (int i = 0; i < 36; i++) {
-            ItemStack stack = ctx.player().inventory.mainInventory.get(i);
-            if (stack.getItem() == Item.getItemFromBlock(Blocks.CRAFTING_TABLE)) {
-                if (i < 9) {
-                    ctx.player().inventory.currentItem = i;
-                    return;
-                } else {
-                    baritone.getInventoryBehavior().attemptToPutOnHotbar(i, null);
-                    i=0;
-                }
-            }
         }
     }
 
