@@ -18,7 +18,6 @@
 package baritone.utils;
 
 import baritone.Baritone;
-import baritone.Elytra;
 import baritone.api.BaritoneAPI;
 import baritone.api.event.events.RenderEvent;
 import baritone.api.pathing.goals.*;
@@ -106,7 +105,7 @@ public final class PathRenderer implements IRenderer {
             drawPath(next.getPath().positions(), 0, settings.colorNextPath.value, settings.fadePath.value, 10, 20);
         }
 
-        drawPath(Elytra.path.subList(Math.max(behavior.baritone.elytra.playerNear - 30, 0), Math.min(behavior.baritone.elytra.playerNear + 30, Elytra.path.size())), 0, Color.RED, false, 0, 0);
+        drawPath(behavior.baritone.elytra.path.subList(Math.max(behavior.baritone.elytra.playerNear - 30, 0), Math.min(behavior.baritone.elytra.playerNear + 30, behavior.baritone.elytra.path.size())), 0, Color.RED, false, 0, 0);
         if (behavior.baritone.elytra.goal != null) {
             drawGoal(renderView, new GoalBlock(behavior.baritone.elytra.goal), partialTicks, Color.GREEN);
         }

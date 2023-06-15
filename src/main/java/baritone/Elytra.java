@@ -25,6 +25,7 @@ import baritone.api.utils.RotationUtils;
 import baritone.behavior.Behavior;
 import baritone.utils.BlockStateInterface;
 import com.mojang.realmsclient.util.Pair;
+import dev.babbaj.pathfinder.NetherPathfinder;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.item.EntityFireworkRocket;
@@ -36,28 +37,16 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 
-import java.io.DataInputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Elytra extends Behavior implements Helper {
 
-    public static List<BetterBlockPos> path = new ArrayList<>();
+    public List<BetterBlockPos> path = new ArrayList<>();
 
-    static {
-
-        try {
-            DataInputStream in = new DataInputStream(new FileInputStream(new File("/Users/leijurv/Dropbox/nether-pathfinder/build/test")));
-            int count = in.readInt();
-            System.out.println("Count: " + count);
-            for (int i = 0; i < count; i++) {
-                path.add(new BetterBlockPos((int) in.readDouble(), (int) in.readDouble(), (int) in.readDouble()));
-            }
-            removeBacktracks();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+    public void path(BlockPos destination) {
+        path = Arrays.stream(NetherPathfinder.pathFind(146008555100680L, false, false, ctx.playerFeet().x, ctx.playerFeet().y, ctx.playerFeet().z, destination.getX(), destination.getY(), destination.getZ())).mapToObj(BlockPos::fromLong).map(BetterBlockPos::new).collect(Collectors.toList());
+        removeBacktracks();
     }
 
     public int playerNear;
@@ -209,6 +198,9 @@ public class Elytra extends Behavior implements Helper {
     @Override
     public void onTick(TickEvent event) {
         if (event.getType() == TickEvent.Type.OUT) {
+            return;
+        }
+        if (path.isEmpty()) {
             return;
         }
         fixNearPlayer();
@@ -425,7 +417,7 @@ public class Elytra extends Behavior implements Helper {
         //System.out.println(playerNear);
     }
 
-    public static void removeBacktracks() {
+    public void removeBacktracks() {
         Map<BetterBlockPos, Integer> positionFirstSeen = new HashMap<>();
         for (int i = 0; i < path.size(); i++) {
             BetterBlockPos pos = path.get(i);
