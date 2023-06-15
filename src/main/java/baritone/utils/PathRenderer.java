@@ -71,19 +71,6 @@ public final class PathRenderer implements IRenderer {
             return;
         }
 
-        // TODO: This is goofy 💀 (pr/deprecateHelperMc)
-        //       renderView isn't even needed for drawGoal since it's only used to
-        //       calculate GoalYLevel x/z bounds, and ends up just cancelling itself
-        //       out because of viewerPosX/Y/Z. I just changed it to center around the
-        //       actual player so the goal box doesn't follow the camera in freecam.
-//        Entity renderView = Helper.mc.getRenderViewEntity();
-//        if (renderView.world != BaritoneAPI.getProvider().getPrimaryBaritone().getPlayerContext().world()) {
-//            System.out.println("I have no idea what's going on");
-//            System.out.println("The primary baritone is in a different world than the render view entity");
-//            System.out.println("Not rendering the path");
-//            return;
-//        }
-
         if (goal != null && settings.renderGoal.value) {
             drawGoal(ctx.player(), goal, partialTicks, settings.colorGoalBox.value);
         }
