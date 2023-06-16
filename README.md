@@ -134,4 +134,4 @@ We thank them for granting Baritone an OSS license so that we can make our softw
 It's named for FitMC's deep sultry voice.
 
 ## Important note
-baritoneminecraft.com is not an official Baritone website. If you find anybody telling you to download Baritone from this site, use the [official repo](https://github.com/cabaletta/baritone/) instead.
+baritoneminecraft.com and 9minecraft.com are not official Baritone websites. If you find anybody telling you to download Baritone from this sites, use the [official repo](https://github.com/cabaletta/baritone/) instead.
