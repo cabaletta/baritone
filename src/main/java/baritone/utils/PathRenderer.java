@@ -115,7 +115,6 @@ public final class PathRenderer implements IRenderer {
             settings.renderPathAsLine.value = true;
             for (Pair<Vec3d, Vec3d> line : behavior.baritone.elytra.lines) {
                 emitLine(line.first().x, line.first().y, line.first().z, line.second().x, line.second().y, line.second().z);
-                tessellator.draw();
             }
             settings.renderPathAsLine.value = orig;
             IRenderer.endLines(settings.renderPathIgnoreDepth.value);
