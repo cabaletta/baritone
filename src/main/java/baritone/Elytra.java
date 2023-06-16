@@ -54,6 +54,14 @@ public class Elytra extends Behavior implements Helper {
     public int sinceFirework;
     public BlockPos goal;
 
+    public void cancel() {
+        this.path.clear();
+        this.goal = null;
+        this.playerNear = 0;
+        this.goingTo = 0;
+        this.sinceFirework = 0;
+    }
+
     private void pathfindAroundObstacles() {
         outer:
         while (true) {
