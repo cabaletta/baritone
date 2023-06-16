@@ -20,6 +20,7 @@ package baritone.launch.mixins;
 import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.event.events.BlockInteractEvent;
+import baritone.api.event.events.PlayerUpdateEvent;
 import baritone.api.event.events.TickEvent;
 import baritone.api.event.events.WorldEvent;
 import baritone.api.event.events.type.EventState;
@@ -84,7 +85,23 @@ public class MixinMinecraft {
 
             baritone.getGameEventHandler().onTick(tickProvider.apply(EventState.PRE, type));
         }
+    }
 
+    @Inject(
+            method = "runTick",
+            at = @At(
+                    value = "INVOKE",
+                    target = "net/minecraft/client/multiplayer/WorldClient.updateEntities()V",
+                    shift = At.Shift.AFTER
+            )
+    )
+    private void postUpdateEntities(CallbackInfo ci) {
+        IBaritone baritone = BaritoneAPI.getProvider().getBaritoneForPlayer(this.player);
+        if (baritone != null) {
+            // Intentionally call this after all entities have been updated. That way, any modification to rotations
+            // can be recognized by other entity code. (Fireworks and Pigs, for example)
+            baritone.getGameEventHandler().onPlayerUpdate(new PlayerUpdateEvent(EventState.POST));
+        }
     }
 
     @Inject(

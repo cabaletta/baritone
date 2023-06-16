@@ -56,7 +56,7 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
 
     @Override
     public void updateTarget(Rotation rotation, boolean blockInteract) {
-        this.target = new Target(rotation, blockInteract);
+        this.target = new Target(rotation, Target.Mode.resolve(ctx, blockInteract));
     }
 
     @Override
@@ -149,6 +149,7 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
     public void onPlayerRotationMove(RotationMoveEvent event) {
         if (this.target != null) {
             event.setYaw(this.target.rotation.getYaw());
+            event.setPitch(this.target.rotation.getPitch());
         }
     }
 
@@ -185,9 +186,9 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
         public final Rotation rotation;
         public final Mode mode;
 
-        public Target(Rotation rotation, boolean blockInteract) {
+        public Target(Rotation rotation, Mode mode) {
             this.rotation = rotation;
-            this.mode = Mode.resolve(blockInteract);
+            this.mode = mode;
         }
 
         enum Mode {
@@ -206,11 +207,15 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
              */
             NONE;
 
-            static Mode resolve(boolean blockInteract) {
+            static Mode resolve(IPlayerContext ctx, boolean blockInteract) {
                 final Settings settings = Baritone.settings();
                 final boolean antiCheat = settings.antiCheatCompatibility.value;
                 final boolean blockFreeLook = settings.blockFreeLook.value;
                 final boolean freeLook = settings.freeLook.value;
+
+                if (ctx.player().isElytraFlying()) {
+                    return settings.elytraFreeLook.value ? SERVER : CLIENT;
+                }
 
                 if (!freeLook && !blockFreeLook) return CLIENT;
                 if (!blockFreeLook && blockInteract) return CLIENT;
