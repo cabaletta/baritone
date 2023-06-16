@@ -26,6 +26,7 @@ import baritone.behavior.Behavior;
 import baritone.utils.BlockStateInterface;
 import com.mojang.realmsclient.util.Pair;
 import dev.babbaj.pathfinder.NetherPathfinder;
+import dev.babbaj.pathfinder.PathSegment;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.item.EntityFireworkRocket;
@@ -44,11 +45,46 @@ public class Elytra extends Behavior implements Helper {
 
     public List<BetterBlockPos> path = new ArrayList<>();
 
-    public void path(BlockPos destination) {
-        playerNear = 0;
-        goingTo = 0;
-        path = Arrays.stream(NetherPathfinder.pathFind(146008555100680L, false, false, ctx.playerFeet().x, ctx.playerFeet().y, ctx.playerFeet().z, destination.getX(), destination.getY(), destination.getZ())).mapToObj(BlockPos::fromLong).map(BetterBlockPos::new).collect(Collectors.toList());
+    private long context;
+    private Long seed;
+
+    public void path(long seed, BlockPos destination) {
+        this.setupContext(seed);
+
+        this.playerNear = 0;
+        this.goingTo = 0;
+
+        final PathSegment segment = NetherPathfinder.pathFind(
+                this.context,
+                ctx.playerFeet().x, ctx.playerFeet().y, ctx.playerFeet().z,
+                destination.getX(), destination.getY(), destination.getZ()
+        );
+
+        this.path = Arrays.stream(segment.packed)
+                .mapToObj(BlockPos::fromLong)
+                .map(BetterBlockPos::new)
+                .collect(Collectors.toList());
+
+        if (!segment.finished) {
+            logDirect("segment not finished. path incomplete");
+        }
+
         removeBacktracks();
+    }
+
+    private void setupContext(long seed) {
+        if (!Objects.equals(this.seed, seed)) {
+            this.freeContext();
+            this.context = NetherPathfinder.newContext(seed);
+        }
+        this.seed = seed;
+    }
+
+    private void freeContext() {
+        if (this.context != 0) {
+            NetherPathfinder.freeContext(this.context);
+        }
+        this.context = 0;
     }
 
     public int playerNear;

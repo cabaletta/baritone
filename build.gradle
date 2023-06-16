@@ -88,6 +88,11 @@ repositories {
         name = 'impactdevelopment-repo'
         url = 'https://impactdevelopment.github.io/maven/'
     }
+
+    maven {
+        name = 'babbaj-repo'
+        url = 'https://babbaj.github.io/maven/'
+    }
 }
 
 dependencies {
@@ -100,9 +105,9 @@ dependencies {
         exclude module: 'commons-io'
         exclude module: 'log4j-core'
     }
-    runtime launchCompile('dev.babbaj:nether-pathfinder:1.3')
+    runtime launchCompile('dev.babbaj:nether-pathfinder:0.2')
     testImplementation 'junit:junit:4.12'
-    implementation 'dev.babbaj:nether-pathfinder:1.3'
+    implementation 'dev.babbaj:nether-pathfinder:0.2'
 }
 
 mixin {
