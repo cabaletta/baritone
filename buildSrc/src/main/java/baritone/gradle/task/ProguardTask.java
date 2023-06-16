@@ -68,17 +68,18 @@ public class ProguardTask extends BaritoneGradleTask {
     private List<String> requiredLibraries;
 
     private File mixin;
+    private File pathfinder;
 
     @TaskAction
     protected void exec() throws Exception {
         super.verifyArtifacts();
 
         // "Haha brady why don't you make separate tasks"
-        processArtifact();
         downloadProguard();
         extractProguard();
         generateConfigs();
         acquireDependencies();
+        processArtifact();
         proguardApi();
         proguardStandalone();
         cleanup();
@@ -89,7 +90,7 @@ public class ProguardTask extends BaritoneGradleTask {
             Files.delete(this.artifactUnoptimizedPath);
         }
 
-        Determinizer.determinize(this.artifactPath.toString(), this.artifactUnoptimizedPath.toString(), Optional.empty());
+        Determinizer.determinize(this.artifactPath.toString(), this.artifactUnoptimizedPath.toString(), Arrays.asList(pathfinder), false);
     }
 
     private void downloadProguard() throws Exception {
@@ -114,8 +115,7 @@ public class ProguardTask extends BaritoneGradleTask {
         try {
             path = findJavaPathByGradleConfig();
             if (path != null) return path;
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             System.err.println("Unable to find java by javaCompile options");
             ex.printStackTrace();
         }
@@ -123,8 +123,7 @@ public class ProguardTask extends BaritoneGradleTask {
         try {
             path = findJavaByJavaHome();
             if (path != null) return path;
-        }
-        catch(Exception ex) {
+        } catch (Exception ex) {
             System.err.println("Unable to find java by JAVA_HOME");
             ex.printStackTrace();
         }
@@ -132,7 +131,7 @@ public class ProguardTask extends BaritoneGradleTask {
 
         path = findJavaByGradleCurrentRuntime();
         if (path != null) return path;
-        
+
         throw new Exception("Unable to find java to determine ProGuard libraryjars. Please specify forkOptions.executable in javaCompile," +
                 " JAVA_HOME environment variable, or make sure to run Gradle with the correct JDK (a v1.8 only)");
     }
@@ -281,12 +280,18 @@ public class ProguardTask extends BaritoneGradleTask {
                     if (lib.contains("mixin")) {
                         mixin = file;
                     }
+                    if (lib.contains("nether-pathfinder")) {
+                        pathfinder = file;
+                    }
                     Files.copy(file.toPath(), getTemporaryFile("tempLibraries/" + lib + ".jar"), REPLACE_EXISTING);
                 }
             }
         }
         if (mixin == null) {
             throw new IllegalStateException("Unable to find mixin jar");
+        }
+        if (pathfinder == null) {
+            throw new IllegalStateException("Unable to find pathfinder jar");
         }
     }
 
@@ -375,14 +380,14 @@ public class ProguardTask extends BaritoneGradleTask {
 
     private void proguardApi() throws Exception {
         runProguard(getTemporaryFile(PROGUARD_API_CONFIG));
-        Determinizer.determinize(this.proguardOut.toString(), this.artifactApiPath.toString(), Optional.empty());
-        Determinizer.determinize(this.proguardOut.toString(), this.artifactForgeApiPath.toString(), Optional.of(mixin));
+        Determinizer.determinize(this.proguardOut.toString(), this.artifactApiPath.toString(), Arrays.asList(pathfinder), false);
+        Determinizer.determinize(this.proguardOut.toString(), this.artifactForgeApiPath.toString(), Arrays.asList(pathfinder, mixin), true);
     }
 
     private void proguardStandalone() throws Exception {
         runProguard(getTemporaryFile(PROGUARD_STANDALONE_CONFIG));
-        Determinizer.determinize(this.proguardOut.toString(), this.artifactStandalonePath.toString(), Optional.empty());
-        Determinizer.determinize(this.proguardOut.toString(), this.artifactForgeStandalonePath.toString(), Optional.of(mixin));
+        Determinizer.determinize(this.proguardOut.toString(), this.artifactStandalonePath.toString(), Arrays.asList(pathfinder), false);
+        Determinizer.determinize(this.proguardOut.toString(), this.artifactForgeStandalonePath.toString(), Arrays.asList(pathfinder, mixin), true);
     }
 
     private void cleanup() {
@@ -409,7 +414,7 @@ public class ProguardTask extends BaritoneGradleTask {
         Path workingDirectory = getTemporaryFile("");
         Path proguardJar = workingDirectory.relativize(getTemporaryFile(PROGUARD_JAR));
         config = workingDirectory.relativize(config);
-        
+
         // Honestly, if you still have spaces in your path at this point, you're SOL.
 
         Process p = new ProcessBuilder("java", "-jar", proguardJar.toString(), "@" + config.toString())
@@ -423,6 +428,7 @@ public class ProguardTask extends BaritoneGradleTask {
         // Halt the current thread until the process is complete, if the exit code isn't 0, throw an exception
         int exitCode = p.waitFor();
         if (exitCode != 0) {
+            Thread.sleep(1000);
             throw new IllegalStateException("Proguard exited with code " + exitCode);
         }
     }

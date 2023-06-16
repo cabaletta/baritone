@@ -45,6 +45,8 @@ public class Elytra extends Behavior implements Helper {
     public List<BetterBlockPos> path = new ArrayList<>();
 
     public void path(BlockPos destination) {
+        playerNear = 0;
+        goingTo = 0;
         path = Arrays.stream(NetherPathfinder.pathFind(146008555100680L, false, false, ctx.playerFeet().x, ctx.playerFeet().y, ctx.playerFeet().z, destination.getX(), destination.getY(), destination.getZ())).mapToObj(BlockPos::fromLong).map(BetterBlockPos::new).collect(Collectors.toList());
         removeBacktracks();
     }

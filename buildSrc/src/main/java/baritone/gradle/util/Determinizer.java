@@ -22,7 +22,10 @@ import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 
 import java.io.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
@@ -36,10 +39,11 @@ import java.util.stream.Collectors;
  */
 public class Determinizer {
 
-    public static void determinize(String inputPath, String outputPath, Optional<File> toInclude) throws IOException {
+    public static void determinize(String inputPath, String outputPath, List<File> toInclude, boolean doForgeReplacementOfMetaInf) throws IOException {
         System.out.println("Running Determinizer");
         System.out.println(" Input path: " + inputPath);
         System.out.println(" Output path: " + outputPath);
+        System.out.println(" Shade: " + toInclude);
 
         try (
                 JarFile jarFile = new JarFile(new File(inputPath));
@@ -63,7 +67,7 @@ public class Determinizer {
                 if (entry.getName().endsWith(".refmap.json")) {
                     JsonObject object = new JsonParser().parse(new InputStreamReader(jarFile.getInputStream(entry))).getAsJsonObject();
                     jos.write(writeSorted(object).getBytes());
-                } else if (entry.getName().equals("META-INF/MANIFEST.MF") && toInclude.isPresent()) { // only replace for forge jar
+                } else if (entry.getName().equals("META-INF/MANIFEST.MF") && doForgeReplacementOfMetaInf) { // only replace for forge jar
                     ByteArrayOutputStream cancer = new ByteArrayOutputStream();
                     copy(jarFile.getInputStream(entry), cancer);
                     String manifest = new String(cancer.toByteArray());
@@ -76,8 +80,8 @@ public class Determinizer {
                     copy(jarFile.getInputStream(entry), jos);
                 }
             }
-            if (toInclude.isPresent()) {
-                try (JarFile mixin = new JarFile(toInclude.get())) {
+            for (File file : toInclude) {
+                try (JarFile mixin = new JarFile(file)) {
                     for (JarEntry entry : mixin.stream().sorted(Comparator.comparing(JarEntry::getName)).collect(Collectors.toList())) {
                         if (entry.getName().startsWith("META-INF") && !entry.getName().startsWith("META-INF/services")) {
                             continue;
@@ -89,6 +93,7 @@ public class Determinizer {
             }
             jos.finish();
         }
+        System.out.println("Done with determinizer");
     }
 
     private static void copy(InputStream is, OutputStream os) throws IOException {
