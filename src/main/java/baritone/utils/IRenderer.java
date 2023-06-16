@@ -116,7 +116,7 @@ public interface IRenderer {
     }
 
     static void drawAABB(AxisAlignedBB aabb) {
-        buffer.begin(GL_LINES, DefaultVertexFormats.POSITION);
+        buffer.begin(GL_LINES, DefaultVertexFormats.POSITION_COLOR);
         emitAABB(aabb);
         tessellator.draw();
     }
