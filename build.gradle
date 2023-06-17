@@ -105,9 +105,9 @@ dependencies {
         exclude module: 'commons-io'
         exclude module: 'log4j-core'
     }
-    runtime launchCompile('dev.babbaj:nether-pathfinder:0.2')
+    runtime launchCompile('dev.babbaj:nether-pathfinder:0.4')
     testImplementation 'junit:junit:4.12'
-    implementation 'dev.babbaj:nether-pathfinder:0.2'
+    implementation 'dev.babbaj:nether-pathfinder:0.4'
 }
 
 mixin {
