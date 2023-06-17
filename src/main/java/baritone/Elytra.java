@@ -18,10 +18,7 @@
 package baritone;
 
 import baritone.api.event.events.TickEvent;
-import baritone.api.utils.BetterBlockPos;
-import baritone.api.utils.Helper;
-import baritone.api.utils.Rotation;
-import baritone.api.utils.RotationUtils;
+import baritone.api.utils.*;
 import baritone.behavior.Behavior;
 import baritone.utils.BlockStateInterface;
 import com.mojang.realmsclient.util.Pair;
@@ -37,20 +34,24 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.chunk.BlockStateContainer;
+import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class Elytra extends Behavior implements Helper {
 
+    private static final long NETHER_SEED = 146008555100680L;
+
     // Used exclusively for PathRenderer
     public List<Pair<Vec3d, Vec3d>> lines;
-    public BlockPos goal;
+    public BlockPos aimPos;
     public List<BetterBlockPos> visiblePath;
 
     // NetherPathfinder stuff
     private long context;
-    private Long seed;
 
     // yay!
     private List<BetterBlockPos> path;
@@ -60,27 +61,33 @@ public class Elytra extends Behavior implements Helper {
 
     protected Elytra(Baritone baritone) {
         super(baritone);
+        // lol
+        this.context = NetherPathfinder.newContext(NETHER_SEED);
+
         this.lines = new ArrayList<>();
         this.visiblePath = Collections.emptyList();
         this.path = new ArrayList<>();
     }
 
-    public void path(long seed, BlockPos destination) {
-        this.setupContext(seed);
-
+    public void path(BlockPos destination) {
         this.playerNear = 0;
         this.goingTo = 0;
 
+        long start = System.currentTimeMillis();
         final PathSegment segment = NetherPathfinder.pathFind(
                 this.context,
                 ctx.playerFeet().x, ctx.playerFeet().y, ctx.playerFeet().z,
                 destination.getX(), destination.getY(), destination.getZ()
         );
+        long end = System.currentTimeMillis();
 
         this.path = Arrays.stream(segment.packed)
                 .mapToObj(BlockPos::fromLong)
                 .map(BetterBlockPos::new)
                 .collect(Collectors.toList());
+
+        final int distance = (int) Math.sqrt(this.path.get(0).distanceSq(this.path.get(this.path.size() - 1)));
+        logDirect(String.format("Computed path in %dms. (%d blocks)", end - start, distance));
 
         if (!segment.finished) {
             logDirect("segment not finished. path incomplete");
@@ -89,25 +96,10 @@ public class Elytra extends Behavior implements Helper {
         removeBacktracks();
     }
 
-    private void setupContext(long seed) {
-        if (!Objects.equals(this.seed, seed)) {
-            this.freeContext();
-            this.context = NetherPathfinder.newContext(seed);
-        }
-        this.seed = seed;
-    }
-
-    private void freeContext() {
-        if (this.context != 0) {
-            NetherPathfinder.freeContext(this.context);
-        }
-        this.context = 0;
-    }
-
     public void cancel() {
         this.visiblePath = Collections.emptyList();
         this.path.clear();
-        this.goal = null;
+        this.aimPos = null;
         this.playerNear = 0;
         this.goingTo = 0;
         this.sinceFirework = 0;
@@ -196,7 +188,7 @@ public class Elytra extends Behavior implements Helper {
                         long b = System.currentTimeMillis();
                         System.out.println("Solved pitch in " + (b - a) + " total time " + (b - t));
                         goingTo = i;
-                        goal = path.get(i).add(0, dy, 0);
+                        aimPos = path.get(i).add(0, dy, 0);
                         baritone.getLookBehavior().updateTarget(new Rotation(rot.getYaw(), pitch), false);
                         return;
                     }
@@ -365,6 +357,36 @@ public class Elytra extends Behavior implements Helper {
             } else {
                 positionFirstSeen.put(pos, i);
             }
+        }
+    }
+
+    private static boolean[] pack(Chunk chunk) {
+        try {
+            boolean[] packed = new boolean[16 * 16 * 128];
+            ExtendedBlockStorage[] chunkInternalStorageArray = chunk.getBlockStorageArray();
+            for (int y0 = 0; y0 < 8; y0++) {
+                ExtendedBlockStorage extendedblockstorage = chunkInternalStorageArray[y0];
+                if (extendedblockstorage == null) {
+                    continue;
+                }
+                BlockStateContainer bsc = extendedblockstorage.getData();
+                int yReal = y0 << 4;
+                for (int y1 = 0; y1 < 16; y1++) {
+                    int y = y1 | yReal;
+                    for (int z = 0; z < 16; z++) {
+                        for (int x = 0; x < 16; x++) {
+                            IBlockState state = bsc.get(x, y1, z);
+                            if (state.getBlock() != Blocks.AIR) { // instanceof BlockAir in 1.13+
+                                packed[x + (z << 4) + (y << 8)] = true;
+                            }
+                        }
+                    }
+                }
+            }
+            return packed;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
         }
     }
 

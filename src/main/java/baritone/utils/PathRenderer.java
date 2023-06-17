@@ -106,8 +106,8 @@ public final class PathRenderer implements IRenderer {
         }
 
         drawPath(behavior.baritone.elytra.visiblePath, 0, Color.RED, false, 0, 0);
-        if (behavior.baritone.elytra.goal != null) {
-            drawGoal(renderView, new GoalBlock(behavior.baritone.elytra.goal), partialTicks, Color.GREEN);
+        if (behavior.baritone.elytra.aimPos != null) {
+            drawGoal(renderView, new GoalBlock(behavior.baritone.elytra.aimPos), partialTicks, Color.GREEN);
         }
         if (!behavior.baritone.elytra.lines.isEmpty() && Baritone.settings().renderRaytraces.value) {
             IRenderer.startLines(Color.BLUE, settings.pathRenderLineWidthPixels.value, settings.renderPathIgnoreDepth.value);
