@@ -319,11 +319,12 @@ public final class ElytraBehavior extends Behavior implements Helper {
                 Math.min(playerNear + 30, path.size())
         );
 
-        baritone.getInputOverrideHandler().clearAllKeys(); // FIXME: This breaks the regular path-finder
-
         if (!ctx.player().isElytraFlying()) {
             return;
         }
+
+        baritone.getInputOverrideHandler().clearAllKeys();
+
         if (ctx.player().collidedHorizontally) {
             logDirect("hbonk");
         }
