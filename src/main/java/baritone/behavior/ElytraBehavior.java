@@ -26,6 +26,7 @@ import baritone.api.utils.Helper;
 import baritone.api.utils.Rotation;
 import baritone.api.utils.RotationUtils;
 import baritone.behavior.elytra.NetherPathfinderContext;
+import baritone.behavior.elytra.UnpackedSegment;
 import baritone.utils.BlockStateInterface;
 import com.mojang.realmsclient.util.Pair;
 import net.minecraft.block.material.Material;
@@ -41,8 +42,8 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.chunk.Chunk;
 
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.UnaryOperator;
 
 public final class ElytraBehavior extends Behavior implements Helper {
 
@@ -58,9 +59,7 @@ public final class ElytraBehavior extends Behavior implements Helper {
 
     // :sunglasses:
     private final NetherPathfinderContext context;
-    private List<BetterBlockPos> path;
-    public int playerNear;
-    private int goingTo;
+    private final PathManager pathManager;
     private int sinceFirework;
 
     public ElytraBehavior(Baritone baritone) {
@@ -68,7 +67,217 @@ public final class ElytraBehavior extends Behavior implements Helper {
         this.context = new NetherPathfinderContext(NETHER_SEED);
         this.lines = new ArrayList<>();
         this.visiblePath = Collections.emptyList();
-        this.path = new ArrayList<>();
+        this.pathManager = new PathManager();
+    }
+
+    private final class PathManager {
+
+        private BlockPos destination;
+        private List<BetterBlockPos> path;
+        private boolean completePath;
+
+        private int playerNear;
+        private int goingTo;
+
+        private boolean recalculating;
+
+        public PathManager() {
+            // lol imagine initializing fields normally
+            this.clear();
+        }
+
+        public void tick() {
+            // Recalculate closest path node
+            this.playerNear = this.calculateNear(this.playerNear);
+
+            // Obstacles are more important than an incomplete path, handle those first.
+            this.pathfindAroundObstacles();
+            this.attemptNextSegment();
+        }
+
+        public void pathToDestination(BlockPos destination) {
+            this.destination = destination;
+            this.path0(ctx.playerFeet(), destination, UnaryOperator.identity())
+                    .thenRun(() -> {
+                        final int distance = (int) this.pathAt(0).distanceTo(this.pathAt(this.path.size() - 1));
+                        if (this.completePath) {
+                            logDirect(String.format("Computed path (%d blocks)", distance));
+                        } else {
+                            logDirect(String.format("Computed segment (Next %d blocks)", distance));
+                        }
+                    });
+        }
+
+        public void recalcSegment(final int upToIncl) {
+            if (this.recalculating) {
+                return;
+            }
+
+            this.recalculating = true;
+            final List<BetterBlockPos> after = this.path.subList(upToIncl, this.path.size());
+            final boolean complete = this.completePath;
+
+            this.path0(ctx.playerFeet(), this.path.get(upToIncl), segment -> segment.append(after.stream(), complete))
+                    .thenRun(() -> {
+                        this.recalculating = false;
+                        final int recompute = this.path.size() - after.size() - 1;
+                        final int distance = (int) this.pathAt(0).distanceTo(this.pathAt(recompute));
+                        logDirect(String.format("Recomputed segment (Next %d blocks)", distance));
+                    });
+        }
+
+        public void nextSegment(final int afterIncl) {
+            if (this.recalculating) {
+                return;
+            }
+
+            this.recalculating = true;
+            final List<BetterBlockPos> before = this.path.subList(0, afterIncl + 1);
+
+            this.path0(this.path.get(afterIncl), this.destination, segment -> segment.prepend(before.stream()))
+                    .thenRun(() -> {
+                        this.recalculating = false;
+                        final int recompute = this.path.size() - before.size() - 1;
+                        final int distance = (int) this.pathAt(0).distanceTo(this.pathAt(recompute));
+
+                        if (this.completePath) {
+                            logDirect(String.format("Computed path (%d blocks)", distance));
+                        } else {
+                            logDirect(String.format("Computed next segment (Next %d blocks)", distance));
+                        }
+                    });
+        }
+
+        private Vec3d pathAt(int i) {
+            return new Vec3d(
+                    this.path.get(i).x + 0.5,
+                    this.path.get(i).y + 0.5,
+                    this.path.get(i).z + 0.5
+            );
+        }
+
+        public void clear() {
+            this.path = Collections.emptyList();
+            this.playerNear = 0;
+            this.goingTo = 0;
+            this.completePath = true;
+        }
+
+        private void setPath(final UnpackedSegment segment) {
+            this.path = segment.collect();
+            this.removeBacktracks();
+            this.playerNear = 0;
+            this.goingTo = 0;
+            this.completePath = segment.isFinished();
+        }
+
+        public List<BetterBlockPos> getPath() {
+            return this.path;
+        }
+
+        public int getNear() {
+            return this.playerNear;
+        }
+
+        public void setGoingTo(int index) {
+            this.goingTo = index;
+        }
+
+        public BetterBlockPos goingTo() {
+            return this.path.get(this.goingTo);
+        }
+
+        // mickey resigned
+        private CompletableFuture<Void> path0(BlockPos src, BlockPos dst, UnaryOperator<UnpackedSegment> operator) {
+            return ElytraBehavior.this.context.pathFindAsync(src, dst)
+                    .thenApply(UnpackedSegment::from)
+                    .thenApply(operator)
+                    .thenAcceptAsync(this::setPath, ctx.minecraft()::addScheduledTask);
+        }
+
+        private void pathfindAroundObstacles() {
+            if (this.recalculating) {
+                return;
+            }
+
+            outer:
+            while (true) {
+                int rangeStartIncl = playerNear;
+                int rangeEndExcl = playerNear;
+                while (rangeEndExcl < path.size() && ctx.world().isBlockLoaded(path.get(rangeEndExcl), false)) {
+                    rangeEndExcl++;
+                }
+                if (rangeStartIncl >= rangeEndExcl) {
+                    // not loaded yet?
+                    return;
+                }
+                if (!passable(ctx.world().getBlockState(path.get(rangeStartIncl)))) {
+                    // we're in a wall
+                    return; // previous iterations of this function SHOULD have fixed this by now :rage_cat:
+                }
+                for (int i = rangeStartIncl; i < rangeEndExcl - 1; i++) {
+                    if (!clearView(pathAt(i), pathAt(i + 1))) {
+                        // obstacle. where do we return to pathing?
+                        // find the next valid segment
+                        this.recalcSegment(rangeEndExcl - 1);
+                        break outer;
+                    }
+                }
+                break;
+            }
+        }
+
+        private void attemptNextSegment() {
+            if (this.recalculating) {
+                return;
+            }
+
+            final int last = this.path.size() - 1;
+            if (!this.completePath && ctx.world().isBlockLoaded(this.path.get(last), false)) {
+                this.nextSegment(last);
+            }
+        }
+
+        private int calculateNear(int index) {
+            final BetterBlockPos pos = ctx.playerFeet();
+            for (int i = index; i >= Math.max(index - 1000, 0); i -= 10) {
+                if (path.get(i).distanceSq(pos) < path.get(index).distanceSq(pos)) {
+                    index = i; // intentional: this changes the bound of the loop
+                }
+            }
+            for (int i = index; i < Math.min(index + 1000, path.size()); i += 10) {
+                if (path.get(i).distanceSq(pos) < path.get(index).distanceSq(pos)) {
+                    index = i; // intentional: this changes the bound of the loop
+                }
+            }
+            for (int i = index; i >= Math.max(index - 50, 0); i--) {
+                if (path.get(i).distanceSq(pos) < path.get(index).distanceSq(pos)) {
+                    index = i; // intentional: this changes the bound of the loop
+                }
+            }
+            for (int i = index; i < Math.min(index + 50, path.size()); i++) {
+                if (path.get(i).distanceSq(pos) < path.get(index).distanceSq(pos)) {
+                    index = i; // intentional: this changes the bound of the loop
+                }
+            }
+            return index;
+        }
+
+        private void removeBacktracks() {
+            Map<BetterBlockPos, Integer> positionFirstSeen = new HashMap<>();
+            for (int i = 0; i < this.path.size(); i++) {
+                BetterBlockPos pos = this.path.get(i);
+                if (positionFirstSeen.containsKey(pos)) {
+                    int j = positionFirstSeen.get(pos);
+                    while (i > j) {
+                        this.path.remove(i);
+                        i--;
+                    }
+                } else {
+                    positionFirstSeen.put(pos, i);
+                }
+            }
+        }
     }
 
     @Override
@@ -79,85 +288,15 @@ public final class ElytraBehavior extends Behavior implements Helper {
         }
     }
 
-    boolean recalculating;
-
-    private void pathfindAroundObstacles() {
-        if (this.recalculating) {
-            return;
-        }
-        outer:
-        while (true) {
-            int rangeStartIncl = playerNear;
-            int rangeEndExcl = playerNear;
-            while (rangeEndExcl < path.size() && ctx.world().isBlockLoaded(path.get(rangeEndExcl), false)) {
-                rangeEndExcl++;
-            }
-            if (rangeStartIncl >= rangeEndExcl) {
-                // not loaded yet?
-                return;
-            }
-            if (!passable(ctx.world().getBlockState(path.get(rangeStartIncl)))) {
-                // we're in a wall
-                return; // previous iterations of this function SHOULD have fixed this by now :rage_cat:
-            }
-            for (int i = rangeStartIncl; i < rangeEndExcl - 1; i++) {
-                if (!clearView(pathAt(i), pathAt(i + 1))) {
-                    // obstacle. where do we return to pathing?
-                    // find the next valid segment
-                    List<BetterBlockPos> afterSplice = path.subList(rangeEndExcl - 1, path.size());
-                    path(path.get(rangeEndExcl - 1), afterSplice);
-                    break outer;
-                }
-            }
-            break;
-        }
-    }
-
     public void path(BlockPos destination) {
-        path(destination, Collections.emptyList());
-    }
-
-    public void path(BlockPos destination, List<BetterBlockPos> andThen) {
-        final boolean isRecalc = !andThen.isEmpty();
-        this.recalculating = isRecalc;
-
-        this.context.pathFindAsync(ctx.playerFeet(), destination).thenAccept(segment -> {
-            final List<BetterBlockPos> joined = Stream.concat(
-                    Arrays.stream(segment.packed)
-                            .mapToObj(BlockPos::fromLong)
-                            .map(BetterBlockPos::new),
-                    andThen.stream()
-            ).collect(Collectors.toList());
-
-            ctx.minecraft().addScheduledTask(() -> {
-                this.path = joined;
-                this.playerNear = 0;
-                this.goingTo = 0;
-
-                final int distance = (int) Math.sqrt(this.path.get(0).distanceSq(this.path.get(segment.packed.length - 1)));
-
-                if (isRecalc) {
-                    this.recalculating = false;
-                    logDirect(String.format("Recalculated segment (%d blocks)", distance));
-                } else {
-                    logDirect(String.format("Computed path (%d blocks)", distance));
-                }
-                removeBacktracks();
-            });
-        });
+        this.pathManager.pathToDestination(destination);
     }
 
     public void cancel() {
         this.visiblePath = Collections.emptyList();
-        this.path.clear();
+        this.pathManager.clear();
         this.aimPos = null;
-        this.playerNear = 0;
-        this.goingTo = 0;
         this.sinceFirework = 0;
-    }
-
-    private Vec3d pathAt(int i) {
-        return new Vec3d(path.get(i).x + 0.5, path.get(i).y + 0.5, path.get(i).z + 0.5);
     }
 
     @Override
@@ -165,20 +304,22 @@ public final class ElytraBehavior extends Behavior implements Helper {
         if (event.getType() == TickEvent.Type.OUT) {
             return;
         }
+        this.lines.clear();
+
+        final List<BetterBlockPos> path = this.pathManager.getPath();
         if (path.isEmpty()) {
             return;
         }
 
-        playerNear = calculateNear(playerNear);
-        visiblePath = path.subList(
+        this.pathManager.tick();
+
+        final int playerNear = this.pathManager.getNear();
+        this.visiblePath = path.subList(
                 Math.max(playerNear - 30, 0),
                 Math.min(playerNear + 30, path.size())
         );
 
         baritone.getInputOverrideHandler().clearAllKeys(); // FIXME: This breaks the regular path-finder
-        lines.clear();
-
-        pathfindAroundObstacles();
 
         if (!ctx.player().isElytraFlying()) {
             return;
@@ -204,19 +345,19 @@ public final class ElytraBehavior extends Behavior implements Helper {
             int minStep = playerNear;
             for (int i = Math.min(playerNear + 20, path.size() - 1); i >= minStep; i--) {
                 for (int dy : heights) {
-                    Vec3d dest = pathAt(i).add(0, dy, 0);
+                    Vec3d dest = this.pathManager.pathAt(i).add(0, dy, 0);
                     if (dy != 0) {
                         if (i + lookahead >= path.size()) {
                             continue;
                         }
                         if (start.distanceTo(dest) < 40) {
-                            if (!clearView(dest, pathAt(i + lookahead).add(0, dy, 0)) || !clearView(dest, pathAt(i + lookahead))) {
+                            if (!clearView(dest, this.pathManager.pathAt(i + lookahead).add(0, dy, 0)) || !clearView(dest, this.pathManager.pathAt(i + lookahead))) {
                                 // aka: don't go upwards if doing so would prevent us from being able to see the next position **OR** the modified next position
                                 continue;
                             }
                         } else {
                             // but if it's far away, allow gaining altitude if we could lose it again by the time we get there
-                            if (!clearView(dest, pathAt(i))) {
+                            if (!clearView(dest, this.pathManager.pathAt(i))) {
                                 continue;
                             }
                         }
@@ -231,8 +372,8 @@ public final class ElytraBehavior extends Behavior implements Helper {
                         }
                         long b = System.currentTimeMillis();
                         System.out.println("Solved pitch in " + (b - a) + " total time " + (b - t));
-                        goingTo = i;
-                        aimPos = path.get(i).add(0, dy, 0);
+                        this.pathManager.setGoingTo(i);
+                        this.aimPos = path.get(i).add(0, dy, 0);
                         baritone.getLookBehavior().updateTarget(new Rotation(rot.getYaw(), pitch), false);
                         break outermost;
                     }
@@ -244,11 +385,13 @@ public final class ElytraBehavior extends Behavior implements Helper {
             }
         }
 
+        final BetterBlockPos goingTo = this.pathManager.goingTo();
+
         if (!firework
                 && sinceFirework > 10
-                && (Baritone.settings().wasteFireworks.value || ctx.player().posY < path.get(goingTo).y + 5) // don't firework if trying to descend
-                && (ctx.player().posY < path.get(goingTo).y - 5 || start.distanceTo(new Vec3d(path.get(goingTo).x + 0.5, ctx.player().posY, path.get(goingTo).z + 0.5)) > 5) // UGH!!!!!!!
-                && new Vec3d(ctx.player().motionX, ctx.player().posY < path.get(goingTo).y ? Math.max(0, ctx.player().motionY) : ctx.player().motionY, ctx.player().motionZ).length() < Baritone.settings().elytraFireworkSpeed.value // ignore y component if we are BOTH below where we want to be AND descending
+                && (Baritone.settings().wasteFireworks.value || ctx.player().posY < goingTo.y + 5) // don't firework if trying to descend
+                && (ctx.player().posY < goingTo.y - 5 || start.distanceTo(new Vec3d(goingTo.x + 0.5, ctx.player().posY, goingTo.z + 0.5)) > 5) // UGH!!!!!!!
+                && new Vec3d(ctx.player().motionX, ctx.player().posY < goingTo.y ? Math.max(0, ctx.player().motionY) : ctx.player().motionY, ctx.player().motionZ).length() < Baritone.settings().elytraFireworkSpeed.value // ignore y component if we are BOTH below where we want to be AND descending
         ) {
             logDirect("firework");
             ctx.playerController().processRightClick(ctx.player(), ctx.world(), EnumHand.MAIN_HAND);
@@ -375,47 +518,6 @@ public final class ElytraBehavior extends Behavior implements Helper {
         //System.out.println(motionX + " " + motionY + " " + motionZ);
 
         return new Vec3d(motionX, motionY, motionZ);
-    }
-
-    private int calculateNear(int index) {
-        final BetterBlockPos pos = ctx.playerFeet();
-        for (int i = index; i >= Math.max(index - 1000, 0); i -= 10) {
-            if (path.get(i).distanceSq(pos) < path.get(index).distanceSq(pos)) {
-                index = i; // intentional: this changes the bound of the loop
-            }
-        }
-        for (int i = index; i < Math.min(index + 1000, path.size()); i += 10) {
-            if (path.get(i).distanceSq(pos) < path.get(index).distanceSq(pos)) {
-                index = i; // intentional: this changes the bound of the loop
-            }
-        }
-        for (int i = index; i >= Math.max(index - 50, 0); i--) {
-            if (path.get(i).distanceSq(pos) < path.get(index).distanceSq(pos)) {
-                index = i; // intentional: this changes the bound of the loop
-            }
-        }
-        for (int i = index; i < Math.min(index + 50, path.size()); i++) {
-            if (path.get(i).distanceSq(pos) < path.get(index).distanceSq(pos)) {
-                index = i; // intentional: this changes the bound of the loop
-            }
-        }
-        return index;
-    }
-
-    private void removeBacktracks() {
-        Map<BetterBlockPos, Integer> positionFirstSeen = new HashMap<>();
-        for (int i = 0; i < path.size(); i++) {
-            BetterBlockPos pos = path.get(i);
-            if (positionFirstSeen.containsKey(pos)) {
-                int j = positionFirstSeen.get(pos);
-                while (i > j) {
-                    path.remove(i);
-                    i--;
-                }
-            } else {
-                positionFirstSeen.put(pos, i);
-            }
-        }
     }
 
     // TODO: Use the optimized version from builder-2
