@@ -166,11 +166,12 @@ public class Elytra extends Behavior implements Helper {
         this.recalculating = isRecalc;
 
         this.context.pathFindAsync(ctx.playerFeet(), destination).thenAccept(segment -> {
-            Stream<BetterBlockPos> newPath = Arrays.stream(segment.packed)
-                    .mapToObj(BlockPos::fromLong)
-                    .map(BetterBlockPos::new);
-
-            List<BetterBlockPos> joined = Stream.concat(newPath, andThen.stream()).collect(Collectors.toList());
+            final List<BetterBlockPos> joined = Stream.concat(
+                    Arrays.stream(segment.packed)
+                            .mapToObj(BlockPos::fromLong)
+                            .map(BetterBlockPos::new),
+                    andThen.stream()
+            ).collect(Collectors.toList());
 
             ctx.minecraft().addScheduledTask(() -> {
                 this.path = joined;
