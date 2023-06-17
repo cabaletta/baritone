@@ -90,6 +90,13 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
         } else {
             //we no longer pathing so it's time to craft
             try {
+                if (!canCraft(recipe,1) && amount > 0) {
+                    recipe = getCraftingRecipeForItem(recipe.getRecipeOutput().getItem());
+                    if (!canCraftInInventory(recipe) && !(ctx.player().openContainer instanceof ContainerWorkbench)) {
+                        pathToACraftingTable();
+                        return new PathingCommand(goal, PathingCommandType.SET_GOAL_AND_PATH);
+                    }
+                }
                 if (clearToPush) {
                     moveItemsToCraftingGrid();
                 }
@@ -176,9 +183,7 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
         }
         int totalPossibleToCraft = 0;
         for (IRecipe recipe : recipeList) {
-            if (canCraft(recipe, 1)) {
-                totalPossibleToCraft = totalPossibleToCraft + (recipeItemHelper.getBiggestCraftableStack(recipe,null) * recipe.getRecipeOutput().getCount());
-            }
+            totalPossibleToCraft = totalPossibleToCraft + (recipeItemHelper.getBiggestCraftableStack(recipe,null) * recipe.getRecipeOutput().getCount());
         }
         return totalPossibleToCraft >= amount;
     }
@@ -213,9 +218,6 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
     private void moveItemsToCraftingGrid() {
         clearToPush = false;
         int windowId = ctx.player().openContainer.windowId;
-        if (!canCraft(recipe,1) && amount > 0) {
-            recipe = getCraftingRecipeForItem(recipe.getRecipeOutput().getItem());
-        }
         //try to put the recipe the required amount of times in to the crafting grid.
         for (int i = 0; i * recipe.getRecipeOutput().getCount() < amount; i++) {
             ctx.player().connection.sendPacket(new CPacketPlaceRecipe(windowId, recipe, GuiScreen.isShiftKeyDown()));
