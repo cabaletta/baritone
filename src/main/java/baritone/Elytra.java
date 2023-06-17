@@ -44,20 +44,25 @@ import java.util.stream.Collectors;
 public class Elytra extends Behavior implements Helper {
 
     // Used exclusively for PathRenderer
-    public List<Pair<Vec3d, Vec3d>> lines = new ArrayList<>();
+    public List<Pair<Vec3d, Vec3d>> lines;
     public BlockPos goal;
+    public List<BetterBlockPos> visiblePath;
 
-    public List<BetterBlockPos> path = new ArrayList<>();
-
+    // NetherPathfinder stuff
     private long context;
     private Long seed;
 
+    // yay!
+    private List<BetterBlockPos> path;
     public int playerNear;
     private int goingTo;
     private int sinceFirework;
 
     protected Elytra(Baritone baritone) {
         super(baritone);
+        this.lines = new ArrayList<>();
+        this.visiblePath = Collections.emptyList();
+        this.path = new ArrayList<>();
     }
 
     public void path(long seed, BlockPos destination) {
@@ -100,6 +105,7 @@ public class Elytra extends Behavior implements Helper {
     }
 
     public void cancel() {
+        this.visiblePath = Collections.emptyList();
         this.path.clear();
         this.goal = null;
         this.playerNear = 0;
@@ -120,7 +126,12 @@ public class Elytra extends Behavior implements Helper {
             return;
         }
 
-        fixNearPlayer();
+        playerNear = fixNearPlayer(playerNear);
+        visiblePath = path.subList(
+                Math.max(playerNear - 30, 0),
+                Math.min(playerNear + 30, path.size())
+        );
+
         baritone.getInputOverrideHandler().clearAllKeys(); // FIXME: This breaks the regular path-finder
         lines.clear();
 
@@ -316,29 +327,29 @@ public class Elytra extends Behavior implements Helper {
         return new Vec3d(motionX, motionY, motionZ);
     }
 
-    private void fixNearPlayer() {
-        BetterBlockPos pos = ctx.playerFeet();
-        for (int i = playerNear; i >= Math.max(playerNear - 1000, 0); i -= 10) {
-            if (path.get(i).distanceSq(pos) < path.get(playerNear).distanceSq(pos)) {
-                playerNear = i; // intentional: this changes the bound of the loop
+    private int fixNearPlayer(int index) {
+        final BetterBlockPos pos = ctx.playerFeet();
+        for (int i = index; i >= Math.max(index - 1000, 0); i -= 10) {
+            if (path.get(i).distanceSq(pos) < path.get(index).distanceSq(pos)) {
+                index = i; // intentional: this changes the bound of the loop
             }
         }
-        for (int i = playerNear; i < Math.min(playerNear + 1000, path.size()); i += 10) {
-            if (path.get(i).distanceSq(pos) < path.get(playerNear).distanceSq(pos)) {
-                playerNear = i; // intentional: this changes the bound of the loop
+        for (int i = index; i < Math.min(index + 1000, path.size()); i += 10) {
+            if (path.get(i).distanceSq(pos) < path.get(index).distanceSq(pos)) {
+                index = i; // intentional: this changes the bound of the loop
             }
         }
-        for (int i = playerNear; i >= Math.max(playerNear - 50, 0); i--) {
-            if (path.get(i).distanceSq(pos) < path.get(playerNear).distanceSq(pos)) {
-                playerNear = i; // intentional: this changes the bound of the loop
+        for (int i = index; i >= Math.max(index - 50, 0); i--) {
+            if (path.get(i).distanceSq(pos) < path.get(index).distanceSq(pos)) {
+                index = i; // intentional: this changes the bound of the loop
             }
         }
-        for (int i = playerNear; i < Math.min(playerNear + 50, path.size()); i++) {
-            if (path.get(i).distanceSq(pos) < path.get(playerNear).distanceSq(pos)) {
-                playerNear = i; // intentional: this changes the bound of the loop
+        for (int i = index; i < Math.min(index + 50, path.size()); i++) {
+            if (path.get(i).distanceSq(pos) < path.get(index).distanceSq(pos)) {
+                index = i; // intentional: this changes the bound of the loop
             }
         }
-        //System.out.println(playerNear);
+        return index;
     }
 
     private void removeBacktracks() {
