@@ -25,8 +25,6 @@ import baritone.api.pathing.goals.GoalRunAway;
 import baritone.api.process.ICraftingProcess;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
-import baritone.api.schematic.FillSchematic;
-import baritone.api.schematic.ISchematic;
 import baritone.api.utils.*;
 import baritone.api.utils.input.Input;
 import baritone.pathing.movement.CalculationContext;
@@ -41,7 +39,6 @@ import net.minecraft.inventory.ClickType;
 import net.minecraft.inventory.ContainerPlayer;
 import net.minecraft.inventory.ContainerWorkbench;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.CraftingManager;
 import net.minecraft.item.crafting.IRecipe;
@@ -60,8 +57,7 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
     private Goal goal;
     private boolean placeCraftingTable = false;
     private boolean clearToPush;
-    List<BlockPos> knownLocations;
-    private int tickCount;
+    private List<BlockPos> knownLocations;
 
     public CraftingProcess(Baritone baritone) {
         super(baritone);
@@ -89,7 +85,7 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
             }
             return new PathingCommand(goal, PathingCommandType.SET_GOAL_AND_PATH);
         } else if (placeCraftingTable) {
-            placeCraftingtableNearby();
+            placeCraftingTable();
             return new PathingCommand(goal, PathingCommandType.SET_GOAL_AND_PATH);
         } else {
             //we no longer pathing so it's time to craft
@@ -129,8 +125,7 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
             clearToPush = true;
             logDirect("Crafting now " + amount + "x [" + recipe.getRecipeOutput().getDisplayName() + "]");
             if (!canCraftInInventory(recipe)) {
-                knownLocations = MineProcess.searchWorld(new CalculationContext(baritone, false), new BlockOptionalMetaLookup(Blocks.CRAFTING_TABLE), 64, Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
-                getACraftingTable();
+                pathToACraftingTable();
             }
         } else {
             logDirect("Insufficient resources.");
@@ -145,8 +140,7 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
             clearToPush = true;
             logDirect("Crafting now " + amount + "x [" + recipe.getRecipeOutput().getDisplayName() + "]");
             if (!canCraftInInventory(recipe)) {
-                knownLocations = MineProcess.searchWorld(new CalculationContext(baritone, false), new BlockOptionalMetaLookup(Blocks.CRAFTING_TABLE), 64, Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
-                getACraftingTable();
+                pathToACraftingTable();
             }
         } else {
             logDirect("Insufficient resources.");
@@ -224,8 +218,8 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
         int inputCount = getInputCount();
         if (inputCount > 0) {
             int windowId = ctx.player().openContainer.windowId;
-            int slotID = 0; //slot id. for crafting table output it is 0
-            int mouseButton = 0; //idk isnt used
+            int slotID = 0; //see cheat sheet https://wiki.vg/Inventory
+            int mouseButton = 0;
             ctx.playerController().windowClick(windowId, slotID, mouseButton, ClickType.QUICK_MOVE, ctx.player());
             amount = amount - (recipe.getRecipeOutput().getCount() * inputCount);
             clearToPush = true;
@@ -258,11 +252,8 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
         return stackSize == Integer.MAX_VALUE ? 0 : stackSize;
     }
 
-    private void getACraftingTable() {
-        int mineGoalUpdateInterval = Baritone.settings().mineGoalUpdateInterval.value;
-        if (mineGoalUpdateInterval != 0 && tickCount++ % mineGoalUpdateInterval == 0) {
-            knownLocations = MineProcess.searchWorld(new CalculationContext(baritone, false), new BlockOptionalMetaLookup(Blocks.CRAFTING_TABLE), 64, Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
-        }
+    private void pathToACraftingTable() {
+        knownLocations = MineProcess.searchWorld(new CalculationContext(baritone, false), new BlockOptionalMetaLookup(Blocks.CRAFTING_TABLE), 64, Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
         if (knownLocations.isEmpty()) {
             if (baritone.getInventoryBehavior().throwaway(false, this::isCraftingTable)) {
                 placeCraftingTable = true;
@@ -283,7 +274,7 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
         return new GoalGetToBlock(pos);
     }
 
-    private boolean rightClick() { //shamelessly copied from go to block process
+    private void rightClick() {
         BlockPos bp = null;
         if (goal instanceof GoalComposite) {
             Goal[] goals = ((GoalComposite) goal).goals();
@@ -293,52 +284,62 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
                     break;
                 }
             }
-        } else {
+        } else if (goal instanceof GoalGetToBlock) {
             bp = ((GoalGetToBlock) goal).getGoalPos();
         }
+
         if (bp != null) {
-            Optional<Rotation> reachable = RotationUtils.reachable(ctx.player(), bp, ctx.playerController().getBlockReachDistance());
+            Optional<Rotation> reachable = RotationUtils.reachable(ctx, bp, ctx.playerController().getBlockReachDistance());
             if (reachable.isPresent()) {
                 baritone.getLookBehavior().updateTarget(reachable.get(), true);
                 if (bp.equals(ctx.getSelectedBlock().orElse(null))) {
                     baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
-                    System.out.println(ctx.player().openContainer);
                     if (!(ctx.player().openContainer instanceof ContainerPlayer)) {
                         baritone.getInputOverrideHandler().clearAllKeys();
-                        return true;
                     }
                 }
-                return false;
             }
-            return true;
         }
-        return false;
     }
 
-    private void placeCraftingtableNearby() {
-        baritone.getInventoryBehavior().throwaway(true, this::isCraftingTable);
-
-        ISchematic schematic = new FillSchematic(5, 4, 5, Blocks.CRAFTING_TABLE.getDefaultState());
-
-        List<IBlockState> desirableOnHotbar = new ArrayList<>();
-        Optional<Placement> toPlace = searchForPlaceables(schematic, desirableOnHotbar);
+    private void placeCraftingTable() {
+        Optional<Placement> toPlace = searchPlacement();
 
         if (toPlace.isPresent()) {
             Rotation rot = toPlace.get().rot;
             baritone.getLookBehavior().updateTarget(rot, true);
-            ctx.player().inventory.currentItem = toPlace.get().hotbarSelection;
+            baritone.getInventoryBehavior().throwaway(true, this::isCraftingTable);
             baritone.getInputOverrideHandler().setInputForceState(Input.SNEAK, true);
             if ((ctx.isLookingAt(toPlace.get().placeAgainst) && ctx.objectMouseOver().sideHit.equals(toPlace.get().side)) || ctx.playerRotations().isReallyCloseTo(rot)) {
                 baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
+                //now that the table is placed path to it
                 placeCraftingTable = false;
-                getACraftingTable();
+                goal = new GoalGetToBlock(toPlace.get().placeAgainst.offset(toPlace.get().side));
             }
         } else {
             goal = new GoalRunAway(5, ctx.playerFeet());
         }
     }
 
-    private Optional<Placement> searchForPlaceables(ISchematic schematic, List<IBlockState> desirableOnHotbar) {
+    private Optional<Placement> searchPlacement() {
+        for (BetterBlockPos bbp : blockPosListSortedByDistanceFromCenter()) {
+            if (MovementHelper.isReplaceable(bbp.x, bbp.y, bbp.z, baritone.bsi.get0(bbp.x, bbp.y, bbp.z), baritone.bsi)) {
+                if (bbp.y == ctx.playerHead().y && baritone.bsi.get0(bbp.x, bbp.y + 1, bbp.z).getBlock() == Blocks.AIR) {
+                    continue;
+                }
+                Optional<Placement> opt = possibleToPlace(Blocks.CRAFTING_TABLE.getDefaultState(), bbp.x, bbp.y, bbp.z, baritone.bsi);
+                if (opt.isPresent()) {
+                    return opt;
+                }
+            }
+        }
+        return Optional.empty();
+    }
+
+    private List<BetterBlockPos> blockPosListSortedByDistanceFromCenter() {
+        //this is so stupid idk why im doing this
+        Map<Integer, BetterBlockPos> map = new HashMap<>();
+        List<Integer> usedIndexes = new ArrayList<>();
         BetterBlockPos center = ctx.playerFeet();
         for (int dx = -2; dx <= 2; dx++) {
             for (int dy = -2; dy <= 2; dy++) {
@@ -346,34 +347,20 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
                     int x = center.x + dx;
                     int y = center.y + dy;
                     int z = center.z + dz;
-                    List<IBlockState> approxPlacable = new ArrayList<>();
-                    approxPlacable.add(Blocks.CRAFTING_TABLE.getDefaultState());
-                    IBlockState desired = schematic.desiredState(x, y, z, baritone.bsi.get0(x, y, z), approxPlacable);
-                    if (desired == null) {
-                        continue; // irrelevant
+
+                    BetterBlockPos bbp = new BetterBlockPos(x, y, z);
+                    int approxPosInList = (int) bbp.distanceSq(center) * 1000;
+                    while (usedIndexes.contains(approxPosInList)) {
+                        approxPosInList++;
                     }
-                    IBlockState curr = baritone.bsi.get0(x, y, z);
-                    if (MovementHelper.isReplaceable(x, y, z, curr, baritone.bsi) && !valid(curr, desired, false)) {
-                        if (dy == 1 && baritone.bsi.get0(x, y + 1, z).getBlock() == Blocks.AIR) {
-                            continue;
-                        }
-                        desirableOnHotbar.add(desired);
-                        Optional<Placement> opt = possibleToPlace(desired, x, y, z, baritone.bsi);
-                        if (opt.isPresent()) {
-                            return opt;
-                        }
-                    }
+                    map.put(approxPosInList, bbp);
+                    usedIndexes.add(approxPosInList);
                 }
             }
         }
-        return Optional.empty();
-    }
-
-    private boolean valid(IBlockState current, IBlockState desired, boolean itemVerify) {
-        if (desired == null) {
-            return true;
-        }
-        return current.equals(desired);
+        List<BetterBlockPos> sortedlist = new ArrayList<>();
+        map.keySet().stream().sorted().forEach(key -> sortedlist.add(map.get(key)));
+        return sortedlist;
     }
 
     private Optional<Placement> possibleToPlace(IBlockState toPlace, int x, int y, int z, BlockStateInterface bsi) {
@@ -394,10 +381,7 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
                 Rotation rot = RotationUtils.calcRotationFromVec3d(RayTraceUtils.inferSneakingEyePosition(ctx.player()), new Vec3d(placeX, placeY, placeZ), ctx.playerRotations());
                 RayTraceResult result = RayTraceUtils.rayTraceTowards(ctx.player(), rot, ctx.playerController().getBlockReachDistance(), true);
                 if (result != null && result.typeOfHit == RayTraceResult.Type.BLOCK && result.getBlockPos().equals(placeAgainstPos) && result.sideHit == against.getOpposite()) {
-                    OptionalInt hotbar = hasAnyItemThatWouldPlace(toPlace, result, rot);
-                    if (hotbar.isPresent()) {
-                        return Optional.of(new Placement(hotbar.getAsInt(), placeAgainstPos, against.getOpposite(), rot));
-                    }
+                    return Optional.of(new Placement(placeAgainstPos, against.getOpposite(), rot));
                 }
             }
         }
@@ -422,45 +406,12 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
         }
     }
 
-    private OptionalInt hasAnyItemThatWouldPlace(IBlockState desired, RayTraceResult result, Rotation rot) {
-        for (int i = 0; i < 9; i++) {
-            ItemStack stack = ctx.player().inventory.mainInventory.get(i);
-            if (stack.isEmpty() || !(stack.getItem() instanceof ItemBlock)) {
-                continue;
-            }
-            float originalYaw = ctx.player().rotationYaw;
-            float originalPitch = ctx.player().rotationPitch;
-            // the state depends on the facing of the player sometimes
-            ctx.player().rotationYaw = rot.getYaw();
-            ctx.player().rotationPitch = rot.getPitch();
-            IBlockState wouldBePlaced = ((ItemBlock) stack.getItem()).getBlock().getStateForPlacement(
-                    ctx.world(),
-                    result.getBlockPos().offset(result.sideHit),
-                    result.sideHit,
-                    (float) result.hitVec.x - result.getBlockPos().getX(), // as in PlayerControllerMP
-                    (float) result.hitVec.y - result.getBlockPos().getY(),
-                    (float) result.hitVec.z - result.getBlockPos().getZ(),
-                    stack.getItem().getMetadata(stack.getMetadata()),
-                    ctx.player()
-            );
-            ctx.player().rotationYaw = originalYaw;
-            ctx.player().rotationPitch = originalPitch;
-            if (valid(wouldBePlaced, desired, true)) {
-                return OptionalInt.of(i);
-            }
-        }
-        return OptionalInt.empty();
-    }
-
     public static class Placement {
-
-        private final int hotbarSelection;
         private final BlockPos placeAgainst;
         private final EnumFacing side;
         private final Rotation rot;
 
-        public Placement(int hotbarSelection, BlockPos placeAgainst, EnumFacing side, Rotation rot) {
-            this.hotbarSelection = hotbarSelection;
+        public Placement(BlockPos placeAgainst, EnumFacing side, Rotation rot) {
             this.placeAgainst = placeAgainst;
             this.side = side;
             this.rot = rot;
