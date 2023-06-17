@@ -462,11 +462,9 @@ public class Elytra extends Behavior implements Helper {
     }
 
     private static boolean[] pack(Chunk chunk) {
-        //System.out.println(chunk);
         try {
             boolean[] packed = new boolean[16 * 16 * 128];
             ExtendedBlockStorage[] chunkInternalStorageArray = chunk.getBlockStorageArray();
-            int count = 0;
             for (int y0 = 0; y0 < 8; y0++) {
                 ExtendedBlockStorage extendedblockstorage = chunkInternalStorageArray[y0];
                 if (extendedblockstorage == null) {
@@ -481,13 +479,11 @@ public class Elytra extends Behavior implements Helper {
                             IBlockState state = bsc.get(x, y1, z);
                             if (!passable(state)) {
                                 packed[x + (z << 4) + (y << 8)] = true;
-                                count++;
                             }
                         }
                     }
                 }
             }
-            System.out.println("breakpoint " + count);
             return packed;
         } catch (Exception e) {
             e.printStackTrace();
