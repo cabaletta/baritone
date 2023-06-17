@@ -44,9 +44,9 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 
 import java.util.*;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Elytra extends Behavior implements Helper {
 
@@ -57,10 +57,8 @@ public class Elytra extends Behavior implements Helper {
     public BlockPos aimPos;
     public List<BetterBlockPos> visiblePath;
 
-    // NetherPathfinder stuff
-    private long context;
-
-    // yay!
+    // :sunglasses:
+    private final Context context;
     private List<BetterBlockPos> path;
     public int playerNear;
     private int goingTo;
@@ -68,31 +66,67 @@ public class Elytra extends Behavior implements Helper {
 
     protected Elytra(Baritone baritone) {
         super(baritone);
-        // lol
-        this.context = NetherPathfinder.newContext(NETHER_SEED);
-
+        this.context = new Context(NETHER_SEED);
         this.lines = new ArrayList<>();
         this.visiblePath = Collections.emptyList();
         this.path = new ArrayList<>();
     }
 
-    private final Executor packer = Executors.newSingleThreadExecutor();
+    private static final class Context {
+
+        private final long context;
+        private final long seed;
+        private final ExecutorService executor;
+
+        public Context(long seed) {
+            this.context = NetherPathfinder.newContext(seed);
+            this.seed = seed;
+            this.executor = Executors.newSingleThreadExecutor();
+        }
+
+        public void queueForPacking(Chunk chunk) {
+            this.executor.submit(() -> NetherPathfinder.insertChunkData(this.context, chunk.x, chunk.z, pack(chunk)));
+        }
+
+        public CompletableFuture<PathSegment> pathFindAsync(final BlockPos src, final BlockPos dst) {
+            return CompletableFuture.supplyAsync(() ->
+                    NetherPathfinder.pathFind(
+                            this.context,
+                            src.getX(), src.getY(), src.getZ(),
+                            dst.getX(), dst.getY(), dst.getZ()
+                    ), this.executor);
+        }
+
+        public void destroy() {
+            // Ignore anything that was queued up, just shutdown the executor
+            this.executor.shutdownNow();
+
+            try {
+                while (!this.executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS)) {}
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            NetherPathfinder.freeContext(this.context);
+        }
+
+        public long getSeed() {
+            return this.seed;
+        }
+    }
 
     @Override
     public final void onChunkEvent(ChunkEvent event) {
-        if (event.getState() == EventState.POST && (event.getType() == ChunkEvent.Type.POPULATE_FULL || event.getType() == ChunkEvent.Type.POPULATE_PARTIAL)) {
-            Chunk chunk = ctx.world().getChunk(event.getX(), event.getZ());
-            packer.execute(() -> {
-                System.out.println("meow");
-                NetherPathfinder.insertChunkData(context, event.getX(), event.getZ(), pack(chunk));
-            });
+        if (event.getState() == EventState.POST && event.getType().isPopulate()) {
+            final Chunk chunk = ctx.world().getChunk(event.getX(), event.getZ());
+            this.context.queueForPacking(chunk);
         }
     }
 
     boolean recalculating;
 
     private void pathfindAroundObstacles() {
-        if (recalculating) {
+        if (this.recalculating) {
             return;
         }
         outer:
@@ -115,7 +149,6 @@ public class Elytra extends Behavior implements Helper {
                     // obstacle. where do we return to pathing?
                     // find the next valid segment
                     List<BetterBlockPos> afterSplice = path.subList(rangeEndExcl - 1, path.size());
-                    recalculating = true;
                     path(path.get(rangeEndExcl - 1), afterSplice);
                     break outer;
                 }
@@ -125,36 +158,33 @@ public class Elytra extends Behavior implements Helper {
     }
 
     public void path(BlockPos destination) {
-        path(destination, new ArrayList<>());
+        path(destination, Collections.emptyList());
     }
 
     public void path(BlockPos destination, List<BetterBlockPos> andThen) {
-        packer.execute(() -> {
-            long start = System.currentTimeMillis();
-            final PathSegment segment = NetherPathfinder.pathFind(
-                    this.context,
-                    ctx.playerFeet().x, ctx.playerFeet().y, ctx.playerFeet().z,
-                    destination.getX(), destination.getY(), destination.getZ()
-            );
-            long end = System.currentTimeMillis();
+        final boolean isRecalc = !andThen.isEmpty();
+        this.recalculating = isRecalc;
+
+        this.context.pathFindAsync(ctx.playerFeet(), destination).thenAccept(segment -> {
+            Stream<BetterBlockPos> newPath = Arrays.stream(segment.packed)
+                    .mapToObj(BlockPos::fromLong)
+                    .map(BetterBlockPos::new);
+
+            List<BetterBlockPos> joined = Stream.concat(newPath, andThen.stream()).collect(Collectors.toList());
 
             ctx.minecraft().addScheduledTask(() -> {
-                this.path = Arrays.stream(segment.packed)
-                        .mapToObj(BlockPos::fromLong)
-                        .map(BetterBlockPos::new)
-                        .collect(Collectors.toList());
-                final int distance = (int) Math.sqrt(this.path.get(0).distanceSq(this.path.get(this.path.size() - 1)));
-                logDirect(String.format("Computed path in %dms. (%d blocks)", end - start, distance));
-
-                if (!segment.finished) {
-                    logDirect("segment not finished. path incomplete");
-                }
-                this.path.addAll(andThen);
-                if (!andThen.isEmpty()) {
-                    recalculating = false;
-                }
+                this.path = joined;
                 this.playerNear = 0;
                 this.goingTo = 0;
+
+                final int distance = (int) Math.sqrt(this.path.get(0).distanceSq(this.path.get(segment.packed.length - 1)));
+
+                if (isRecalc) {
+                    this.recalculating = false;
+                    logDirect(String.format("Recalculated segment (%d blocks)", distance));
+                } else {
+                    logDirect(String.format("Computed path (%d blocks)", distance));
+                }
                 removeBacktracks();
             });
         });
@@ -182,7 +212,7 @@ public class Elytra extends Behavior implements Helper {
             return;
         }
 
-        playerNear = fixNearPlayer(playerNear);
+        playerNear = calculateNear(playerNear);
         visiblePath = path.subList(
                 Math.max(playerNear - 30, 0),
                 Math.min(playerNear + 30, path.size())
@@ -390,7 +420,7 @@ public class Elytra extends Behavior implements Helper {
         return new Vec3d(motionX, motionY, motionZ);
     }
 
-    private int fixNearPlayer(int index) {
+    private int calculateNear(int index) {
         final BetterBlockPos pos = ctx.playerFeet();
         for (int i = index; i >= Math.max(index - 1000, 0); i -= 10) {
             if (path.get(i).distanceSq(pos) < path.get(index).distanceSq(pos)) {

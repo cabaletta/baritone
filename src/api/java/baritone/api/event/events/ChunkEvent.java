@@ -106,6 +106,10 @@ public final class ChunkEvent {
          * <p>
          * And it's a partial chunk
          */
-        POPULATE_PARTIAL
+        POPULATE_PARTIAL;
+
+        public final boolean isPopulate() {
+            return this == POPULATE_FULL || this == POPULATE_PARTIAL;
+        }
     }
 }
