@@ -120,10 +120,10 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
     @Override
     public void craftItem(Item item, int amount) {
         if (canCraft(item, amount)) {
-            this.recipe = getCraftingRecipeForItem(item, amount);
+            this.recipe = getCraftingRecipeForItem(item);
             this.amount = amount;
             clearToPush = true;
-            logDirect("Crafting now " + amount + "x [" + recipe.getRecipeOutput().getDisplayName() + "]");
+            logDirect("Crafting now " + amount + "x [" + item.getTranslationKey() + "]");
             if (!canCraftInInventory(recipe)) {
                 pathToACraftingTable();
             }
@@ -170,12 +170,17 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
     //should this be in a helper class?
     public boolean canCraft(Item item, int amount) {
         List<IRecipe> recipeList = getCraftingRecipes(item);
+        RecipeItemHelper recipeItemHelper = new RecipeItemHelper();
+        for (ItemStack stack : ctx.player().inventory.mainInventory) {
+            recipeItemHelper.accountStack(stack);
+        }
+        int totalPossibleToCraft = 0;
         for (IRecipe recipe : recipeList) {
-            if (canCraft(recipe, amount)) {
-                return true;
+            if (canCraft(recipe, 1)) {
+                totalPossibleToCraft = totalPossibleToCraft + (recipeItemHelper.getBiggestCraftableStack(recipe,null) * recipe.getRecipeOutput().getCount());
             }
         }
-        return false;
+        return totalPossibleToCraft >= amount;
     }
 
     @Override
@@ -195,10 +200,10 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
         return recipe.canFit(2, 2) && !ctx.player().isCreative();
     }
 
-    private IRecipe getCraftingRecipeForItem(Item item, int amount) {
+    private IRecipe getCraftingRecipeForItem(Item item) {
         List<IRecipe> recipeList = getCraftingRecipes(item);
         for (IRecipe recipe : recipeList) {
-            if (canCraft(recipe, amount)) {
+            if (canCraft(recipe, 1)) {
                 return recipe;
             }
         }
@@ -208,6 +213,9 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
     private void moveItemsToCraftingGrid() {
         clearToPush = false;
         int windowId = ctx.player().openContainer.windowId;
+        if (!canCraft(recipe,1) && amount > 0) {
+            recipe = getCraftingRecipeForItem(recipe.getRecipeOutput().getItem());
+        }
         //try to put the recipe the required amount of times in to the crafting grid.
         for (int i = 0; i * recipe.getRecipeOutput().getCount() < amount; i++) {
             ctx.player().connection.sendPacket(new CPacketPlaceRecipe(windowId, recipe, GuiScreen.isShiftKeyDown()));
