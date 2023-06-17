@@ -64,9 +64,9 @@ public class Determinizer {
                 JarEntry clone = new JarEntry(entry.getName());
                 clone.setTime(42069);
                 jos.putNextEntry(clone);
-                if (entry.getName().endsWith(".refmap.json")) {
-                    JsonObject object = new JsonParser().parse(new InputStreamReader(jarFile.getInputStream(entry))).getAsJsonObject();
-                    jos.write(writeSorted(object).getBytes());
+                if (entry.getName().endsWith(".json")) {
+                    JsonElement json = new JsonParser().parse(new InputStreamReader(jarFile.getInputStream(entry)));
+                    jos.write(writeSorted(json).getBytes());
                 } else if (entry.getName().equals("META-INF/MANIFEST.MF") && doForgeReplacementOfMetaInf) { // only replace for forge jar
                     ByteArrayOutputStream cancer = new ByteArrayOutputStream();
                     copy(jarFile.getInputStream(entry), cancer);
@@ -104,7 +104,7 @@ public class Determinizer {
         }
     }
 
-    private static String writeSorted(JsonObject in) throws IOException {
+    private static String writeSorted(JsonElement in) throws IOException {
         StringWriter writer = new StringWriter();
         JsonWriter jw = new JsonWriter(writer);
         ORDERED_JSON_WRITER.write(jw, in);
