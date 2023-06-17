@@ -43,16 +43,18 @@ import java.util.stream.Collectors;
 
 public class Elytra extends Behavior implements Helper {
 
+    // Used exclusively for PathRenderer
+    public List<Pair<Vec3d, Vec3d>> lines = new ArrayList<>();
+    public BlockPos goal;
+
     public List<BetterBlockPos> path = new ArrayList<>();
 
     private long context;
     private Long seed;
 
     public int playerNear;
-    public int goingTo;
-    public int sinceFirework;
-    public BlockPos goal;
-    public List<Pair<Vec3d, Vec3d>> lines = new ArrayList<>();
+    private int goingTo;
+    private int sinceFirework;
 
     protected Elytra(Baritone baritone) {
         super(baritone);
@@ -117,79 +119,83 @@ public class Elytra extends Behavior implements Helper {
         if (path.isEmpty()) {
             return;
         }
+
         fixNearPlayer();
-        baritone.getInputOverrideHandler().clearAllKeys();
+        baritone.getInputOverrideHandler().clearAllKeys(); // FIXME: This breaks the regular path-finder
         lines.clear();
-        if (ctx.player().isElytraFlying()) {
-            if (ctx.player().collidedHorizontally) {
-                logDirect("hbonk");
-            }
-            if (ctx.player().collidedVertically) {
-                logDirect("vbonk");
-            }
-            Vec3d start = ctx.playerFeetAsVec();
-            boolean firework = firework();
-            sinceFirework++;
-            if (!firework
-                    && sinceFirework > 10
-                    && (Baritone.settings().wasteFireworks.value || ctx.player().posY < path.get(goingTo).y + 5) // don't firework if trying to descend
-                    && (ctx.player().posY < path.get(goingTo).y - 5 || ctx.playerFeetAsVec().distanceTo(new Vec3d(path.get(goingTo).x + 0.5, ctx.player().posY, path.get(goingTo).z + 0.5)) > 5) // UGH!!!!!!!
-                    && new Vec3d(ctx.player().motionX, ctx.player().posY < path.get(goingTo).y ? Math.max(0, ctx.player().motionY) : ctx.player().motionY, ctx.player().motionZ).length() < Baritone.settings().elytraFireworkSpeed.value // ignore y component if we are BOTH below where we want to be AND descending
-            ) {
-                logDirect("firework");
-                ctx.playerController().processRightClick(ctx.player(), ctx.world(), EnumHand.MAIN_HAND);
-                sinceFirework = 0;
-            }
-            long t = System.currentTimeMillis();
-            for (int relaxation = 0; relaxation < 3; relaxation++) { // try for a strict solution first, then relax more and more (if we're in a corner or near some blocks, it will have to relax its constraints a bit)
-                int[] heights = firework ? new int[]{20, 10, 5, 0} : new int[]{0}; // attempt to gain height, if we can, so as not to waste the boost
-                boolean requireClear = relaxation == 0;
-                int steps = relaxation < 2 ? firework ? 5 : Baritone.settings().elytraSimulationTicks.value : 3;
-                int lookahead = relaxation == 0 ? 2 : 3; // ideally this would be expressed as a distance in blocks, rather than a number of voxel steps
-                //int minStep = Math.max(0, playerNear - relaxation);
-                int minStep = playerNear;
-                for (int i = Math.min(playerNear + 20, path.size() - 1); i >= minStep; i--) {
-                    for (int dy : heights) {
-                        Vec3d dest = pathAt(i).add(0, dy, 0);
-                        if (dy != 0) {
-                            if (i + lookahead >= path.size()) {
+
+        if (!ctx.player().isElytraFlying()) {
+            return;
+        }
+        if (ctx.player().collidedHorizontally) {
+            logDirect("hbonk");
+        }
+        if (ctx.player().collidedVertically) {
+            logDirect("vbonk");
+        }
+
+        Vec3d start = ctx.playerFeetAsVec();
+        boolean firework = isFireworkActive();
+        sinceFirework++;
+        if (!firework
+                && sinceFirework > 10
+                && (Baritone.settings().wasteFireworks.value || ctx.player().posY < path.get(goingTo).y + 5) // don't firework if trying to descend
+                && (ctx.player().posY < path.get(goingTo).y - 5 || start.distanceTo(new Vec3d(path.get(goingTo).x + 0.5, ctx.player().posY, path.get(goingTo).z + 0.5)) > 5) // UGH!!!!!!!
+                && new Vec3d(ctx.player().motionX, ctx.player().posY < path.get(goingTo).y ? Math.max(0, ctx.player().motionY) : ctx.player().motionY, ctx.player().motionZ).length() < Baritone.settings().elytraFireworkSpeed.value // ignore y component if we are BOTH below where we want to be AND descending
+        ) {
+            logDirect("firework");
+            ctx.playerController().processRightClick(ctx.player(), ctx.world(), EnumHand.MAIN_HAND);
+            sinceFirework = 0;
+        }
+        final long t = System.currentTimeMillis();
+        for (int relaxation = 0; relaxation < 3; relaxation++) { // try for a strict solution first, then relax more and more (if we're in a corner or near some blocks, it will have to relax its constraints a bit)
+            int[] heights = firework ? new int[]{20, 10, 5, 0} : new int[]{0}; // attempt to gain height, if we can, so as not to waste the boost
+            boolean requireClear = relaxation == 0;
+            int steps = relaxation < 2 ? firework ? 5 : Baritone.settings().elytraSimulationTicks.value : 3;
+            int lookahead = relaxation == 0 ? 2 : 3; // ideally this would be expressed as a distance in blocks, rather than a number of voxel steps
+            //int minStep = Math.max(0, playerNear - relaxation);
+            int minStep = playerNear;
+            for (int i = Math.min(playerNear + 20, path.size() - 1); i >= minStep; i--) {
+                for (int dy : heights) {
+                    Vec3d dest = pathAt(i).add(0, dy, 0);
+                    if (dy != 0) {
+                        if (i + lookahead >= path.size()) {
+                            continue;
+                        }
+                        if (start.distanceTo(dest) < 40) {
+                            if (!clearView(dest, pathAt(i + lookahead).add(0, dy, 0)) || !clearView(dest, pathAt(i + lookahead))) {
+                                // aka: don't go upwards if doing so would prevent us from being able to see the next position **OR** the modified next position
                                 continue;
                             }
-                            if (start.distanceTo(dest) < 40) {
-                                if (!clearView(dest, pathAt(i + lookahead).add(0, dy, 0)) || !clearView(dest, pathAt(i + lookahead))) {
-                                    // aka: don't go upwards if doing so would prevent us from being able to see the next position **OR** the modified next position
-                                    continue;
-                                }
-                            } else {
-                                // but if it's far away, allow gaining altitude if we could lose it again by the time we get there
-                                if (!clearView(dest, pathAt(i))) {
-                                    continue;
-                                }
-                            }
-                        }
-                        if (requireClear ? isClear(start, dest) : clearView(start, dest)) {
-                            Rotation rot = RotationUtils.calcRotationFromVec3d(start, dest, ctx.playerRotations());
-                            long a = System.currentTimeMillis();
-                            Float pitch = solvePitch(dest.subtract(start), steps, relaxation == 2);
-                            if (pitch == null) {
-                                baritone.getLookBehavior().updateTarget(new Rotation(rot.getYaw(), ctx.playerRotations().getPitch()), false);
+                        } else {
+                            // but if it's far away, allow gaining altitude if we could lose it again by the time we get there
+                            if (!clearView(dest, pathAt(i))) {
                                 continue;
                             }
-                            long b = System.currentTimeMillis();
-                            System.out.println("Solved pitch in " + (b - a) + " total time " + (b - t));
-                            goingTo = i;
-                            goal = path.get(i).add(0, dy, 0);
-                            baritone.getLookBehavior().updateTarget(new Rotation(rot.getYaw(), pitch), false);
-                            return;
                         }
+                    }
+                    if (requireClear ? isClear(start, dest) : clearView(start, dest)) {
+                        Rotation rot = RotationUtils.calcRotationFromVec3d(start, dest, ctx.playerRotations());
+                        long a = System.currentTimeMillis();
+                        Float pitch = solvePitch(dest.subtract(start), steps, relaxation == 2);
+                        if (pitch == null) {
+                            baritone.getLookBehavior().updateTarget(new Rotation(rot.getYaw(), ctx.playerRotations().getPitch()), false);
+                            continue;
+                        }
+                        long b = System.currentTimeMillis();
+                        System.out.println("Solved pitch in " + (b - a) + " total time " + (b - t));
+                        goingTo = i;
+                        goal = path.get(i).add(0, dy, 0);
+                        baritone.getLookBehavior().updateTarget(new Rotation(rot.getYaw(), pitch), false);
+                        return;
                     }
                 }
             }
-            logDirect("no pitch solution, probably gonna crash in a few ticks LOL!!!");
         }
+        logDirect("no pitch solution, probably gonna crash in a few ticks LOL!!!");
     }
 
-    private boolean firework() {
+    private boolean isFireworkActive() {
         // TODO: Validate that the EntityFireworkRocket is attached to ctx.player()
         return ctx.world().loadedEntityList.stream()
                 .anyMatch(x -> (x instanceof EntityFireworkRocket) && ((EntityFireworkRocket) x).isAttachedToEntity());
@@ -218,7 +224,7 @@ public class Elytra extends Behavior implements Helper {
         goalDirection = goalDirection.normalize();
         Rotation good = RotationUtils.calcRotationFromVec3d(new Vec3d(0, 0, 0), goalDirection, ctx.playerRotations()); // lazy lol
 
-        boolean firework = firework();
+        boolean firework = isFireworkActive();
         Float bestPitch = null;
         double bestDot = Double.NEGATIVE_INFINITY;
         Vec3d motion = new Vec3d(ctx.player().motionX, ctx.player().motionY, ctx.player().motionZ);
@@ -268,11 +274,14 @@ public class Elytra extends Behavior implements Helper {
         float pitchBase = -MathHelper.cos(-rotationPitch * 0.017453292F);
         float pitchHeight = MathHelper.sin(-rotationPitch * 0.017453292F);
         Vec3d lookDirection = new Vec3d(flatX * pitchBase, pitchHeight, flatZ * pitchBase);
+
         if (firework) {
+            // See EntityFireworkRocket
             motionX += lookDirection.x * 0.1 + (lookDirection.x * 1.5 - motionX) * 0.5;
             motionY += lookDirection.y * 0.1 + (lookDirection.y * 1.5 - motionY) * 0.5;
             motionZ += lookDirection.z * 0.1 + (lookDirection.z * 1.5 - motionZ) * 0.5;
         }
+
         float pitchRadians = rotationPitch * 0.017453292F;
         double pitchBase2 = Math.sqrt(lookDirection.x * lookDirection.x + lookDirection.z * lookDirection.z);
         double flatMotion = Math.sqrt(motionX * motionX + motionZ * motionZ);
