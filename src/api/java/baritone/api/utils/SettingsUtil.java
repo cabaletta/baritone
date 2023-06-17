@@ -20,6 +20,7 @@ package baritone.api.utils;
 import baritone.api.BaritoneAPI;
 import baritone.api.Settings;
 import net.minecraft.block.Block;
+import net.minecraft.client.Minecraft;
 import net.minecraft.item.Item;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.Vec3i;
@@ -43,8 +44,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import static net.minecraft.client.Minecraft.getMinecraft;
 
 public class SettingsUtil {
 
@@ -105,7 +104,7 @@ public class SettingsUtil {
     }
 
     private static Path settingsByName(String name) {
-        return getMinecraft().gameDir.toPath().resolve("baritone").resolve(name);
+        return Minecraft.getMinecraft().gameDir.toPath().resolve("baritone").resolve(name);
     }
 
     public static List<Settings.Setting> modifiedSettings(Settings settings) {
