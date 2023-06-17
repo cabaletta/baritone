@@ -108,7 +108,7 @@ public final class ElytraBehavior extends Behavior implements Helper {
                     });
         }
 
-        public void recalcSegment(final int upToIncl) {
+        public void pathRecalcSegment(final int upToIncl) {
             if (this.recalculating) {
                 return;
             }
@@ -126,7 +126,7 @@ public final class ElytraBehavior extends Behavior implements Helper {
                     });
         }
 
-        public void nextSegment(final int afterIncl) {
+        public void pathNextSegment(final int afterIncl) {
             if (this.recalculating) {
                 return;
             }
@@ -219,7 +219,7 @@ public final class ElytraBehavior extends Behavior implements Helper {
                     if (!clearView(pathAt(i), pathAt(i + 1))) {
                         // obstacle. where do we return to pathing?
                         // find the next valid segment
-                        this.recalcSegment(rangeEndExcl - 1);
+                        this.pathRecalcSegment(rangeEndExcl - 1);
                         break outer;
                     }
                 }
@@ -234,7 +234,7 @@ public final class ElytraBehavior extends Behavior implements Helper {
 
             final int last = this.path.size() - 1;
             if (!this.completePath && ctx.world().isBlockLoaded(this.path.get(last), false)) {
-                this.nextSegment(last);
+                this.pathNextSegment(last);
             }
         }
 
