@@ -206,17 +206,8 @@ public class Elytra extends Behavior implements Helper {
         Vec3d start = ctx.playerFeetAsVec();
         boolean firework = isFireworkActive();
         sinceFirework++;
-        if (!firework
-                && sinceFirework > 10
-                && (Baritone.settings().wasteFireworks.value || ctx.player().posY < path.get(goingTo).y + 5) // don't firework if trying to descend
-                && (ctx.player().posY < path.get(goingTo).y - 5 || start.distanceTo(new Vec3d(path.get(goingTo).x + 0.5, ctx.player().posY, path.get(goingTo).z + 0.5)) > 5) // UGH!!!!!!!
-                && new Vec3d(ctx.player().motionX, ctx.player().posY < path.get(goingTo).y ? Math.max(0, ctx.player().motionY) : ctx.player().motionY, ctx.player().motionZ).length() < Baritone.settings().elytraFireworkSpeed.value // ignore y component if we are BOTH below where we want to be AND descending
-        ) {
-            logDirect("firework");
-            ctx.playerController().processRightClick(ctx.player(), ctx.world(), EnumHand.MAIN_HAND);
-            sinceFirework = 0;
-        }
         final long t = System.currentTimeMillis();
+        outermost:
         for (int relaxation = 0; relaxation < 3; relaxation++) { // try for a strict solution first, then relax more and more (if we're in a corner or near some blocks, it will have to relax its constraints a bit)
             int[] heights = firework ? new int[]{20, 10, 5, 0} : new int[]{0}; // attempt to gain height, if we can, so as not to waste the boost
             boolean requireClear = relaxation == 0;
@@ -256,12 +247,26 @@ public class Elytra extends Behavior implements Helper {
                         goingTo = i;
                         aimPos = path.get(i).add(0, dy, 0);
                         baritone.getLookBehavior().updateTarget(new Rotation(rot.getYaw(), pitch), false);
-                        return;
+                        break outermost;
                     }
                 }
             }
+            if (relaxation == 2) {
+                logDirect("no pitch solution, probably gonna crash in a few ticks LOL!!!");
+                return;
+            }
         }
-        logDirect("no pitch solution, probably gonna crash in a few ticks LOL!!!");
+
+        if (!firework
+                && sinceFirework > 10
+                && (Baritone.settings().wasteFireworks.value || ctx.player().posY < path.get(goingTo).y + 5) // don't firework if trying to descend
+                && (ctx.player().posY < path.get(goingTo).y - 5 || start.distanceTo(new Vec3d(path.get(goingTo).x + 0.5, ctx.player().posY, path.get(goingTo).z + 0.5)) > 5) // UGH!!!!!!!
+                && new Vec3d(ctx.player().motionX, ctx.player().posY < path.get(goingTo).y ? Math.max(0, ctx.player().motionY) : ctx.player().motionY, ctx.player().motionZ).length() < Baritone.settings().elytraFireworkSpeed.value // ignore y component if we are BOTH below where we want to be AND descending
+        ) {
+            logDirect("firework");
+            ctx.playerController().processRightClick(ctx.player(), ctx.world(), EnumHand.MAIN_HAND);
+            sinceFirework = 0;
+        }
     }
 
     private boolean isFireworkActive() {
