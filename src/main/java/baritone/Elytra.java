@@ -17,8 +17,13 @@
 
 package baritone;
 
+import baritone.api.event.events.ChunkEvent;
 import baritone.api.event.events.TickEvent;
-import baritone.api.utils.*;
+import baritone.api.event.events.type.EventState;
+import baritone.api.utils.BetterBlockPos;
+import baritone.api.utils.Helper;
+import baritone.api.utils.Rotation;
+import baritone.api.utils.RotationUtils;
 import baritone.behavior.Behavior;
 import baritone.utils.BlockStateInterface;
 import com.mojang.realmsclient.util.Pair;
@@ -39,6 +44,8 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 
 import java.util.*;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 public class Elytra extends Behavior implements Helper {
@@ -69,31 +76,93 @@ public class Elytra extends Behavior implements Helper {
         this.path = new ArrayList<>();
     }
 
-    public void path(BlockPos destination) {
-        this.playerNear = 0;
-        this.goingTo = 0;
+    private final Executor packer = Executors.newSingleThreadExecutor();
 
-        long start = System.currentTimeMillis();
-        final PathSegment segment = NetherPathfinder.pathFind(
-                this.context,
-                ctx.playerFeet().x, ctx.playerFeet().y, ctx.playerFeet().z,
-                destination.getX(), destination.getY(), destination.getZ()
-        );
-        long end = System.currentTimeMillis();
-
-        this.path = Arrays.stream(segment.packed)
-                .mapToObj(BlockPos::fromLong)
-                .map(BetterBlockPos::new)
-                .collect(Collectors.toList());
-
-        final int distance = (int) Math.sqrt(this.path.get(0).distanceSq(this.path.get(this.path.size() - 1)));
-        logDirect(String.format("Computed path in %dms. (%d blocks)", end - start, distance));
-
-        if (!segment.finished) {
-            logDirect("segment not finished. path incomplete");
+    @Override
+    public final void onChunkEvent(ChunkEvent event) {
+        if (event.getState() == EventState.POST && (event.getType() == ChunkEvent.Type.POPULATE_FULL || event.getType() == ChunkEvent.Type.POPULATE_PARTIAL)) {
+            Chunk chunk = ctx.world().getChunk(event.getX(), event.getZ());
+            packer.execute(() -> {
+                NetherPathfinder.insertChunkData(context, event.getX(), event.getZ(), pack(chunk));
+            });
         }
+    }
 
-        removeBacktracks();
+    boolean recalculating;
+
+    private void pathfindAroundObstacles() {
+        if (recalculating) {
+            return;
+        }
+        outer:
+        while (true) {
+            int rangeStartIncl = playerNear;
+            int rangeEndExcl = playerNear;
+            while (rangeEndExcl < path.size() && ctx.world().isBlockLoaded(path.get(rangeEndExcl), false)) {
+                rangeEndExcl++;
+            }
+            if (rangeStartIncl >= rangeEndExcl) {
+                // not loaded yet?
+                return;
+            }
+            if (!passable(ctx.world().getBlockState(path.get(rangeStartIncl)))) {
+                // we're in a wall
+                return; // previous iterations of this function SHOULD have fixed this by now :rage_cat:
+            }
+            for (int i = rangeStartIncl; i < rangeEndExcl - 1; i++) {
+                if (!clearView(pathAt(i), pathAt(i + 1))) {
+                    // obstacle. where do we return to pathing?
+                    // find the next valid segment
+                    for (int j = i + 1; j < rangeEndExcl - 1; j++) {
+                        if (clearView(pathAt(j), pathAt(j + 1))) {
+                            // found it
+                            // we want to replace the path from i to j
+                            List<BetterBlockPos> afterSplice = path.subList(j + 1, path.size());
+                            recalculating = true;
+                            path(path.get(j + 1), afterSplice);
+                            break outer;
+                        }
+                    }
+                }
+            }
+            break;
+        }
+    }
+
+    public void path(BlockPos destination) {
+        path(destination, new ArrayList<>());
+    }
+
+    public void path(BlockPos destination, List<BetterBlockPos> andThen) {
+        packer.execute(() -> {
+            long start = System.currentTimeMillis();
+            final PathSegment segment = NetherPathfinder.pathFind(
+                    this.context,
+                    ctx.playerFeet().x, ctx.playerFeet().y, ctx.playerFeet().z,
+                    destination.getX(), destination.getY(), destination.getZ()
+            );
+            long end = System.currentTimeMillis();
+
+            ctx.minecraft().addScheduledTask(() -> {
+                this.path = Arrays.stream(segment.packed)
+                        .mapToObj(BlockPos::fromLong)
+                        .map(BetterBlockPos::new)
+                        .collect(Collectors.toList());
+                final int distance = (int) Math.sqrt(this.path.get(0).distanceSq(this.path.get(this.path.size() - 1)));
+                logDirect(String.format("Computed path in %dms. (%d blocks)", end - start, distance));
+
+                if (!segment.finished) {
+                    logDirect("segment not finished. path incomplete");
+                }
+                this.path.addAll(andThen);
+                if (!andThen.isEmpty()) {
+                    recalculating = false;
+                }
+                this.playerNear = 0;
+                this.goingTo = 0;
+                removeBacktracks();
+            });
+        });
     }
 
     public void cancel() {
@@ -126,6 +195,8 @@ public class Elytra extends Behavior implements Helper {
 
         baritone.getInputOverrideHandler().clearAllKeys(); // FIXME: This breaks the regular path-finder
         lines.clear();
+
+        pathfindAroundObstacles();
 
         if (!ctx.player().isElytraFlying()) {
             return;
@@ -361,9 +432,11 @@ public class Elytra extends Behavior implements Helper {
     }
 
     private static boolean[] pack(Chunk chunk) {
+        //System.out.println(chunk);
         try {
             boolean[] packed = new boolean[16 * 16 * 128];
             ExtendedBlockStorage[] chunkInternalStorageArray = chunk.getBlockStorageArray();
+            int count = 0;
             for (int y0 = 0; y0 < 8; y0++) {
                 ExtendedBlockStorage extendedblockstorage = chunkInternalStorageArray[y0];
                 if (extendedblockstorage == null) {
@@ -376,17 +449,19 @@ public class Elytra extends Behavior implements Helper {
                     for (int z = 0; z < 16; z++) {
                         for (int x = 0; x < 16; x++) {
                             IBlockState state = bsc.get(x, y1, z);
-                            if (state.getBlock() != Blocks.AIR) { // instanceof BlockAir in 1.13+
+                            if (!passable(state)) {
                                 packed[x + (z << 4) + (y << 8)] = true;
+                                count++;
                             }
                         }
                     }
                 }
             }
+            //System.out.println("breakpoint " + count);
             return packed;
         } catch (Exception e) {
             e.printStackTrace();
-            return null;
+            throw new RuntimeException(e);
         }
     }
 
@@ -401,7 +476,7 @@ public class Elytra extends Behavior implements Helper {
         BlockPos blockpos = new BlockPos(x2, y2, z2);
         IBlockState iblockstate = ctx.world().getBlockState(blockpos);
         if (!passable(iblockstate)) {
-            return Blocks.DIRT.getDefaultState().collisionRayTrace(ctx.world(), blockpos, start, end);
+            return Blocks.SPONGE.getDefaultState().collisionRayTrace(ctx.world(), blockpos, start, end);
         }
         int steps = 200;
         while (steps-- >= 0) {
@@ -479,7 +554,7 @@ public class Elytra extends Behavior implements Helper {
             blockpos = new BlockPos(x2, y2, z2);
             IBlockState iblockstate1 = ctx.world().getBlockState(blockpos);
             if (!passable(iblockstate1)) {
-                return Blocks.DIRT.getDefaultState().collisionRayTrace(ctx.world(), blockpos, start, end);
+                return Blocks.NETHERRACK.getDefaultState().collisionRayTrace(ctx.world(), blockpos, start, end);
             }
         }
         return null;

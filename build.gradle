@@ -142,7 +142,8 @@ afterEvaluate {
 
             dependencies {
                 // https://github.com/MinecraftMachina/lwjgl/releases/download/2.9.4-20150209-mmachina.2/lwjgl-platform-2.9.4-nightly-20150209-natives-osx.jar
-                minecraft files("libs/lwjgl-platform-2.9.4-nightly-20150209-natives-osx.jar") // TODO: use prism launcher maven
+                minecraft files("libs/lwjgl-platform-2.9.4-nightly-20150209-natives-osx.jar")
+                // TODO: use prism launcher maven
                 // https://github.com/MinecraftMachina/Java-Objective-C-Bridge/releases/download/1.1.0-mmachina.1/java-objc-bridge-1.1.jar
                 minecraft files("libs/java-objc-bridge-1.1.jar") // TODO: use prism launcher maven
                 minecraft(group: 'net.java.dev.jna', name: 'jna') {
@@ -174,9 +175,9 @@ dependencies {
         transitive = false
     }
     launchAnnotationProcessor 'org.spongepowered:mixin:0.8.4-SNAPSHOT:processor'
-    launchImplementation('dev.babbaj:nether-pathfinder:0.4')
+    launchImplementation('dev.babbaj:nether-pathfinder:0.6')
     testImplementation 'junit:junit:4.12'
-    implementation 'dev.babbaj:nether-pathfinder:0.4'
+    implementation 'dev.babbaj:nether-pathfinder:0.6'
 }
 
 mixin {
