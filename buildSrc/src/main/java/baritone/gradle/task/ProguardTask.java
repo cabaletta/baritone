@@ -18,38 +18,32 @@
 package baritone.gradle.task;
 
 import baritone.gradle.util.Determinizer;
-import baritone.gradle.util.MappingType;
-import baritone.gradle.util.ReobfWrapper;
 import org.apache.commons.io.IOUtils;
-import org.gradle.api.JavaVersion;
-import org.gradle.api.NamedDomainObjectContainer;
+import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.Dependency;
-import org.gradle.api.internal.file.IdentityFileResolver;
-import org.gradle.api.internal.plugins.DefaultConvention;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.api.tasks.TaskCollection;
 import org.gradle.api.tasks.compile.ForkOptions;
 import org.gradle.api.tasks.compile.JavaCompile;
-import org.gradle.internal.Pair;
 import org.gradle.internal.jvm.Jvm;
-import org.gradle.internal.jvm.inspection.DefaultJvmVersionDetector;
-import org.gradle.process.internal.DefaultExecActionFactory;
+
+import java.io.File;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.util.Objects;
 
 import java.io.*;
-import java.lang.reflect.Field;
 import java.net.URL;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-
-import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 /**
  * @author Brady
@@ -138,23 +132,16 @@ public class ProguardTask extends BaritoneGradleTask {
 
     private String findJavaByGradleCurrentRuntime() {
         String path = Jvm.current().getJavaExecutable().getAbsolutePath();
-
-        if (this.validateJavaVersion(path)) {
-            System.out.println("Using Gradle's runtime Java for ProGuard");
-            return path;
-        }
-        return null;
+        System.out.println("Using Gradle's runtime Java for ProGuard");
+        return path;
     }
 
     private String findJavaByJavaHome() {
         final String javaHomeEnv = System.getenv("JAVA_HOME");
         if (javaHomeEnv != null) {
-
             String path = Jvm.forHome(new File(javaHomeEnv)).getJavaExecutable().getAbsolutePath();
-            if (this.validateJavaVersion(path)) {
-                System.out.println("Detected Java path by JAVA_HOME");
-                return path;
-            }
+            System.out.println("Detected Java path by JAVA_HOME");
+            return path;
         }
         return null;
     }
@@ -170,19 +157,11 @@ public class ProguardTask extends BaritoneGradleTask {
             if (javacPath != null) {
                 File javacFile = new File(javacPath);
                 if (javacFile.exists()) {
-                    File[] maybeJava = javacFile.getParentFile().listFiles(new FilenameFilter() {
-                        @Override
-                        public boolean accept(File dir, String name) {
-                            return name.equals("java");
-                        }
-                    });
-
+                    File[] maybeJava = javacFile.getParentFile().listFiles((dir, name) -> name.equals("java"));
                     if (maybeJava != null && maybeJava.length > 0) {
                         String path = maybeJava[0].getAbsolutePath();
-                        if (this.validateJavaVersion(path)) {
-                            System.out.println("Detected Java path by forkOptions");
-                            return path;
-                        }
+                        System.out.println("Detected Java path by forkOptions");
+                        return path;
                     }
                 }
             }
@@ -190,21 +169,8 @@ public class ProguardTask extends BaritoneGradleTask {
         return null;
     }
 
-    private boolean validateJavaVersion(String java) {
-        final JavaVersion javaVersion = new DefaultJvmVersionDetector(new DefaultExecActionFactory(new IdentityFileResolver())).getJavaVersion(java);
-
-        if (!javaVersion.getMajorVersion().equals("8")) {
-            System.out.println("Failed to validate Java version " + javaVersion.toString() + " [" + java + "] for ProGuard libraryjars");
-            // throw new RuntimeException("Java version incorrect: " + javaVersion.getMajorVersion() + " for " + java);
-            return false;
-        }
-
-        System.out.println("Validated Java version " + javaVersion.toString() + " [" + java + "] for ProGuard libraryjars");
-        return true;
-    }
-
     private void generateConfigs() throws Exception {
-        Files.copy(getRelativeFile(PROGUARD_CONFIG_TEMPLATE), getTemporaryFile(PROGUARD_CONFIG_DEST), REPLACE_EXISTING);
+        Files.copy(getRelativeFile(PROGUARD_CONFIG_TEMPLATE), getTemporaryFile(PROGUARD_CONFIG_DEST), StandardCopyOption.REPLACE_EXISTING);
 
         // Setup the template that will be used to derive the API and Standalone configs
         List<String> template = Files.readAllLines(getTemporaryFile(PROGUARD_CONFIG_DEST));
@@ -236,14 +202,37 @@ public class ProguardTask extends BaritoneGradleTask {
         });
     }
 
-    private void acquireDependencies() throws Exception {
+    private static final class Pair<A, B> {
+        public final A a;
+        public final B b;
 
+        private Pair(final A a, final B b) {
+            this.a = a;
+            this.b = b;
+        }
+
+        @Override
+        public String toString() {
+            return "Pair{" +
+                    "a=" + this.a +
+                    ", " +
+                    "b=" + this.b +
+                    '}';
+        }
+    }
+
+    private void acquireDependencies() throws Exception {
         // Create a map of all of the dependencies that we are able to access in this project
         // Likely a better way to do this, I just pair the dependency with the first valid configuration
         Map<String, Pair<Configuration, Dependency>> dependencyLookupMap = new HashMap<>();
-        getProject().getConfigurations().stream().filter(Configuration::isCanBeResolved).forEach(config ->
-                config.getAllDependencies().forEach(dependency ->
-                        dependencyLookupMap.putIfAbsent(dependency.getName() + "-" + dependency.getVersion(), Pair.of(config, dependency))));
+        Map<String, File> files = new HashMap<>();
+        getProject().getConfigurations().stream().filter(Configuration::isCanBeResolved).forEach(config -> {
+            for (File file : config.getFiles()) {
+                files.put(file.getName(), file);
+            }
+            config.getAllDependencies().forEach(dependency ->
+                    dependencyLookupMap.putIfAbsent(dependency.getName() + "-" + dependency.getVersion(), new Pair<>(config, dependency)));
+        });
 
         // Create the directory if it doesn't already exist
         Path tempLibraries = getTemporaryFile(TEMP_LIBRARY_DIR);
@@ -258,7 +247,7 @@ public class ProguardTask extends BaritoneGradleTask {
                 Path cachedJar = getMinecraftJar();
                 Path inTempDir = getTemporaryFile("tempLibraries/minecraft.jar");
                 // TODO: maybe try not to copy every time
-                Files.copy(cachedJar, inTempDir, REPLACE_EXISTING);
+                Files.copy(cachedJar, inTempDir, StandardCopyOption.REPLACE_EXISTING);
 
                 continue;
             }
@@ -270,20 +259,21 @@ public class ProguardTask extends BaritoneGradleTask {
                     pair = entry.getValue();
                 }
             }
-
-            // The pair must be non-null
-            Objects.requireNonNull(pair);
-
             // Find the library jar file, and copy it to tempLibraries
-            for (File file : pair.getLeft().files(pair.getRight())) {
-                if (file.getName().startsWith(lib)) {
-                    if (lib.contains("mixin")) {
-                        mixin = file;
+            if (pair == null) {
+                File libFile = files.get(lib + ".jar");
+                if (libFile == null) {
+                    libFile = files.values().stream().filter(file -> file.getName().startsWith(lib)).findFirst().orElse(null);
+                    if (libFile == null) {
+                        throw new IllegalStateException(lib);
                     }
-                    if (lib.contains("nether-pathfinder")) {
-                        pathfinder = file;
+                }
+                copyTempLib(lib, libFile);
+            } else {
+                for (File file : pair.a.files(pair.b)) {
+                    if (file.getName().startsWith(lib)) {
+                        copyTempLib(lib, file);
                     }
-                    Files.copy(file.toPath(), getTemporaryFile("tempLibraries/" + lib + ".jar"), REPLACE_EXISTING);
                 }
             }
         }
@@ -295,87 +285,39 @@ public class ProguardTask extends BaritoneGradleTask {
         }
     }
 
+    private void copyTempLib(String lib, File libFile) throws IOException {
+        if (lib.contains("mixin")) {
+            mixin = libFile;
+        }
+        if (lib.contains("nether-pathfinder")) {
+            pathfinder = libFile;
+        }
+        Files.copy(libFile.toPath(), getTemporaryFile("tempLibraries/" + lib + ".jar"), StandardCopyOption.REPLACE_EXISTING);
+    }
+
     // a bunch of epic stuff to get the path to the cached jar
     private Path getMinecraftJar() throws Exception {
-        MappingType mappingType;
-        try {
-            mappingType = getMappingType();
-        } catch (Exception e) {
-            System.err.println("Failed to get mapping type, assuming NOTCH.");
-            mappingType = MappingType.NOTCH;
-        }
-
-        String suffix;
-        switch (mappingType) {
-            case NOTCH:
-                suffix = "";
-                break;
-            case SEARGE:
-                suffix = "-srgBin";
-                break;
-            case CUSTOM:
-                throw new IllegalStateException("Custom mappings not supported!");
-            default:
-                throw new IllegalStateException("Unknown mapping type: " + mappingType);
-        }
-
-        DefaultConvention convention = (DefaultConvention) this.getProject().getConvention();
-        Object extension = convention.getAsMap().get("minecraft");
-        Objects.requireNonNull(extension);
-
-        // for some reason cant use Class.forName
-        Class<?> class_baseExtension = extension.getClass().getSuperclass().getSuperclass().getSuperclass(); // <-- cursed
-        Field f_replacer = class_baseExtension.getDeclaredField("replacer");
-        f_replacer.setAccessible(true);
-        Object replacer = f_replacer.get(extension);
-        Class<?> class_replacementProvider = replacer.getClass();
-        Field replacement_replaceMap = class_replacementProvider.getDeclaredField("replaceMap");
-        replacement_replaceMap.setAccessible(true);
-
-        Map<String, Object> replacements = (Map) replacement_replaceMap.get(replacer);
-        String cacheDir = replacements.get("CACHE_DIR").toString() + "/net/minecraft";
-        String mcVersion = replacements.get("MC_VERSION").toString();
-        String mcpInsert = replacements.get("MAPPING_CHANNEL").toString() + "/" + replacements.get("MAPPING_VERSION").toString();
-        String fullJarName = "minecraft-" + mcVersion + suffix + ".jar";
-
-        String baseDir = String.format("%s/minecraft/%s/", cacheDir, mcVersion);
-
-        String jarPath;
-        if (mappingType == MappingType.SEARGE) {
-            jarPath = String.format("%s/%s/%s", baseDir, mcpInsert, fullJarName);
-        } else {
-            jarPath = baseDir + fullJarName;
-        }
-        jarPath = jarPath
-                .replace("/", File.separator)
-                .replace("\\", File.separator); // hecking regex
-
-        return new File(jarPath).toPath();
+        return getObfuscatedMinecraftJar(getProject(), false); // always notch jar for now.
     }
 
-    // throws IllegalStateException if mapping type is ambiguous or it fails to find it
-    private MappingType getMappingType() {
-        // if it fails to find this then its probably a forgegradle version problem
-        Set<Object> reobf = (NamedDomainObjectContainer<Object>) this.getProject().getExtensions().getByName("reobf");
+    private static Path getObfuscatedMinecraftJar(final Project project, final boolean srg) throws Exception {
+        final Object extension = Objects.requireNonNull(project.getExtensions().findByName("minecraft"), "Unable to find Minecraft extension.");
 
-        List<MappingType> mappingTypes = getUsedMappingTypes(reobf);
-        long mappingTypesUsed = mappingTypes.size();
-        if (mappingTypesUsed == 0) {
-            throw new IllegalStateException("Failed to find mapping type (no jar task?)");
-        }
-        if (mappingTypesUsed > 1) {
-            throw new IllegalStateException("Ambiguous mapping type (multiple jars with different mapping types?)");
-        }
+        final Class<?> mcpRepoClass = mcpRepoClass(extension.getClass().getClassLoader());
+        final Field mcpRepoInstanceField = mcpRepoClass.getDeclaredField("INSTANCE");
+        mcpRepoInstanceField.setAccessible(true);
+        final Method findMethod = mcpRepoClass.getDeclaredMethod(srg ? "findSrg" : "findRaw", String.class, String.class);
+        findMethod.setAccessible(true);
 
-        return mappingTypes.get(0);
+        final Object mcpRepo = mcpRepoInstanceField.get(null);
+        final String mcpVersion = (String) Objects.requireNonNull(project.getExtensions().getExtraProperties().get("MCP_VERSION"), "Extra property \"MCP_VERSION\" not found");
+        return ((File) findMethod.invoke(mcpRepo, "joined", mcpVersion)).toPath();
     }
 
-    private List<MappingType> getUsedMappingTypes(Set<Object> reobf) {
-        return reobf.stream()
-                .map(ReobfWrapper::new)
-                .map(ReobfWrapper::getMappingType)
-                .distinct()
-                .collect(Collectors.toList());
+    private static Class<?> mcpRepoClass(final ClassLoader loader) throws Exception {
+        final Method forName0 = Class.class.getDeclaredMethod("forName0", String.class, boolean.class, ClassLoader.class, Class.class);
+        forName0.setAccessible(true);
+        return (Class<?>) forName0.invoke(null, "net.minecraftforge.gradle.mcp.MCPRepo", true, loader, null);
     }
 
     private void proguardApi() throws Exception {
@@ -400,8 +342,16 @@ public class ProguardTask extends BaritoneGradleTask {
         this.url = url;
     }
 
+    public String getUrl() {
+        return url;
+    }
+
     public void setExtract(String extract) {
         this.extract = extract;
+    }
+
+    public String getExtract() {
+        return extract;
     }
 
     private void runProguard(Path config) throws Exception {
