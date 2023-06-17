@@ -83,6 +83,7 @@ public class Elytra extends Behavior implements Helper {
         if (event.getState() == EventState.POST && (event.getType() == ChunkEvent.Type.POPULATE_FULL || event.getType() == ChunkEvent.Type.POPULATE_PARTIAL)) {
             Chunk chunk = ctx.world().getChunk(event.getX(), event.getZ());
             packer.execute(() -> {
+                System.out.println("meow");
                 NetherPathfinder.insertChunkData(context, event.getX(), event.getZ(), pack(chunk));
             });
         }
@@ -113,16 +114,10 @@ public class Elytra extends Behavior implements Helper {
                 if (!clearView(pathAt(i), pathAt(i + 1))) {
                     // obstacle. where do we return to pathing?
                     // find the next valid segment
-                    for (int j = i + 1; j < rangeEndExcl - 1; j++) {
-                        if (clearView(pathAt(j), pathAt(j + 1))) {
-                            // found it
-                            // we want to replace the path from i to j
-                            List<BetterBlockPos> afterSplice = path.subList(j + 1, path.size());
-                            recalculating = true;
-                            path(path.get(j + 1), afterSplice);
-                            break outer;
-                        }
-                    }
+                    List<BetterBlockPos> afterSplice = path.subList(rangeEndExcl - 1, path.size());
+                    recalculating = true;
+                    path(path.get(rangeEndExcl - 1), afterSplice);
+                    break outer;
                 }
             }
             break;
@@ -457,7 +452,7 @@ public class Elytra extends Behavior implements Helper {
                     }
                 }
             }
-            //System.out.println("breakpoint " + count);
+            System.out.println("breakpoint " + count);
             return packed;
         } catch (Exception e) {
             e.printStackTrace();
