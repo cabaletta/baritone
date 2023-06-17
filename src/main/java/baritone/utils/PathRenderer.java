@@ -24,6 +24,7 @@ import baritone.api.pathing.goals.*;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.interfaces.IGoalRenderPos;
+import baritone.behavior.ElytraBehavior;
 import baritone.behavior.PathingBehavior;
 import baritone.pathing.path.PathExecutor;
 import com.mojang.realmsclient.util.Pair;
@@ -101,15 +102,17 @@ public final class PathRenderer implements IRenderer {
             drawPath(next.getPath().positions(), 0, settings.colorNextPath.value, settings.fadePath.value, 10, 20);
         }
 
-        drawPath(behavior.baritone.elytra.visiblePath, 0, Color.RED, false, 0, 0);
-        if (behavior.baritone.elytra.aimPos != null) {
-            drawGoal(ctx.player(), new GoalBlock(behavior.baritone.elytra.aimPos), partialTicks, Color.GREEN);
+        final ElytraBehavior elytra = behavior.baritone.getElytraBehavior();
+
+        drawPath(elytra.visiblePath, 0, Color.RED, false, 0, 0);
+        if (elytra.aimPos != null) {
+            drawGoal(ctx.player(), new GoalBlock(elytra.aimPos), partialTicks, Color.GREEN);
         }
-        if (!behavior.baritone.elytra.lines.isEmpty() && Baritone.settings().renderRaytraces.value) {
+        if (!elytra.lines.isEmpty() && Baritone.settings().renderRaytraces.value) {
             IRenderer.startLines(Color.BLUE, settings.pathRenderLineWidthPixels.value, settings.renderPathIgnoreDepth.value);
             boolean orig = settings.renderPathAsLine.value;
             settings.renderPathAsLine.value = true;
-            for (Pair<Vec3d, Vec3d> line : behavior.baritone.elytra.lines) {
+            for (Pair<Vec3d, Vec3d> line : elytra.lines) {
                 emitLine(line.first().x, line.first().y, line.first().z, line.second().x, line.second().y, line.second().z);
             }
             settings.renderPathAsLine.value = orig;

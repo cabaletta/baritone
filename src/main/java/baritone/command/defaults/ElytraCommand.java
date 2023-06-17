@@ -41,7 +41,7 @@ public class ElytraCommand extends Command {
         ICustomGoalProcess customGoalProcess = baritone.getCustomGoalProcess();
         args.requireMax(0);
         GoalXZ goal = (GoalXZ) customGoalProcess.getGoal();
-        ((Baritone) baritone).elytra.path(new BlockPos(goal.getX(), 64, goal.getZ()));
+        ((Baritone) baritone).getElytraBehavior().path(new BlockPos(goal.getX(), 64, goal.getZ()));
     }
 
     @Override

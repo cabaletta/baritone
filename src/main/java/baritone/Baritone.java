@@ -64,7 +64,7 @@ public class Baritone implements IBaritone {
     private final GameEventHandler gameEventHandler;
 
     private final PathingBehavior pathingBehavior;
-    public final Elytra elytra;
+    private final ElytraBehavior elytraBehavior;
     private final LookBehavior lookBehavior;
     private final InventoryBehavior inventoryBehavior;
     private final InputOverrideHandler inputOverrideHandler;
@@ -103,7 +103,7 @@ public class Baritone implements IBaritone {
 
         {
             this.pathingBehavior      = this.registerBehavior(PathingBehavior::new);
-            this.elytra               = this.registerBehavior(Elytra::new);
+            this.elytraBehavior       = this.registerBehavior(ElytraBehavior::new);
             this.lookBehavior         = this.registerBehavior(LookBehavior::new);
             this.inventoryBehavior    = this.registerBehavior(InventoryBehavior::new);
             this.inputOverrideHandler = this.registerBehavior(InputOverrideHandler::new);
@@ -230,6 +230,10 @@ public class Baritone implements IBaritone {
     @Override
     public CommandManager getCommandManager() {
         return this.commandManager;
+    }
+
+    public ElytraBehavior getElytraBehavior() {
+        return this.elytraBehavior;
     }
 
     @Override

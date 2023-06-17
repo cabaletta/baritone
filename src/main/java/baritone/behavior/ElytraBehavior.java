@@ -15,8 +15,9 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone;
+package baritone.behavior;
 
+import baritone.Baritone;
 import baritone.api.event.events.ChunkEvent;
 import baritone.api.event.events.TickEvent;
 import baritone.api.event.events.type.EventState;
@@ -24,7 +25,6 @@ import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.Helper;
 import baritone.api.utils.Rotation;
 import baritone.api.utils.RotationUtils;
-import baritone.behavior.Behavior;
 import baritone.utils.BlockStateInterface;
 import com.mojang.realmsclient.util.Pair;
 import dev.babbaj.pathfinder.NetherPathfinder;
@@ -48,7 +48,7 @@ import java.util.concurrent.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class Elytra extends Behavior implements Helper {
+public final class ElytraBehavior extends Behavior implements Helper {
 
     private static final long NETHER_SEED = 146008555100680L;
 
@@ -64,7 +64,7 @@ public class Elytra extends Behavior implements Helper {
     private int goingTo;
     private int sinceFirework;
 
-    protected Elytra(Baritone baritone) {
+    public ElytraBehavior(Baritone baritone) {
         super(baritone);
         this.context = new Context(NETHER_SEED);
         this.lines = new ArrayList<>();
