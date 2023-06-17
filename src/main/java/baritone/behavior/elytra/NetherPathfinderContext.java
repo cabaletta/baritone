@@ -60,7 +60,12 @@ public final class NetherPathfinderContext {
                 ), this.executor);
     }
 
+    public void cancel() {
+        NetherPathfinder.cancel(this.context);
+    }
+
     public void destroy() {
+        this.cancel();
         // Ignore anything that was queued up, just shutdown the executor
         this.executor.shutdownNow();
 
