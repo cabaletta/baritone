@@ -35,10 +35,7 @@ import net.minecraft.entity.item.EntityFireworkRocket;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.*;
 import net.minecraft.world.chunk.Chunk;
 
 import java.util.*;
@@ -339,7 +336,6 @@ public final class ElytraBehavior extends Behavior implements Helper {
         outermost:
         for (int relaxation = 0; relaxation < 3; relaxation++) { // try for a strict solution first, then relax more and more (if we're in a corner or near some blocks, it will have to relax its constraints a bit)
             int[] heights = firework ? new int[]{20, 10, 5, 0} : new int[]{0}; // attempt to gain height, if we can, so as not to waste the boost
-            boolean requireClear = relaxation == 0;
             int steps = relaxation < 2 ? firework ? 5 : Baritone.settings().elytraSimulationTicks.value : 3;
             int lookahead = relaxation == 0 ? 2 : 3; // ideally this would be expressed as a distance in blocks, rather than a number of voxel steps
             //int minStep = Math.max(0, playerNear - relaxation);
@@ -363,7 +359,12 @@ public final class ElytraBehavior extends Behavior implements Helper {
                             }
                         }
                     }
-                    if (requireClear ? isClear(start, dest) : clearView(start, dest)) {
+
+                    // 1.0 -> 0.25 -> none
+                    final Double grow = relaxation == 2 ? null
+                            : relaxation == 0 ? 1.0d : 0.25d;
+
+                    if (isClear(start, dest, grow)) {
                         Rotation rot = RotationUtils.calcRotationFromVec3d(start, dest, ctx.playerRotations());
                         long a = System.currentTimeMillis();
                         Float pitch = solvePitch(dest.subtract(start), steps, relaxation == 2);
@@ -406,13 +407,32 @@ public final class ElytraBehavior extends Behavior implements Helper {
                 .anyMatch(x -> (x instanceof EntityFireworkRocket) && ((EntityFireworkRocket) x).isAttachedToEntity());
     }
 
-    private boolean isClear(Vec3d start, Vec3d dest) {
-        Vec3d perpendicular = dest.subtract(start).crossProduct(new Vec3d(0, 1, 0)).normalize();
-        return clearView(start, dest)
-                && clearView(start.add(0, 2, 0), dest.add(0, 2, 0))
-                && clearView(start.add(0, -2, 0), dest.add(0, -2, 0))
-                && clearView(start.add(perpendicular), dest.add(perpendicular))
-                && clearView(start.subtract(perpendicular), dest.subtract(perpendicular));
+    private boolean isClear(final Vec3d start, final Vec3d dest, final Double growAmount) {
+        if (!clearView(start, dest)) {
+            return false;
+        }
+        if (growAmount == null) {
+            return true;
+        }
+
+        final AxisAlignedBB bb = ctx.player().getEntityBoundingBox().grow(growAmount);
+        final Vec3d[] corners = new Vec3d[] {
+                new Vec3d(bb.minX, bb.minY, bb.minZ),
+                new Vec3d(bb.minX, bb.minY, bb.maxZ),
+                new Vec3d(bb.minX, bb.maxY, bb.minZ),
+                new Vec3d(bb.minX, bb.maxY, bb.maxZ),
+                new Vec3d(bb.maxX, bb.minY, bb.minZ),
+                new Vec3d(bb.maxX, bb.minY, bb.maxZ),
+                new Vec3d(bb.maxX, bb.maxY, bb.minZ),
+                new Vec3d(bb.maxX, bb.maxY, bb.maxZ),
+        };
+
+        for (final Vec3d corner : corners) {
+            if (!clearView(corner, dest.add(corner.subtract(start)))) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private boolean clearView(Vec3d start, Vec3d dest) {
