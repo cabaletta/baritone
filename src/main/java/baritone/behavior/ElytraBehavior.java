@@ -28,10 +28,9 @@ import baritone.utils.BlockStateInterface;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.item.EntityFireworkRocket;
-import net.minecraft.init.Blocks;
-import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.*;
+import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 
 import java.util.*;
@@ -453,8 +452,7 @@ public final class ElytraBehavior extends Behavior implements Helper {
 
     private boolean clearView(Vec3d start, Vec3d dest) {
         lines.add(new Pair<>(start, dest));
-        RayTraceResult result = rayTraceBlocks(start, dest);
-        return result == null || result.typeOfHit == RayTraceResult.Type.MISS;
+        return !rayTraceBlocks(ctx.world(), start.x, start.y, start.z, dest.x, dest.y, dest.z);
     }
 
     private Float solvePitch(Vec3d goalDirection, int steps, boolean desperate) {
@@ -557,98 +555,118 @@ public final class ElytraBehavior extends Behavior implements Helper {
         return new Vec3d(motionX, motionY, motionZ);
     }
 
-    // TODO: Use the optimized version from builder-2
-    private RayTraceResult rayTraceBlocks(Vec3d start, Vec3d end) {
-        int x1 = MathHelper.floor(end.x);
-        int y1 = MathHelper.floor(end.y);
-        int z1 = MathHelper.floor(end.z);
-        int x2 = MathHelper.floor(start.x);
-        int y2 = MathHelper.floor(start.y);
-        int z2 = MathHelper.floor(start.z);
-        BlockPos blockpos = new BlockPos(x2, y2, z2);
-        IBlockState iblockstate = ctx.world().getBlockState(blockpos);
-        if (!passable(iblockstate)) {
-            return Blocks.SPONGE.getDefaultState().collisionRayTrace(ctx.world(), blockpos, start, end);
+    private final BlockPos.MutableBlockPos mutableRaytraceBlockPos = new BlockPos.MutableBlockPos();
+
+    private boolean rayTraceBlocks(final World world,
+                                   final double startX, final double startY, final double startZ,
+                                   final double endX, final double endY, final double endZ) {
+        int voxelCurrX = fastFloor(startX);
+        int voxelCurrY = fastFloor(startY);
+        int voxelCurrZ = fastFloor(startZ);
+
+        Chunk prevChunk;
+        IBlockState currentState = (prevChunk = cachedChunk(world, this.mutableRaytraceBlockPos.setPos(voxelCurrX, voxelCurrY, voxelCurrZ), null)).getBlockState(this.mutableRaytraceBlockPos);
+
+        // This is true if player is standing inside of block.
+        if (!passable(currentState)) {
+            return true;
         }
-        int steps = 200;
+
+        final int voxelEndX = fastFloor(endX);
+        final int voxelEndY = fastFloor(endY);
+        final int voxelEndZ = fastFloor(endZ);
+        double currPosX = startX;
+        double currPosY = startY;
+        double currPosZ = startZ;
+
+        int steps = 200; // TODO: should we lower the max steps?
         while (steps-- >= 0) {
-            if (Double.isNaN(start.x) || Double.isNaN(start.y) || Double.isNaN(start.z)) {
-                return null;
+            if (voxelCurrX == voxelEndX && voxelCurrY == voxelEndY && voxelCurrZ == voxelEndZ) {
+                return false;
             }
-            if (x2 == x1 && y2 == y1 && z2 == z1) {
-                return null;
+
+            final double distanceFromStartToEndX = endX - currPosX;
+            final double distanceFromStartToEndY = endY - currPosY;
+            final double distanceFromStartToEndZ = endZ - currPosZ;
+
+            double nextIntegerX;
+            double nextIntegerY;
+            double nextIntegerZ;
+            // potentially more based branchless impl?
+            nextIntegerX = voxelCurrX + ((voxelCurrX - voxelEndX) >>> 31); // if voxelEnd > voxelIn, then voxelIn-voxelEnd will be negative, meaning the sign bit is 1
+            nextIntegerY = voxelCurrY + ((voxelCurrY - voxelEndY) >>> 31); // if we do an unsigned right shift by 31, that sign bit becomes the LSB
+            nextIntegerZ = voxelCurrZ + ((voxelCurrZ - voxelEndZ) >>> 31); // therefore, this increments nextInteger iff EndX>inX, otherwise it leaves it alone
+            // remember: don't have to worry about the case when voxelEnd == voxelIn, because nextInteger value wont be used
+
+            // these just have to be strictly greater than 1, might as well just go up to the next int
+            double fracIfSkipX = 2.0D;
+            double fracIfSkipY = 2.0D;
+            double fracIfSkipZ = 2.0D;
+
+            // reminder to future self: don't "branchlessify" this, it's MUCH slower (pretty obviously, floating point div is much worse than a branch mispredict, but integer increment (like the other two removed branches) are cheap enough to be worth doing either way)
+            if (voxelEndX != voxelCurrX) {
+                fracIfSkipX = (nextIntegerX - currPosX) / distanceFromStartToEndX;
             }
-            boolean hitX = true;
-            boolean hitY = true;
-            boolean hitZ = true;
-            double nextX = 999.0D;
-            double nextY = 999.0D;
-            double nextZ = 999.0D;
-            if (x1 > x2) {
-                nextX = (double) x2 + 1.0D;
-            } else if (x1 < x2) {
-                nextX = (double) x2 + 0.0D;
+            if (voxelEndY != voxelCurrY) {
+                fracIfSkipY = (nextIntegerY - currPosY) / distanceFromStartToEndY;
+            }
+            if (voxelEndZ != voxelCurrZ) {
+                fracIfSkipZ = (nextIntegerZ - currPosZ) / distanceFromStartToEndZ;
+            }
+
+            if (fracIfSkipX < fracIfSkipY && fracIfSkipX < fracIfSkipZ) {
+                // note: voxelEndX == voxelInX is impossible because allowSkip would be set to false in that case, meaning that the elapsed distance would stay at default
+                currPosX = nextIntegerX;
+                currPosY += distanceFromStartToEndY * fracIfSkipX;
+                currPosZ += distanceFromStartToEndZ * fracIfSkipX;
+                // tested: faster to paste this 3 times with only one of the subtractions in each
+                final int xFloorOffset = (voxelEndX - voxelCurrX) >>> 31;
+                voxelCurrX = (fastFloor(currPosX) - xFloorOffset);
+                voxelCurrY = (fastFloor(currPosY));
+                voxelCurrZ = (fastFloor(currPosZ));
+            } else if (fracIfSkipY < fracIfSkipZ) {
+                currPosX += distanceFromStartToEndX * fracIfSkipY;
+                currPosY = nextIntegerY;
+                currPosZ += distanceFromStartToEndZ * fracIfSkipY;
+                // tested: faster to paste this 3 times with only one of the subtractions in each
+                final int yFloorOffset = (voxelEndY - voxelCurrY) >>> 31;
+                voxelCurrX = (fastFloor(currPosX));
+                voxelCurrY = (fastFloor(currPosY) - yFloorOffset);
+                voxelCurrZ = (fastFloor(currPosZ));
             } else {
-                hitX = false;
+                currPosX += distanceFromStartToEndX * fracIfSkipZ;
+                currPosY += distanceFromStartToEndY * fracIfSkipZ;
+                currPosZ = nextIntegerZ;
+                // tested: faster to paste this 3 times with only one of the subtractions in each
+                final int zFloorOffset = (voxelEndZ - voxelCurrZ) >>> 31;
+                voxelCurrX = (fastFloor(currPosX));
+                voxelCurrY = (fastFloor(currPosY));
+                voxelCurrZ = (fastFloor(currPosZ) - zFloorOffset);
             }
-            if (y1 > y2) {
-                nextY = (double) y2 + 1.0D;
-            } else if (y1 < y2) {
-                nextY = (double) y2 + 0.0D;
-            } else {
-                hitY = false;
-            }
-            if (z1 > z2) {
-                nextZ = (double) z2 + 1.0D;
-            } else if (z1 < z2) {
-                nextZ = (double) z2 + 0.0D;
-            } else {
-                hitZ = false;
-            }
-            double stepX = 999.0D;
-            double stepY = 999.0D;
-            double stepZ = 999.0D;
-            double dirX = end.x - start.x;
-            double dirY = end.y - start.y;
-            double dirZ = end.z - start.z;
-            if (hitX) {
-                stepX = (nextX - start.x) / dirX;
-            }
-            if (hitY) {
-                stepY = (nextY - start.y) / dirY;
-            }
-            if (hitZ) {
-                stepZ = (nextZ - start.z) / dirZ;
-            }
-            if (stepX == -0.0D) {
-                stepX = -1.0E-4D;
-            }
-            if (stepY == -0.0D) {
-                stepY = -1.0E-4D;
-            }
-            if (stepZ == -0.0D) {
-                stepZ = -1.0E-4D;
-            }
-            EnumFacing dir;
-            if (stepX < stepY && stepX < stepZ) {
-                dir = x1 > x2 ? EnumFacing.WEST : EnumFacing.EAST;
-                start = new Vec3d(nextX, start.y + dirY * stepX, start.z + dirZ * stepX);
-            } else if (stepY < stepZ) {
-                dir = y1 > y2 ? EnumFacing.DOWN : EnumFacing.UP;
-                start = new Vec3d(start.x + dirX * stepY, nextY, start.z + dirZ * stepY);
-            } else {
-                dir = z1 > z2 ? EnumFacing.NORTH : EnumFacing.SOUTH;
-                start = new Vec3d(start.x + dirX * stepZ, start.y + dirY * stepZ, nextZ);
-            }
-            x2 = MathHelper.floor(start.x) - (dir == EnumFacing.EAST ? 1 : 0);
-            y2 = MathHelper.floor(start.y) - (dir == EnumFacing.UP ? 1 : 0);
-            z2 = MathHelper.floor(start.z) - (dir == EnumFacing.SOUTH ? 1 : 0);
-            blockpos = new BlockPos(x2, y2, z2);
-            IBlockState iblockstate1 = ctx.world().getBlockState(blockpos);
-            if (!passable(iblockstate1)) {
-                return Blocks.NETHERRACK.getDefaultState().collisionRayTrace(ctx.world(), blockpos, start, end);
+
+            currentState = (prevChunk = cachedChunk(world, this.mutableRaytraceBlockPos.setPos(voxelCurrX, voxelCurrY, voxelCurrZ), prevChunk)).getBlockState(this.mutableRaytraceBlockPos);
+            if (!passable(currentState)) {
+                return true;
             }
         }
-        return null;
+        return false;
+    }
+
+    private static final double FLOOR_DOUBLE_D = 1_073_741_824.0;
+    private static final int FLOOR_DOUBLE_I = 1_073_741_824;
+
+    private static int fastFloor(final double v) {
+        return ((int) (v + FLOOR_DOUBLE_D)) - FLOOR_DOUBLE_I;
+    }
+
+    private static Chunk cachedChunk(final World world,
+                                     final BlockPos pos,
+                                     final Chunk prevLookup) {
+        final int chunkX = pos.getX() >> 4;
+        final int chunkZ = pos.getZ() >> 4;
+        if (prevLookup != null && prevLookup.x == chunkX && prevLookup.z == chunkZ) {
+            return prevLookup;
+        }
+        return world.getChunk(chunkX, chunkZ);
     }
 }
