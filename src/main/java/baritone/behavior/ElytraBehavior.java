@@ -21,14 +21,10 @@ import baritone.Baritone;
 import baritone.api.event.events.ChunkEvent;
 import baritone.api.event.events.TickEvent;
 import baritone.api.event.events.type.EventState;
-import baritone.api.utils.BetterBlockPos;
-import baritone.api.utils.Helper;
-import baritone.api.utils.Rotation;
-import baritone.api.utils.RotationUtils;
+import baritone.api.utils.*;
 import baritone.behavior.elytra.NetherPathfinderContext;
 import baritone.behavior.elytra.UnpackedSegment;
 import baritone.utils.BlockStateInterface;
-import com.mojang.realmsclient.util.Pair;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.item.EntityFireworkRocket;
@@ -381,15 +377,15 @@ public final class ElytraBehavior extends Behavior implements Helper {
                             : relaxation == 0 ? 1.0d : 0.25d;
 
                     if (isClear(start, dest, grow)) {
-                        Rotation rot = RotationUtils.calcRotationFromVec3d(start, dest, ctx.playerRotations());
+                        float yaw = RotationUtils.calcRotationFromVec3d(start, dest, ctx.playerRotations()).getYaw();
                         Float pitch = solvePitch(dest.subtract(start), steps, relaxation == 2);
                         if (pitch == null) {
-                            baritone.getLookBehavior().updateTarget(new Rotation(rot.getYaw(), ctx.playerRotations().getPitch()), false);
+                            baritone.getLookBehavior().updateTarget(new Rotation(yaw, ctx.playerRotations().getPitch()), false);
                             continue;
                         }
                         this.pathManager.setGoingTo(i);
                         this.aimPos = path.get(i).add(0, dy, 0);
-                        baritone.getLookBehavior().updateTarget(new Rotation(rot.getYaw(), pitch), false);
+                        baritone.getLookBehavior().updateTarget(new Rotation(yaw, pitch), false);
                         break outermost;
                     }
                 }
@@ -456,7 +452,7 @@ public final class ElytraBehavior extends Behavior implements Helper {
     }
 
     private boolean clearView(Vec3d start, Vec3d dest) {
-        lines.add(Pair.of(start, dest));
+        lines.add(new Pair<>(start, dest));
         RayTraceResult result = rayTraceBlocks(start, dest);
         return result == null || result.typeOfHit == RayTraceResult.Type.MISS;
     }
