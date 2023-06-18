@@ -22,6 +22,9 @@ import baritone.api.IBaritone;
 import baritone.api.command.Command;
 import baritone.api.command.argument.IArgConsumer;
 import baritone.api.command.exception.CommandException;
+import baritone.api.command.exception.CommandInvalidStateException;
+import baritone.api.pathing.goals.Goal;
+import baritone.api.pathing.goals.GoalBlock;
 import baritone.api.pathing.goals.GoalXZ;
 import baritone.api.process.ICustomGoalProcess;
 import net.minecraft.util.math.BlockPos;
@@ -40,8 +43,28 @@ public class ElytraCommand extends Command {
     public void execute(String label, IArgConsumer args) throws CommandException {
         ICustomGoalProcess customGoalProcess = baritone.getCustomGoalProcess();
         args.requireMax(0);
-        GoalXZ goal = (GoalXZ) customGoalProcess.getGoal();
-        ((Baritone) baritone).getElytraBehavior().path(new BlockPos(goal.getX(), 64, goal.getZ()));
+        Goal iGoal = customGoalProcess.getGoal();
+        if (iGoal == null) {
+            throw new CommandInvalidStateException("No goal has been set");
+        }
+        final int x, y, z;
+        if (iGoal instanceof GoalXZ) {
+            GoalXZ goal = (GoalXZ) iGoal;
+            x = goal.getX();
+            y = 64;
+            z = goal.getZ();
+        } else if (iGoal instanceof GoalBlock) {
+            GoalBlock goal = (GoalBlock) iGoal;
+            x = goal.x;
+            y = goal.y;
+            z = goal.z;
+        } else {
+            throw new CommandInvalidStateException("The goal must be a GoalXZ or GoalBlock");
+        }
+        if (y <= 0 || y >= 128) {
+            throw new CommandInvalidStateException("The y of the goal is not between 0 and 128");
+        }
+        ((Baritone) baritone).getElytraBehavior().path(new BlockPos(x, y, z));
     }
 
     @Override

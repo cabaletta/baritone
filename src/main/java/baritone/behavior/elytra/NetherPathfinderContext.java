@@ -100,7 +100,7 @@ public final class NetherPathfinderContext {
                         for (int x = 0; x < 16; x++) {
                             IBlockState state = bsc.get(x, y1, z);
                             if (!passable(state)) {
-                                packed[x + (z << 4) + (y << 8)] = true;
+                                packed[x | (z << 4) | (y << 8)] = true;
                             }
                         }
                     }

@@ -386,7 +386,7 @@ public final class ElytraBehavior extends Behavior implements Helper {
                             continue;
                         }
                         long b = System.currentTimeMillis();
-                        System.out.println("Solved pitch in " + (b - a) + " total time " + (b - t));
+                        //System.out.println("Solved pitch in " + (b - a) + " total time " + (b - t));
                         this.pathManager.setGoingTo(i);
                         this.aimPos = path.get(i).add(0, dy, 0);
                         baritone.getLookBehavior().updateTarget(new Rotation(rot.getYaw(), pitch), false);
