@@ -345,10 +345,10 @@ public final class ElytraBehavior extends Behavior implements Helper {
             logDirect("vbonk");
         }
 
-        Vec3d start = ctx.playerFeetAsVec();
-        boolean firework = isFireworkActive();
-        sinceFirework++;
-        final long t = System.currentTimeMillis();
+        final Vec3d start = ctx.playerFeetAsVec();
+        final boolean firework = isFireworkActive();
+        this.sinceFirework++;
+
         outermost:
         for (int relaxation = 0; relaxation < 3; relaxation++) { // try for a strict solution first, then relax more and more (if we're in a corner or near some blocks, it will have to relax its constraints a bit)
             int[] heights = firework ? new int[]{20, 10, 5, 0} : new int[]{0}; // attempt to gain height, if we can, so as not to waste the boost
@@ -382,14 +382,11 @@ public final class ElytraBehavior extends Behavior implements Helper {
 
                     if (isClear(start, dest, grow)) {
                         Rotation rot = RotationUtils.calcRotationFromVec3d(start, dest, ctx.playerRotations());
-                        long a = System.currentTimeMillis();
                         Float pitch = solvePitch(dest.subtract(start), steps, relaxation == 2);
                         if (pitch == null) {
                             baritone.getLookBehavior().updateTarget(new Rotation(rot.getYaw(), ctx.playerRotations().getPitch()), false);
                             continue;
                         }
-                        long b = System.currentTimeMillis();
-                        //System.out.println("Solved pitch in " + (b - a) + " total time " + (b - t));
                         this.pathManager.setGoingTo(i);
                         this.aimPos = path.get(i).add(0, dy, 0);
                         baritone.getLookBehavior().updateTarget(new Rotation(rot.getYaw(), pitch), false);
@@ -404,10 +401,11 @@ public final class ElytraBehavior extends Behavior implements Helper {
         }
 
         final BetterBlockPos goingTo = this.pathManager.goingTo();
+        final boolean useOnDescend = !Baritone.settings().conserveFireworks.value || ctx.player().posY < goingTo.y + 5;
 
         if (!firework
                 && sinceFirework > 10
-                && (Baritone.settings().wasteFireworks.value || ctx.player().posY < goingTo.y + 5) // don't firework if trying to descend
+                && useOnDescend
                 && (ctx.player().posY < goingTo.y - 5 || start.distanceTo(new Vec3d(goingTo.x + 0.5, ctx.player().posY, goingTo.z + 0.5)) > 5) // UGH!!!!!!!
                 && new Vec3d(ctx.player().motionX, ctx.player().posY < goingTo.y ? Math.max(0, ctx.player().motionY) : ctx.player().motionY, ctx.player().motionZ).length() < Baritone.settings().elytraFireworkSpeed.value // ignore y component if we are BOTH below where we want to be AND descending
         ) {
