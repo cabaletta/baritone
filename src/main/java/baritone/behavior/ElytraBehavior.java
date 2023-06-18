@@ -95,16 +95,18 @@ public final class ElytraBehavior extends Behavior implements Helper {
         public void pathToDestination(BlockPos destination) {
             this.destination = destination;
             this.path0(ctx.playerFeet(), destination, UnaryOperator.identity())
-                    .whenComplete((__, ex) -> {
-                        if (ex != null) {
-                            logDirect("Failed to compute path to destination");
-                            return;
-                        }
+                    .thenRun(() -> {
                         final int distance = (int) this.pathAt(0).distanceTo(this.pathAt(this.path.size() - 1));
                         if (this.completePath) {
                             logDirect(String.format("Computed path (%d blocks)", distance));
                         } else {
                             logDirect(String.format("Computed segment (Next %d blocks)", distance));
+                        }
+                    })
+                    .whenComplete((result, ex) -> {
+                        this.recalculating = false;
+                        if (ex != null) {
+                            logDirect("Failed to compute path to destination");
                         }
                     });
         }
@@ -119,15 +121,16 @@ public final class ElytraBehavior extends Behavior implements Helper {
             final boolean complete = this.completePath;
 
             this.path0(ctx.playerFeet(), this.path.get(upToIncl), segment -> segment.append(after.stream(), complete))
-                    .whenComplete((__, ex) -> {
-                        this.recalculating = false;
-                        if (ex != null) {
-                            logDirect("Failed to recompute segment");
-                            return;
-                        }
+                    .thenRun(() -> {
                         final int recompute = this.path.size() - after.size() - 1;
                         final int distance = (int) this.pathAt(0).distanceTo(this.pathAt(recompute));
                         logDirect(String.format("Recomputed segment (Next %d blocks)", distance));
+                    })
+                    .whenComplete((result, ex) -> {
+                        this.recalculating = false;
+                        if (ex != null) {
+                            logDirect("Failed to recompute segment");
+                        }
                     });
         }
 
@@ -140,13 +143,7 @@ public final class ElytraBehavior extends Behavior implements Helper {
             final List<BetterBlockPos> before = this.path.subList(0, afterIncl + 1);
 
             this.path0(this.path.get(afterIncl), this.destination, segment -> segment.prepend(before.stream()))
-                    .whenComplete((__, ex) -> {
-                        this.recalculating = false;
-                        if (ex != null) {
-                            logDirect("Failed to compute next segment");
-                            return;
-                        }
-
+                    .thenRun(() -> {
                         final int recompute = this.path.size() - before.size() - 1;
                         final int distance = (int) this.pathAt(0).distanceTo(this.pathAt(recompute));
 
@@ -154,6 +151,12 @@ public final class ElytraBehavior extends Behavior implements Helper {
                             logDirect(String.format("Computed path (%d blocks)", distance));
                         } else {
                             logDirect(String.format("Computed next segment (Next %d blocks)", distance));
+                        }
+                    })
+                    .whenComplete((result, ex) -> {
+                        this.recalculating = false;
+                        if (ex != null) {
+                            logDirect("Failed to compute next segment");
                         }
                     });
         }
