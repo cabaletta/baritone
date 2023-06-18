@@ -342,6 +342,7 @@ public final class ElytraBehavior extends Behavior implements Helper {
 
         final Vec3d start = ctx.playerFeetAsVec();
         final boolean firework = isFireworkActive();
+        boolean forceUseFirework = false;
         this.sinceFirework++;
 
         outermost:
@@ -376,15 +377,18 @@ public final class ElytraBehavior extends Behavior implements Helper {
                             : relaxation == 0 ? 1.0d : 0.25d;
 
                     if (isClear(start, dest, grow)) {
-                        float yaw = RotationUtils.calcRotationFromVec3d(start, dest, ctx.playerRotations()).getYaw();
-                        Float pitch = solvePitch(dest.subtract(start), steps, relaxation == 2);
-                        if (pitch == null) {
+                        final float yaw = RotationUtils.calcRotationFromVec3d(start, dest, ctx.playerRotations()).getYaw();
+
+                        final Pair<Float, Boolean> pitch = this.solvePitch(dest.subtract(start), steps, relaxation, firework);
+                        if (pitch.first() == null) {
                             baritone.getLookBehavior().updateTarget(new Rotation(yaw, ctx.playerRotations().getPitch()), false);
                             continue;
                         }
+                        forceUseFirework = pitch.second();
+
                         this.pathManager.setGoingTo(i);
                         this.aimPos = path.get(i).add(0, dy, 0);
-                        baritone.getLookBehavior().updateTarget(new Rotation(yaw, pitch), false);
+                        baritone.getLookBehavior().updateTarget(new Rotation(yaw, pitch.first()), false);
                         break outermost;
                     }
                 }
@@ -404,13 +408,13 @@ public final class ElytraBehavior extends Behavior implements Helper {
                 ctx.player().motionZ
         ).length();
 
-        if (!firework
+        if (forceUseFirework || (!firework
                 && sinceFirework > 10
                 && useOnDescend
                 && (ctx.player().posY < goingTo.y - 5 || start.distanceTo(new Vec3d(goingTo.x + 0.5, ctx.player().posY, goingTo.z + 0.5)) > 5) // UGH!!!!!!!
-                && currentSpeed < Baritone.settings().elytraFireworkSpeed.value
+                && currentSpeed < Baritone.settings().elytraFireworkSpeed.value)
         ) {
-            logDirect("firework");
+            logDirect("firework" + (forceUseFirework ? " takeoff" : ""));
             ctx.playerController().processRightClick(ctx.player(), ctx.world(), EnumHand.MAIN_HAND);
             sinceFirework = 0;
         }
@@ -455,7 +459,23 @@ public final class ElytraBehavior extends Behavior implements Helper {
         return !rayTraceBlocks(ctx.world(), start.x, start.y, start.z, dest.x, dest.y, dest.z);
     }
 
-    private Float solvePitch(Vec3d goalDirection, int steps, boolean desperate) {
+    private Pair<Float, Boolean> solvePitch(Vec3d goalDirection, int steps, int relaxation, boolean currentlyBoosted) {
+        final Float pitch = this.solvePitch(goalDirection, steps, relaxation == 2, currentlyBoosted);
+        if (pitch != null) {
+            return new Pair<>(pitch, false);
+        }
+
+        if (Baritone.settings().experimentalTakeoff.value && relaxation > 0) {
+            final Float usingFirework = this.solvePitch(goalDirection, steps, relaxation == 2, true);
+            if (usingFirework != null) {
+                return new Pair<>(usingFirework, true);
+            }
+        }
+
+        return new Pair<>(null, false);
+    }
+
+    private Float solvePitch(Vec3d goalDirection, int steps, boolean desperate, boolean firework) {
         // we are at a certain velocity, but we have a target velocity
         // what pitch would get us closest to our target velocity?
         // yaw is easy so we only care about pitch
@@ -463,7 +483,6 @@ public final class ElytraBehavior extends Behavior implements Helper {
         goalDirection = goalDirection.normalize();
         Rotation good = RotationUtils.calcRotationFromVec3d(new Vec3d(0, 0, 0), goalDirection, ctx.playerRotations()); // lazy lol
 
-        boolean firework = isFireworkActive();
         Float bestPitch = null;
         double bestDot = Double.NEGATIVE_INFINITY;
         Vec3d motion = new Vec3d(ctx.player().motionX, ctx.player().motionY, ctx.player().motionZ);

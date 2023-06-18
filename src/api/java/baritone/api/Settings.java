@@ -54,6 +54,7 @@ public final class Settings {
     public final Setting<Boolean> conserveFireworks = new Setting<>(true);
     public final Setting<Boolean> renderRaytraces = new Setting<>(false);
     public final Setting<Boolean> elytraFreeLook = new Setting<>(false);
+    public final Setting<Boolean> experimentalTakeoff = new Setting<>(false);
 
     /**
      * Allow Baritone to break blocks
