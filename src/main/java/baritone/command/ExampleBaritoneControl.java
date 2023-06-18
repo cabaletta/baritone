@@ -17,8 +17,8 @@
 
 package baritone.command;
 
+import baritone.Baritone;
 import baritone.api.BaritoneAPI;
-import baritone.api.IBaritone;
 import baritone.api.Settings;
 import baritone.api.command.argument.ICommandArgument;
 import baritone.api.command.exception.CommandNotEnoughArgumentsException;
@@ -30,6 +30,7 @@ import baritone.api.event.events.TabCompleteEvent;
 import baritone.api.event.listener.AbstractGameEventListener;
 import baritone.api.utils.Helper;
 import baritone.api.utils.SettingsUtil;
+import baritone.behavior.Behavior;
 import baritone.command.argument.ArgConsumer;
 import baritone.command.argument.CommandArguments;
 import baritone.command.manager.CommandManager;
@@ -49,14 +50,14 @@ import java.util.stream.Stream;
 
 import static baritone.api.command.IBaritoneChatControl.FORCE_COMMAND_PREFIX;
 
-public class ExampleBaritoneControl implements Helper, AbstractGameEventListener {
+public class ExampleBaritoneControl extends Behavior implements Helper {
 
     private static final Settings settings = BaritoneAPI.getSettings();
     private final ICommandManager manager;
 
-    public ExampleBaritoneControl(IBaritone baritone) {
+    public ExampleBaritoneControl(Baritone baritone) {
+        super(baritone);
         this.manager = baritone.getCommandManager();
-        baritone.getGameEventHandler().registerEventListener(this);
     }
 
     @Override
@@ -100,7 +101,7 @@ public class ExampleBaritoneControl implements Helper, AbstractGameEventListener
             return false;
         } else if (msg.trim().equalsIgnoreCase("orderpizza")) {
             try {
-                ((IGuiScreen) mc.currentScreen).openLink(new URI("https://www.dominos.com/en/pages/order/"));
+                ((IGuiScreen) ctx.minecraft().currentScreen).openLink(new URI("https://www.dominos.com/en/pages/order/"));
             } catch (NullPointerException | URISyntaxException ignored) {}
             return false;
         }

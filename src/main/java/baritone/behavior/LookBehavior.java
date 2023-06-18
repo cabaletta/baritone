@@ -164,19 +164,19 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
         return pitch;
     }
 
-    private static float calculateMouseMove(float current, float target) {
+    private float calculateMouseMove(float current, float target) {
         final float delta = target - current;
         final int deltaPx = angleToMouse(delta);
         return current + mouseToAngle(deltaPx);
     }
 
-    private static int angleToMouse(float angleDelta) {
+    private int angleToMouse(float angleDelta) {
         final float minAngleChange = mouseToAngle(1);
         return Math.round(angleDelta / minAngleChange);
     }
 
-    private static float mouseToAngle(int mouseDelta) {
-        final float f = Helper.mc.gameSettings.mouseSensitivity * 0.6f + 0.2f;
+    private float mouseToAngle(int mouseDelta) {
+        final float f = ctx.minecraft().gameSettings.mouseSensitivity * 0.6f + 0.2f;
         return mouseDelta * f * f * f * 8.0f * 0.15f;
     }
 

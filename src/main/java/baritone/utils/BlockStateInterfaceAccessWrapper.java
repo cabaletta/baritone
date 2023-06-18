@@ -37,9 +37,11 @@ import javax.annotation.Nullable;
 public final class BlockStateInterfaceAccessWrapper implements IBlockAccess {
 
     private final BlockStateInterface bsi;
+    private final IBlockAccess world;
 
-    BlockStateInterfaceAccessWrapper(BlockStateInterface bsi) {
+    BlockStateInterfaceAccessWrapper(BlockStateInterface bsi, IBlockAccess world) {
         this.bsi = bsi;
+        this.world = world;
     }
 
     @Nullable
@@ -76,6 +78,6 @@ public final class BlockStateInterfaceAccessWrapper implements IBlockAccess {
 
     @Override
     public WorldType getWorldType() {
-        return this.bsi.world.getWorldType();
+        return this.world.getWorldType();
     }
 }

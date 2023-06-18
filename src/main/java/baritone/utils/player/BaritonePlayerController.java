@@ -17,9 +17,9 @@
 
 package baritone.utils.player;
 
-import baritone.api.utils.Helper;
 import baritone.api.utils.IPlayerController;
 import baritone.utils.accessor.IPlayerControllerMP;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.entity.player.EntityPlayer;
@@ -39,9 +39,13 @@ import net.minecraft.world.World;
  * @author Brady
  * @since 12/14/2018
  */
-public enum PrimaryPlayerController implements IPlayerController, Helper {
+public final class BaritonePlayerController implements IPlayerController {
 
-    INSTANCE;
+    private final Minecraft mc;
+
+    public BaritonePlayerController(Minecraft mc) {
+        this.mc = mc;
+    }
 
     @Override
     public void syncHeldItem() {
