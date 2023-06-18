@@ -16,6 +16,7 @@
     "MixinChunkProviderServer",
     "MixinChunkRenderContainer",
     "MixinChunkRenderWorker",
+    "MixinEntityFireworkRocket",
     "MixinEntityLivingBase",
     "MixinEntityPlayerSP",
     "MixinEntityRenderer",
