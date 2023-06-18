@@ -402,12 +402,18 @@ public final class ElytraBehavior extends Behavior implements Helper {
 
         final BetterBlockPos goingTo = this.pathManager.goingTo();
         final boolean useOnDescend = !Baritone.settings().conserveFireworks.value || ctx.player().posY < goingTo.y + 5;
+        final double currentSpeed = new Vec3d(
+                ctx.player().motionX,
+                // ignore y component if we are BOTH below where we want to be AND descending
+                ctx.player().posY < goingTo.y ? Math.max(0, ctx.player().motionY) : ctx.player().motionY,
+                ctx.player().motionZ
+        ).length();
 
         if (!firework
                 && sinceFirework > 10
                 && useOnDescend
                 && (ctx.player().posY < goingTo.y - 5 || start.distanceTo(new Vec3d(goingTo.x + 0.5, ctx.player().posY, goingTo.z + 0.5)) > 5) // UGH!!!!!!!
-                && new Vec3d(ctx.player().motionX, ctx.player().posY < goingTo.y ? Math.max(0, ctx.player().motionY) : ctx.player().motionY, ctx.player().motionZ).length() < Baritone.settings().elytraFireworkSpeed.value // ignore y component if we are BOTH below where we want to be AND descending
+                && currentSpeed < Baritone.settings().elytraFireworkSpeed.value
         ) {
             logDirect("firework");
             ctx.playerController().processRightClick(ctx.player(), ctx.world(), EnumHand.MAIN_HAND);
