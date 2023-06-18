@@ -160,9 +160,9 @@ public final class ElytraBehavior extends Behavior implements Helper {
 
         private Vec3d pathAt(int i) {
             return new Vec3d(
-                    this.path.get(i).x + 0.5,
-                    this.path.get(i).y + 0.5,
-                    this.path.get(i).z + 0.5
+                    this.path.get(i).x,
+                    this.path.get(i).y,
+                    this.path.get(i).z
             );
         }
 
@@ -326,7 +326,7 @@ public final class ElytraBehavior extends Behavior implements Helper {
         final int playerNear = this.pathManager.getNear();
         this.visiblePath = path.subList(
                 Math.max(playerNear - 30, 0),
-                Math.min(playerNear + 30, path.size())
+                Math.min(playerNear + 100, path.size())
         );
 
         if (!ctx.player().isElytraFlying()) {
@@ -429,7 +429,7 @@ public final class ElytraBehavior extends Behavior implements Helper {
         }
 
         final AxisAlignedBB bb = ctx.player().getEntityBoundingBox().grow(growAmount);
-        final Vec3d[] corners = new Vec3d[] {
+        final Vec3d[] corners = new Vec3d[]{
                 new Vec3d(bb.minX, bb.minY, bb.minZ),
                 new Vec3d(bb.minX, bb.minY, bb.maxZ),
                 new Vec3d(bb.minX, bb.maxY, bb.minZ),
@@ -479,7 +479,7 @@ public final class ElytraBehavior extends Behavior implements Helper {
                 totalMotion = totalMotion.add(stepped);
                 Vec3d actualPosition = ctx.playerFeetAsVec().add(totalMotion);
                 for (int x = MathHelper.floor(Math.min(actualPosition.x, actualPositionPrevTick.x) - 0.31); x <= Math.max(actualPosition.x, actualPositionPrevTick.x) + 0.31; x++) {
-                    for (int y = MathHelper.floor(Math.min(actualPosition.y, actualPositionPrevTick.y) - 0.2); y <= Math.max(actualPosition.y, actualPositionPrevTick.y) + 0.8; y++) {
+                    for (int y = MathHelper.floor(Math.min(actualPosition.y, actualPositionPrevTick.y) - 0.2); y <= Math.max(actualPosition.y, actualPositionPrevTick.y) + 1; y++) {
                         for (int z = MathHelper.floor(Math.min(actualPosition.z, actualPositionPrevTick.z) - 0.31); z <= Math.max(actualPosition.z, actualPositionPrevTick.z) + 0.31; z++) {
                             if (!passable(bsi.get0(x, y, z))) {
                                 continue outer;

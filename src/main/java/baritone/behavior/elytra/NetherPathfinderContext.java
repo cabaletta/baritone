@@ -56,7 +56,8 @@ public final class NetherPathfinderContext {
                 NetherPathfinder.pathFind(
                         this.context,
                         src.getX(), src.getY(), src.getZ(),
-                        dst.getX(), dst.getY(), dst.getZ()
+                        dst.getX(), dst.getY(), dst.getZ(),
+                        true
                 ), this.executor);
     }
 
