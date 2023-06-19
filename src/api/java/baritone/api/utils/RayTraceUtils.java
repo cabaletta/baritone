@@ -50,7 +50,7 @@ public final class RayTraceUtils {
         } else {
             start = entity.getPositionEyes(1.0F); // do whatever is correct
         }
-        Vec3d direction = RotationUtils.calcVec3dFromRotation(rotation);
+        Vec3d direction = RotationUtils.calcLookDirectionFromRotation(rotation);
         Vec3d end = start.add(
                 direction.x * blockReachDistance,
                 direction.y * blockReachDistance,

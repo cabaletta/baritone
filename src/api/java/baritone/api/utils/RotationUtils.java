@@ -37,11 +37,13 @@ public final class RotationUtils {
      * Constant that a degree value is multiplied by to get the equivalent radian value
      */
     public static final double DEG_TO_RAD = Math.PI / 180.0;
+    public static final float DEG_TO_RAD_F = (float) DEG_TO_RAD;
 
     /**
      * Constant that a radian value is multiplied by to get the equivalent degree value
      */
     public static final double RAD_TO_DEG = 180.0 / Math.PI;
+    public static final float RAD_TO_DEG_F = (float) RAD_TO_DEG;
 
     /**
      * Offsets from the root block position to the center of each side.
@@ -122,12 +124,17 @@ public final class RotationUtils {
      * @param rotation The input rotation
      * @return Look vector for the rotation
      */
+    public static Vec3d calcLookDirectionFromRotation(Rotation rotation) {
+        float flatZ = MathHelper.cos((-rotation.getYaw() * DEG_TO_RAD_F) - (float) Math.PI);
+        float flatX = MathHelper.sin((-rotation.getYaw() * DEG_TO_RAD_F) - (float) Math.PI);
+        float pitchBase = -MathHelper.cos(-rotation.getPitch() * DEG_TO_RAD_F);
+        float pitchHeight = MathHelper.sin(-rotation.getPitch() * DEG_TO_RAD_F);
+        return new Vec3d(flatX * pitchBase, pitchHeight, flatZ * pitchBase);
+    }
+
+    @Deprecated
     public static Vec3d calcVec3dFromRotation(Rotation rotation) {
-        float f = MathHelper.cos(-rotation.getYaw() * (float) DEG_TO_RAD - (float) Math.PI);
-        float f1 = MathHelper.sin(-rotation.getYaw() * (float) DEG_TO_RAD - (float) Math.PI);
-        float f2 = -MathHelper.cos(-rotation.getPitch() * (float) DEG_TO_RAD);
-        float f3 = MathHelper.sin(-rotation.getPitch() * (float) DEG_TO_RAD);
-        return new Vec3d((double) (f1 * f2), (double) f3, (double) (f * f2));
+        return calcLookDirectionFromRotation(rotation);
     }
 
     /**

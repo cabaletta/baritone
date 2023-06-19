@@ -622,10 +622,10 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         double motionX = motion.x;
         double motionY = motion.y;
         double motionZ = motion.z;
-        float flatZ = MathHelper.cos(-rotationYaw * 0.017453292F - (float) Math.PI); // 0.174... is Math.PI / 180
-        float flatX = MathHelper.sin(-rotationYaw * 0.017453292F - (float) Math.PI);
-        float pitchBase = -MathHelper.cos(-rotationPitch * 0.017453292F);
-        float pitchHeight = MathHelper.sin(-rotationPitch * 0.017453292F);
+        float flatZ = MathHelper.cos((-rotationYaw * RotationUtils.DEG_TO_RAD_F) - (float) Math.PI);
+        float flatX = MathHelper.sin((-rotationYaw * RotationUtils.DEG_TO_RAD_F) - (float) Math.PI);
+        float pitchBase = -MathHelper.cos(-rotationPitch * RotationUtils.DEG_TO_RAD_F);
+        float pitchHeight = MathHelper.sin(-rotationPitch * RotationUtils.DEG_TO_RAD_F);
         Vec3d lookDirection = new Vec3d(flatX * pitchBase, pitchHeight, flatZ * pitchBase);
 
         if (firework) {
@@ -635,7 +635,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
             motionZ += lookDirection.z * 0.1 + (lookDirection.z * 1.5 - motionZ) * 0.5;
         }
 
-        float pitchRadians = rotationPitch * 0.017453292F;
+        float pitchRadians = rotationPitch * RotationUtils.DEG_TO_RAD_F;
         double pitchBase2 = Math.sqrt(lookDirection.x * lookDirection.x + lookDirection.z * lookDirection.z);
         double flatMotion = Math.sqrt(motionX * motionX + motionZ * motionZ);
         double thisIsAlwaysOne = lookDirection.length();
