@@ -36,10 +36,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.NonNullList;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.*;
 import net.minecraft.world.chunk.Chunk;
 
 import java.util.*;
@@ -222,12 +219,12 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
                 // not loaded yet?
                 return;
             }
-            if (!passable(ctx.world().getBlockState(path.get(rangeStartIncl)))) {
+            if (!passable(ctx.world().getBlockState(path.get(rangeStartIncl)), false)) {
                 // we're in a wall
                 return; // previous iterations of this function SHOULD have fixed this by now :rage_cat:
             }
             for (int i = rangeStartIncl; i < rangeEndExcl - 1; i++) {
-                if (!clearView(pathAt(i), pathAt(i + 1))) {
+                if (!clearView(pathAt(i), pathAt(i + 1), false)) {
                     // obstacle. where do we return to pathing?
                     // find the next valid segment
                     this.pathRecalcSegment(i, rangeEndExcl - 1);
@@ -363,6 +360,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         BetterBlockPos goingTo = null;
         boolean forceUseFirework = false;
         this.sinceFirework++;
+        final boolean isInLava = ctx.player().isInLava();
 
         outermost:
         for (int relaxation = 0; relaxation < 3; relaxation++) { // try for a strict solution first, then relax more and more (if we're in a corner or near some blocks, it will have to relax its constraints a bit)
@@ -379,13 +377,13 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
                             continue;
                         }
                         if (start.distanceTo(dest) < 40) {
-                            if (!clearView(dest, this.pathManager.pathAt(i + lookahead).add(0, dy, 0)) || !clearView(dest, this.pathManager.pathAt(i + lookahead))) {
+                            if (!clearView(dest, this.pathManager.pathAt(i + lookahead).add(0, dy, 0), false) || !clearView(dest, this.pathManager.pathAt(i + lookahead), false)) {
                                 // aka: don't go upwards if doing so would prevent us from being able to see the next position **OR** the modified next position
                                 continue;
                             }
                         } else {
                             // but if it's far away, allow gaining altitude if we could lose it again by the time we get there
-                            if (!clearView(dest, this.pathManager.pathAt(i))) {
+                            if (!clearView(dest, this.pathManager.pathAt(i), false)) {
                                 continue;
                             }
                         }
@@ -395,10 +393,10 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
                     final Double grow = relaxation == 2 ? null
                             : relaxation == 0 ? 1.0d : 0.25d;
 
-                    if (isClear(start, dest, grow)) {
+                    if (isClear(start, dest, grow, isInLava)) {
                         final float yaw = RotationUtils.calcRotationFromVec3d(start, dest, ctx.playerRotations()).getYaw();
 
-                        final Pair<Float, Boolean> pitch = this.solvePitch(dest.subtract(start), steps, relaxation, firework);
+                        final Pair<Float, Boolean> pitch = this.solvePitch(dest.subtract(start), steps, relaxation, firework, isInLava);
                         if (pitch.first() == null) {
                             baritone.getLookBehavior().updateTarget(new Rotation(yaw, ctx.playerRotations().getPitch()), false);
                             continue;
@@ -463,8 +461,8 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
                 .anyMatch(x -> Objects.equals(((IEntityFireworkRocket) x).getBoostedEntity(), ctx.player()));
     }
 
-    private boolean isClear(final Vec3d start, final Vec3d dest, final Double growAmount) {
-        if (!clearView(start, dest)) {
+    private boolean isClear(final Vec3d start, final Vec3d dest, final Double growAmount, boolean ignoreLava) {
+        if (!clearView(start, dest, ignoreLava)) {
             return false;
         }
         if (growAmount == null) {
@@ -509,8 +507,14 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         return true;
     }
 
-    private boolean clearView(Vec3d start, Vec3d dest) {
-        boolean clear = !this.context.raytrace(start.x, start.y, start.z, dest.x, dest.y, dest.z);
+    private boolean clearView(Vec3d start, Vec3d dest, boolean ignoreLava) {
+        final boolean clear;
+        if (!ignoreLava) {
+            clear = !this.context.raytrace(start.x, start.y, start.z, dest.x, dest.y, dest.z);
+        } else {
+            clear = ctx.world().rayTraceBlocks(start, dest, false, false, false) == null;
+        }
+
         if (clear) {
             clearLines.add(new Pair<>(start, dest));
             return true;
@@ -520,14 +524,14 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         }
     }
 
-    private Pair<Float, Boolean> solvePitch(Vec3d goalDirection, int steps, int relaxation, boolean currentlyBoosted) {
-        final Float pitch = this.solvePitch(goalDirection, steps, relaxation == 2, currentlyBoosted);
+    private Pair<Float, Boolean> solvePitch(Vec3d goalDirection, int steps, int relaxation, boolean currentlyBoosted, boolean ignoreLava) {
+        final Float pitch = this.solvePitch(goalDirection, steps, relaxation == 2, currentlyBoosted, ignoreLava);
         if (pitch != null) {
             return new Pair<>(pitch, false);
         }
 
         if (Baritone.settings().experimentalTakeoff.value && relaxation > 0) {
-            final Float usingFirework = this.solvePitch(goalDirection, steps, relaxation == 2, true);
+            final Float usingFirework = this.solvePitch(goalDirection, steps, relaxation == 2, true, ignoreLava);
             if (usingFirework != null) {
                 return new Pair<>(usingFirework, true);
             }
@@ -536,7 +540,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         return new Pair<>(null, false);
     }
 
-    private Float solvePitch(Vec3d goalDirection, int steps, boolean desperate, boolean firework) {
+    private Float solvePitch(Vec3d goalDirection, int steps, boolean desperate, boolean firework, boolean ignoreLava) {
         // we are at a certain velocity, but we have a target velocity
         // what pitch would get us closest to our target velocity?
         // yaw is easy so we only care about pitch
@@ -561,7 +565,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
                 for (int x = MathHelper.floor(Math.min(actualPosition.x, actualPositionPrevTick.x) - 0.31); x <= Math.max(actualPosition.x, actualPositionPrevTick.x) + 0.31; x++) {
                     for (int y = MathHelper.floor(Math.min(actualPosition.y, actualPositionPrevTick.y) - 0.2); y <= Math.max(actualPosition.y, actualPositionPrevTick.y) + 1; y++) {
                         for (int z = MathHelper.floor(Math.min(actualPosition.z, actualPositionPrevTick.z) - 0.31); z <= Math.max(actualPosition.z, actualPositionPrevTick.z) + 0.31; z++) {
-                            if (!this.passable(x, y, z)) {
+                            if (!this.passable(x, y, z, ignoreLava)) {
                                 continue outer;
                             }
                         }
@@ -579,12 +583,13 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         return bestPitch;
     }
 
-    public boolean passable(int x, int y, int z) {
-        return passable(this.bsi.get0(x, y, z));
+    public boolean passable(int x, int y, int z, boolean ignoreLava) {
+        return passable(this.bsi.get0(x, y, z), ignoreLava);
     }
 
-    public static boolean passable(IBlockState state) {
-        return state.getMaterial() == Material.AIR;
+    public static boolean passable(IBlockState state, boolean ignoreLava) {
+        Material mat = state.getMaterial();
+        return mat == Material.AIR || (ignoreLava && mat == Material.LAVA);
     }
 
     private static Vec3d step(Vec3d motion, float rotationPitch, float rotationYaw, boolean firework) {
