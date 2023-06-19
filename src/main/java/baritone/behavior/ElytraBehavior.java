@@ -487,7 +487,8 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         final NBTTagCompound subCompound = itemStack.getSubCompound("Fireworks");
         return itemStack.getItem() == Items.FIREWORKS
                 && subCompound != null
-                && subCompound.hasKey("Flight");
+                && subCompound.hasKey("Flight")
+                && !subCompound.hasKey("Explosions");
     }
 
     private boolean isFireworkActive() {
