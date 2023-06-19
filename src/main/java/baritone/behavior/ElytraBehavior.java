@@ -64,7 +64,6 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
     private final NetherPathfinderContext context;
     private final PathManager pathManager;
     private int sinceFirework;
-    private boolean pawsed = false;
 
     public ElytraBehavior(Baritone baritone) {
         super(baritone);
@@ -180,6 +179,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
             this.path = Collections.emptyList();
             this.playerNear = 0;
             this.completePath = true;
+            this.destination = null;
         }
 
         private void setPath(final UnpackedSegment segment) {
@@ -305,33 +305,22 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
                 .forEach(this.context::queueForPacking);
     }
 
-    public void path(BlockPos destination) {
-        pawsed = false;
+    @Override
+    public void pathTo(BlockPos destination) {
         this.pathManager.pathToDestination(destination);
     }
 
+    @Override
     public void cancel() {
         this.visiblePath = Collections.emptyList();
         this.pathManager.clear();
         this.aimPos = null;
         this.sinceFirework = 0;
-        pawsed = false;
     }
 
+    @Override
     public boolean isActive() {
-        return !this.pathManager.getPath().isEmpty() && !isPaused();
-    }
-
-    public void pause() {
-        this.pawsed = true;
-    }
-
-    public void resume() {
-        this.pawsed = false;
-    }
-
-    public boolean isPaused() {
-        return this.pawsed;
+        return !this.pathManager.getPath().isEmpty();
     }
 
     @Override
@@ -339,7 +328,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         if (event.getType() == TickEvent.Type.OUT) {
             return;
         }
-        if (isPaused()) return;
+
         this.clearLines.clear();
         this.blockedLines.clear();
 

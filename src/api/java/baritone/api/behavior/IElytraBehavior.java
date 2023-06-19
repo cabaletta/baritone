@@ -17,19 +17,16 @@
 
 package baritone.api.behavior;
 
+import net.minecraft.util.math.BlockPos;
+
 public interface IElytraBehavior extends IBehavior {
-    /**
-     * Pause the current {@link IElytraBehavior} if it is pathing.
-     */
-    void pause();
+
+    void pathTo(BlockPos destination);
+
+    void cancel();
 
     /**
-     * Resume the current {@link IElytraBehavior} if it is paused.
-     */
-    void resume();
-
-    /**
-     * Returns true if the current {@link IElytraBehavior} is actively pathing and not paused.
+     * Returns {@code true} if the current {@link IElytraBehavior} is actively pathing.
      */
     boolean isActive();
 }

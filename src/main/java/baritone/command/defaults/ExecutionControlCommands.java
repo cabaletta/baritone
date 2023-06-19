@@ -89,7 +89,6 @@ public class ExecutionControlCommands {
                     throw new CommandInvalidStateException("Already paused");
                 }
                 paused[0] = true;
-                baritone.getElytraBehavior().pause();
                 logDirect("Paused");
             }
 
@@ -124,7 +123,6 @@ public class ExecutionControlCommands {
                     throw new CommandInvalidStateException("Not paused");
                 }
                 paused[0] = false;
-                baritone.getElytraBehavior().resume();
                 logDirect("Resumed");
             }
 

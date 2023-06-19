@@ -64,7 +64,7 @@ public class ElytraCommand extends Command {
         if (y <= 0 || y >= 128) {
             throw new CommandInvalidStateException("The y of the goal is not between 0 and 128");
         }
-        ((Baritone) baritone).getElytraBehavior().path(new BlockPos(x, y, z));
+        ((Baritone) baritone).getElytraBehavior().pathTo(new BlockPos(x, y, z));
     }
 
     @Override
