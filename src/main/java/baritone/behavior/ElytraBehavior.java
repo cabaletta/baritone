@@ -63,6 +63,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
     private final NetherPathfinderContext context;
     private final PathManager pathManager;
     private int sinceFirework;
+    private BlockStateInterface bsi;
 
     public ElytraBehavior(Baritone baritone) {
         super(baritone);
@@ -212,30 +213,26 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
                 return;
             }
 
-            outer:
-            while (true) {
-                int rangeStartIncl = playerNear;
-                int rangeEndExcl = playerNear;
-                while (rangeEndExcl < path.size() && ctx.world().isBlockLoaded(path.get(rangeEndExcl), false)) {
-                    rangeEndExcl++;
-                }
-                if (rangeStartIncl >= rangeEndExcl) {
-                    // not loaded yet?
+            int rangeStartIncl = playerNear;
+            int rangeEndExcl = playerNear;
+            while (rangeEndExcl < path.size() && ctx.world().isBlockLoaded(path.get(rangeEndExcl), false)) {
+                rangeEndExcl++;
+            }
+            if (rangeStartIncl >= rangeEndExcl) {
+                // not loaded yet?
+                return;
+            }
+            if (!passable(ctx.world().getBlockState(path.get(rangeStartIncl)))) {
+                // we're in a wall
+                return; // previous iterations of this function SHOULD have fixed this by now :rage_cat:
+            }
+            for (int i = rangeStartIncl; i < rangeEndExcl - 1; i++) {
+                if (!clearView(pathAt(i), pathAt(i + 1))) {
+                    // obstacle. where do we return to pathing?
+                    // find the next valid segment
+                    this.pathRecalcSegment(i, rangeEndExcl - 1);
                     return;
                 }
-                if (!passable(ctx.world().getBlockState(path.get(rangeStartIncl)))) {
-                    // we're in a wall
-                    return; // previous iterations of this function SHOULD have fixed this by now :rage_cat:
-                }
-                for (int i = rangeStartIncl; i < rangeEndExcl - 1; i++) {
-                    if (!clearView(pathAt(i), pathAt(i + 1))) {
-                        // obstacle. where do we return to pathing?
-                        // find the next valid segment
-                        this.pathRecalcSegment(i, rangeEndExcl - 1);
-                        break outer;
-                    }
-                }
-                break;
             }
         }
 
@@ -581,8 +578,6 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         }
         return bestPitch;
     }
-
-    private BlockStateInterface bsi;
 
     public boolean passable(int x, int y, int z) {
         return passable(this.bsi.get0(x, y, z));
