@@ -110,22 +110,16 @@ public final class PathRenderer implements IRenderer {
         }
         if (!elytra.clearLines.isEmpty() && Baritone.settings().renderRaytraces.value) {
             IRenderer.startLines(Color.GREEN, settings.pathRenderLineWidthPixels.value, settings.renderPathIgnoreDepth.value);
-            boolean orig = settings.renderPathAsLine.value;
-            settings.renderPathAsLine.value = true;
             for (Pair<Vec3d, Vec3d> line : elytra.clearLines) {
                 emitLine(line.first().x, line.first().y, line.first().z, line.second().x, line.second().y, line.second().z);
             }
-            settings.renderPathAsLine.value = orig;
             IRenderer.endLines(settings.renderPathIgnoreDepth.value);
         }
         if (!elytra.blockedLines.isEmpty() && Baritone.settings().renderRaytraces.value) {
             IRenderer.startLines(Color.BLUE, settings.pathRenderLineWidthPixels.value, settings.renderPathIgnoreDepth.value);
-            boolean orig = settings.renderPathAsLine.value;
-            settings.renderPathAsLine.value = true;
             for (Pair<Vec3d, Vec3d> line : elytra.blockedLines) {
                 emitLine(line.first().x, line.first().y, line.first().z, line.second().x, line.second().y, line.second().z);
             }
-            settings.renderPathAsLine.value = orig;
             IRenderer.endLines(settings.renderPathIgnoreDepth.value);
         }
 
@@ -179,13 +173,21 @@ public final class PathRenderer implements IRenderer {
                 IRenderer.glColor(color, alpha);
             }
 
-            emitLine(start.x, start.y, start.z, end.x, end.y, end.z);
+            emitPathLine(start.x, start.y, start.z, end.x, end.y, end.z);
         }
 
         IRenderer.endLines(settings.renderPathIgnoreDepth.value);
     }
 
     private static void emitLine(double x1, double y1, double z1, double x2, double y2, double z2) {
+        double vpX = renderManager.viewerPosX;
+        double vpY = renderManager.viewerPosY;
+        double vpZ = renderManager.viewerPosZ;
+        buffer.pos(x1 - vpX, y1 - vpY, z1 - vpZ).color(color[0], color[1], color[2], color[3]).endVertex();
+        buffer.pos(x2 - vpX, y2 - vpY, z2 - vpZ).color(color[0], color[1], color[2], color[3]).endVertex();
+    }
+
+    private static void emitPathLine(double x1, double y1, double z1, double x2, double y2, double z2) {
         double vpX = renderManager.viewerPosX;
         double vpY = renderManager.viewerPosY;
         double vpZ = renderManager.viewerPosZ;
