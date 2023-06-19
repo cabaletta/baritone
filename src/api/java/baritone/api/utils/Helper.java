@@ -170,8 +170,8 @@ public interface Helper {
         MutableComponent component = Component.literal("");
         if (!logAsToast && !useMessageTag) {
             component.append(getPrefix());
+            component.append(Component.literal(" "));
         }
-        component.append(Component.literal(" "));
         Arrays.asList(components).forEach(component::append);
         if (logAsToast) {
             logToast(getPrefix(), component);
