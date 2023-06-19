@@ -429,11 +429,10 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
                 ctx.player().motionZ
         ).length();
 
-        if (forceUseFirework || (!firework
-                && sinceFirework > 10
+        if (sinceFirework > 10 && (forceUseFirework || (!firework
                 && useOnDescend
                 && (ctx.player().posY < goingTo.y - 5 || start.distanceTo(new Vec3d(goingTo.x + 0.5, ctx.player().posY, goingTo.z + 0.5)) > 5) // UGH!!!!!!!
-                && currentSpeed < Baritone.settings().elytraFireworkSpeed.value)
+                && currentSpeed < Baritone.settings().elytraFireworkSpeed.value))
         ) {
             // Prioritize boosting fireworks over regular ones
             // TODO: Take the minimum boost time into account?
