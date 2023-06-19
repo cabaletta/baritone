@@ -51,7 +51,11 @@ public class MineCommand extends Command {
     }
 
     @Override
-    public Stream<String> tabComplete(String label, IArgConsumer args) {
+    public Stream<String> tabComplete(String label, IArgConsumer args) throws CommandException {
+        args.getAsOrDefault(Integer.class, 0);
+        while (args.has(2)) {
+            args.getDatatypeFor(ForBlockOptionalMeta.INSTANCE);
+        }
         return args.tabCompleteDatatype(ForBlockOptionalMeta.INSTANCE);
     }
 
