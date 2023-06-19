@@ -99,13 +99,14 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
 
         public void pathToDestination(BlockPos destination) {
             this.destination = destination;
+            final long start = System.nanoTime();
             this.path0(ctx.playerFeet(), destination, UnaryOperator.identity())
                     .thenRun(() -> {
-                        final int distance = (int) this.pathAt(0).distanceTo(this.pathAt(this.path.size() - 1));
+                        final double distance = this.pathAt(0).distanceTo(this.pathAt(this.path.size() - 1));
                         if (this.completePath) {
-                            logDirect(String.format("Computed path (%d blocks)", distance));
+                            logDirect(String.format("Computed path (%.1f blocks in %.4f seconds)", distance, (System.nanoTime() - start) / 1e9d));
                         } else {
-                            logDirect(String.format("Computed segment (Next %d blocks)", distance));
+                            logDirect(String.format("Computed segment (Next %.1f blocks in %.4f seconds)", distance, (System.nanoTime() - start) / 1e9d));
                         }
                     })
                     .whenComplete((result, ex) -> {
@@ -116,7 +117,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
                     });
         }
 
-        public void pathRecalcSegment(final int upToIncl) {
+        public void pathRecalcSegment(final int blockedAt, final int upToIncl) {
             if (this.recalculating) {
                 return;
             }
@@ -124,12 +125,14 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
             this.recalculating = true;
             final List<BetterBlockPos> after = this.path.subList(upToIncl, this.path.size());
             final boolean complete = this.completePath;
+            final BetterBlockPos blockage = this.path.get(blockedAt);
+            final long start = System.nanoTime();
 
             this.path0(ctx.playerFeet(), this.path.get(upToIncl), segment -> segment.append(after.stream(), complete))
                     .thenRun(() -> {
                         final int recompute = this.path.size() - after.size() - 1;
-                        final int distance = (int) this.pathAt(0).distanceTo(this.pathAt(recompute));
-                        logDirect(String.format("Recomputed segment (Next %d blocks)", distance));
+                        final double distance = this.pathAt(0).distanceTo(this.pathAt(recompute)); // in spirit same as ctx.playerFeet().distanceTo(this.path.get(upToIncl)), but, thread safe (those could have changed in the meantime)
+                        logDirect(String.format("Recalculated segment around path blockage near %s %s %s (next %.1f blocks in %.4f seconds)", SettingsUtil.maybeCensor(blockage.x), SettingsUtil.maybeCensor(blockage.y), SettingsUtil.maybeCensor(blockage.z), distance, (System.nanoTime() - start) / 1e9d));
                     })
                     .whenComplete((result, ex) -> {
                         this.recalculating = false;
@@ -146,16 +149,17 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
 
             this.recalculating = true;
             final List<BetterBlockPos> before = this.path.subList(0, afterIncl + 1);
+            final long start = System.nanoTime();
 
             this.path0(this.path.get(afterIncl), this.destination, segment -> segment.prepend(before.stream()))
                     .thenRun(() -> {
                         final int recompute = this.path.size() - before.size() - 1;
-                        final int distance = (int) this.pathAt(0).distanceTo(this.pathAt(recompute));
+                        final double distance = this.pathAt(0).distanceTo(this.pathAt(recompute));
 
                         if (this.completePath) {
-                            logDirect(String.format("Computed path (%d blocks)", distance));
+                            logDirect(String.format("Computed path (%.1f blocks in %.4f seconds)", distance, (System.nanoTime() - start) / 1e9d));
                         } else {
-                            logDirect(String.format("Computed next segment (Next %d blocks)", distance));
+                            logDirect(String.format("Computed segment (Next %.1f blocks in %.4f seconds)", distance, (System.nanoTime() - start) / 1e9d));
                         }
                     })
                     .whenComplete((result, ex) -> {
@@ -228,7 +232,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
                     if (!clearView(pathAt(i), pathAt(i + 1))) {
                         // obstacle. where do we return to pathing?
                         // find the next valid segment
-                        this.pathRecalcSegment(rangeEndExcl - 1);
+                        this.pathRecalcSegment(i, rangeEndExcl - 1);
                         break outer;
                     }
                 }
@@ -443,7 +447,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
                     ctx.player().inventory.currentItem = firstFireworksInHotbar;
                 }
             }
-            logDirect("firework" + (forceUseFirework ? " takeoff" : ""));
+            logDirect("attempting to use firework" + (forceUseFirework ? " takeoff" : ""));
             ctx.playerController().processRightClick(ctx.player(), ctx.world(), EnumHand.MAIN_HAND);
             sinceFirework = 0;
         }
@@ -507,7 +511,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
             final double oy = dest.y - start.y;
             final double oz = dest.z - start.z;
 
-            final double[] src = new double[] {
+            final double[] src = new double[]{
                     bb.minX, bb.minY, bb.minZ,
                     bb.minX, bb.minY, bb.maxZ,
                     bb.minX, bb.maxY, bb.minZ,
@@ -517,7 +521,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
                     bb.maxX, bb.maxY, bb.minZ,
                     bb.maxX, bb.maxY, bb.maxZ,
             };
-            final double[] dst = new double[] {
+            final double[] dst = new double[]{
                     bb.minX + ox, bb.minY + oy, bb.minZ + oz,
                     bb.minX + ox, bb.minY + oy, bb.maxZ + oz,
                     bb.minX + ox, bb.maxY + oy, bb.minZ + oz,
