@@ -162,9 +162,9 @@ public final class ElytraBehavior extends Behavior implements Helper {
 
         private Vec3d pathAt(int i) {
             return new Vec3d(
-                    this.path.get(i).x,
-                    this.path.get(i).y,
-                    this.path.get(i).z
+                    this.path.get(i).x + 0.000123,
+                    this.path.get(i).y + 0.000456,
+                    this.path.get(i).z + 0.000789
             );
         }
 
@@ -351,8 +351,7 @@ public final class ElytraBehavior extends Behavior implements Helper {
             int minStep = playerNear;
             for (int i = Math.min(playerNear + 20, path.size() - 1); i >= minStep; i--) {
                 for (int dy : heights) {
-                    final BetterBlockPos pos = path.get(i);
-                    Vec3d dest = new Vec3d(pos).add(0, dy, 0);
+                    Vec3d dest = this.pathManager.pathAt(i).add(0, dy, 0);
                     if (dy != 0) {
                         if (i + lookahead >= path.size()) {
                             continue;
@@ -387,7 +386,7 @@ public final class ElytraBehavior extends Behavior implements Helper {
                         logDirect("i " + i);
                         logDirect("playerNear " + playerNear);
                         logDirect("relaxation " + relaxation);
-                        goingTo = pos;
+                        goingTo = path.get(i);
                         this.aimPos = path.get(i).add(0, dy, 0);
                         baritone.getLookBehavior().updateTarget(new Rotation(yaw, pitch.first()), false);
                         break outermost;
@@ -455,7 +454,7 @@ public final class ElytraBehavior extends Behavior implements Helper {
     }
 
     private boolean clearView(Vec3d start, Vec3d dest) {
-        boolean oxy = !rayTraceBlocks(start.x + 0.0001 * Math.random(), start.y + 0.0001 * Math.random(), start.z + 0.0001 * Math.random(), dest.x + 0.0001 * Math.random(), dest.y + 0.0001 * Math.random(), dest.z + 0.0001 * Math.random());
+        boolean oxy = !rayTraceBlocks(start.x, start.y, start.z, dest.x, dest.y, dest.z);
         boolean meow = !rayTraceBlocks(start, dest);
         if (oxy != meow) {
             logDirect(start + " " + dest + " " + oxy + " " + meow);
