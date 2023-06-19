@@ -161,7 +161,7 @@ public final class RotationUtils {
     }
 
     public static Optional<Rotation> reachable(IPlayerContext ctx, BlockPos pos, double blockReachDistance, boolean wouldSneak) {
-        if (ctx.isLookingAt(pos)) {
+        if (BaritoneAPI.getSettings().remainWithExistingLookDirection.value && ctx.isLookingAt(pos)) {
             /*
              * why add 0.0001?
              * to indicate that we actually have a desired pitch
