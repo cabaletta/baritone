@@ -431,21 +431,16 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
 
         if (forceUseFirework || (!firework
                 && sinceFirework > 10
-                && Baritone.settings().elytraUseFireworks.value
                 && useOnDescend
                 && (ctx.player().posY < goingTo.y - 5 || start.distanceTo(new Vec3d(goingTo.x + 0.5, ctx.player().posY, goingTo.z + 0.5)) > 5) // UGH!!!!!!!
                 && currentSpeed < Baritone.settings().elytraFireworkSpeed.value)
         ) {
-            if (Baritone.settings().elytraInventory.value) {
-                final int firstFireworksInHotbar = firstFireworksInHotbar();
-                if (firstFireworksInHotbar == -1) {
-                    if (!swapToFireworksInInventory()) {
-                        logDirect("no fireworks");
-                        return;
-                    }
-                } else {
-                    ctx.player().inventory.currentItem = firstFireworksInHotbar;
-                }
+            // Prioritize boosting fireworks over regular ones
+            // TODO: Take the minimum boost time into account?
+            if (!baritone.getInventoryBehavior().throwaway(true, ElytraBehavior::isBoostingFireworks) &&
+                    !baritone.getInventoryBehavior().throwaway(true, ElytraBehavior::isFireworks)) {
+                logDirect("no fireworks");
+                return;
             }
             logDirect("attempting to use firework" + (forceUseFirework ? " takeoff" : ""));
             ctx.playerController().processRightClick(ctx.player(), ctx.world(), EnumHand.MAIN_HAND);
@@ -453,42 +448,18 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         }
     }
 
-    private boolean swapToFireworksInInventory() {
-        final int i = firstFireworksInInventory();
-        if (i != -1) {
-            baritone.getInventoryBehavior().attemptToPutOnHotbar(i, (slot) -> slot != 7);
-            ctx.player().inventory.currentItem = 7;
-            return true;
+    private static boolean isFireworks(final ItemStack itemStack) {
+        if (itemStack.getItem() != Items.FIREWORKS) {
+            return false;
         }
-        return false;
-    }
-
-    private int firstFireworksInInventory() {
-        final NonNullList<ItemStack> invy = ctx.player().inventory.mainInventory;
-        for (int i = 0; i < invy.size(); i++) {
-            if (isBoostingFireworks(invy.get(i))) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
-    private int firstFireworksInHotbar() {
-        final NonNullList<ItemStack> invy = ctx.player().inventory.mainInventory;
-        for (int i = 0; i < 9; i++) {
-            if (isBoostingFireworks(invy.get(i))) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
-    private boolean isBoostingFireworks(final ItemStack itemStack) {
+        // If it has NBT data, make sure it won't cause us to explode.
         final NBTTagCompound subCompound = itemStack.getSubCompound("Fireworks");
-        return itemStack.getItem() == Items.FIREWORKS
-                && subCompound != null
-                && subCompound.hasKey("Flight")
-                && !subCompound.hasKey("Explosions");
+        return subCompound == null || !subCompound.hasKey("Explosions");
+    }
+
+    private static boolean isBoostingFireworks(final ItemStack itemStack) {
+        final NBTTagCompound subCompound = itemStack.getSubCompound("Fireworks");
+        return isFireworks(itemStack) && subCompound != null && subCompound.hasKey("Flight");
     }
 
     private boolean isFireworkActive() {
