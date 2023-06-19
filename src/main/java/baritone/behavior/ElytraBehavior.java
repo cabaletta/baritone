@@ -18,9 +18,9 @@
 package baritone.behavior;
 
 import baritone.Baritone;
+import baritone.api.event.events.BlockChangeEvent;
 import baritone.api.event.events.ChunkEvent;
 import baritone.api.event.events.TickEvent;
-import baritone.api.event.events.type.EventState;
 import baritone.api.utils.*;
 import baritone.behavior.elytra.NetherPathfinderContext;
 import baritone.behavior.elytra.UnpackedSegment;
@@ -284,10 +284,17 @@ public final class ElytraBehavior extends Behavior implements Helper {
 
     @Override
     public void onChunkEvent(ChunkEvent event) {
-        if (event.getState() == EventState.POST && event.getType().isPopulate()) {
+        if (event.isPostPopulate()) {
             final Chunk chunk = ctx.world().getChunk(event.getX(), event.getZ());
             this.context.queueForPacking(chunk);
         }
+    }
+
+    @Override
+    public void onBlockChange(BlockChangeEvent event) {
+        event.getAffectedChunks().stream()
+                .map(pos -> ctx.world().getChunk(pos.x, pos.z))
+                .forEach(this.context::queueForPacking);
     }
 
     public void path(BlockPos destination) {
@@ -382,10 +389,6 @@ public final class ElytraBehavior extends Behavior implements Helper {
                             continue;
                         }
                         forceUseFirework = pitch.second();
-                        logDirect("final dy " + dy);
-                        logDirect("i " + i);
-                        logDirect("playerNear " + playerNear);
-                        logDirect("relaxation " + relaxation);
                         goingTo = path.get(i);
                         this.aimPos = path.get(i).add(0, dy, 0);
                         baritone.getLookBehavior().updateTarget(new Rotation(yaw, pitch.first()), false);
