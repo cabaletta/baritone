@@ -151,9 +151,12 @@ public class CommandManager implements ICommandManager {
         private Stream<String> tabComplete() {
             try {
                 return this.command.tabComplete(this.label, this.args);
+            } catch (CommandException ignored) {
+                // NOP
             } catch (Throwable t) {
-                return Stream.empty();
+                t.printStackTrace();
             }
+            return Stream.empty();
         }
     }
 }
