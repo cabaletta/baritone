@@ -182,6 +182,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
             this.path = Collections.emptyList();
             this.playerNear = 0;
             this.completePath = true;
+            this.recalculating = false;
             this.destination = null;
         }
 
