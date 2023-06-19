@@ -18,6 +18,7 @@
 package baritone.behavior;
 
 import baritone.Baritone;
+import baritone.api.behavior.IElytraBehavior;
 import baritone.api.event.events.BlockChangeEvent;
 import baritone.api.event.events.ChunkEvent;
 import baritone.api.event.events.TickEvent;
@@ -25,22 +26,28 @@ import baritone.api.utils.*;
 import baritone.behavior.elytra.NetherPathfinderContext;
 import baritone.behavior.elytra.UnpackedSegment;
 import baritone.utils.BlockStateInterface;
+import baritone.utils.accessor.IEntityFireworkRocket;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.item.EntityFireworkRocket;
+import net.minecraft.init.Items;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.UnaryOperator;
 
-public final class ElytraBehavior extends Behavior implements Helper {
+public final class ElytraBehavior extends Behavior implements IElytraBehavior, Helper {
 
     /**
      * 2b2t seed
@@ -57,6 +64,7 @@ public final class ElytraBehavior extends Behavior implements Helper {
     private final NetherPathfinderContext context;
     private final PathManager pathManager;
     private int sinceFirework;
+    private boolean pawsed = false;
 
     public ElytraBehavior(Baritone baritone) {
         super(baritone);
@@ -298,6 +306,7 @@ public final class ElytraBehavior extends Behavior implements Helper {
     }
 
     public void path(BlockPos destination) {
+        pawsed = false;
         this.pathManager.pathToDestination(destination);
     }
 
@@ -306,6 +315,23 @@ public final class ElytraBehavior extends Behavior implements Helper {
         this.pathManager.clear();
         this.aimPos = null;
         this.sinceFirework = 0;
+        pawsed = false;
+    }
+
+    public boolean isActive() {
+        return !this.pathManager.getPath().isEmpty() && !isPaused();
+    }
+
+    public void pause() {
+        this.pawsed = true;
+    }
+
+    public void resume() {
+        this.pawsed = false;
+    }
+
+    public boolean isPaused() {
+        return this.pawsed;
     }
 
     @Override
@@ -313,6 +339,8 @@ public final class ElytraBehavior extends Behavior implements Helper {
         if (event.getType() == TickEvent.Type.OUT) {
             return;
         }
+        if (isPaused()) return;
+        this.lines.clear();
         this.clearLines.clear();
         this.blockedLines.clear();
 
@@ -412,20 +440,69 @@ public final class ElytraBehavior extends Behavior implements Helper {
 
         if (forceUseFirework || (!firework
                 && sinceFirework > 10
+                && Baritone.settings().elytraUseFireworks.value
                 && useOnDescend
                 && (ctx.player().posY < goingTo.y - 5 || start.distanceTo(new Vec3d(goingTo.x + 0.5, ctx.player().posY, goingTo.z + 0.5)) > 5) // UGH!!!!!!!
                 && currentSpeed < Baritone.settings().elytraFireworkSpeed.value)
         ) {
+            if (Baritone.settings().elytraInventory.value) {
+                final int firstFireworksInHotbar = firstFireworksInHotbar();
+                if (firstFireworksInHotbar == -1) {
+                    if (!swapToFireworksInInventory()) {
+                        logDirect("no fireworks");
+                        return;
+                    }
+                } else {
+                    ctx.player().inventory.currentItem = firstFireworksInHotbar;
+                }
+            }
             logDirect("firework" + (forceUseFirework ? " takeoff" : ""));
             ctx.playerController().processRightClick(ctx.player(), ctx.world(), EnumHand.MAIN_HAND);
             sinceFirework = 0;
         }
     }
 
+    private boolean swapToFireworksInInventory() {
+        final int i = firstFireworksInInventory();
+        if (i != -1) {
+            baritone.getInventoryBehavior().attemptToPutOnHotbar(i, (slot) -> slot != 7);
+            ctx.player().inventory.currentItem = 7;
+            return true;
+        }
+        return false;
+    }
+
+    private int firstFireworksInInventory() {
+        final NonNullList<ItemStack> invy = ctx.player().inventory.mainInventory;
+        for (int i = 0; i < invy.size(); i++) {
+            if (isBoostingFireworks(invy.get(i))) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private int firstFireworksInHotbar() {
+        final NonNullList<ItemStack> invy = ctx.player().inventory.mainInventory;
+        for (int i = 0; i < 9; i++) {
+            if (isBoostingFireworks(invy.get(i))) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private boolean isBoostingFireworks(final ItemStack itemStack) {
+        final NBTTagCompound subCompound = itemStack.getSubCompound("Fireworks");
+        return itemStack.getItem() == Items.FIREWORKS
+                && subCompound != null
+                && subCompound.hasKey("Flight");
+    }
+
     private boolean isFireworkActive() {
-        // TODO: Validate that the EntityFireworkRocket is attached to ctx.player()
         return ctx.world().loadedEntityList.stream()
-                .anyMatch(x -> (x instanceof EntityFireworkRocket) && ((EntityFireworkRocket) x).isAttachedToEntity());
+                .filter(x -> x instanceof EntityFireworkRocket)
+                .anyMatch(x -> Objects.equals(((IEntityFireworkRocket) x).getBoostedEntity(), ctx.player()));
     }
 
     private boolean isClear(final Vec3d start, final Vec3d dest, final Double growAmount) {
@@ -781,3 +858,4 @@ public final class ElytraBehavior extends Behavior implements Helper {
         return false;
     }
 }
+

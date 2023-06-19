@@ -50,6 +50,14 @@ public final class Settings {
 
     public final Setting<Integer> elytraSimulationTicks = new Setting<>(20);
     public final Setting<Integer> elytraPitchRange = new Setting<>(25);
+    /**
+     * Allow users to control firework usage instead of Baritone. e.g. with their own client modules.
+     */
+    public final Setting<Boolean> elytraUseFireworks = new Setting<>(true);
+    /**
+     * Allow Baritone to manage fireworks in the inventory and hotbar
+     */
+    public final Setting<Boolean> elytraInventory = new Setting<>(true);
     public final Setting<Double> elytraFireworkSpeed = new Setting<>(0.6);
     public final Setting<Boolean> conserveFireworks = new Setting<>(true);
     public final Setting<Boolean> renderRaytraces = new Setting<>(false);

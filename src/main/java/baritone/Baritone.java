@@ -232,6 +232,7 @@ public class Baritone implements IBaritone {
         return this.commandManager;
     }
 
+    @Override
     public ElytraBehavior getElytraBehavior() {
         return this.elytraBehavior;
     }
