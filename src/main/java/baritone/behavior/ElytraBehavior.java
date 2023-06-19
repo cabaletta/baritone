@@ -455,7 +455,7 @@ public final class ElytraBehavior extends Behavior implements Helper {
     }
 
     private boolean clearView(Vec3d start, Vec3d dest) {
-        boolean oxy = !rayTraceBlocks(start.x, start.y, start.z, dest.x, dest.y, dest.z);
+        boolean oxy = !rayTraceBlocks(start.x + 0.0001 * Math.random(), start.y + 0.0001 * Math.random(), start.z + 0.0001 * Math.random(), dest.x + 0.0001 * Math.random(), dest.y + 0.0001 * Math.random(), dest.z + 0.0001 * Math.random());
         boolean meow = !rayTraceBlocks(start, dest);
         if (oxy != meow) {
             logDirect(start + " " + dest + " " + oxy + " " + meow);
