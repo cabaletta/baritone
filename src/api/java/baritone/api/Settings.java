@@ -57,7 +57,6 @@ public final class Settings {
 
     // Experimental Elytra Settings
     public final Setting<Boolean> experimentalTakeoff = new Setting<>(false);
-    public final Setting<Boolean> experimentalRaytrace = new Setting<>(false);
 
     /**
      * Allow Baritone to break blocks

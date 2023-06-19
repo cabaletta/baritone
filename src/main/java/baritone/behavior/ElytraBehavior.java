@@ -476,56 +476,36 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
 
         final AxisAlignedBB bb = ctx.player().getEntityBoundingBox().grow(growAmount);
 
-        if (Baritone.settings().experimentalRaytrace.value) {
-            final double ox = dest.x - start.x;
-            final double oy = dest.y - start.y;
-            final double oz = dest.z - start.z;
+        final double ox = dest.x - start.x;
+        final double oy = dest.y - start.y;
+        final double oz = dest.z - start.z;
 
-            final double[] src = new double[]{
-                    bb.minX, bb.minY, bb.minZ,
-                    bb.minX, bb.minY, bb.maxZ,
-                    bb.minX, bb.maxY, bb.minZ,
-                    bb.minX, bb.maxY, bb.maxZ,
-                    bb.maxX, bb.minY, bb.minZ,
-                    bb.maxX, bb.minY, bb.maxZ,
-                    bb.maxX, bb.maxY, bb.minZ,
-                    bb.maxX, bb.maxY, bb.maxZ,
-            };
-            final double[] dst = new double[]{
-                    bb.minX + ox, bb.minY + oy, bb.minZ + oz,
-                    bb.minX + ox, bb.minY + oy, bb.maxZ + oz,
-                    bb.minX + ox, bb.maxY + oy, bb.minZ + oz,
-                    bb.minX + ox, bb.maxY + oy, bb.maxZ + oz,
-                    bb.maxX + ox, bb.minY + oy, bb.minZ + oz,
-                    bb.maxX + ox, bb.minY + oy, bb.maxZ + oz,
-                    bb.maxX + ox, bb.maxY + oy, bb.minZ + oz,
-                    bb.maxX + ox, bb.maxY + oy, bb.maxZ + oz,
-            };
-
-            // Batch together all 8 traces
-            final boolean[] hitOut = new boolean[8];
-            this.context.raytrace(src, dst, hitOut);
-            for (boolean hit : hitOut) {
-                if (hit) {
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        final Vec3d[] corners = new Vec3d[]{
-                new Vec3d(bb.minX, bb.minY, bb.minZ),
-                new Vec3d(bb.minX, bb.minY, bb.maxZ),
-                new Vec3d(bb.minX, bb.maxY, bb.minZ),
-                new Vec3d(bb.minX, bb.maxY, bb.maxZ),
-                new Vec3d(bb.maxX, bb.minY, bb.minZ),
-                new Vec3d(bb.maxX, bb.minY, bb.maxZ),
-                new Vec3d(bb.maxX, bb.maxY, bb.minZ),
-                new Vec3d(bb.maxX, bb.maxY, bb.maxZ),
+        final double[] src = new double[]{
+                bb.minX, bb.minY, bb.minZ,
+                bb.minX, bb.minY, bb.maxZ,
+                bb.minX, bb.maxY, bb.minZ,
+                bb.minX, bb.maxY, bb.maxZ,
+                bb.maxX, bb.minY, bb.minZ,
+                bb.maxX, bb.minY, bb.maxZ,
+                bb.maxX, bb.maxY, bb.minZ,
+                bb.maxX, bb.maxY, bb.maxZ,
+        };
+        final double[] dst = new double[]{
+                bb.minX + ox, bb.minY + oy, bb.minZ + oz,
+                bb.minX + ox, bb.minY + oy, bb.maxZ + oz,
+                bb.minX + ox, bb.maxY + oy, bb.minZ + oz,
+                bb.minX + ox, bb.maxY + oy, bb.maxZ + oz,
+                bb.maxX + ox, bb.minY + oy, bb.minZ + oz,
+                bb.maxX + ox, bb.minY + oy, bb.maxZ + oz,
+                bb.maxX + ox, bb.maxY + oy, bb.minZ + oz,
+                bb.maxX + ox, bb.maxY + oy, bb.maxZ + oz,
         };
 
-        for (final Vec3d corner : corners) {
-            if (!clearView(corner, dest.add(corner.subtract(start)))) {
+        // Batch together all 8 traces
+        final boolean[] hitOut = new boolean[8];
+        this.context.raytrace(src, dst, hitOut);
+        for (boolean hit : hitOut) {
+            if (hit) {
                 return false;
             }
         }
@@ -533,11 +513,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
     }
 
     private boolean clearView(Vec3d start, Vec3d dest) {
-        boolean clear = !(Baritone.settings().experimentalRaytrace.value
-                ? this.context.raytrace(start.x, start.y, start.z, dest.x, dest.y, dest.z)
-                : this.rayTraceBlocks(start.x, start.y, start.z, dest.x, dest.y, dest.z) // ox method
-        );
-
+        boolean clear = !this.context.raytrace(start.x, start.y, start.z, dest.x, dest.y, dest.z);
         if (clear) {
             clearLines.add(new Pair<>(start, dest));
             return true;
@@ -665,196 +641,6 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         //System.out.println(motionX + " " + motionY + " " + motionZ);
 
         return new Vec3d(motionX, motionY, motionZ);
-    }
-
-    private boolean rayTraceBlocks(final double startX, final double startY, final double startZ,
-                                   final double endX, final double endY, final double endZ) {
-        int voxelCurrX = fastFloor(startX);
-        int voxelCurrY = fastFloor(startY);
-        int voxelCurrZ = fastFloor(startZ);
-
-        if (!this.passable(voxelCurrX, voxelCurrY, voxelCurrZ)) {
-            return true;
-        }
-
-        final int voxelEndX = fastFloor(endX);
-        final int voxelEndY = fastFloor(endY);
-        final int voxelEndZ = fastFloor(endZ);
-        double currPosX = startX;
-        double currPosY = startY;
-        double currPosZ = startZ;
-
-        int steps = 200; // TODO: should we lower the max steps?
-        while (steps-- >= 0) {
-            if (voxelCurrX == voxelEndX && voxelCurrY == voxelEndY && voxelCurrZ == voxelEndZ) {
-                return false;
-            }
-
-            final double distanceFromStartToEndX = endX - currPosX;
-            final double distanceFromStartToEndY = endY - currPosY;
-            final double distanceFromStartToEndZ = endZ - currPosZ;
-
-            double nextIntegerX;
-            double nextIntegerY;
-            double nextIntegerZ;
-            // potentially more based branchless impl?
-            nextIntegerX = voxelCurrX + ((voxelCurrX - voxelEndX) >>> 31); // if voxelEnd > voxelIn, then voxelIn-voxelEnd will be negative, meaning the sign bit is 1
-            nextIntegerY = voxelCurrY + ((voxelCurrY - voxelEndY) >>> 31); // if we do an unsigned right shift by 31, that sign bit becomes the LSB
-            nextIntegerZ = voxelCurrZ + ((voxelCurrZ - voxelEndZ) >>> 31); // therefore, this increments nextInteger iff EndX>inX, otherwise it leaves it alone
-            // remember: don't have to worry about the case when voxelEnd == voxelIn, because nextInteger value wont be used
-
-            // these just have to be strictly greater than 1, might as well just go up to the next int
-            double fracIfSkipX = 2.0D;
-            double fracIfSkipY = 2.0D;
-            double fracIfSkipZ = 2.0D;
-
-            // reminder to future self: don't "branchlessify" this, it's MUCH slower (pretty obviously, floating point div is much worse than a branch mispredict, but integer increment (like the other two removed branches) are cheap enough to be worth doing either way)
-            if (voxelEndX != voxelCurrX) {
-                fracIfSkipX = (nextIntegerX - currPosX) / distanceFromStartToEndX;
-            }
-            if (voxelEndY != voxelCurrY) {
-                fracIfSkipY = (nextIntegerY - currPosY) / distanceFromStartToEndY;
-            }
-            if (voxelEndZ != voxelCurrZ) {
-                fracIfSkipZ = (nextIntegerZ - currPosZ) / distanceFromStartToEndZ;
-            }
-
-            if (fracIfSkipX < fracIfSkipY && fracIfSkipX < fracIfSkipZ) {
-                // note: voxelEndX == voxelInX is impossible because allowSkip would be set to false in that case, meaning that the elapsed distance would stay at default
-                currPosX = nextIntegerX;
-                currPosY += distanceFromStartToEndY * fracIfSkipX;
-                currPosZ += distanceFromStartToEndZ * fracIfSkipX;
-                // tested: faster to paste this 3 times with only one of the subtractions in each
-                final int xFloorOffset = (voxelEndX - voxelCurrX) >>> 31;
-                voxelCurrX = (fastFloor(currPosX) - xFloorOffset);
-                voxelCurrY = (fastFloor(currPosY));
-                voxelCurrZ = (fastFloor(currPosZ));
-            } else if (fracIfSkipY < fracIfSkipZ) {
-                currPosX += distanceFromStartToEndX * fracIfSkipY;
-                currPosY = nextIntegerY;
-                currPosZ += distanceFromStartToEndZ * fracIfSkipY;
-                // tested: faster to paste this 3 times with only one of the subtractions in each
-                final int yFloorOffset = (voxelEndY - voxelCurrY) >>> 31;
-                voxelCurrX = (fastFloor(currPosX));
-                voxelCurrY = (fastFloor(currPosY) - yFloorOffset);
-                voxelCurrZ = (fastFloor(currPosZ));
-            } else {
-                currPosX += distanceFromStartToEndX * fracIfSkipZ;
-                currPosY += distanceFromStartToEndY * fracIfSkipZ;
-                currPosZ = nextIntegerZ;
-                // tested: faster to paste this 3 times with only one of the subtractions in each
-                final int zFloorOffset = (voxelEndZ - voxelCurrZ) >>> 31;
-                voxelCurrX = (fastFloor(currPosX));
-                voxelCurrY = (fastFloor(currPosY));
-                voxelCurrZ = (fastFloor(currPosZ) - zFloorOffset);
-            }
-
-            if (!this.passable(voxelCurrX, voxelCurrY, voxelCurrZ)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private static final double FLOOR_DOUBLE_D = 1_073_741_824.0;
-    private static final int FLOOR_DOUBLE_I = 1_073_741_824;
-
-    private static int fastFloor(final double v) {
-        return ((int) (v + FLOOR_DOUBLE_D)) - FLOOR_DOUBLE_I;
-    }
-
-    private boolean rayTraceBlocks(Vec3d start, Vec3d end) {
-        int x1 = MathHelper.floor(end.x);
-        int y1 = MathHelper.floor(end.y);
-        int z1 = MathHelper.floor(end.z);
-        int x2 = MathHelper.floor(start.x);
-        int y2 = MathHelper.floor(start.y);
-        int z2 = MathHelper.floor(start.z);
-        BlockPos blockpos = new BlockPos(x2, y2, z2);
-        IBlockState iblockstate = ctx.world().getBlockState(blockpos);
-        if (!passable(iblockstate)) {
-            return true;
-        }
-        int steps = 200;
-        while (steps-- >= 0) {
-            if (Double.isNaN(start.x) || Double.isNaN(start.y) || Double.isNaN(start.z)) {
-                return false;
-            }
-            if (x2 == x1 && y2 == y1 && z2 == z1) {
-                return false;
-            }
-            boolean hitX = true;
-            boolean hitY = true;
-            boolean hitZ = true;
-            double nextX = 999.0D;
-            double nextY = 999.0D;
-            double nextZ = 999.0D;
-            if (x1 > x2) {
-                nextX = (double) x2 + 1.0D;
-            } else if (x1 < x2) {
-                nextX = (double) x2 + 0.0D;
-            } else {
-                hitX = false;
-            }
-            if (y1 > y2) {
-                nextY = (double) y2 + 1.0D;
-            } else if (y1 < y2) {
-                nextY = (double) y2 + 0.0D;
-            } else {
-                hitY = false;
-            }
-            if (z1 > z2) {
-                nextZ = (double) z2 + 1.0D;
-            } else if (z1 < z2) {
-                nextZ = (double) z2 + 0.0D;
-            } else {
-                hitZ = false;
-            }
-            double stepX = 999.0D;
-            double stepY = 999.0D;
-            double stepZ = 999.0D;
-            double dirX = end.x - start.x;
-            double dirY = end.y - start.y;
-            double dirZ = end.z - start.z;
-            if (hitX) {
-                stepX = (nextX - start.x) / dirX;
-            }
-            if (hitY) {
-                stepY = (nextY - start.y) / dirY;
-            }
-            if (hitZ) {
-                stepZ = (nextZ - start.z) / dirZ;
-            }
-            if (stepX == -0.0D) {
-                stepX = -1.0E-4D;
-            }
-            if (stepY == -0.0D) {
-                stepY = -1.0E-4D;
-            }
-            if (stepZ == -0.0D) {
-                stepZ = -1.0E-4D;
-            }
-            EnumFacing dir;
-            if (stepX < stepY && stepX < stepZ) {
-                dir = x1 > x2 ? EnumFacing.WEST : EnumFacing.EAST;
-                start = new Vec3d(nextX, start.y + dirY * stepX, start.z + dirZ * stepX);
-            } else if (stepY < stepZ) {
-                dir = y1 > y2 ? EnumFacing.DOWN : EnumFacing.UP;
-                start = new Vec3d(start.x + dirX * stepY, nextY, start.z + dirZ * stepY);
-            } else {
-                dir = z1 > z2 ? EnumFacing.NORTH : EnumFacing.SOUTH;
-                start = new Vec3d(start.x + dirX * stepZ, start.y + dirY * stepZ, nextZ);
-            }
-            x2 = MathHelper.floor(start.x) - (dir == EnumFacing.EAST ? 1 : 0);
-            y2 = MathHelper.floor(start.y) - (dir == EnumFacing.UP ? 1 : 0);
-            z2 = MathHelper.floor(start.z) - (dir == EnumFacing.SOUTH ? 1 : 0);
-            blockpos = new BlockPos(x2, y2, z2);
-            IBlockState iblockstate1 = ctx.world().getBlockState(blockpos);
-            if (!passable(iblockstate1)) {
-                return true;
-            }
-        }
-        return false;
     }
 }
 
