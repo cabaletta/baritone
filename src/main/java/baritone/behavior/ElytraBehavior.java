@@ -78,10 +78,8 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         private BlockPos destination;
         private List<BetterBlockPos> path;
         private boolean completePath;
-
-        private int playerNear;
-
         private boolean recalculating;
+        private int playerNear;
 
         public PathManager() {
             // lol imagine initializing fields normally
@@ -179,11 +177,11 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         }
 
         public void clear() {
+            this.destination = null;
             this.path = Collections.emptyList();
-            this.playerNear = 0;
             this.completePath = true;
             this.recalculating = false;
-            this.destination = null;
+            this.playerNear = 0;
         }
 
         private void setPath(final UnpackedSegment segment) {
