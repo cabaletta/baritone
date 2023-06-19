@@ -222,12 +222,12 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
                 // not loaded yet?
                 return;
             }
-            if (!passable(ctx.world().getBlockState(path.get(rangeStartIncl)))) {
+            if (!passable(ctx.world().getBlockState(path.get(rangeStartIncl)), false)) {
                 // we're in a wall
                 return; // previous iterations of this function SHOULD have fixed this by now :rage_cat:
             }
             for (int i = rangeStartIncl; i < rangeEndExcl - 1; i++) {
-                if (!clearView(pathAt(i), pathAt(i + 1))) {
+                if (!clearView(pathAt(i), pathAt(i + 1), false)) {
                     // obstacle. where do we return to pathing?
                     // find the next valid segment
                     this.pathRecalcSegment(i, rangeEndExcl - 1);
@@ -363,6 +363,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         BetterBlockPos goingTo = null;
         boolean forceUseFirework = false;
         this.sinceFirework++;
+        final boolean isInLava = ctx.player().isInLava();
 
         outermost:
         for (int relaxation = 0; relaxation < 3; relaxation++) { // try for a strict solution first, then relax more and more (if we're in a corner or near some blocks, it will have to relax its constraints a bit)
@@ -379,13 +380,13 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
                             continue;
                         }
                         if (start.distanceTo(dest) < 40) {
-                            if (!clearView(dest, this.pathManager.pathAt(i + lookahead).add(0, dy, 0)) || !clearView(dest, this.pathManager.pathAt(i + lookahead))) {
+                            if (!clearView(dest, this.pathManager.pathAt(i + lookahead).add(0, dy, 0), false) || !clearView(dest, this.pathManager.pathAt(i + lookahead), false)) {
                                 // aka: don't go upwards if doing so would prevent us from being able to see the next position **OR** the modified next position
                                 continue;
                             }
                         } else {
                             // but if it's far away, allow gaining altitude if we could lose it again by the time we get there
-                            if (!clearView(dest, this.pathManager.pathAt(i))) {
+                            if (!clearView(dest, this.pathManager.pathAt(i), false)) {
                                 continue;
                             }
                         }
@@ -395,10 +396,10 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
                     final Double grow = relaxation == 2 ? null
                             : relaxation == 0 ? 1.0d : 0.25d;
 
-                    if (isClear(start, dest, grow)) {
+                    if (isClear(start, dest, grow, isInLava)) {
                         final float yaw = RotationUtils.calcRotationFromVec3d(start, dest, ctx.playerRotations()).getYaw();
 
-                        final Pair<Float, Boolean> pitch = this.solvePitch(dest.subtract(start), steps, relaxation, firework);
+                        final Pair<Float, Boolean> pitch = this.solvePitch(dest.subtract(start), steps, relaxation, firework, isInLava);
                         if (pitch.first() == null) {
                             baritone.getLookBehavior().updateTarget(new Rotation(yaw, ctx.playerRotations().getPitch()), false);
                             continue;
@@ -463,8 +464,8 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
                 .anyMatch(x -> Objects.equals(((IEntityFireworkRocket) x).getBoostedEntity(), ctx.player()));
     }
 
-    private boolean isClear(final Vec3d start, final Vec3d dest, final Double growAmount) {
-        if (!clearView(start, dest)) {
+    private boolean isClear(final Vec3d start, final Vec3d dest, final Double growAmount, boolean ignoreLava) {
+        if (!clearView(start, dest, ignoreLava)) {
             return false;
         }
         if (growAmount == null) {
@@ -509,8 +510,14 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         return true;
     }
 
-    private boolean clearView(Vec3d start, Vec3d dest) {
-        boolean clear = !this.context.raytrace(start.x, start.y, start.z, dest.x, dest.y, dest.z);
+    private boolean clearView(Vec3d start, Vec3d dest, boolean ignoreLava) {
+        final boolean clear;
+        if (!ignoreLava) {
+            clear = !this.context.raytrace(start.x, start.y, start.z, dest.x, dest.y, dest.z);
+        } else {
+            clear = !rayTraceBlocks(start.x, start.y, start.z, dest.x, dest.y, dest.z, true);
+        }
+
         if (clear) {
             clearLines.add(new Pair<>(start, dest));
             return true;
@@ -520,14 +527,14 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         }
     }
 
-    private Pair<Float, Boolean> solvePitch(Vec3d goalDirection, int steps, int relaxation, boolean currentlyBoosted) {
-        final Float pitch = this.solvePitch(goalDirection, steps, relaxation == 2, currentlyBoosted);
+    private Pair<Float, Boolean> solvePitch(Vec3d goalDirection, int steps, int relaxation, boolean currentlyBoosted, boolean ignoreLava) {
+        final Float pitch = this.solvePitch(goalDirection, steps, relaxation == 2, currentlyBoosted, ignoreLava);
         if (pitch != null) {
             return new Pair<>(pitch, false);
         }
 
         if (Baritone.settings().experimentalTakeoff.value && relaxation > 0) {
-            final Float usingFirework = this.solvePitch(goalDirection, steps, relaxation == 2, true);
+            final Float usingFirework = this.solvePitch(goalDirection, steps, relaxation == 2, true, ignoreLava);
             if (usingFirework != null) {
                 return new Pair<>(usingFirework, true);
             }
@@ -536,7 +543,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         return new Pair<>(null, false);
     }
 
-    private Float solvePitch(Vec3d goalDirection, int steps, boolean desperate, boolean firework) {
+    private Float solvePitch(Vec3d goalDirection, int steps, boolean desperate, boolean firework, boolean ignoreLava) {
         // we are at a certain velocity, but we have a target velocity
         // what pitch would get us closest to our target velocity?
         // yaw is easy so we only care about pitch
@@ -561,7 +568,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
                 for (int x = MathHelper.floor(Math.min(actualPosition.x, actualPositionPrevTick.x) - 0.31); x <= Math.max(actualPosition.x, actualPositionPrevTick.x) + 0.31; x++) {
                     for (int y = MathHelper.floor(Math.min(actualPosition.y, actualPositionPrevTick.y) - 0.2); y <= Math.max(actualPosition.y, actualPositionPrevTick.y) + 1; y++) {
                         for (int z = MathHelper.floor(Math.min(actualPosition.z, actualPositionPrevTick.z) - 0.31); z <= Math.max(actualPosition.z, actualPositionPrevTick.z) + 0.31; z++) {
-                            if (!this.passable(x, y, z)) {
+                            if (!this.passable(x, y, z, ignoreLava)) {
                                 continue outer;
                             }
                         }
@@ -579,12 +586,13 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         return bestPitch;
     }
 
-    public boolean passable(int x, int y, int z) {
-        return passable(this.bsi.get0(x, y, z));
+    public boolean passable(int x, int y, int z, boolean ignoreLava) {
+        return passable(this.bsi.get0(x, y, z), ignoreLava);
     }
 
-    public static boolean passable(IBlockState state) {
-        return state.getMaterial() == Material.AIR;
+    public static boolean passable(IBlockState state, boolean ignoreLava) {
+        Material mat = state.getMaterial();
+        return mat == Material.AIR || (ignoreLava && mat == Material.LAVA);
     }
 
     private static Vec3d step(Vec3d motion, float rotationPitch, float rotationYaw, boolean firework) {
@@ -636,6 +644,196 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         //System.out.println(motionX + " " + motionY + " " + motionZ);
 
         return new Vec3d(motionX, motionY, motionZ);
+    }
+
+    private boolean rayTraceBlocks(final double startX, final double startY, final double startZ,
+                                   final double endX, final double endY, final double endZ, boolean ignoreLava) {
+        int voxelCurrX = fastFloor(startX);
+        int voxelCurrY = fastFloor(startY);
+        int voxelCurrZ = fastFloor(startZ);
+
+        if (!this.passable(voxelCurrX, voxelCurrY, voxelCurrZ, ignoreLava)) {
+            return true;
+        }
+
+        final int voxelEndX = fastFloor(endX);
+        final int voxelEndY = fastFloor(endY);
+        final int voxelEndZ = fastFloor(endZ);
+        double currPosX = startX;
+        double currPosY = startY;
+        double currPosZ = startZ;
+
+        int steps = 200; // TODO: should we lower the max steps?
+        while (steps-- >= 0) {
+            if (voxelCurrX == voxelEndX && voxelCurrY == voxelEndY && voxelCurrZ == voxelEndZ) {
+                return false;
+            }
+
+            final double distanceFromStartToEndX = endX - currPosX;
+            final double distanceFromStartToEndY = endY - currPosY;
+            final double distanceFromStartToEndZ = endZ - currPosZ;
+
+            double nextIntegerX;
+            double nextIntegerY;
+            double nextIntegerZ;
+            // potentially more based branchless impl?
+            nextIntegerX = voxelCurrX + ((voxelCurrX - voxelEndX) >>> 31); // if voxelEnd > voxelIn, then voxelIn-voxelEnd will be negative, meaning the sign bit is 1
+            nextIntegerY = voxelCurrY + ((voxelCurrY - voxelEndY) >>> 31); // if we do an unsigned right shift by 31, that sign bit becomes the LSB
+            nextIntegerZ = voxelCurrZ + ((voxelCurrZ - voxelEndZ) >>> 31); // therefore, this increments nextInteger iff EndX>inX, otherwise it leaves it alone
+            // remember: don't have to worry about the case when voxelEnd == voxelIn, because nextInteger value wont be used
+
+            // these just have to be strictly greater than 1, might as well just go up to the next int
+            double fracIfSkipX = 2.0D;
+            double fracIfSkipY = 2.0D;
+            double fracIfSkipZ = 2.0D;
+
+            // reminder to future self: don't "branchlessify" this, it's MUCH slower (pretty obviously, floating point div is much worse than a branch mispredict, but integer increment (like the other two removed branches) are cheap enough to be worth doing either way)
+            if (voxelEndX != voxelCurrX) {
+                fracIfSkipX = (nextIntegerX - currPosX) / distanceFromStartToEndX;
+            }
+            if (voxelEndY != voxelCurrY) {
+                fracIfSkipY = (nextIntegerY - currPosY) / distanceFromStartToEndY;
+            }
+            if (voxelEndZ != voxelCurrZ) {
+                fracIfSkipZ = (nextIntegerZ - currPosZ) / distanceFromStartToEndZ;
+            }
+
+            if (fracIfSkipX < fracIfSkipY && fracIfSkipX < fracIfSkipZ) {
+                // note: voxelEndX == voxelInX is impossible because allowSkip would be set to false in that case, meaning that the elapsed distance would stay at default
+                currPosX = nextIntegerX;
+                currPosY += distanceFromStartToEndY * fracIfSkipX;
+                currPosZ += distanceFromStartToEndZ * fracIfSkipX;
+                // tested: faster to paste this 3 times with only one of the subtractions in each
+                final int xFloorOffset = (voxelEndX - voxelCurrX) >>> 31;
+                voxelCurrX = (fastFloor(currPosX) - xFloorOffset);
+                voxelCurrY = (fastFloor(currPosY));
+                voxelCurrZ = (fastFloor(currPosZ));
+            } else if (fracIfSkipY < fracIfSkipZ) {
+                currPosX += distanceFromStartToEndX * fracIfSkipY;
+                currPosY = nextIntegerY;
+                currPosZ += distanceFromStartToEndZ * fracIfSkipY;
+                // tested: faster to paste this 3 times with only one of the subtractions in each
+                final int yFloorOffset = (voxelEndY - voxelCurrY) >>> 31;
+                voxelCurrX = (fastFloor(currPosX));
+                voxelCurrY = (fastFloor(currPosY) - yFloorOffset);
+                voxelCurrZ = (fastFloor(currPosZ));
+            } else {
+                currPosX += distanceFromStartToEndX * fracIfSkipZ;
+                currPosY += distanceFromStartToEndY * fracIfSkipZ;
+                currPosZ = nextIntegerZ;
+                // tested: faster to paste this 3 times with only one of the subtractions in each
+                final int zFloorOffset = (voxelEndZ - voxelCurrZ) >>> 31;
+                voxelCurrX = (fastFloor(currPosX));
+                voxelCurrY = (fastFloor(currPosY));
+                voxelCurrZ = (fastFloor(currPosZ) - zFloorOffset);
+            }
+
+            if (!this.passable(voxelCurrX, voxelCurrY, voxelCurrZ, ignoreLava)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static final double FLOOR_DOUBLE_D = 1_073_741_824.0;
+    private static final int FLOOR_DOUBLE_I = 1_073_741_824;
+
+    private static int fastFloor(final double v) {
+        return ((int) (v + FLOOR_DOUBLE_D)) - FLOOR_DOUBLE_I;
+    }
+
+    private boolean rayTraceBlocks(Vec3d start, Vec3d end, boolean ignoreLava) {
+        int x1 = MathHelper.floor(end.x);
+        int y1 = MathHelper.floor(end.y);
+        int z1 = MathHelper.floor(end.z);
+        int x2 = MathHelper.floor(start.x);
+        int y2 = MathHelper.floor(start.y);
+        int z2 = MathHelper.floor(start.z);
+        BlockPos blockpos = new BlockPos(x2, y2, z2);
+        IBlockState iblockstate = ctx.world().getBlockState(blockpos);
+        if (!passable(iblockstate, ignoreLava)) {
+            return true;
+        }
+        int steps = 200;
+        while (steps-- >= 0) {
+            if (Double.isNaN(start.x) || Double.isNaN(start.y) || Double.isNaN(start.z)) {
+                return false;
+            }
+            if (x2 == x1 && y2 == y1 && z2 == z1) {
+                return false;
+            }
+            boolean hitX = true;
+            boolean hitY = true;
+            boolean hitZ = true;
+            double nextX = 999.0D;
+            double nextY = 999.0D;
+            double nextZ = 999.0D;
+            if (x1 > x2) {
+                nextX = (double) x2 + 1.0D;
+            } else if (x1 < x2) {
+                nextX = (double) x2 + 0.0D;
+            } else {
+                hitX = false;
+            }
+            if (y1 > y2) {
+                nextY = (double) y2 + 1.0D;
+            } else if (y1 < y2) {
+                nextY = (double) y2 + 0.0D;
+            } else {
+                hitY = false;
+            }
+            if (z1 > z2) {
+                nextZ = (double) z2 + 1.0D;
+            } else if (z1 < z2) {
+                nextZ = (double) z2 + 0.0D;
+            } else {
+                hitZ = false;
+            }
+            double stepX = 999.0D;
+            double stepY = 999.0D;
+            double stepZ = 999.0D;
+            double dirX = end.x - start.x;
+            double dirY = end.y - start.y;
+            double dirZ = end.z - start.z;
+            if (hitX) {
+                stepX = (nextX - start.x) / dirX;
+            }
+            if (hitY) {
+                stepY = (nextY - start.y) / dirY;
+            }
+            if (hitZ) {
+                stepZ = (nextZ - start.z) / dirZ;
+            }
+            if (stepX == -0.0D) {
+                stepX = -1.0E-4D;
+            }
+            if (stepY == -0.0D) {
+                stepY = -1.0E-4D;
+            }
+            if (stepZ == -0.0D) {
+                stepZ = -1.0E-4D;
+            }
+            EnumFacing dir;
+            if (stepX < stepY && stepX < stepZ) {
+                dir = x1 > x2 ? EnumFacing.WEST : EnumFacing.EAST;
+                start = new Vec3d(nextX, start.y + dirY * stepX, start.z + dirZ * stepX);
+            } else if (stepY < stepZ) {
+                dir = y1 > y2 ? EnumFacing.DOWN : EnumFacing.UP;
+                start = new Vec3d(start.x + dirX * stepY, nextY, start.z + dirZ * stepY);
+            } else {
+                dir = z1 > z2 ? EnumFacing.NORTH : EnumFacing.SOUTH;
+                start = new Vec3d(start.x + dirX * stepZ, start.y + dirY * stepZ, nextZ);
+            }
+            x2 = MathHelper.floor(start.x) - (dir == EnumFacing.EAST ? 1 : 0);
+            y2 = MathHelper.floor(start.y) - (dir == EnumFacing.UP ? 1 : 0);
+            z2 = MathHelper.floor(start.z) - (dir == EnumFacing.SOUTH ? 1 : 0);
+            blockpos = new BlockPos(x2, y2, z2);
+            IBlockState iblockstate1 = ctx.world().getBlockState(blockpos);
+            if (!passable(iblockstate1, ignoreLava)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
 
