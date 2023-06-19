@@ -40,7 +40,6 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 
 import java.util.*;
@@ -169,9 +168,9 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
 
         private Vec3d pathAt(int i) {
             return new Vec3d(
-                    this.path.get(i).x + 0.000123,
-                    this.path.get(i).y + 0.000456,
-                    this.path.get(i).z + 0.000789
+                    this.path.get(i).x,
+                    this.path.get(i).y,
+                    this.path.get(i).z
             );
         }
 
@@ -502,6 +501,44 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         }
 
         final AxisAlignedBB bb = ctx.player().getEntityBoundingBox().grow(growAmount);
+
+        if (Baritone.settings().experimentalRaytrace.value) {
+            final double ox = dest.x - start.x;
+            final double oy = dest.y - start.y;
+            final double oz = dest.z - start.z;
+
+            final double[] src = new double[] {
+                    bb.minX, bb.minY, bb.minZ,
+                    bb.minX, bb.minY, bb.maxZ,
+                    bb.minX, bb.maxY, bb.minZ,
+                    bb.minX, bb.maxY, bb.maxZ,
+                    bb.maxX, bb.minY, bb.minZ,
+                    bb.maxX, bb.minY, bb.maxZ,
+                    bb.maxX, bb.maxY, bb.minZ,
+                    bb.maxX, bb.maxY, bb.maxZ,
+            };
+            final double[] dst = new double[] {
+                    bb.minX + ox, bb.minY + oy, bb.minZ + oz,
+                    bb.minX + ox, bb.minY + oy, bb.maxZ + oz,
+                    bb.minX + ox, bb.maxY + oy, bb.minZ + oz,
+                    bb.minX + ox, bb.maxY + oy, bb.maxZ + oz,
+                    bb.maxX + ox, bb.minY + oy, bb.minZ + oz,
+                    bb.maxX + ox, bb.minY + oy, bb.maxZ + oz,
+                    bb.maxX + ox, bb.maxY + oy, bb.minZ + oz,
+                    bb.maxX + ox, bb.maxY + oy, bb.maxZ + oz,
+            };
+
+            // Batch together all 8 traces
+            final boolean[] hitOut = new boolean[8];
+            this.context.raytrace(src, dst, hitOut);
+            for (boolean hit : hitOut) {
+                if (hit) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
         final Vec3d[] corners = new Vec3d[]{
                 new Vec3d(bb.minX, bb.minY, bb.minZ),
                 new Vec3d(bb.minX, bb.minY, bb.maxZ),
@@ -522,12 +559,12 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
     }
 
     private boolean clearView(Vec3d start, Vec3d dest) {
-        boolean oxy = !rayTraceBlocks(start.x, start.y, start.z, dest.x, dest.y, dest.z);
-        boolean meow = !rayTraceBlocks(start, dest);
-        if (oxy != meow) {
-            logDirect(start + " " + dest + " " + oxy + " " + meow);
-        }
-        if (oxy) {
+        boolean clear = !(Baritone.settings().experimentalRaytrace.value
+                ? this.context.raytrace(start.x, start.y, start.z, dest.x, dest.y, dest.z)
+                : this.rayTraceBlocks(start.x, start.y, start.z, dest.x, dest.y, dest.z) // ox method
+        );
+
+        if (clear) {
             clearLines.add(new Pair<>(start, dest));
             return true;
         } else {

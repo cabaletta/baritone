@@ -21,6 +21,7 @@ import dev.babbaj.pathfinder.NetherPathfinder;
 import dev.babbaj.pathfinder.PathSegment;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.chunk.BlockStateContainer;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
@@ -57,8 +58,28 @@ public final class NetherPathfinderContext {
                         this.context,
                         src.getX(), src.getY(), src.getZ(),
                         dst.getX(), dst.getY(), dst.getZ(),
-                        true
+                        true,
+                        10000
                 ), this.executor);
+    }
+
+    public boolean raytrace(final double startX, final double startY, final double startZ,
+                            final double endX, final double endY, final double endZ) {
+        final boolean[] hitOut = new boolean[1];
+        NetherPathfinder.raytrace(
+                this.context,
+                true,
+                1,
+                new double[] { startX, startY, startZ },
+                new double[] { endX, endY, endZ },
+                hitOut,
+                null
+        );
+        return hitOut[0];
+    }
+
+    public void raytrace(final double[] src, final double[] dst, final boolean[] hitOut) {
+        NetherPathfinder.raytrace(this.context, true, hitOut.length, src, dst, hitOut, null);
     }
 
     public void cancel() {
