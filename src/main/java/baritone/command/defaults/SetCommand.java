@@ -22,12 +22,14 @@ import baritone.api.IBaritone;
 import baritone.api.Settings;
 import baritone.api.command.Command;
 import baritone.api.command.argument.IArgConsumer;
+import baritone.api.command.datatypes.RelativeFile;
 import baritone.api.command.exception.CommandException;
 import baritone.api.command.exception.CommandInvalidStateException;
 import baritone.api.command.exception.CommandInvalidTypeException;
 import baritone.api.command.helpers.Paginator;
 import baritone.api.command.helpers.TabCompleteHelper;
 import baritone.api.utils.SettingsUtil;
+import net.minecraft.client.Minecraft;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
@@ -221,6 +223,9 @@ public class SetCommand extends Command {
                             .addToggleableSettings()
                             .filterPrefix(args.getString())
                             .stream();
+                } else if (Arrays.asList("ld", "load").contains(arg.toLowerCase(Locale.US))) {
+                    // settings always use the directory of the main Minecraft instance
+                    return RelativeFile.tabComplete(args, Minecraft.getMinecraft().gameDir.toPath().resolve("baritone").toFile());
                 }
                 Settings.Setting setting = Baritone.settings().byLowerName.get(arg.toLowerCase(Locale.US));
                 if (setting != null) {
