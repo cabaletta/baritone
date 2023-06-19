@@ -23,8 +23,11 @@ import baritone.api.event.events.type.EventState;
 import baritone.api.event.listener.IEventBus;
 import baritone.api.event.listener.IGameEventListener;
 import baritone.api.utils.Helper;
+import baritone.api.utils.Pair;
+import baritone.cache.CachedChunk;
 import baritone.cache.WorldProvider;
 import baritone.utils.BlockStateInterface;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 
@@ -75,12 +78,9 @@ public final class GameEventHandler implements IEventBus, Helper {
     }
 
     @Override
-    public final void onChunkEvent(ChunkEvent event) {
+    public void onChunkEvent(ChunkEvent event) {
         EventState state = event.getState();
         ChunkEvent.Type type = event.getType();
-
-        boolean isPostPopulate = state == EventState.POST
-                && (type == ChunkEvent.Type.POPULATE_FULL || type == ChunkEvent.Type.POPULATE_PARTIAL);
 
         World world = baritone.getPlayerContext().world();
 
@@ -91,7 +91,7 @@ public final class GameEventHandler implements IEventBus, Helper {
                 && type == ChunkEvent.Type.UNLOAD
                 && world.getChunkProvider().isChunkGeneratedAt(event.getX(), event.getZ());
 
-        if (isPostPopulate || isPreUnload) {
+        if (event.isPostPopulate() || isPreUnload) {
             baritone.getWorldProvider().ifWorldLoaded(worldData -> {
                 Chunk chunk = world.getChunk(event.getX(), event.getZ());
                 worldData.getCachedWorld().queueForPacking(chunk);
@@ -100,6 +100,26 @@ public final class GameEventHandler implements IEventBus, Helper {
 
 
         listeners.forEach(l -> l.onChunkEvent(event));
+    }
+
+    @Override
+    public void onBlockChange(BlockChangeEvent event) {
+        if (Baritone.settings().repackOnAnyBlockChange.value) {
+            final boolean keepingTrackOf = event.getBlocks().stream()
+                    .map(Pair::second).map(IBlockState::getBlock)
+                    .anyMatch(CachedChunk.BLOCKS_TO_KEEP_TRACK_OF::contains);
+
+            if (keepingTrackOf) {
+                baritone.getWorldProvider().ifWorldLoaded(worldData -> {
+                    final World world = baritone.getPlayerContext().world();
+                    event.getAffectedChunks().stream()
+                            .map(pos -> world.getChunk(pos.x, pos.z))
+                            .forEach(worldData.getCachedWorld()::queueForPacking);
+                });
+            }
+        }
+
+        listeners.forEach(l -> l.onBlockChange(event));
     }
 
     @Override

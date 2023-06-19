@@ -46,6 +46,9 @@ public interface AbstractGameEventListener extends IGameEventListener {
     default void onChunkEvent(ChunkEvent event) {}
 
     @Override
+    default void onBlockChange(BlockChangeEvent event) {}
+
+    @Override
     default void onRenderPass(RenderEvent event) {}
 
     @Override

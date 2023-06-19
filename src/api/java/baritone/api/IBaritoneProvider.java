@@ -23,6 +23,7 @@ import baritone.api.command.ICommandSystem;
 import baritone.api.schematic.ISchematicSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraft.client.network.NetHandlerPlayClient;
 
 import java.util.List;
 import java.util.Objects;
@@ -76,6 +77,22 @@ public interface IBaritoneProvider {
     default IBaritone getBaritoneForMinecraft(Minecraft minecraft) {
         for (IBaritone baritone : this.getAllBaritones()) {
             if (Objects.equals(minecraft, baritone.getPlayerContext().minecraft())) {
+                return baritone;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Provides the {@link IBaritone} instance for the player with the specified connection.
+     *
+     * @param connection The connection
+     * @return The {@link IBaritone} instance.
+     */
+    default IBaritone getBaritoneForConnection(NetHandlerPlayClient connection) {
+        for (IBaritone baritone : this.getAllBaritones()) {
+            final EntityPlayerSP player = baritone.getPlayerContext().player();
+            if (player != null && player.connection == connection) {
                 return baritone;
             }
         }
