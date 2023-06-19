@@ -73,6 +73,13 @@ public interface IGameEventListener {
     void onChunkEvent(ChunkEvent event);
 
     /**
+     * Runs after a single or multi block change packet is received and processed.
+     *
+     * @param event The event
+     */
+    void onBlockChange(BlockChangeEvent event);
+
+    /**
      * Runs once per world render pass. Two passes are made when {@link GameSettings#anaglyph} is on.
      * <p>
      * <b>Note:</b> {@link GameSettings#anaglyph} has been removed in Minecraft 1.13

@@ -19,9 +19,9 @@ package baritone.behavior;
 
 import baritone.Baritone;
 import baritone.api.behavior.IElytraBehavior;
+import baritone.api.event.events.BlockChangeEvent;
 import baritone.api.event.events.ChunkEvent;
 import baritone.api.event.events.TickEvent;
-import baritone.api.event.events.type.EventState;
 import baritone.api.utils.*;
 import baritone.behavior.elytra.NetherPathfinderContext;
 import baritone.behavior.elytra.UnpackedSegment;
@@ -33,6 +33,7 @@ import net.minecraft.entity.item.EntityFireworkRocket;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.AxisAlignedBB;
@@ -54,7 +55,8 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
     private static final long NETHER_SEED = 146008555100680L;
 
     // Used exclusively for PathRenderer
-    public List<Pair<Vec3d, Vec3d>> lines;
+    public List<Pair<Vec3d, Vec3d>> clearLines;
+    public List<Pair<Vec3d, Vec3d>> blockedLines;
     public BlockPos aimPos;
     public List<BetterBlockPos> visiblePath;
 
@@ -67,7 +69,8 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
     public ElytraBehavior(Baritone baritone) {
         super(baritone);
         this.context = new NetherPathfinderContext(NETHER_SEED);
-        this.lines = new ArrayList<>();
+        this.clearLines = new ArrayList<>();
+        this.blockedLines = new ArrayList<>();
         this.visiblePath = Collections.emptyList();
         this.pathManager = new PathManager();
     }
@@ -79,7 +82,6 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         private boolean completePath;
 
         private int playerNear;
-        private int goingTo;
 
         private boolean recalculating;
 
@@ -168,16 +170,15 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
 
         private Vec3d pathAt(int i) {
             return new Vec3d(
-                    this.path.get(i).x,
-                    this.path.get(i).y,
-                    this.path.get(i).z
+                    this.path.get(i).x + 0.000123,
+                    this.path.get(i).y + 0.000456,
+                    this.path.get(i).z + 0.000789
             );
         }
 
         public void clear() {
             this.path = Collections.emptyList();
             this.playerNear = 0;
-            this.goingTo = 0;
             this.completePath = true;
         }
 
@@ -185,7 +186,6 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
             this.path = segment.collect();
             this.removeBacktracks();
             this.playerNear = 0;
-            this.goingTo = 0;
             this.completePath = segment.isFinished();
         }
 
@@ -195,14 +195,6 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
 
         public int getNear() {
             return this.playerNear;
-        }
-
-        public void setGoingTo(int index) {
-            this.goingTo = index;
-        }
-
-        public BetterBlockPos goingTo() {
-            return this.path.get(this.goingTo);
         }
 
         // mickey resigned
@@ -300,10 +292,17 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
 
     @Override
     public void onChunkEvent(ChunkEvent event) {
-        if (event.getState() == EventState.POST && event.getType().isPopulate()) {
+        if (event.isPostPopulate()) {
             final Chunk chunk = ctx.world().getChunk(event.getX(), event.getZ());
             this.context.queueForPacking(chunk);
         }
+    }
+
+    @Override
+    public void onBlockChange(BlockChangeEvent event) {
+        event.getAffectedChunks().stream()
+                .map(pos -> ctx.world().getChunk(pos.x, pos.z))
+                .forEach(this.context::queueForPacking);
     }
 
     public void path(BlockPos destination) {
@@ -342,12 +341,15 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         }
         if (isPaused()) return;
         this.lines.clear();
+        this.clearLines.clear();
+        this.blockedLines.clear();
 
         final List<BetterBlockPos> path = this.pathManager.getPath();
         if (path.isEmpty()) {
             return;
         }
 
+        this.bsi = new BlockStateInterface(ctx);
         this.pathManager.tick();
 
         final int playerNear = this.pathManager.getNear();
@@ -371,6 +373,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
 
         final Vec3d start = ctx.playerFeetAsVec();
         final boolean firework = isFireworkActive();
+        BetterBlockPos goingTo = null;
         boolean forceUseFirework = false;
         this.sinceFirework++;
 
@@ -414,8 +417,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
                             continue;
                         }
                         forceUseFirework = pitch.second();
-
-                        this.pathManager.setGoingTo(i);
+                        goingTo = path.get(i);
                         this.aimPos = path.get(i).add(0, dy, 0);
                         baritone.getLookBehavior().updateTarget(new Rotation(yaw, pitch.first()), false);
                         break outermost;
@@ -428,7 +430,6 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
             }
         }
 
-        final BetterBlockPos goingTo = this.pathManager.goingTo();
         final boolean useOnDescend = !Baritone.settings().conserveFireworks.value || ctx.player().posY < goingTo.y + 5;
         final double currentSpeed = new Vec3d(
                 ctx.player().motionX,
@@ -533,8 +534,18 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
     }
 
     private boolean clearView(Vec3d start, Vec3d dest) {
-        lines.add(new Pair<>(start, dest));
-        return !rayTraceBlocks(ctx.world(), start.x, start.y, start.z, dest.x, dest.y, dest.z);
+        boolean oxy = !rayTraceBlocks(start.x, start.y, start.z, dest.x, dest.y, dest.z);
+        boolean meow = !rayTraceBlocks(start, dest);
+        if (oxy != meow) {
+            logDirect(start + " " + dest + " " + oxy + " " + meow);
+        }
+        if (oxy) {
+            clearLines.add(new Pair<>(start, dest));
+            return true;
+        } else {
+            blockedLines.add(new Pair<>(start, dest));
+            return false;
+        }
     }
 
     private Pair<Float, Boolean> solvePitch(Vec3d goalDirection, int steps, int relaxation, boolean currentlyBoosted) {
@@ -564,7 +575,6 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         Float bestPitch = null;
         double bestDot = Double.NEGATIVE_INFINITY;
         Vec3d motion = new Vec3d(ctx.player().motionX, ctx.player().motionY, ctx.player().motionZ);
-        BlockStateInterface bsi = new BlockStateInterface(ctx);
         float minPitch = desperate ? -90 : Math.max(good.getPitch() - Baritone.settings().elytraPitchRange.value, -89);
         float maxPitch = desperate ? 90 : Math.min(good.getPitch() + Baritone.settings().elytraPitchRange.value, 89);
         outer:
@@ -579,7 +589,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
                 for (int x = MathHelper.floor(Math.min(actualPosition.x, actualPositionPrevTick.x) - 0.31); x <= Math.max(actualPosition.x, actualPositionPrevTick.x) + 0.31; x++) {
                     for (int y = MathHelper.floor(Math.min(actualPosition.y, actualPositionPrevTick.y) - 0.2); y <= Math.max(actualPosition.y, actualPositionPrevTick.y) + 1; y++) {
                         for (int z = MathHelper.floor(Math.min(actualPosition.z, actualPositionPrevTick.z) - 0.31); z <= Math.max(actualPosition.z, actualPositionPrevTick.z) + 0.31; z++) {
-                            if (!passable(bsi.get0(x, y, z))) {
+                            if (!this.passable(x, y, z)) {
                                 continue outer;
                             }
                         }
@@ -595,6 +605,12 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
             }
         }
         return bestPitch;
+    }
+
+    private BlockStateInterface bsi;
+
+    public boolean passable(int x, int y, int z) {
+        return passable(this.bsi.get0(x, y, z));
     }
 
     public static boolean passable(IBlockState state) {
@@ -652,20 +668,13 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         return new Vec3d(motionX, motionY, motionZ);
     }
 
-    private final BlockPos.MutableBlockPos mutableRaytraceBlockPos = new BlockPos.MutableBlockPos();
-
-    private boolean rayTraceBlocks(final World world,
-                                   final double startX, final double startY, final double startZ,
+    private boolean rayTraceBlocks(final double startX, final double startY, final double startZ,
                                    final double endX, final double endY, final double endZ) {
         int voxelCurrX = fastFloor(startX);
         int voxelCurrY = fastFloor(startY);
         int voxelCurrZ = fastFloor(startZ);
 
-        Chunk prevChunk;
-        IBlockState currentState = (prevChunk = cachedChunk(world, this.mutableRaytraceBlockPos.setPos(voxelCurrX, voxelCurrY, voxelCurrZ), null)).getBlockState(this.mutableRaytraceBlockPos);
-
-        // This is true if player is standing inside of block.
-        if (!passable(currentState)) {
+        if (!this.passable(voxelCurrX, voxelCurrY, voxelCurrZ)) {
             return true;
         }
 
@@ -741,8 +750,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
                 voxelCurrZ = (fastFloor(currPosZ) - zFloorOffset);
             }
 
-            currentState = (prevChunk = cachedChunk(world, this.mutableRaytraceBlockPos.setPos(voxelCurrX, voxelCurrY, voxelCurrZ), prevChunk)).getBlockState(this.mutableRaytraceBlockPos);
-            if (!passable(currentState)) {
+            if (!this.passable(voxelCurrX, voxelCurrY, voxelCurrZ)) {
                 return true;
             }
         }
@@ -756,15 +764,98 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         return ((int) (v + FLOOR_DOUBLE_D)) - FLOOR_DOUBLE_I;
     }
 
-    private static Chunk cachedChunk(final World world,
-                                     final BlockPos pos,
-                                     final Chunk prevLookup) {
-        final int chunkX = pos.getX() >> 4;
-        final int chunkZ = pos.getZ() >> 4;
-        if (prevLookup != null && prevLookup.x == chunkX && prevLookup.z == chunkZ) {
-            return prevLookup;
+    private boolean rayTraceBlocks(Vec3d start, Vec3d end) {
+        int x1 = MathHelper.floor(end.x);
+        int y1 = MathHelper.floor(end.y);
+        int z1 = MathHelper.floor(end.z);
+        int x2 = MathHelper.floor(start.x);
+        int y2 = MathHelper.floor(start.y);
+        int z2 = MathHelper.floor(start.z);
+        BlockPos blockpos = new BlockPos(x2, y2, z2);
+        IBlockState iblockstate = ctx.world().getBlockState(blockpos);
+        if (!passable(iblockstate)) {
+            return true;
         }
-        return world.getChunk(chunkX, chunkZ);
+        int steps = 200;
+        while (steps-- >= 0) {
+            if (Double.isNaN(start.x) || Double.isNaN(start.y) || Double.isNaN(start.z)) {
+                return false;
+            }
+            if (x2 == x1 && y2 == y1 && z2 == z1) {
+                return false;
+            }
+            boolean hitX = true;
+            boolean hitY = true;
+            boolean hitZ = true;
+            double nextX = 999.0D;
+            double nextY = 999.0D;
+            double nextZ = 999.0D;
+            if (x1 > x2) {
+                nextX = (double) x2 + 1.0D;
+            } else if (x1 < x2) {
+                nextX = (double) x2 + 0.0D;
+            } else {
+                hitX = false;
+            }
+            if (y1 > y2) {
+                nextY = (double) y2 + 1.0D;
+            } else if (y1 < y2) {
+                nextY = (double) y2 + 0.0D;
+            } else {
+                hitY = false;
+            }
+            if (z1 > z2) {
+                nextZ = (double) z2 + 1.0D;
+            } else if (z1 < z2) {
+                nextZ = (double) z2 + 0.0D;
+            } else {
+                hitZ = false;
+            }
+            double stepX = 999.0D;
+            double stepY = 999.0D;
+            double stepZ = 999.0D;
+            double dirX = end.x - start.x;
+            double dirY = end.y - start.y;
+            double dirZ = end.z - start.z;
+            if (hitX) {
+                stepX = (nextX - start.x) / dirX;
+            }
+            if (hitY) {
+                stepY = (nextY - start.y) / dirY;
+            }
+            if (hitZ) {
+                stepZ = (nextZ - start.z) / dirZ;
+            }
+            if (stepX == -0.0D) {
+                stepX = -1.0E-4D;
+            }
+            if (stepY == -0.0D) {
+                stepY = -1.0E-4D;
+            }
+            if (stepZ == -0.0D) {
+                stepZ = -1.0E-4D;
+            }
+            EnumFacing dir;
+            if (stepX < stepY && stepX < stepZ) {
+                dir = x1 > x2 ? EnumFacing.WEST : EnumFacing.EAST;
+                start = new Vec3d(nextX, start.y + dirY * stepX, start.z + dirZ * stepX);
+            } else if (stepY < stepZ) {
+                dir = y1 > y2 ? EnumFacing.DOWN : EnumFacing.UP;
+                start = new Vec3d(start.x + dirX * stepY, nextY, start.z + dirZ * stepY);
+            } else {
+                dir = z1 > z2 ? EnumFacing.NORTH : EnumFacing.SOUTH;
+                start = new Vec3d(start.x + dirX * stepZ, start.y + dirY * stepZ, nextZ);
+            }
+            x2 = MathHelper.floor(start.x) - (dir == EnumFacing.EAST ? 1 : 0);
+            y2 = MathHelper.floor(start.y) - (dir == EnumFacing.UP ? 1 : 0);
+            z2 = MathHelper.floor(start.z) - (dir == EnumFacing.SOUTH ? 1 : 0);
+            blockpos = new BlockPos(x2, y2, z2);
+            IBlockState iblockstate1 = ctx.world().getBlockState(blockpos);
+            if (!passable(iblockstate1)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
 

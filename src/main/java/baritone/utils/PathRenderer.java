@@ -108,11 +108,21 @@ public final class PathRenderer implements IRenderer {
         if (elytra.aimPos != null) {
             drawGoal(ctx.player(), new GoalBlock(elytra.aimPos), partialTicks, Color.GREEN);
         }
-        if (!elytra.lines.isEmpty() && Baritone.settings().renderRaytraces.value) {
+        if (!elytra.clearLines.isEmpty() && Baritone.settings().renderRaytraces.value) {
+            IRenderer.startLines(Color.GREEN, settings.pathRenderLineWidthPixels.value, settings.renderPathIgnoreDepth.value);
+            boolean orig = settings.renderPathAsLine.value;
+            settings.renderPathAsLine.value = true;
+            for (Pair<Vec3d, Vec3d> line : elytra.clearLines) {
+                emitLine(line.first().x, line.first().y, line.first().z, line.second().x, line.second().y, line.second().z);
+            }
+            settings.renderPathAsLine.value = orig;
+            IRenderer.endLines(settings.renderPathIgnoreDepth.value);
+        }
+        if (!elytra.blockedLines.isEmpty() && Baritone.settings().renderRaytraces.value) {
             IRenderer.startLines(Color.BLUE, settings.pathRenderLineWidthPixels.value, settings.renderPathIgnoreDepth.value);
             boolean orig = settings.renderPathAsLine.value;
             settings.renderPathAsLine.value = true;
-            for (Pair<Vec3d, Vec3d> line : elytra.lines) {
+            for (Pair<Vec3d, Vec3d> line : elytra.blockedLines) {
                 emitLine(line.first().x, line.first().y, line.first().z, line.second().x, line.second().y, line.second().z);
             }
             settings.renderPathAsLine.value = orig;
