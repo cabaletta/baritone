@@ -340,7 +340,6 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
             return;
         }
         if (isPaused()) return;
-        this.lines.clear();
         this.clearLines.clear();
         this.blockedLines.clear();
 
