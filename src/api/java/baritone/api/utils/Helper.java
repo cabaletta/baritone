@@ -18,8 +18,10 @@
 package baritone.api.utils;
 
 import baritone.api.BaritoneAPI;
+import baritone.api.Settings;
 import baritone.api.utils.gui.BaritoneToast;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.GuiMessageTag;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -47,6 +49,11 @@ public interface Helper {
      * Instance of the game
      */
     Minecraft mc = Minecraft.getInstance();
+
+    /**
+     * The tag to assign to chat messages when {@link Settings#useMessageTag} is {@code true}.
+     */
+    GuiMessageTag MESSAGE_TAG = new GuiMessageTag(0xFF55FF, null, Component.literal("Baritone message."), "Baritone");
 
     static Component getPrefix() {
         // Inner text component
@@ -149,24 +156,27 @@ public interface Helper {
         }
         // We won't log debug chat into toasts
         // Because only a madman would want that extreme spam -_-
-        logDirect(message, false);
+        logDirect(message, false, BaritoneAPI.getSettings().useMessageTag.value);
     }
 
     /**
      * Send components to chat with the [Baritone] prefix
      *
      * @param logAsToast Whether to log as a toast notification
+     * @param useMessageTag Whether to use a message tag instead of a prefix
      * @param components The components to send
      */
-    default void logDirect(boolean logAsToast, Component... components) {
+    default void logDirect(boolean logAsToast, boolean useMessageTag, Component... components) {
         MutableComponent component = Component.literal("");
-        component.append(getPrefix());
+        if (!logAsToast && !useMessageTag) {
+            component.append(getPrefix());
+        }
         component.append(Component.literal(" "));
         Arrays.asList(components).forEach(component::append);
         if (logAsToast) {
             logToast(getPrefix(), component);
         } else {
-            mc.execute(() -> BaritoneAPI.getSettings().logger.value.accept(component));
+            mc.execute(() -> BaritoneAPI.getSettings().logger.value.accept(component, useMessageTag ? MESSAGE_TAG : null));
         }
     }
 
@@ -176,22 +186,23 @@ public interface Helper {
      * @param components The components to send
      */
     default void logDirect(Component... components) {
-        logDirect(BaritoneAPI.getSettings().logAsToast.value, components);
+        logDirect(BaritoneAPI.getSettings().logAsToast.value, BaritoneAPI.getSettings().useMessageTag.value, components);
     }
 
     /**
      * Send a message to chat regardless of chatDebug (should only be used for critically important messages, or as a
      * direct response to a chat command)
      *
-     * @param message    The message to display in chat
-     * @param color      The color to print that message in
-     * @param logAsToast Whether to log as a toast notification
+     * @param message       The message to display in chat
+     * @param color         The color to print that message in
+     * @param logAsToast    Whether to log as a toast notification
+     * @param useMessageTag Whether to use a message tag instead of a prefix
      */
-    default void logDirect(String message, ChatFormatting color, boolean logAsToast) {
+    default void logDirect(String message, ChatFormatting color, boolean logAsToast, boolean useMessageTag) {
         Stream.of(message.split("\n")).forEach(line -> {
             MutableComponent component = Component.literal(line.replace("\t", "    "));
             component.setStyle(component.getStyle().withColor(color));
-            logDirect(logAsToast, component);
+            logDirect(logAsToast, useMessageTag, component);
         });
     }
 
@@ -203,18 +214,19 @@ public interface Helper {
      * @param color   The color to print that message in
      */
     default void logDirect(String message, ChatFormatting color) {
-        logDirect(message, color, BaritoneAPI.getSettings().logAsToast.value);
+        logDirect(message, color, BaritoneAPI.getSettings().logAsToast.value, BaritoneAPI.getSettings().useMessageTag.value);
     }
 
     /**
      * Send a message to chat regardless of chatDebug (should only be used for critically important messages, or as a
      * direct response to a chat command)
      *
-     * @param message    The message to display in chat
-     * @param logAsToast Whether to log as a toast notification
+     * @param message       The message to display in chat
+     * @param logAsToast    Whether to log as a toast notification
+     * @param useMessageTag Whether to use a message tag instead of a prefix
      */
-    default void logDirect(String message, boolean logAsToast) {
-        logDirect(message, ChatFormatting.GRAY, logAsToast);
+    default void logDirect(String message, boolean logAsToast, boolean useMessageTag) {
+        logDirect(message, ChatFormatting.GRAY, logAsToast, useMessageTag);
     }
 
     /**
@@ -224,6 +236,6 @@ public interface Helper {
      * @param message The message to display in chat
      */
     default void logDirect(String message) {
-        logDirect(message, BaritoneAPI.getSettings().logAsToast.value);
+        logDirect(message, BaritoneAPI.getSettings().logAsToast.value, BaritoneAPI.getSettings().useMessageTag.value);
     }
 }
