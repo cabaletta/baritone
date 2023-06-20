@@ -539,7 +539,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         final boolean clear;
         if (!ignoreLava) {
             // if start == dest then the cpp raytracer dies
-            clear = start.equals(dest) || !this.context.raytrace(start.x, start.y, start.z, dest.x, dest.y, dest.z);
+            clear = start.equals(dest) || this.context.raytrace(start.x, start.y, start.z, dest.x, dest.y, dest.z);
         } else {
             clear = ctx.world().rayTraceBlocks(start, dest, false, false, false) == null;
         }

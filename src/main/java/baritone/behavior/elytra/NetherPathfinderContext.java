@@ -62,26 +62,24 @@ public final class NetherPathfinderContext {
                 ), this.executor);
     }
 
+    /**
+     * Performs a raytrace from the given start position to the given end position, returning {@code true} if there is
+     * visibility between the two points.
+     *
+     * @param startX The start X coordinate
+     * @param startY The start Y coordinate
+     * @param startZ The start Z coordinate
+     * @param endX The end X coordinate
+     * @param endY The end Y coordinate
+     * @param endZ The end Z coordinate
+     * @return {@code true} if there is visibility between the points
+     */
     public boolean raytrace(final double startX, final double startY, final double startZ,
                             final double endX, final double endY, final double endZ) {
-        final boolean[] hitOut = new boolean[1];
-        NetherPathfinder.raytrace(
-                this.context,
-                true,
-                1,
-                new double[] { startX, startY, startZ },
-                new double[] { endX, endY, endZ },
-                hitOut,
-                null
-        );
-        return hitOut[0];
+        return NetherPathfinder.isVisible(this.context, true, startX, startY, startZ, endX, endY, endZ);
     }
 
-    public void raytrace(final double[] src, final double[] dst, final boolean[] hitOut) {
-        NetherPathfinder.raytrace(this.context, true, hitOut.length, src, dst, hitOut, null);
-    }
-
-    public boolean raytrace(final int count, final double[] src, final double[] dst, int visibility) {
+    public boolean raytrace(final int count, final double[] src, final double[] dst, final int visibility) {
         switch (visibility) {
             case Visibility.ALL:
                 return NetherPathfinder.isVisibleMulti(this.context, true, count, src, dst, false);
