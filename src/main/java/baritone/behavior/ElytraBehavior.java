@@ -50,10 +50,6 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
      */
     private static final long NETHER_SEED = 146008555100680L;
 
-    private static final long MS_IN_NANOS = 1_000_000L;
-    private static final long TICK_IN_MS = 50L;
-    private static final long TICK_IN_NANOS = TICK_IN_MS * MS_IN_NANOS;
-
     // Used exclusively for PathRenderer
     public List<Pair<Vec3d, Vec3d>> clearLines;
     public List<Pair<Vec3d, Vec3d>> blockedLines;
@@ -82,6 +78,9 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         private List<BetterBlockPos> path;
         private boolean completePath;
         private boolean recalculating;
+
+        private int maxPlayerNear;
+        private int ticksNearUnchanged;
         private int playerNear;
 
         public PathManager() {
@@ -91,7 +90,15 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
 
         public void tick() {
             // Recalculate closest path node
+            final int prevMaxNear = this.maxPlayerNear;
             this.playerNear = this.calculateNear(this.playerNear);
+            this.maxPlayerNear = Math.max(this.maxPlayerNear, this.playerNear);
+
+            if (this.maxPlayerNear == prevMaxNear) {
+                this.ticksNearUnchanged++;
+            } else {
+                this.ticksNearUnchanged = 0;
+            }
 
             // Obstacles are more important than an incomplete path, handle those first.
             this.pathfindAroundObstacles();
@@ -118,23 +125,16 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
                     });
         }
 
-        public void pathRecalcSegment(final int blockedAt, final int upToIncl) {
+        public CompletableFuture<Void> pathRecalcSegment(final int upToIncl) {
             if (this.recalculating) {
-                return;
+                throw new IllegalStateException("already recalculating");
             }
 
             this.recalculating = true;
             final List<BetterBlockPos> after = this.path.subList(upToIncl, this.path.size());
             final boolean complete = this.completePath;
-            final BetterBlockPos blockage = this.path.get(blockedAt);
-            final long start = System.nanoTime();
 
-            this.path0(ctx.playerFeet(), this.path.get(upToIncl), segment -> segment.append(after.stream(), complete))
-                    .thenRun(() -> {
-                        final int recompute = this.path.size() - after.size() - 1;
-                        final double distance = this.pathAt(0).distanceTo(this.pathAt(recompute)); // in spirit same as ctx.playerFeet().distanceTo(this.path.get(upToIncl)), but, thread safe (those could have changed in the meantime)
-                        logDirect(String.format("Recalculated segment around path blockage near %s %s %s (next %.1f blocks in %.4f seconds)", SettingsUtil.maybeCensor(blockage.x), SettingsUtil.maybeCensor(blockage.y), SettingsUtil.maybeCensor(blockage.z), distance, (System.nanoTime() - start) / 1e9d));
-                    })
+            return this.path0(ctx.playerFeet(), this.path.get(upToIncl), segment -> segment.append(after.stream(), complete))
                     .whenComplete((result, ex) -> {
                         this.recalculating = false;
                         if (ex != null) {
@@ -185,13 +185,17 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
             this.completePath = true;
             this.recalculating = false;
             this.playerNear = 0;
+            this.ticksNearUnchanged = 0;
+            this.maxPlayerNear = 0;
         }
 
         private void setPath(final UnpackedSegment segment) {
             this.path = segment.collect();
             this.removeBacktracks();
-            this.playerNear = 0;
             this.completePath = segment.isFinished();
+            this.playerNear = 0;
+            this.ticksNearUnchanged = 0;
+            this.maxPlayerNear = 0;
         }
 
         public List<BetterBlockPos> getPath() {
@@ -228,11 +232,34 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
                 // we're in a wall
                 return; // previous iterations of this function SHOULD have fixed this by now :rage_cat:
             }
+
+            if (this.ticksNearUnchanged > 100) {
+                this.pathRecalcSegment(rangeEndExcl - 1)
+                        .thenRun(() -> {
+                            logDirect("Recalculating segment, no progress in last 100 ticks");
+                        });
+                this.ticksNearUnchanged = 0;
+                return;
+            }
+
             for (int i = rangeStartIncl; i < rangeEndExcl - 1; i++) {
                 if (!clearView(pathAt(i), pathAt(i + 1), false)) {
                     // obstacle. where do we return to pathing?
                     // find the next valid segment
-                    this.pathRecalcSegment(i, rangeEndExcl - 1);
+                    final BetterBlockPos blockage = this.path.get(i);
+                    final double distance = Math.sqrt(ctx.playerFeet().distanceSq(this.path.get(rangeEndExcl - 1)));
+
+                    final long start = System.nanoTime();
+                    this.pathRecalcSegment(rangeEndExcl - 1)
+                            .thenRun(() -> {
+                                logDirect(String.format("Recalculated segment around path blockage near %s %s %s (next %.1f blocks in %.4f seconds)",
+                                        SettingsUtil.maybeCensor(blockage.x),
+                                        SettingsUtil.maybeCensor(blockage.y),
+                                        SettingsUtil.maybeCensor(blockage.z),
+                                        distance,
+                                        (System.nanoTime() - start) / 1e9d
+                                ));
+                            });
                     return;
                 }
             }
