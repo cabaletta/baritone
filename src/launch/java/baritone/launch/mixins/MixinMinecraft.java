@@ -38,6 +38,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.Slice;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
@@ -69,9 +70,15 @@ public class MixinMinecraft {
                     value = "FIELD",
                     opcode = Opcodes.GETFIELD,
                     target = "net/minecraft/client/Minecraft.currentScreen:Lnet/minecraft/client/gui/GuiScreen;",
-                    ordinal = 5,
-                    shift = At.Shift.BY,
-                    by = -3
+                    ordinal = 0,
+                    shift = At.Shift.BEFORE
+            ),
+            slice = @Slice(
+                    from = @At(
+                            value = "FIELD",
+                            opcode = Opcodes.PUTFIELD,
+                            target = "net/minecraft/client/Minecraft.leftClickCounter:I"
+                    )
             )
     )
     private void runTick(CallbackInfo ci) {
