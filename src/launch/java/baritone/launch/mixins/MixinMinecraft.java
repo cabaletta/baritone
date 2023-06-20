@@ -35,6 +35,7 @@ import net.minecraft.util.math.BlockPos;
 import org.spongepowered.asm.lib.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -53,8 +54,12 @@ public class MixinMinecraft {
 
     @Shadow
     public EntityPlayerSP player;
+
     @Shadow
     public WorldClient world;
+
+    @Unique
+    private BiFunction<EventState, TickEvent.Type, TickEvent> tickProvider;
 
     @Inject(
             method = "init",
@@ -82,16 +87,33 @@ public class MixinMinecraft {
             )
     )
     private void runTick(CallbackInfo ci) {
-        final BiFunction<EventState, TickEvent.Type, TickEvent> tickProvider = TickEvent.createNextProvider();
+        this.tickProvider = TickEvent.createNextProvider();
 
         for (IBaritone baritone : BaritoneAPI.getProvider().getAllBaritones()) {
-
             TickEvent.Type type = baritone.getPlayerContext().player() != null && baritone.getPlayerContext().world() != null
                     ? TickEvent.Type.IN
                     : TickEvent.Type.OUT;
-
-            baritone.getGameEventHandler().onTick(tickProvider.apply(EventState.PRE, type));
+            baritone.getGameEventHandler().onTick(this.tickProvider.apply(EventState.PRE, type));
         }
+    }
+
+    @Inject(
+            method = "runTick",
+            at = @At("RETURN")
+    )
+    private void postRunTick() {
+        if (this.tickProvider == null) {
+            return;
+        }
+
+        for (IBaritone baritone : BaritoneAPI.getProvider().getAllBaritones()) {
+            TickEvent.Type type = baritone.getPlayerContext().player() != null && baritone.getPlayerContext().world() != null
+                    ? TickEvent.Type.IN
+                    : TickEvent.Type.OUT;
+            baritone.getGameEventHandler().onPostTick(this.tickProvider.apply(EventState.POST, type));
+        }
+
+        this.tickProvider = null;
     }
 
     @Inject(

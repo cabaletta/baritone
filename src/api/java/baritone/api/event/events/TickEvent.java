@@ -18,9 +18,18 @@
 package baritone.api.event.events;
 
 import baritone.api.event.events.type.EventState;
+import net.minecraft.client.Minecraft;
 
 import java.util.function.BiFunction;
 
+/**
+ * Called on and after each game tick of the primary {@link Minecraft} instance and dispatched to all Baritone
+ * instances.
+ * <p>
+ * When {@link #state} is {@link EventState#PRE}, the event is being called just prior to when the current in-game
+ * screen is ticked. When {@link #state} is {@link EventState#POST}, the event is being called at the very end
+ * of the {@link Minecraft#runTick()} method.
+ */
 public final class TickEvent {
 
     private static int overallTickCount;

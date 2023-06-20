@@ -42,6 +42,14 @@ public interface IGameEventListener {
     void onTick(TickEvent event);
 
     /**
+     * Run once per game tick after the tick is completed
+     *
+     * @param event The event
+     * @see Minecraft#runTick()
+     */
+    void onPostTick(TickEvent event);
+
+    /**
      * Run once per game tick from before and after the player rotation is sent to the server.
      *
      * @param event The event

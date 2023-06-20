@@ -63,6 +63,11 @@ public final class GameEventHandler implements IEventBus, Helper {
     }
 
     @Override
+    public void onPostTick(TickEvent event) {
+        listeners.forEach(l -> l.onPostTick(event));
+    }
+
+    @Override
     public final void onPlayerUpdate(PlayerUpdateEvent event) {
         listeners.forEach(l -> l.onPlayerUpdate(event));
     }
