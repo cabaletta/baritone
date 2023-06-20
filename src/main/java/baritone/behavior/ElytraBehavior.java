@@ -21,6 +21,7 @@ import baritone.Baritone;
 import baritone.api.behavior.IElytraBehavior;
 import baritone.api.event.events.BlockChangeEvent;
 import baritone.api.event.events.ChunkEvent;
+import baritone.api.event.events.PacketEvent;
 import baritone.api.event.events.TickEvent;
 import baritone.api.utils.*;
 import baritone.behavior.elytra.NetherPathfinderContext;
@@ -33,9 +34,8 @@ import net.minecraft.entity.item.EntityFireworkRocket;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.network.play.server.SPacketPlayerPosLook;
 import net.minecraft.util.EnumHand;
-import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.*;
 import net.minecraft.world.chunk.Chunk;
 
@@ -50,6 +50,10 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
      */
     private static final long NETHER_SEED = 146008555100680L;
 
+    private static final long MS_IN_NANOS = 1_000_000L;
+    private static final long TICK_IN_MS = 50L;
+    private static final long TICK_IN_NANOS = TICK_IN_MS * MS_IN_NANOS;
+
     // Used exclusively for PathRenderer
     public List<Pair<Vec3d, Vec3d>> clearLines;
     public List<Pair<Vec3d, Vec3d>> blockedLines;
@@ -61,6 +65,8 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
     private final PathManager pathManager;
     private int sinceFirework;
     private BlockStateInterface bsi;
+
+    private long lastSetBack = Long.MIN_VALUE;
 
     public ElytraBehavior(Baritone baritone) {
         super(baritone);
@@ -302,6 +308,13 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
     }
 
     @Override
+    public void onReceivePacket(PacketEvent event) {
+        if (event.getPacket() instanceof SPacketPlayerPosLook) {
+            this.lastSetBack = System.nanoTime();
+        }
+    }
+
+    @Override
     public void pathTo(BlockPos destination) {
         this.pathManager.pathToDestination(destination);
     }
@@ -312,6 +325,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         this.pathManager.clear();
         this.aimPos = null;
         this.sinceFirework = 0;
+        this.lastSetBack = Long.MIN_VALUE;
     }
 
     @Override
@@ -415,18 +429,29 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
             }
         }
 
+        this.tickUseFireworks(start, firework, goingTo, forceUseFirework);
+    }
+
+    private void tickUseFireworks(final Vec3d start, final boolean firework, final BetterBlockPos goingTo, final boolean forceUseFirework) {
+        final long now = System.nanoTime();
+        final long timeSinceLastSetback = now - this.lastSetBack;
+        if (timeSinceLastSetback < Baritone.settings().elytraFireworkSetbackUseDelay.value * TICK_IN_NANOS) {
+            logDebug("waiting for elytraFireworkSetbackUseDelay: " + (timeSinceLastSetback / TICK_IN_NANOS));
+            return;
+        }
         final boolean useOnDescend = !Baritone.settings().conserveFireworks.value || ctx.player().posY < goingTo.y + 5;
         final double currentSpeed = new Vec3d(
                 ctx.player().motionX,
                 // ignore y component if we are BOTH below where we want to be AND descending
                 ctx.player().posY < goingTo.y ? Math.max(0, ctx.player().motionY) : ctx.player().motionY,
                 ctx.player().motionZ
-        ).length();
+        ).lengthSquared();
 
+        final double elytraFireworkSpeed = Baritone.settings().elytraFireworkSpeed.value;
         if (sinceFirework > 10 && (forceUseFirework || (!firework
                 && useOnDescend
                 && (ctx.player().posY < goingTo.y - 5 || start.distanceTo(new Vec3d(goingTo.x + 0.5, ctx.player().posY, goingTo.z + 0.5)) > 5) // UGH!!!!!!!
-                && currentSpeed < Baritone.settings().elytraFireworkSpeed.value))
+                && currentSpeed < elytraFireworkSpeed * elytraFireworkSpeed))
         ) {
             // Prioritize boosting fireworks over regular ones
             // TODO: Take the minimum boost time into account?
