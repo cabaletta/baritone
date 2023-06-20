@@ -406,16 +406,32 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         }
 
         final Vec3d start = ctx.playerFeetAsVec();
-        final boolean firework = isFireworkActive();
-        BetterBlockPos goingTo = null;
+        final boolean currentlyBoosted = this.isFireworkActive();
+
+        final Solution solution = this.solveAngles(path, playerNear, start, currentlyBoosted);
+        if (solution == null) {
+            logDirect("no solution");
+            return;
+        }
+
+        baritone.getLookBehavior().updateTarget(solution.rotation, false);
+
+        if (!solution.solvedPitch) {
+            logDirect("no pitch solution, probably gonna crash in a few ticks LOL!!!");
+            return;
+        }
+
+        this.tickUseFireworks(start, currentlyBoosted, solution.goingTo, solution.forceUseFirework);
+    }
+
+    private Solution solveAngles(final List<BetterBlockPos> path, final int playerNear, final Vec3d start, final boolean currentlyBoosted) {
         final boolean isInLava = ctx.player().isInLava();
         Solution solution = null;
 
-        outermost:
         for (int relaxation = 0; relaxation < 3; relaxation++) { // try for a strict solution first, then relax more and more (if we're in a corner or near some blocks, it will have to relax its constraints a bit)
-            int[] heights = firework ? new int[]{20, 10, 5, 0} : new int[]{0}; // attempt to gain height, if we can, so as not to waste the boost
+            int[] heights = currentlyBoosted ? new int[]{20, 10, 5, 0} : new int[]{0}; // attempt to gain height, if we can, so as not to waste the boost
             float[] interps = new float[] {1.0f, 0.75f, 0.5f, 0.25f};
-            int steps = relaxation < 2 ? firework ? 5 : Baritone.settings().elytraSimulationTicks.value : 3;
+            int steps = relaxation < 2 ? currentlyBoosted ? 5 : Baritone.settings().elytraSimulationTicks.value : 3;
             int lookahead = relaxation == 0 ? 2 : 3; // ideally this would be expressed as a distance in blocks, rather than a number of voxel steps
             //int minStep = Math.max(0, playerNear - relaxation);
             int minStep = playerNear;
@@ -456,36 +472,23 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
                         if (isClear(start, dest, grow, isInLava)) {
                             final float yaw = RotationUtils.calcRotationFromVec3d(start, dest, ctx.playerRotations()).getYaw();
 
-                            final Pair<Float, Boolean> pitch = this.solvePitch(dest.subtract(start), steps, relaxation, firework, isInLava);
+                            final Pair<Float, Boolean> pitch = this.solvePitch(dest.subtract(start), steps, relaxation, currentlyBoosted, isInLava);
                             if (pitch.first() == null) {
-                                solution = new Solution(new Rotation(yaw, ctx.playerRotations().getPitch()), false, false);
+                                solution = new Solution(new Rotation(yaw, ctx.playerRotations().getPitch()), null, false, false);
                                 continue;
                             }
-                            goingTo = new BetterBlockPos(dest.x, dest.y, dest.z);
+
+                            final BetterBlockPos goingTo = new BetterBlockPos(dest.x, dest.y, dest.z);
                             this.aimPos = goingTo;
 
-                            // A solution was found with yaw AND pitch, break out of the loop to use it
-                            solution = new Solution(new Rotation(yaw, pitch.first()), true, pitch.second());
-                            break outermost;
+                            // A solution was found with yaw AND pitch, so just immediately return it.
+                            return new Solution(new Rotation(yaw, pitch.first()), goingTo, true, pitch.second());
                         }
                     }
                 }
             }
         }
-
-        if (solution == null) {
-            logDirect("no solution");
-            return;
-        }
-
-        baritone.getLookBehavior().updateTarget(solution.rotation, false);
-
-        if (!solution.solvedPitch) {
-            logDirect("no pitch solution, probably gonna crash in a few ticks LOL!!!");
-            return;
-        }
-
-        this.tickUseFireworks(start, firework, goingTo, solution.forceUseFirework);
+        return solution;
     }
 
     private void tickUseFireworks(final Vec3d start, final boolean firework, final BetterBlockPos goingTo, final boolean forceUseFirework) {
@@ -523,11 +526,13 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
     private static final class Solution {
 
         public final Rotation rotation;
+        public final BetterBlockPos goingTo;
         public final boolean solvedPitch;
         public final boolean forceUseFirework;
 
-        public Solution(Rotation rotation, boolean solvedPitch, boolean forceUseFirework) {
+        public Solution(Rotation rotation, BetterBlockPos goingTo, boolean solvedPitch, boolean forceUseFirework) {
             this.rotation = rotation;
+            this.goingTo = goingTo;
             this.solvedPitch = solvedPitch;
             this.forceUseFirework = forceUseFirework;
         }
