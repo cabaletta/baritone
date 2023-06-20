@@ -40,26 +40,26 @@ public class CraftCommand extends Command {
     public void execute(String label, IArgConsumer args) throws CommandException {
         int amount = args.getAsOrDefault(Integer.class, 1);
 
-        Item item = args.getAsOrNull(Item.class);
+        Item item = args.getDatatypeForOrNull(ItemById.INSTANCE);
 
         if (item == null) {
             String itemName = args.rawRest();
-            //boolean recipeExists = false;
+            boolean recipeExists = false;
             for (IRecipe recipe : CraftingManager.REGISTRY) {
                 if (recipe.getRecipeOutput().getDisplayName().equalsIgnoreCase(itemName)) {
                     if (baritone.getCraftingProcess().canCraft(recipe, amount)) {
                         baritone.getCraftingProcess().craftRecipe(recipe, amount);
                         return;
-                    } /*else { //a recipe exists but we cant craft it
+                    } else { //a recipe exists but we cant craft it
                         recipeExists = true;
-                    }/**/
+                    }
                 }
-            }/*
+            }
             if (recipeExists) {
                 logDirect("Insufficient Resources");
             } else {
                 logDirect("Invalid Item");
-            }/**/
+            }
         } else if (!baritone.getCraftingProcess().hasCraftingRecipe(item)) {
             logDirect("no crafting recipe for "+item.getTranslationKey()+" found.");
         } else if (!baritone.getCraftingProcess().canCraft(item, amount)){
