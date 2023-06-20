@@ -21,7 +21,6 @@ import dev.babbaj.pathfinder.NetherPathfinder;
 import dev.babbaj.pathfinder.PathSegment;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.chunk.BlockStateContainer;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
@@ -82,6 +81,18 @@ public final class NetherPathfinderContext {
         NetherPathfinder.raytrace(this.context, true, hitOut.length, src, dst, hitOut, null);
     }
 
+    public boolean raytrace(final int count, final double[] src, final double[] dst, int visibility) {
+        switch (visibility) {
+            case Visibility.ALL:
+                return NetherPathfinder.isVisibleMulti(this.context, true, count, src, dst, false);
+            case Visibility.NONE:
+                return !NetherPathfinder.isVisibleMulti(this.context, true, count, src, dst, true);
+            case Visibility.ANY:
+                return NetherPathfinder.isVisibleMulti(this.context, true, count, src, dst, true);
+        }
+        throw new IllegalArgumentException("lol");
+    }
+
     public void cancel() {
         NetherPathfinder.cancel(this.context);
     }
@@ -132,5 +143,14 @@ public final class NetherPathfinderContext {
             e.printStackTrace();
             throw new RuntimeException(e);
         }
+    }
+
+    public static final class Visibility {
+
+        private Visibility() {}
+
+        public static final int ALL = 0;
+        public static final int NONE = 1;
+        public static final int ANY = 2;
     }
 }

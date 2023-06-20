@@ -379,47 +379,59 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         outermost:
         for (int relaxation = 0; relaxation < 3; relaxation++) { // try for a strict solution first, then relax more and more (if we're in a corner or near some blocks, it will have to relax its constraints a bit)
             int[] heights = firework ? new int[]{20, 10, 5, 0} : new int[]{0}; // attempt to gain height, if we can, so as not to waste the boost
+            float[] interps = new float[] {1.0f, 0.75f, 0.5f, 0.25f};
             int steps = relaxation < 2 ? firework ? 5 : Baritone.settings().elytraSimulationTicks.value : 3;
             int lookahead = relaxation == 0 ? 2 : 3; // ideally this would be expressed as a distance in blocks, rather than a number of voxel steps
             //int minStep = Math.max(0, playerNear - relaxation);
             int minStep = playerNear;
             for (int i = Math.min(playerNear + 20, path.size() - 1); i >= minStep; i--) {
                 for (int dy : heights) {
-                    Vec3d dest = this.pathManager.pathAt(i).add(0, dy, 0);
-                    if (dy != 0) {
-                        if (i + lookahead >= path.size()) {
-                            continue;
-                        }
-                        if (start.distanceTo(dest) < 40) {
-                            if (!clearView(dest, this.pathManager.pathAt(i + lookahead).add(0, dy, 0), false) || !clearView(dest, this.pathManager.pathAt(i + lookahead), false)) {
-                                // aka: don't go upwards if doing so would prevent us from being able to see the next position **OR** the modified next position
-                                continue;
-                            }
+                    for (float interp : interps) {
+                        Vec3d dest;
+                        if (interp == 1 || i == minStep) {
+                            dest = this.pathManager.pathAt(i);
                         } else {
-                            // but if it's far away, allow gaining altitude if we could lose it again by the time we get there
-                            if (!clearView(dest, this.pathManager.pathAt(i), false)) {
+                            dest = this.pathManager.pathAt(i).scale(interp)
+                                    .add(this.pathManager.pathAt(i - 1).scale(1.0d - interp));
+                        }
+
+                        dest = dest.add(0, dy, 0);
+                        if (dy != 0) {
+                            if (i + lookahead >= path.size()) {
                                 continue;
                             }
+                            if (start.distanceTo(dest) < 40) {
+                                if (!clearView(dest, this.pathManager.pathAt(i + lookahead).add(0, dy, 0), false)
+                                        || !clearView(dest, this.pathManager.pathAt(i + lookahead), false)) {
+                                    // aka: don't go upwards if doing so would prevent us from being able to see the next position **OR** the modified next position
+                                    continue;
+                                }
+                            } else {
+                                // but if it's far away, allow gaining altitude if we could lose it again by the time we get there
+                                if (!clearView(dest, this.pathManager.pathAt(i), false)) {
+                                    continue;
+                                }
+                            }
                         }
-                    }
 
-                    // 1.0 -> 0.25 -> none
-                    final Double grow = relaxation == 2 ? null
-                            : relaxation == 0 ? 1.0d : 0.25d;
+                        // 1.0 -> 0.25 -> none
+                        final Double grow = relaxation == 2 ? null
+                                : relaxation == 0 ? 1.0d : 0.25d;
 
-                    if (isClear(start, dest, grow, isInLava)) {
-                        final float yaw = RotationUtils.calcRotationFromVec3d(start, dest, ctx.playerRotations()).getYaw();
+                        if (isClear(start, dest, grow, isInLava)) {
+                            final float yaw = RotationUtils.calcRotationFromVec3d(start, dest, ctx.playerRotations()).getYaw();
 
-                        final Pair<Float, Boolean> pitch = this.solvePitch(dest.subtract(start), steps, relaxation, firework, isInLava);
-                        if (pitch.first() == null) {
-                            baritone.getLookBehavior().updateTarget(new Rotation(yaw, ctx.playerRotations().getPitch()), false);
-                            continue;
+                            final Pair<Float, Boolean> pitch = this.solvePitch(dest.subtract(start), steps, relaxation, firework, isInLava);
+                            if (pitch.first() == null) {
+                                baritone.getLookBehavior().updateTarget(new Rotation(yaw, ctx.playerRotations().getPitch()), false);
+                                continue;
+                            }
+                            forceUseFirework = pitch.second();
+                            goingTo = new BetterBlockPos(dest.x, dest.y, dest.z);
+                            this.aimPos = goingTo;
+                            baritone.getLookBehavior().updateTarget(new Rotation(yaw, pitch.first()), false);
+                            break outermost;
                         }
-                        forceUseFirework = pitch.second();
-                        goingTo = path.get(i);
-                        this.aimPos = path.get(i).add(0, dy, 0);
-                        baritone.getLookBehavior().updateTarget(new Rotation(yaw, pitch.first()), false);
-                        break outermost;
                     }
                 }
             }
@@ -520,22 +532,14 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
                 bb.maxX + ox, bb.maxY + oy, bb.minZ + oz,
                 bb.maxX + ox, bb.maxY + oy, bb.maxZ + oz,
         };
-
-        // Batch together all 8 traces
-        final boolean[] hitOut = new boolean[8];
-        this.context.raytrace(src, dst, hitOut);
-        for (boolean hit : hitOut) {
-            if (hit) {
-                return false;
-            }
-        }
-        return true;
+        return this.context.raytrace(8, src, dst, NetherPathfinderContext.Visibility.ALL);
     }
 
     private boolean clearView(Vec3d start, Vec3d dest, boolean ignoreLava) {
         final boolean clear;
         if (!ignoreLava) {
-            clear = !this.context.raytrace(start.x, start.y, start.z, dest.x, dest.y, dest.z);
+            // if start == dest then the cpp raytracer dies
+            clear = start.equals(dest) || !this.context.raytrace(start.x, start.y, start.z, dest.x, dest.y, dest.z);
         } else {
             clear = ctx.world().rayTraceBlocks(start, dest, false, false, false) == null;
         }
