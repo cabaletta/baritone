@@ -17,6 +17,7 @@
 
 package baritone.api.pathing.goals;
 
+import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.SettingsUtil;
 import baritone.api.utils.interfaces.IGoalRenderPos;
 import it.unimi.dsi.fastutil.doubles.DoubleIterator;
@@ -100,6 +101,11 @@ public class GoalNear implements Goal, IGoalRenderPos {
                 && y == goal.y
                 && z == goal.z
                 && rangeSq == goal.rangeSq;
+    }
+
+    @Override
+    public int hashCode() {
+        return (int) BetterBlockPos.longHash(x, y, z) + rangeSq;
     }
 
     @Override

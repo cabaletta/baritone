@@ -66,6 +66,11 @@ public class GoalInverted implements Goal {
     }
 
     @Override
+    public int hashCode() {
+        return origin.hashCode() * 495796690;
+    }
+
+    @Override
     public String toString() {
         return String.format("GoalInverted{%s}", origin.toString());
     }
