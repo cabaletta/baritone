@@ -84,6 +84,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         private boolean completePath;
         private boolean recalculating;
         private int playerNear;
+        private int maxPlayerNear;
 
         public PathManager() {
             // lol imagine initializing fields normally
@@ -92,6 +93,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
 
         public void tick() {
             // Recalculate closest path node
+            final int prevMax = this.maxPlayerNear;
             this.playerNear = this.calculateNear(this.playerNear);
 
             // Obstacles are more important than an incomplete path, handle those first.
@@ -446,9 +448,10 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
 
     private void tickUseFireworks(final Vec3d start, final boolean firework, final BetterBlockPos goingTo, final boolean forceUseFirework) {
         final long now = System.nanoTime();
-        final long timeSinceLastSetback = now - this.lastSetBack;
-        if (timeSinceLastSetback < Baritone.settings().elytraFireworkSetbackUseDelay.value * TICK_IN_NANOS) {
-            logDebug("waiting for elytraFireworkSetbackUseDelay: " + (timeSinceLastSetback / TICK_IN_NANOS));
+        final long waitUntil = this.lastSetBack + Baritone.settings().elytraFireworkSetbackUseDelay.value * TICK_IN_NANOS;
+        final long remaining = waitUntil - now;
+        if (remaining < 0) {
+            logDebug("waiting for elytraFireworkSetbackUseDelay: " + (remaining / TICK_IN_NANOS));
             return;
         }
         final boolean useOnDescend = !Baritone.settings().conserveFireworks.value || ctx.player().posY < goingTo.y + 5;
