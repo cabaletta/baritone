@@ -63,10 +63,9 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
     // :sunglasses:
     private final NetherPathfinderContext context;
     private final PathManager pathManager;
-    private int sinceFirework;
+    private int remainingFireworkTicks;
+    private int remainingSetBackTicks;
     private BlockStateInterface bsi;
-
-    private long lastSetBack = Long.MIN_VALUE;
 
     public ElytraBehavior(Baritone baritone) {
         super(baritone);
@@ -84,7 +83,6 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         private boolean completePath;
         private boolean recalculating;
         private int playerNear;
-        private int maxPlayerNear;
 
         public PathManager() {
             // lol imagine initializing fields normally
@@ -93,7 +91,6 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
 
         public void tick() {
             // Recalculate closest path node
-            final int prevMax = this.maxPlayerNear;
             this.playerNear = this.calculateNear(this.playerNear);
 
             // Obstacles are more important than an incomplete path, handle those first.
@@ -312,7 +309,9 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
     @Override
     public void onReceivePacket(PacketEvent event) {
         if (event.getPacket() instanceof SPacketPlayerPosLook) {
-            this.lastSetBack = System.nanoTime();
+            ctx.minecraft().addScheduledTask(() -> {
+                this.remainingSetBackTicks = Baritone.settings().elytraFireworkSetbackUseDelay.value;
+            });
         }
     }
 
@@ -326,8 +325,8 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         this.visiblePath = Collections.emptyList();
         this.pathManager.clear();
         this.aimPos = null;
-        this.sinceFirework = 0;
-        this.lastSetBack = Long.MIN_VALUE;
+        this.remainingFireworkTicks = 0;
+        this.remainingSetBackTicks = 0;
     }
 
     @Override
@@ -339,6 +338,14 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
     public void onTick(TickEvent event) {
         if (event.getType() == TickEvent.Type.OUT) {
             return;
+        }
+
+        // Certified mojang employee incident
+        if (this.remainingFireworkTicks > 0) {
+            this.remainingFireworkTicks--;
+        }
+        if (this.remainingSetBackTicks > 0) {
+            this.remainingSetBackTicks--;
         }
 
         this.clearLines.clear();
@@ -375,7 +382,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         final boolean firework = isFireworkActive();
         BetterBlockPos goingTo = null;
         boolean forceUseFirework = false;
-        this.sinceFirework++;
+
         final boolean isInLava = ctx.player().isInLava();
 
         outermost:
@@ -447,11 +454,8 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
     }
 
     private void tickUseFireworks(final Vec3d start, final boolean firework, final BetterBlockPos goingTo, final boolean forceUseFirework) {
-        final long now = System.nanoTime();
-        final long waitUntil = this.lastSetBack + Baritone.settings().elytraFireworkSetbackUseDelay.value * TICK_IN_NANOS;
-        final long remaining = waitUntil - now;
-        if (remaining < 0) {
-            logDebug("waiting for elytraFireworkSetbackUseDelay: " + (remaining / TICK_IN_NANOS));
+        if (this.remainingSetBackTicks > 0) {
+            logDebug("waiting for elytraFireworkSetbackUseDelay: " + this.remainingSetBackTicks);
             return;
         }
         final boolean useOnDescend = !Baritone.settings().conserveFireworks.value || ctx.player().posY < goingTo.y + 5;
@@ -463,7 +467,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         ).lengthSquared();
 
         final double elytraFireworkSpeed = Baritone.settings().elytraFireworkSpeed.value;
-        if (sinceFirework > 10 && (forceUseFirework || (!firework
+        if (this.remainingFireworkTicks <= 0 && (forceUseFirework || (!firework
                 && useOnDescend
                 && (ctx.player().posY < goingTo.y - 5 || start.distanceTo(new Vec3d(goingTo.x + 0.5, ctx.player().posY, goingTo.z + 0.5)) > 5) // UGH!!!!!!!
                 && currentSpeed < elytraFireworkSpeed * elytraFireworkSpeed))
@@ -477,7 +481,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
             }
             logDirect("attempting to use firework" + (forceUseFirework ? " takeoff" : ""));
             ctx.playerController().processRightClick(ctx.player(), ctx.world(), EnumHand.MAIN_HAND);
-            sinceFirework = 0;
+            this.remainingFireworkTicks = 10;
         }
     }
 
