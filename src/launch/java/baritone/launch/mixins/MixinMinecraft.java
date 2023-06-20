@@ -101,7 +101,7 @@ public class MixinMinecraft {
             method = "runTick",
             at = @At("RETURN")
     )
-    private void postRunTick() {
+    private void postRunTick(CallbackInfo ci) {
         if (this.tickProvider == null) {
             return;
         }
