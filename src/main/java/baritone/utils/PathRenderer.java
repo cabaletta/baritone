@@ -104,7 +104,7 @@ public final class PathRenderer implements IRenderer {
 
         final ElytraBehavior elytra = behavior.baritone.getElytraBehavior();
 
-        drawPath(elytra.visiblePath, 0, Color.RED, false, 0, 0);
+        drawPath(elytra.visiblePath, 0, Color.RED, false, 0, 0, 0.0D);
         if (elytra.aimPos != null) {
             drawGoal(ctx.player(), new GoalBlock(elytra.aimPos), partialTicks, Color.GREEN);
         }
@@ -138,6 +138,10 @@ public final class PathRenderer implements IRenderer {
     }
 
     private static void drawPath(List<BetterBlockPos> positions, int startIndex, Color color, boolean fadeOut, int fadeStart0, int fadeEnd0) {
+        drawPath(positions, startIndex, color, fadeOut, fadeStart0, fadeEnd0, 0.5D);
+    }
+
+    private static void drawPath(List<BetterBlockPos> positions, int startIndex, Color color, boolean fadeOut, int fadeStart0, int fadeEnd0, double offset) {
         IRenderer.startLines(color, settings.pathRenderLineWidthPixels.value, settings.renderPathIgnoreDepth.value);
 
         int fadeStart = fadeStart0 + startIndex;
@@ -173,7 +177,7 @@ public final class PathRenderer implements IRenderer {
                 IRenderer.glColor(color, alpha);
             }
 
-            emitPathLine(start.x, start.y, start.z, end.x, end.y, end.z);
+            emitPathLine(start.x, start.y, start.z, end.x, end.y, end.z, offset);
         }
 
         IRenderer.endLines(settings.renderPathIgnoreDepth.value);
@@ -187,24 +191,25 @@ public final class PathRenderer implements IRenderer {
         buffer.pos(x2 - vpX, y2 - vpY, z2 - vpZ).color(color[0], color[1], color[2], color[3]).endVertex();
     }
 
-    private static void emitPathLine(double x1, double y1, double z1, double x2, double y2, double z2) {
+    private static void emitPathLine(double x1, double y1, double z1, double x2, double y2, double z2, double offset) {
+        final double extraOffset = offset + 0.03D;
         double vpX = renderManager.viewerPosX;
         double vpY = renderManager.viewerPosY;
         double vpZ = renderManager.viewerPosZ;
         boolean renderPathAsFrickinThingy = !settings.renderPathAsLine.value;
 
-        buffer.pos(x1 + 0.5D - vpX, y1 + 0.5D - vpY, z1 + 0.5D - vpZ).color(color[0], color[1], color[2], color[3]).endVertex();
-        buffer.pos(x2 + 0.5D - vpX, y2 + 0.5D - vpY, z2 + 0.5D - vpZ).color(color[0], color[1], color[2], color[3]).endVertex();
+        buffer.pos(x1 + offset - vpX, y1 + offset - vpY, z1 + offset - vpZ).color(color[0], color[1], color[2], color[3]).endVertex();
+        buffer.pos(x2 + offset - vpX, y2 + offset - vpY, z2 + offset - vpZ).color(color[0], color[1], color[2], color[3]).endVertex();
 
         if (renderPathAsFrickinThingy) {
-            buffer.pos(x2 + 0.5D - vpX, y2 + 0.5D - vpY, z2 + 0.5D - vpZ).color(color[0], color[1], color[2], color[3]).endVertex();
-            buffer.pos(x2 + 0.5D - vpX, y2 + 0.53D - vpY, z2 + 0.5D - vpZ).color(color[0], color[1], color[2], color[3]).endVertex();
+            buffer.pos(x2 + offset - vpX, y2 + offset - vpY, z2 + offset - vpZ).color(color[0], color[1], color[2], color[3]).endVertex();
+            buffer.pos(x2 + offset - vpX, y2 + extraOffset - vpY, z2 + offset - vpZ).color(color[0], color[1], color[2], color[3]).endVertex();
 
-            buffer.pos(x2 + 0.5D - vpX, y2 + 0.53D - vpY, z2 + 0.5D - vpZ).color(color[0], color[1], color[2], color[3]).endVertex();
-            buffer.pos(x1 + 0.5D - vpX, y1 + 0.53D - vpY, z1 + 0.5D - vpZ).color(color[0], color[1], color[2], color[3]).endVertex();
+            buffer.pos(x2 + offset - vpX, y2 + extraOffset - vpY, z2 + offset - vpZ).color(color[0], color[1], color[2], color[3]).endVertex();
+            buffer.pos(x1 + offset - vpX, y1 + extraOffset - vpY, z1 + offset - vpZ).color(color[0], color[1], color[2], color[3]).endVertex();
 
-            buffer.pos(x1 + 0.5D - vpX, y1 + 0.53D - vpY, z1 + 0.5D - vpZ).color(color[0], color[1], color[2], color[3]).endVertex();
-            buffer.pos(x1 + 0.5D - vpX, y1 + 0.5D - vpY, z1 + 0.5D - vpZ).color(color[0], color[1], color[2], color[3]).endVertex();
+            buffer.pos(x1 + offset - vpX, y1 + extraOffset - vpY, z1 + offset - vpZ).color(color[0], color[1], color[2], color[3]).endVertex();
+            buffer.pos(x1 + offset - vpX, y1 + offset - vpY, z1 + offset - vpZ).color(color[0], color[1], color[2], color[3]).endVertex();
         }
     }
 
