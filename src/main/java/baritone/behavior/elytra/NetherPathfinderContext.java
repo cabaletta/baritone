@@ -82,11 +82,11 @@ public final class NetherPathfinderContext {
     public boolean raytrace(final int count, final double[] src, final double[] dst, final int visibility) {
         switch (visibility) {
             case Visibility.ALL:
-                return NetherPathfinder.isVisibleMulti(this.context, true, count, src, dst, false);
+                return NetherPathfinder.isVisibleMulti(this.context, true, count, src, dst, false) == -1;
             case Visibility.NONE:
-                return !NetherPathfinder.isVisibleMulti(this.context, true, count, src, dst, true);
+                return NetherPathfinder.isVisibleMulti(this.context, true, count, src, dst, true) == -1;
             case Visibility.ANY:
-                return NetherPathfinder.isVisibleMulti(this.context, true, count, src, dst, true);
+                return NetherPathfinder.isVisibleMulti(this.context, true, count, src, dst, true) != -1;
         }
         throw new IllegalArgumentException("lol");
     }
