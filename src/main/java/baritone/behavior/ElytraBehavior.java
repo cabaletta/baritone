@@ -94,7 +94,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
             this.playerNear = this.calculateNear(this.playerNear);
             this.maxPlayerNear = Math.max(this.maxPlayerNear, this.playerNear);
 
-            if (this.maxPlayerNear == prevMaxNear) {
+            if (this.maxPlayerNear == prevMaxNear && ctx.player().isElytraFlying()) {
                 this.ticksNearUnchanged++;
             } else {
                 this.ticksNearUnchanged = 0;
