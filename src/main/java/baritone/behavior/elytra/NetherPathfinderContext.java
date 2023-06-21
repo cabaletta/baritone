@@ -22,6 +22,7 @@ import dev.babbaj.pathfinder.PathSegment;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.chunk.BlockStateContainer;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
@@ -76,6 +77,18 @@ public final class NetherPathfinderContext {
     public boolean raytrace(final double startX, final double startY, final double startZ,
                             final double endX, final double endY, final double endZ) {
         return NetherPathfinder.isVisible(this.context, true, startX, startY, startZ, endX, endY, endZ);
+    }
+
+    /**
+     * Performs a raytrace from the given start position to the given end position, returning {@code true} if there is
+     * visibility between the two points.
+     *
+     * @param start The starting point
+     * @param end The ending point
+     * @return {@code true} if there is visibility between the points
+     */
+    public boolean raytrace(final Vec3d start, final Vec3d end) {
+        return NetherPathfinder.isVisible(this.context, true, start.x, start.y, start.z, end.x, end.y, end.z);
     }
 
     public boolean raytrace(final int count, final double[] src, final double[] dst, final int visibility) {
