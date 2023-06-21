@@ -39,6 +39,7 @@ import net.minecraft.world.chunk.Chunk;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Future;
 import java.util.function.UnaryOperator;
 
@@ -68,8 +69,8 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
     public ElytraBehavior(Baritone baritone) {
         super(baritone);
         this.context = new NetherPathfinderContext(NETHER_SEED);
-        this.clearLines = new ArrayList<>();
-        this.blockedLines = new ArrayList<>();
+        this.clearLines = new CopyOnWriteArrayList<>();
+        this.blockedLines = new CopyOnWriteArrayList<>();
         this.visiblePath = Collections.emptyList();
         this.pathManager = this.new PathManager();
     }
