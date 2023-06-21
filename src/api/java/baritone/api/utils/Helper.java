@@ -18,8 +18,10 @@
 package baritone.api.utils;
 
 import baritone.api.BaritoneAPI;
+import baritone.api.Settings;
 import baritone.api.utils.gui.BaritoneToast;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.GuiMessageTag;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -47,6 +49,11 @@ public interface Helper {
      * Instance of the game
      */
     Minecraft mc = Minecraft.getInstance();
+
+    /**
+     * The tag to assign to chat messages when {@link Settings#useMessageTag} is {@code true}.
+     */
+    GuiMessageTag MESSAGE_TAG = new GuiMessageTag(0xFF55FF, null, Component.literal("Baritone message."), "Baritone");
 
     static Component getPrefix() {
         // Inner text component
@@ -156,18 +163,31 @@ public interface Helper {
      * Send components to chat with the [Baritone] prefix
      *
      * @param logAsToast Whether to log as a toast notification
+     * @param useMessageTag Whether to use a message tag instead of a prefix
      * @param components The components to send
      */
-    default void logDirect(boolean logAsToast, Component... components) {
+    default void logDirect(boolean logAsToast, boolean useMessageTag, Component... components) {
         MutableComponent component = Component.literal("");
-        component.append(getPrefix());
-        component.append(Component.literal(" "));
+        if (!logAsToast && !useMessageTag) {
+            component.append(getPrefix());
+            component.append(Component.literal(" "));
+        }
         Arrays.asList(components).forEach(component::append);
         if (logAsToast) {
             logToast(getPrefix(), component);
         } else {
-            mc.execute(() -> BaritoneAPI.getSettings().logger.value.accept(component));
+            mc.execute(() -> BaritoneAPI.getSettings().logger.value.accept(component, useMessageTag ? MESSAGE_TAG : null));
         }
+    }
+
+    /**
+     * Send components to chat with the [Baritone] prefix
+     *
+     * @param logAsToast Whether to log as a toast notification
+     * @param components The components to send
+     */
+    default void logDirect(boolean logAsToast, Component... components) {
+        logDirect(logAsToast, BaritoneAPI.getSettings().useMessageTag.value, components);
     }
 
     /**
