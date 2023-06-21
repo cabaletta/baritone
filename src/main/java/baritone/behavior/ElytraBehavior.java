@@ -713,7 +713,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
             Vec3d stepped = motion;
             Vec3d totalMotion = Vec3d.ZERO;
             for (int i = 0; i < steps; i++) {
-                stepped = step(stepped, pitch, good.getYaw(), firework);
+                stepped = step(stepped, pitch, good.getYaw(), firework && i > 0);
                 Vec3d actualPositionPrevTick = ctx.playerFeetAsVec().add(totalMotion);
                 totalMotion = totalMotion.add(stepped);
                 Vec3d actualPosition = ctx.playerFeetAsVec().add(totalMotion);
@@ -781,9 +781,9 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
             motionX += (lookDirection.x / pitchBase2 * flatMotion - motionX) * 0.1;
             motionZ += (lookDirection.z / pitchBase2 * flatMotion - motionZ) * 0.1;
         }
-        motionX *= 0.99;
-        motionY *= 0.98;
-        motionZ *= 0.99;
+        motionX *= 0.99f;
+        motionY *= 0.98f;
+        motionZ *= 0.99f;
         //System.out.println(motionX + " " + motionY + " " + motionZ);
 
         return new Vec3d(motionX, motionY, motionZ);
