@@ -156,7 +156,7 @@ public interface Helper {
         }
         // We won't log debug chat into toasts
         // Because only a madman would want that extreme spam -_-
-        logDirect(message, false, BaritoneAPI.getSettings().useMessageTag.value);
+        logDirect(message, false);
     }
 
     /**
@@ -183,10 +183,20 @@ public interface Helper {
     /**
      * Send components to chat with the [Baritone] prefix
      *
+     * @param logAsToast Whether to log as a toast notification
+     * @param components The components to send
+     */
+    default void logDirect(boolean logAsToast, Component... components) {
+        logDirect(logAsToast, BaritoneAPI.getSettings().useMessageTag.value, components);
+    }
+
+    /**
+     * Send components to chat with the [Baritone] prefix
+     *
      * @param components The components to send
      */
     default void logDirect(Component... components) {
-        logDirect(BaritoneAPI.getSettings().logAsToast.value, BaritoneAPI.getSettings().useMessageTag.value, components);
+        logDirect(BaritoneAPI.getSettings().logAsToast.value, components);
     }
 
     /**
@@ -196,13 +206,12 @@ public interface Helper {
      * @param message       The message to display in chat
      * @param color         The color to print that message in
      * @param logAsToast    Whether to log as a toast notification
-     * @param useMessageTag Whether to use a message tag instead of a prefix
      */
-    default void logDirect(String message, ChatFormatting color, boolean logAsToast, boolean useMessageTag) {
+    default void logDirect(String message, ChatFormatting color, boolean logAsToast) {
         Stream.of(message.split("\n")).forEach(line -> {
             MutableComponent component = Component.literal(line.replace("\t", "    "));
             component.setStyle(component.getStyle().withColor(color));
-            logDirect(logAsToast, useMessageTag, component);
+            logDirect(logAsToast, component);
         });
     }
 
@@ -214,7 +223,7 @@ public interface Helper {
      * @param color   The color to print that message in
      */
     default void logDirect(String message, ChatFormatting color) {
-        logDirect(message, color, BaritoneAPI.getSettings().logAsToast.value, BaritoneAPI.getSettings().useMessageTag.value);
+        logDirect(message, color, BaritoneAPI.getSettings().logAsToast.value);
     }
 
     /**
@@ -223,10 +232,9 @@ public interface Helper {
      *
      * @param message       The message to display in chat
      * @param logAsToast    Whether to log as a toast notification
-     * @param useMessageTag Whether to use a message tag instead of a prefix
      */
-    default void logDirect(String message, boolean logAsToast, boolean useMessageTag) {
-        logDirect(message, ChatFormatting.GRAY, logAsToast, useMessageTag);
+    default void logDirect(String message, boolean logAsToast) {
+        logDirect(message, ChatFormatting.GRAY, logAsToast);
     }
 
     /**
@@ -236,6 +244,6 @@ public interface Helper {
      * @param message The message to display in chat
      */
     default void logDirect(String message) {
-        logDirect(message, BaritoneAPI.getSettings().logAsToast.value, BaritoneAPI.getSettings().useMessageTag.value);
+        logDirect(message, BaritoneAPI.getSettings().logAsToast.value);
     }
 }
