@@ -203,9 +203,9 @@ public interface Helper {
      * Send a message to chat regardless of chatDebug (should only be used for critically important messages, or as a
      * direct response to a chat command)
      *
-     * @param message       The message to display in chat
-     * @param color         The color to print that message in
-     * @param logAsToast    Whether to log as a toast notification
+     * @param message    The message to display in chat
+     * @param color      The color to print that message in
+     * @param logAsToast Whether to log as a toast notification
      */
     default void logDirect(String message, ChatFormatting color, boolean logAsToast) {
         Stream.of(message.split("\n")).forEach(line -> {
@@ -230,8 +230,8 @@ public interface Helper {
      * Send a message to chat regardless of chatDebug (should only be used for critically important messages, or as a
      * direct response to a chat command)
      *
-     * @param message       The message to display in chat
-     * @param logAsToast    Whether to log as a toast notification
+     * @param message    The message to display in chat
+     * @param logAsToast Whether to log as a toast notification
      */
     default void logDirect(String message, boolean logAsToast) {
         logDirect(message, ChatFormatting.GRAY, logAsToast);
