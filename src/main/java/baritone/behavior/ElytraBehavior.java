@@ -23,6 +23,7 @@ import baritone.api.event.events.*;
 import baritone.api.utils.*;
 import baritone.behavior.elytra.NetherPathfinderContext;
 import baritone.behavior.elytra.NetherPath;
+import baritone.behavior.elytra.PathCalculationException;
 import baritone.behavior.elytra.UnpackedSegment;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.accessor.IEntityFireworkRocket;
@@ -108,7 +109,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
             this.attemptNextSegment();
         }
 
-        public void pathToDestination(BlockPos destination) {
+        public void pathToDestination(final BlockPos destination) {
             this.destination = destination;
             final long start = System.nanoTime();
             this.path0(ctx.playerFeet(), destination, UnaryOperator.identity())
@@ -123,7 +124,11 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
                     .whenComplete((result, ex) -> {
                         this.recalculating = false;
                         if (ex != null) {
-                            logDirect("Failed to compute path to destination");
+                            if (ex instanceof PathCalculationException) {
+                                logDirect("Failed to compute path to destination");
+                            } else {
+                                logUnhandledException(ex);
+                            }
                         }
                     });
         }
@@ -141,7 +146,11 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
                     .whenComplete((result, ex) -> {
                         this.recalculating = false;
                         if (ex != null) {
-                            logDirect("Failed to recompute segment");
+                            if (ex instanceof PathCalculationException) {
+                                logDirect("Failed to recompute segment");
+                            } else {
+                                logUnhandledException(ex);
+                            }
                         }
                     });
         }
@@ -168,8 +177,10 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
                     })
                     .whenComplete((result, ex) -> {
                         this.recalculating = false;
-                        if (ex != null) {
+                        if (ex instanceof PathCalculationException) {
                             logDirect("Failed to compute next segment");
+                        } else {
+                            logUnhandledException(ex);
                         }
                     });
         }

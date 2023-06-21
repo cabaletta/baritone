@@ -52,14 +52,19 @@ public final class NetherPathfinderContext {
     }
 
     public CompletableFuture<PathSegment> pathFindAsync(final BlockPos src, final BlockPos dst) {
-        return CompletableFuture.supplyAsync(() ->
-                NetherPathfinder.pathFind(
-                        this.context,
-                        src.getX(), src.getY(), src.getZ(),
-                        dst.getX(), dst.getY(), dst.getZ(),
-                        true,
-                        10000
-                ), this.executor);
+        return CompletableFuture.supplyAsync(() -> {
+            final PathSegment segment = NetherPathfinder.pathFind(
+                    this.context,
+                    src.getX(), src.getY(), src.getZ(),
+                    dst.getX(), dst.getY(), dst.getZ(),
+                    true,
+                    10000
+            );
+            if (segment == null) {
+                throw new PathCalculationException("Path calculation failed");
+            }
+            return segment;
+        }, this.executor);
     }
 
     /**

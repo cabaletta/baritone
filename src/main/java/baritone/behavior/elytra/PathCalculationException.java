@@ -15,27 +15,14 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.api.command.exception;
+package baritone.behavior.elytra;
 
-import baritone.api.command.ICommand;
-import baritone.api.command.argument.ICommandArgument;
+/**
+ * @author Brady
+ */
+public final class PathCalculationException extends RuntimeException {
 
-import java.util.List;
-
-import static baritone.api.utils.Helper.HELPER;
-
-public class CommandUnhandledException extends RuntimeException implements ICommandException {
-
-    public CommandUnhandledException(String message) {
+    public PathCalculationException(final String message) {
         super(message);
-    }
-
-    public CommandUnhandledException(Throwable cause) {
-        super(cause);
-    }
-
-    @Override
-    public void handle(ICommand command, List<ICommandArgument> args) {
-        HELPER.logUnhandledException(this);
     }
 }
