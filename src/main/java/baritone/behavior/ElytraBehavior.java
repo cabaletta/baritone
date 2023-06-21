@@ -112,7 +112,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
             final long start = System.nanoTime();
             this.path0(ctx.playerFeet(), destination, UnaryOperator.identity())
                     .thenRun(() -> {
-                        final double distance = this.pathAt(0).distanceTo(this.pathAt(this.path.size() - 1));
+                        final double distance = this.path.get(0).distanceTo(this.path.get(this.path.size() - 1));
                         if (this.completePath) {
                             logDirect(String.format("Computed path (%.1f blocks in %.4f seconds)", distance, (System.nanoTime() - start) / 1e9d));
                         } else {
@@ -157,7 +157,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
             this.path0(this.path.get(afterIncl), this.destination, segment -> segment.prepend(before.stream()))
                     .thenRun(() -> {
                         final int recompute = this.path.size() - before.size() - 1;
-                        final double distance = this.pathAt(0).distanceTo(this.pathAt(recompute));
+                        final double distance = this.path.get(0).distanceTo(this.path.get(recompute));
 
                         if (this.completePath) {
                             logDirect(String.format("Computed path (%.1f blocks in %.4f seconds)", distance, (System.nanoTime() - start) / 1e9d));
