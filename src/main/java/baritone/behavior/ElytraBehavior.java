@@ -357,6 +357,8 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         this.aimPos = null;
         this.remainingFireworkTicks = 0;
         this.remainingSetBackTicks = 0;
+        this.solver.cancel(true);
+        this.solver = null;
     }
 
     @Override
