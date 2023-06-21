@@ -22,7 +22,6 @@ import dev.babbaj.pathfinder.PathSegment;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -48,8 +47,8 @@ public final class UnpackedSegment {
         return new UnpackedSegment(Stream.concat(other, this.path), this.finished);
     }
 
-    public List<BetterBlockPos> collect() {
-        return this.path.collect(Collectors.toList());
+    public NetherPath collect() {
+        return new NetherPath(this.path.collect(Collectors.toList()));
     }
 
     public boolean isFinished() {

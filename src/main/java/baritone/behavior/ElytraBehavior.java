@@ -22,6 +22,7 @@ import baritone.api.behavior.IElytraBehavior;
 import baritone.api.event.events.*;
 import baritone.api.utils.*;
 import baritone.behavior.elytra.NetherPathfinderContext;
+import baritone.behavior.elytra.NetherPath;
 import baritone.behavior.elytra.UnpackedSegment;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.accessor.IEntityFireworkRocket;
@@ -39,7 +40,6 @@ import net.minecraft.world.chunk.Chunk;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
-import java.util.function.IntFunction;
 import java.util.function.UnaryOperator;
 
 public final class ElytraBehavior extends Behavior implements IElytraBehavior, Helper {
@@ -77,7 +77,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
     private final class PathManager {
 
         private BlockPos destination;
-        private List<BetterBlockPos> path;
+        private NetherPath path;
         private boolean completePath;
         private boolean recalculating;
 
@@ -173,17 +173,9 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
                     });
         }
 
-        private Vec3d pathAt(int i) {
-            return new Vec3d(
-                    this.path.get(i).x,
-                    this.path.get(i).y,
-                    this.path.get(i).z
-            );
-        }
-
         public void clear() {
             this.destination = null;
-            this.path = Collections.emptyList();
+            this.path = NetherPath.emptyPath();
             this.completePath = true;
             this.recalculating = false;
             this.playerNear = 0;
@@ -200,7 +192,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
             this.maxPlayerNear = 0;
         }
 
-        public List<BetterBlockPos> getPath() {
+        public NetherPath getPath() {
             return this.path;
         }
 
@@ -245,7 +237,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
             }
 
             for (int i = rangeStartIncl; i < rangeEndExcl - 1; i++) {
-                if (!clearView(pathAt(i), pathAt(i + 1), false)) {
+                if (!ElytraBehavior.this.clearView(this.path.getVec(i), this.path.getVec(i + 1), false)) {
                     // obstacle. where do we return to pathing?
                     // find the next valid segment
                     final BetterBlockPos blockage = this.path.get(i);
@@ -392,8 +384,10 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
             this.remainingSetBackTicks--;
         }
 
+        // Reset rendered elements
         this.clearLines.clear();
         this.blockedLines.clear();
+        this.aimPos = null;
 
         final List<BetterBlockPos> path = this.pathManager.getPath();
         if (path.isEmpty() || !ctx.player().isElytraFlying()) {
@@ -462,16 +456,10 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
     }
 
     private Solution solveAngles(final SolverContext context) {
-        final List<BetterBlockPos> path = context.path;
+        final NetherPath path = context.path;
         final int playerNear = context.playerNear;
         final Vec3d start = context.start;
         final boolean isBoosted = context.isBoosted;
-
-        final IntFunction<Vec3d> pathAt = (i) -> new Vec3d(
-                path.get(i).x,
-                path.get(i).y,
-                path.get(i).z
-        );
 
         final boolean isInLava = ctx.player().isInLava();
         Solution solution = null;
@@ -488,9 +476,9 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
                     for (float interp : interps) {
                         Vec3d dest;
                         if (interp == 1 || i == minStep) {
-                            dest = pathAt.apply(i);
+                            dest = path.getVec(i);
                         } else {
-                            dest = pathAt.apply(i).scale(interp).add(pathAt.apply(i - 1).scale(1.0d - interp));
+                            dest = path.getVec(i).scale(interp).add(path.getVec(i - 1).scale(1.0d - interp));
                         }
 
                         dest = dest.add(0, dy, 0);
@@ -499,24 +487,24 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
                                 continue;
                             }
                             if (start.distanceTo(dest) < 40) {
-                                if (!this.clearView(dest, pathAt.apply(i + lookahead).add(0, dy, 0), false)
-                                        || !this.clearView(dest, pathAt.apply(i + lookahead), false)) {
+                                if (!this.clearView(dest, path.getVec(i + lookahead).add(0, dy, 0), false)
+                                        || !this.clearView(dest, path.getVec(i + lookahead), false)) {
                                     // aka: don't go upwards if doing so would prevent us from being able to see the next position **OR** the modified next position
                                     continue;
                                 }
                             } else {
                                 // but if it's far away, allow gaining altitude if we could lose it again by the time we get there
-                                if (!this.clearView(dest, pathAt.apply(i), false)) {
+                                if (!this.clearView(dest, path.getVec(i), false)) {
                                     continue;
                                 }
                             }
                         }
 
                         // 1.0 -> 0.25 -> none
-                        final Double grow = relaxation == 2 ? null
+                        final Double growth = relaxation == 2 ? null
                                 : relaxation == 0 ? 1.0d : 0.25d;
 
-                        if (this.isClear(start, dest, grow, isInLava)) {
+                        if (this.isHitboxClear(start, dest, growth, isInLava)) {
                             // Yaw is trivial, just calculate the rotation required to face the destination
                             final float yaw = RotationUtils.calcRotationFromVec3d(start, dest, ctx.playerRotations()).getYaw();
 
@@ -570,7 +558,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
 
     private final class SolverContext {
 
-        public final List<BetterBlockPos> path;
+        public final NetherPath path;
         public final int playerNear;
         public final Vec3d start;
         public final boolean isBoosted;
@@ -636,7 +624,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
                 .anyMatch(x -> Objects.equals(((IEntityFireworkRocket) x).getBoostedEntity(), ctx.player()));
     }
 
-    private boolean isClear(final Vec3d start, final Vec3d dest, final Double growAmount, boolean ignoreLava) {
+    private boolean isHitboxClear(final Vec3d start, final Vec3d dest, final Double growAmount, boolean ignoreLava) {
         if (!this.clearView(start, dest, ignoreLava)) {
             return false;
         }
@@ -713,7 +701,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         // yaw is easy so we only care about pitch
 
         goalDirection = goalDirection.normalize();
-        Rotation good = RotationUtils.calcRotationFromVec3d(new Vec3d(0, 0, 0), goalDirection, ctx.playerRotations()); // lazy lol
+        Rotation good = RotationUtils.calcRotationFromVec3d(Vec3d.ZERO, goalDirection, ctx.playerRotations()); // lazy lol
 
         Float bestPitch = null;
         double bestDot = Double.NEGATIVE_INFINITY;
@@ -723,7 +711,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         outer:
         for (float pitch = minPitch; pitch <= maxPitch; pitch++) {
             Vec3d stepped = motion;
-            Vec3d totalMotion = new Vec3d(0, 0, 0);
+            Vec3d totalMotion = Vec3d.ZERO;
             for (int i = 0; i < steps; i++) {
                 stepped = step(stepped, pitch, good.getYaw(), firework);
                 Vec3d actualPositionPrevTick = ctx.playerFeetAsVec().add(totalMotion);
