@@ -145,7 +145,7 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
     @Override
     public void onPlayerRotationMove(RotationMoveEvent event) {
         if (this.target != null) {
-            final Rotation actual = this.target.rotation;
+            final Rotation actual = this.processor.nextRotation(this.target.rotation);
             event.setYaw(actual.getYaw());
             event.setPitch(actual.getPitch());
         }
