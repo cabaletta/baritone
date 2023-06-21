@@ -22,6 +22,9 @@ import dev.babbaj.pathfinder.PathSegment;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -48,7 +51,24 @@ public final class UnpackedSegment {
     }
 
     public NetherPath collect() {
-        return new NetherPath(this.path.collect(Collectors.toList()));
+        final List<BetterBlockPos> path = this.path.collect(Collectors.toList());
+
+        // Remove backtracks
+        final Map<BetterBlockPos, Integer> positionFirstSeen = new HashMap<>();
+        for (int i = 0; i < path.size(); i++) {
+            BetterBlockPos pos = path.get(i);
+            if (positionFirstSeen.containsKey(pos)) {
+                int j = positionFirstSeen.get(pos);
+                while (i > j) {
+                    path.remove(i);
+                    i--;
+                }
+            } else {
+                positionFirstSeen.put(pos, i);
+            }
+        }
+
+        return new NetherPath(path);
     }
 
     public boolean isFinished() {

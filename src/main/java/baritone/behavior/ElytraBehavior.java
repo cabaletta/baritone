@@ -185,7 +185,6 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
 
         private void setPath(final UnpackedSegment segment) {
             this.path = segment.collect();
-            this.removeBacktracks();
             this.completePath = segment.isFinished();
             this.playerNear = 0;
             this.ticksNearUnchanged = 0;
@@ -294,22 +293,6 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
                 }
             }
             this.playerNear = index;
-        }
-
-        private void removeBacktracks() {
-            Map<BetterBlockPos, Integer> positionFirstSeen = new HashMap<>();
-            for (int i = 0; i < this.path.size(); i++) {
-                BetterBlockPos pos = this.path.get(i);
-                if (positionFirstSeen.containsKey(pos)) {
-                    int j = positionFirstSeen.get(pos);
-                    while (i > j) {
-                        this.path.remove(i);
-                        i--;
-                    }
-                } else {
-                    positionFirstSeen.put(pos, i);
-                }
-            }
         }
     }
 
@@ -466,7 +449,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
 
         for (int relaxation = 0; relaxation < 3; relaxation++) { // try for a strict solution first, then relax more and more (if we're in a corner or near some blocks, it will have to relax its constraints a bit)
             int[] heights = isBoosted ? new int[]{20, 10, 5, 0} : new int[]{0}; // attempt to gain height, if we can, so as not to waste the boost
-            float[] interps = new float[] {1.0f, 0.75f, 0.5f, 0.25f};
+            float[] interps = new float[] {1.0f};
             int steps = relaxation < 2 ? isBoosted ? 5 : Baritone.settings().elytraSimulationTicks.value : 3;
             int lookahead = relaxation == 0 ? 2 : 3; // ideally this would be expressed as a distance in blocks, rather than a number of voxel steps
             //int minStep = Math.max(0, playerNear - relaxation);
