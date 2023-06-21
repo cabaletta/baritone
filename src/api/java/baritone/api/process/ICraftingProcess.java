@@ -28,44 +28,26 @@ import java.util.List;
 public interface ICraftingProcess extends IBaritoneProcess {
 
     /**
-     * Executes the crafting of the requested item such that we obtain the requested amount.
-     * @param item that should be crafted
-     * @param amount how much of that item is wanted.
-     */
-    void craftItem(Item item, int amount);
-
-    /**
-     * Executes the crafting of the requested recipe such that we obtain the requested amount of output.
-     * @param recipe recipe that should be used.
+     * Executes the crafting of the requested recipes such that we obtain the requested amount of output.
+     * It is possible to mix recipes with different out puts, but it may lead to strange results.
+     * @param recipes List of recipes that should be used.
      * @param amount how many result items are wanted.
      */
-    void craftRecipe(IRecipe recipe, int amount);
+    void craft(List<IRecipe> recipes, int amount);
 
     /**
      * @param item that should be crafted.
-     * @return Can the item be crafted in a crafting table?
+     * @param allCraftingRecipes if all crafting recipes should be returned or only the one that can be crafted
+     * @return List of recipes that result in the provided Item.
      */
-    boolean hasCraftingRecipe(Item item);
+    List<IRecipe> getCraftingRecipes(Item item, boolean allCraftingRecipes);
 
     /**
-     * @param item that should be crafted.
-     * @return List of all recipes that result in the provided Item.
-     */
-    List<IRecipe> getCraftingRecipes(Item item);
-
-    /**
-     * @param item that should be crafted.
-     * @param amount how much of this item should be crafted.
-     * @return Can we craft this item the requested amount of times?
-     */
-    boolean canCraft(Item item, int amount);
-
-    /**
-     * @param recipe that should be crafted.
+     * @param recipes that should be crafted.
      * @param amount how much output is wanted.
-     * @return Can we craft this recipe to get the requested amount of output?
+     * @return Can we craft this the requested amount of output from the provided recipes?
      */
-    boolean canCraft(IRecipe recipe, int amount);
+    boolean canCraft(List<IRecipe> recipes, int amount);
 
     /**
      * @param recipe the recipe we want to craft.

@@ -26,6 +26,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.crafting.CraftingManager;
 import net.minecraft.item.crafting.IRecipe;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
@@ -39,33 +40,27 @@ public class CraftCommand extends Command {
     @Override
     public void execute(String label, IArgConsumer args) throws CommandException {
         int amount = args.getAsOrDefault(Integer.class, 1);
-
         Item item = args.getDatatypeForOrNull(ItemById.INSTANCE);
+        List<IRecipe> recipes;
 
-        if (item == null) {
+        if (item != null) {
+            recipes = baritone.getCraftingProcess().getCraftingRecipes(item, false);
+        } else {
             String itemName = args.rawRest();
-            boolean recipeExists = false;
+            recipes = new ArrayList<>();
             for (IRecipe recipe : CraftingManager.REGISTRY) {
                 if (recipe.getRecipeOutput().getDisplayName().equalsIgnoreCase(itemName)) {
-                    if (baritone.getCraftingProcess().canCraft(recipe, amount)) {
-                        baritone.getCraftingProcess().craftRecipe(recipe, amount);
-                        return;
-                    } else { //a recipe exists but we cant craft it
-                        recipeExists = true;
-                    }
+                    recipes.add(recipe);
                 }
             }
-            if (recipeExists) {
-                logDirect("Insufficient Resources");
-            } else {
-                logDirect("Invalid Item");
-            }
-        } else if (!baritone.getCraftingProcess().hasCraftingRecipe(item)) {
-            logDirect("no crafting recipe for "+item.getTranslationKey()+" found.");
-        } else if (!baritone.getCraftingProcess().canCraft(item, amount)){
+        }
+
+        if (recipes.isEmpty()) {
+            logDirect("no crafting recipe found.");
+        } else if (!baritone.getCraftingProcess().canCraft(recipes, amount)) {
             logDirect("Insufficient Resources");
         } else {
-            baritone.getCraftingProcess().craftItem(item, amount);
+            baritone.getCraftingProcess().craft(recipes, amount);
         }
     }
 

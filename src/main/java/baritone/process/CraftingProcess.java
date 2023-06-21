@@ -53,7 +53,7 @@ import java.util.*;
 
 public final class CraftingProcess extends BaritoneProcessHelper implements ICraftingProcess {
     private int amount;
-    private IRecipe recipe;
+    private List<IRecipe> recipes;
     private Goal goal;
     private boolean placeCraftingTable = false;
     private boolean clearToPush;
@@ -65,7 +65,7 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
 
     @Override
     public boolean isActive() {
-        return recipe != null && amount >= 1;
+        return recipes != null && amount >= 1;
     }
 
     @Override
@@ -90,12 +90,17 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
         } else {
             //we no longer pathing so it's time to craft
             try {
-                if (!canCraft(recipe,1) && amount > 0) {
-                    recipe = getCraftingRecipeForItem(recipe.getRecipeOutput().getItem());
-                    if (!canCraftInInventory(recipe) && !(ctx.player().openContainer instanceof ContainerWorkbench)) {
-                        pathToACraftingTable();
-                        return new PathingCommand(goal, PathingCommandType.SET_GOAL_AND_PATH);
+                while (!canCraft(recipes.subList(0,1), 1) && amount > 0) {
+                    if (recipes.size() == 1) {
+                        logDirect("Insufficient Resources");
+                        onLostControl();
+                        return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
                     }
+                    recipes = recipes.subList(1, recipes.size());
+                }
+                if (!canCraftInInventory(recipes.get(0)) && !(ctx.player().openContainer instanceof ContainerWorkbench)) {
+                    pathToACraftingTable();
+                    return new PathingCommand(goal, PathingCommandType.SET_GOAL_AND_PATH);
                 }
                 if (clearToPush) {
                     moveItemsToCraftingGrid();
@@ -112,7 +117,7 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
     @Override
     public synchronized void onLostControl() {
         amount = 0;
-        recipe = null;
+        recipes = null;
         goal = null;
         placeCraftingTable = false;
         knownLocations = null;
@@ -121,52 +126,22 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
 
     @Override
     public String displayName0() {
-        return "Crafting " + amount + "x " + recipe.getRecipeOutput().getDisplayName();
+        return "Crafting " + amount + "x " + recipes.get(0).getRecipeOutput().getDisplayName();
     }
 
     @Override
-    public void craftItem(Item item, int amount) {
-        if (canCraft(item, amount)) {
-            this.recipe = getCraftingRecipeForItem(item);
-            this.amount = amount;
-            clearToPush = true;
-            logDirect("Crafting now " + amount + "x [" + item.getTranslationKey() + "]");
-            if (!canCraftInInventory(recipe)) {
-                pathToACraftingTable();
-            }
-        } else {
-            logDirect("Insufficient resources.");
-        }
+    public void craft(List<IRecipe> recipes, int amount) {
+        this.recipes = recipes;
+        this.amount = amount;
+        clearToPush = true;
+        logDirect("Crafting now " + amount + "x [" + recipes.get(0).getRecipeOutput().getDisplayName() + "]");
     }
 
     @Override
-    public void craftRecipe(IRecipe recipe, int amount) {
-        if (canCraft(recipe, amount)) {
-            this.recipe = recipe;
-            this.amount = amount;
-            clearToPush = true;
-            logDirect("Crafting now " + amount + "x [" + recipe.getRecipeOutput().getDisplayName() + "]");
-            if (!canCraftInInventory(recipe)) {
-                pathToACraftingTable();
-            }
-        } else {
-            logDirect("Insufficient resources.");
-        }
-    }
-
-    @Override
-    //should this be in a helper class?
-    public boolean hasCraftingRecipe(Item item) {
-        ArrayList<IRecipe> recipes = getCraftingRecipes(item);
-        return !recipes.isEmpty();
-    }
-
-    @Override
-    //should this be in a helper class?
-    public ArrayList<IRecipe> getCraftingRecipes(Item item) {
-        ArrayList<IRecipe> recipes = new ArrayList<>();
+    public List<IRecipe> getCraftingRecipes(Item item, boolean allCraftingRecipes) {
+        List<IRecipe> recipes = new ArrayList<>();
         for (IRecipe recipe : CraftingManager.REGISTRY) {
-            if (recipe.getRecipeOutput().getItem().equals(item)) {
+            if (recipe.getRecipeOutput().getItem().equals(item) && (canCraft(recipe) || allCraftingRecipes)) {
                 recipes.add(recipe);
             }
         }
@@ -174,30 +149,22 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
     }
 
     @Override
-    //should this be in a helper class?
-    public boolean canCraft(Item item, int amount) {
-        List<IRecipe> recipeList = getCraftingRecipes(item);
+    public boolean canCraft(List<IRecipe> recipes, int amount) {
         RecipeItemHelper recipeItemHelper = new RecipeItemHelper();
         for (ItemStack stack : ctx.player().inventory.mainInventory) {
             recipeItemHelper.accountStack(stack);
         }
         int totalPossibleToCraft = 0;
-        for (IRecipe recipe : recipeList) {
+        for (IRecipe recipe : recipes) {
             totalPossibleToCraft = totalPossibleToCraft + (recipeItemHelper.getBiggestCraftableStack(recipe,null) * recipe.getRecipeOutput().getCount());
         }
         return totalPossibleToCraft >= amount;
     }
 
-    @Override
-    //should this be in a helper class?
-    public boolean canCraft(IRecipe recipe, int amount) {
-        RecipeItemHelper recipeItemHelper = new RecipeItemHelper();
-        for (ItemStack stack : ctx.player().inventory.mainInventory) {
-            recipeItemHelper.accountStack(stack);
-        }
-        int outputCount = recipe.getRecipeOutput().getCount();
-        int times = amount % outputCount == 0 ? amount / outputCount : (amount / outputCount) + 1;
-        return recipeItemHelper.canCraft(recipe, null, times);
+    private boolean canCraft(IRecipe recipe) {
+        List<IRecipe> recipeList = new ArrayList<>();
+        recipeList.add(recipe);
+        return canCraft(recipeList, 1);
     }
 
     @Override
@@ -205,22 +172,12 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
         return recipe.canFit(2, 2) && !ctx.player().isCreative();
     }
 
-    private IRecipe getCraftingRecipeForItem(Item item) {
-        List<IRecipe> recipeList = getCraftingRecipes(item);
-        for (IRecipe recipe : recipeList) {
-            if (canCraft(recipe, 1)) {
-                return recipe;
-            }
-        }
-        return null;
-    }
-
     private void moveItemsToCraftingGrid() {
         clearToPush = false;
         int windowId = ctx.player().openContainer.windowId;
         //try to put the recipe the required amount of times in to the crafting grid.
-        for (int i = 0; i * recipe.getRecipeOutput().getCount() < amount; i++) {
-            ctx.player().connection.sendPacket(new CPacketPlaceRecipe(windowId, recipe, GuiScreen.isShiftKeyDown()));
+        for (int i = 0; i * recipes.get(0).getRecipeOutput().getCount() < amount; i++) {
+            ctx.player().connection.sendPacket(new CPacketPlaceRecipe(windowId, recipes.get(0), GuiScreen.isShiftKeyDown()));
         }
     }
 
@@ -231,7 +188,7 @@ public final class CraftingProcess extends BaritoneProcessHelper implements ICra
             int slotID = 0; //see cheat sheet https://wiki.vg/Inventory
             int mouseButton = 0;
             ctx.playerController().windowClick(windowId, slotID, mouseButton, ClickType.QUICK_MOVE, ctx.player());
-            amount = amount - (recipe.getRecipeOutput().getCount() * inputCount);
+            amount = amount - (recipes.get(0).getRecipeOutput().getCount() * inputCount);
             clearToPush = true;
         }
 
