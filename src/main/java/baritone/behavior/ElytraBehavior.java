@@ -97,7 +97,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
             final int prevMaxNear = this.maxPlayerNear;
             this.maxPlayerNear = Math.max(this.maxPlayerNear, this.playerNear);
 
-            if (this.maxPlayerNear == prevMaxNear) {
+            if (this.maxPlayerNear == prevMaxNear && ctx.player().isElytraFlying()) {
                 this.ticksNearUnchanged++;
             } else {
                 this.ticksNearUnchanged = 0;
@@ -376,7 +376,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         this.aimPos = null;
 
         final List<BetterBlockPos> path = this.pathManager.getPath();
-        if (path.isEmpty() || !ctx.player().isElytraFlying()) {
+        if (path.isEmpty()) {
             return;
         }
 
@@ -389,6 +389,9 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
                 Math.min(playerNear + 100, path.size())
         );
 
+        if (!ctx.player().isElytraFlying()) {
+            return;
+        }
         baritone.getInputOverrideHandler().clearAllKeys();
 
         if (ctx.player().collidedHorizontally) {
