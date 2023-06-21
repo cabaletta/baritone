@@ -19,6 +19,7 @@ package baritone.behavior.elytra;
 
 import dev.babbaj.pathfinder.NetherPathfinder;
 import dev.babbaj.pathfinder.PathSegment;
+import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.BlockStateContainer;
@@ -29,8 +30,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-
-import static baritone.behavior.ElytraBehavior.passable;
 
 /**
  * @author Brady
@@ -129,7 +128,7 @@ public final class NetherPathfinderContext {
                     for (int z = 0; z < 16; z++) {
                         for (int x = 0; x < 16; x++) {
                             IBlockState state = bsc.get(x, y1, z);
-                            if (!passable(state, false)) {
+                            if (state.getMaterial() != Material.AIR) {
                                 packed[x | (z << 4) | (y << 8)] = true;
                             }
                         }

@@ -202,6 +202,20 @@ public final class BetterBlockPos extends BlockPos {
         return amt == 0 ? this : new BetterBlockPos(x - amt, y, z);
     }
 
+    public double distanceSq(final BetterBlockPos to) {
+        double dx = (double) this.x - to.x;
+        double dy = (double) this.y - to.y;
+        double dz = (double) this.z - to.z;
+        return dx * dx + dy * dy + dz * dz;
+    }
+
+    public double distanceTo(final BetterBlockPos to) {
+        double dx = (double) this.x - to.x;
+        double dy = (double) this.y - to.y;
+        double dz = (double) this.z - to.z;
+        return Math.sqrt(dx * dx + dy * dy + dz * dz);
+    }
+
     @Override
     @Nonnull
     public String toString() {
