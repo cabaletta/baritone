@@ -123,10 +123,13 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
                     })
                     .whenComplete((result, ex) -> {
                         this.recalculating = false;
-                        if (ex instanceof PathCalculationException) {
-                            logDirect("Failed to compute path to destination");
-                        } else if (ex != null) {
-                            logUnhandledException(ex);
+                        if (ex != null) {
+                            final Throwable cause = ex.getCause();
+                            if (cause instanceof PathCalculationException) {
+                                logDirect("Failed to compute path to destination");
+                            } else {
+                                logUnhandledException(cause);
+                            }
                         }
                     });
         }
@@ -143,10 +146,13 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
             return this.path0(ctx.playerFeet(), this.path.get(upToIncl), segment -> segment.append(after.stream(), complete))
                     .whenComplete((result, ex) -> {
                         this.recalculating = false;
-                        if (ex instanceof PathCalculationException) {
-                            logDirect("Failed to recompute segment");
-                        } else if (ex != null) {
-                            logUnhandledException(ex);
+                        if (ex != null) {
+                            final Throwable cause = ex.getCause();
+                            if (cause instanceof PathCalculationException) {
+                                logDirect("Failed to recompute segment");
+                            } else {
+                                logUnhandledException(cause);
+                            }
                         }
                     });
         }
@@ -173,10 +179,13 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
                     })
                     .whenComplete((result, ex) -> {
                         this.recalculating = false;
-                        if (ex instanceof PathCalculationException) {
-                            logDirect("Failed to compute next segment");
-                        } else if (ex != null) {
-                            logUnhandledException(ex);
+                        if (ex != null) {
+                            final Throwable cause = ex.getCause();
+                            if (cause instanceof PathCalculationException) {
+                                logDirect("Failed to compute next segment");
+                            } else {
+                                logUnhandledException(cause);
+                            }
                         }
                     });
         }
@@ -628,11 +637,6 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         if (!this.clearView(start, dest, ignoreLava)) {
             return false;
         }
-        // Avoid head bonks
-        // Even though the player's hitbox is supposed to be 0.6 tall, there's no way it's actually that short
-        if (!this.clearView(start.add(0, 1, 0), dest, ignoreLava)) {
-            return false;
-        }
         if (growAmount == null) {
             return true;
         }
@@ -722,13 +726,14 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
             AxisAlignedBB hitbox = initialBB;
             Vec3d totalMotion = Vec3d.ZERO;
             for (int i = 0; i < steps; i++) {
+                if (MC_1_12_Collision_Fix.bonk(ctx, hitbox)) {
+                    continue outer;
+                }
                 motion = step(motion, pitch, good.getYaw(), firework && i > 0);
 
                 final AxisAlignedBB inMotion = hitbox.expand(motion.x, motion.y, motion.z)
                         // Additional padding for safety
-                        .grow(0.01, 0.01, 0.01)
-                        // Expand 0.4 up and 0.2 down for head bonk avoidance
-                        .expand(0, 0.4, 0).expand(0, -0.2, 0);
+                        .grow(0.01, 0.01, 0.01);
 
                 for (int x = MathHelper.floor(inMotion.minX); x < MathHelper.ceil(inMotion.maxX); x++) {
                     for (int y = MathHelper.floor(inMotion.minY); y < MathHelper.ceil(inMotion.maxY); y++) {
@@ -812,6 +817,41 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
     private static boolean passable(IBlockState state, boolean ignoreLava) {
         Material mat = state.getMaterial();
         return mat == Material.AIR || (ignoreLava && mat == Material.LAVA);
+    }
+
+    /**
+     * Minecraft 1.12's pushOutOfBlocks logic doesn't account for players being able to fit under single block spaces,
+     * so whenever the edge of a ceiling is encountered while elytra flying it tries to push the player out.
+     */
+    private static final class MC_1_12_Collision_Fix {
+
+        public static boolean bonk(final IPlayerContext ctx, final AxisAlignedBB aabb) {
+            final Vec3d center = aabb.getCenter();
+            final double width = (double) ctx.player().width * 0.35D;
+            final double x = center.x;
+            final double y = aabb.minY + 0.5D;
+            final double z = center.z;
+
+            return pushOutOfBlocks(ctx, x - width, y, z + width)
+                    || pushOutOfBlocks(ctx, x - width, y, z - width)
+                    || pushOutOfBlocks(ctx, x + width, y, z - width)
+                    || pushOutOfBlocks(ctx, x + width, y, z + width);
+        }
+
+        private static boolean pushOutOfBlocks(final IPlayerContext ctx, final double x, final double y, final double z) {
+            final BlockPos pos = new BlockPos(x, y, z);
+            if (isOpenBlockSpace(ctx, pos)) {
+                return false;
+            }
+            return isOpenBlockSpace(ctx, pos.west())
+                    || isOpenBlockSpace(ctx, pos.east())
+                    || isOpenBlockSpace(ctx, pos.north())
+                    || isOpenBlockSpace(ctx, pos.south());
+        }
+
+        private static boolean isOpenBlockSpace(IPlayerContext ctx, BlockPos pos) {
+            return !ctx.world().getBlockState(pos).isNormalCube() && !ctx.world().getBlockState(pos.up()).isNormalCube();
+        }
     }
 }
 
