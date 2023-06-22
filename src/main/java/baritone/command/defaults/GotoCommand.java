@@ -20,7 +20,6 @@ package baritone.command.defaults;
 import baritone.api.IBaritone;
 import baritone.api.command.Command;
 import baritone.api.command.argument.IArgConsumer;
-import baritone.api.command.datatypes.BlockById;
 import baritone.api.command.datatypes.ForBlockOptionalMeta;
 import baritone.api.command.datatypes.RelativeCoordinate;
 import baritone.api.command.datatypes.RelativeGoal;
@@ -61,7 +60,8 @@ public class GotoCommand extends Command {
     public Stream<String> tabComplete(String label, IArgConsumer args) throws CommandException {
         // since it's either a goal or a block, I don't think we can tab complete properly?
         // so just tab complete for the block variant
-        return args.tabCompleteDatatype(BlockById.INSTANCE);
+        args.requireMax(1);
+        return args.tabCompleteDatatype(ForBlockOptionalMeta.INSTANCE);
     }
 
     @Override
