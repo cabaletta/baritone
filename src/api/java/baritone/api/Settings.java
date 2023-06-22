@@ -907,11 +907,13 @@ public final class Settings {
     public final Setting<Boolean> extendCacheOnThreshold = new Setting<>(false);
 
     /**
-     * When enabled the main thread will not be used for world scanning.
-     * This trades correctness for performance so do not enable this unless you
-     * really need it and do not report bugs if it causes problems.
+     * When enabled the main thread will not participate in world scanning.
+     * <p>
+     * Rarely causes a race condition so if Baritone doesn't find blocks anymore
+     * and your log is full of {@code ArrayIndexOutOfBoundsException}s you might
+     * want to try turning this off.
      */
-    public final Setting<Boolean> scanAsynchronously = new Setting<>(false);
+    public final Setting<Boolean> scanAsynchronously = new Setting<>(true);
 
     /**
      * Don't consider the next layer in builder until the current one is done
