@@ -163,12 +163,11 @@ public interface Helper {
      * Send components to chat with the [Baritone] prefix
      *
      * @param logAsToast Whether to log as a toast notification
-     * @param useMessageTag Whether to use a message tag instead of a prefix
      * @param components The components to send
      */
-    default void logDirect(boolean logAsToast, boolean useMessageTag, Component... components) {
+    default void logDirect(boolean logAsToast, Component... components) {
         MutableComponent component = Component.literal("");
-        if (!logAsToast && !useMessageTag) {
+        if (!logAsToast && !BaritoneAPI.getSettings().useMessageTag.value) {
             component.append(getPrefix());
             component.append(Component.literal(" "));
         }
@@ -176,18 +175,8 @@ public interface Helper {
         if (logAsToast) {
             logToast(getPrefix(), component);
         } else {
-            mc.execute(() -> BaritoneAPI.getSettings().logger.value.accept(component, useMessageTag ? MESSAGE_TAG : null));
+            mc.execute(() -> BaritoneAPI.getSettings().logger.value.accept(component));
         }
-    }
-
-    /**
-     * Send components to chat with the [Baritone] prefix
-     *
-     * @param logAsToast Whether to log as a toast notification
-     * @param components The components to send
-     */
-    default void logDirect(boolean logAsToast, Component... components) {
-        logDirect(logAsToast, BaritoneAPI.getSettings().useMessageTag.value, components);
     }
 
     /**

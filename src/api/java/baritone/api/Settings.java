@@ -17,6 +17,7 @@
 
 package baritone.api;
 
+import baritone.api.utils.Helper;
 import baritone.api.utils.NotificationHelper;
 import baritone.api.utils.SettingsUtil;
 import baritone.api.utils.TypeUtils;
@@ -1147,7 +1148,10 @@ public final class Settings {
      * via {@link Consumer#andThen(Consumer)} or it can completely be overriden via setting
      * {@link Setting#value};
      */
-    public final Setting<BiConsumer<Component, GuiMessageTag>> logger = new Setting<>((msg, tag) -> Minecraft.getInstance().gui.getChat().addMessage(msg, null, tag));
+    public final Setting<Consumer<Component>> logger = new Setting<>((msg) -> {
+        final GuiMessageTag tag = useMessageTag.value ? Helper.MESSAGE_TAG : null;
+        Minecraft.getInstance().gui.getChat().addMessage(msg, null, tag);
+    });
 
     /**
      * The function that is called when Baritone will send a desktop notification. This function can be added to
