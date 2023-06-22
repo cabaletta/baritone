@@ -509,9 +509,9 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
                             }
                         }
 
-                        // 1.0 -> 0.25 -> none
+                        final double minAvoidance = Baritone.settings().elytraMinimumAvoidance.value;
                         final Double growth = relaxation == 2 ? null
-                                : relaxation == 0 ? 0.5d : 0.25d;
+                                : relaxation == 0 ? 2 * minAvoidance : minAvoidance;
 
                         if (this.isHitboxClear(start, dest, growth, isInLava)) {
                             // Yaw is trivial, just calculate the rotation required to face the destination

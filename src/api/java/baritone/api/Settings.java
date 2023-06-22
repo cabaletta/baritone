@@ -52,6 +52,7 @@ public final class Settings {
     public final Setting<Integer> elytraPitchRange = new Setting<>(25);
     public final Setting<Double> elytraFireworkSpeed = new Setting<>(0.6);
     public final Setting<Integer> elytraFireworkSetbackUseDelay = new Setting<>(15);
+    public final Setting<Double> elytraMinimumAvoidance = new Setting<>(0.2);
     public final Setting<Boolean> conserveFireworks = new Setting<>(true);
     public final Setting<Boolean> renderRaytraces = new Setting<>(false);
     public final Setting<Boolean> elytraFreeLook = new Setting<>(false);
