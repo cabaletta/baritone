@@ -143,12 +143,10 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
             return this.path0(ctx.playerFeet(), this.path.get(upToIncl), segment -> segment.append(after.stream(), complete))
                     .whenComplete((result, ex) -> {
                         this.recalculating = false;
-                        if (ex != null) {
-                            if (ex instanceof PathCalculationException) {
-                                logDirect("Failed to recompute segment");
-                            } else {
-                                logUnhandledException(ex);
-                            }
+                        if (ex instanceof PathCalculationException) {
+                            logDirect("Failed to recompute segment");
+                        } else if (ex != null) {
+                            logUnhandledException(ex);
                         }
                     });
         }
@@ -175,12 +173,10 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
                     })
                     .whenComplete((result, ex) -> {
                         this.recalculating = false;
-                        if (ex != null) {
-                            if (ex instanceof PathCalculationException) {
-                                logDirect("Failed to compute next segment");
-                            } else {
-                                logUnhandledException(ex);
-                            }
+                        if (ex instanceof PathCalculationException) {
+                            logDirect("Failed to compute next segment");
+                        } else if (ex != null) {
+                            logUnhandledException(ex);
                         }
                     });
         }
