@@ -123,12 +123,10 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
                     })
                     .whenComplete((result, ex) -> {
                         this.recalculating = false;
-                        if (ex != null) {
-                            if (ex instanceof PathCalculationException) {
-                                logDirect("Failed to compute path to destination");
-                            } else {
-                                logUnhandledException(ex);
-                            }
+                        if (ex instanceof PathCalculationException) {
+                            logDirect("Failed to compute path to destination");
+                        } else if (ex != null) {
+                            logUnhandledException(ex);
                         }
                     });
         }
