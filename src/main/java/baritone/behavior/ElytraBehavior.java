@@ -628,6 +628,11 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         if (!this.clearView(start, dest, ignoreLava)) {
             return false;
         }
+        // Prevent head bonks
+        // Even though the player's hitbox is supposed to be 0.6 tall, there's no way it's actually that short
+        if (!this.clearView(start.add(0, 1.6, 0), dest, ignoreLava)) {
+            return false;
+        }
         if (growAmount == null) {
             return true;
         }
