@@ -17,10 +17,12 @@
 
 package baritone.api;
 
+import baritone.api.utils.Helper;
 import baritone.api.utils.NotificationHelper;
 import baritone.api.utils.SettingsUtil;
 import baritone.api.utils.TypeUtils;
 import baritone.api.utils.gui.BaritoneToast;
+import net.minecraft.client.GuiMessageTag;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Vec3i;
 import net.minecraft.network.chat.Component;
@@ -773,6 +775,11 @@ public final class Settings {
     public final Setting<Boolean> shortBaritonePrefix = new Setting<>(false);
 
     /**
+     * Use a modern message tag instead of a prefix when logging to chat
+     */
+    public final Setting<Boolean> useMessageTag = new Setting<>(false);
+
+    /**
      * Echo commands to chat when they are run
      */
     public final Setting<Boolean> echoCommands = new Setting<>(true);
@@ -1141,7 +1148,10 @@ public final class Settings {
      * via {@link Consumer#andThen(Consumer)} or it can completely be overriden via setting
      * {@link Setting#value};
      */
-    public final Setting<Consumer<Component>> logger = new Setting<>(msg -> Minecraft.getInstance().gui.getChat().addMessage(msg));
+    public final Setting<Consumer<Component>> logger = new Setting<>((msg) -> {
+        final GuiMessageTag tag = useMessageTag.value ? Helper.MESSAGE_TAG : null;
+        Minecraft.getInstance().gui.getChat().addMessage(msg, null, tag);
+    });
 
     /**
      * The function that is called when Baritone will send a desktop notification. This function can be added to

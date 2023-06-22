@@ -18,8 +18,10 @@
 package baritone.api.utils;
 
 import baritone.api.BaritoneAPI;
+import baritone.api.Settings;
 import baritone.api.utils.gui.BaritoneToast;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.GuiMessageTag;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -47,6 +49,11 @@ public interface Helper {
      * Instance of the game
      */
     Minecraft mc = Minecraft.getInstance();
+
+    /**
+     * The tag to assign to chat messages when {@link Settings#useMessageTag} is {@code true}.
+     */
+    GuiMessageTag MESSAGE_TAG = new GuiMessageTag(0xFF55FF, null, Component.literal("Baritone message."), "Baritone");
 
     static Component getPrefix() {
         // Inner text component
@@ -160,8 +167,10 @@ public interface Helper {
      */
     default void logDirect(boolean logAsToast, Component... components) {
         MutableComponent component = Component.literal("");
-        component.append(getPrefix());
-        component.append(Component.literal(" "));
+        if (!logAsToast && !BaritoneAPI.getSettings().useMessageTag.value) {
+            component.append(getPrefix());
+            component.append(Component.literal(" "));
+        }
         Arrays.asList(components).forEach(component::append);
         if (logAsToast) {
             logToast(getPrefix(), component);
