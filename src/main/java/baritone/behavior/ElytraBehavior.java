@@ -282,6 +282,10 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         }
 
         public void updatePlayerNear() {
+            if (this.path.isEmpty()) {
+                return;
+            }
+
             int index = this.playerNear;
             final BetterBlockPos pos = ctx.playerFeet();
             for (int i = index; i >= Math.max(index - 1000, 0); i -= 10) {
