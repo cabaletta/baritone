@@ -628,7 +628,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         if (!this.clearView(start, dest, ignoreLava)) {
             return false;
         }
-        // Prevent head bonks
+        // Avoid head bonks
         // Even though the player's hitbox is supposed to be 0.6 tall, there's no way it's actually that short
         if (!this.clearView(start.add(0, 1.6, 0), dest, ignoreLava)) {
             return false;
@@ -684,14 +684,14 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         }
     }
 
-    private Pair<Float, Boolean> solvePitch(Vec3d goalDirection, int steps, int relaxation, boolean isBoosted, boolean ignoreLava) {
-        final Float pitch = this.solvePitch(goalDirection, steps, relaxation == 2, isBoosted, ignoreLava);
+    private Pair<Float, Boolean> solvePitch(Vec3d goalDelta, int steps, int relaxation, boolean isBoosted, boolean ignoreLava) {
+        final Float pitch = this.solvePitch(goalDelta, steps, relaxation == 2, isBoosted, ignoreLava);
         if (pitch != null) {
             return new Pair<>(pitch, false);
         }
 
         if (Baritone.settings().experimentalTakeoff.value && relaxation > 0) {
-            final Float usingFirework = this.solvePitch(goalDirection, steps, relaxation == 2, true, ignoreLava);
+            final Float usingFirework = this.solvePitch(goalDelta, steps, relaxation == 2, true, ignoreLava);
             if (usingFirework != null) {
                 return new Pair<>(usingFirework, true);
             }
@@ -700,37 +700,48 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         return new Pair<>(null, false);
     }
 
-    private Float solvePitch(Vec3d goalDirection, int steps, boolean desperate, boolean firework, boolean ignoreLava) {
+    private Float solvePitch(Vec3d goalDelta, int steps, boolean desperate, boolean firework, boolean ignoreLava) {
         // we are at a certain velocity, but we have a target velocity
         // what pitch would get us closest to our target velocity?
         // yaw is easy so we only care about pitch
 
-        goalDirection = goalDirection.normalize();
+        final Vec3d goalDirection = goalDelta.normalize();
         Rotation good = RotationUtils.calcRotationFromVec3d(Vec3d.ZERO, goalDirection, ctx.playerRotations()); // lazy lol
 
         Float bestPitch = null;
         double bestDot = Double.NEGATIVE_INFINITY;
-        Vec3d motion = new Vec3d(ctx.player().motionX, ctx.player().motionY, ctx.player().motionZ);
-        float minPitch = desperate ? -90 : Math.max(good.getPitch() - Baritone.settings().elytraPitchRange.value, -89);
-        float maxPitch = desperate ? 90 : Math.min(good.getPitch() + Baritone.settings().elytraPitchRange.value, 89);
+
+        final Vec3d initialMotion = new Vec3d(ctx.player().motionX, ctx.player().motionY, ctx.player().motionZ);
+        final AxisAlignedBB initialBB = ctx.player().getEntityBoundingBox();
+        final float minPitch = desperate ? -90 : Math.max(good.getPitch() - Baritone.settings().elytraPitchRange.value, -89);
+        final float maxPitch = desperate ? 90 : Math.min(good.getPitch() + Baritone.settings().elytraPitchRange.value, 89);
+
         outer:
         for (float pitch = minPitch; pitch <= maxPitch; pitch++) {
-            Vec3d stepped = motion;
+            Vec3d motion = initialMotion;
+            AxisAlignedBB hitbox = initialBB;
             Vec3d totalMotion = Vec3d.ZERO;
             for (int i = 0; i < steps; i++) {
-                stepped = step(stepped, pitch, good.getYaw(), firework && i > 0);
-                Vec3d actualPositionPrevTick = ctx.playerFeetAsVec().add(totalMotion);
-                totalMotion = totalMotion.add(stepped);
-                Vec3d actualPosition = ctx.playerFeetAsVec().add(totalMotion);
-                for (int x = MathHelper.floor(Math.min(actualPosition.x, actualPositionPrevTick.x) - 0.31); x <= Math.max(actualPosition.x, actualPositionPrevTick.x) + 0.31; x++) {
-                    for (int y = MathHelper.floor(Math.min(actualPosition.y, actualPositionPrevTick.y) - 0.2); y <= Math.max(actualPosition.y, actualPositionPrevTick.y) + 1; y++) {
-                        for (int z = MathHelper.floor(Math.min(actualPosition.z, actualPositionPrevTick.z) - 0.31); z <= Math.max(actualPosition.z, actualPositionPrevTick.z) + 0.31; z++) {
+                motion = step(motion, pitch, good.getYaw(), firework && i > 0);
+
+                final AxisAlignedBB inMotion = hitbox.expand(motion.x, motion.y, motion.z)
+                        // Additional padding for safety
+                        .grow(0.01, 0.01, 0.01)
+                        // Expand 0.4 up and 0.2 down for head bonk avoidance
+                        .expand(0, 0.4, 0).expand(0, -0.2, 0);
+
+                for (int x = MathHelper.floor(inMotion.minX); x < MathHelper.ceil(inMotion.maxX); x++) {
+                    for (int y = MathHelper.floor(inMotion.minY); y < MathHelper.ceil(inMotion.maxY); y++) {
+                        for (int z = MathHelper.floor(inMotion.minZ); z < MathHelper.ceil(inMotion.maxZ); z++) {
                             if (!this.passable(x, y, z, ignoreLava)) {
                                 continue outer;
                             }
                         }
                     }
                 }
+
+                hitbox = hitbox.offset(motion.x, motion.y, motion.z);
+                totalMotion = totalMotion.add(motion);
             }
             double directionalGoodness = goalDirection.dotProduct(totalMotion.normalize());
             // tried to incorporate a "speedGoodness" but it kept making it do stupid stuff (aka always losing altitude)
