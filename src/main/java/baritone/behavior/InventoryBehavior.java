@@ -152,20 +152,6 @@ public final class InventoryBehavior extends Behavior implements Helper {
         return bestInd;
     }
 
-    private int firstFireworks() {
-        final NonNullList<ItemStack> invy = ctx.player().inventory.mainInventory;
-        for (int i = 0; i < invy.size(); i++) {
-            final ItemStack itemStack = invy.get(i);
-            final NBTTagCompound subCompound = itemStack.getSubCompound("Fireworks");
-            if (itemStack.getItem() == Items.FIREWORKS
-                    && subCompound != null
-                    && subCompound.hasKey("Flight")) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
     public boolean hasGenericThrowaway() {
         for (Item item : Baritone.settings().acceptableThrowawayItems.value) {
             if (throwaway(false, stack -> item.equals(stack.getItem()))) {
