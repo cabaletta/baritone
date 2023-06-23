@@ -40,14 +40,11 @@ public interface ILookBehavior extends IBehavior {
     void updateTarget(Rotation rotation, boolean blockInteract);
 
     /**
-     * The aim processor instance for this {@link ILookBehavior}, which is responsible for applying additional, deterministic
-     * transformations to the target rotation set by {@link #updateTarget}. Whenever {@link IAimProcessor#nextRotation(Rotation)}
-     * is called on the instance returned by this method, the returned value always reflects what would happen in the
-     * upcoming tick. In other words, it is a pure function, and no internal state changes. If simulation of the
-     * rotation states beyond the next tick is required, then a {@link IAimProcessor#fork(int) fork} should be created.
+     * The aim processor instance for this {@link ILookBehavior}, which is responsible for applying additional,
+     * deterministic transformations to the target rotation set by {@link #updateTarget}.
      *
      * @return The aim processor
-     * @see IAimProcessor#fork(int)
+     * @see IAimProcessor#fork
      */
     IAimProcessor getAimProcessor();
 }

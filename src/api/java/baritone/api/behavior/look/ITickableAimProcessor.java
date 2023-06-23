@@ -22,24 +22,26 @@ import baritone.api.utils.Rotation;
 /**
  * @author Brady
  */
-public interface IAimProcessor {
+public interface ITickableAimProcessor extends IAimProcessor {
 
     /**
-     * Returns the actual rotation that will be used when the desired rotation is requested. The returned rotation
-     * always reflects what would happen in the upcoming tick. In other words, it is a pure function, and no internal
-     * state changes. If simulation of the rotation states beyond the next tick is required, then a
-     * {@link IAimProcessor#fork fork} should be created.
+     * Advances the internal state of this aim processor by a single tick.
+     */
+    void tick();
+
+    /**
+     * Calls {@link #tick()} the specified number of times.
      *
-     * @param desired The desired rotation to set
+     * @param ticks The number of calls
+     */
+    void advance(int ticks);
+
+    /**
+     * Returns the actual rotation as provided by {@link #peekRotation(Rotation)}, and then automatically advances the
+     * internal state by one {@link #tick() tick}.
+     *
+     * @param rotation The desired rotation to set
      * @return The actual rotation
      */
-    Rotation peekRotation(Rotation desired);
-
-    /**
-     * Returns a copy of this {@link IAimProcessor} which has its own internal state and is manually tickable.
-     *
-     * @return The forked processor
-     * @see ITickableAimProcessor
-     */
-    ITickableAimProcessor fork();
+    Rotation nextRotation(Rotation rotation);
 }

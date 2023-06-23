@@ -21,6 +21,7 @@ import baritone.Baritone;
 import baritone.api.Settings;
 import baritone.api.behavior.ILookBehavior;
 import baritone.api.behavior.look.IAimProcessor;
+import baritone.api.behavior.look.ITickableAimProcessor;
 import baritone.api.event.events.*;
 import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.Rotation;
@@ -68,7 +69,6 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
     @Override
     public void onTick(TickEvent event) {
         if (event.getType() == TickEvent.Type.IN) {
-            // Unlike forked AimProcessors, the root one needs to be manually updated each game tick
             this.processor.tick();
         }
     }
@@ -88,7 +88,7 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
                     this.prevRotation = new Rotation(ctx.player().rotationYaw, ctx.player().rotationPitch);
                 }
 
-                final Rotation actual = this.processor.nextRotation(this.target.rotation);
+                final Rotation actual = this.processor.peekRotation(this.target.rotation);
                 ctx.player().rotationYaw = actual.getYaw();
                 ctx.player().rotationPitch = actual.getPitch();
                 break;
@@ -129,7 +129,7 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
 
     public void pig() {
         if (this.target != null) {
-            final Rotation actual = this.processor.nextRotation(this.target.rotation);
+            final Rotation actual = this.processor.peekRotation(this.target.rotation);
             ctx.player().rotationYaw = actual.getYaw();
         }
     }
@@ -145,7 +145,7 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
     @Override
     public void onPlayerRotationMove(RotationMoveEvent event) {
         if (this.target != null) {
-            final Rotation actual = this.processor.nextRotation(this.target.rotation);
+            final Rotation actual = this.processor.peekRotation(this.target.rotation);
             event.setYaw(actual.getYaw());
             event.setPitch(actual.getPitch());
         }
@@ -164,7 +164,7 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
         }
     }
 
-    private static abstract class AbstractAimProcessor implements IAimProcessor {
+    private static abstract class AbstractAimProcessor implements ITickableAimProcessor {
 
         protected final IPlayerContext ctx;
         private final ForkableRandom rand;
@@ -183,13 +183,8 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
             this.randomPitchOffset = source.randomPitchOffset;
         }
 
-        public void tick() {
-            this.randomYawOffset = (this.rand.nextDouble() - 0.5) * Baritone.settings().randomLooking.value;
-            this.randomPitchOffset = (this.rand.nextDouble() - 0.5) * Baritone.settings().randomLooking.value;
-        }
-
         @Override
-        public Rotation nextRotation(final Rotation rotation) {
+        public final Rotation peekRotation(final Rotation rotation) {
             final Rotation prev = this.getPrevRotation();
 
             float desiredYaw = rotation.getYaw();
@@ -211,16 +206,34 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
         }
 
         @Override
-        public final IAimProcessor fork(final int ticksAdvanced) {
-            final AbstractAimProcessor fork = new AbstractAimProcessor(this) {
+        public final void tick() {
+            this.randomYawOffset = (this.rand.nextDouble() - 0.5) * Baritone.settings().randomLooking.value;
+            this.randomPitchOffset = (this.rand.nextDouble() - 0.5) * Baritone.settings().randomLooking.value;
+        }
+
+        @Override
+        public final void advance(int ticks) {
+            for (int i = 0; i < ticks; i++) {
+                this.tick();
+            }
+        }
+
+        @Override
+        public Rotation nextRotation(final Rotation rotation) {
+            final Rotation actual = this.peekRotation(rotation);
+            this.tick();
+            return actual;
+        }
+
+        @Override
+        public final ITickableAimProcessor fork() {
+            return new AbstractAimProcessor(this) {
 
                 private Rotation prev = AbstractAimProcessor.this.getPrevRotation();
 
                 @Override
-                public Rotation nextRotation(Rotation rotation) {
-                    final Rotation actual = super.nextRotation(rotation);
-                    this.tick();
-                    return (this.prev = actual);
+                public Rotation nextRotation(final Rotation rotation) {
+                    return (this.prev = super.nextRotation(rotation));
                 }
 
                 @Override
@@ -228,10 +241,6 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
                     return this.prev;
                 }
             };
-            for (int i = 0; i < ticksAdvanced; i++) {
-                fork.tick();
-            }
-            return fork;
         }
 
         protected abstract Rotation getPrevRotation();
