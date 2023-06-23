@@ -46,7 +46,7 @@ public final class InventoryBehavior extends Behavior implements Helper {
 
     @Override
     public void onTick(TickEvent event) {
-        if (!Baritone.settings().allowInventory.value) {
+        if (!Baritone.settings().allowInventory.value || baritone.getPathingControlManager().mostRecentInControl().orElse(null) == null) {
             return;
         }
         if (event.getType() == TickEvent.Type.OUT) {
@@ -60,9 +60,17 @@ public final class InventoryBehavior extends Behavior implements Helper {
         if (firstValidThrowaway() >= 9) { // aka there are none on the hotbar, but there are some in main inventory
             requestSwapWithHotBar(firstValidThrowaway(), 8);
         }
-        int pick = bestToolAgainst(Blocks.STONE, ItemPickaxe.class);
-        if (pick >= 9) {
-            requestSwapWithHotBar(pick, 0);
+        int pick1 = bestToolAgainst(Blocks.STONE, ItemPickaxe.class);
+        if (pick1 >= 9) {
+            requestSwapWithHotBar(pick1, 0);
+        }
+        int pick2 = bestToolAgainst(Blocks.DIRT, ItemSpade.class);
+        if (pick2 >= 9) {
+            requestSwapWithHotBar(pick2, 1);
+        }
+        int pick3 = bestToolAgainst(Blocks.LOG, ItemAxe.class);
+        if (pick3 >= 9) {
+            requestSwapWithHotBar(pick3, 2);
         }
         if (lastTickRequestedMove != null) {
             logDebug("Remembering to move " + lastTickRequestedMove[0] + " " + lastTickRequestedMove[1] + " from a previous tick");
