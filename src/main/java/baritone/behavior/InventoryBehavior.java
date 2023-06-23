@@ -46,7 +46,7 @@ public final class InventoryBehavior extends Behavior implements Helper {
 
     @Override
     public void onTick(TickEvent event) {
-        if (!Baritone.settings().allowInventory.value || baritone.getPathingControlManager().mostRecentInControl().orElse(null) == null) {
+        if (!Baritone.settings().allowInventory.value || baritone.getPathingControlManager().mostRecentInControl().isPresent()) {
             return;
         }
         if (event.getType() == TickEvent.Type.OUT) {
