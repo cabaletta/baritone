@@ -60,7 +60,19 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
     // :sunglasses:
     private final NetherPathfinderContext context;
     private final PathManager pathManager;
+
+    /**
+     * Remaining cool-down ticks between firework usage
+     */
     private int remainingFireworkTicks;
+
+    /**
+     * The most recent minimum number of firework boost ticks, equivalent to {@code 10 * (1 + Flight)}
+     * <p>
+     * Updated every time a firework is automatically used
+     */
+    private int minimumBoostTicks;
+
     private int remainingSetBackTicks;
     private BlockStateInterface bsi;
 
@@ -561,6 +573,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
             }
             logDirect("attempting to use firework" + (forceUseFirework ? " takeoff" : ""));
             ctx.playerController().processRightClick(ctx.player(), ctx.world(), EnumHand.MAIN_HAND);
+            this.minimumBoostTicks = 10 * (1 + getFireworkBoost(ctx.player().getHeldItemMainhand()).orElse(0));
             this.remainingFireworkTicks = 10;
         }
     }
@@ -576,7 +589,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
             this.path       = ElytraBehavior.this.pathManager.getPath();
             this.playerNear = ElytraBehavior.this.pathManager.getNear();
             this.start      = ElytraBehavior.this.ctx.playerFeetAsVec();
-            this.isBoosted  = ElytraBehavior.this.isFireworkActive();
+            this.isBoosted  = ElytraBehavior.this.getAttachedFirework().isPresent();
         }
 
         @Override
@@ -618,19 +631,30 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
             return false;
         }
         // If it has NBT data, make sure it won't cause us to explode.
-        final NBTTagCompound subCompound = itemStack.getSubCompound("Fireworks");
-        return subCompound == null || !subCompound.hasKey("Explosions");
+        final NBTTagCompound compound = itemStack.getSubCompound("Fireworks");
+        return compound == null || !compound.hasKey("Explosions");
     }
 
     private static boolean isBoostingFireworks(final ItemStack itemStack) {
-        final NBTTagCompound subCompound = itemStack.getSubCompound("Fireworks");
-        return isFireworks(itemStack) && subCompound != null && subCompound.hasKey("Flight");
+        return getFireworkBoost(itemStack).isPresent();
     }
 
-    private boolean isFireworkActive() {
+    private static OptionalInt getFireworkBoost(final ItemStack itemStack) {
+        if (isFireworks(itemStack)) {
+            final NBTTagCompound compound = itemStack.getSubCompound("Fireworks");
+            if (compound != null && compound.hasKey("Flight")) {
+                return OptionalInt.of(compound.getByte("Flight"));
+            }
+        }
+        return OptionalInt.empty();
+    }
+
+    private Optional<EntityFireworkRocket> getAttachedFirework() {
         return ctx.world().loadedEntityList.stream()
-                .filter(x -> x instanceof EntityFireworkRocket)
-                .anyMatch(x -> Objects.equals(((IEntityFireworkRocket) x).getBoostedEntity(), ctx.player()));
+            .filter(x -> x instanceof EntityFireworkRocket)
+            .filter(x -> Objects.equals(((IEntityFireworkRocket) x).getBoostedEntity(), ctx.player()))
+            .map(x -> (EntityFireworkRocket) x)
+            .findFirst();
     }
 
     private boolean isHitboxClear(final Vec3d start, final Vec3d dest, final Double growAmount, boolean ignoreLava) {
