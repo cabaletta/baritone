@@ -326,6 +326,11 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         }
 
         @Override
+        public int hashCode() {
+            return super.hashCode() * 393857768;
+        }
+
+        @Override
         public String toString() {
             return String.format(
                     "GoalThreeBlocks{x=%s,y=%s,z=%s}",

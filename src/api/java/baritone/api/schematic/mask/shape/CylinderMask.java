@@ -35,8 +35,8 @@ public final class CylinderMask extends AbstractMask implements StaticMask {
 
     public CylinderMask(int widthX, int heightY, int lengthZ, boolean filled, EnumFacing.Axis alignment) {
         super(widthX, heightY, lengthZ);
-        this.centerA = this.getA(widthX, heightY) / 2.0;
-        this.centerB = this.getB(heightY, lengthZ) / 2.0;
+        this.centerA = this.getA(widthX, heightY, alignment) / 2.0;
+        this.centerB = this.getB(heightY, lengthZ, alignment) / 2.0;
         this.radiusSqA = (this.centerA - 1) * (this.centerA - 1);
         this.radiusSqB = (this.centerB - 1) * (this.centerB - 1);
         this.filled = filled;
@@ -45,8 +45,8 @@ public final class CylinderMask extends AbstractMask implements StaticMask {
 
     @Override
     public boolean partOfMask(int x, int y, int z) {
-        double da = Math.abs((this.getA(x, y) + 0.5) - this.centerA);
-        double db = Math.abs((this.getB(y, z) + 0.5) - this.centerB);
+        double da = Math.abs((this.getA(x, y, this.alignment) + 0.5) - this.centerA);
+        double db = Math.abs((this.getB(y, z, this.alignment) + 0.5) - this.centerB);
         if (this.outside(da, db)) {
             return false;
         }
@@ -59,11 +59,11 @@ public final class CylinderMask extends AbstractMask implements StaticMask {
         return da * da / this.radiusSqA + db * db / this.radiusSqB > 1;
     }
 
-    private int getA(int x, int y) {
-        return this.alignment == EnumFacing.Axis.X ? y : x;
+    private static int getA(int x, int y, EnumFacing.Axis alignment) {
+        return alignment == EnumFacing.Axis.X ? y : x;
     }
 
-    private int getB(int y, int z) {
-        return this.alignment == EnumFacing.Axis.Z ? y : z;
+    private static int getB(int y, int z, EnumFacing.Axis alignment) {
+        return alignment == EnumFacing.Axis.Z ? y : z;
     }
 }

@@ -78,6 +78,14 @@ public class GoalXZ implements Goal {
     }
 
     @Override
+    public int hashCode() {
+        int hash = 1791873246;
+        hash = hash * 222601791 + x;
+        hash = hash * -1331679453 + z;
+        return hash;
+    }
+
+    @Override
     public String toString() {
         return String.format(
                 "GoalXZ{x=%s,z=%s}",

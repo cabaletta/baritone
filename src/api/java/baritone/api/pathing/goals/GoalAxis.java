@@ -48,6 +48,11 @@ public class GoalAxis implements Goal {
     }
 
     @Override
+    public int hashCode() {
+        return 201385781;
+    }
+
+    @Override
     public String toString() {
         return "GoalAxis";
     }
