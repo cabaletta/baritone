@@ -101,6 +101,7 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
                 // Reset the player's rotations back to their original values
                 if (this.prevRotation != null) {
                     if (Baritone.settings().smoothLook.value) {
+                        this.smoothYawBuffer.add(this.target.rotation.getYaw());
                         ctx.player().rotationYaw = (float) this.smoothYawBuffer.stream()
                             .mapToDouble(d -> d).average().orElseGet(this.prevRotation::getYaw);
                         ctx.player().rotationPitch = this.prevRotation.getPitch();
