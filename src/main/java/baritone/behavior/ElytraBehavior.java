@@ -701,6 +701,21 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
                 bb.maxX + ox, bb.maxY + oy, bb.minZ + oz,
                 bb.maxX + ox, bb.maxY + oy, bb.maxZ + oz,
         };
+
+        // Use non-batching method without early failure
+        if (Baritone.settings().renderHitboxRaytraces.value) {
+            boolean clear = true;
+            for (int i = 0; i < 8; i++) {
+                final Vec3d s = new Vec3d(src[i * 3], src[i * 3 + 1], src[i * 3 + 2]);
+                final Vec3d d = new Vec3d(dst[i * 3], dst[i * 3 + 1], dst[i * 3 + 2]);
+                // Don't forward ignoreLava since the batch call doesn't care about it
+                if (!this.clearView(s, d, false)) {
+                    clear = false;
+                }
+            }
+            return clear;
+        }
+
         return this.context.raytrace(8, src, dst, NetherPathfinderContext.Visibility.ALL);
     }
 
