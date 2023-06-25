@@ -56,6 +56,7 @@ public final class Settings {
     public final Setting<Boolean> conserveFireworks = new Setting<>(true);
     public final Setting<Boolean> renderRaytraces = new Setting<>(false);
     public final Setting<Boolean> renderHitboxRaytraces = new Setting<>(false);
+    public final Setting<Boolean> renderElytraSimulation = new Setting<>(false);
     public final Setting<Boolean> elytraFreeLook = new Setting<>(false);
 
     // Experimental Elytra Settings

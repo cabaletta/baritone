@@ -122,6 +122,17 @@ public final class PathRenderer implements IRenderer {
             }
             IRenderer.endLines(settings.renderPathIgnoreDepth.value);
         }
+        if (elytra.simulationLine != null && Baritone.settings().renderElytraSimulation.value) {
+            IRenderer.startLines(new Color(0x36CCDC), settings.pathRenderLineWidthPixels.value, settings.renderPathIgnoreDepth.value);
+            for (int i = 0; i < elytra.simulationLine.size() - 1; i++) {
+                Vec3d src = elytra.simulationLine.get(i);
+                Vec3d dst = elytra.simulationLine.get(i + 1);
+                // Center line on viewer pos
+                buffer.pos(src.x, src.y, src.z).color(color[0], color[1], color[2], color[3]).endVertex();
+                buffer.pos(dst.x, dst.y, dst.z).color(color[0], color[1], color[2], color[3]).endVertex();
+            }
+            IRenderer.endLines(settings.renderPathIgnoreDepth.value);
+        }
 
 
         // If there is a path calculation currently running, render the path calculation process

@@ -56,6 +56,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
     // Used exclusively for PathRenderer
     public List<Pair<Vec3d, Vec3d>> clearLines;
     public List<Pair<Vec3d, Vec3d>> blockedLines;
+    public List<Vec3d> simulationLine;
     public BlockPos aimPos;
     public List<BetterBlockPos> visiblePath;
 
@@ -407,6 +408,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         // Reset rendered elements
         this.clearLines.clear();
         this.blockedLines.clear();
+        this.simulationLine = null;
         this.aimPos = null;
 
         final List<BetterBlockPos> path = this.pathManager.getPath();
@@ -763,6 +765,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
 
         Float bestPitch = null;
         double bestDot = Double.NEGATIVE_INFINITY;
+        List<Vec3d> bestLine = null;
 
         final Vec3d initialMotion = ctx.playerMotion();
         final AxisAlignedBB initialBB = ctx.player().getEntityBoundingBox();
@@ -776,6 +779,8 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
             Vec3d motion = initialMotion;
             AxisAlignedBB hitbox = initialBB;
             Vec3d totalMotion = Vec3d.ZERO;
+            List<Vec3d> line = new ArrayList<>();
+            line.add(totalMotion);
 
             for (int i = 0; i < steps; i++) {
                 if (MC_1_12_Collision_Fix.bonk(ctx, hitbox)) {
@@ -802,6 +807,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
 
                 hitbox = hitbox.offset(motion.x, motion.y, motion.z);
                 totalMotion = totalMotion.add(motion);
+                line.add(totalMotion);
             }
             double directionalGoodness = goalDirection.dotProduct(totalMotion.normalize());
             // tried to incorporate a "speedGoodness" but it kept making it do stupid stuff (aka always losing altitude)
@@ -809,7 +815,11 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
             if (goodness > bestDot) {
                 bestDot = goodness;
                 bestPitch = pitch;
+                bestLine = line;
             }
+        }
+        if (bestLine != null) {
+            this.simulationLine = bestLine;
         }
         return bestPitch;
     }
