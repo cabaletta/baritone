@@ -19,6 +19,8 @@ package baritone.behavior;
 
 import baritone.Baritone;
 import baritone.api.behavior.IElytraBehavior;
+import baritone.api.behavior.look.IAimProcessor;
+import baritone.api.behavior.look.ITickableAimProcessor;
 import baritone.api.event.events.*;
 import baritone.api.utils.*;
 import baritone.behavior.elytra.NetherPathfinderContext;
@@ -433,7 +435,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
             logDirect("vbonk");
         }
 
-        final SolverContext solverContext = this.new SolverContext();
+        final SolverContext solverContext = this.new SolverContext(false);
         this.solveNextTick = true;
 
         // If there's no previously calculated solution to use, or the context used at the end of last tick doesn't match this tick
@@ -470,7 +472,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
             // changed. Updating it now will avoid unnecessary recalculation on the main thread.
             this.pathManager.updatePlayerNear();
 
-            final SolverContext context = this.new SolverContext();
+            final SolverContext context = this.new SolverContext(true);
             this.solver = CompletableFuture.supplyAsync(() -> this.solveAngles(context));
             this.solveNextTick = false;
         }
@@ -529,7 +531,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
                             // Yaw is trivial, just calculate the rotation required to face the destination
                             final float yaw = RotationUtils.calcRotationFromVec3d(start, dest, ctx.playerRotations()).getYaw();
 
-                            final Pair<Float, Boolean> pitch = this.solvePitch(dest.subtract(start), steps, relaxation, isBoosted, isInLava);
+                            final Pair<Float, Boolean> pitch = this.solvePitch(context, dest.subtract(start), steps, relaxation, isInLava);
                             if (pitch.first() == null) {
                                 solution = new Solution(context, new Rotation(yaw, ctx.playerRotations().getPitch()), null, false, false);
                                 continue;
@@ -584,12 +586,20 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         public final int playerNear;
         public final Vec3d start;
         public final boolean isBoosted;
+        public final IAimProcessor aimProcessor;
 
-        public SolverContext() {
+        public SolverContext(boolean async) {
             this.path       = ElytraBehavior.this.pathManager.getPath();
             this.playerNear = ElytraBehavior.this.pathManager.getNear();
             this.start      = ElytraBehavior.this.ctx.playerFeetAsVec();
             this.isBoosted  = ElytraBehavior.this.getAttachedFirework().isPresent();
+
+            ITickableAimProcessor aim = ElytraBehavior.this.baritone.getLookBehavior().getAimProcessor().fork();
+            if (async) {
+                // async computation is done at the end of a tick, advance by 1 to prepare for the next tick
+                aim.advance(1);
+            }
+            this.aimProcessor = aim;
         }
 
         @Override
@@ -712,14 +722,14 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         }
     }
 
-    private Pair<Float, Boolean> solvePitch(Vec3d goalDelta, int steps, int relaxation, boolean isBoosted, boolean ignoreLava) {
-        final Float pitch = this.solvePitch(goalDelta, steps, relaxation == 2, isBoosted, ignoreLava);
+    private Pair<Float, Boolean> solvePitch(SolverContext context, Vec3d goalDelta, int steps, int relaxation, boolean ignoreLava) {
+        final Float pitch = this.solvePitch(context, goalDelta, steps, relaxation == 2, context.isBoosted, ignoreLava);
         if (pitch != null) {
             return new Pair<>(pitch, false);
         }
 
         if (Baritone.settings().experimentalTakeoff.value && relaxation > 0) {
-            final Float usingFirework = this.solvePitch(goalDelta, steps, relaxation == 2, true, ignoreLava);
+            final Float usingFirework = this.solvePitch(context, goalDelta, steps, relaxation == 2, true, ignoreLava);
             if (usingFirework != null) {
                 return new Pair<>(usingFirework, true);
             }
@@ -728,32 +738,39 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         return new Pair<>(null, false);
     }
 
-    private Float solvePitch(Vec3d goalDelta, int steps, boolean desperate, boolean firework, boolean ignoreLava) {
+    private Float solvePitch(SolverContext context, Vec3d goalDelta, int steps, boolean desperate, boolean firework, boolean ignoreLava) {
         // we are at a certain velocity, but we have a target velocity
         // what pitch would get us closest to our target velocity?
         // yaw is easy so we only care about pitch
 
         final Vec3d goalDirection = goalDelta.normalize();
-        Rotation good = RotationUtils.calcRotationFromVec3d(Vec3d.ZERO, goalDirection, ctx.playerRotations()); // lazy lol
+        final float goodPitch = RotationUtils.calcRotationFromVec3d(Vec3d.ZERO, goalDirection, ctx.playerRotations()).getPitch();
 
         Float bestPitch = null;
         double bestDot = Double.NEGATIVE_INFINITY;
 
-        final Vec3d initialMotion = new Vec3d(ctx.player().motionX, ctx.player().motionY, ctx.player().motionZ);
+        final Vec3d initialMotion = ctx.playerMotion();
         final AxisAlignedBB initialBB = ctx.player().getEntityBoundingBox();
-        final float minPitch = desperate ? -90 : Math.max(good.getPitch() - Baritone.settings().elytraPitchRange.value, -89);
-        final float maxPitch = desperate ? 90 : Math.min(good.getPitch() + Baritone.settings().elytraPitchRange.value, 89);
+        final float minPitch = desperate ? -90 : Math.max(goodPitch - Baritone.settings().elytraPitchRange.value, -89);
+        final float maxPitch = desperate ? 90 : Math.min(goodPitch + Baritone.settings().elytraPitchRange.value, 89);
 
         outer:
         for (float pitch = minPitch; pitch <= maxPitch; pitch++) {
+            final ITickableAimProcessor aimProcessor = context.aimProcessor.fork();
+            Vec3d delta = goalDelta;
             Vec3d motion = initialMotion;
             AxisAlignedBB hitbox = initialBB;
             Vec3d totalMotion = Vec3d.ZERO;
+
             for (int i = 0; i < steps; i++) {
                 if (MC_1_12_Collision_Fix.bonk(ctx, hitbox)) {
                     continue outer;
                 }
-                motion = step(motion, pitch, good.getYaw(), firework && i > 0);
+                final Rotation rotation = aimProcessor.nextRotation(
+                    RotationUtils.calcRotationFromVec3d(Vec3d.ZERO, delta, ctx.playerRotations()).withPitch(pitch)
+                );
+                motion = step(motion, rotation.getPitch(), rotation.getYaw(), firework && i > 0);
+                delta = delta.subtract(motion);
 
                 final AxisAlignedBB inMotion = hitbox.expand(motion.x, motion.y, motion.z)
                         // Additional padding for safety
