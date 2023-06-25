@@ -769,12 +769,11 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
                 final Rotation rotation = aimProcessor.nextRotation(
                     RotationUtils.calcRotationFromVec3d(Vec3d.ZERO, delta, ctx.playerRotations()).withPitch(pitch)
                 );
-                motion = step(motion, rotation.getPitch(), rotation.getYaw(), firework && i > 0);
+                motion = step(motion, rotation, firework && i > 0);
                 delta = delta.subtract(motion);
 
-                final AxisAlignedBB inMotion = hitbox.expand(motion.x, motion.y, motion.z)
-                        // Additional padding for safety
-                        .grow(0.01, 0.01, 0.01);
+                // Collision box while the player is in motion, with additional padding for safety
+                final AxisAlignedBB inMotion = hitbox.expand(motion.x, motion.y, motion.z).grow(0.01);
 
                 for (int x = MathHelper.floor(inMotion.minX); x < MathHelper.ceil(inMotion.maxX); x++) {
                     for (int y = MathHelper.floor(inMotion.minY); y < MathHelper.ceil(inMotion.maxY); y++) {
@@ -800,15 +799,11 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         return bestPitch;
     }
 
-    private static Vec3d step(Vec3d motion, float rotationPitch, float rotationYaw, boolean firework) {
+    private static Vec3d step(final Vec3d motion, final Rotation rotation, final boolean firework) {
         double motionX = motion.x;
         double motionY = motion.y;
         double motionZ = motion.z;
-        float flatZ = MathHelper.cos((-rotationYaw * RotationUtils.DEG_TO_RAD_F) - (float) Math.PI);
-        float flatX = MathHelper.sin((-rotationYaw * RotationUtils.DEG_TO_RAD_F) - (float) Math.PI);
-        float pitchBase = -MathHelper.cos(-rotationPitch * RotationUtils.DEG_TO_RAD_F);
-        float pitchHeight = MathHelper.sin(-rotationPitch * RotationUtils.DEG_TO_RAD_F);
-        Vec3d lookDirection = new Vec3d(flatX * pitchBase, pitchHeight, flatZ * pitchBase);
+        final Vec3d lookDirection = RotationUtils.calcLookDirectionFromRotation(rotation);
 
         if (firework) {
             // See EntityFireworkRocket
@@ -817,7 +812,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
             motionZ += lookDirection.z * 0.1 + (lookDirection.z * 1.5 - motionZ) * 0.5;
         }
 
-        float pitchRadians = rotationPitch * RotationUtils.DEG_TO_RAD_F;
+        float pitchRadians = rotation.getPitch() * RotationUtils.DEG_TO_RAD_F;
         double pitchBase2 = Math.sqrt(lookDirection.x * lookDirection.x + lookDirection.z * lookDirection.z);
         double flatMotion = Math.sqrt(motionX * motionX + motionZ * motionZ);
         double thisIsAlwaysOne = lookDirection.length();
