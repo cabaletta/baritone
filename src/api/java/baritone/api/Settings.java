@@ -58,6 +58,7 @@ public final class Settings {
     public final Setting<Boolean> renderHitboxRaytraces = new Setting<>(false);
     public final Setting<Boolean> renderElytraSimulation = new Setting<>(false);
     public final Setting<Boolean> elytraFreeLook = new Setting<>(false);
+    public final Setting<Boolean> smoothLook = new Setting<>(false);
 
     // Experimental Elytra Settings
     public final Setting<Boolean> experimentalTakeoff = new Setting<>(false);
