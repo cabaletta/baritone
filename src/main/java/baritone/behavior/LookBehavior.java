@@ -202,7 +202,7 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
             return new Rotation(
                     this.calculateMouseMove(prev.getYaw(), desiredYaw),
                     this.calculateMouseMove(prev.getPitch(), desiredPitch)
-            );
+            ).clamp();
         }
 
         @Override
