@@ -792,15 +792,17 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
     private Pair<Float, Boolean> solvePitch(final SolverContext context, final Vec3d goalDelta,
                                             final int relaxation, final boolean ignoreLava) {
         final boolean desperate = relaxation == 2;
-        final int steps = desperate ? 3 : context.boost.isBoosted() ? 5 : Baritone.settings().elytraSimulationTicks.value;
+        final int ticks = desperate ? 3 : context.boost.isBoosted() ? 5 : Baritone.settings().elytraSimulationTicks.value;
+        final int ticksBoosted = context.boost.isBoosted() ? ticks : 0;
 
-        final Float pitch = this.solvePitch(context, goalDelta, steps, desperate, context.boost.isBoosted(), ignoreLava);
+        final Float pitch = this.solvePitch(context, goalDelta, ticks, ticksBoosted, desperate, ignoreLava);
         if (pitch != null) {
             return new Pair<>(pitch, false);
         }
 
         if (Baritone.settings().experimentalTakeoff.value && relaxation > 0) {
-            final Float usingFirework = this.solvePitch(context, goalDelta, steps, desperate, true, ignoreLava);
+            // Simulate as if we were boosted for the entire duration
+            final Float usingFirework = this.solvePitch(context, goalDelta, ticks, ticks, desperate, ignoreLava);
             if (usingFirework != null) {
                 return new Pair<>(usingFirework, true);
             }
@@ -809,8 +811,8 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         return new Pair<>(null, false);
     }
 
-    private Float solvePitch(final SolverContext context, final Vec3d goalDelta, final int steps,
-                             final boolean desperate, final boolean firework, final boolean ignoreLava) {
+    private Float solvePitch(final SolverContext context, final Vec3d goalDelta, final int ticks,
+                             final int ticksBoosted, final boolean desperate, final boolean ignoreLava) {
         // we are at a certain velocity, but we have a target velocity
         // what pitch would get us closest to our target velocity?
         // yaw is easy so we only care about pitch
@@ -830,8 +832,8 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
                     context.aimProcessor.fork(),
                     goalDelta,
                     pitch,
-                    steps,
-                    firework ? Integer.MAX_VALUE : 0,
+                    ticks,
+                    ticksBoosted,
                     ignoreLava
             );
             if (displacement == null) {
