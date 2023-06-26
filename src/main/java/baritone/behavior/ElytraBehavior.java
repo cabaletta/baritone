@@ -854,7 +854,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
     }
 
     private List<Vec3d> simulate(final ITickableAimProcessor aimProcessor, final Vec3d goalDelta, final float pitch,
-                           final int ticks, int ticksBoosted, final boolean ignoreLava) {
+                                 final int ticks, int ticksBoosted, final boolean ignoreLava) {
         Vec3d delta = goalDelta;
         Vec3d motion = ctx.playerMotion();
         AxisAlignedBB hitbox = ctx.player().getEntityBoundingBox();
@@ -864,6 +864,9 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         for (int i = 0; i < ticks; i++) {
             if (MC_1_12_Collision_Fix.bonk(ctx, hitbox)) {
                 return null;
+            }
+            if (delta.lengthSquared() < 1) {
+                break;
             }
             final Rotation rotation = aimProcessor.nextRotation(
                     RotationUtils.calcRotationFromVec3d(Vec3d.ZERO, delta, ctx.playerRotations()).withPitch(pitch)
