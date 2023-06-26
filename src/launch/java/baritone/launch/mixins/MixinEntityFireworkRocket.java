@@ -18,18 +18,35 @@
 package baritone.launch.mixins;
 
 import baritone.utils.accessor.IEntityFireworkRocket;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityFireworkRocket;
+import net.minecraft.network.datasync.DataParameter;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
 @Mixin(EntityFireworkRocket.class)
-public abstract class MixinEntityFireworkRocket implements IEntityFireworkRocket {
+public abstract class MixinEntityFireworkRocket extends MixinEntity implements IEntityFireworkRocket {
+
+    @Shadow
+    @Final
+    private static DataParameter<Integer> BOOSTED_ENTITY_ID;
+
     @Shadow
     private EntityLivingBase boostedEntity;
 
+    @Shadow
+    public abstract boolean isAttachedToEntity();
+
     @Override
     public EntityLivingBase getBoostedEntity() {
-        return boostedEntity;
+        if (this.isAttachedToEntity() && this.boostedEntity == null) {
+            final Entity entity = this.world.getEntityByID(this.dataManager.get(BOOSTED_ENTITY_ID));
+            if (entity instanceof EntityLivingBase) {
+                this.boostedEntity = (EntityLivingBase) entity;
+            }
+        }
+        return this.boostedEntity;
     }
 }

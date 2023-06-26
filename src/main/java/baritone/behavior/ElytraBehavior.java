@@ -462,7 +462,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         this.tickUseFireworks(
                 solution.context.start,
                 solution.goingTo,
-                solution.context.isBoosted,
+                solution.context.boost.isBoosted(),
                 solution.forceUseFirework
         );
     }
@@ -484,15 +484,14 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         final NetherPath path = context.path;
         final int playerNear = context.playerNear;
         final Vec3d start = context.start;
-        final boolean isBoosted = context.isBoosted;
 
         final boolean isInLava = ctx.player().isInLava();
         Solution solution = null;
 
         for (int relaxation = 0; relaxation < 3; relaxation++) { // try for a strict solution first, then relax more and more (if we're in a corner or near some blocks, it will have to relax its constraints a bit)
-            int[] heights = isBoosted ? new int[]{20, 10, 5, 0} : new int[]{0}; // attempt to gain height, if we can, so as not to waste the boost
+            int[] heights = context.boost.isBoosted() ? new int[]{20, 10, 5, 0} : new int[]{0}; // attempt to gain height, if we can, so as not to waste the boost
             float[] interps = new float[] {1.0f, 0.75f, 0.5f, 0.25f};
-            int steps = relaxation < 2 ? isBoosted ? 5 : Baritone.settings().elytraSimulationTicks.value : 3;
+            int steps = relaxation < 2 ? context.boost.isBoosted() ? 5 : Baritone.settings().elytraSimulationTicks.value : 3;
             int lookahead = relaxation == 0 ? 2 : 3; // ideally this would be expressed as a distance in blocks, rather than a number of voxel steps
             //int minStep = Math.max(0, playerNear - relaxation);
             int minStep = playerNear;
@@ -590,14 +589,17 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         public final NetherPath path;
         public final int playerNear;
         public final Vec3d start;
-        public final boolean isBoosted;
+        public final FireworkBoost boost;
         public final IAimProcessor aimProcessor;
 
         public SolverContext(boolean async) {
             this.path       = ElytraBehavior.this.pathManager.getPath();
             this.playerNear = ElytraBehavior.this.pathManager.getNear();
             this.start      = ElytraBehavior.this.ctx.playerFeetAsVec();
-            this.isBoosted  = ElytraBehavior.this.getAttachedFirework().isPresent();
+            this.boost      = new FireworkBoost(
+                    ElytraBehavior.this.getAttachedFirework().orElse(null),
+                    ElytraBehavior.this.minimumBoostTicks
+            );
 
             ITickableAimProcessor aim = ElytraBehavior.this.baritone.getLookBehavior().getAimProcessor().fork();
             if (async) {
@@ -620,7 +622,49 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
             return this.path == other.path  // Contents aren't modified, just compare by reference
                     && this.playerNear == other.playerNear
                     && Objects.equals(this.start, other.start)
-                    && this.isBoosted == other.isBoosted;
+                    && Objects.equals(this.boost, other.boost);
+        }
+    }
+
+    private static final class FireworkBoost {
+
+        private final EntityFireworkRocket firework;
+        private final int minimumBoostTicks;
+        private final int maximumBoostTicks;
+
+        public FireworkBoost(final EntityFireworkRocket firework, final int minimumBoostTicks) {
+            this.firework = firework;
+
+            // this.lifetime = 10 * i + this.rand.nextInt(6) + this.rand.nextInt(7);
+            this.minimumBoostTicks = minimumBoostTicks;
+            this.maximumBoostTicks = minimumBoostTicks + 11;
+        }
+
+        public boolean isBoosted() {
+            return this.firework != null;
+        }
+
+        public int getGuaranteedBoostTicks() {
+            return this.isBoosted() ? Math.max(0, this.minimumBoostTicks - this.firework.ticksExisted) : 0;
+        }
+
+        public int getMaximumBoostTicks() {
+            return this.isBoosted() ? Math.max(0, this.maximumBoostTicks - this.firework.ticksExisted) : 0;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || o.getClass() != FireworkBoost.class) {
+                return false;
+            }
+
+            FireworkBoost other = (FireworkBoost) o;
+            return Objects.equals(this.firework, other.firework)
+                    && this.minimumBoostTicks == other.minimumBoostTicks
+                    && this.maximumBoostTicks == other.maximumBoostTicks;
         }
     }
 
@@ -743,7 +787,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
     }
 
     private Pair<Float, Boolean> solvePitch(SolverContext context, Vec3d goalDelta, int steps, int relaxation, boolean ignoreLava) {
-        final Float pitch = this.solvePitch(context, goalDelta, steps, relaxation == 2, context.isBoosted, ignoreLava);
+        final Float pitch = this.solvePitch(context, goalDelta, steps, relaxation == 2, context.boost.isBoosted(), ignoreLava);
         if (pitch != null) {
             return new Pair<>(pitch, false);
         }
@@ -827,13 +871,13 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         return bestPitch;
     }
 
-    private static Vec3d step(final Vec3d motion, final Rotation rotation, final boolean firework) {
+    private static Vec3d step(final Vec3d motion, final Rotation rotation, final boolean applyFireworkBoost) {
         double motionX = motion.x;
         double motionY = motion.y;
         double motionZ = motion.z;
         final Vec3d lookDirection = RotationUtils.calcLookDirectionFromRotation(rotation);
 
-        if (firework) {
+        if (applyFireworkBoost) {
             // See EntityFireworkRocket
             motionX += lookDirection.x * 0.1 + (lookDirection.x * 1.5 - motionX) * 0.5;
             motionY += lookDirection.y * 0.1 + (lookDirection.y * 1.5 - motionY) * 0.5;
