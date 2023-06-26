@@ -807,7 +807,8 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         return new Pair<>(null, false);
     }
 
-    private Float solvePitch(SolverContext context, Vec3d goalDelta, int steps, boolean desperate, boolean firework, boolean ignoreLava) {
+    private Float solvePitch(final SolverContext context, final Vec3d goalDelta, final int steps,
+                             final boolean desperate, final boolean firework, final boolean ignoreLava) {
         // we are at a certain velocity, but we have a target velocity
         // what pitch would get us closest to our target velocity?
         // yaw is easy so we only care about pitch
@@ -819,72 +820,72 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         double bestDot = Double.NEGATIVE_INFINITY;
         List<Vec3d> bestLine = null;
 
-        final Vec3d initialMotion = ctx.playerMotion();
-        final AxisAlignedBB initialBB = ctx.player().getEntityBoundingBox();
         final float minPitch = desperate ? -90 : Math.max(goodPitch - Baritone.settings().elytraPitchRange.value, -89);
         final float maxPitch = desperate ? 90 : Math.min(goodPitch + Baritone.settings().elytraPitchRange.value, 89);
 
-        outer:
         for (float pitch = minPitch; pitch <= maxPitch; pitch++) {
-            final ITickableAimProcessor aimProcessor = context.aimProcessor.fork();
-            Vec3d delta = goalDelta;
-            Vec3d motion = initialMotion;
-            AxisAlignedBB hitbox = initialBB;
-            Vec3d totalMotion = Vec3d.ZERO;
-            List<Vec3d> line = new ArrayList<>();
-            line.add(totalMotion);
-
-            for (int i = 0; i < steps; i++) {
-                if (MC_1_12_Collision_Fix.bonk(ctx, hitbox)) {
-                    continue outer;
-                }
-                final Rotation rotation = aimProcessor.nextRotation(
-                    RotationUtils.calcRotationFromVec3d(Vec3d.ZERO, delta, ctx.playerRotations()).withPitch(pitch)
-                );
-                final Vec3d lookDirection = RotationUtils.calcLookDirectionFromRotation(rotation);
-
-                motion = step(motion, lookDirection, rotation.getPitch());
-                delta = delta.subtract(motion);
-
-                // Collision box while the player is in motion, with additional padding for safety
-                final AxisAlignedBB inMotion = hitbox.expand(motion.x, motion.y, motion.z).grow(0.01);
-
-                for (int x = MathHelper.floor(inMotion.minX); x < MathHelper.ceil(inMotion.maxX); x++) {
-                    for (int y = MathHelper.floor(inMotion.minY); y < MathHelper.ceil(inMotion.maxY); y++) {
-                        for (int z = MathHelper.floor(inMotion.minZ); z < MathHelper.ceil(inMotion.maxZ); z++) {
-                            if (!this.passable(x, y, z, ignoreLava)) {
-                                continue outer;
-                            }
-                        }
-                    }
-                }
-
-                hitbox = hitbox.offset(motion.x, motion.y, motion.z);
-                totalMotion = totalMotion.add(motion);
-                line.add(totalMotion);
-
-                if (firework) {
-                    // See EntityFireworkRocket
-                    motion = motion.add(
-                            lookDirection.x * 0.1 + (lookDirection.x * 1.5 - motion.x) * 0.5,
-                            lookDirection.y * 0.1 + (lookDirection.y * 1.5 - motion.y) * 0.5,
-                            lookDirection.z * 0.1 + (lookDirection.z * 1.5 - motion.z) * 0.5
-                    );
-                }
+            Vec3d totalMotion = this.simulate(context.aimProcessor.fork(), goalDelta, pitch, steps, firework, ignoreLava);
+            if (totalMotion == null) {
+                continue;
             }
-            double directionalGoodness = goalDirection.dotProduct(totalMotion.normalize());
-            // tried to incorporate a "speedGoodness" but it kept making it do stupid stuff (aka always losing altitude)
-            double goodness = directionalGoodness;
+            double goodness = goalDirection.dotProduct(totalMotion.normalize());
             if (goodness > bestDot) {
                 bestDot = goodness;
                 bestPitch = pitch;
-                bestLine = line;
             }
         }
         if (bestLine != null) {
             this.simulationLine = bestLine;
         }
         return bestPitch;
+    }
+
+    private Vec3d simulate(final ITickableAimProcessor aimProcessor, final Vec3d goalDelta, final float pitch,
+                           final int ticks, final boolean firework, final boolean ignoreLava) {
+        Vec3d delta = goalDelta;
+        Vec3d motion = ctx.playerMotion();
+        AxisAlignedBB hitbox = ctx.player().getEntityBoundingBox();
+        Vec3d totalMotion = Vec3d.ZERO;
+
+        for (int i = 0; i < ticks; i++) {
+            if (MC_1_12_Collision_Fix.bonk(ctx, hitbox)) {
+                return null;
+            }
+            final Rotation rotation = aimProcessor.nextRotation(
+                    RotationUtils.calcRotationFromVec3d(Vec3d.ZERO, delta, ctx.playerRotations()).withPitch(pitch)
+            );
+            final Vec3d lookDirection = RotationUtils.calcLookDirectionFromRotation(rotation);
+
+            motion = step(motion, lookDirection, rotation.getPitch());
+            delta = delta.subtract(motion);
+
+            // Collision box while the player is in motion, with additional padding for safety
+            final AxisAlignedBB inMotion = hitbox.expand(motion.x, motion.y, motion.z).grow(0.01);
+
+            for (int x = MathHelper.floor(inMotion.minX); x < MathHelper.ceil(inMotion.maxX); x++) {
+                for (int y = MathHelper.floor(inMotion.minY); y < MathHelper.ceil(inMotion.maxY); y++) {
+                    for (int z = MathHelper.floor(inMotion.minZ); z < MathHelper.ceil(inMotion.maxZ); z++) {
+                        if (!this.passable(x, y, z, ignoreLava)) {
+                            return null;
+                        }
+                    }
+                }
+            }
+
+            hitbox = hitbox.offset(motion.x, motion.y, motion.z);
+            totalMotion = totalMotion.add(motion);
+
+            if (firework) {
+                // See EntityFireworkRocket
+                motion = motion.add(
+                        lookDirection.x * 0.1 + (lookDirection.x * 1.5 - motion.x) * 0.5,
+                        lookDirection.y * 0.1 + (lookDirection.y * 1.5 - motion.y) * 0.5,
+                        lookDirection.z * 0.1 + (lookDirection.z * 1.5 - motion.z) * 0.5
+                );
+            }
+        }
+
+        return totalMotion;
     }
 
     private static Vec3d step(final Vec3d motion, final Vec3d lookDirection, final float pitch) {
