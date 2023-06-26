@@ -498,7 +498,6 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         for (int relaxation = 0; relaxation < 3; relaxation++) { // try for a strict solution first, then relax more and more (if we're in a corner or near some blocks, it will have to relax its constraints a bit)
             int[] heights = context.boost.isBoosted() ? new int[]{20, 10, 5, 0} : new int[]{0}; // attempt to gain height, if we can, so as not to waste the boost
             float[] interps = new float[] {1.0f, 0.75f, 0.5f, 0.25f};
-            int steps = relaxation < 2 ? context.boost.isBoosted() ? 5 : Baritone.settings().elytraSimulationTicks.value : 3;
             int lookahead = relaxation == 0 ? 2 : 3; // ideally this would be expressed as a distance in blocks, rather than a number of voxel steps
             //int minStep = Math.max(0, playerNear - relaxation);
             int minStep = playerNear;
@@ -539,7 +538,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
                             // Yaw is trivial, just calculate the rotation required to face the destination
                             final float yaw = RotationUtils.calcRotationFromVec3d(start, dest, ctx.playerRotations()).getYaw();
 
-                            final Pair<Float, Boolean> pitch = this.solvePitch(context, dest.subtract(start), steps, relaxation, isInLava);
+                            final Pair<Float, Boolean> pitch = this.solvePitch(context, dest.subtract(start), relaxation, isInLava);
                             if (pitch.first() == null) {
                                 solution = new Solution(context, new Rotation(yaw, ctx.playerRotations().getPitch()), null, false, false);
                                 continue;
@@ -790,7 +789,9 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         }
     }
 
-    private Pair<Float, Boolean> solvePitch(SolverContext context, Vec3d goalDelta, int steps, int relaxation, boolean ignoreLava) {
+    private Pair<Float, Boolean> solvePitch(SolverContext context, Vec3d goalDelta, int relaxation, boolean ignoreLava) {
+        final int steps = relaxation < 2 ? context.boost.isBoosted() ? 5 : Baritone.settings().elytraSimulationTicks.value : 3;
+
         final Float pitch = this.solvePitch(context, goalDelta, steps, relaxation == 2, context.boost.isBoosted(), ignoreLava);
         if (pitch != null) {
             return new Pair<>(pitch, false);
