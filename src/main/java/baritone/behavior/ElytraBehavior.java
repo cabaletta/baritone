@@ -789,16 +789,18 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         }
     }
 
-    private Pair<Float, Boolean> solvePitch(SolverContext context, Vec3d goalDelta, int relaxation, boolean ignoreLava) {
-        final int steps = relaxation < 2 ? context.boost.isBoosted() ? 5 : Baritone.settings().elytraSimulationTicks.value : 3;
+    private Pair<Float, Boolean> solvePitch(final SolverContext context, final Vec3d goalDelta,
+                                            final int relaxation, final boolean ignoreLava) {
+        final boolean desperate = relaxation == 2;
+        final int steps = desperate ? 3 : context.boost.isBoosted() ? 5 : Baritone.settings().elytraSimulationTicks.value;
 
-        final Float pitch = this.solvePitch(context, goalDelta, steps, relaxation == 2, context.boost.isBoosted(), ignoreLava);
+        final Float pitch = this.solvePitch(context, goalDelta, steps, desperate, context.boost.isBoosted(), ignoreLava);
         if (pitch != null) {
             return new Pair<>(pitch, false);
         }
 
         if (Baritone.settings().experimentalTakeoff.value && relaxation > 0) {
-            final Float usingFirework = this.solvePitch(context, goalDelta, steps, relaxation == 2, true, ignoreLava);
+            final Float usingFirework = this.solvePitch(context, goalDelta, steps, desperate, true, ignoreLava);
             if (usingFirework != null) {
                 return new Pair<>(usingFirework, true);
             }
