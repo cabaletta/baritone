@@ -70,13 +70,17 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
     private int remainingFireworkTicks;
 
     /**
+     * Remaining cool-down ticks after the player's position and rotation are reset by the server
+     */
+    private int remainingSetBackTicks;
+
+    /**
      * The most recent minimum number of firework boost ticks, equivalent to {@code 10 * (1 + Flight)}
      * <p>
      * Updated every time a firework is automatically used
      */
     private int minimumBoostTicks;
 
-    private int remainingSetBackTicks;
     private BlockStateInterface bsi;
 
     private Future<Solution> solver;
@@ -836,7 +840,9 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
                 final Rotation rotation = aimProcessor.nextRotation(
                     RotationUtils.calcRotationFromVec3d(Vec3d.ZERO, delta, ctx.playerRotations()).withPitch(pitch)
                 );
-                motion = step(motion, rotation, firework && i > 0);
+                final Vec3d lookDirection = RotationUtils.calcLookDirectionFromRotation(rotation);
+
+                motion = step(motion, lookDirection, rotation.getPitch());
                 delta = delta.subtract(motion);
 
                 // Collision box while the player is in motion, with additional padding for safety
@@ -855,6 +861,15 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
                 hitbox = hitbox.offset(motion.x, motion.y, motion.z);
                 totalMotion = totalMotion.add(motion);
                 line.add(totalMotion);
+
+                if (firework) {
+                    // See EntityFireworkRocket
+                    motion = motion.add(
+                            lookDirection.x * 0.1 + (lookDirection.x * 1.5 - motion.x) * 0.5,
+                            lookDirection.y * 0.1 + (lookDirection.y * 1.5 - motion.y) * 0.5,
+                            lookDirection.z * 0.1 + (lookDirection.z * 1.5 - motion.z) * 0.5
+                    );
+                }
             }
             double directionalGoodness = goalDirection.dotProduct(totalMotion.normalize());
             // tried to incorporate a "speedGoodness" but it kept making it do stupid stuff (aka always losing altitude)
@@ -871,20 +886,12 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         return bestPitch;
     }
 
-    private static Vec3d step(final Vec3d motion, final Rotation rotation, final boolean applyFireworkBoost) {
+    private static Vec3d step(final Vec3d motion, final Vec3d lookDirection, final float pitch) {
         double motionX = motion.x;
         double motionY = motion.y;
         double motionZ = motion.z;
-        final Vec3d lookDirection = RotationUtils.calcLookDirectionFromRotation(rotation);
 
-        if (applyFireworkBoost) {
-            // See EntityFireworkRocket
-            motionX += lookDirection.x * 0.1 + (lookDirection.x * 1.5 - motionX) * 0.5;
-            motionY += lookDirection.y * 0.1 + (lookDirection.y * 1.5 - motionY) * 0.5;
-            motionZ += lookDirection.z * 0.1 + (lookDirection.z * 1.5 - motionZ) * 0.5;
-        }
-
-        float pitchRadians = rotation.getPitch() * RotationUtils.DEG_TO_RAD_F;
+        float pitchRadians = pitch * RotationUtils.DEG_TO_RAD_F;
         double pitchBase2 = Math.sqrt(lookDirection.x * lookDirection.x + lookDirection.z * lookDirection.z);
         double flatMotion = Math.sqrt(motionX * motionX + motionZ * motionZ);
         double thisIsAlwaysOne = lookDirection.length();
@@ -962,4 +969,3 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         }
     }
 }
-
