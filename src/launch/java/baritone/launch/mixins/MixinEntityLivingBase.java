@@ -21,9 +21,7 @@ import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.event.events.RotationMoveEvent;
 import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -40,7 +38,7 @@ import static org.spongepowered.asm.lib.Opcodes.GETFIELD;
  * @since 9/10/2018
  */
 @Mixin(EntityLivingBase.class)
-public abstract class MixinEntityLivingBase extends Entity {
+public abstract class MixinEntityLivingBase extends MixinEntity {
 
     /**
      * Event called to override the movement direction when jumping
@@ -50,10 +48,6 @@ public abstract class MixinEntityLivingBase extends Entity {
 
     @Unique
     private RotationMoveEvent elytraRotationEvent;
-
-    public MixinEntityLivingBase(World worldIn) {
-        super(worldIn);
-    }
 
     @Inject(
             method = "jump",
@@ -123,7 +117,7 @@ public abstract class MixinEntityLivingBase extends Entity {
     private void onMoveRelative(EntityLivingBase self, float strafe, float up, float forward, float friction) {
         Optional<IBaritone> baritone = this.getBaritone();
         if (!baritone.isPresent()) {
-            moveRelative(strafe, up, forward, friction);
+            this.moveRelative(strafe, up, forward, friction);
             return;
         }
 

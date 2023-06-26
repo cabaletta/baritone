@@ -34,4 +34,13 @@ public abstract class MixinEntity {
 
     @Shadow
     protected EntityDataManager dataManager;
+
+    @Shadow
+    public float rotationPitch;
+
+    @Shadow
+    public float rotationYaw;
+
+    @Shadow
+    public abstract void moveRelative(float strafe, float up, float forward, float friction);
 }
