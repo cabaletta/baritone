@@ -824,14 +824,23 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         final float maxPitch = desperate ? 90 : Math.min(goodPitch + Baritone.settings().elytraPitchRange.value, 89);
 
         for (float pitch = minPitch; pitch <= maxPitch; pitch++) {
-            Vec3d totalMotion = this.simulate(context.aimProcessor.fork(), goalDelta, pitch, steps, firework, ignoreLava);
-            if (totalMotion == null) {
+            final List<Vec3d> displacement = this.simulate(
+                    context.aimProcessor.fork(),
+                    goalDelta,
+                    pitch,
+                    steps,
+                    firework ? Integer.MAX_VALUE : 0,
+                    ignoreLava
+            );
+            if (displacement == null) {
                 continue;
             }
-            double goodness = goalDirection.dotProduct(totalMotion.normalize());
+            final Vec3d result = displacement.get(displacement.size() - 1);
+            double goodness = goalDirection.dotProduct(result.normalize());
             if (goodness > bestDot) {
                 bestDot = goodness;
                 bestPitch = pitch;
+                bestLine = displacement;
             }
         }
         if (bestLine != null) {
@@ -840,12 +849,13 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         return bestPitch;
     }
 
-    private Vec3d simulate(final ITickableAimProcessor aimProcessor, final Vec3d goalDelta, final float pitch,
-                           final int ticks, final boolean firework, final boolean ignoreLava) {
+    private List<Vec3d> simulate(final ITickableAimProcessor aimProcessor, final Vec3d goalDelta, final float pitch,
+                           final int ticks, int ticksBoosted, final boolean ignoreLava) {
         Vec3d delta = goalDelta;
         Vec3d motion = ctx.playerMotion();
         AxisAlignedBB hitbox = ctx.player().getEntityBoundingBox();
-        Vec3d totalMotion = Vec3d.ZERO;
+        List<Vec3d> displacement = new ArrayList<>();
+        displacement.add(Vec3d.ZERO);
 
         for (int i = 0; i < ticks; i++) {
             if (MC_1_12_Collision_Fix.bonk(ctx, hitbox)) {
@@ -872,10 +882,10 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
                 }
             }
 
-            hitbox = hitbox.offset(motion.x, motion.y, motion.z);
-            totalMotion = totalMotion.add(motion);
+            hitbox = hitbox.offset(motion);
+            displacement.add(displacement.get(displacement.size() - 1).add(motion));
 
-            if (firework) {
+            if (ticksBoosted-- > 0) {
                 // See EntityFireworkRocket
                 motion = motion.add(
                         lookDirection.x * 0.1 + (lookDirection.x * 1.5 - motion.x) * 0.5,
@@ -885,7 +895,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
             }
         }
 
-        return totalMotion;
+        return displacement;
     }
 
     private static Vec3d step(final Vec3d motion, final Vec3d lookDirection, final float pitch) {
