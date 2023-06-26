@@ -404,6 +404,9 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         if (this.remainingSetBackTicks > 0) {
             this.remainingSetBackTicks--;
         }
+        if (!this.getAttachedFirework().isPresent()) {
+            this.minimumBoostTicks = 0;
+        }
 
         // Reset rendered elements
         this.clearLines.clear();
@@ -549,9 +552,6 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
     }
 
     private void tickUseFireworks(final Vec3d start, final Vec3d goingTo, final boolean isBoosted, final boolean forceUseFirework) {
-        if (!isBoosted) {
-            this.minimumBoostTicks = 0;
-        }
         if (this.remainingSetBackTicks > 0) {
             logDebug("waiting for elytraFireworkSetbackUseDelay: " + this.remainingSetBackTicks);
             return;
