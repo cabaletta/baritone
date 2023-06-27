@@ -684,6 +684,19 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         }
     }
 
+    private static final class PitchResult {
+
+        public final float pitch;
+        public final double dot;
+        public final List<Vec3d> steps;
+
+        public PitchResult(float pitch, double dot, List<Vec3d> steps) {
+            this.pitch = pitch;
+            this.dot = dot;
+            this.steps = steps;
+        }
+    }
+
     private static final class Solution {
 
         public final SolverContext context;
@@ -808,24 +821,24 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         final int ticks = desperate ? 3 : context.boost.isBoosted() ? 5 : Baritone.settings().elytraSimulationTicks.value;
         final int ticksBoosted = context.boost.isBoosted() ? ticks : 0;
 
-        final Float pitch = this.solvePitch(context, goalDelta, ticks, ticksBoosted, desperate, ignoreLava);
+        final PitchResult pitch = this.solvePitch(context, goalDelta, ticks, ticksBoosted, desperate, ignoreLava);
         if (pitch != null) {
-            return new Pair<>(pitch, false);
+            return new Pair<>(pitch.pitch, false);
         }
 
         if (Baritone.settings().experimentalTakeoff.value && relaxation > 0) {
             // Simulate as if we were boosted for the entire duration
-            final Float usingFirework = this.solvePitch(context, goalDelta, ticks, ticks, desperate, ignoreLava);
+            final PitchResult usingFirework = this.solvePitch(context, goalDelta, ticks, ticks, desperate, ignoreLava);
             if (usingFirework != null) {
-                return new Pair<>(usingFirework, true);
+                return new Pair<>(usingFirework.pitch, true);
             }
         }
 
         return new Pair<>(null, false);
     }
 
-    private Float solvePitch(final SolverContext context, final Vec3d goalDelta, final int ticks,
-                             final int ticksBoosted, final boolean desperate, final boolean ignoreLava) {
+    private PitchResult solvePitch(final SolverContext context, final Vec3d goalDelta, final int ticks,
+                                   final int ticksBoosted, final boolean desperate, final boolean ignoreLava) {
         // we are at a certain velocity, but we have a target velocity
         // what pitch would get us closest to our target velocity?
         // yaw is easy so we only care about pitch
@@ -833,9 +846,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         final Vec3d goalDirection = goalDelta.normalize();
         final float goodPitch = RotationUtils.calcRotationFromVec3d(Vec3d.ZERO, goalDirection, ctx.playerRotations()).getPitch();
 
-        Float bestPitch = null;
-        double bestDot = Double.NEGATIVE_INFINITY;
-        List<Vec3d> bestLine = null;
+        PitchResult result = null;
 
         final float minPitch = desperate ? -90 : Math.max(goodPitch - Baritone.settings().elytraPitchRange.value, -89);
         final float maxPitch = desperate ? 90 : Math.min(goodPitch + Baritone.settings().elytraPitchRange.value, 89);
@@ -852,18 +863,16 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
             if (displacement == null) {
                 continue;
             }
-            final Vec3d result = displacement.get(displacement.size() - 1);
-            double goodness = goalDirection.dotProduct(result.normalize());
-            if (goodness > bestDot) {
-                bestDot = goodness;
-                bestPitch = pitch;
-                bestLine = displacement;
+            final Vec3d last = displacement.get(displacement.size() - 1);
+            double goodness = goalDirection.dotProduct(last.normalize());
+            if (result == null || goodness > result.dot) {
+                result = new PitchResult(pitch, goodness, displacement);
             }
         }
-        if (bestLine != null) {
-            this.simulationLine = bestLine;
+        if (result != null) {
+            this.simulationLine = result.steps;
         }
-        return bestPitch;
+        return result;
     }
 
     private List<Vec3d> simulate(final ITickableAimProcessor aimProcessor, final Vec3d goalDelta, final float pitch,
