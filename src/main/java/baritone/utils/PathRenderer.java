@@ -111,25 +111,28 @@ public final class PathRenderer implements IRenderer {
         if (!elytra.clearLines.isEmpty() && Baritone.settings().renderRaytraces.value) {
             IRenderer.startLines(Color.GREEN, settings.pathRenderLineWidthPixels.value, settings.renderPathIgnoreDepth.value);
             for (Pair<Vec3d, Vec3d> line : elytra.clearLines) {
-                emitLine(line.first().x, line.first().y, line.first().z, line.second().x, line.second().y, line.second().z);
+                emitLine(line.first(), line.second());
             }
             IRenderer.endLines(settings.renderPathIgnoreDepth.value);
         }
         if (!elytra.blockedLines.isEmpty() && Baritone.settings().renderRaytraces.value) {
             IRenderer.startLines(Color.BLUE, settings.pathRenderLineWidthPixels.value, settings.renderPathIgnoreDepth.value);
             for (Pair<Vec3d, Vec3d> line : elytra.blockedLines) {
-                emitLine(line.first().x, line.first().y, line.first().z, line.second().x, line.second().y, line.second().z);
+                emitLine(line.first(), line.second());
             }
             IRenderer.endLines(settings.renderPathIgnoreDepth.value);
         }
         if (elytra.simulationLine != null && Baritone.settings().renderElytraSimulation.value) {
             IRenderer.startLines(new Color(0x36CCDC), settings.pathRenderLineWidthPixels.value, settings.renderPathIgnoreDepth.value);
+            final Vec3d offset = new Vec3d(
+                ctx.player().prevPosX + (ctx.player().posX - ctx.player().prevPosX) * partialTicks,
+                ctx.player().prevPosY + (ctx.player().posY - ctx.player().prevPosY) * partialTicks,
+                ctx.player().prevPosZ + (ctx.player().posZ - ctx.player().prevPosZ) * partialTicks
+            );
             for (int i = 0; i < elytra.simulationLine.size() - 1; i++) {
-                Vec3d src = elytra.simulationLine.get(i);
-                Vec3d dst = elytra.simulationLine.get(i + 1);
-                // Center line on viewer pos
-                buffer.pos(src.x, src.y, src.z).color(color[0], color[1], color[2], color[3]).endVertex();
-                buffer.pos(dst.x, dst.y, dst.z).color(color[0], color[1], color[2], color[3]).endVertex();
+                final Vec3d src = elytra.simulationLine.get(i).add(offset);
+                final Vec3d dst = elytra.simulationLine.get(i + 1).add(offset);
+                emitLine(src, dst);
             }
             IRenderer.endLines(settings.renderPathIgnoreDepth.value);
         }
@@ -192,6 +195,10 @@ public final class PathRenderer implements IRenderer {
         }
 
         IRenderer.endLines(settings.renderPathIgnoreDepth.value);
+    }
+
+    private static void emitLine(Vec3d start, Vec3d end) {
+        emitLine(start.x, start.y, start.z, end.x, end.y, end.z);
     }
 
     private static void emitLine(double x1, double y1, double z1, double x2, double y2, double z2) {
