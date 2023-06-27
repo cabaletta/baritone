@@ -18,11 +18,8 @@
 package baritone.api.bot;
 
 import baritone.api.IBaritone;
-import baritone.api.utils.IPlayerController;
+import baritone.api.utils.IPlayerContext;
 import com.mojang.authlib.GameProfile;
-import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.client.multiplayer.WorldClient;
-import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.util.Session;
 
@@ -38,29 +35,16 @@ public interface IBaritoneUser {
     IBaritone getBaritone();
 
     /**
+     * Returns the player context. Equivalent to {@code getBaritone().getPlayerContext()}.
+     *
+     * @return The player context
+     */
+    IPlayerContext getPlayerContext();
+
+    /**
      * @return The network manager that is responsible for the current connection.
      */
     NetworkManager getNetworkManager();
-
-    /**
-     * @return The play network handler
-     */
-    NetHandlerPlayClient getConnection();
-
-    /**
-     * @return The locally managed player entity for this user.
-     */
-    EntityPlayerSP getPlayer();
-
-    /**
-     * @return The world the user belongs to
-     */
-    WorldClient getWorld();
-
-    /**
-     * @return The user player controller
-     */
-    IPlayerController getPlayerController();
 
     /**
      * Returns the user login session. Should never be {@code null}, as this should be set when the

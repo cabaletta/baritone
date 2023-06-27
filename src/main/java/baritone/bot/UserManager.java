@@ -25,6 +25,7 @@ import baritone.api.event.events.TickEvent;
 import baritone.api.event.events.type.EventState;
 import baritone.api.event.listener.AbstractGameEventListener;
 import baritone.api.utils.Helper;
+import baritone.api.utils.IPlayerContext;
 import baritone.bot.connect.ConnectionResult;
 import baritone.bot.handler.BotNetHandlerLoginClient;
 import baritone.bot.impl.BotEntity;
@@ -73,8 +74,9 @@ public enum UserManager implements IUserManager, AbstractGameEventListener, Help
         this.users.forEach(user -> {
             switch (event.getType()) {
                 case IN: {
-                    if (user.getPlayer() != null && user.getPlayerController() != null) {
-                        user.getPlayerController().syncHeldItem();
+                    final IPlayerContext ctx = user.getPlayerContext();
+                    if (ctx.player() != null) {
+                        ctx.playerController().syncHeldItem();
                     }
                     if (user.getNetworkManager().isChannelOpen()) {
                         user.getNetworkManager().processReceivedPackets();
@@ -181,12 +183,14 @@ public enum UserManager implements IUserManager, AbstractGameEventListener, Help
                 // noinspection ConstantConditions
                 user.getNetworkManager().closeChannel(null);
             }
+            BaritoneAPI.getProvider().destroyBaritone(user.getBaritone());
             this.users.remove(user);
             logDirect(user.getSession().getUsername() + " Disconnected: " +
                     (reason == null ? "Unknown" : reason.getUnformattedText()));
 
-            if (user.getPlayer() != null && user.getWorld() != null) {
-                ((BotWorld) user.getWorld()).handleWorldRemove((BotEntity) user.getPlayer());
+            final IPlayerContext ctx = user.getPlayerContext();
+            if (ctx.player() != null && ctx.world() != null) {
+                ((BotWorld) ctx.world()).handleWorldRemove((BotEntity) ctx.player());
             }
         }
     }

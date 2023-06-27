@@ -18,15 +18,16 @@
 package baritone.bot;
 
 import baritone.Baritone;
+import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.bot.IBaritoneUser;
 import baritone.api.event.events.WorldEvent;
 import baritone.api.event.events.type.EventState;
+import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.IPlayerController;
 import baritone.bot.impl.BotMinecraft;
 import baritone.bot.impl.BotWorld;
 import baritone.bot.impl.BotEntity;
-import baritone.utils.player.WrappedPlayerController;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.client.multiplayer.PlayerControllerMP;
 import net.minecraft.client.multiplayer.ServerData;
@@ -53,7 +54,6 @@ public final class BaritoneUser implements IBaritoneUser {
     private NetHandlerPlayClient netHandlerPlayClient;
     private BotWorld world;
     private BotEntity player;
-    private IPlayerController playerController;
 
     BaritoneUser(UserManager manager, NetworkManager networkManager, Session session, ServerData serverData) {
         this.mc = BotMinecraft.allocate(this);
@@ -62,7 +62,7 @@ public final class BaritoneUser implements IBaritoneUser {
         this.networkManager = networkManager;
         this.session = session;
         this.profile = session.getProfile();
-        this.baritone = new Baritone(new BotPlayerContext(this));
+        this.baritone = (Baritone) BaritoneAPI.getProvider().createBaritone(this.mc);
     }
 
     public void onLoginSuccess(GameProfile profile, NetHandlerPlayClient netHandlerPlayClient) {
@@ -76,34 +76,23 @@ public final class BaritoneUser implements IBaritoneUser {
         this.mc.player = this.player = player;
         this.mc.world = this.world = world;
         this.mc.playerController = controller;
-        this.playerController = new WrappedPlayerController(controller);
 
         this.baritone.getGameEventHandler().onWorldEvent(new WorldEvent(world, EventState.POST));
     }
 
     @Override
+    public IBaritone getBaritone() {
+        return this.baritone;
+    }
+
+    @Override
+    public IPlayerContext getPlayerContext() {
+        return this.baritone.getPlayerContext();
+    }
+
+    @Override
     public NetworkManager getNetworkManager() {
         return this.networkManager;
-    }
-
-    @Override
-    public NetHandlerPlayClient getConnection() {
-        return this.netHandlerPlayClient;
-    }
-
-    @Override
-    public BotEntity getPlayer() {
-        return this.player;
-    }
-
-    @Override
-    public WorldClient getWorld() {
-        return this.world;
-    }
-
-    @Override
-    public IPlayerController getPlayerController() {
-        return this.playerController;
     }
 
     @Override
@@ -119,14 +108,5 @@ public final class BaritoneUser implements IBaritoneUser {
     @Override
     public UserManager getManager() {
         return this.manager;
-    }
-
-    @Override
-    public IBaritone getBaritone() {
-        return this.baritone;
-    }
-
-    public BotMinecraft getMinecraft() {
-        return this.mc;
     }
 }

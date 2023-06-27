@@ -52,9 +52,9 @@ public final class BotNetHandlerLoginClient extends NetHandlerLoginClient {
     private final BaritoneUser user;
 
     public BotNetHandlerLoginClient(NetworkManager networkManager, BaritoneUser user) {
-        super(networkManager, user.getMinecraft(), null);
+        super(networkManager, user.getPlayerContext().minecraft(), null);
         this.networkManager = networkManager;
-        this.mc = user.getMinecraft();
+        this.mc = (BotMinecraft) user.getPlayerContext().minecraft();
         this.user = user;
     }
 

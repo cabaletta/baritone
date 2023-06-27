@@ -44,9 +44,7 @@ public interface IPlayerContext {
 
     IWorldData worldData();
 
-    default RayTraceResult objectMouseOver() {
-        return RayTraceUtils.rayTraceTowards(player(), playerRotations(), playerController().getBlockReachDistance());
-    }
+    RayTraceResult objectMouseOver();
 
     default BetterBlockPos playerFeet() {
         // TODO find a better way to deal with soul sand!!!!!

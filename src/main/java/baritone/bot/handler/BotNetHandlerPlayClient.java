@@ -21,12 +21,12 @@ import baritone.api.utils.Helper;
 import baritone.bot.BaritoneUser;
 import baritone.bot.impl.BotEntity;
 import baritone.bot.impl.BotMinecraft;
-import baritone.bot.impl.BotPlayerController;
 import baritone.bot.impl.BotWorld;
 import baritone.utils.accessor.INetHandlerPlayClient;
 import com.mojang.authlib.GameProfile;
 import io.netty.buffer.Unpooled;
 import net.minecraft.client.multiplayer.ClientAdvancementManager;
+import net.minecraft.client.multiplayer.PlayerControllerMP;
 import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.client.util.RecipeBookClient;
 import net.minecraft.entity.Entity;
@@ -81,7 +81,7 @@ public final class BotNetHandlerPlayClient extends NetHandlerPlayClient {
     /**
      * The current player controller
      */
-    private BotPlayerController playerController;
+    private PlayerControllerMP playerController;
 
     BotNetHandlerPlayClient(NetworkManager networkManager, BaritoneUser user, BotMinecraft client, GameProfile profile) {
         // noinspection ConstantConditions
@@ -274,7 +274,7 @@ public final class BotNetHandlerPlayClient extends NetHandlerPlayClient {
     public void handleJoinGame(@Nonnull SPacketJoinGame packetIn) {
         PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
 
-        this.playerController = new BotPlayerController(this.user, this);
+        this.playerController = new PlayerControllerMP(this.user.getPlayerContext().minecraft(), this);
         this.world = this.user.getManager().getWorldProvider().getWorld(packetIn.getDimension());
         ((INetHandlerPlayClient) (Object) this).setWorld(this.world);
         this.player = new BotEntity(this.user, this.client, this.world, this, new StatisticsManager(), new RecipeBookClient());

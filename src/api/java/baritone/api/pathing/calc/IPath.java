@@ -105,7 +105,7 @@ public interface IPath {
      * Returns the estimated number of ticks to complete the path from the given node index.
      *
      * @param pathPosition The index of the node we're calculating from
-     * @return The estimated number of ticks remaining from the given position
+     * @return The estimated number of ticks remaining frm the given position
      */
     default double ticksRemainingFrom(int pathPosition) {
         double sum = 0;
