@@ -22,7 +22,7 @@ import baritone.api.event.events.RenderEvent;
 import baritone.api.pathing.calc.IPath;
 import baritone.api.pathing.goals.*;
 import baritone.api.utils.BetterBlockPos;
-import baritone.api.utils.Helper;
+import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.interfaces.IGoalRenderPos;
 import baritone.behavior.PathingBehavior;
 import baritone.pathing.path.PathExecutor;
@@ -52,27 +52,27 @@ public final class PathRenderer implements IRenderer {
     private PathRenderer() {}
 
     public static void render(RenderEvent event, PathingBehavior behavior) {
-        float partialTicks = event.getPartialTicks();
-        Goal goal = behavior.getGoal();
-        if (behavior.baritone.getPlayerContext().world() == null) {
+        final IPlayerContext ctx = behavior.ctx;
+        if (ctx.world() == null) {
             return;
         }
-
-        if (Helper.mc.currentScreen instanceof GuiClick && behavior.baritone == BaritoneAPI.getProvider().getPrimaryBaritone()) {
-            ((GuiClick) Helper.mc.currentScreen).onRender();
+        if (ctx.minecraft().currentScreen instanceof GuiClick && behavior.baritone == BaritoneAPI.getProvider().getPrimaryBaritone()) {
+            ((GuiClick) ctx.minecraft().currentScreen).onRender();
         }
 
-        Entity renderView = Helper.mc.getRenderViewEntity();
+        final float partialTicks = event.getPartialTicks();
+        final Goal goal = behavior.getGoal();
 
-        if (renderView.world != BaritoneAPI.getProvider().getPrimaryBaritone().getPlayerContext().world()) {
-            System.out.println("I have no idea what's going on");
-            System.out.println("The primary baritone is in a different world than the render view entity");
-            System.out.println("Not rendering the path");
+        final int thisPlayerDimension = ctx.world().provider.getDimensionType().getId();
+        final int currentRenderViewDimension = BaritoneAPI.getProvider().getPrimaryBaritone().getPlayerContext().world().provider.getDimensionType().getId();
+
+        if (thisPlayerDimension != currentRenderViewDimension) {
+            // this is a path for a bot in a different dimension, don't render it
             return;
         }
 
         if (goal != null && settings.renderGoal.value) {
-            drawGoal(renderView, goal, partialTicks, settings.colorGoalBox.value);
+            drawGoal(ctx.player(), goal, partialTicks, settings.colorGoalBox.value);
         }
 
         if (!settings.renderPath.value) {
@@ -82,9 +82,9 @@ public final class PathRenderer implements IRenderer {
         PathExecutor current = behavior.getCurrent(); // this should prevent most race conditions?
         PathExecutor next = behavior.getNext(); // like, now it's not possible for current!=null to be true, then suddenly false because of another thread
         if (current != null && settings.renderSelectionBoxes.value) {
-            drawManySelectionBoxes(renderView, current.toBreak(), settings.colorBlocksToBreak.value);
-            drawManySelectionBoxes(renderView, current.toPlace(), settings.colorBlocksToPlace.value);
-            drawManySelectionBoxes(renderView, current.toWalkInto(), settings.colorBlocksToWalkInto.value);
+            drawManySelectionBoxes(ctx.player(), current.toBreak(), settings.colorBlocksToBreak.value);
+            drawManySelectionBoxes(ctx.player(), current.toPlace(), settings.colorBlocksToPlace.value);
+            drawManySelectionBoxes(ctx.player(), current.toWalkInto(), settings.colorBlocksToWalkInto.value);
         }
 
         //drawManySelectionBoxes(player, Collections.singletonList(behavior.pathStart()), partialTicks, Color.WHITE);
@@ -107,12 +107,12 @@ public final class PathRenderer implements IRenderer {
 
             currentlyRunning.pathToMostRecentNodeConsidered().ifPresent(mr -> {
                 drawPath(mr, 0, settings.colorMostRecentConsidered.value, settings.fadePath.value, 10, 20);
-                drawManySelectionBoxes(renderView, Collections.singletonList(mr.getDest()), settings.colorMostRecentConsidered.value);
+                drawManySelectionBoxes(ctx.player(), Collections.singletonList(mr.getDest()), settings.colorMostRecentConsidered.value);
             });
         });
     }
 
-    public static void drawPath(IPath path, int startIndex, Color color, boolean fadeOut, int fadeStart0, int fadeEnd0) {
+    private static void drawPath(IPath path, int startIndex, Color color, boolean fadeOut, int fadeStart0, int fadeEnd0) {
         IRenderer.startLines(color, settings.pathRenderLineWidthPixels.value, settings.renderPathIgnoreDepth.value);
 
         int fadeStart = fadeStart0 + startIndex;
@@ -155,7 +155,7 @@ public final class PathRenderer implements IRenderer {
         IRenderer.endLines(settings.renderPathIgnoreDepth.value);
     }
 
-    public static void emitLine(double x1, double y1, double z1, double x2, double y2, double z2) {
+    private static void emitLine(double x1, double y1, double z1, double x2, double y2, double z2) {
         double vpX = renderManager.viewerPosX;
         double vpY = renderManager.viewerPosY;
         double vpZ = renderManager.viewerPosZ;
@@ -198,11 +198,11 @@ public final class PathRenderer implements IRenderer {
         IRenderer.endLines(settings.renderSelectionBoxesIgnoreDepth.value);
     }
 
-    public static void drawGoal(Entity player, Goal goal, float partialTicks, Color color) {
+    private static void drawGoal(Entity player, Goal goal, float partialTicks, Color color) {
         drawGoal(player, goal, partialTicks, color, true);
     }
 
-    public static void drawGoal(Entity player, Goal goal, float partialTicks, Color color, boolean setupRender) {
+    private static void drawGoal(Entity player, Goal goal, float partialTicks, Color color, boolean setupRender) {
         double renderPosX = renderManager.viewerPosX;
         double renderPosY = renderManager.viewerPosY;
         double renderPosZ = renderManager.viewerPosZ;
@@ -241,7 +241,7 @@ public final class PathRenderer implements IRenderer {
             if (settings.renderGoalXZBeacon.value) {
                 glPushAttrib(GL_LIGHTING_BIT);
 
-                Helper.mc.getTextureManager().bindTexture(TileEntityBeaconRenderer.TEXTURE_BEACON_BEAM);
+                textureManager.bindTexture(TileEntityBeaconRenderer.TEXTURE_BEACON_BEAM);
 
                 if (settings.renderGoalIgnoreDepth.value) {
                     GlStateManager.disableDepth();

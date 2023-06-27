@@ -141,6 +141,14 @@ public class GoalRunAway implements Goal {
     }
 
     @Override
+    public int hashCode() {
+        int hash = Arrays.hashCode(from);
+        hash = hash * 1196803141 + distanceSq;
+        hash = hash * -2053788840 + maintainY;
+        return hash;
+    }
+
+    @Override
     public String toString() {
         if (maintainY != null) {
             return String.format(

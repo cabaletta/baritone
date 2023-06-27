@@ -280,7 +280,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                     IBlockState curr = bcc.bsi.get0(x, y, z);
                     if (curr.getBlock() != Blocks.AIR && !(curr.getBlock() instanceof BlockLiquid) && !valid(curr, desired, false)) {
                         BetterBlockPos pos = new BetterBlockPos(x, y, z);
-                        Optional<Rotation> rot = RotationUtils.reachable(ctx.player(), pos, ctx.playerController().getBlockReachDistance());
+                        Optional<Rotation> rot = RotationUtils.reachable(ctx, pos, ctx.playerController().getBlockReachDistance());
                         if (rot.isPresent()) {
                             return Optional.of(new Tuple<>(pos, rot.get()));
                         }
@@ -351,9 +351,10 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                 double placeY = placeAgainstPos.y + aabb.minY * placementMultiplier.y + aabb.maxY * (1 - placementMultiplier.y);
                 double placeZ = placeAgainstPos.z + aabb.minZ * placementMultiplier.z + aabb.maxZ * (1 - placementMultiplier.z);
                 Rotation rot = RotationUtils.calcRotationFromVec3d(RayTraceUtils.inferSneakingEyePosition(ctx.player()), new Vec3d(placeX, placeY, placeZ), ctx.playerRotations());
-                RayTraceResult result = RayTraceUtils.rayTraceTowards(ctx.player(), rot, ctx.playerController().getBlockReachDistance(), true);
+                Rotation actualRot = baritone.getLookBehavior().getAimProcessor().peekRotation(rot);
+                RayTraceResult result = RayTraceUtils.rayTraceTowards(ctx.player(), actualRot, ctx.playerController().getBlockReachDistance(), true);
                 if (result != null && result.typeOfHit == RayTraceResult.Type.BLOCK && result.getBlockPos().equals(placeAgainstPos) && result.sideHit == against.getOpposite()) {
-                    OptionalInt hotbar = hasAnyItemThatWouldPlace(toPlace, result, rot);
+                    OptionalInt hotbar = hasAnyItemThatWouldPlace(toPlace, result, actualRot);
                     if (hotbar.isPresent()) {
                         return Optional.of(new Placement(hotbar.getAsInt(), placeAgainstPos, against.getOpposite(), rot));
                     }
@@ -688,7 +689,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         incorrectPositions.forEach(pos -> {
             IBlockState state = bcc.bsi.get0(pos);
             if (state.getBlock() instanceof BlockAir) {
-                if (approxPlaceable.contains(bcc.getSchematic(pos.x, pos.y, pos.z, state))) {
+                if (containsBlockState(approxPlaceable, bcc.getSchematic(pos.x, pos.y, pos.z, state))) {
                     placeable.add(pos);
                 } else {
                     IBlockState desired = bcc.getSchematic(pos.x, pos.y, pos.z, state);
@@ -776,6 +777,14 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         }
 
         @Override
+        public int hashCode() {
+            int hash = -1701079641;
+            hash = hash * 1196141026 + primary.hashCode();
+            hash = hash * -80327868 + fallback.hashCode();
+            return hash;
+        }
+
+        @Override
         public String toString() {
             return "JankyComposite Primary: " + primary + " Fallback: " + fallback;
         }
@@ -805,6 +814,11 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                     SettingsUtil.maybeCensor(y),
                     SettingsUtil.maybeCensor(z)
             );
+        }
+
+        @Override
+        public int hashCode() {
+            return super.hashCode() * 1636324008;
         }
     }
 
@@ -884,6 +898,15 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         }
 
         @Override
+        public int hashCode() {
+            int hash = 806368046;
+            hash = hash * 1412661222 + super.hashCode();
+            hash = hash * 1730799370 + (int) BetterBlockPos.longHash(no.getX(), no.getY(), no.getZ());
+            hash = hash * 260592149 + (allowSameLevel ? -1314802005 : 1565710265);
+            return hash;
+        }
+
+        @Override
         public String toString() {
             return String.format(
                     "GoalAdjacent{x=%s,y=%s,z=%s}",
@@ -904,6 +927,11 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         public double heuristic(int x, int y, int z) {
             // prioritize lower y coordinates
             return this.y * 100 + super.heuristic(x, y, z);
+        }
+
+        @Override
+        public int hashCode() {
+            return super.hashCode() * 1910811835;
         }
 
         @Override
@@ -975,6 +1003,15 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             }
         }
         return true;
+    }
+
+    private boolean containsBlockState(Collection<IBlockState> states, IBlockState state) {
+        for (IBlockState testee : states) {
+            if (sameBlockstate(testee, state)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean valid(IBlockState current, IBlockState desired, boolean itemVerify) {

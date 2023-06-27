@@ -26,7 +26,6 @@ import baritone.api.command.datatypes.RelativeFile;
 import baritone.api.command.exception.CommandException;
 import baritone.api.command.exception.CommandInvalidStateException;
 import baritone.api.utils.BetterBlockPos;
-import net.minecraft.client.Minecraft;
 import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
@@ -36,10 +35,11 @@ import java.util.stream.Stream;
 
 public class BuildCommand extends Command {
 
-    private static final File schematicsDir = new File(Minecraft.getMinecraft().gameDir, "schematics");
+    private final File schematicsDir;
 
     public BuildCommand(IBaritone baritone) {
         super(baritone, "build");
+        this.schematicsDir = new File(baritone.getPlayerContext().minecraft().gameDir, "schematics");
     }
 
     @Override

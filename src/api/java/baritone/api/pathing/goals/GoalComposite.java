@@ -81,6 +81,11 @@ public class GoalComposite implements Goal {
     }
 
     @Override
+    public int hashCode() {
+        return Arrays.hashCode(goals);
+    }
+
+    @Override
     public String toString() {
         return "GoalComposite" + Arrays.toString(goals);
     }

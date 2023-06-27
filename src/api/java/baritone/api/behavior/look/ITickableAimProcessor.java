@@ -15,24 +15,33 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.utils.player;
+package baritone.api.behavior.look;
 
-import baritone.api.utils.Helper;
-import baritone.api.utils.IPlayerController;
-import net.minecraft.client.multiplayer.PlayerControllerMP;
+import baritone.api.utils.Rotation;
 
 /**
- * Implementation of {@link IPlayerController} that chains to the primary player controller's methods
- *
  * @author Brady
- * @since 12/14/2018
  */
-public final class PrimaryPlayerController extends AbstractPlayerController implements Helper {
+public interface ITickableAimProcessor extends IAimProcessor {
 
-    public static final PrimaryPlayerController INSTANCE = new PrimaryPlayerController();
+    /**
+     * Advances the internal state of this aim processor by a single tick.
+     */
+    void tick();
 
-    @Override
-    protected PlayerControllerMP getController() {
-        return mc.playerController;
-    }
+    /**
+     * Calls {@link #tick()} the specified number of times.
+     *
+     * @param ticks The number of calls
+     */
+    void advance(int ticks);
+
+    /**
+     * Returns the actual rotation as provided by {@link #peekRotation(Rotation)}, and then automatically advances the
+     * internal state by one {@link #tick() tick}.
+     *
+     * @param rotation The desired rotation to set
+     * @return The actual rotation
+     */
+    Rotation nextRotation(Rotation rotation);
 }

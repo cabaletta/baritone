@@ -72,6 +72,11 @@ public class GoalYLevel implements Goal, ActionCosts {
     }
 
     @Override
+    public int hashCode() {
+        return level * 1271009915;
+    }
+
+    @Override
     public String toString() {
         return String.format(
                 "GoalYLevel{y=%s}",

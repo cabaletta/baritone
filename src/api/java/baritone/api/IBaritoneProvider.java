@@ -22,6 +22,7 @@ import baritone.api.cache.IWorldScanner;
 import baritone.api.command.ICommand;
 import baritone.api.command.ICommandSystem;
 import baritone.api.schematic.ISchematicSystem;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 
 import java.util.List;
@@ -59,7 +60,7 @@ public interface IBaritoneProvider {
      * @return The {@link IBaritone} instance.
      */
     default IBaritone getBaritoneForPlayer(EntityPlayerSP player) {
-        for (IBaritone baritone : getAllBaritones()) {
+        for (IBaritone baritone : this.getAllBaritones()) {
             if (Objects.equals(player, baritone.getPlayerContext().player())) {
                 return baritone;
             }
@@ -68,8 +69,41 @@ public interface IBaritoneProvider {
     }
 
     /**
-     * Returns the {@link IWorldScanner} instance. This is not a type returned by a
-     * {@link IBaritone} implementation because it is not linked with {@link IBaritone}.
+     * Provides the {@link IBaritone} instance for a given {@link Minecraft}.
+     *
+     * @param minecraft The minecraft
+     * @return The {@link IBaritone} instance.
+     */
+    default IBaritone getBaritoneForMinecraft(Minecraft minecraft) {
+        for (IBaritone baritone : this.getAllBaritones()) {
+            if (Objects.equals(minecraft, baritone.getPlayerContext().minecraft())) {
+                return baritone;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Creates and registers a new {@link IBaritone} instance using the specified {@link Minecraft}. The existing
+     * instance is returned if already registered.
+     *
+     * @param minecraft The minecraft
+     * @return The {@link IBaritone} instance
+     */
+    IBaritone createBaritone(Minecraft minecraft);
+
+    /**
+     * Destroys and removes the specified {@link IBaritone} instance. If the specified instance is the
+     * {@link #getPrimaryBaritone() primary baritone}, this operation has no effect and will return {@code false}.
+     *
+     * @param baritone The baritone instance to remove
+     * @return Whether the baritone instance was removed
+     */
+    boolean destroyBaritone(IBaritone baritone);
+
+    /**
+     * Returns the {@link IWorldScanner} instance. This is not a type returned by
+     * {@link IBaritone} implementation, because it is not linked with {@link IBaritone}.
      *
      * @return The {@link IWorldScanner} instance.
      */

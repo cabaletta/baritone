@@ -19,7 +19,6 @@ package baritone;
 
 import baritone.api.IBaritone;
 import baritone.api.IBaritoneProvider;
-import baritone.api.bot.IBaritoneUser;
 import baritone.api.bot.IUserManager;
 import baritone.api.cache.IWorldScanner;
 import baritone.api.command.ICommandSystem;
@@ -27,11 +26,13 @@ import baritone.api.schematic.ISchematicSystem;
 import baritone.bot.UserManager;
 import baritone.cache.FasterWorldScanner;
 import baritone.command.CommandSystem;
-import baritone.utils.player.PrimaryPlayerContext;
+import baritone.command.ExampleBaritoneControl;
 import baritone.utils.schematic.SchematicSystem;
+import net.minecraft.client.Minecraft;
 
-import java.util.AbstractList;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * @author Brady
@@ -39,22 +40,40 @@ import java.util.List;
  */
 public final class BaritoneProvider implements IBaritoneProvider {
 
-    private final IBaritone primary;
     private final List<IBaritone> all;
+    private final List<IBaritone> allView;
 
     public BaritoneProvider() {
-        this.primary = new Baritone(PrimaryPlayerContext.INSTANCE);
-        this.all = this.new BaritoneList();
+        this.all = new CopyOnWriteArrayList<>();
+        this.allView = Collections.unmodifiableList(this.all);
+
+        // Setup chat control, just for the primary instance
+        final Baritone primary = (Baritone) this.createBaritone(Minecraft.getMinecraft());
+        primary.registerBehavior(ExampleBaritoneControl::new);
     }
 
     @Override
     public IBaritone getPrimaryBaritone() {
-        return this.primary;
+        return this.all.get(0);
     }
 
     @Override
     public List<IBaritone> getAllBaritones() {
-        return this.all;
+        return this.allView;
+    }
+
+    @Override
+    public synchronized IBaritone createBaritone(Minecraft minecraft) {
+        IBaritone baritone = this.getBaritoneForMinecraft(minecraft);
+        if (baritone == null) {
+            this.all.add(baritone = new Baritone(minecraft));
+        }
+        return baritone;
+    }
+
+    @Override
+    public synchronized boolean destroyBaritone(IBaritone baritone) {
+        return baritone != this.getPrimaryBaritone() && this.all.remove(baritone);
     }
 
     @Override
@@ -75,28 +94,5 @@ public final class BaritoneProvider implements IBaritoneProvider {
     @Override
     public ISchematicSystem getSchematicSystem() {
         return SchematicSystem.INSTANCE;
-    }
-
-    private final class BaritoneList extends AbstractList<IBaritone> {
-
-        @Override
-        public int size() {
-            return 1 + this.getUsers().size();
-        }
-
-        @Override
-        public IBaritone get(int index) {
-            if (index < 0 || index >= this.size()) {
-                throw new IndexOutOfBoundsException();
-            }
-            if (index == 0) {
-                return BaritoneProvider.this.primary;
-            }
-            return this.getUsers().get(index - 1).getBaritone();
-        }
-
-        private List<IBaritoneUser> getUsers() {
-            return BaritoneProvider.this.getUserManager().getUsers();
-        }
     }
 }

@@ -724,6 +724,18 @@ public final class Settings {
     public final Setting<Boolean> freeLook = new Setting<>(true);
 
     /**
+     * Break and place blocks without having to force the client-sided rotations. Having this setting enabled implies
+     * {@link #freeLook}.
+     */
+    public final Setting<Boolean> blockFreeLook = new Setting<>(false);
+
+    /**
+     * When true, the player will remain with its existing look direction as often as possible.
+     * Although, in some cases this can get it stuck, hence this setting to disable that behavior.
+     */
+    public final Setting<Boolean> remainWithExistingLookDirection = new Setting<>(true);
+
+    /**
      * Will cause some minor behavioral differences to ensure that Baritone works on anticheats.
      * <p>
      * At the moment this will silently set the player's rotations when using freeLook so you're not sprinting in
