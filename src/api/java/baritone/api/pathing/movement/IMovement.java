@@ -26,16 +26,8 @@ import net.minecraft.util.math.BlockPos;
  */
 public interface IMovement {
 
-    /**
-     * @return The cost of executing this movement.
-     */
     double getCost();
 
-    /**
-     * Updates this movement, allowing it to set the controls for the player to execute.
-     *
-     * @return The new status for this movement
-     */
     MovementStatus update();
 
     /**
@@ -53,19 +45,10 @@ public interface IMovement {
      */
     boolean safeToCancel();
 
-    /**
-     * @return Whether or not the position that this movement represents was loaded in the world when calculated.
-     */
     boolean calculatedWhileLoaded();
 
-    /**
-     * @return The starting position of this movement.
-     */
     BetterBlockPos getSrc();
 
-    /**
-     * @return The destination position of this movement.
-     */
     BetterBlockPos getDest();
 
     BlockPos getDirection();
