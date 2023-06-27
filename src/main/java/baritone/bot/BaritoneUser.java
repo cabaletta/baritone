@@ -24,14 +24,13 @@ import baritone.api.bot.IBaritoneUser;
 import baritone.api.event.events.WorldEvent;
 import baritone.api.event.events.type.EventState;
 import baritone.api.utils.IPlayerContext;
-import baritone.api.utils.IPlayerController;
 import baritone.bot.impl.BotMinecraft;
 import baritone.bot.impl.BotWorld;
 import baritone.bot.impl.BotEntity;
+import baritone.command.ExampleBaritoneControl;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.client.multiplayer.PlayerControllerMP;
 import net.minecraft.client.multiplayer.ServerData;
-import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.util.Session;
@@ -63,6 +62,7 @@ public final class BaritoneUser implements IBaritoneUser {
         this.session = session;
         this.profile = session.getProfile();
         this.baritone = (Baritone) BaritoneAPI.getProvider().createBaritone(this.mc);
+        this.baritone.registerBehavior(ExampleBaritoneControl::new);
     }
 
     public void onLoginSuccess(GameProfile profile, NetHandlerPlayClient netHandlerPlayClient) {

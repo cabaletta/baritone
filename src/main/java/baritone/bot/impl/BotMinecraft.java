@@ -21,6 +21,7 @@ import baritone.api.bot.IBaritoneUser;
 import baritone.api.utils.Helper;
 import baritone.utils.ObjectAllocator;
 import baritone.utils.accessor.IGameSettings;
+import baritone.utils.accessor.IMinecraft;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.mojang.authlib.minecraft.MinecraftSessionService;
 import net.minecraft.client.Minecraft;
@@ -31,6 +32,7 @@ import net.minecraft.client.main.GameConfiguration;
 import net.minecraft.client.settings.GameSettings;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.client.tutorial.Tutorial;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.EnumHandSide;
 import net.minecraft.util.Session;
@@ -55,6 +57,12 @@ public final class BotMinecraft extends Minecraft implements Helper {
 
     private BotMinecraft(GameConfiguration gameConfig) {
         super(gameConfig);
+    }
+
+    @Nullable
+    @Override
+    public Entity getRenderViewEntity() {
+        return Minecraft.getMinecraft().getRenderViewEntity();
     }
 
     @Nonnull
@@ -103,6 +111,7 @@ public final class BotMinecraft extends Minecraft implements Helper {
 
     public static BotMinecraft allocate(IBaritoneUser user) {
         BotMinecraft bm = ObjectAllocator.allocate(BotMinecraft.class);
+        ((IMinecraft) (Object) bm).setGameDir(Minecraft.getMinecraft().gameDir);
         bm.user = user;
         bm.tutorial = new Tutorial(bm);
         bm.gameSettings = createGameSettings(bm);

@@ -24,6 +24,7 @@ import baritone.api.event.events.PlayerUpdateEvent;
 import baritone.api.event.events.TickEvent;
 import baritone.api.event.events.WorldEvent;
 import baritone.api.event.events.type.EventState;
+import baritone.utils.accessor.IMinecraft;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.GuiScreen;
@@ -33,7 +34,9 @@ import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import org.spongepowered.asm.lib.Opcodes;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -41,6 +44,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
+import java.io.File;
 import java.util.function.BiFunction;
 
 /**
@@ -48,12 +52,18 @@ import java.util.function.BiFunction;
  * @since 7/31/2018
  */
 @Mixin(Minecraft.class)
-public class MixinMinecraft {
+public class MixinMinecraft implements IMinecraft {
 
     @Shadow
     public EntityPlayerSP player;
+
     @Shadow
     public WorldClient world;
+
+    @Shadow
+    @Final
+    @Mutable
+    public File gameDir;
 
     @Inject(
             method = "init",
@@ -175,5 +185,10 @@ public class MixinMinecraft {
     private void onBlockUse(CallbackInfo ci, EnumHand var1[], int var2, int var3, EnumHand enumhand, ItemStack itemstack, BlockPos blockpos, int i, EnumActionResult enumactionresult) {
         // rightClickMouse is only for the main player
         BaritoneAPI.getProvider().getPrimaryBaritone().getGameEventHandler().onBlockInteract(new BlockInteractEvent(blockpos, BlockInteractEvent.Type.USE));
+    }
+
+    @Override
+    public void setGameDir(File gameDir) {
+        this.gameDir = gameDir;
     }
 }
