@@ -439,12 +439,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         this.blockedLines.clear();
         this.simulationLine = null;
         this.aimPos = null;
-    }
 
-    /**
-     * Called by {@link ElytraProcess#onTick(boolean, boolean)} when the process is in control
-     */
-    private void tick() {
         final List<BetterBlockPos> path = this.pathManager.getPath();
         if (path.isEmpty()) {
             return;
@@ -458,11 +453,12 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
                 Math.max(playerNear - 30, 0),
                 Math.min(playerNear + 100, path.size())
         );
+    }
 
-        if (!ctx.player().isElytraFlying()) {
-            return;
-        }
-
+    /**
+     * Called by {@link ElytraProcess#onTick(boolean, boolean)} when the process is in control
+     */
+    private void tick() {
         if (ctx.player().collidedHorizontally) {
             logDirect("hbonk");
         }
