@@ -42,4 +42,12 @@ public final class BotGuiInventory extends GuiInventory {
         mc.displayHeight = primary.displayHeight;
         super.setWorldAndResolution(mc, width, height);
     }
+
+    @Override
+    protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY) {
+        final BotPlayer player = (BotPlayer) this.user.getPlayerContext().player();
+        player.isUser = false;
+        super.drawGuiContainerBackgroundLayer(partialTicks, mouseX, mouseY);
+        player.isUser = true;
+    }
 }

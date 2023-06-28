@@ -57,17 +57,25 @@ public final class BotPlayer extends EntityPlayerSP {
 
     private final IBaritoneUser user;
     private NetworkPlayerInfo playerInfo;
+    public boolean isUser;
 
     public BotPlayer(IBaritoneUser user, Minecraft mc, World world, NetHandlerPlayClient netHandlerPlayClient, StatisticsManager statisticsManager, RecipeBook recipeBook) {
         super(mc, world, netHandlerPlayClient, statisticsManager, recipeBook);
         this.user = user;
         this.movementInput = new PlayerMovementInput(this.user.getBaritone().getInputOverrideHandler());
+        this.isUser = true;
     }
 
     @Override
     public void onUpdate() {
         this.entityCollisionReduction = Baritone.settings().botCollision.value ? 0.0F : 1.0F;
         super.onUpdate();
+    }
+
+    @Override
+    public boolean isUser() {
+        // Used by BotGuiInventory to fix player model rendering in the gui
+        return this.isUser;
     }
 
     @Override
