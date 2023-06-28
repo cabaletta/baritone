@@ -37,6 +37,8 @@ import baritone.behavior.elytra.UnpackedSegment;
 import baritone.cache.FasterWorldScanner;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.accessor.IEntityFireworkRocket;
+import it.unimi.dsi.fastutil.floats.FloatArrayList;
+import it.unimi.dsi.fastutil.floats.FloatIterator;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.item.EntityFireworkRocket;
@@ -52,6 +54,7 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Future;
+import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
 public final class ElytraBehavior extends Behavior implements IElytraBehavior, Helper {
@@ -530,56 +533,83 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
 
         for (int relaxation = 0; relaxation < 3; relaxation++) { // try for a strict solution first, then relax more and more (if we're in a corner or near some blocks, it will have to relax its constraints a bit)
             int[] heights = context.boost.isBoosted() ? new int[]{20, 10, 5, 0} : new int[]{0}; // attempt to gain height, if we can, so as not to waste the boost
-            float[] interps = new float[] {1.0f, 0.75f, 0.5f, 0.25f};
             int lookahead = relaxation == 0 ? 2 : 3; // ideally this would be expressed as a distance in blocks, rather than a number of voxel steps
             //int minStep = Math.max(0, playerNear - relaxation);
             int minStep = playerNear;
+
             for (int i = Math.min(playerNear + 20, path.size() - 1); i >= minStep; i--) {
+                final List<Pair<Vec3d, Integer>> candidates = new ArrayList<>();
                 for (int dy : heights) {
-                    for (float interp : interps) {
-                        Vec3d dest;
-                        if (interp == 1 || i == minStep) {
-                            dest = path.getVec(i);
+                    if (i == minStep) {
+                        // no interp
+                        candidates.add(new Pair<>(path.getVec(i).add(0, dy, 0), dy));
+                    } else {
+                        if (relaxation == 2) {
+                            final Vec3d delta = path.getVec(i).subtract(path.getVec(i - 1));
+                            final double stepLength = 0.5;
+                            final int steps = MathHelper.floor(delta.length() / stepLength);
+                            final Vec3d step = delta.normalize().scale(stepLength);
+
+                            Vec3d stepped = path.getVec(i);
+                            for (int interp = 0; interp < steps; interp++) {
+                                candidates.add(new Pair<>(stepped.add(0, dy, 0), dy));
+                                stepped = stepped.subtract(step);
+                            }
                         } else {
-                            dest = path.getVec(i).scale(interp).add(path.getVec(i - 1).scale(1.0d - interp));
+                            final float[] interps = relaxation == 0
+                                    ? new float[]{1.0f, 0.75f, 0.5f, 0.25f}
+                                    : new float[]{1.0f, 0.875f, 0.75f, 0.625f, 0.5f, 0.375f, 0.25f, 0.125f};
+                            for (float interp : interps) {
+                                Vec3d dest;
+                                if (interp == 1) {
+                                    dest = path.getVec(i);
+                                } else {
+                                    dest = path.getVec(i).scale(interp).add(path.getVec(i - 1).scale(1.0d - interp));
+                                }
+                                candidates.add(new Pair<>(dest.add(0, dy, 0), dy));
+                            }
                         }
+                    }
+                }
 
-                        dest = dest.add(0, dy, 0);
-                        if (dy != 0) {
-                            if (i + lookahead >= path.size()) {
+                for (final Pair<Vec3d, Integer> candidate : candidates) {
+                    final Vec3d dest = candidate.first();
+                    final Integer augment = candidate.second();
+
+                    if (augment != 0) {
+                        if (i + lookahead >= path.size()) {
+                            continue;
+                        }
+                        if (start.distanceTo(dest) < 40) {
+                            if (!this.clearView(dest, path.getVec(i + lookahead).add(0, augment, 0), false)
+                                    || !this.clearView(dest, path.getVec(i + lookahead), false)) {
+                                // aka: don't go upwards if doing so would prevent us from being able to see the next position **OR** the modified next position
                                 continue;
                             }
-                            if (start.distanceTo(dest) < 40) {
-                                if (!this.clearView(dest, path.getVec(i + lookahead).add(0, dy, 0), false)
-                                        || !this.clearView(dest, path.getVec(i + lookahead), false)) {
-                                    // aka: don't go upwards if doing so would prevent us from being able to see the next position **OR** the modified next position
-                                    continue;
-                                }
-                            } else {
-                                // but if it's far away, allow gaining altitude if we could lose it again by the time we get there
-                                if (!this.clearView(dest, path.getVec(i), false)) {
-                                    continue;
-                                }
-                            }
-                        }
-
-                        final double minAvoidance = Baritone.settings().elytraMinimumAvoidance.value;
-                        final Double growth = relaxation == 2 ? null
-                                : relaxation == 0 ? 2 * minAvoidance : minAvoidance;
-
-                        if (this.isHitboxClear(start, dest, growth, isInLava)) {
-                            // Yaw is trivial, just calculate the rotation required to face the destination
-                            final float yaw = RotationUtils.calcRotationFromVec3d(start, dest, ctx.playerRotations()).getYaw();
-
-                            final Pair<Float, Boolean> pitch = this.solvePitch(context, dest.subtract(start), relaxation, isInLava);
-                            if (pitch.first() == null) {
-                                solution = new Solution(context, new Rotation(yaw, ctx.playerRotations().getPitch()), null, false, false);
+                        } else {
+                            // but if it's far away, allow gaining altitude if we could lose it again by the time we get there
+                            if (!this.clearView(dest, path.getVec(i), false)) {
                                 continue;
                             }
-
-                            // A solution was found with yaw AND pitch, so just immediately return it.
-                            return new Solution(context, new Rotation(yaw, pitch.first()), dest, true, pitch.second());
                         }
+                    }
+
+                    final double minAvoidance = Baritone.settings().elytraMinimumAvoidance.value;
+                    final Double growth = relaxation == 2 ? null
+                            : relaxation == 0 ? 2 * minAvoidance : minAvoidance;
+
+                    if (this.isHitboxClear(start, dest, growth, isInLava)) {
+                        // Yaw is trivial, just calculate the rotation required to face the destination
+                        final float yaw = RotationUtils.calcRotationFromVec3d(start, dest, ctx.playerRotations()).getYaw();
+
+                        final Pair<Float, Boolean> pitch = this.solvePitch(context, dest, relaxation, isInLava);
+                        if (pitch == null) {
+                            solution = new Solution(context, new Rotation(yaw, ctx.playerRotations().getPitch()), null, false, false);
+                            continue;
+                        }
+
+                        // A solution was found with yaw AND pitch, so just immediately return it.
+                        return new Solution(context, new Rotation(yaw, pitch.first()), dest, true, pitch.second());
                     }
                 }
             }
@@ -680,10 +710,16 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
             return this.firework != null;
         }
 
+        /**
+         * @return The guaranteed number of remaining ticks with boost
+         */
         public int getGuaranteedBoostTicks() {
             return this.isBoosted() ? Math.max(0, this.minimumBoostTicks - this.firework.ticksExisted) : 0;
         }
 
+        /**
+         * @return The maximum number of remaining ticks with boost
+         */
         public int getMaximumBoostTicks() {
             return this.isBoosted() ? Math.max(0, this.maximumBoostTicks - this.firework.ticksExisted) : 0;
         }
@@ -835,43 +871,92 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         }
     }
 
-    private Pair<Float, Boolean> solvePitch(final SolverContext context, final Vec3d goalDelta,
-                                            final int relaxation, final boolean ignoreLava) {
-        final boolean desperate = relaxation == 2;
-        final int ticks = desperate ? 3 : context.boost.isBoosted() ? 5 : Baritone.settings().elytraSimulationTicks.value;
-        final int ticksBoosted = context.boost.isBoosted() ? ticks : 0;
+    @FunctionalInterface
+    private interface IntBiFunction<T> {
+        T apply(int left, int right);
+    }
 
-        final PitchResult pitch = this.solvePitch(context, goalDelta, ticks, ticksBoosted, desperate, ignoreLava);
-        if (pitch != null) {
-            return new Pair<>(pitch.pitch, false);
+    private static FloatArrayList pitchesToSolveFor(final float goodPitch, final boolean desperate) {
+        final float minPitch = desperate ? -90 : Math.max(goodPitch - Baritone.settings().elytraPitchRange.value, -89);
+        final float maxPitch = desperate ? 90 : Math.min(goodPitch + Baritone.settings().elytraPitchRange.value, 89);
+
+        final FloatArrayList pitchValues = new FloatArrayList(MathHelper.ceil(maxPitch - minPitch) + 1);
+        for (float pitch = goodPitch; pitch <= maxPitch; pitch++) {
+            pitchValues.add(pitch);
+        }
+        for (float pitch = goodPitch - 1; pitch >= minPitch; pitch--) {
+            pitchValues.add(pitch);
+        }
+
+        return pitchValues;
+    }
+
+    private Pair<Float, Boolean> solvePitch(final SolverContext context, final Vec3d goal,
+                                            final int relaxation, final boolean ignoreLava) {
+
+        final boolean desperate = relaxation == 2;
+        final float goodPitch = RotationUtils.calcRotationFromVec3d(context.start, goal, ctx.playerRotations()).getPitch();
+        final FloatArrayList pitches = pitchesToSolveFor(goodPitch, desperate);
+
+        final IntBiFunction<PitchResult> solve = (ticks, ticksBoosted) ->
+                this.solvePitch(context, goal, relaxation, pitches.iterator(), ticks, ticksBoosted, ignoreLava);
+
+        final List<Supplier<PitchResult>> tests = new ArrayList<>();
+
+        if (context.boost.isBoosted()) {
+            final int guaranteed = context.boost.getGuaranteedBoostTicks();
+            if (guaranteed == 0) {
+                // uncertain when boost will run out
+                final int lookahead = Math.max(4, 10 - context.boost.getMaximumBoostTicks());
+                tests.add(() -> solve.apply(lookahead, 1));
+                tests.add(() -> solve.apply(5, 5));
+            } else if (guaranteed <= 5) {
+                // boost will run out within 5 ticks
+                tests.add(() -> solve.apply(guaranteed + 5, guaranteed));
+            } else {
+                // there's plenty of guaranteed boost
+                tests.add(() -> solve.apply(guaranteed + 1, guaranteed));
+            }
+        }
+
+        // Standard test, assume (not) boosted for entire duration
+        final int ticks = desperate ? 3 : context.boost.isBoosted() ? Math.max(5, context.boost.getGuaranteedBoostTicks()) : Baritone.settings().elytraSimulationTicks.value;
+        tests.add(() -> solve.apply(ticks, context.boost.isBoosted() ? ticks : 0));
+
+        final Optional<PitchResult> result = tests.stream()
+                .map(Supplier::get)
+                .filter(Objects::nonNull)
+                .findFirst();
+        if (result.isPresent()) {
+            return new Pair<>(result.get().pitch, false);
         }
 
         if (Baritone.settings().experimentalTakeoff.value && relaxation > 0) {
             // Simulate as if we were boosted for the entire duration
-            final PitchResult usingFirework = this.solvePitch(context, goalDelta, ticks, ticks, desperate, ignoreLava);
+            final PitchResult usingFirework = solve.apply(ticks, ticks);
             if (usingFirework != null) {
                 return new Pair<>(usingFirework.pitch, true);
             }
         }
 
-        return new Pair<>(null, false);
+        return null;
     }
 
-    private PitchResult solvePitch(final SolverContext context, final Vec3d goalDelta, final int ticks,
-                                   final int ticksBoosted, final boolean desperate, final boolean ignoreLava) {
+    private PitchResult solvePitch(final SolverContext context, final Vec3d goal, final int relaxation,
+                                   final FloatIterator pitches, final int ticks, final int ticksBoosted,
+                                   final boolean ignoreLava) {
         // we are at a certain velocity, but we have a target velocity
         // what pitch would get us closest to our target velocity?
         // yaw is easy so we only care about pitch
 
+        final Vec3d goalDelta = goal.subtract(context.start);
         final Vec3d goalDirection = goalDelta.normalize();
-        final float goodPitch = RotationUtils.calcRotationFromVec3d(Vec3d.ZERO, goalDirection, ctx.playerRotations()).getPitch();
 
         PitchResult result = null;
 
-        final float minPitch = desperate ? -90 : Math.max(goodPitch - Baritone.settings().elytraPitchRange.value, -89);
-        final float maxPitch = desperate ? 90 : Math.min(goodPitch + Baritone.settings().elytraPitchRange.value, 89);
-
-        for (float pitch = minPitch; pitch <= maxPitch; pitch++) {
+        outer:
+        while (pitches.hasNext()) {
+            final float pitch = pitches.nextFloat();
             final List<Vec3d> displacement = this.simulate(
                     context.aimProcessor.fork(),
                     goalDelta,
@@ -883,9 +968,24 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
             if (displacement == null) {
                 continue;
             }
-            final Vec3d last = displacement.get(displacement.size() - 1);
-            double goodness = goalDirection.dotProduct(last.normalize());
+            final int lastIndex = displacement.size() - 1;
+            final Vec3d last = displacement.get(lastIndex);
+            final double goodness = goalDirection.dotProduct(last.normalize());
             if (result == null || goodness > result.dot) {
+                if (relaxation == 0) {
+                    // Ensure that the goal is visible along the entire simulated path
+                    // Reverse order iteration since the last position is most likely to fail
+                    for (int i = lastIndex; i >= 1; i--) {
+                        if (!clearView(context.start.add(displacement.get(i)), goal, false)) {
+                            continue outer;
+                        }
+                    }
+                } else if (relaxation == 1) {
+                    // Ensure that the goal is visible from the final position
+                    if (!clearView(context.start.add(last), goal, false)) {
+                        continue;
+                    }
+                }
                 result = new PitchResult(pitch, goodness, displacement);
             }
         }
