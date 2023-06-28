@@ -456,7 +456,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
     }
 
     /**
-     * Called by {@link ElytraProcess#onTick(boolean, boolean)} when the process is in control
+     * Called by {@link ElytraProcess#onTick(boolean, boolean)} when the process is in control and the player is flying
      */
     private void tick() {
         if (ctx.player().collidedHorizontally) {
