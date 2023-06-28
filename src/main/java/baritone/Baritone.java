@@ -107,8 +107,8 @@ public class Baritone implements IBaritone {
 
         {
             this.lookBehavior         = this.registerBehavior(LookBehavior::new);
-            this.pathingBehavior      = this.registerBehavior(PathingBehavior::new);
             this.elytraBehavior       = this.registerBehavior(ElytraBehavior::new);
+            this.pathingBehavior      = this.registerBehavior(PathingBehavior::new);
             this.inventoryBehavior    = this.registerBehavior(InventoryBehavior::new);
             this.inputOverrideHandler = this.registerBehavior(InputOverrideHandler::new);
             this.registerBehavior(WaypointBehavior::new);
