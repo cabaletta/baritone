@@ -79,6 +79,18 @@ public final class BotPlayer extends EntityPlayerSP {
     }
 
     @Override
+    public double getDistanceSq(@Nonnull Entity entityIn) {
+        if (entityIn == Minecraft.getMinecraft().getRenderViewEntity()) {
+            // Always render nametag in BotGuiInventory
+            return 0.0;
+        } else {
+            return super.getDistanceSq(entityIn);
+        }
+    }
+
+
+
+    @Override
     public void sendStatusMessage(@Nonnull ITextComponent chatComponent, boolean actionBar) {
         // TODO: Custom message handling
     }
