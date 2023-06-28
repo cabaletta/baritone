@@ -25,12 +25,16 @@ import baritone.api.command.Command;
 import baritone.api.command.argument.IArgConsumer;
 import baritone.api.command.exception.CommandException;
 import baritone.api.command.exception.CommandInvalidTypeException;
+import baritone.api.event.events.ChatEvent;
 import baritone.bot.UserManager;
 import baritone.bot.impl.BotGuiInventory;
 import net.minecraft.util.Session;
 
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static baritone.api.command.IBaritoneChatControl.FORCE_COMMAND_PREFIX;
 
 /**
  * @author Brady
@@ -54,18 +58,48 @@ public class BotCommand extends Command {
             final Session session = new Session(username, UUID.randomUUID().toString(), "", "");
             final IConnectionResult result = UserManager.INSTANCE.connect(session);
             logDirect(result.toString());
-        } else if (action == Action.INVENTORY || action == Action.DISCONNECT) {
-            Optional<IBaritoneUser> bot = UserManager.INSTANCE.getUserByName(args.getString());
-            if (!bot.isPresent()) {
-                throw new CommandInvalidTypeException(args.consumed(), "a bot name");
+        } else if (action.requiresBotSelector()) {
+            final String selector = args.getString();
+            final List<IBaritoneUser> bots;
+
+            if (selector.equals("*")) {
+                bots = UserManager.INSTANCE.getUsers();
+            } else if (selector.contains(",")) {
+                bots = Arrays.stream(selector.split(","))
+                        .map(UserManager.INSTANCE::getUserByName)
+                        .filter(Optional::isPresent)
+                        .map(Optional::get)
+                        .collect(Collectors.toList());
+            } else {
+                bots = UserManager.INSTANCE.getUserByName(selector)
+                        .map(Collections::singletonList)
+                        .orElseGet(Collections::emptyList);
             }
+
+            if (bots.isEmpty()) {
+                throw new CommandInvalidTypeException(args.consumed(), "selector didn't match any bots");
+            }
+
+            if (action == Action.INVENTORY) {
+                // Only display one inventory lol
+                final IBaritoneUser bot = bots.get(0);
+                ((Baritone) baritone).showScreen(new BotGuiInventory(bot));
+                return;
+            }
+
             switch (action) {
-                case INVENTORY: {
-                    ((Baritone) baritone).showScreen(new BotGuiInventory(bot.get()));
+                case DISCONNECT: {
+                    bots.forEach(bot -> UserManager.INSTANCE.disconnect(bot, null));
                     break;
                 }
-                case DISCONNECT: {
-                    UserManager.INSTANCE.disconnect(bot.get(), null);
+                case SAY: {
+                    final String message = args.rawRest();
+                    bots.forEach(bot -> bot.getPlayerContext().player().sendChatMessage(message));
+                    break;
+                }
+                case EXECUTE: {
+                    final String command = FORCE_COMMAND_PREFIX + args.rawRest();
+                    bots.forEach(bot -> bot.getBaritone().getGameEventHandler().onSendChatMessage(new ChatEvent(command)));
                     break;
                 }
             }
@@ -89,19 +123,27 @@ public class BotCommand extends Command {
                 "",
                 "Usage:",
                 "> bot add/a <name>",
-                "> bot inventory/i [name]",
-                "> bot disconnect/dc [name]"
+                "> bot inventory/i [bot]",
+                "> bot disconnect/d [bot]",
+                "> bot say/s [bot] [args...]",
+                "> bot execute/e [bot] [args...]"
         );
     }
 
     private enum Action {
         ADD("add", "a"),
         INVENTORY("inventory", "i"),
-        DISCONNECT("disconnect", "dc");
+        DISCONNECT("disconnect", "d"),
+        SAY("say", "s"),
+        EXECUTE("execute", "e");
         private final String[] names;
 
         Action(String... names) {
             this.names = names;
+        }
+
+        public boolean requiresBotSelector() {
+            return this == INVENTORY || this == DISCONNECT || this == SAY || this == EXECUTE;
         }
 
         public static Action getByName(String name) {
