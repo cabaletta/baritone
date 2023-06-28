@@ -556,10 +556,10 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
                                 stepped = stepped.subtract(step);
                             }
                         } else {
-                            final float[] interps = relaxation == 0
-                                    ? new float[]{1.0f, 0.75f, 0.5f, 0.25f}
-                                    : new float[]{1.0f, 0.875f, 0.75f, 0.625f, 0.5f, 0.375f, 0.25f, 0.125f};
-                            for (float interp : interps) {
+                            final double[] interps = relaxation == 0
+                                    ? new double[]{1.0, 0.75, 0.5, 0.25}
+                                    : new double[]{1.0, 0.875, 0.75, 0.625, 0.5, 0.375, 0.25, 0.125};
+                            for (double interp : interps) {
                                 Vec3d dest;
                                 if (interp == 1) {
                                     dest = path.getVec(i);
