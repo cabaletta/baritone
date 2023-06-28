@@ -871,11 +871,6 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         }
     }
 
-    @FunctionalInterface
-    private interface IntBiFunction<T> {
-        T apply(int left, int right);
-    }
-
     private static FloatArrayList pitchesToSolveFor(final float goodPitch, final boolean desperate) {
         final float minPitch = desperate ? -90 : Math.max(goodPitch - Baritone.settings().elytraPitchRange.value, -89);
         final float maxPitch = desperate ? 90 : Math.min(goodPitch + Baritone.settings().elytraPitchRange.value, 89);
@@ -891,6 +886,21 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         return pitchValues;
     }
 
+    @FunctionalInterface
+    private interface IntBiFunction<T> {
+        T apply(int left, int right);
+    }
+
+    private static final class IntPair {
+        public final int first;
+        public final int second;
+
+        public IntPair(int first, int second) {
+            this.first = first;
+            this.second = second;
+        }
+    }
+
     private Pair<Float, Boolean> solvePitch(final SolverContext context, final Vec3d goal,
                                             final int relaxation, final boolean ignoreLava) {
 
@@ -901,30 +911,30 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         final IntBiFunction<PitchResult> solve = (ticks, ticksBoosted) ->
                 this.solvePitch(context, goal, relaxation, pitches.iterator(), ticks, ticksBoosted, ignoreLava);
 
-        final List<Supplier<PitchResult>> tests = new ArrayList<>();
+        final List<IntPair> tests = new ArrayList<>();
 
         if (context.boost.isBoosted()) {
             final int guaranteed = context.boost.getGuaranteedBoostTicks();
             if (guaranteed == 0) {
                 // uncertain when boost will run out
                 final int lookahead = Math.max(4, 10 - context.boost.getMaximumBoostTicks());
-                tests.add(() -> solve.apply(lookahead, 1));
-                tests.add(() -> solve.apply(5, 5));
+                tests.add(new IntPair(lookahead, 1));
+                tests.add(new IntPair(5, 5));
             } else if (guaranteed <= 5) {
                 // boost will run out within 5 ticks
-                tests.add(() -> solve.apply(guaranteed + 5, guaranteed));
+                tests.add(new IntPair(guaranteed + 5, guaranteed));
             } else {
                 // there's plenty of guaranteed boost
-                tests.add(() -> solve.apply(guaranteed + 1, guaranteed));
+                tests.add(new IntPair(guaranteed + 1, guaranteed));
             }
         }
 
         // Standard test, assume (not) boosted for entire duration
         final int ticks = desperate ? 3 : context.boost.isBoosted() ? Math.max(5, context.boost.getGuaranteedBoostTicks()) : Baritone.settings().elytraSimulationTicks.value;
-        tests.add(() -> solve.apply(ticks, context.boost.isBoosted() ? ticks : 0));
+        tests.add(new IntPair(ticks, context.boost.isBoosted() ? ticks : 0));
 
         final Optional<PitchResult> result = tests.stream()
-                .map(Supplier::get)
+                .map(i -> solve.apply(i.first, i.second))
                 .filter(Objects::nonNull)
                 .findFirst();
         if (result.isPresent()) {
