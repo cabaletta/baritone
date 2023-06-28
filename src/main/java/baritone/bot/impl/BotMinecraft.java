@@ -18,7 +18,6 @@
 package baritone.bot.impl;
 
 import baritone.api.bot.IBaritoneUser;
-import baritone.api.utils.Helper;
 import baritone.utils.ObjectAllocator;
 import baritone.utils.accessor.IGameSettings;
 import baritone.utils.accessor.IMinecraft;
@@ -29,6 +28,10 @@ import net.minecraft.client.audio.SoundHandler;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.toasts.GuiToast;
 import net.minecraft.client.main.GameConfiguration;
+import net.minecraft.client.renderer.RenderItem;
+import net.minecraft.client.renderer.entity.RenderManager;
+import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.settings.GameSettings;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.client.tutorial.Tutorial;
@@ -49,7 +52,9 @@ import java.util.concurrent.Callable;
  * @author Brady
  * @since 3/3/2020
  */
-public final class BotMinecraft extends Minecraft implements Helper {
+public final class BotMinecraft extends Minecraft {
+
+    private static final Minecraft mc = Minecraft.getMinecraft();
 
     private IBaritoneUser user;
     private Tutorial tutorial;
@@ -62,7 +67,7 @@ public final class BotMinecraft extends Minecraft implements Helper {
     @Nullable
     @Override
     public Entity getRenderViewEntity() {
-        return Minecraft.getMinecraft().getRenderViewEntity();
+        return mc.getRenderViewEntity();
     }
 
     @Nonnull
@@ -107,11 +112,43 @@ public final class BotMinecraft extends Minecraft implements Helper {
     @Override
     public void displayGuiScreen(@Nullable GuiScreen guiScreenIn) {
         // do nothing
+        if (guiScreenIn == null) {
+            if (mc.currentScreen instanceof BotGuiInventory) {
+                mc.displayGuiScreen(null);
+            }
+        }
+    }
+
+    @Nonnull
+    @Override
+    public TextureManager getTextureManager() {
+        return mc.getTextureManager();
+    }
+
+    @Nonnull
+    @Override
+    public RenderItem getRenderItem() {
+        return mc.getRenderItem();
+    }
+
+    @Nonnull
+    @Override
+    public TextureMap getTextureMapBlocks() {
+        return mc.getTextureMapBlocks();
+    }
+
+    @Override
+    public void dispatchKeypresses() {
+        // Do nothing
     }
 
     public static BotMinecraft allocate(IBaritoneUser user) {
         BotMinecraft bm = ObjectAllocator.allocate(BotMinecraft.class);
-        ((IMinecraft) (Object) bm).setGameDir(Minecraft.getMinecraft().gameDir);
+        ((IMinecraft) (Object) bm).setGameDir(mc.gameDir);
+
+        // Gui Compatibility
+        bm.fontRenderer = mc.fontRenderer;
+
         bm.user = user;
         bm.tutorial = new Tutorial(bm);
         bm.gameSettings = createGameSettings(bm);
@@ -133,6 +170,12 @@ public final class BotMinecraft extends Minecraft implements Helper {
         settings.chatVisibility = EntityPlayer.EnumChatVisibility.FULL;
         settings.chatColours = true;
         settings.mainHand = EnumHandSide.RIGHT;
+
+        // Gui Compatibility
+        settings.keyBindPickBlock = mc.gameSettings.keyBindPickBlock;
+        settings.keyBindsHotbar = mc.gameSettings.keyBindsHotbar;
+        settings.keyBindInventory = mc.gameSettings.keyBindInventory;
+        settings.keyBindDrop = mc.gameSettings.keyBindDrop;
 
         // Private fields that must be initialized
         IGameSettings accessor = (IGameSettings) settings;

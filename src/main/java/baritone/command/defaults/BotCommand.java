@@ -17,6 +17,7 @@
 
 package baritone.command.defaults;
 
+import baritone.Baritone;
 import baritone.api.IBaritone;
 import baritone.api.bot.IBaritoneUser;
 import baritone.api.bot.connect.IConnectionResult;
@@ -25,6 +26,7 @@ import baritone.api.command.argument.IArgConsumer;
 import baritone.api.command.exception.CommandException;
 import baritone.api.command.exception.CommandInvalidTypeException;
 import baritone.bot.UserManager;
+import baritone.bot.impl.BotGuiInventory;
 import net.minecraft.util.Session;
 
 import java.util.*;
@@ -42,22 +44,26 @@ public class BotCommand extends Command {
 
     @Override
     public void execute(String label, IArgConsumer args) throws CommandException {
-        if (args.hasExactly(0)) {
-            IConnectionResult result = UserManager.INSTANCE.connect(
-                    new Session("Bot" + System.currentTimeMillis() % 1000, UUID.randomUUID().toString(), "", ""));
-            logDirect(result.toString());
-        } else if (args.hasExactly(2)) {
-            Action action = Action.getByName(args.getString());
-            if (action == null) {
-                throw new CommandInvalidTypeException(args.consumed(), "an action");
-            }
+        final Action action = Action.getByName(args.getString());
+        if (action == null) {
+            throw new CommandInvalidTypeException(args.consumed(), "an action");
+        }
 
+        if (action == Action.ADD) {
+            final String username = args.hasAny() ? args.getString() : "Bot" + System.currentTimeMillis() % 1000;
+            final Session session = new Session(username, UUID.randomUUID().toString(), "", "");
+            final IConnectionResult result = UserManager.INSTANCE.connect(session);
+            logDirect(result.toString());
+        } else if (action == Action.INVENTORY || action == Action.DISCONNECT) {
             Optional<IBaritoneUser> bot = UserManager.INSTANCE.getUserByName(args.getString());
             if (!bot.isPresent()) {
                 throw new CommandInvalidTypeException(args.consumed(), "a bot name");
             }
-
             switch (action) {
+                case INVENTORY: {
+                    ((Baritone) baritone).showScreen(new BotGuiInventory(bot.get()));
+                    break;
+                }
                 case DISCONNECT: {
                     UserManager.INSTANCE.disconnect(bot.get(), null);
                     break;
@@ -82,12 +88,15 @@ public class BotCommand extends Command {
                 "Spawns a bot",
                 "",
                 "Usage:",
-                "> bot",
-                "> bot <disconnect> <name>"
+                "> bot add/a <name>",
+                "> bot inventory/i [name]",
+                "> bot disconnect/dc [name]"
         );
     }
 
     private enum Action {
+        ADD("add", "a"),
+        INVENTORY("inventory", "i"),
         DISCONNECT("disconnect", "dc");
         private final String[] names;
 

@@ -19,7 +19,7 @@ package baritone.bot.handler;
 
 import baritone.api.utils.Helper;
 import baritone.bot.BaritoneUser;
-import baritone.bot.impl.BotEntity;
+import baritone.bot.impl.BotPlayer;
 import baritone.bot.impl.BotMinecraft;
 import baritone.bot.impl.BotWorld;
 import baritone.utils.accessor.INetHandlerPlayClient;
@@ -59,7 +59,7 @@ public final class BotNetHandlerPlayClient extends NetHandlerPlayClient {
     private final NetworkManager networkManager;
 
     /**
-     * The bot's minecraft game instance. {@link BaritoneUser#getMinecraft()}
+     * The bot's minecraft game instance
      */
     private final BotMinecraft client;
 
@@ -69,9 +69,9 @@ public final class BotNetHandlerPlayClient extends NetHandlerPlayClient {
     private final BaritoneUser user;
 
     /**
-     * The bot entity
+     * The bot player
      */
-    private BotEntity player;
+    private BotPlayer player;
 
     /**
      * The current world.
@@ -91,7 +91,7 @@ public final class BotNetHandlerPlayClient extends NetHandlerPlayClient {
         this.user = user;
 
         // Notify the user that we're ingame
-        this.user.onLoginSuccess(profile, this);
+        this.user.onLoginSuccess(profile);
     }
 
     @Override
@@ -277,7 +277,7 @@ public final class BotNetHandlerPlayClient extends NetHandlerPlayClient {
         this.playerController = new PlayerControllerMP(this.user.getPlayerContext().minecraft(), this);
         this.world = this.user.getManager().getWorldProvider().getWorld(packetIn.getDimension());
         ((INetHandlerPlayClient) (Object) this).setWorld(this.world);
-        this.player = new BotEntity(this.user, this.client, this.world, this, new StatisticsManager(), new RecipeBookClient());
+        this.player = new BotPlayer(this.user, this.client, this.world, this, new StatisticsManager(), new RecipeBookClient());
         this.user.onWorldLoad(this.world, this.player, this.playerController);
         this.player.preparePlayerToSpawn();
         this.player.setEntityId(packetIn.getPlayerId());
@@ -297,7 +297,7 @@ public final class BotNetHandlerPlayClient extends NetHandlerPlayClient {
         PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.client);
 
         Entity e = packetIn.getEntity(this.world);
-        if (e instanceof BotEntity && !e.equals(this.player)) {
+        if (e instanceof BotPlayer && !e.equals(this.player)) {
             return;
         }
 
@@ -342,9 +342,9 @@ public final class BotNetHandlerPlayClient extends NetHandlerPlayClient {
             ((INetHandlerPlayClient) (Object) this).setWorld(this.world);
         }
 
-        BotEntity prev = this.player;
+        BotPlayer prev = this.player;
 
-        this.player = new BotEntity(this.user, this.client, this.world, this, prev.getStatFileWriter(), prev.getRecipeBook());
+        this.player = new BotPlayer(this.user, this.client, this.world, this, prev.getStatFileWriter(), prev.getRecipeBook());
         this.user.onWorldLoad(this.world, this.player, this.playerController);
         // noinspection ConstantConditions
         this.player.getDataManager().setEntryValues(prev.getDataManager().getAll());
@@ -511,7 +511,7 @@ public final class BotNetHandlerPlayClient extends NetHandlerPlayClient {
         throw new UnsupportedOperationException("This method shouldn't have been called; That is unepic!");
     }
 
-    public BotEntity player() {
+    public BotPlayer player() {
         return player;
     }
 

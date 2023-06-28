@@ -26,12 +26,11 @@ import baritone.api.event.events.type.EventState;
 import baritone.api.utils.IPlayerContext;
 import baritone.bot.impl.BotMinecraft;
 import baritone.bot.impl.BotWorld;
-import baritone.bot.impl.BotEntity;
+import baritone.bot.impl.BotPlayer;
 import baritone.command.ExampleBaritoneControl;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.client.multiplayer.PlayerControllerMP;
 import net.minecraft.client.multiplayer.ServerData;
-import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.util.Session;
 
@@ -50,9 +49,6 @@ public final class BaritoneUser implements IBaritoneUser {
     private final Baritone baritone;
 
     private GameProfile profile;
-    private NetHandlerPlayClient netHandlerPlayClient;
-    private BotWorld world;
-    private BotEntity player;
 
     BaritoneUser(UserManager manager, NetworkManager networkManager, Session session, ServerData serverData) {
         this.mc = BotMinecraft.allocate(this);
@@ -65,17 +61,16 @@ public final class BaritoneUser implements IBaritoneUser {
         this.baritone.registerBehavior(ExampleBaritoneControl::new);
     }
 
-    public void onLoginSuccess(GameProfile profile, NetHandlerPlayClient netHandlerPlayClient) {
+    public void onLoginSuccess(GameProfile profile) {
         this.profile = profile;
-        this.netHandlerPlayClient = netHandlerPlayClient;
     }
 
-    public void onWorldLoad(BotWorld world, BotEntity player, PlayerControllerMP controller) {
+    public void onWorldLoad(BotWorld world, BotPlayer player, PlayerControllerMP playerController) {
         this.baritone.getGameEventHandler().onWorldEvent(new WorldEvent(world, EventState.PRE));
 
-        this.mc.player = this.player = player;
-        this.mc.world = this.world = world;
-        this.mc.playerController = controller;
+        this.mc.player = player;
+        this.mc.world = world;
+        this.mc.playerController = playerController;
 
         this.baritone.getGameEventHandler().onWorldEvent(new WorldEvent(world, EventState.POST));
     }

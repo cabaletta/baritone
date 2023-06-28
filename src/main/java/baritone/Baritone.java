@@ -37,6 +37,7 @@ import baritone.utils.InputOverrideHandler;
 import baritone.utils.PathingControlManager;
 import baritone.utils.player.BaritonePlayerContext;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiScreen;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -233,10 +234,14 @@ public class Baritone implements IBaritone {
 
     @Override
     public void openClick() {
+        this.showScreen(new GuiClick());
+    }
+
+    public void showScreen(GuiScreen screen) {
         new Thread(() -> {
             try {
                 Thread.sleep(100);
-                mc.addScheduledTask(() -> mc.displayGuiScreen(new GuiClick()));
+                mc.addScheduledTask(() -> mc.displayGuiScreen(screen));
             } catch (Exception ignored) {}
         }).start();
     }

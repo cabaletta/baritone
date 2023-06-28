@@ -28,10 +28,11 @@ import baritone.api.utils.Helper;
 import baritone.api.utils.IPlayerContext;
 import baritone.bot.connect.ConnectionResult;
 import baritone.bot.handler.BotNetHandlerLoginClient;
-import baritone.bot.impl.BotEntity;
+import baritone.bot.impl.BotPlayer;
 import baritone.bot.impl.BotWorld;
 import baritone.utils.accessor.IIntegratedServer;
 import baritone.utils.accessor.IThreadLanServerPing;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ServerAddress;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.network.EnumConnectionState;
@@ -53,8 +54,10 @@ import static baritone.api.bot.connect.ConnectionStatus.*;
  * @author Brady
  * @since 11/6/2018
  */
-public enum UserManager implements IUserManager, AbstractGameEventListener, Helper {
+public enum UserManager implements IUserManager, AbstractGameEventListener {
     INSTANCE;
+
+    private static final Minecraft mc = Minecraft.getMinecraft();
 
     private final List<IBaritoneUser> users;
     private final BotWorldProvider worldProvider;
@@ -179,18 +182,16 @@ public enum UserManager implements IUserManager, AbstractGameEventListener, Help
     public final void disconnect(IBaritoneUser user, ITextComponent reason) {
         if (this.users.contains(user)) {
             if (user.getNetworkManager().isChannelOpen()) {
-                // It's probably fine to pass null to this, because the handlers aren't doing anything with it
-                // noinspection ConstantConditions
-                user.getNetworkManager().closeChannel(null);
+                user.getNetworkManager().closeChannel(reason);
             }
             BaritoneAPI.getProvider().destroyBaritone(user.getBaritone());
             this.users.remove(user);
-            logDirect(user.getSession().getUsername() + " Disconnected: " +
+            Helper.HELPER.logDirect(user.getSession().getUsername() + " Disconnected: " +
                     (reason == null ? "Unknown" : reason.getUnformattedText()));
 
             final IPlayerContext ctx = user.getPlayerContext();
             if (ctx.player() != null && ctx.world() != null) {
-                ((BotWorld) ctx.world()).handleWorldRemove((BotEntity) ctx.player());
+                ((BotWorld) ctx.world()).handleWorldRemove((BotPlayer) ctx.player());
             }
         }
     }

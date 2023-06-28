@@ -60,7 +60,7 @@ public final class BotWorld extends WorldClient {
     @Override
     public Entity removeEntityFromWorld(int entityID) {
         Entity entity = this.entitiesById.lookup(entityID);
-        if (entity != null && !(entity instanceof BotEntity)) {
+        if (entity != null && !(entity instanceof BotPlayer)) {
             this.removeEntity(entity);
             this.entitiesById.removeObject(entityID);
         }
@@ -80,7 +80,7 @@ public final class BotWorld extends WorldClient {
      * @param load   {@code true} if the chunk is being loaded, {@code false} if the chunk is being unloaded.
      * @return Whether or not the chunk needs to be loaded or unloaded accordingly.
      */
-    public boolean handlePreChunk(BotEntity bot, int chunkX, int chunkZ, boolean load) {
+    public boolean handlePreChunk(BotPlayer bot, int chunkX, int chunkZ, boolean load) {
         IntSet bots = this.loadedChunksMap.computeIfAbsent(new ChunkPos(chunkX, chunkZ), $ -> new IntArraySet());
         if (load) {
             boolean wasEmpty = bots.isEmpty();
@@ -92,7 +92,7 @@ public final class BotWorld extends WorldClient {
         }
     }
 
-    public void handleWorldRemove(BotEntity bot) {
+    public void handleWorldRemove(BotPlayer bot) {
         // Remove Bot from world
         this.removeEntity(bot);
         this.entitiesById.removeObject(bot.getEntityId());
