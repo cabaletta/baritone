@@ -40,6 +40,8 @@ import net.minecraft.client.Minecraft;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -63,6 +65,7 @@ public class Baritone implements IBaritone {
 
     private final GameEventHandler gameEventHandler;
 
+    private final List<IBehavior> behaviors;
     private final PathingBehavior pathingBehavior;
     private final ElytraBehavior elytraBehavior;
     private final LookBehavior lookBehavior;
@@ -89,6 +92,7 @@ public class Baritone implements IBaritone {
 
     Baritone(Minecraft mc) {
         this.mc = mc;
+        this.behaviors = new ArrayList<>();
         this.gameEventHandler = new GameEventHandler(this);
 
         this.directory = mc.gameDir.toPath().resolve("baritone");
@@ -121,15 +125,17 @@ public class Baritone implements IBaritone {
             this.farmProcess             = this.registerProcess(FarmProcess::new);
             this.inventoryPauserProcess  = this.registerProcess(InventoryPauserProcess::new);
             this.registerProcess(BackfillProcess::new);
-            this.registerProcess(__ -> this.elytraBehavior.new ElytraProcess()); // pain
         }
 
         this.worldProvider = new WorldProvider(this);
         this.selectionManager = new SelectionManager(this);
         this.commandManager = new CommandManager(this);
+
+        this.behaviors.forEach(IBehavior::onLoad);
     }
 
     public void registerBehavior(IBehavior behavior) {
+        this.behaviors.add(behavior);
         this.gameEventHandler.registerEventListener(behavior);
     }
 

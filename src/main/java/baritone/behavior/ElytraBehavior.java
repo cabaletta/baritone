@@ -71,6 +71,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
     // :sunglasses:
     private final NetherPathfinderContext context;
     private final PathManager pathManager;
+    private final ElytraProcess process;
 
     /**
      * Remaining cool-down ticks between firework usage
@@ -93,6 +94,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
     private BlockPos destination;
 
     private Future<Solution> solver;
+    private Solution pendingSolution;
     private boolean solveNextTick;
 
     public ElytraBehavior(Baritone baritone) {
@@ -102,6 +104,12 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         this.blockedLines = new CopyOnWriteArrayList<>();
         this.visiblePath = Collections.emptyList();
         this.pathManager = this.new PathManager();
+        this.process = new ElytraProcess();
+    }
+
+    @Override
+    public void onLoad() {
+        baritone.getPathingControlManager().registerProcess(this.process);
     }
 
     private final class PathManager {
@@ -398,16 +406,16 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
     }
 
     @Override
-    public void onTick(TickEvent event) {
+    public void onTick(final TickEvent event) {
         if (event.getType() == TickEvent.Type.OUT) {
             return;
         }
 
         // Fetch the previous solution, regardless of if it's going to be used
-        Solution solution = null;
+        this.pendingSolution = null;
         if (this.solver != null) {
             try {
-                solution = this.solver.get();
+                this.pendingSolution = this.solver.get();
             } catch (Exception ignored) {
                 // it doesn't matter if get() fails since the solution can just be recalculated synchronously
             } finally {
@@ -431,7 +439,12 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         this.blockedLines.clear();
         this.simulationLine = null;
         this.aimPos = null;
+    }
 
+    /**
+     * Called by {@link ElytraProcess#onTick(boolean, boolean)} when the process is in control
+     */
+    private void tick() {
         final List<BetterBlockPos> path = this.pathManager.getPath();
         if (path.isEmpty()) {
             return;
@@ -461,8 +474,11 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         this.solveNextTick = true;
 
         // If there's no previously calculated solution to use, or the context used at the end of last tick doesn't match this tick
-        if (solution == null || !solution.context.equals(solverContext)) {
+        final Solution solution;
+        if (this.pendingSolution == null || !this.pendingSolution.context.equals(solverContext)) {
             solution = this.solveAngles(solverContext);
+        } else {
+            solution = this.pendingSolution;
         }
 
         if (solution == null) {
@@ -1010,7 +1026,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         }
     }
 
-    public final class ElytraProcess implements IBaritoneProcess {
+    private final class ElytraProcess implements IBaritoneProcess {
 
         private State state;
         private Goal goal;
@@ -1032,6 +1048,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
                 this.state = State.FLYING;
                 this.goal = null;
                 baritone.getInputOverrideHandler().clearAllKeys();
+                ElytraBehavior.this.tick();
                 return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
             }
 
