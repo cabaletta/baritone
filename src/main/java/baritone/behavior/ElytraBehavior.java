@@ -398,6 +398,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
             this.solver.cancel(true);
             this.solver = null;
         }
+        this.pendingSolution = null;
     }
 
     @Override
