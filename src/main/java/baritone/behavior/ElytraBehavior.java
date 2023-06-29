@@ -404,8 +404,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
             this.solver = null;
         }
         this.pendingSolution = null;
-        this.nextTickBoostCounter[0] = 0;
-        this.nextTickBoostCounter[1] = 0;
+        Arrays.fill(this.nextTickBoostCounter, 0);
     }
 
     @Override
