@@ -409,7 +409,8 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
 
     @Override
     public boolean isActive() {
-        return !this.pathManager.getPath().isEmpty();
+        return baritone.getPathingControlManager().mostRecentInControl()
+                .filter(process -> this.process == process).isPresent();
     }
 
     @Override
