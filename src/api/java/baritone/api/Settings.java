@@ -61,9 +61,6 @@ public final class Settings {
     public final Setting<Boolean> elytraAutoJump = new Setting<>(false);
     public final Setting<Boolean> smoothLook = new Setting<>(false);
 
-    // Experimental Elytra Settings
-    public final Setting<Boolean> experimentalTakeoff = new Setting<>(false);
-
     /**
      * Allow Baritone to break blocks
      */

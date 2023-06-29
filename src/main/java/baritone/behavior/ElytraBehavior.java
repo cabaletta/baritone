@@ -54,7 +54,6 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Future;
-import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
 public final class ElytraBehavior extends Behavior implements IElytraBehavior, Helper {
@@ -540,19 +539,17 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
             for (int i = Math.min(playerNear + 20, path.size() - 1); i >= minStep; i--) {
                 final List<Pair<Vec3d, Integer>> candidates = new ArrayList<>();
                 for (int dy : heights) {
-                    if (relaxation == 0 || i == minStep) {
+                    if (i == minStep) {
                         // no interp
                         candidates.add(new Pair<>(path.getVec(i).add(0, dy, 0), dy));
-                    } else if (relaxation == 1) {
-                        // Create 4 points along the segment
-                        final double[] interps = new double[]{1.0, 0.75, 0.5, 0.25};
+                    } else if (relaxation < 2) {
+                        final double[] interps = relaxation == 0
+                                ? new double[]{1.0, 0.75, 0.5, 0.25}
+                                : new double[]{1.0, 0.875, 0.75, 0.625, 0.5, 0.375, 0.25, 0.125};
                         for (double interp : interps) {
-                            Vec3d dest;
-                            if (interp == 1) {
-                                dest = path.getVec(i);
-                            } else {
-                                dest = path.getVec(i).scale(interp).add(path.getVec(i - 1).scale(1.0d - interp));
-                            }
+                            final Vec3d dest = interp == 1.0
+                                    ? path.getVec(i)
+                                    : path.getVec(i).scale(interp).add(path.getVec(i - 1).scale(1.0 - interp));
                             candidates.add(new Pair<>(dest.add(0, dy, 0), dy));
                         }
                     } else {
@@ -641,7 +638,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
                 logDirect("no fireworks");
                 return;
             }
-            logDirect("attempting to use firework" + (forceUseFirework ? " takeoff" : ""));
+            logDirect("attempting to use firework" + (forceUseFirework ? " (forced)" : ""));
             ctx.playerController().processRightClick(ctx.player(), ctx.world(), EnumHand.MAIN_HAND);
             this.minimumBoostTicks = 10 * (1 + getFireworkBoost(ctx.player().getHeldItemMainhand()).orElse(0));
             this.remainingFireworkTicks = 10;
@@ -885,17 +882,19 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
     }
 
     @FunctionalInterface
-    private interface IntBiFunction<T> {
-        T apply(int left, int right);
+    private interface IntTriFunction<T> {
+        T apply(int first, int second, int third);
     }
 
-    private static final class IntPair {
+    private static final class IntTriple {
         public final int first;
         public final int second;
+        public final int third;
 
-        public IntPair(int first, int second) {
+        public IntTriple(int first, int second, int third) {
             this.first = first;
             this.second = second;
+            this.third = third;
         }
     }
 
@@ -906,44 +905,52 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         final float goodPitch = RotationUtils.calcRotationFromVec3d(context.start, goal, ctx.playerRotations()).getPitch();
         final FloatArrayList pitches = pitchesToSolveFor(goodPitch, desperate);
 
-        final IntBiFunction<PitchResult> solve = (ticks, ticksBoosted) ->
-                this.solvePitch(context, goal, relaxation, pitches.iterator(), ticks, ticksBoosted, ignoreLava);
+        final IntTriFunction<PitchResult> solve = (ticks, ticksBoosted, ticksBoostDelay) ->
+                this.solvePitch(context, goal, relaxation, pitches.iterator(), ticks, ticksBoosted, ticksBoostDelay, ignoreLava);
 
-        final List<IntPair> tests = new ArrayList<>();
+        final List<IntTriple> tests = new ArrayList<>();
 
         if (context.boost.isBoosted()) {
             final int guaranteed = context.boost.getGuaranteedBoostTicks();
             if (guaranteed == 0) {
                 // uncertain when boost will run out
                 final int lookahead = Math.max(4, 10 - context.boost.getMaximumBoostTicks());
-                tests.add(new IntPair(lookahead, 1));
-                tests.add(new IntPair(5, 5));
+                tests.add(new IntTriple(lookahead, 1, 0));
+                tests.add(new IntTriple(5, 5, 0));
             } else if (guaranteed <= 5) {
                 // boost will run out within 5 ticks
-                tests.add(new IntPair(guaranteed + 5, guaranteed));
+                tests.add(new IntTriple(guaranteed + 5, guaranteed, 0));
             } else {
                 // there's plenty of guaranteed boost
-                tests.add(new IntPair(guaranteed + 1, guaranteed));
+                tests.add(new IntTriple(guaranteed + 1, guaranteed, 0));
             }
         }
 
         // Standard test, assume (not) boosted for entire duration
         final int ticks = desperate ? 3 : context.boost.isBoosted() ? Math.max(5, context.boost.getGuaranteedBoostTicks()) : Baritone.settings().elytraSimulationTicks.value;
-        tests.add(new IntPair(ticks, context.boost.isBoosted() ? ticks : 0));
+        tests.add(new IntTriple(ticks, context.boost.isBoosted() ? ticks : 0, 0));
 
         final Optional<PitchResult> result = tests.stream()
-                .map(i -> solve.apply(i.first, i.second))
+                .map(i -> solve.apply(i.first, i.second, i.third))
                 .filter(Objects::nonNull)
                 .findFirst();
         if (result.isPresent()) {
             return new Pair<>(result.get().pitch, false);
         }
 
-        if (Baritone.settings().experimentalTakeoff.value && relaxation > 0) {
-            // Simulate as if we were boosted for the entire duration
-            final PitchResult usingFirework = solve.apply(ticks, ticks);
-            if (usingFirework != null) {
-                return new Pair<>(usingFirework.pitch, true);
+        // If we used a firework would we be able to get out of the current situation??? perhaps
+        if (relaxation > 0) {
+            final List<IntTriple> testsBoost = new ArrayList<>();
+            testsBoost.add(new IntTriple(ticks, 10, 3));
+            testsBoost.add(new IntTriple(ticks, 10, 2));
+            testsBoost.add(new IntTriple(ticks, 10, 1));
+
+            final Optional<PitchResult> resultBoost = testsBoost.stream()
+                    .map(i -> solve.apply(i.first, i.second, i.third))
+                    .filter(Objects::nonNull)
+                    .findFirst();
+            if (resultBoost.isPresent()) {
+                return new Pair<>(resultBoost.get().pitch, true);
             }
         }
 
@@ -952,7 +959,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
 
     private PitchResult solvePitch(final SolverContext context, final Vec3d goal, final int relaxation,
                                    final FloatIterator pitches, final int ticks, final int ticksBoosted,
-                                   final boolean ignoreLava) {
+                                   final int ticksBoostDelay, final boolean ignoreLava) {
         // we are at a certain velocity, but we have a target velocity
         // what pitch would get us closest to our target velocity?
         // yaw is easy so we only care about pitch
@@ -971,6 +978,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
                     pitch,
                     ticks,
                     ticksBoosted,
+                    ticksBoostDelay,
                     ignoreLava
             );
             if (displacement == null) {
@@ -980,7 +988,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
             final Vec3d last = displacement.get(lastIndex);
             final double goodness = goalDirection.dotProduct(last.normalize());
             if (result == null || goodness > result.dot) {
-                if (relaxation == 0) {
+                if (relaxation < 2) {
                     // Ensure that the goal is visible along the entire simulated path
                     // Reverse order iteration since the last position is most likely to fail
                     for (int i = lastIndex; i >= 1; i--) {
@@ -988,7 +996,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
                             continue outer;
                         }
                     }
-                } else if (relaxation == 1) {
+                } else {
                     // Ensure that the goal is visible from the final position
                     if (!clearView(context.start.add(last), goal, false)) {
                         continue;
@@ -1004,7 +1012,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
     }
 
     private List<Vec3d> simulate(final ITickableAimProcessor aimProcessor, final Vec3d goalDelta, final float pitch,
-                                 final int ticks, int ticksBoosted, final boolean ignoreLava) {
+                                 final int ticks, int ticksBoosted, final int ticksBoostDelay, final boolean ignoreLava) {
         Vec3d delta = goalDelta;
         Vec3d motion = ctx.playerMotion();
         AxisAlignedBB hitbox = ctx.player().getEntityBoundingBox();
@@ -1042,7 +1050,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
             hitbox = hitbox.offset(motion);
             displacement.add(displacement.get(displacement.size() - 1).add(motion));
 
-            if (ticksBoosted-- > 0) {
+            if (i >= ticksBoostDelay && ticksBoosted-- > 0) {
                 // See EntityFireworkRocket
                 motion = motion.add(
                         lookDirection.x * 0.1 + (lookDirection.x * 1.5 - motion.x) * 0.5,
