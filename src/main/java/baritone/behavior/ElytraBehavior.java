@@ -523,9 +523,6 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
             // changed. Updating it now will avoid unnecessary recalculation on the main thread.
             this.pathManager.updatePlayerNear();
 
-            // TODO: If we used a firework at the end of the last tick, then it's worth it to solve with the assumption
-            //       that we'll be boosted next tick (if our ping to the server is less than 50ms) since a recalc won't
-            //       be needed on the main thread.
             final SolverContext context = this.new SolverContext(true);
             this.solver = CompletableFuture.supplyAsync(() -> this.solveAngles(context));
             this.solveNextTick = false;
