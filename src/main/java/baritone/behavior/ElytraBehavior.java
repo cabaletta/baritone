@@ -97,6 +97,8 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
 
     private Future<Solution> solver;
     private Solution pendingSolution;
+    private boolean deployedFireworkLastTick;
+    private final int[] nextTickBoostCounter;
     private boolean solveNextTick;
 
     public ElytraBehavior(Baritone baritone) {
@@ -107,6 +109,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         this.visiblePath = Collections.emptyList();
         this.pathManager = this.new PathManager();
         this.process = new ElytraProcess();
+        this.nextTickBoostCounter = new int[2];
     }
 
     @Override
@@ -401,6 +404,8 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
             this.solver = null;
         }
         this.pendingSolution = null;
+        this.nextTickBoostCounter[0] = 0;
+        this.nextTickBoostCounter[1] = 0;
     }
 
     @Override
@@ -482,6 +487,11 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
             solution = this.solveAngles(solverContext);
         } else {
             solution = this.pendingSolution;
+        }
+
+        if (this.deployedFireworkLastTick) {
+            this.nextTickBoostCounter[solverContext.boost.isBoosted() ? 1 : 0]++;
+            this.deployedFireworkLastTick = false;
         }
 
         if (solution == null) {
@@ -642,6 +652,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
             ctx.playerController().processRightClick(ctx.player(), ctx.world(), EnumHand.MAIN_HAND);
             this.minimumBoostTicks = 10 * (1 + getFireworkBoost(ctx.player().getHeldItemMainhand()).orElse(0));
             this.remainingFireworkTicks = 10;
+            this.deployedFireworkLastTick = true;
         }
     }
 
@@ -657,10 +668,15 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
             this.path       = ElytraBehavior.this.pathManager.getPath();
             this.playerNear = ElytraBehavior.this.pathManager.getNear();
             this.start      = ElytraBehavior.this.ctx.playerFeetAsVec();
-            this.boost      = new FireworkBoost(
-                    ElytraBehavior.this.getAttachedFirework().orElse(null),
-                    ElytraBehavior.this.minimumBoostTicks
-            );
+
+            final Integer fireworkTicksExisted;
+            if (async && ElytraBehavior.this.deployedFireworkLastTick) {
+                final int[] counter = ElytraBehavior.this.nextTickBoostCounter;
+                fireworkTicksExisted = counter[1] > counter[0] ? 0 : null;
+            } else {
+                fireworkTicksExisted = ElytraBehavior.this.getAttachedFirework().map(e -> e.ticksExisted).orElse(null);
+            }
+            this.boost = new FireworkBoost(fireworkTicksExisted, ElytraBehavior.this.minimumBoostTicks);
 
             ITickableAimProcessor aim = ElytraBehavior.this.baritone.getLookBehavior().getAimProcessor().fork();
             if (async) {
@@ -689,12 +705,12 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
 
     private static final class FireworkBoost {
 
-        private final EntityFireworkRocket firework;
+        private final Integer fireworkTicksExisted;
         private final int minimumBoostTicks;
         private final int maximumBoostTicks;
 
-        public FireworkBoost(final EntityFireworkRocket firework, final int minimumBoostTicks) {
-            this.firework = firework;
+        public FireworkBoost(final Integer fireworkTicksExisted, final int minimumBoostTicks) {
+            this.fireworkTicksExisted = fireworkTicksExisted;
 
             // this.lifetime = 10 * i + this.rand.nextInt(6) + this.rand.nextInt(7);
             this.minimumBoostTicks = minimumBoostTicks;
@@ -702,21 +718,21 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         }
 
         public boolean isBoosted() {
-            return this.firework != null;
+            return this.fireworkTicksExisted != null;
         }
 
         /**
          * @return The guaranteed number of remaining ticks with boost
          */
         public int getGuaranteedBoostTicks() {
-            return this.isBoosted() ? Math.max(0, this.minimumBoostTicks - this.firework.ticksExisted) : 0;
+            return this.isBoosted() ? Math.max(0, this.minimumBoostTicks - this.fireworkTicksExisted) : 0;
         }
 
         /**
          * @return The maximum number of remaining ticks with boost
          */
         public int getMaximumBoostTicks() {
-            return this.isBoosted() ? Math.max(0, this.maximumBoostTicks - this.firework.ticksExisted) : 0;
+            return this.isBoosted() ? Math.max(0, this.maximumBoostTicks - this.fireworkTicksExisted) : 0;
         }
 
         @Override
@@ -729,7 +745,11 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
             }
 
             FireworkBoost other = (FireworkBoost) o;
-            return Objects.equals(this.firework, other.firework)
+            if (!this.isBoosted() && !other.isBoosted()) {
+                return true;
+            }
+
+            return Objects.equals(this.fireworkTicksExisted, other.fireworkTicksExisted)
                     && this.minimumBoostTicks == other.minimumBoostTicks
                     && this.maximumBoostTicks == other.maximumBoostTicks;
         }
