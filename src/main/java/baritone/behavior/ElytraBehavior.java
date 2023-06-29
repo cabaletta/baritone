@@ -540,34 +540,32 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
             for (int i = Math.min(playerNear + 20, path.size() - 1); i >= minStep; i--) {
                 final List<Pair<Vec3d, Integer>> candidates = new ArrayList<>();
                 for (int dy : heights) {
-                    if (i == minStep) {
+                    if (relaxation == 0 || i == minStep) {
                         // no interp
                         candidates.add(new Pair<>(path.getVec(i).add(0, dy, 0), dy));
+                    } else if (relaxation == 1) {
+                        // Create 4 points along the segment
+                        final double[] interps = new double[]{1.0, 0.75, 0.5, 0.25};
+                        for (double interp : interps) {
+                            Vec3d dest;
+                            if (interp == 1) {
+                                dest = path.getVec(i);
+                            } else {
+                                dest = path.getVec(i).scale(interp).add(path.getVec(i - 1).scale(1.0d - interp));
+                            }
+                            candidates.add(new Pair<>(dest.add(0, dy, 0), dy));
+                        }
                     } else {
-                        if (relaxation == 2) {
-                            final Vec3d delta = path.getVec(i).subtract(path.getVec(i - 1));
-                            final double stepLength = 0.5;
-                            final int steps = MathHelper.floor(delta.length() / stepLength);
-                            final Vec3d step = delta.normalize().scale(stepLength);
+                        // Create a point along the segment every 0.5 blocks
+                        final Vec3d delta = path.getVec(i).subtract(path.getVec(i - 1));
+                        final double stepLength = 0.5;
+                        final int steps = MathHelper.floor(delta.length() / stepLength);
+                        final Vec3d step = delta.normalize().scale(stepLength);
 
-                            Vec3d stepped = path.getVec(i);
-                            for (int interp = 0; interp < steps; interp++) {
-                                candidates.add(new Pair<>(stepped.add(0, dy, 0), dy));
-                                stepped = stepped.subtract(step);
-                            }
-                        } else {
-                            final double[] interps = relaxation == 0
-                                    ? new double[]{1.0, 0.75, 0.5, 0.25}
-                                    : new double[]{1.0, 0.875, 0.75, 0.625, 0.5, 0.375, 0.25, 0.125};
-                            for (double interp : interps) {
-                                Vec3d dest;
-                                if (interp == 1) {
-                                    dest = path.getVec(i);
-                                } else {
-                                    dest = path.getVec(i).scale(interp).add(path.getVec(i - 1).scale(1.0d - interp));
-                                }
-                                candidates.add(new Pair<>(dest.add(0, dy, 0), dy));
-                            }
+                        Vec3d stepped = path.getVec(i).add(0, dy, 0);
+                        for (int interp = 0; interp < steps; interp++) {
+                            candidates.add(new Pair<>(stepped, dy));
+                            stepped = stepped.subtract(step);
                         }
                     }
                 }
