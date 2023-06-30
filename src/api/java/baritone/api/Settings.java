@@ -623,6 +623,13 @@ public final class Settings {
     public final Setting<Boolean> pruneRegionsFromRAM = new Setting<>(true);
 
     /**
+     * The chunk packer queue can never grow to larger than this, if it does, the oldest chunks are discarded
+     * <p>
+     * The newest chunks are kept, so that if you're moving in a straight line quickly then stop, your immediate render distance is still included
+     */
+    public final Setting<Integer> chunkPackerQueueMaxSize = new Setting<>(2000);
+
+    /**
      * Fill in blocks behind you
      */
     public final Setting<Boolean> backfill = new Setting<>(false);
