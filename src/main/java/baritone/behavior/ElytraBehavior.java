@@ -1032,7 +1032,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         displacement.add(Vec3d.ZERO);
 
         for (int i = 0; i < ticks; i++) {
-            if (MC_1_12_Collision_Fix.bonk(ctx, this.bsi, hitbox)) {
+            if (MC_1_12_Collision_Fix.bonk(this.bsi, hitbox)) {
                 return null;
             }
             if (delta.lengthSquared() < 1) {
@@ -1129,9 +1129,9 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
      */
     private static final class MC_1_12_Collision_Fix {
 
-        public static boolean bonk(final IPlayerContext ctx, final BlockStateInterface bsi, final AxisAlignedBB aabb) {
+        public static boolean bonk(final BlockStateInterface bsi, final AxisAlignedBB aabb) {
             final Vec3d center = aabb.getCenter();
-            final double width = (double) ctx.player().width * 0.35D;
+            final double width = (aabb.maxX - aabb.minX) * 0.35D;
             final double x = center.x;
             final double y = aabb.minY + 0.5D;
             final double z = center.z;
