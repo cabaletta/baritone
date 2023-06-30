@@ -546,27 +546,23 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
             for (int i = Math.min(playerNear + 20, path.size() - 1); i >= minStep; i--) {
                 final List<Pair<Vec3d, Integer>> candidates = new ArrayList<>();
                 for (int dy : heights) {
-                    if (i == minStep) {
+                    if (relaxation == 0 || i == minStep) {
                         // no interp
-                        candidates.add(new Pair<>(path.getVec(i).add(0, dy, 0), dy));
-                    } else if (relaxation < 2) {
-                        final double[] interps = relaxation == 0
-                                ? new double[]{1.0, 0.75, 0.5, 0.25}
-                                : new double[]{1.0, 0.875, 0.75, 0.625, 0.5, 0.375, 0.25, 0.125};
+                        candidates.add(new Pair<>(path.getVec(i), dy));
+                    } else if (relaxation == 1) {
+                        final double[] interps = new double[]{1.0, 0.75, 0.5, 0.25};
                         for (double interp : interps) {
                             final Vec3d dest = interp == 1.0
                                     ? path.getVec(i)
                                     : path.getVec(i).scale(interp).add(path.getVec(i - 1).scale(1.0 - interp));
-                            candidates.add(new Pair<>(dest.add(0, dy, 0), dy));
+                            candidates.add(new Pair<>(dest, dy));
                         }
                     } else {
-                        // Create a point along the segment every 0.5 blocks
+                        // Create a point along the segment every block
                         final Vec3d delta = path.getVec(i).subtract(path.getVec(i - 1));
-                        final double stepLength = 0.5;
-                        final int steps = MathHelper.floor(delta.length() / stepLength);
-                        final Vec3d step = delta.normalize().scale(stepLength);
-
-                        Vec3d stepped = path.getVec(i).add(0, dy, 0);
+                        final int steps = MathHelper.floor(delta.length());
+                        final Vec3d step = delta.normalize();
+                        Vec3d stepped = path.getVec(i);
                         for (int interp = 0; interp < steps; interp++) {
                             candidates.add(new Pair<>(stepped, dy));
                             stepped = stepped.subtract(step);
@@ -575,8 +571,8 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
                 }
 
                 for (final Pair<Vec3d, Integer> candidate : candidates) {
-                    final Vec3d dest = candidate.first();
                     final Integer augment = candidate.second();
+                    final Vec3d dest = candidate.first().add(0, augment, 0);
 
                     if (augment != 0) {
                         if (i + lookahead >= path.size()) {
@@ -933,7 +929,6 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
                 // uncertain when boost will run out
                 final int lookahead = Math.max(4, 10 - context.boost.getMaximumBoostTicks());
                 tests.add(new IntTriple(lookahead, 1, 0));
-                tests.add(new IntTriple(5, 5, 0));
             } else if (guaranteed <= 5) {
                 // boost will run out within 5 ticks
                 tests.add(new IntTriple(guaranteed + 5, guaranteed, 0));
@@ -956,7 +951,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         }
 
         // If we used a firework would we be able to get out of the current situation??? perhaps
-        if (relaxation > 0) {
+        if (desperate) {
             final List<IntTriple> testsBoost = new ArrayList<>();
             testsBoost.add(new IntTriple(ticks, 10, 3));
             testsBoost.add(new IntTriple(ticks, 10, 2));
@@ -984,9 +979,8 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         final Vec3d goalDelta = goal.subtract(context.start);
         final Vec3d goalDirection = goalDelta.normalize();
 
-        PitchResult result = null;
+        final Deque<PitchResult> bestResults = new ArrayDeque<>();
 
-        outer:
         while (pitches.hasNext()) {
             final float pitch = pitches.nextFloat();
             final List<Vec3d> displacement = this.simulate(
@@ -1001,31 +995,35 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
             if (displacement == null) {
                 continue;
             }
-            final int lastIndex = displacement.size() - 1;
-            final Vec3d last = displacement.get(lastIndex);
+            final Vec3d last = displacement.get(displacement.size() - 1);
             final double goodness = goalDirection.dotProduct(last.normalize());
-            if (result == null || goodness > result.dot) {
-                if (relaxation < 2) {
-                    // Ensure that the goal is visible along the entire simulated path
-                    // Reverse order iteration since the last position is most likely to fail
-                    for (int i = lastIndex; i >= 1; i--) {
-                        if (!clearView(context.start.add(displacement.get(i)), goal, false)) {
-                            continue outer;
-                        }
-                    }
-                } else {
-                    // Ensure that the goal is visible from the final position
-                    if (!clearView(context.start.add(last), goal, false)) {
-                        continue;
-                    }
-                }
-                result = new PitchResult(pitch, goodness, displacement);
+            final PitchResult bestSoFar = bestResults.peek();
+            if (bestSoFar == null || goodness > bestSoFar.dot) {
+                bestResults.push(new PitchResult(pitch, goodness, displacement));
             }
         }
-        if (result != null) {
+
+        outer:
+        for (final PitchResult result : bestResults) {
+            if (relaxation < 2) {
+                // Ensure that the goal is visible along the entire simulated path
+                // Reverse order iteration since the last position is most likely to fail
+                for (int i = result.steps.size() - 1; i >= 1; i--) {
+                    if (!clearView(context.start.add(result.steps.get(i)), goal, false)) {
+                        continue outer;
+                    }
+                }
+            } else {
+                // Ensure that the goal is visible from the final position
+                if (!clearView(context.start.add(result.steps.get(result.steps.size() - 1)), goal, false)) {
+                    continue;
+                }
+            }
+
             this.simulationLine = result.steps;
+            return result;
         }
-        return result;
+        return null;
     }
 
     private List<Vec3d> simulate(final ITickableAimProcessor aimProcessor, final Vec3d goalDelta, final float pitch,
