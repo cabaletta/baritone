@@ -51,9 +51,7 @@ import net.minecraft.util.math.*;
 import net.minecraft.world.chunk.Chunk;
 
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 import java.util.function.UnaryOperator;
 
 public final class ElytraBehavior extends Behavior implements IElytraBehavior, Helper {
@@ -92,13 +90,15 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
      */
     private int minimumBoostTicks;
 
+    private boolean deployedFireworkLastTick;
+    private final int[] nextTickBoostCounter;
+
     private BlockStateInterface bsi;
     private BlockPos destination;
 
+    private final ExecutorService solverExecutor;
     private Future<Solution> solver;
     private Solution pendingSolution;
-    private boolean deployedFireworkLastTick;
-    private final int[] nextTickBoostCounter;
     private boolean solveNextTick;
 
     public ElytraBehavior(Baritone baritone) {
@@ -109,6 +109,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         this.visiblePath = Collections.emptyList();
         this.pathManager = this.new PathManager();
         this.process = new ElytraProcess();
+        this.solverExecutor = Executors.newSingleThreadExecutor();
         this.nextTickBoostCounter = new int[2];
     }
 
@@ -524,7 +525,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
             this.pathManager.updatePlayerNear();
 
             final SolverContext context = this.new SolverContext(true);
-            this.solver = CompletableFuture.supplyAsync(() -> this.solveAngles(context));
+            this.solver = this.solverExecutor.submit(() -> this.solveAngles(context));
             this.solveNextTick = false;
         }
     }
