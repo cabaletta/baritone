@@ -870,13 +870,10 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
             clear = ctx.world().rayTraceBlocks(start, dest, false, false, false) == null;
         }
 
-        if (clear) {
-            this.clearLines.add(new Pair<>(start, dest));
-            return true;
-        } else {
-            this.blockedLines.add(new Pair<>(start, dest));
-            return false;
+        if (Baritone.settings().renderRaytraces.value) {
+            (clear ? this.clearLines : this.blockedLines).add(new Pair<>(start, dest));
         }
+        return clear;
     }
 
     private static FloatArrayList pitchesToSolveFor(final float goodPitch, final boolean desperate) {
@@ -1035,7 +1032,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         displacement.add(Vec3d.ZERO);
 
         for (int i = 0; i < ticks; i++) {
-            if (MC_1_12_Collision_Fix.bonk(ctx, hitbox)) {
+            if (MC_1_12_Collision_Fix.bonk(ctx, this.bsi, hitbox)) {
                 return null;
             }
             if (delta.lengthSquared() < 1) {
@@ -1132,32 +1129,35 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
      */
     private static final class MC_1_12_Collision_Fix {
 
-        public static boolean bonk(final IPlayerContext ctx, final AxisAlignedBB aabb) {
+        public static boolean bonk(final IPlayerContext ctx, final BlockStateInterface bsi, final AxisAlignedBB aabb) {
             final Vec3d center = aabb.getCenter();
             final double width = (double) ctx.player().width * 0.35D;
             final double x = center.x;
             final double y = aabb.minY + 0.5D;
             final double z = center.z;
 
-            return pushOutOfBlocks(ctx, x - width, y, z + width)
-                    || pushOutOfBlocks(ctx, x - width, y, z - width)
-                    || pushOutOfBlocks(ctx, x + width, y, z - width)
-                    || pushOutOfBlocks(ctx, x + width, y, z + width);
+            return pushOutOfBlocks(bsi, x - width, y, z + width)
+                    || pushOutOfBlocks(bsi, x - width, y, z - width)
+                    || pushOutOfBlocks(bsi, x + width, y, z - width)
+                    || pushOutOfBlocks(bsi, x + width, y, z + width);
         }
 
-        private static boolean pushOutOfBlocks(final IPlayerContext ctx, final double x, final double y, final double z) {
-            final BlockPos pos = new BlockPos(x, y, z);
-            if (isOpenBlockSpace(ctx, pos)) {
+        private static boolean pushOutOfBlocks(final BlockStateInterface bsi,
+                                               final double xIn, final double yIn, final double zIn) {
+            final int x = MathHelper.floor(xIn);
+            final int y = MathHelper.floor(yIn);
+            final int z = MathHelper.floor(zIn);
+            if (isOpenBlockSpace(bsi, x, y, z)) {
                 return false;
             }
-            return isOpenBlockSpace(ctx, pos.west())
-                    || isOpenBlockSpace(ctx, pos.east())
-                    || isOpenBlockSpace(ctx, pos.north())
-                    || isOpenBlockSpace(ctx, pos.south());
+            return isOpenBlockSpace(bsi, x - 1, y, z)
+                    || isOpenBlockSpace(bsi, x + 1, y, z)
+                    || isOpenBlockSpace(bsi, x, y, z - 1)
+                    || isOpenBlockSpace(bsi, x, y, z + 1);
         }
 
-        private static boolean isOpenBlockSpace(IPlayerContext ctx, BlockPos pos) {
-            return !ctx.world().getBlockState(pos).isNormalCube() && !ctx.world().getBlockState(pos.up()).isNormalCube();
+        private static boolean isOpenBlockSpace(BlockStateInterface bsi, final int x, final int y, final int z) {
+            return !bsi.get0(x, y, z).isNormalCube() && !bsi.get0(x, y + 1, z).isNormalCube();
         }
     }
 
