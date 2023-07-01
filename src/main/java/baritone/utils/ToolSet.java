@@ -20,6 +20,7 @@ package baritone.utils;
 import baritone.Baritone;
 import baritone.PerformanceCritical;
 import baritone.utils.accessor.IItemTool;
+import it.unimi.dsi.fastutil.objects.Reference2DoubleOpenHashMap;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.entity.EntityPlayerSP;
@@ -30,8 +31,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemSword;
 import net.minecraft.item.ItemTool;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.function.Function;
 
 /**
@@ -45,7 +44,7 @@ public class ToolSet {
      * A cache mapping a {@link Block} to how long it will take to break
      * with this toolset, given the optimum tool is used.
      */
-    private final Map<Block, Double> breakStrengthCache;
+    private final Reference2DoubleOpenHashMap<Block> breakStrengthCache;
 
     /**
      * My buddy leijurv owned me so we have this to not create a new lambda instance.
@@ -55,15 +54,15 @@ public class ToolSet {
     private final EntityPlayerSP player;
 
     public ToolSet(EntityPlayerSP player) {
-        breakStrengthCache = new HashMap<>();
+        this.breakStrengthCache = new Reference2DoubleOpenHashMap<>();
         this.player = player;
 
         if (Baritone.settings().considerPotionEffects.value) {
             double amplifier = potionAmplifier();
             Function<Double, Double> amplify = x -> amplifier * x;
-            backendCalculation = amplify.compose(this::getBestDestructionTime);
+            this.backendCalculation = amplify.compose(this::getBestDestructionTime);
         } else {
-            backendCalculation = this::getBestDestructionTime;
+            this.backendCalculation = this::getBestDestructionTime;
         }
     }
 
@@ -75,7 +74,9 @@ public class ToolSet {
      */
     @PerformanceCritical
     public double getStrVsBlock(IBlockState state) {
-        return breakStrengthCache.computeIfAbsent(state.getBlock(), backendCalculation);
+        // fastutil 8+ has a computeIfAbsent overload that uses a primitive mapping function
+        // for now, we're stuck with the boxed implementation
+        return this.breakStrengthCache.computeIfAbsent(state.getBlock(), this.backendCalculation);
     }
 
     /**
