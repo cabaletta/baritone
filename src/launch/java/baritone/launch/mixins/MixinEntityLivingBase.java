@@ -117,7 +117,8 @@ public abstract class MixinEntityLivingBase extends MixinEntity {
     private void onMoveRelative(EntityLivingBase self, float strafe, float up, float forward, float friction) {
         Optional<IBaritone> baritone = this.getBaritone();
         if (!baritone.isPresent()) {
-            this.moveRelative(strafe, up, forward, friction);
+            // If a shadow is used here it breaks on Forge
+            self.moveRelative(strafe, up, forward, friction);
             return;
         }
 
@@ -127,7 +128,7 @@ public abstract class MixinEntityLivingBase extends MixinEntity {
         this.rotationYaw = event.getYaw();
         this.rotationPitch = event.getPitch();
 
-        this.moveRelative(strafe, up, forward, friction);
+        self.moveRelative(strafe, up, forward, friction);
 
         this.rotationYaw = event.getOriginal().getYaw();
         this.rotationPitch = event.getOriginal().getPitch();

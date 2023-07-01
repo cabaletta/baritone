@@ -40,7 +40,4 @@ public abstract class MixinEntity {
 
     @Shadow
     public float rotationYaw;
-
-    @Shadow
-    public abstract void moveRelative(float strafe, float up, float forward, float friction);
 }
