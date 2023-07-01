@@ -33,6 +33,7 @@ import net.minecraft.util.NonNullList;
 import java.util.ArrayList;
 import java.util.OptionalInt;
 import java.util.Random;
+import java.util.function.IntPredicate;
 import java.util.function.Predicate;
 
 public final class InventoryBehavior extends Behavior implements Helper {
@@ -70,7 +71,7 @@ public final class InventoryBehavior extends Behavior implements Helper {
         }
     }
 
-    public boolean attemptToPutOnHotbar(int inMainInvy, Predicate<Integer> disallowedHotbar) {
+    public boolean attemptToPutOnHotbar(int inMainInvy, IntPredicate disallowedHotbar) {
         OptionalInt destination = getTempHotbarSlot(disallowedHotbar);
         if (destination.isPresent()) {
             if (!requestSwapWithHotBar(inMainInvy, destination.getAsInt())) {
@@ -80,7 +81,7 @@ public final class InventoryBehavior extends Behavior implements Helper {
         return true;
     }
 
-    public OptionalInt getTempHotbarSlot(Predicate<Integer> disallowedHotbar) {
+    public OptionalInt getTempHotbarSlot(IntPredicate disallowedHotbar) {
         // we're using 0 and 8 for pickaxe and throwaway
         ArrayList<Integer> candidates = new ArrayList<>();
         for (int i = 1; i < 8; i++) {
@@ -152,7 +153,7 @@ public final class InventoryBehavior extends Behavior implements Helper {
 
     public boolean hasGenericThrowaway() {
         for (Item item : Baritone.settings().acceptableThrowawayItems.value) {
-            if (throwaway(false, stack -> item.equals(stack.getItem()))) {
+            if (this.canSelectItem(stack -> item.equals(stack.getItem()))) {
                 return true;
             }
         }
@@ -175,8 +176,16 @@ public final class InventoryBehavior extends Behavior implements Helper {
         return false;
     }
 
+    public boolean canSelectItem(Predicate<? super ItemStack> desired) {
+        return this.throwaway(false, desired);
+    }
+
+    public boolean trySelectItem(Predicate<? super ItemStack> desired) {
+        return this.throwaway(true, desired);
+    }
+
     public boolean throwaway(boolean select, Predicate<? super ItemStack> desired) {
-        return throwaway(select, desired, Baritone.settings().allowInventory.value);
+        return this.throwaway(select, desired, Baritone.settings().allowInventory.value);
     }
 
     public boolean throwaway(boolean select, Predicate<? super ItemStack> desired, boolean allowInventory) {

@@ -18,6 +18,7 @@
 package baritone.utils;
 
 import baritone.Baritone;
+import baritone.PerformanceCritical;
 import baritone.utils.accessor.IItemTool;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -72,6 +73,7 @@ public class ToolSet {
      * @param state the blockstate to be mined
      * @return the speed of how fast we'll mine it. 1/(time in ticks)
      */
+    @PerformanceCritical
     public double getStrVsBlock(IBlockState state) {
         return breakStrengthCache.computeIfAbsent(state.getBlock(), backendCalculation);
     }
@@ -104,7 +106,6 @@ public class ToolSet {
      * @param b the blockstate to be mined
      * @return An int containing the index in the tools array that worked best
      */
-
     public int getBestSlot(Block b, boolean preferSilkTouch) {
         return getBestSlot(b, preferSilkTouch, false);
     }
