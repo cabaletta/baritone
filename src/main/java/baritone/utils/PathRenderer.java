@@ -104,7 +104,9 @@ public final class PathRenderer implements IRenderer {
 
         final ElytraBehavior elytra = behavior.baritone.getElytraBehavior();
 
-        drawPath(elytra.visiblePath, 0, Color.RED, false, 0, 0, 0.0D);
+        if (elytra.visiblePath != null) {
+            drawPath(elytra.visiblePath, 0, Color.RED, false, 0, 0, 0.0D);
+        }
         if (elytra.aimPos != null) {
             drawGoal(ctx.player(), new GoalBlock(elytra.aimPos), partialTicks, Color.GREEN);
         }

@@ -178,6 +178,14 @@ public class MovementDescend extends Movement {
                 res.cost = tentativeCost;// TODO incorporate water swim up cost?
                 return false;
             }
+            if (context.allowFallIntoLava && MovementHelper.isLava(ontoBlock.getBlock())) {
+                // found a fall into lava
+                res.x = destX;
+                res.y = newY;
+                res.z = destZ;
+                res.cost = tentativeCost;
+                return false;
+            }
             if (unprotectedFallHeight <= 11 && (ontoBlock.getBlock() == Blocks.VINE || ontoBlock.getBlock() == Blocks.LADDER)) {
                 // if fall height is greater than or equal to 11, we don't actually grab on to vines or ladders. the more you know
                 // this effectively "resets" our falling speed

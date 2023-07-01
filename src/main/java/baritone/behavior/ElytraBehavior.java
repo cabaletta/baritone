@@ -18,24 +18,28 @@
 package baritone.behavior;
 
 import baritone.Baritone;
+import baritone.api.IBaritone;
 import baritone.api.behavior.IElytraBehavior;
 import baritone.api.behavior.look.IAimProcessor;
 import baritone.api.behavior.look.ITickableAimProcessor;
 import baritone.api.event.events.*;
 import baritone.api.pathing.goals.Goal;
-import baritone.api.pathing.goals.GoalGetToBlock;
+import baritone.api.pathing.goals.GoalYLevel;
+import baritone.api.pathing.movement.IMovement;
+import baritone.api.pathing.path.IPathExecutor;
 import baritone.api.process.IBaritoneProcess;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
 import baritone.api.utils.*;
 import baritone.api.utils.input.Input;
-import baritone.api.utils.interfaces.IGoalRenderPos;
 import baritone.behavior.elytra.NetherPathfinderContext;
 import baritone.behavior.elytra.NetherPath;
 import baritone.behavior.elytra.PathCalculationException;
 import baritone.behavior.elytra.UnpackedSegment;
-import baritone.cache.FasterWorldScanner;
+import baritone.pathing.movement.CalculationContext;
+import baritone.pathing.movement.movements.MovementFall;
 import baritone.utils.BlockStateInterface;
+import baritone.utils.PathingCommandContext;
 import baritone.utils.accessor.IEntityFireworkRocket;
 import it.unimi.dsi.fastutil.floats.FloatArrayList;
 import it.unimi.dsi.fastutil.floats.FloatIterator;
@@ -53,6 +57,8 @@ import net.minecraft.world.chunk.Chunk;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.function.UnaryOperator;
+
+import static baritone.api.pathing.movement.ActionCosts.COST_INF;
 
 public final class ElytraBehavior extends Behavior implements IElytraBehavior, Helper {
 
@@ -106,7 +112,6 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         this.context = new NetherPathfinderContext(NETHER_SEED);
         this.clearLines = new CopyOnWriteArrayList<>();
         this.blockedLines = new CopyOnWriteArrayList<>();
-        this.visiblePath = Collections.emptyList();
         this.pathManager = this.new PathManager();
         this.process = new ElytraProcess();
         this.solverExecutor = Executors.newSingleThreadExecutor();
@@ -395,9 +400,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
     @Override
     public void cancel() {
         this.destination = null;
-        this.visiblePath = Collections.emptyList();
         this.pathManager.clear();
-        this.aimPos = null;
         this.remainingFireworkTicks = 0;
         this.remainingSetBackTicks = 0;
         if (this.solver != null) {
@@ -446,11 +449,15 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         // Reset rendered elements
         this.clearLines.clear();
         this.blockedLines.clear();
+        this.visiblePath = null;
         this.simulationLine = null;
         this.aimPos = null;
 
         final List<BetterBlockPos> path = this.pathManager.getPath();
         if (path.isEmpty()) {
+            return;
+        } else if (this.destination == null) {
+            this.pathManager.clear();
             return;
         }
 
@@ -1190,43 +1197,67 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
                 return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
             }
 
-            if (!Baritone.settings().elytraAutoJump.value) {
-                return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
+            if (this.state == State.FLYING || this.state == State.START_FLYING) {
+                this.state = ctx.player().onGround && Baritone.settings().elytraAutoJump.value
+                        ? State.LOCATE_JUMP
+                        : State.START_FLYING;
             }
 
-            // We were flying, but we're not anymore, reset the state
-            if (this.state == State.FLYING) {
-                this.state = State.GET_TO_JUMP;
+            if (this.state == State.LOCATE_JUMP) {
+                if (this.goal == null) {
+                    this.goal = new GoalYLevel(31);
+                }
+                this.state = State.VALIDATE_PATH;
+                return new PathingCommandContext(this.goal, PathingCommandType.SET_GOAL_AND_PAUSE, new WalkOffCalculationContext(baritone));
+            }
+
+            if (this.state == State.VALIDATE_PATH) {
+                final IPathExecutor executor = baritone.getPathingBehavior().getCurrent();
+                if (executor != null && executor.getPath().getGoal() == this.goal) {
+                    final IMovement fall = executor.getPath().movements().stream()
+                            .filter(movement -> movement instanceof MovementFall)
+                            .findFirst().orElse(null);
+
+                    if (fall != null) {
+                        ElytraBehavior.this.pathManager.pathToDestination(fall.getSrc());
+                        this.state = State.WAIT_ELYTRA_PATH;
+                    } else {
+                        onLostControl();
+                        logDirect("Jump off path didn't include a fall movement, canceling");
+                        return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
+                    }
+                }
+                return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
+            }
+
+            // yucky
+            if (this.state == State.WAIT_ELYTRA_PATH) {
+                if (!ElytraBehavior.this.pathManager.getPath().isEmpty()) {
+                    this.state = State.GET_TO_JUMP;
+                }
+                return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
             }
 
             if (this.state == State.GET_TO_JUMP) {
-                if (this.goal == null) {
-                    final BlockPos jumpOff = this.findJumpOffSpot();
-                    if (jumpOff == null) {
-                        onLostControl();
-                        logDirect("Couldn't find a suitable spot to jump off of, canceling");
-                        return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
-                    }
-                    this.goal = new GoalGetToBlock(jumpOff);
-                    ElytraBehavior.this.pathManager.pathToDestination(jumpOff.add(0, -4, 0));
-                }
-                if (this.goal.isInGoal(ctx.playerFeet())) {
+                final IPathExecutor executor = baritone.getPathingBehavior().getCurrent();
+                final boolean canStartFlying = ctx.player().fallDistance > 1.0f
+                        && !isSafeToCancel
+                        && executor != null
+                        && executor.getPath().movements().get(executor.getPosition()) instanceof MovementFall;
+
+                if (canStartFlying) {
                     this.state = State.START_FLYING;
                 } else {
-                    return new PathingCommand(this.goal, PathingCommandType.SET_GOAL_AND_PATH);
+                    return new PathingCommand(null, PathingCommandType.SET_GOAL_AND_PATH);
                 }
             }
 
-            if (this.state == State.START_FLYING && isSafeToCancel && !ElytraBehavior.this.pathManager.getPath().isEmpty()) {
-                baritone.getLookBehavior().updateTarget(RotationUtils.calcRotationFromVec3d(
-                        ctx.playerHead(),
-                        VecUtils.getBlockPosCenter(((IGoalRenderPos) this.goal).getGoalPos()),
-                        ctx.playerRotations()
-                ), false);
-                baritone.getInputOverrideHandler().setInputForceState(Input.MOVE_FORWARD, true);
-                if (ctx.player().fallDistance > 0.0f) {
-                    baritone.getInputOverrideHandler().setInputForceState(Input.JUMP, true);
+            if (this.state == State.START_FLYING) {
+                if (!isSafeToCancel) {
+                    // owned
+                    baritone.getPathingBehavior().secretInternalSegmentCancel();
                 }
+                baritone.getInputOverrideHandler().setInputForceState(Input.JUMP, true);
             }
             return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
         }
@@ -1239,7 +1270,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         @Override
         public void onLostControl() {
             this.goal = null;
-            this.state = State.GET_TO_JUMP;
+            this.state = State.START_FLYING;
             ElytraBehavior.this.cancel();
         }
 
@@ -1252,64 +1283,42 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         public String displayName0() {
             return "Elytra";
         }
+    }
 
-        // ok... now this.. is disgusting
-        // TODO: make less scuffed
-        private BlockPos findJumpOffSpot() {
-            BlockPos best = null;
-            final BetterBlockPos feet = ctx.playerFeet();
-            final List<ChunkPos> nearby = FasterWorldScanner.getChunkRange(feet.x >> 4, feet.z >> 4, 3);
-            for (ChunkPos pos : nearby) {
-                final Chunk chunk = ctx.world().getChunk(pos.x, pos.z);
-                int[][] obstruction = new int[16][16];
-                for (int y0 = 0; y0 < 8; y0++) {
-                    for (int z = 0; z < 16; z++) {
-                        for (int x = 0; x < 16; x++) {
-                            int y = feet.y - y0;
-                            if (chunk.getBlockState(x, y, z).getMaterial() != Material.AIR) {
-                                if (obstruction[x][z] == 0 || obstruction[x][z] > y0 + 1) {
-                                    obstruction[x][z] = y0 + 1;
-                                }
-                            }
-                        }
-                    }
-                }
-                for (int x = 0; x < 16; x++) {
-                    for (int z = 0; z < 16; z++) {
-                        if (obstruction[x][z] != 0) {
-                            continue;
-                        }
+    /**
+     * Custom calculation context which makes the player fall into lava
+     */
+    private static final class WalkOffCalculationContext extends CalculationContext {
 
-                        final int[] adjacent = new int[4];
-                        if (x > 0)  adjacent[0] = obstruction[x - 1][z];
-                        if (z > 0)  adjacent[1] = obstruction[x][z - 1];
-                        if (x < 15) adjacent[2] = obstruction[x + 1][z];
-                        if (z < 15) adjacent[3] = obstruction[x][z + 1];
-                        final OptionalInt minLevel = Arrays.stream(adjacent).filter(i -> i != 0).min();
+        public WalkOffCalculationContext(IBaritone baritone) {
+            super(baritone, true);
+            this.allowFallIntoLava = true;
+            this.maxFallHeightNoWater = 10000;
+        }
 
-                        if (minLevel.isPresent() && minLevel.getAsInt() <= 4) {
-                            final int yActual = feet.y - minLevel.getAsInt() + 2; // lol
-                            // The target spot itself is clear
-                            if (chunk.getBlockState(x, yActual, z).getMaterial() != Material.AIR
-                                    || chunk.getBlockState(x, yActual + 1, z).getMaterial() != Material.AIR) {
-                                continue;
-                            }
-                            // lessgooo
-                            final BlockPos target = new BlockPos(chunk.x << 4 | x, yActual, chunk.z << 4 | z);
-                            if (best == null || target.distanceSq(feet) < best.distanceSq(feet)) {
-                                best = target;
-                            }
-                        }
-                    }
-                }
-            }
-            return best;
+        @Override
+        public double costOfPlacingAt(int x, int y, int z, IBlockState current) {
+            return COST_INF;
+        }
+
+        @Override
+        public double breakCostMultiplierAt(int x, int y, int z, IBlockState current) {
+            return COST_INF;
+        }
+
+        @Override
+        public double placeBucketCost() {
+            return COST_INF;
         }
     }
 
     private enum State {
+        LOCATE_JUMP,
+        VALIDATE_PATH,
+        WAIT_ELYTRA_PATH,
         GET_TO_JUMP,
         START_FLYING,
-        FLYING
+        FLYING,
+        RESTART_FLYING,
     }
 }

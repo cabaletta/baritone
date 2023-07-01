@@ -107,7 +107,7 @@ public final class InputOverrideHandler extends Behavior implements IInputOverri
     }
 
     private boolean inControl() {
-        for (Input input : new Input[]{Input.MOVE_FORWARD, Input.MOVE_BACK, Input.MOVE_LEFT, Input.MOVE_RIGHT, Input.SNEAK}) {
+        for (Input input : new Input[]{Input.MOVE_FORWARD, Input.MOVE_BACK, Input.MOVE_LEFT, Input.MOVE_RIGHT, Input.SNEAK, Input.JUMP}) {
             if (isInputForcedDown(input)) {
                 return true;
             }

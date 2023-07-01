@@ -99,6 +99,8 @@ public class PathingControlManager implements IPathingControlManager {
             // get rid of the in progress stuff from the last process
         }
         switch (command.commandType) {
+            case SET_GOAL_AND_PAUSE:
+                p.secretInternalSetGoalAndPath(command);
             case REQUEST_PAUSE:
                 p.requestPause();
                 break;
@@ -119,7 +121,7 @@ public class PathingControlManager implements IPathingControlManager {
             case SET_GOAL_AND_PATH:
                 // now this i can do
                 if (command.goal != null) {
-                    baritone.getPathingBehavior().secretInternalSetGoalAndPath(command);
+                    p.secretInternalSetGoalAndPath(command);
                 }
                 break;
             default:

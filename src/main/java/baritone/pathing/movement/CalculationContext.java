@@ -66,11 +66,12 @@ public class CalculationContext {
     public final boolean allowJumpAt256;
     public final boolean allowParkourAscend;
     public final boolean assumeWalkOnWater;
+    public boolean allowFallIntoLava;
     public final int frostWalker;
     public final boolean allowDiagonalDescend;
     public final boolean allowDiagonalAscend;
     public final boolean allowDownward;
-    public final int maxFallHeightNoWater;
+    public int maxFallHeightNoWater;
     public final int maxFallHeightBucket;
     public final double waterWalkSpeed;
     public final double breakBlockAdditionalCost;
@@ -105,6 +106,7 @@ public class CalculationContext {
         this.allowJumpAt256 = Baritone.settings().allowJumpAt256.value;
         this.allowParkourAscend = Baritone.settings().allowParkourAscend.value;
         this.assumeWalkOnWater = Baritone.settings().assumeWalkOnWater.value;
+        this.allowFallIntoLava = false; // Super secret internal setting for ElytraBehavior
         this.frostWalker = EnchantmentHelper.getMaxEnchantmentLevel(Enchantments.FROST_WALKER, baritone.getPlayerContext().player());
         this.allowDiagonalDescend = Baritone.settings().allowDiagonalDescend.value;
         this.allowDiagonalAscend = Baritone.settings().allowDiagonalAscend.value;

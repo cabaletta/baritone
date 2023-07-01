@@ -352,7 +352,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
     }
 
     // just cancel the current path
-    private void secretInternalSegmentCancel() {
+    public void secretInternalSegmentCancel() {
         queuePathEvent(PathEvent.CANCELED);
         synchronized (pathPlanLock) {
             getInProgress().ifPresent(AbstractNodeCostSearch::cancel);
