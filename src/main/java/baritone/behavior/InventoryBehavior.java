@@ -47,7 +47,7 @@ public final class InventoryBehavior extends Behavior implements Helper {
 
     @Override
     public void onTick(TickEvent event) {
-        if (!Baritone.settings().allowInventory.value) {
+        if (!this.canAccessInventory()) {
             return;
         }
         if (event.getType() == TickEvent.Type.OUT) {
@@ -121,7 +121,7 @@ public final class InventoryBehavior extends Behavior implements Helper {
     private int firstValidThrowaway() { // TODO offhand idk
         NonNullList<ItemStack> invy = ctx.player().inventory.mainInventory;
         for (int i = 0; i < invy.size(); i++) {
-            if (Baritone.settings().acceptableThrowawayItems.value.contains(invy.get(i).getItem())) {
+            if (this.isThrowawayItem(invy.get(i))) {
                 return i;
             }
         }
@@ -152,12 +152,7 @@ public final class InventoryBehavior extends Behavior implements Helper {
     }
 
     public boolean hasGenericThrowaway() {
-        for (Item item : Baritone.settings().acceptableThrowawayItems.value) {
-            if (this.canSelectItem(stack -> item.equals(stack.getItem()))) {
-                return true;
-            }
-        }
-        return false;
+        return this.canSelectItem(this::isThrowawayItem);
     }
 
     public boolean selectThrowawayForLocation(boolean select, int x, int y, int z) {
@@ -168,12 +163,7 @@ public final class InventoryBehavior extends Behavior implements Helper {
         if (maybe != null && throwaway(select, stack -> stack.getItem() instanceof ItemBlock && ((ItemBlock) stack.getItem()).getBlock().equals(maybe.getBlock()))) {
             return true;
         }
-        for (Item item : Baritone.settings().acceptableThrowawayItems.value) {
-            if (throwaway(select, stack -> item.equals(stack.getItem()))) {
-                return true;
-            }
-        }
-        return false;
+        return throwaway(select, this::isThrowawayItem);
     }
 
     public boolean canSelectItem(Predicate<? super ItemStack> desired) {
@@ -236,5 +226,13 @@ public final class InventoryBehavior extends Behavior implements Helper {
 
     public boolean canAccessInventory() {
         return Baritone.settings().allowInventory.value;
+    }
+
+    public boolean isThrowawayItem(ItemStack stack) {
+        return this.isThrowawayItem(stack.getItem());
+    }
+
+    public boolean isThrowawayItem(Item item) {
+        return Baritone.settings().acceptableThrowawayItems.value.contains(item);
     }
 }
