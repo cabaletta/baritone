@@ -108,6 +108,10 @@ public final class NetherPathfinderContext {
         throw new IllegalArgumentException("lol");
     }
 
+    public void raytrace(final int count, final double[] src, final double[] dst, final boolean[] hitsOut, final double[] hitPosOut) {
+        NetherPathfinder.raytrace(this.context, true, count, src, dst, hitsOut, hitPosOut);
+    }
+
     public void cancel() {
         NetherPathfinder.cancel(this.context);
     }
