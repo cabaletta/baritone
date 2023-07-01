@@ -34,10 +34,4 @@ public abstract class MixinEntity {
 
     @Shadow
     protected EntityDataManager dataManager;
-
-    @Shadow
-    public float rotationPitch;
-
-    @Shadow
-    public float rotationYaw;
 }

@@ -21,7 +21,9 @@ import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.event.events.RotationMoveEvent;
 import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -38,7 +40,7 @@ import static org.spongepowered.asm.lib.Opcodes.GETFIELD;
  * @since 9/10/2018
  */
 @Mixin(EntityLivingBase.class)
-public abstract class MixinEntityLivingBase extends MixinEntity {
+public abstract class MixinEntityLivingBase extends Entity {
 
     /**
      * Event called to override the movement direction when jumping
@@ -48,6 +50,10 @@ public abstract class MixinEntityLivingBase extends MixinEntity {
 
     @Unique
     private RotationMoveEvent elytraRotationEvent;
+
+    public MixinEntityLivingBase(World worldIn) {
+        super(worldIn);
+    }
 
     @Inject(
             method = "jump",
@@ -118,7 +124,7 @@ public abstract class MixinEntityLivingBase extends MixinEntity {
         Optional<IBaritone> baritone = this.getBaritone();
         if (!baritone.isPresent()) {
             // If a shadow is used here it breaks on Forge
-            self.moveRelative(strafe, up, forward, friction);
+            this.moveRelative(strafe, up, forward, friction);
             return;
         }
 
@@ -128,7 +134,7 @@ public abstract class MixinEntityLivingBase extends MixinEntity {
         this.rotationYaw = event.getYaw();
         this.rotationPitch = event.getPitch();
 
-        self.moveRelative(strafe, up, forward, friction);
+        this.moveRelative(strafe, up, forward, friction);
 
         this.rotationYaw = event.getOriginal().getYaw();
         this.rotationPitch = event.getOriginal().getPitch();
