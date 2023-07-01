@@ -28,6 +28,6 @@ import java.lang.annotation.Target;
  *
  * @author Brady
  */
-@Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
+@Target(ElementType.METHOD)
 @Retention(RetentionPolicy.SOURCE)
 public @interface PerformanceCritical {}
