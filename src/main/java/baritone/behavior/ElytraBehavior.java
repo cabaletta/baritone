@@ -155,13 +155,13 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
             this.attemptNextSegment();
         }
 
-        public void pathToDestination() {
-            this.pathToDestination(ctx.playerFeet());
+        public CompletableFuture<Void> pathToDestination() {
+            return this.pathToDestination(ctx.playerFeet());
         }
 
-        public void pathToDestination(final BlockPos from) {
+        public CompletableFuture<Void> pathToDestination(final BlockPos from) {
             final long start = System.nanoTime();
-            this.path0(from, ElytraBehavior.this.destination, UnaryOperator.identity())
+            return this.path0(from, ElytraBehavior.this.destination, UnaryOperator.identity())
                     .thenRun(() -> {
                         final double distance = this.path.get(0).distanceTo(this.path.get(this.path.size() - 1));
                         if (this.completePath) {
@@ -1219,8 +1219,19 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
                             .findFirst().orElse(null);
 
                     if (fall != null) {
-                        ElytraBehavior.this.pathManager.pathToDestination(fall.getSrc());
-                        this.state = State.WAIT_ELYTRA_PATH;
+                        final BetterBlockPos from = new BetterBlockPos(
+                                (fall.getSrc().x + fall.getDest().x) / 2,
+                                (fall.getSrc().y + fall.getDest().y) / 2,
+                                (fall.getSrc().z + fall.getDest().z) / 2
+                        );
+                        ElytraBehavior.this.pathManager.pathToDestination(from).whenComplete((result, ex) -> {
+                            if (ex == null) {
+                                this.state = State.GET_TO_JUMP;
+                            } else {
+                                this.onLostControl(); // this is fine :Smile:
+                            }
+                        });
+                        this.state = State.PAUSE;
                     } else {
                         onLostControl();
                         logDirect("Jump off path didn't include a fall movement, canceling");
@@ -1231,10 +1242,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
             }
 
             // yucky
-            if (this.state == State.WAIT_ELYTRA_PATH) {
-                if (!ElytraBehavior.this.pathManager.getPath().isEmpty()) {
-                    this.state = State.GET_TO_JUMP;
-                }
+            if (this.state == State.PAUSE) {
                 return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
             }
 
@@ -1257,7 +1265,10 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
                     // owned
                     baritone.getPathingBehavior().secretInternalSegmentCancel();
                 }
-                baritone.getInputOverrideHandler().setInputForceState(Input.JUMP, true);
+                baritone.getInputOverrideHandler().clearAllKeys();
+                if (ctx.player().fallDistance > 1.0f) {
+                    baritone.getInputOverrideHandler().setInputForceState(Input.JUMP, true);
+                }
             }
             return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
         }
@@ -1315,7 +1326,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
     private enum State {
         LOCATE_JUMP,
         VALIDATE_PATH,
-        WAIT_ELYTRA_PATH,
+        PAUSE,
         GET_TO_JUMP,
         START_FLYING,
         FLYING,
