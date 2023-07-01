@@ -185,10 +185,6 @@ public final class InventoryBehavior extends Behavior implements Helper {
     }
 
     public boolean throwaway(boolean select, Predicate<? super ItemStack> desired) {
-        return this.throwaway(select, desired, Baritone.settings().allowInventory.value);
-    }
-
-    public boolean throwaway(boolean select, Predicate<? super ItemStack> desired, boolean allowInventory) {
         EntityPlayerSP p = ctx.player();
         NonNullList<ItemStack> inv = p.inventory.mainInventory;
         for (int i = 0; i < 9; i++) {
@@ -205,6 +201,7 @@ public final class InventoryBehavior extends Behavior implements Helper {
                 return true;
             }
         }
+
         if (desired.test(p.inventory.offHandInventory.get(0))) {
             // main hand takes precedence over off hand
             // that means that if we have block A selected in main hand and block B in off hand, right clicking places block B
@@ -222,7 +219,7 @@ public final class InventoryBehavior extends Behavior implements Helper {
             }
         }
 
-        if (allowInventory) {
+        if (this.canAccessInventory()) {
             for (int i = 9; i < 36; i++) {
                 if (desired.test(inv.get(i))) {
                     if (select) {
@@ -235,5 +232,9 @@ public final class InventoryBehavior extends Behavior implements Helper {
         }
 
         return false;
+    }
+
+    public boolean canAccessInventory() {
+        return Baritone.settings().allowInventory.value;
     }
 }
