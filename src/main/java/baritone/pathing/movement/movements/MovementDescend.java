@@ -178,7 +178,7 @@ public class MovementDescend extends Movement {
                 res.cost = tentativeCost;// TODO incorporate water swim up cost?
                 return false;
             }
-            if (context.allowFallIntoLava && MovementHelper.isLava(ontoBlock.getBlock())) {
+            if (fallHeight >= 8 && context.allowFallIntoLava && MovementHelper.isLava(ontoBlock.getBlock())) {
                 // found a fall into lava
                 res.x = destX;
                 res.y = newY;

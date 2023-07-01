@@ -56,6 +56,7 @@ import net.minecraft.world.chunk.Chunk;
 
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
 import static baritone.api.pathing.movement.ActionCosts.COST_INF;
@@ -1225,11 +1226,17 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
                                 (fall.getSrc().z + fall.getDest().z) / 2
                         );
                         ElytraBehavior.this.pathManager.pathToDestination(from).whenComplete((result, ex) -> {
+                            if (!ElytraBehavior.this.clearView(new Vec3d(from), ElytraBehavior.this.pathManager.getPath().getVec(0), false)) {
+                                onLostControl();
+                                // TODO: Get to higher ground and then look again
+                                logDirect("Can't see start of path from jump spot, canceling");
+                                return;
+                            }
                             if (ex == null) {
                                 this.state = State.GET_TO_JUMP;
-                            } else {
-                                this.onLostControl(); // this is fine :Smile:
+                                return;
                             }
+                            onLostControl();
                         });
                         this.state = State.PAUSE;
                     } else {
@@ -1292,7 +1299,24 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
 
         @Override
         public String displayName0() {
-            return "Elytra";
+            final Supplier<String> status = () -> {
+                switch (this.state) {
+                    case LOCATE_JUMP:
+                        return "Finding spot to jump off";
+                    case VALIDATE_PATH:
+                        return "Validating path";
+                    case PAUSE:
+                        return "Waiting for elytra path";
+                    case GET_TO_JUMP:
+                        return "Walking to takeoff";
+                    case START_FLYING:
+                        return "Begin flying";
+                    case FLYING:
+                        return "Flying";
+                }
+                return "Unknown";
+            };
+            return "Elytra - " + status.get();
         }
     }
 
@@ -1329,7 +1353,6 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         PAUSE,
         GET_TO_JUMP,
         START_FLYING,
-        FLYING,
-        RESTART_FLYING,
+        FLYING
     }
 }
