@@ -51,7 +51,7 @@ public abstract class MixinEntityLivingBase extends Entity {
     @Unique
     private RotationMoveEvent elytraRotationEvent;
 
-    public MixinEntityLivingBase(World worldIn) {
+    private MixinEntityLivingBase(World worldIn) {
         super(worldIn);
     }
 
