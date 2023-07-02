@@ -164,13 +164,27 @@ public final class InventoryBehavior extends Behavior implements Helper {
 
     public boolean selectThrowawayForLocation(boolean select, int x, int y, int z) {
         IBlockState maybe = baritone.getBuilderProcess().placeAt(x, y, z, baritone.bsi.get0(x, y, z));
-        if (maybe != null && throwaway(select, stack -> stack.getItem() instanceof ItemBlock && maybe.equals(((ItemBlock) stack.getItem()).getBlock().getStateForPlacement(ctx.world(), ctx.playerFeet(), EnumFacing.UP, (float) ctx.player().posX, (float) ctx.player().posY, (float) ctx.player().posZ, stack.getItem().getMetadata(stack.getMetadata()), ctx.player())))) {
-            return true; // gotem
+        if (maybe != null) {
+            return this.throwaway(select, stack -> {
+                if (!(stack.getItem() instanceof ItemBlock)) {
+                    return false;
+                }
+                Block block = ((ItemBlock) stack.getItem()).getBlock();
+                return maybe.equals(block.getStateForPlacement(
+                        ctx.world(),
+                        ctx.playerFeet(),
+                        EnumFacing.UP,
+                        0.5f, 1.0f, 0.5f,
+                        stack.getItem().getMetadata(stack.getMetadata()),
+                        ctx.player()
+                ));
+            }) || this.throwaway(select, stack -> {
+                // Since a stack didn't match the desired block state, accept a match of just the block
+                return stack.getItem() instanceof ItemBlock
+                        && ((ItemBlock) stack.getItem()).getBlock().equals(maybe.getBlock());
+            });
         }
-        if (maybe != null && throwaway(select, stack -> stack.getItem() instanceof ItemBlock && ((ItemBlock) stack.getItem()).getBlock().equals(maybe.getBlock()))) {
-            return true;
-        }
-        return throwaway(select, this::isThrowawayItem);
+        return this.throwaway(select, this::isThrowawayItem);
     }
 
     public boolean canSelectItem(Predicate<? super ItemStack> desired) {

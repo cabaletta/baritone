@@ -38,7 +38,7 @@ import java.util.function.Function;
  *
  * @author Avery, Brady, leijurv
  */
-public class ToolSet {
+public final class ToolSet {
 
     /**
      * A cache mapping a {@link Block} to how long it will take to break
