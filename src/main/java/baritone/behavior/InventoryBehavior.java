@@ -38,8 +38,8 @@ import java.util.function.Predicate;
 
 public final class InventoryBehavior extends Behavior implements Helper {
 
-    int ticksSinceLastInventoryMove;
-    int[] lastTickRequestedMove; // not everything asks every tick, so remember the request while coming to a halt
+    private int ticksSinceLastInventoryMove;
+    private int[] lastTickRequestedMove; // not everything asks every tick, so remember the request while coming to a halt
 
     public InventoryBehavior(Baritone baritone) {
         super(baritone);
@@ -47,24 +47,31 @@ public final class InventoryBehavior extends Behavior implements Helper {
 
     @Override
     public void onTick(TickEvent event) {
-        if (!this.canAccessInventory()) {
+        if (event.getType() == TickEvent.Type.OUT) {
             return;
         }
-        if (event.getType() == TickEvent.Type.OUT) {
+        ticksSinceLastInventoryMove++;
+
+        // TODO: Move these checks into "requestSwapWithHotBar" or whatever supersedes it
+        if (!this.canAccessInventory()) {
             return;
         }
         if (ctx.player().openContainer != ctx.player().inventoryContainer) {
             // we have a crafting table or a chest or something open
             return;
         }
-        ticksSinceLastInventoryMove++;
-        if (firstValidThrowaway() >= 9) { // aka there are none on the hotbar, but there are some in main inventory
-            requestSwapWithHotBar(firstValidThrowaway(), 8);
+
+        if (Baritone.settings().allowHotbarManagement.value && baritone.getPathingBehavior().isPathing()) {
+            // TODO: Some way of indicating which slots are currently reserved by this setting
+            if (firstValidThrowaway() >= 9) { // aka there are none on the hotbar, but there are some in main inventory
+                requestSwapWithHotBar(firstValidThrowaway(), 8);
+            }
+            int pick = bestToolAgainst(Blocks.STONE, ItemPickaxe.class);
+            if (pick >= 9) {
+                requestSwapWithHotBar(pick, 0);
+            }
         }
-        int pick = bestToolAgainst(Blocks.STONE, ItemPickaxe.class);
-        if (pick >= 9) {
-            requestSwapWithHotBar(pick, 0);
-        }
+
         if (lastTickRequestedMove != null) {
             logDebug("Remembering to move " + lastTickRequestedMove[0] + " " + lastTickRequestedMove[1] + " from a previous tick");
             requestSwapWithHotBar(lastTickRequestedMove[0], lastTickRequestedMove[1]);
@@ -225,7 +232,7 @@ public final class InventoryBehavior extends Behavior implements Helper {
     }
 
     public boolean canAccessInventory() {
-        return Baritone.settings().allowInventory.value;
+        return Baritone.settings().allowInventory.value || Baritone.settings().allowHotbarManagement.value;
     }
 
     public boolean isThrowawayItem(ItemStack stack) {
