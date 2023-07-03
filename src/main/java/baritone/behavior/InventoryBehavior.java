@@ -22,18 +22,22 @@ import baritone.api.event.events.TickEvent;
 import baritone.api.utils.Helper;
 import baritone.utils.InventorySlot;
 import baritone.utils.ToolSet;
+import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.inventory.ClickType;
 import net.minecraft.item.*;
-import net.minecraft.network.play.client.CPacketPlayerDigging;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.NonNullList;
+import net.minecraft.util.*;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 
+import javax.annotation.Nonnull;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.OptionalInt;
 import java.util.Random;
 import java.util.function.IntPredicate;
@@ -214,35 +218,23 @@ public final class InventoryBehavior extends Behavior implements Helper {
                     return SelectionStrategy.of(SelectionType.IMMEDIATE, () ->
                             ctx.player().inventory.currentItem = slot.getInventoryIndex());
                 case OFFHAND:
-                    // main hand takes precedence over off hand
-                    // that means that if we have block A selected in main hand and block B in off hand, right clicking places block B
-                    // we've already checked above ^ and the main hand can't possible have an acceptablethrowawayitem
-                    // so we need to select in the main hand something that doesn't right click
-                    // so not a shovel, not a hoe, not a block, etc
-//                    for (int i = 0; i < 9; i++) {
-//                        ItemStack item = ctx.player().inventory.mainInventory.get(i);
-//                        if (item.isEmpty() || item.getItem() instanceof ItemPickaxe) {
-//                            ctx.player().inventory.currentItem = i;
-//                            break;
-//                        }
-//                    }
-                    // TODO: This method of acquiring an offhand item is temporary and just guarantees that there won't
-                    //       be any item usage issues. It's probably worth adding a parameter to this method so that the
-                    //       caller can indicate what the purpose of the item is. for example, attacks are always done
-                    //       using the main hand.
-                    // If there is an empty slot on the hotbar, switch to that slot and swap the offhand into it
-                    final InventorySlot empty = this.findSlotMatching(ItemStack::isEmpty);
-                    if (empty != null && empty.getType() == InventorySlot.Type.HOTBAR) {
-                        return SelectionStrategy.of(SelectionType.ENQUEUED, () -> {
-                            ctx.player().inventory.currentItem = empty.getInventoryIndex();
-                            ctx.playerController().syncHeldItem();
-                            ctx.player().connection.sendPacket(new CPacketPlayerDigging(
-                                    CPacketPlayerDigging.Action.SWAP_HELD_ITEMS,
-                                    BlockPos.ORIGIN,
-                                    EnumFacing.DOWN
-                            ));
-                        });
+                    // TODO: It's probably worth adding a parameter to this method so that the caller can indicate what
+                    //       the purpose of the item is. For example, attacks are always done using the main hand, so
+                    //       just switching to a non-interacting hotbar item isn't sufficient.
+                    final ItemStack heldItem = ctx.player().inventory.getCurrentItem();
+
+                    if (!ItemInteractionHelper.couldInteract(heldItem)) {
+                        // Don't need to do anything, the item held in the main hand doesn't have any interaction.
+                        return SelectionStrategy.of(SelectionType.IMMEDIATE, () -> {});
                     }
+
+                    final InventorySlot hotbar = this.findHotbarMatching(item -> !ItemInteractionHelper.couldInteract(item));
+                    if (hotbar != null) {
+                        return SelectionStrategy.of(SelectionType.IMMEDIATE, () ->
+                                ctx.player().inventory.currentItem = hotbar.getInventoryIndex());
+                    }
+
+                    // TODO: Swap offhand with an unimportant item
                     break;
                 case INVENTORY:
                     if (this.canAccessInventory()) {
@@ -267,15 +259,13 @@ public final class InventoryBehavior extends Behavior implements Helper {
      * @return A matching slot, or {@code null} if none.
      */
     public InventorySlot findSlotMatching(final Predicate<? super ItemStack> desired) {
+        final InventorySlot hotbar = this.findHotbarMatching(desired);
+        if (hotbar != null) {
+            return hotbar;
+        }
+
         final EntityPlayerSP p = ctx.player();
         final NonNullList<ItemStack> inv = p.inventory.mainInventory;
-
-        for (int i = 0; i < 9; i++) {
-            ItemStack item = inv.get(i);
-            if (desired.test(item)) {
-                return InventorySlot.hotbar(i);
-            }
-        }
 
         if (desired.test(p.inventory.offHandInventory.get(0))) {
             return InventorySlot.offhand();
@@ -286,6 +276,18 @@ public final class InventoryBehavior extends Behavior implements Helper {
                 if (desired.test(inv.get(i))) {
                     return InventorySlot.inventory(i);
                 }
+            }
+        }
+        return null;
+    }
+
+    public InventorySlot findHotbarMatching(final Predicate<? super ItemStack> desired) {
+        final EntityPlayerSP p = ctx.player();
+        final NonNullList<ItemStack> inv = p.inventory.mainInventory;
+        for (int i = 0; i < 9; i++) {
+            ItemStack item = inv.get(i);
+            if (desired.test(item)) {
+                return InventorySlot.hotbar(i);
             }
         }
         return null;
@@ -327,5 +329,67 @@ public final class InventoryBehavior extends Behavior implements Helper {
 
     public enum SelectionType {
         IMMEDIATE, ENQUEUED
+    }
+
+    private static final class ItemInteractionHelper {
+
+        private static final Map<Class<? extends Item>, Boolean> CACHE = new Reference2ReferenceOpenHashMap<>();
+
+        public static boolean couldInteract(final ItemStack stack) {
+            if (stack.isEmpty()) {
+                return false;
+            }
+
+            return CACHE.computeIfAbsent(stack.getItem().getClass(), itemClass -> {
+                try {
+                    final Method onItemUse        = itemClass.getMethod(Helper1.name, Helper1.parameters);
+                    final Method onItemRightClick = itemClass.getMethod(Helper2.name, Helper2.parameters);
+
+                    // If the declaring class isn't Item, then the method is overriden
+                    return onItemUse.getDeclaringClass() != Item.class
+                            || onItemRightClick.getDeclaringClass() != Item.class;
+                } catch (NoSuchMethodException ignored) {
+                    // this shouldn't happen
+                    return true;
+                }
+            });
+        }
+
+        private static final class Helper1 extends Item {
+
+            public static final String name;
+            public static final Class<?>[] parameters;
+            static {
+                final Method method = Helper1.class.getDeclaredMethods()[0];
+                name = method.getName();
+                parameters = method.getParameterTypes();
+            }
+
+            @Nonnull
+            @Override
+            public EnumActionResult onItemUse(@Nonnull EntityPlayer player, @Nonnull World worldIn,
+                                              @Nonnull BlockPos pos, @Nonnull EnumHand hand,
+                                              @Nonnull EnumFacing facing, float hitX, float hitY, float hitZ) {
+                return super.onItemUse(player, worldIn, pos, hand, facing, hitX, hitY, hitZ);
+            }
+        }
+
+        private static final class Helper2 extends Item {
+
+            public static final String name;
+            public static final Class<?>[] parameters;
+            static {
+                final Method method = Helper2.class.getDeclaredMethods()[0];
+                name = method.getName();
+                parameters = method.getParameterTypes();
+            }
+
+            @Nonnull
+            @Override
+            public ActionResult<ItemStack> onItemRightClick(@Nonnull World worldIn, @Nonnull EntityPlayer playerIn,
+                                                            @Nonnull EnumHand handIn) {
+                return super.onItemRightClick(worldIn, playerIn, handIn);
+            }
+        }
     }
 }

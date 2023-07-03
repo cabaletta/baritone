@@ -49,7 +49,6 @@ public final class InventorySlot {
             public void accept(Type type, int count) {
                 for (int i = 0; i < count; i++) {
                     SLOTS[this.index] = new InventorySlot(this.index, type);
-                    System.out.println(this.index);
                     this.index++;
                 }
             }
