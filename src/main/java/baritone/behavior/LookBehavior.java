@@ -146,10 +146,10 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
     }
 
     public Optional<Rotation> getEffectiveRotation() {
-        if (Baritone.settings().freeLook.value || Baritone.settings().blockFreeLook.value) {
+        if (Baritone.settings().freeLook.value) {
             return Optional.ofNullable(this.serverRotation);
         }
-        // If neither of the freeLook settings are on, just defer to the player's actual rotations
+        // If freeLook isn't on, just defer to the player's actual rotations
         return Optional.empty();
     }
 
@@ -213,7 +213,7 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
             return new Rotation(
                     this.calculateMouseMove(prev.getYaw(), desiredYaw),
                     this.calculateMouseMove(prev.getPitch(), desiredPitch)
-            );
+            ).clamp();
         }
 
         @Override
@@ -317,12 +317,12 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
                 final boolean blockFreeLook = settings.blockFreeLook.value;
                 final boolean freeLook = settings.freeLook.value;
 
+                if (!freeLook) return CLIENT;
+                if (!blockFreeLook && blockInteract) return CLIENT;
+
                 if (ctx.player().isElytraFlying()) {
                     return settings.elytraFreeLook.value ? SERVER : CLIENT;
                 }
-
-                if (!freeLook && !blockFreeLook) return CLIENT;
-                if (!blockFreeLook && blockInteract) return CLIENT;
 
                 // Regardless of if antiCheatCompatibility is enabled, if a blockInteract is requested then the player
                 // rotation needs to be set somehow, otherwise Baritone will halt since objectMouseOver() will just be
