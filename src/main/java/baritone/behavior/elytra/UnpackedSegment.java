@@ -19,7 +19,6 @@ package baritone.behavior.elytra;
 
 import baritone.api.utils.BetterBlockPos;
 import dev.babbaj.pathfinder.PathSegment;
-import net.minecraft.util.math.BlockPos;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -77,7 +76,7 @@ public final class UnpackedSegment {
 
     public static UnpackedSegment from(final PathSegment segment) {
         return new UnpackedSegment(
-                Arrays.stream(segment.packed).mapToObj(BlockPos::fromLong).map(BetterBlockPos::new),
+                Arrays.stream(segment.packed).mapToObj(BetterBlockPos::deserializeFromLong),
                 segment.finished
         );
     }

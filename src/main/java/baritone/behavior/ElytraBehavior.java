@@ -43,6 +43,7 @@ import baritone.utils.PathingCommandContext;
 import baritone.utils.accessor.IEntityFireworkRocket;
 import it.unimi.dsi.fastutil.floats.FloatArrayList;
 import it.unimi.dsi.fastutil.floats.FloatIterator;
+import it.unimi.dsi.fastutil.longs.Long2ReferenceOpenHashMap;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.item.EntityFireworkRocket;
@@ -60,6 +61,8 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
 import static baritone.api.pathing.movement.ActionCosts.COST_INF;
+import static baritone.utils.BaritoneMath.fastCeil;
+import static baritone.utils.BaritoneMath.fastFloor;
 
 public final class ElytraBehavior extends Behavior implements IElytraBehavior, Helper {
 
@@ -447,6 +450,9 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
             this.minimumBoostTicks = 0;
         }
 
+        // lol
+        MC_1_12_Collision_Fix.clear();
+
         // Reset rendered elements
         this.clearLines.clear();
         this.blockedLines.clear();
@@ -567,7 +573,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
                     } else {
                         // Create a point along the segment every block
                         final Vec3d delta = path.getVec(i).subtract(path.getVec(i - 1));
-                        final int steps = MathHelper.floor(delta.length());
+                        final int steps = fastFloor(delta.length());
                         final Vec3d step = delta.normalize();
                         Vec3d stepped = path.getVec(i);
                         for (int interp = 0; interp < steps; interp++) {
@@ -893,7 +899,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         final float minPitch = desperate ? -90 : Math.max(goodPitch - Baritone.settings().elytraPitchRange.value, -89);
         final float maxPitch = desperate ? 90 : Math.min(goodPitch + Baritone.settings().elytraPitchRange.value, 89);
 
-        final FloatArrayList pitchValues = new FloatArrayList(MathHelper.ceil(maxPitch - minPitch) + 1);
+        final FloatArrayList pitchValues = new FloatArrayList(fastCeil(maxPitch - minPitch) + 1);
         for (float pitch = goodPitch; pitch <= maxPitch; pitch++) {
             pitchValues.add(pitch);
         }
@@ -1039,11 +1045,13 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         Vec3d delta = goalDelta;
         Vec3d motion = ctx.playerMotion();
         AxisAlignedBB hitbox = ctx.player().getEntityBoundingBox();
-        List<Vec3d> displacement = new ArrayList<>();
+        List<Vec3d> displacement = new ArrayList<>(ticks + 1);
         displacement.add(Vec3d.ZERO);
 
         for (int i = 0; i < ticks; i++) {
-            if (MC_1_12_Collision_Fix.bonk(this.bsi, hitbox)) {
+            final double cx = hitbox.minX + (hitbox.maxX - hitbox.minX) * 0.5D;
+            final double cz = hitbox.minZ + (hitbox.maxZ - hitbox.minZ) * 0.5D;
+            if (MC_1_12_Collision_Fix.bonk(this.bsi, cx, hitbox.minY, cz)) {
                 return null;
             }
             if (delta.lengthSquared() < 1) {
@@ -1060,9 +1068,9 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
             // Collision box while the player is in motion, with additional padding for safety
             final AxisAlignedBB inMotion = hitbox.expand(motion.x, motion.y, motion.z).grow(0.01);
 
-            for (int x = MathHelper.floor(inMotion.minX); x < MathHelper.ceil(inMotion.maxX); x++) {
-                for (int y = MathHelper.floor(inMotion.minY); y < MathHelper.ceil(inMotion.maxY); y++) {
-                    for (int z = MathHelper.floor(inMotion.minZ); z < MathHelper.ceil(inMotion.maxZ); z++) {
+            for (int x = fastFloor(inMotion.minX); x < fastCeil(inMotion.maxX); x++) {
+                for (int y = fastFloor(inMotion.minY); y < fastCeil(inMotion.maxY); y++) {
+                    for (int z = fastFloor(inMotion.minZ); z < fastCeil(inMotion.maxZ); z++) {
                         if (!this.passable(x, y, z, ignoreLava)) {
                             return null;
                         }
@@ -1140,35 +1148,62 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
      */
     private static final class MC_1_12_Collision_Fix {
 
-        public static boolean bonk(final BlockStateInterface bsi, final AxisAlignedBB aabb) {
-            final Vec3d center = aabb.getCenter();
-            final double width = (aabb.maxX - aabb.minX) * 0.35D;
-            final double x = center.x;
-            final double y = aabb.minY + 0.5D;
-            final double z = center.z;
+        private static final Long2ReferenceOpenHashMap<Boolean> PUSH_OUT_CACHE = new Long2ReferenceOpenHashMap<>();
+        private static final Long2ReferenceOpenHashMap<Boolean> IS_OPEN_CACHE = new Long2ReferenceOpenHashMap<>();
+        private static final double WIDTH = 0.35D * 0.6F;
 
-            return pushOutOfBlocks(bsi, x - width, y, z + width)
-                    || pushOutOfBlocks(bsi, x - width, y, z - width)
-                    || pushOutOfBlocks(bsi, x + width, y, z - width)
-                    || pushOutOfBlocks(bsi, x + width, y, z + width);
-        }
-
-        private static boolean pushOutOfBlocks(final BlockStateInterface bsi,
-                                               final double xIn, final double yIn, final double zIn) {
-            final int x = MathHelper.floor(xIn);
-            final int y = MathHelper.floor(yIn);
-            final int z = MathHelper.floor(zIn);
-            if (isOpenBlockSpace(bsi, x, y, z)) {
-                return false;
+        public static void clear() {
+            // TODO: I don't like this....
+            if (MC_1_12_Collision_Fix.PUSH_OUT_CACHE.size() > 4096) {
+                MC_1_12_Collision_Fix.PUSH_OUT_CACHE.clear();
             }
-            return isOpenBlockSpace(bsi, x - 1, y, z)
-                    || isOpenBlockSpace(bsi, x + 1, y, z)
-                    || isOpenBlockSpace(bsi, x, y, z - 1)
-                    || isOpenBlockSpace(bsi, x, y, z + 1);
+            if (MC_1_12_Collision_Fix.IS_OPEN_CACHE.size() > 4096) {
+                MC_1_12_Collision_Fix.IS_OPEN_CACHE.clear();
+            }
         }
 
-        private static boolean isOpenBlockSpace(BlockStateInterface bsi, final int x, final int y, final int z) {
-            return !bsi.get0(x, y, z).isNormalCube() && !bsi.get0(x, y + 1, z).isNormalCube();
+        public static boolean bonk(final BlockStateInterface bsi, final double xIn, final double yIn, final double zIn) {
+            final int y = fastFloor(yIn + 0.5D);
+            final int minX = fastFloor(xIn - WIDTH);
+            final int minZ = fastFloor(zIn - WIDTH);
+            final int maxX = fastFloor(xIn + WIDTH);
+            final int maxZ = fastFloor(zIn + WIDTH);
+
+            if (minX == maxX && minZ == maxZ) {
+                return pushOutOfBlocks(bsi, minX, y, minZ);
+            } else if (minX == maxX) {
+                return pushOutOfBlocks(bsi, minX, y, minZ) || pushOutOfBlocks(bsi, minX, y, maxZ);
+            } else if (minZ == maxZ) {
+                return pushOutOfBlocks(bsi, minX, y, minZ) || pushOutOfBlocks(bsi, maxX, y, minZ);
+            }
+
+            return pushOutOfBlocks(bsi, minX, y, maxZ)
+                    || pushOutOfBlocks(bsi, minX, y, minZ)
+                    || pushOutOfBlocks(bsi, maxX, y, minZ)
+                    || pushOutOfBlocks(bsi, maxX, y, maxZ);
+        }
+
+        private static boolean pushOutOfBlocks(final BlockStateInterface bsi, final int x, final int y, final int z) {
+            final long hash = BetterBlockPos.serializeToLong(x, y, z);
+            Boolean result = PUSH_OUT_CACHE.get(hash);
+            if (result == null) {
+                PUSH_OUT_CACHE.put(hash, result = !isOpenBlockSpace(bsi, x, y, z) && (
+                        isOpenBlockSpace(bsi, x - 1, y, z)
+                                || isOpenBlockSpace(bsi, x + 1, y, z)
+                                || isOpenBlockSpace(bsi, x, y, z - 1)
+                                || isOpenBlockSpace(bsi, x, y, z + 1))
+                );
+            }
+            return result;
+        }
+
+        private static boolean isOpenBlockSpace(final BlockStateInterface bsi, final int x, final int y, final int z) {
+            final long hash = BetterBlockPos.serializeToLong(x, y, z);
+            Boolean result = IS_OPEN_CACHE.get(hash);
+            if (result == null) {
+                IS_OPEN_CACHE.put(hash, result = !bsi.get0(x, y, z).isNormalCube() && !bsi.get0(x, y + 1, z).isNormalCube());
+            }
+            return result;
         }
     }
 
