@@ -1154,11 +1154,11 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
 
         public static void clear() {
             // TODO: I don't like this....
-            if (MC_1_12_Collision_Fix.PUSH_OUT_CACHE.size() > 4096) {
-                MC_1_12_Collision_Fix.PUSH_OUT_CACHE.clear();
+            if (PUSH_OUT_CACHE.size() > 4096) {
+                PUSH_OUT_CACHE.clear();
             }
-            if (MC_1_12_Collision_Fix.IS_OPEN_CACHE.size() > 4096) {
-                MC_1_12_Collision_Fix.IS_OPEN_CACHE.clear();
+            if (IS_OPEN_CACHE.size() > 4096) {
+                IS_OPEN_CACHE.clear();
             }
         }
 
