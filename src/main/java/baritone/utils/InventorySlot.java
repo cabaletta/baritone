@@ -17,6 +17,8 @@
 
 package baritone.utils;
 
+import java.util.function.ObjIntConsumer;
+
 /**
  * @author Brady
  */
@@ -40,20 +42,24 @@ public final class InventorySlot {
     private static final InventorySlot[] SLOTS = new InventorySlot[46];
 
     static {
-        SLOTS[0] = new InventorySlot(0, Type.CRAFTING_OUTPUT);
-        for (int i = 0; i < 4; i++) {
-            SLOTS[i + 1] = new InventorySlot(i + 1, Type.CRAFTING_GRID);
-        }
-        for (int i = 0; i < 4; i++) {
-            SLOTS[i + 5] = new InventorySlot(i + 5, Type.ARMOR);
-        }
-        for (int i = 0; i < 27; i++) {
-            SLOTS[i + 9] = new InventorySlot(i + 9, Type.INVENTORY);
-        }
-        for (int i = 0; i < 9; i++) {
-            SLOTS[i + 36] = new InventorySlot(i + 36, Type.HOTBAR);
-        }
-        SLOTS[45] = new InventorySlot(45, Type.OFFHAND);
+        final ObjIntConsumer<Type> populate = new ObjIntConsumer<Type>() {
+            private int index;
+
+            @Override
+            public void accept(Type type, int count) {
+                for (int i = 0; i < count; i++) {
+                    SLOTS[this.index] = new InventorySlot(this.index, type);
+                    System.out.println(this.index);
+                    this.index++;
+                }
+            }
+        };
+        populate.accept(Type.CRAFTING_OUTPUT,   1);
+        populate.accept(Type.CRAFTING_GRID,     4);
+        populate.accept(Type.ARMOR,             4);
+        populate.accept(Type.INVENTORY,         27);
+        populate.accept(Type.HOTBAR,            9);
+        populate.accept(Type.OFFHAND,           1);
     }
 
     private final int slotId;
