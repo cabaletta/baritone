@@ -75,7 +75,7 @@ public final class Settings {
 
     /**
      * Allow Baritone to automatically put useful items (such as tools and throwaway blocks) on the hotbar while
-     * pathing. Having this setting enabled implies {@link #allowInventory}.
+     * pathing. Requires {@link #allowInventory}.
      */
     public final Setting<Boolean> allowHotbarManagement = new Setting<>(false);
 

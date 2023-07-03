@@ -20,6 +20,7 @@ package baritone.behavior;
 import baritone.Baritone;
 import baritone.api.event.events.TickEvent;
 import baritone.api.utils.Helper;
+import baritone.utils.InventorySlot;
 import baritone.utils.ToolSet;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -27,8 +28,10 @@ import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.init.Blocks;
 import net.minecraft.inventory.ClickType;
 import net.minecraft.item.*;
+import net.minecraft.network.play.client.CPacketPlayerDigging;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.NonNullList;
+import net.minecraft.util.math.BlockPos;
 
 import java.util.ArrayList;
 import java.util.OptionalInt;
@@ -163,9 +166,11 @@ public final class InventoryBehavior extends Behavior implements Helper {
     }
 
     public boolean selectThrowawayForLocation(boolean select, int x, int y, int z) {
-        IBlockState maybe = baritone.getBuilderProcess().placeAt(x, y, z, baritone.bsi.get0(x, y, z));
+        final Predicate<Predicate<? super ItemStack>> op = select ? this::trySelectItem : this::canSelectItem;
+
+        final IBlockState maybe = baritone.getBuilderProcess().placeAt(x, y, z, baritone.bsi.get0(x, y, z));
         if (maybe != null) {
-            return this.throwaway(select, stack -> {
+            return op.test(stack -> {
                 if (!(stack.getItem() instanceof ItemBlock)) {
                     return false;
                 }
@@ -178,75 +183,116 @@ public final class InventoryBehavior extends Behavior implements Helper {
                         stack.getItem().getMetadata(stack.getMetadata()),
                         ctx.player()
                 ));
-            }) || this.throwaway(select, stack -> {
+            }) || op.test(stack -> {
                 // Since a stack didn't match the desired block state, accept a match of just the block
                 return stack.getItem() instanceof ItemBlock
                         && ((ItemBlock) stack.getItem()).getBlock().equals(maybe.getBlock());
             });
         }
-        return this.throwaway(select, this::isThrowawayItem);
+        return op.test(this::isThrowawayItem);
     }
 
     public boolean canSelectItem(Predicate<? super ItemStack> desired) {
-        return this.throwaway(false, desired);
+        return this.resolveSelectionStrategy(desired) != null;
     }
 
     public boolean trySelectItem(Predicate<? super ItemStack> desired) {
-        return this.throwaway(true, desired);
+        final SelectionStrategy strategy = this.resolveSelectionStrategy(desired);
+        if (strategy != null) {
+            strategy.run();
+            // TODO: Consider cases where returning the SelectionType is needed/useful to the caller
+            return true;
+        }
+        return false;
     }
 
-    public boolean throwaway(boolean select, Predicate<? super ItemStack> desired) {
-        EntityPlayerSP p = ctx.player();
-        NonNullList<ItemStack> inv = p.inventory.mainInventory;
+    public SelectionStrategy resolveSelectionStrategy(Predicate<? super ItemStack> desired) {
+        final InventorySlot slot = this.findSlotMatching(desired);
+        if (slot != null) {
+            switch (slot.getType()) {
+                case HOTBAR:
+                    return SelectionStrategy.of(SelectionType.IMMEDIATE, () ->
+                            ctx.player().inventory.currentItem = slot.getInventoryIndex());
+                case OFFHAND:
+                    // main hand takes precedence over off hand
+                    // that means that if we have block A selected in main hand and block B in off hand, right clicking places block B
+                    // we've already checked above ^ and the main hand can't possible have an acceptablethrowawayitem
+                    // so we need to select in the main hand something that doesn't right click
+                    // so not a shovel, not a hoe, not a block, etc
+//                    for (int i = 0; i < 9; i++) {
+//                        ItemStack item = ctx.player().inventory.mainInventory.get(i);
+//                        if (item.isEmpty() || item.getItem() instanceof ItemPickaxe) {
+//                            ctx.player().inventory.currentItem = i;
+//                            break;
+//                        }
+//                    }
+                    // TODO: This method of acquiring an offhand item is temporary and just guarantees that there won't
+                    //       be any item usage issues. It's probably worth adding a parameter to this method so that the
+                    //       caller can indicate what the purpose of the item is. for example, attacks are always done
+                    //       using the main hand.
+                    // If there is an empty slot on the hotbar, switch to that slot and swap the offhand into it
+                    final InventorySlot empty = this.findSlotMatching(ItemStack::isEmpty);
+                    if (empty != null && empty.getType() == InventorySlot.Type.HOTBAR) {
+                        return SelectionStrategy.of(SelectionType.ENQUEUED, () -> {
+                            ctx.player().inventory.currentItem = empty.getInventoryIndex();
+                            ctx.playerController().syncHeldItem();
+                            ctx.player().connection.sendPacket(new CPacketPlayerDigging(
+                                    CPacketPlayerDigging.Action.SWAP_HELD_ITEMS,
+                                    BlockPos.ORIGIN,
+                                    EnumFacing.DOWN
+                            ));
+                        });
+                    }
+                    break;
+                case INVENTORY:
+                    if (this.canAccessInventory()) {
+                        return SelectionStrategy.of(SelectionType.ENQUEUED, () -> {
+                            // TODO: Determine if hotbar swap can be immediate, and return type accordingly
+                            requestSwapWithHotBar(slot.getInventoryIndex(), 7);
+                            ctx.player().inventory.currentItem = 7;
+                        });
+                    }
+                    break;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns an {@link InventorySlot} that contains a stack matching the given predicate. The priority of the
+     * returned slot is the hotbar, offhand, and finally the main inventory, if {@link #canAccessInventory()} is
+     * {@code true}. Additionally, for the hotbar and main inventory, slots with a lower index will be returned.
+     *
+     * @param desired The predicate to match
+     * @return A matching slot, or {@code null} if none.
+     */
+    public InventorySlot findSlotMatching(final Predicate<? super ItemStack> desired) {
+        final EntityPlayerSP p = ctx.player();
+        final NonNullList<ItemStack> inv = p.inventory.mainInventory;
+
         for (int i = 0; i < 9; i++) {
             ItemStack item = inv.get(i);
-            // this usage of settings() is okay because it's only called once during pathing
-            // (while creating the CalculationContext at the very beginning)
-            // and then it's called during execution
-            // since this function is never called during cost calculation, we don't need to migrate
-            // acceptableThrowawayItems to the CalculationContext
             if (desired.test(item)) {
-                if (select) {
-                    p.inventory.currentItem = i;
-                }
-                return true;
+                return InventorySlot.hotbar(i);
             }
         }
 
         if (desired.test(p.inventory.offHandInventory.get(0))) {
-            // main hand takes precedence over off hand
-            // that means that if we have block A selected in main hand and block B in off hand, right clicking places block B
-            // we've already checked above ^ and the main hand can't possible have an acceptablethrowawayitem
-            // so we need to select in the main hand something that doesn't right click
-            // so not a shovel, not a hoe, not a block, etc
-            for (int i = 0; i < 9; i++) {
-                ItemStack item = inv.get(i);
-                if (item.isEmpty() || item.getItem() instanceof ItemPickaxe) {
-                    if (select) {
-                        p.inventory.currentItem = i;
-                    }
-                    return true;
-                }
-            }
+            return InventorySlot.offhand();
         }
 
         if (this.canAccessInventory()) {
             for (int i = 9; i < 36; i++) {
                 if (desired.test(inv.get(i))) {
-                    if (select) {
-                        requestSwapWithHotBar(i, 7);
-                        p.inventory.currentItem = 7;
-                    }
-                    return true;
+                    return InventorySlot.inventory(i);
                 }
             }
         }
-
-        return false;
+        return null;
     }
 
     public boolean canAccessInventory() {
-        return Baritone.settings().allowInventory.value || Baritone.settings().allowHotbarManagement.value;
+        return Baritone.settings().allowInventory.value;
     }
 
     public boolean isThrowawayItem(ItemStack stack) {
@@ -255,5 +301,31 @@ public final class InventoryBehavior extends Behavior implements Helper {
 
     public boolean isThrowawayItem(Item item) {
         return Baritone.settings().acceptableThrowawayItems.value.contains(item);
+    }
+
+    public interface SelectionStrategy extends Runnable {
+
+        @Override
+        void run();
+
+        SelectionType getType();
+
+        static SelectionStrategy of(final SelectionType type, final Runnable runnable) {
+            return new SelectionStrategy() {
+                @Override
+                public void run() {
+                    runnable.run();
+                }
+
+                @Override
+                public SelectionType getType() {
+                    return type;
+                }
+            };
+        }
+    }
+
+    public enum SelectionType {
+        IMMEDIATE, ENQUEUED
     }
 }
