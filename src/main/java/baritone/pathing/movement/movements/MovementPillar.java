@@ -188,9 +188,9 @@ public class MovementPillar extends Movement {
         boolean vine = fromDown.getBlock() == Blocks.VINE;
         Rotation rotation = RotationUtils.calcRotationFromVec3d(ctx.playerHead(),
                 VecUtils.getBlockPosCenter(positionToPlace),
-                new Rotation(ctx.player().rotationYaw, ctx.player().rotationPitch));
+                ctx.playerRotations());
         if (!ladder) {
-            state.setTarget(new MovementState.MovementTarget(new Rotation(ctx.player().rotationYaw, rotation.getPitch()), true));
+            state.setTarget(new MovementState.MovementTarget(ctx.playerRotations().withPitch(rotation.getPitch()), true));
         }
 
         boolean blockIsThere = MovementHelper.canWalkOn(ctx, src) || ladder;
@@ -249,7 +249,7 @@ public class MovementPillar extends Movement {
                 Block fr = frState.getBlock();
                 // TODO: Evaluate usage of getMaterial().isReplaceable()
                 if (!(fr instanceof AirBlock || frState.getMaterial().isReplaceable())) {
-                    RotationUtils.reachable(ctx.player(), src, ctx.playerController().getBlockReachDistance())
+                    RotationUtils.reachable(ctx, src, ctx.playerController().getBlockReachDistance())
                             .map(rot -> new MovementState.MovementTarget(rot, true))
                             .ifPresent(state::setTarget);
                     state.setInput(Input.JUMP, false); // breaking is like 5x slower when you're jumping

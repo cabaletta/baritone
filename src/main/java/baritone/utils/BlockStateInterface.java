@@ -28,7 +28,6 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientChunkProvider;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockReader;
@@ -46,7 +45,6 @@ public class BlockStateInterface {
 
     private final ClientChunkProvider provider;
     private final WorldData worldData;
-    protected final IBlockReader world;
     public final BlockPos.MutableBlockPos isPassableBlockPos;
     public final IBlockReader access;
     public final BetterWorldBorder worldBorder;
@@ -63,20 +61,16 @@ public class BlockStateInterface {
     }
 
     public BlockStateInterface(IPlayerContext ctx, boolean copyLoadedChunks) {
-        this(ctx.world(), (WorldData) ctx.worldData(), copyLoadedChunks);
-    }
-
-    public BlockStateInterface(World world, WorldData worldData, boolean copyLoadedChunks) {
-        this.world = world;
+        final World world = ctx.world();
         this.worldBorder = new BetterWorldBorder(world.getWorldBorder());
-        this.worldData = worldData;
+        this.worldData = (WorldData) ctx.worldData();
         if (copyLoadedChunks) {
             this.provider = ((IClientChunkProvider) world.getChunkProvider()).createThreadSafeCopy();
         } else {
             this.provider = (ClientChunkProvider) world.getChunkProvider();
         }
         this.useTheRealWorld = !Baritone.settings().pathThroughCachedOnly.value;
-        if (!Minecraft.getInstance().isOnExecutionThread()) {
+        if (!ctx.minecraft().isOnExecutionThread()) {
             throw new IllegalStateException();
         }
         this.isPassableBlockPos = new BlockPos.MutableBlockPos();

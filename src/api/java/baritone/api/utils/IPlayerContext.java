@@ -19,6 +19,7 @@ package baritone.api.utils;
 
 import baritone.api.cache.IWorldData;
 import net.minecraft.block.SlabBlock;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
@@ -37,6 +38,8 @@ import java.util.stream.StreamSupport;
  * @since 11/12/2018
  */
 public interface IPlayerContext {
+
+    Minecraft minecraft();
 
     ClientPlayerEntity player();
 
@@ -85,6 +88,8 @@ public interface IPlayerContext {
     default Vec3d playerHead() {
         return new Vec3d(player().posX, player().posY + player().getEyeHeight(), player().posZ);
     }
+
+    BetterBlockPos viewerPos();
 
     default Rotation playerRotations() {
         return new Rotation(player().rotationYaw, player().rotationPitch);
