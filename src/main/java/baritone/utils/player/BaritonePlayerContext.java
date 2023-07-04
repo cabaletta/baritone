@@ -17,13 +17,13 @@
 
 package baritone.utils.player;
 
-import baritone.api.BaritoneAPI;
+import baritone.Baritone;
 import baritone.api.cache.IWorldData;
-import baritone.api.utils.Helper;
-import baritone.api.utils.IPlayerContext;
-import baritone.api.utils.IPlayerController;
-import baritone.api.utils.RayTraceUtils;
+import baritone.api.utils.*;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraft.entity.Entity;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
 
@@ -33,28 +33,52 @@ import net.minecraft.world.World;
  * @author Brady
  * @since 11/12/2018
  */
-public enum PrimaryPlayerContext implements IPlayerContext, Helper {
+public final class BaritonePlayerContext implements IPlayerContext {
 
-    INSTANCE;
+    private final Baritone baritone;
+    private final Minecraft mc;
+    private final IPlayerController playerController;
+
+    public BaritonePlayerContext(Baritone baritone, Minecraft mc) {
+        this.baritone = baritone;
+        this.mc = mc;
+        this.playerController = new BaritonePlayerController(mc);
+    }
+
+    @Override
+    public Minecraft minecraft() {
+        return this.mc;
+    }
 
     @Override
     public EntityPlayerSP player() {
-        return mc.player;
+        return this.mc.player;
     }
 
     @Override
     public IPlayerController playerController() {
-        return PrimaryPlayerController.INSTANCE;
+        return this.playerController;
     }
 
     @Override
     public World world() {
-        return mc.world;
+        return this.mc.world;
     }
 
     @Override
     public IWorldData worldData() {
-        return BaritoneAPI.getProvider().getPrimaryBaritone().getWorldProvider().getCurrentWorld();
+        return this.baritone.getWorldProvider().getCurrentWorld();
+    }
+
+    @Override
+    public BetterBlockPos viewerPos() {
+        final Entity entity = this.mc.getRenderViewEntity();
+        return entity == null ? this.playerFeet() : BetterBlockPos.from(new BlockPos(entity));
+    }
+
+    @Override
+    public Rotation playerRotations() {
+        return this.baritone.getLookBehavior().getEffectiveRotation().orElseGet(IPlayerContext.super::playerRotations);
     }
 
     @Override

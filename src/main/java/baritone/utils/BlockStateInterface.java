@@ -27,7 +27,6 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.Minecraft;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
@@ -44,7 +43,6 @@ public class BlockStateInterface {
 
     private final Long2ObjectMap<Chunk> loadedChunks;
     private final WorldData worldData;
-    protected final IBlockReader world;
     public final BlockPos.MutableBlockPos isPassableBlockPos;
     public final IBlockReader access;
     public final BetterWorldBorder worldBorder;
@@ -61,13 +59,9 @@ public class BlockStateInterface {
     }
 
     public BlockStateInterface(IPlayerContext ctx, boolean copyLoadedChunks) {
-        this(ctx.world(), (WorldData) ctx.worldData(), copyLoadedChunks);
-    }
-
-    public BlockStateInterface(World world, WorldData worldData, boolean copyLoadedChunks) {
-        this.world = world;
+        final World world = ctx.world();
         this.worldBorder = new BetterWorldBorder(world.getWorldBorder());
-        this.worldData = worldData;
+        this.worldData = (WorldData) ctx.worldData();
         Long2ObjectMap<Chunk> worldLoaded = ((IChunkProviderClient) world.getChunkProvider()).loadedChunks();
         if (copyLoadedChunks) {
             this.loadedChunks = new Long2ObjectOpenHashMap<>(worldLoaded); // make a copy that we can safely access from another thread
@@ -75,7 +69,7 @@ public class BlockStateInterface {
             this.loadedChunks = worldLoaded; // this will only be used on the main thread
         }
         this.useTheRealWorld = !Baritone.settings().pathThroughCachedOnly.value;
-        if (!Minecraft.getInstance().isCallingFromMinecraftThread()) {
+        if (!ctx.minecraft().isCallingFromMinecraftThread()) {
             throw new IllegalStateException();
         }
         this.isPassableBlockPos = new BlockPos.MutableBlockPos();

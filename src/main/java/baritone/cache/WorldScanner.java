@@ -156,7 +156,7 @@ public enum WorldScanner implements IWorldScanner {
                 continue;
             }
             int yReal = y0 << 4;
-            IBlockStateContainer bsc = (IBlockStateContainer) extendedblockstorage.getData();
+            IBlockStateContainer<IBlockState> bsc = (IBlockStateContainer<IBlockState>) extendedblockstorage.getData();
             // storageArray uses an optimized algorithm that's faster than getAt
             // creating this array and then using getAtPalette is faster than even getFast(int index)
             int[] storage = bsc.storageArray();

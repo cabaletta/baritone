@@ -24,16 +24,22 @@ import net.minecraft.init.Blocks;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.registry.IRegistry;
 
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 public enum BlockById implements IDatatypeFor<Block> {
     INSTANCE;
 
+    /**
+     * Matches (domain:)?name? where domain and name are [a-z0-9_.-]+ and [a-z0-9/_.-]+ respectively.
+     */
+    private static Pattern PATTERN = Pattern.compile("(?:[a-z0-9_.-]+:)?[a-z0-9/_.-]*");
+
     @Override
     public Block get(IDatatypeContext ctx) throws CommandException {
         ResourceLocation id = new ResourceLocation(ctx.getConsumer().getString());
         Block block;
-        if ((block = IRegistry.BLOCK.get(id)) == Blocks.AIR) {
+        if ((block = IRegistry.BLOCK.get(id)) == null) {
             throw new IllegalArgumentException("no block found by that id");
         }
         return block;
@@ -41,13 +47,19 @@ public enum BlockById implements IDatatypeFor<Block> {
 
     @Override
     public Stream<String> tabComplete(IDatatypeContext ctx) throws CommandException {
+        String arg = ctx.getConsumer().getString();
+
+        if (!PATTERN.matcher(arg).matches()) {
+            return Stream.empty();
+        }
+
         return new TabCompleteHelper()
                 .append(
                         IRegistry.BLOCK.keySet()
                                 .stream()
                                 .map(Object::toString)
                 )
-                .filterPrefixNamespaced(ctx.getConsumer().getString())
+                .filterPrefixNamespaced(arg)
                 .sortAlphabetically()
                 .stream();
     }

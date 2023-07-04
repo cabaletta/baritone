@@ -149,7 +149,11 @@ public class WaypointsCommand extends Command {
             logDirect(component);
         } else if (action == Action.CLEAR) {
             args.requireMax(1);
-            IWaypoint.Tag tag = IWaypoint.Tag.getByName(args.getString());
+            String name = args.getString();
+            IWaypoint.Tag tag = IWaypoint.Tag.getByName(name);
+            if (tag == null) {
+                throw new CommandInvalidStateException("Invalid tag, \"" + name + "\"");
+            }
             IWaypoint[] waypoints = ForWaypoints.getWaypointsByTag(this.baritone, tag);
             for (IWaypoint waypoint : waypoints) {
                 ForWaypoints.waypoints(this.baritone).removeWaypoint(waypoint);

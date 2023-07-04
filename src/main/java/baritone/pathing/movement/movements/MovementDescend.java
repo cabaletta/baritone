@@ -20,7 +20,6 @@ package baritone.pathing.movement.movements;
 import baritone.api.IBaritone;
 import baritone.api.pathing.movement.MovementStatus;
 import baritone.api.utils.BetterBlockPos;
-import baritone.api.utils.Rotation;
 import baritone.api.utils.RotationUtils;
 import baritone.api.utils.input.Input;
 import baritone.pathing.movement.CalculationContext;
@@ -33,7 +32,6 @@ import com.google.common.collect.ImmutableSet;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockFalling;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
@@ -234,11 +232,10 @@ public class MovementDescend extends Movement {
         if (safeMode()) {
             double destX = (src.getX() + 0.5) * 0.17 + (dest.getX() + 0.5) * 0.83;
             double destZ = (src.getZ() + 0.5) * 0.17 + (dest.getZ() + 0.5) * 0.83;
-            EntityPlayerSP player = ctx.player();
             state.setTarget(new MovementState.MovementTarget(
-                    new Rotation(RotationUtils.calcRotationFromVec3d(ctx.playerHead(),
+                    RotationUtils.calcRotationFromVec3d(ctx.playerHead(),
                             new Vec3d(destX, dest.getY(), destZ),
-                            new Rotation(player.rotationYaw, player.rotationPitch)).getYaw(), player.rotationPitch),
+                            ctx.playerRotations()).withPitch(ctx.playerRotations().getPitch()),
                     false
             )).setInput(Input.MOVE_FORWARD, true);
             return state;

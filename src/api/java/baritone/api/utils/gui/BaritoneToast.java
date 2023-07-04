@@ -17,6 +17,7 @@
 
 package baritone.api.utils.gui;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.toasts.GuiToast;
 import net.minecraft.client.gui.toasts.IToast;
 import net.minecraft.client.renderer.GlStateManager;
@@ -73,6 +74,6 @@ public class BaritoneToast implements IToast {
     }
 
     public static void addOrUpdate(ITextComponent title, ITextComponent subtitle) {
-        addOrUpdate(net.minecraft.client.Minecraft.getInstance().getToastGui(), title, subtitle, baritone.api.BaritoneAPI.getSettings().toastTimer.value);
+        addOrUpdate(Minecraft.getInstance().getToastGui(), title, subtitle, baritone.api.BaritoneAPI.getSettings().toastTimer.value);
     }
 }

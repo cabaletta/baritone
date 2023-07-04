@@ -118,21 +118,11 @@ public class GuiClick extends GuiScreen {
             // drawSingleSelectionBox WHEN?
             PathRenderer.drawManySelectionBoxes(e, Collections.singletonList(currentMouseOver), Color.CYAN);
             if (clickStart != null && !clickStart.equals(currentMouseOver)) {
-                GlStateManager.enableBlend();
-                GlStateManager.blendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
-                GlStateManager.color4f(Color.RED.getColorComponents(null)[0], Color.RED.getColorComponents(null)[1], Color.RED.getColorComponents(null)[2], 0.4F);
-                GlStateManager.lineWidth(Baritone.settings().pathRenderLineWidthPixels.value);
-                GlStateManager.disableTexture2D();
-                GlStateManager.depthMask(false);
-                GlStateManager.disableDepthTest();
+                IRenderer.startLines(Color.RED, Baritone.settings().pathRenderLineWidthPixels.value, true);
                 BetterBlockPos a = new BetterBlockPos(currentMouseOver);
                 BetterBlockPos b = new BetterBlockPos(clickStart);
-                IRenderer.drawAABB(new AxisAlignedBB(Math.min(a.x, b.x), Math.min(a.y, b.y), Math.min(a.z, b.z), Math.max(a.x, b.x) + 1, Math.max(a.y, b.y) + 1, Math.max(a.z, b.z) + 1));
-                GlStateManager.enableDepthTest();
-
-                GlStateManager.depthMask(true);
-                GlStateManager.enableTexture2D();
-                GlStateManager.disableBlend();
+                IRenderer.emitAABB(new AxisAlignedBB(Math.min(a.x, b.x), Math.min(a.y, b.y), Math.min(a.z, b.z), Math.max(a.x, b.x) + 1, Math.max(a.y, b.y) + 1, Math.max(a.z, b.z) + 1));
+                IRenderer.endLines(true);
             }
         }
     }

@@ -239,11 +239,11 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         if (current != null) {
             switch (event.getState()) {
                 case PRE:
-                    lastAutoJump = mc.gameSettings.autoJump;
-                    mc.gameSettings.autoJump = false;
+                    lastAutoJump = ctx.minecraft().gameSettings.autoJump;
+                    ctx.minecraft().gameSettings.autoJump = false;
                     break;
                 case POST:
-                    mc.gameSettings.autoJump = lastAutoJump;
+                    ctx.minecraft().gameSettings.autoJump = lastAutoJump;
                     break;
                 default:
                     break;
