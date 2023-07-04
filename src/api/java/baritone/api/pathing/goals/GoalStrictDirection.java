@@ -17,6 +17,7 @@
 
 package baritone.api.pathing.goals;
 
+import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.SettingsUtil;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
@@ -67,6 +68,31 @@ public class GoalStrictDirection implements Goal {
     @Override
     public double heuristic() {
         return Double.NEGATIVE_INFINITY;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        GoalStrictDirection goal = (GoalStrictDirection) o;
+        return x == goal.x
+                && y == goal.y
+                && z == goal.z
+                && dx == goal.dx
+                && dz == goal.dz;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = (int) BetterBlockPos.longHash(x, y, z);
+        hash = hash * 630627507 + dx;
+        hash = hash * -283028380 + dz;
+        return hash;
     }
 
     @Override

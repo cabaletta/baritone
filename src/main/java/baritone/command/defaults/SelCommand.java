@@ -21,6 +21,7 @@ import baritone.Baritone;
 import baritone.api.IBaritone;
 import baritone.api.command.Command;
 import baritone.api.command.argument.IArgConsumer;
+import baritone.api.command.datatypes.ForAxis;
 import baritone.api.command.datatypes.ForBlockOptionalMeta;
 import baritone.api.command.datatypes.ForDirection;
 import baritone.api.command.datatypes.RelativeBlockPos;
@@ -31,6 +32,8 @@ import baritone.api.command.helpers.TabCompleteHelper;
 import baritone.api.event.events.RenderEvent;
 import baritone.api.event.listener.AbstractGameEventListener;
 import baritone.api.schematic.*;
+import baritone.api.schematic.mask.shape.CylinderMask;
+import baritone.api.schematic.mask.shape.SphereMask;
 import baritone.api.selection.ISelection;
 import baritone.api.selection.ISelectionManager;
 import baritone.api.utils.BetterBlockPos;
@@ -49,6 +52,7 @@ import java.awt.*;
 import java.util.List;
 import java.util.*;
 import java.util.function.Function;
+import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
 public class SelCommand extends Command {
@@ -71,7 +75,7 @@ public class SelCommand extends Command {
                 float lineWidth = Baritone.settings().selectionLineWidth.value;
                 boolean ignoreDepth = Baritone.settings().renderSelectionIgnoreDepth.value;
                 IRenderer.startLines(color, opacity, lineWidth, ignoreDepth);
-                IRenderer.drawAABB(event.getModelViewStack(), new AxisAlignedBB(pos1, pos1.add(1, 1, 1)));
+                IRenderer.emitAABB(event.getModelViewStack(), new AxisAlignedBB(pos1, pos1.add(1, 1, 1)));
                 IRenderer.endLines(ignoreDepth);
             }
         });
@@ -87,7 +91,7 @@ public class SelCommand extends Command {
             if (action == Action.POS2 && pos1 == null) {
                 throw new CommandInvalidStateException("Set pos1 first before using pos2");
             }
-            BetterBlockPos playerPos = mc.getRenderViewEntity() != null ? BetterBlockPos.from(mc.getRenderViewEntity().getPosition()) : ctx.playerFeet();
+            BetterBlockPos playerPos = ctx.viewerPos();
             BetterBlockPos pos = args.hasAny() ? args.getDatatypePost(RelativeBlockPos.INSTANCE, playerPos) : playerPos;
             args.requireMax(0);
             if (action == Action.POS1) {
@@ -116,11 +120,13 @@ public class SelCommand extends Command {
                     logDirect("Undid pos2");
                 }
             }
-        } else if (action == Action.SET || action == Action.WALLS || action == Action.SHELL || action == Action.CLEARAREA || action == Action.REPLACE) {
+        } else if (action.isFillAction()) {
             BlockOptionalMeta type = action == Action.CLEARAREA
                     ? new BlockOptionalMeta(Blocks.AIR)
                     : args.getDatatypeFor(ForBlockOptionalMeta.INSTANCE);
-            BlockOptionalMetaLookup replaces = null;
+
+            final BlockOptionalMetaLookup replaces; // Action.REPLACE
+            final Direction.Axis alignment;         // Action.(H)CYLINDER
             if (action == Action.REPLACE) {
                 args.requireMin(1);
                 List<BlockOptionalMeta> replacesList = new ArrayList<>();
@@ -130,8 +136,15 @@ public class SelCommand extends Command {
                 }
                 type = args.getDatatypeFor(ForBlockOptionalMeta.INSTANCE);
                 replaces = new BlockOptionalMetaLookup(replacesList.toArray(new BlockOptionalMeta[0]));
+                alignment = null;
+            } else if (action == Action.CYLINDER || action == Action.HCYLINDER) {
+                args.requireMax(1);
+                alignment = args.hasAny() ? args.getDatatypeFor(ForAxis.INSTANCE) : Direction.Axis.Y;
+                replaces = null;
             } else {
                 args.requireMax(0);
+                replaces = null;
+                alignment = null;
             }
             ISelection[] selections = manager.getSelections();
             if (selections.length == 0) {
@@ -150,20 +163,41 @@ public class SelCommand extends Command {
             for (ISelection selection : selections) {
                 Vector3i size = selection.size();
                 BetterBlockPos min = selection.min();
-                ISchematic schematic = new FillSchematic(size.getX(), size.getY(), size.getZ(), type);
-                if (action == Action.WALLS) {
-                    schematic = new WallsSchematic(schematic);
-                } else if (action == Action.SHELL) {
-                    schematic = new ShellSchematic(schematic);
-                } else if (action == Action.REPLACE) {
-                    schematic = new ReplaceSchematic(schematic, replaces);
-                }
+
+                // Java 8 so no switch expressions 😿
+                UnaryOperator<ISchematic> create = fill -> {
+                    final int w = fill.widthX();
+                    final int h = fill.heightY();
+                    final int l = fill.lengthZ();
+
+                    switch (action) {
+                        case WALLS:
+                            return new WallsSchematic(fill);
+                        case SHELL:
+                            return new ShellSchematic(fill);
+                        case REPLACE:
+                            return new ReplaceSchematic(fill, replaces);
+                        case SPHERE:
+                            return MaskSchematic.create(fill, new SphereMask(w, h, l, true).compute());
+                        case HSPHERE:
+                            return MaskSchematic.create(fill, new SphereMask(w, h, l, false).compute());
+                        case CYLINDER:
+                            return MaskSchematic.create(fill, new CylinderMask(w, h, l, true, alignment).compute());
+                        case HCYLINDER:
+                            return MaskSchematic.create(fill, new CylinderMask(w, h, l, false, alignment).compute());
+                        default:
+                            // Silent fail
+                            return fill;
+                    }
+                };
+
+                ISchematic schematic = create.apply(new FillSchematic(size.getX(), size.getY(), size.getZ(), type));
                 composite.put(schematic, min.x - origin.x, min.y - origin.y, min.z - origin.z);
             }
             baritone.getBuilderProcess().build("Fill", composite, origin);
             logDirect("Filling now");
         } else if (action == Action.COPY) {
-            BetterBlockPos playerPos = mc.getRenderViewEntity() != null ? BetterBlockPos.from(mc.getRenderViewEntity().getPosition()) : ctx.playerFeet();
+            BetterBlockPos playerPos = ctx.viewerPos();
             BetterBlockPos pos = args.hasAny() ? args.getDatatypePost(RelativeBlockPos.INSTANCE, playerPos) : playerPos;
             args.requireMax(0);
             ISelection[] selections = manager.getSelections();
@@ -204,7 +238,7 @@ public class SelCommand extends Command {
             clipboardOffset = origin.subtract(pos);
             logDirect("Selection copied");
         } else if (action == Action.PASTE) {
-            BetterBlockPos playerPos = mc.getRenderViewEntity() != null ? BetterBlockPos.from(mc.getRenderViewEntity().getPosition()) : ctx.playerFeet();
+            BetterBlockPos playerPos = ctx.viewerPos();
             BetterBlockPos pos = args.hasAny() ? args.getDatatypePost(RelativeBlockPos.INSTANCE, playerPos) : playerPos;
             args.requireMax(0);
             if (clipboard == null) {
@@ -253,12 +287,15 @@ public class SelCommand extends Command {
                     if (args.hasAtMost(3)) {
                         return args.tabCompleteDatatype(RelativeBlockPos.INSTANCE);
                     }
-                } else if (action == Action.SET || action == Action.WALLS || action == Action.CLEARAREA || action == Action.REPLACE) {
+                } else if (action.isFillAction()) {
                     if (args.hasExactlyOne() || action == Action.REPLACE) {
                         while (args.has(2)) {
                             args.get();
                         }
                         return args.tabCompleteDatatype(ForBlockOptionalMeta.INSTANCE);
+                    } else if (args.hasExactly(2) && (action == Action.CYLINDER || action == Action.HCYLINDER)) {
+                        args.get();
+                        return args.tabCompleteDatatype(ForAxis.INSTANCE);
                     }
                 } else if (action == Action.EXPAND || action == Action.CONTRACT || action == Action.SHIFT) {
                     if (args.hasExactlyOne()) {
@@ -304,6 +341,10 @@ public class SelCommand extends Command {
                 "> sel set/fill/s/f [block] - Completely fill all selections with a block.",
                 "> sel walls/w [block] - Fill in the walls of the selection with a specified block.",
                 "> sel shell/shl [block] - The same as walls, but fills in a ceiling and floor too.",
+                "> sel sphere/sph [block] - Fills the selection with a sphere bounded by the sides.",
+                "> sel hsphere/hsph [block] - The same as sphere, but hollow.",
+                "> sel cylinder/cyl [block] <axis> - Fills the selection with a cylinder bounded by the sides, oriented about the given axis. (default=y)",
+                "> sel hcylinder/hcyl [block] <axis> - The same as cylinder, but hollow.",
                 "> sel cleararea/ca - Basically 'set air'.",
                 "> sel replace/r <blocks...> <with> - Replaces blocks with another block.",
                 "> sel copy/cp <x> <y> <z> - Copy the selected area relative to the specified or your position.",
@@ -323,6 +364,10 @@ public class SelCommand extends Command {
         SET("set", "fill", "s", "f"),
         WALLS("walls", "w"),
         SHELL("shell", "shl"),
+        SPHERE("sphere", "sph"),
+        HSPHERE("hsphere", "hsph"),
+        CYLINDER("cylinder", "cyl"),
+        HCYLINDER("hcylinder", "hcyl"),
         CLEARAREA("cleararea", "ca"),
         REPLACE("replace", "r"),
         EXPAND("expand", "ex"),
@@ -353,6 +398,18 @@ public class SelCommand extends Command {
                 names.addAll(Arrays.asList(action.names));
             }
             return names.toArray(new String[0]);
+        }
+
+        public final boolean isFillAction() {
+            return this == SET
+                    || this == WALLS
+                    || this == SHELL
+                    || this == SPHERE
+                    || this == HSPHERE
+                    || this == CYLINDER
+                    || this == HCYLINDER
+                    || this == CLEARAREA
+                    || this == REPLACE;
         }
     }
 
