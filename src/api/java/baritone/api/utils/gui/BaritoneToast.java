@@ -18,6 +18,7 @@
 package baritone.api.utils.gui;
 
 import com.mojang.blaze3d.platform.GlStateManager;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.toasts.IToast;
 import net.minecraft.client.gui.toasts.ToastGui;
 import net.minecraft.util.ResourceLocation;
@@ -73,6 +74,6 @@ public class BaritoneToast implements IToast {
     }
 
     public static void addOrUpdate(ITextComponent title, ITextComponent subtitle) {
-        addOrUpdate(net.minecraft.client.Minecraft.getInstance().getToastGui(), title, subtitle, baritone.api.BaritoneAPI.getSettings().toastTimer.value);
+        addOrUpdate(Minecraft.getInstance().getToastGui(), title, subtitle, baritone.api.BaritoneAPI.getSettings().toastTimer.value);
     }
 }

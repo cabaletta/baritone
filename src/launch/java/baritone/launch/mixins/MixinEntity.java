@@ -23,6 +23,7 @@ import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -33,21 +34,25 @@ public class MixinEntity {
     @Shadow
     private float rotationYaw;
 
-    float yawRestore;
+    @Shadow
+    private float rotationPitch;
+
+    @Unique
+    private RotationMoveEvent motionUpdateRotationEvent;
 
     @Inject(
             method = "moveRelative",
             at = @At("HEAD")
     )
     private void moveRelativeHead(CallbackInfo info) {
-        this.yawRestore = this.rotationYaw;
         // noinspection ConstantConditions
         if (!ClientPlayerEntity.class.isInstance(this) || BaritoneAPI.getProvider().getBaritoneForPlayer((ClientPlayerEntity) (Object) this) == null) {
             return;
         }
-        RotationMoveEvent motionUpdateRotationEvent = new RotationMoveEvent(RotationMoveEvent.Type.MOTION_UPDATE, this.rotationYaw);
+        this.motionUpdateRotationEvent = new RotationMoveEvent(RotationMoveEvent.Type.MOTION_UPDATE, this.rotationYaw, this.rotationPitch);
         BaritoneAPI.getProvider().getBaritoneForPlayer((ClientPlayerEntity) (Object) this).getGameEventHandler().onPlayerRotationMove(motionUpdateRotationEvent);
-        this.rotationYaw = motionUpdateRotationEvent.getYaw();
+        this.rotationYaw = this.motionUpdateRotationEvent.getYaw();
+        this.rotationPitch = this.motionUpdateRotationEvent.getPitch();
     }
 
     @Inject(
@@ -55,6 +60,10 @@ public class MixinEntity {
             at = @At("RETURN")
     )
     private void moveRelativeReturn(CallbackInfo info) {
-        this.rotationYaw = this.yawRestore;
+        if (this.motionUpdateRotationEvent != null) {
+            this.rotationYaw = this.motionUpdateRotationEvent.getOriginal().getYaw();
+            this.rotationPitch = this.motionUpdateRotationEvent.getOriginal().getPitch();
+            this.motionUpdateRotationEvent = null;
+        }
     }
 }
