@@ -237,6 +237,8 @@ public final class InventoryBehavior extends Behavior implements Helper {
                         });
                     }
                     break;
+                default:
+                    break;
             }
         }
         return null;
