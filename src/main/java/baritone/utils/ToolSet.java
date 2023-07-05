@@ -20,6 +20,7 @@ package baritone.utils;
 import baritone.Baritone;
 import baritone.PerformanceCritical;
 import baritone.utils.accessor.IItemTool;
+import it.unimi.dsi.fastutil.HashCommon;
 import it.unimi.dsi.fastutil.objects.Reference2DoubleOpenHashMap;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -31,7 +32,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemSword;
 import net.minecraft.item.ItemTool;
 
-import java.util.function.Function;
+import java.util.function.ToDoubleFunction;
 
 /**
  * A cached list of the best tools on the hotbar for any block
@@ -44,23 +45,22 @@ public final class ToolSet {
      * A cache mapping a {@link Block} to how long it will take to break
      * with this toolset, given the optimum tool is used.
      */
-    private final Reference2DoubleOpenHashMap<Block> breakStrengthCache;
+    private final Cache breakStrengthCache;
 
     /**
      * My buddy leijurv owned me so we have this to not create a new lambda instance.
      */
-    private final Function<Block, Double> backendCalculation;
+    private final ToDoubleFunction<Block> backendCalculation;
 
     private final EntityPlayerSP player;
 
     public ToolSet(EntityPlayerSP player) {
-        this.breakStrengthCache = new Reference2DoubleOpenHashMap<>();
+        this.breakStrengthCache = new Cache();
         this.player = player;
 
         if (Baritone.settings().considerPotionEffects.value) {
-            double amplifier = potionAmplifier();
-            Function<Double, Double> amplify = x -> amplifier * x;
-            this.backendCalculation = amplify.compose(this::getBestDestructionTime);
+            double amplifier = this.potionAmplifier();
+            this.backendCalculation = block -> amplifier * this.getBestDestructionTime(block);
         } else {
             this.backendCalculation = this::getBestDestructionTime;
         }
@@ -74,8 +74,6 @@ public final class ToolSet {
      */
     @PerformanceCritical
     public double getStrVsBlock(IBlockState state) {
-        // fastutil 8+ has a computeIfAbsent overload that uses a primitive mapping function
-        // for now, we're stuck with the boxed implementation
         return this.breakStrengthCache.computeIfAbsent(state.getBlock(), this.backendCalculation);
     }
 
@@ -85,7 +83,7 @@ public final class ToolSet {
      * but in that case we don't really care.
      *
      * @param itemStack a possibly empty ItemStack
-     * @return values from 0 up
+     * @return The tool's harvest level, or {@code -1} if the stack isn't a tool
      */
     private int getMaterialCost(ItemStack itemStack) {
         if (itemStack.getItem() instanceof ItemTool) {
@@ -228,5 +226,60 @@ public final class ToolSet {
             }
         }
         return speed;
+    }
+
+    /*
+     * Copyright (C) 2002-2022 Sebastiano Vigna
+     *
+     * Licensed under the Apache License, Version 2.0 (the "License");
+     * you may not use this file except in compliance with the License.
+     * You may obtain a copy of the License at
+     *
+     *     http://www.apache.org/licenses/LICENSE-2.0
+     *
+     * Unless required by applicable law or agreed to in writing, software
+     * distributed under the License is distributed on an "AS IS" BASIS,
+     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     * See the License for the specific language governing permissions and
+     * limitations under the License.
+     */
+    private static final class Cache extends Reference2DoubleOpenHashMap<Block> {
+
+        public double computeIfAbsent(final Block key, final ToDoubleFunction<Block> mappingFunction) {
+            int pos = this.find(key);
+            if (pos >= 0) {
+                return this.value[pos];
+            } else {
+                double newValue = mappingFunction.applyAsDouble(key);
+                this.insert(-pos - 1, key, newValue);
+                return newValue;
+            }
+        }
+
+        private int find(final Block k) {
+            if (((k) == (null))) return containsNullKey ? n : -(n + 1);
+            Block curr;
+            final Block[] key = this.key;
+            int pos;
+            // The starting point.
+            if (((curr = key[pos = (it.unimi.dsi.fastutil.HashCommon.mix(System.identityHashCode(k))) & mask]) == (null))) return -(pos + 1);
+            if (((k) == (curr))) return pos;
+            // There's always an unused entry.
+            while (true) {
+                if (((curr = key[pos = (pos + 1) & mask]) == (null))) return -(pos + 1);
+                if (((k) == (curr))) return pos;
+            }
+        }
+
+        private void insert(int pos, Block k, double v) {
+            if (pos == this.n) {
+                this.containsNullKey = true;
+            }
+            this.key[pos] = k;
+            this.value[pos] = v;
+            if (this.size++ >= this.maxFill) {
+                this.rehash(HashCommon.arraySize(this.size + 1, this.f));
+            }
+        }
     }
 }
