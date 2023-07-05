@@ -80,6 +80,13 @@ public final class InventorySlot {
         return this.type;
     }
 
+    /**
+     * Returns the index of this slot in {@code mainInventory}. If this slot does not correspond to an index into
+     * {@code mainInventory}, then an {@link IllegalArgumentException} is thrown.
+     *
+     * @return The index of this slot in the player's {@code mainInventory}
+     * @throws IllegalArgumentException if type is not {@link Type#HOTBAR} or {@link Type#INVENTORY}
+     */
     public int getInventoryIndex() {
         switch (this.getType()) {
             case HOTBAR:
@@ -91,18 +98,20 @@ public final class InventorySlot {
         }
     }
 
-    public static InventorySlot hotbar(final int index) {
-        if (index < 0 || index >= 9) {
-            throw new IllegalArgumentException();
+    public static InventorySlot inventory(final int index) {
+        if (index >= 0 && index < 9) {
+            return SLOTS[index + 36]; // HOTBAR
+        } else if (index >= 9 && index < 36) {
+            return SLOTS[index];      // INVENTORY
         }
-        return SLOTS[index + 36];
+        throw new IllegalArgumentException();
     }
 
-    public static InventorySlot inventory(final int index) {
-        if (index < 9 || index >= 36) {
+    public static InventorySlot armor(final int index) {
+        if (index < 0 || index >= 4) {
             throw new IllegalArgumentException();
         }
-        return SLOTS[index];
+        return SLOTS[index + 5];
     }
 
     public static InventorySlot offhand() {

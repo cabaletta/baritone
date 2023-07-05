@@ -86,9 +86,9 @@ public final class InventoryBehavior extends Behavior implements Helper {
             return;
         }
 
-        final InventorySlot pick = bestToolAgainst(Blocks.STONE, ItemPickaxe.class);
+        final InventorySlot pick = this.bestToolAgainst(Blocks.STONE, ItemPickaxe.class);
         if (pick != null && pick.getType() == InventorySlot.Type.INVENTORY) {
-            requestSwapWithHotBar(pick.getInventoryIndex(), 0);
+            this.requestSwapWithHotBar(pick.getInventoryIndex(), 0);
         }
     }
 

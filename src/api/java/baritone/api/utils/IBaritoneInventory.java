@@ -27,8 +27,9 @@ import java.util.stream.Stream;
 public interface IBaritoneInventory {
 
     /**
-     * Returns a stream containing all the player's regular inventory slots and items. In the order of hotbar, offhand,
-     * then main inventory, for a total of 37 slots. This explicitly does not contain the armor slots or crafting grid.
+     * Returns a stream containing all the player's regular inventory slots and items. The elements of the stream are in
+     * the order of hotbar, offhand, then main inventory, for a total of 37 slots. This explicitly does not contain the
+     * armor slots or crafting grid, which may otherwise be accessed with {@link #armorSlots()} and/or {@link #itemAt}.
      *
      * @return All the player's inventory slots and items
      */
@@ -39,4 +40,8 @@ public interface IBaritoneInventory {
     Stream<Pair<InventorySlot, ItemStack>> inventorySlots();
 
     Pair<InventorySlot, ItemStack> offhand();
+
+    Stream<Pair<InventorySlot, ItemStack>> armorSlots();
+
+    ItemStack itemAt(InventorySlot slot);
 }

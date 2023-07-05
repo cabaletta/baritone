@@ -45,18 +45,30 @@ public final class BaritoneInventory implements IBaritoneInventory {
 
     @Override
     public Stream<Pair<InventorySlot, ItemStack>> hotbarSlots() {
-        return IntStream.range(0, 9).mapToObj(i ->
-                new Pair<>(InventorySlot.hotbar(i), ctx.player().inventory.mainInventory.get(i)));
+        return IntStream.range(0, 9).mapToObj(InventorySlot::inventory).map(this::itemSlotPairAt);
     }
 
     @Override
     public Stream<Pair<InventorySlot, ItemStack>> inventorySlots() {
-        return IntStream.range(9, 36).mapToObj(i ->
-                new Pair<>(InventorySlot.inventory(i), ctx.player().inventory.mainInventory.get(i)));
+        return IntStream.range(9, 36).mapToObj(InventorySlot::inventory).map(this::itemSlotPairAt);
     }
 
     @Override
     public Pair<InventorySlot, ItemStack> offhand() {
         return new Pair<>(InventorySlot.offhand(), ctx.player().inventory.offHandInventory.get(0));
+    }
+
+    @Override
+    public Stream<Pair<InventorySlot, ItemStack>> armorSlots() {
+        return IntStream.range(0, 4).mapToObj(InventorySlot::armor).map(this::itemSlotPairAt);
+    }
+
+    @Override
+    public ItemStack itemAt(InventorySlot slot) {
+        return ctx.player().inventoryContainer.getSlot(slot.getSlotId()).getStack();
+    }
+
+    private Pair<InventorySlot, ItemStack> itemSlotPairAt(InventorySlot slot) {
+        return new Pair<>(slot, this.itemAt(slot));
     }
 }
