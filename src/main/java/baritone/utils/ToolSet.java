@@ -258,8 +258,8 @@ public final class ToolSet {
 
         private int find(final Block k) {
             if (((k) == (null))) return containsNullKey ? n : -(n + 1);
-            Block curr;
-            final Block[] key = this.key;
+            Object curr;
+            final Object[] key = this.key;
             int pos;
             // The starting point.
             if (((curr = key[pos = (it.unimi.dsi.fastutil.HashCommon.mix(System.identityHashCode(k))) & mask]) == (null))) return -(pos + 1);
@@ -275,7 +275,8 @@ public final class ToolSet {
             if (pos == this.n) {
                 this.containsNullKey = true;
             }
-            this.key[pos] = k;
+            final Object[] key = this.key;
+            key[pos] = k;
             this.value[pos] = v;
             if (this.size++ >= this.maxFill) {
                 this.rehash(HashCommon.arraySize(this.size + 1, this.f));
