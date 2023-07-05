@@ -178,7 +178,16 @@ public final class ToolSet {
      * @return how long it would take in ticks
      */
     public static double calculateSpeedVsBlock(ItemStack item, IBlockState state) {
-        float hardness = state.getBlockHardness(null, null);
+        float hardness;
+        try {
+            // noinspection DataFlowIssue
+            hardness = state.getBlockHardness(null, null);
+        } catch (NullPointerException ignored) {
+            // Just catch the exception and act as if the block is unbreakable. Even in situations where we could
+            // reasonably determine the hardness by passing the correct world/position (not via 'getStrVsBlock' during
+            // performance critical cost calculation), it's not worth it for the sake of consistency.
+            return -1;
+        }
         if (hardness < 0) {
             return -1;
         }
