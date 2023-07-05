@@ -40,6 +40,8 @@ public interface IPlayerContext {
 
     IPlayerController playerController();
 
+    IBaritoneInventory inventory();
+
     World world();
 
     IWorldData worldData();

@@ -38,11 +38,13 @@ public final class BaritonePlayerContext implements IPlayerContext {
     private final Baritone baritone;
     private final Minecraft mc;
     private final IPlayerController playerController;
+    private final IBaritoneInventory inventory;
 
     public BaritonePlayerContext(Baritone baritone, Minecraft mc) {
         this.baritone = baritone;
         this.mc = mc;
         this.playerController = new BaritonePlayerController(mc);
+        this.inventory = new BaritoneInventory(this);
     }
 
     @Override
@@ -58,6 +60,11 @@ public final class BaritonePlayerContext implements IPlayerContext {
     @Override
     public IPlayerController playerController() {
         return this.playerController;
+    }
+
+    @Override
+    public IBaritoneInventory inventory() {
+        return this.player() == null ? null : this.inventory;
     }
 
     @Override
