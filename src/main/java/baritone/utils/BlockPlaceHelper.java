@@ -18,14 +18,13 @@
 package baritone.utils;
 
 import baritone.Baritone;
-import baritone.api.utils.Helper;
 import baritone.api.utils.IPlayerContext;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.RayTraceResult;
 
-public class BlockPlaceHelper implements Helper {
+public class BlockPlaceHelper {
 
     private final IPlayerContext ctx;
     private int rightClickTimer;

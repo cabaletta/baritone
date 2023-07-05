@@ -23,10 +23,16 @@ import net.minecraft.block.Block;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.registry.Registry;
 
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 public enum BlockById implements IDatatypeFor<Block> {
     INSTANCE;
+
+    /**
+     * Matches (domain:)?name? where domain and name are [a-z0-9_.-]+ and [a-z0-9/_.-]+ respectively.
+     */
+    private static Pattern PATTERN = Pattern.compile("(?:[a-z0-9_.-]+:)?[a-z0-9/_.-]*");
 
     @Override
     public Block get(IDatatypeContext ctx) throws CommandException {
@@ -40,13 +46,19 @@ public enum BlockById implements IDatatypeFor<Block> {
 
     @Override
     public Stream<String> tabComplete(IDatatypeContext ctx) throws CommandException {
+        String arg = ctx.getConsumer().getString();
+
+        if (!PATTERN.matcher(arg).matches()) {
+            return Stream.empty();
+        }
+
         return new TabCompleteHelper()
                 .append(
                         Registry.BLOCK.keySet()
                                 .stream()
                                 .map(Object::toString)
                 )
-                .filterPrefixNamespaced(ctx.getConsumer().getString())
+                .filterPrefixNamespaced(arg)
                 .sortAlphabetically()
                 .stream();
     }

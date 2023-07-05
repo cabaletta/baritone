@@ -25,11 +25,15 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.world.World;
+import net.minecraft.util.math.vector.Vector3d;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+import java.util.Optional;
 
 import static org.objectweb.asm.Opcodes.GETFIELD;
 
@@ -43,7 +47,11 @@ public abstract class MixinLivingEntity extends Entity {
     /**
      * Event called to override the movement direction when jumping
      */
+    @Unique
     private RotationMoveEvent jumpRotationEvent;
+
+    @Unique
+    private RotationMoveEvent elytraRotationEvent;
 
     public MixinLivingEntity(EntityType<?> entityTypeIn, World worldIn) {
         super(entityTypeIn, worldIn);
@@ -54,14 +62,10 @@ public abstract class MixinLivingEntity extends Entity {
             at = @At("HEAD")
     )
     private void preMoveRelative(CallbackInfo ci) {
-        // noinspection ConstantConditions
-        if (ClientPlayerEntity.class.isInstance(this)) {
-            IBaritone baritone = BaritoneAPI.getProvider().getBaritoneForPlayer((ClientPlayerEntity) (Object) this);
-            if (baritone != null) {
-                this.jumpRotationEvent = new RotationMoveEvent(RotationMoveEvent.Type.JUMP, this.rotationYaw);
-                baritone.getGameEventHandler().onPlayerRotationMove(this.jumpRotationEvent);
-            }
-        }
+        this.getBaritone().ifPresent(baritone -> {
+            this.jumpRotationEvent = new RotationMoveEvent(RotationMoveEvent.Type.JUMP, this.rotationYaw, this.rotationPitch);
+            baritone.getGameEventHandler().onPlayerRotationMove(this.jumpRotationEvent);
+        });
     }
 
     @Redirect(
@@ -79,5 +83,45 @@ public abstract class MixinLivingEntity extends Entity {
         return self.rotationYaw;
     }
 
+    @Inject(
+            method = "travel",
+            at = @At(
+                    value = "INVOKE",
+                    target = "net/minecraft/entity/LivingEntity.getLookVec()Lnet/minecraft/util/math/vector/Vector3d;"
+            )
+    )
+    private void onPreElytraMove(Vector3d direction, CallbackInfo ci) {
+        this.getBaritone().ifPresent(baritone -> {
+            this.elytraRotationEvent = new RotationMoveEvent(RotationMoveEvent.Type.MOTION_UPDATE, this.rotationYaw, this.rotationPitch);
+            baritone.getGameEventHandler().onPlayerRotationMove(this.elytraRotationEvent);
+            this.rotationYaw = this.elytraRotationEvent.getYaw();
+            this.rotationPitch = this.elytraRotationEvent.getPitch();
+        });
+    }
 
+    @Inject(
+            method = "travel",
+            at = @At(
+                    value = "INVOKE",
+                    target = "net/minecraft/entity/Entity.move(Lnet/minecraft/entity/MoverType;Lnet/minecraft/util/math/vector/Vector3d;)V",
+                    shift = At.Shift.AFTER
+            )
+    )
+    private void onPostElytraMove(float strafe, float vertical, float forward, CallbackInfo ci) {
+        if (this.elytraRotationEvent != null) {
+            this.rotationYaw = this.elytraRotationEvent.getOriginal().getYaw();
+            this.rotationPitch = this.elytraRotationEvent.getOriginal().getPitch();
+            this.elytraRotationEvent = null;
+        }
+    }
+
+    @Unique
+    private Optional<IBaritone> getBaritone() {
+        // noinspection ConstantConditions
+        if (ClientPlayerEntity.class.isInstance(this)) {
+            return Optional.ofNullable(BaritoneAPI.getProvider().getBaritoneForPlayer((ClientPlayerEntity) (Object) this));
+        } else {
+            return Optional.empty();
+        }
+    }
 }
