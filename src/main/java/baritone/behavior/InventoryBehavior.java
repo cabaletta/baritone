@@ -22,22 +22,19 @@ import baritone.api.event.events.TickEvent;
 import baritone.api.utils.Helper;
 import baritone.api.utils.InventorySlot;
 import baritone.api.utils.Pair;
+import baritone.utils.ItemInteractionHelper;
 import baritone.utils.ToolSet;
-import it.unimi.dsi.fastutil.objects.Reference2BooleanMap;
-import it.unimi.dsi.fastutil.objects.Reference2BooleanOpenHashMap;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.inventory.ClickType;
 import net.minecraft.item.*;
-import net.minecraft.util.*;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.util.EnumFacing;
 
-import javax.annotation.Nonnull;
-import java.lang.reflect.Method;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.OptionalInt;
+import java.util.Random;
 import java.util.function.IntPredicate;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -326,67 +323,5 @@ public final class InventoryBehavior extends Behavior implements Helper {
 
     public enum SelectionType {
         IMMEDIATE, ENQUEUED
-    }
-
-    private static final class ItemInteractionHelper {
-
-        private static final Reference2BooleanMap<Class<? extends Item>> CACHE = new Reference2BooleanOpenHashMap<>();
-
-        public static boolean couldInteract(final ItemStack stack) {
-            if (stack.isEmpty()) {
-                return false;
-            }
-
-            return CACHE.computeIfAbsent(stack.getItem().getClass(), itemClass -> {
-                try {
-                    final Method onItemUse        = itemClass.getMethod(Helper1.name, Helper1.parameters);
-                    final Method onItemRightClick = itemClass.getMethod(Helper2.name, Helper2.parameters);
-
-                    // If the declaring class isn't Item, then the method is overridden
-                    return onItemUse.getDeclaringClass() != Item.class
-                            || onItemRightClick.getDeclaringClass() != Item.class;
-                } catch (NoSuchMethodException ignored) {
-                    // this shouldn't happen
-                    return true;
-                }
-            });
-        }
-
-        private static final class Helper1 extends Item {
-
-            public static final String name;
-            public static final Class<?>[] parameters;
-            static {
-                final Method method = Helper1.class.getDeclaredMethods()[0];
-                name = method.getName();
-                parameters = method.getParameterTypes();
-            }
-
-            @Nonnull
-            @Override
-            public EnumActionResult onItemUse(@Nonnull EntityPlayer player, @Nonnull World worldIn,
-                                              @Nonnull BlockPos pos, @Nonnull EnumHand hand,
-                                              @Nonnull EnumFacing facing, float hitX, float hitY, float hitZ) {
-                return super.onItemUse(player, worldIn, pos, hand, facing, hitX, hitY, hitZ);
-            }
-        }
-
-        private static final class Helper2 extends Item {
-
-            public static final String name;
-            public static final Class<?>[] parameters;
-            static {
-                final Method method = Helper2.class.getDeclaredMethods()[0];
-                name = method.getName();
-                parameters = method.getParameterTypes();
-            }
-
-            @Nonnull
-            @Override
-            public ActionResult<ItemStack> onItemRightClick(@Nonnull World worldIn, @Nonnull EntityPlayer playerIn,
-                                                            @Nonnull EnumHand handIn) {
-                return super.onItemRightClick(worldIn, playerIn, handIn);
-            }
-        }
     }
 }

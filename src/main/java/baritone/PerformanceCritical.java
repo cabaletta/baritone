@@ -17,6 +17,8 @@
 
 package baritone;
 
+import baritone.pathing.movement.CalculationContext;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -24,7 +26,8 @@ import java.lang.annotation.Target;
 
 /**
  * Annotation that should be used on methods which are performance critical (i.e. called millions of times per second
- * by the pathfinder) and should be modified with care.
+ * by the pathfinder) and should be modified with care. Particularly useful for methods for which this fact is not
+ * obvious, such as those which don't have a {@link CalculationContext} parameter.
  *
  * @author Brady
  */
