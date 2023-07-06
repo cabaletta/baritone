@@ -19,6 +19,8 @@ package baritone.api.command.datatypes;
 
 import baritone.api.command.argument.IArgConsumer;
 import baritone.api.command.exception.CommandException;
+import baritone.api.utils.Helper;
+import net.minecraft.client.Minecraft;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,8 +31,6 @@ import java.nio.file.Path;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.stream.Stream;
-
-import static baritone.api.utils.Helper.HELPER;
 
 public enum RelativeFile implements IDatatypePost<File, File> {
     INSTANCE;
@@ -93,8 +93,13 @@ public enum RelativeFile implements IDatatypePost<File, File> {
                 .filter(s -> !s.contains(" "));
     }
 
+    @Deprecated
     public static File gameDir() {
-        File gameDir = HELPER.mc.gameDirectory.getAbsoluteFile();
+        return gameDir(Helper.mc);
+    }
+
+    public static File gameDir(Minecraft mc) {
+        File gameDir = mc.gameDirectory.getAbsoluteFile();
         if (gameDir.getName().equals(".")) {
             return gameDir.getParentFile();
         }

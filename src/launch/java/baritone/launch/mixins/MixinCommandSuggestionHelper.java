@@ -19,9 +19,12 @@ package baritone.launch.mixins;
 
 import baritone.api.BaritoneAPI;
 import baritone.api.event.events.TabCompleteEvent;
+import com.mojang.brigadier.ParseResults;
 import com.mojang.brigadier.context.StringRange;
 import com.mojang.brigadier.suggestion.Suggestion;
 import com.mojang.brigadier.suggestion.Suggestions;
+import net.minecraft.client.gui.components.CommandSuggestions;
+import net.minecraft.client.gui.components.EditBox;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -33,8 +36,6 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import net.minecraft.client.gui.components.CommandSuggestions;
-import net.minecraft.client.gui.components.EditBox;
 
 /**
  * @author Brady
@@ -52,7 +53,16 @@ public class MixinCommandSuggestionHelper {
     private List<String> commandUsage;
 
     @Shadow
+    private ParseResults currentParse;
+
+    @Shadow
     private CompletableFuture<Suggestions> pendingSuggestions;
+
+    @Shadow
+    private CommandSuggestions.SuggestionsList suggestions;
+
+    @Shadow
+    boolean keepSuggestions;
 
     @Inject(
             method = "updateCommandInfo",
@@ -74,27 +84,32 @@ public class MixinCommandSuggestionHelper {
         if (event.completions != null) {
             ci.cancel();
 
+            this.currentParse = null; // stop coloring
+
+            if (this.keepSuggestions) { // Supress suggestions update when cycling suggestions.
+                return;
+            }
+
+            this.input.setSuggestion(null); // clear old suggestions
+            this.suggestions = null;
             // TODO: Support populating the command usage
             this.commandUsage.clear();
 
             if (event.completions.length == 0) {
                 this.pendingSuggestions = Suggestions.empty();
             } else {
-                int offset = this.input.getValue().endsWith(" ")
-                        ? this.input.getCursorPosition()
-                        : this.input.getValue().lastIndexOf(" ") + 1; // If there is no space this is still 0 haha yes
+                StringRange range = StringRange.between(prefix.lastIndexOf(" ") + 1, prefix.length()); // if there is no space this starts at 0
 
                 List<Suggestion> suggestionList = Stream.of(event.completions)
-                        .map(s -> new Suggestion(StringRange.between(offset, offset + s.length()), s))
+                        .map(s -> new Suggestion(range, s))
                         .collect(Collectors.toList());
 
-                Suggestions suggestions = new Suggestions(
-                        StringRange.between(offset, offset + suggestionList.stream().mapToInt(s -> s.getText().length()).max().orElse(0)),
-                        suggestionList);
+                Suggestions suggestions = new Suggestions(range, suggestionList);
 
                 this.pendingSuggestions = new CompletableFuture<>();
                 this.pendingSuggestions.complete(suggestions);
             }
+            ((CommandSuggestions) (Object) this).showSuggestions(true); // actually populate the suggestions list from the suggestions future
         }
     }
 }

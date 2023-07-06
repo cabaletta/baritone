@@ -43,8 +43,10 @@ public interface Helper {
     Helper HELPER = new Helper() {};
 
     /**
-     * Instance of the game
+     * The main game instance returned by {@link Minecraft#getInstance()}.
+     * Deprecated since {@link IPlayerContext#minecraft()} should be used instead (In the majority of cases).
      */
+    @Deprecated
     Minecraft mc = Minecraft.getInstance();
 
     static Component getPrefix() {
@@ -71,7 +73,7 @@ public interface Helper {
      * @param message The message to display in the popup
      */
     default void logToast(Component title, Component message) {
-        mc.execute(() -> BaritoneAPI.getSettings().toaster.value.accept(title, message));
+        Minecraft.getInstance().execute(() -> BaritoneAPI.getSettings().toaster.value.accept(title, message));
     }
 
     /**
@@ -132,7 +134,7 @@ public interface Helper {
      * @param error   Whether to log as an error
      */
     default void logNotificationDirect(String message, boolean error) {
-        mc.execute(() -> BaritoneAPI.getSettings().notifier.value.accept(message, error));
+        Minecraft.getInstance().execute(() -> BaritoneAPI.getSettings().notifier.value.accept(message, error));
     }
 
     /**
@@ -165,7 +167,7 @@ public interface Helper {
         if (logAsToast) {
             logToast(getPrefix(), component);
         } else {
-            mc.execute(() -> BaritoneAPI.getSettings().logger.value.accept(component));
+            Minecraft.getInstance().execute(() -> BaritoneAPI.getSettings().logger.value.accept(component));
         }
     }
 

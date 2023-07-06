@@ -35,10 +35,11 @@ import java.util.stream.Stream;
 
 public class BuildCommand extends Command {
 
-    private static final File schematicsDir = new File(mc.gameDirectory, "schematics");
+    private final File schematicsDir;
 
     public BuildCommand(IBaritone baritone) {
         super(baritone, "build");
+        this.schematicsDir = new File(baritone.getPlayerContext().minecraft().gameDirectory, "schematics");
     }
 
     @Override

@@ -22,22 +22,25 @@ import baritone.api.IBaritone;
 import baritone.api.Settings;
 import baritone.api.command.Command;
 import baritone.api.command.argument.IArgConsumer;
+import baritone.api.command.datatypes.RelativeFile;
 import baritone.api.command.exception.CommandException;
 import baritone.api.command.exception.CommandInvalidStateException;
 import baritone.api.command.exception.CommandInvalidTypeException;
 import baritone.api.command.helpers.Paginator;
 import baritone.api.command.helpers.TabCompleteHelper;
 import baritone.api.utils.SettingsUtil;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.BaseComponent;
+import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.HoverEvent;
+import net.minecraft.network.chat.TextComponent;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.BaseComponent;
-import net.minecraft.network.chat.ClickEvent;
-import net.minecraft.network.chat.HoverEvent;
-import net.minecraft.network.chat.TextComponent;
 
 import static baritone.api.command.IBaritoneChatControl.FORCE_COMMAND_PREFIX;
 import static baritone.api.utils.SettingsUtil.*;
@@ -56,6 +59,18 @@ public class SetCommand extends Command {
             logDirect("Settings saved");
             return;
         }
+        if (Arrays.asList("load", "ld").contains(arg)) {
+            String file = SETTINGS_DEFAULT_NAME;
+            if (args.hasAny()) {
+                file = args.getString();
+            }
+            // reset to defaults
+            SettingsUtil.modifiedSettings(Baritone.settings()).forEach(Settings.Setting::reset);
+            // then load from disk
+            SettingsUtil.readAndApply(Baritone.settings(), file);
+            logDirect("Settings reloaded from " + file);
+            return;
+        }
         boolean viewModified = Arrays.asList("m", "mod", "modified").contains(arg);
         boolean viewAll = Arrays.asList("all", "l", "list").contains(arg);
         boolean paginate = viewModified || viewAll;
@@ -64,7 +79,7 @@ public class SetCommand extends Command {
             args.requireMax(1);
             List<? extends Settings.Setting> toPaginate =
                     (viewModified ? SettingsUtil.modifiedSettings(Baritone.settings()) : Baritone.settings().allSettings).stream()
-                            .filter(s -> !javaOnlySetting(s))
+                            .filter(s -> !s.isJavaOnly())
                             .filter(s -> s.getName().toLowerCase(Locale.US).contains(search.toLowerCase(Locale.US)))
                             .sorted((s1, s2) -> String.CASE_INSENSITIVE_ORDER.compare(s1.getName(), s2.getName()))
                             .collect(Collectors.toList());
@@ -128,7 +143,7 @@ public class SetCommand extends Command {
         if (setting == null) {
             throw new CommandInvalidTypeException(args.consumed(), "a valid setting");
         }
-        if (javaOnlySetting(setting)) {
+        if (setting.isJavaOnly()) {
             // ideally it would act as if the setting didn't exist
             // but users will see it in Settings.java or its javadoc
             // so at some point we have to tell them or they will see it as a bug
@@ -208,6 +223,9 @@ public class SetCommand extends Command {
                             .addToggleableSettings()
                             .filterPrefix(args.getString())
                             .stream();
+                } else if (Arrays.asList("ld", "load").contains(arg.toLowerCase(Locale.US))) {
+                    // settings always use the directory of the main Minecraft instance
+                    return RelativeFile.tabComplete(args, Minecraft.getInstance().gameDirectory.toPath().resolve("baritone").toFile());
                 }
                 Settings.Setting setting = Baritone.settings().byLowerName.get(arg.toLowerCase(Locale.US));
                 if (setting != null) {
@@ -227,7 +245,7 @@ public class SetCommand extends Command {
                 return new TabCompleteHelper()
                         .addSettings()
                         .sortAlphabetically()
-                        .prepend("list", "modified", "reset", "toggle", "save")
+                        .prepend("list", "modified", "reset", "toggle", "save", "load")
                         .filterPrefix(arg)
                         .stream();
             }
@@ -254,7 +272,9 @@ public class SetCommand extends Command {
                 "> set reset all - Reset ALL SETTINGS to their defaults",
                 "> set reset <setting> - Reset a setting to its default",
                 "> set toggle <setting> - Toggle a boolean setting",
-                "> set save - Save all settings (this is automatic tho)"
+                "> set save - Save all settings (this is automatic tho)",
+                "> set load - Load settings from settings.txt",
+                "> set load [filename] - Load settings from another file in your minecraft/baritone"
         );
     }
 }
