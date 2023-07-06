@@ -18,12 +18,12 @@
 package baritone.pathing.movement;
 
 import baritone.Baritone;
-import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.pathing.movement.ActionCosts;
 import baritone.api.pathing.movement.MovementStatus;
 import baritone.api.utils.*;
 import baritone.api.utils.input.Input;
+import baritone.behavior.InventoryBehavior;
 import baritone.pathing.movement.MovementState.MovementTarget;
 import baritone.pathing.precompute.Ternary;
 import baritone.utils.BlockStateInterface;
@@ -592,8 +592,13 @@ public interface MovementHelper extends ActionCosts, Helper {
      * @param ts    Previously calculated ToolSet
      */
     static void switchToBestToolFor(IPlayerContext ctx, IBlockState state, ToolSet ts, boolean preferSilkTouch) {
-        if (Baritone.settings().autoTool.value && !Baritone.settings().assumeExternalAutoTool.value) {
-            ctx.player().inventory.currentItem = ts.getBestSlot(state, preferSilkTouch, false);
+        if (ToolSet.isAutoTool()) {
+            // TODO: Submit through InventoryBehavior, instead of executing the strategy here
+            final InventorySlot slot = ts.getBestSlot(state, preferSilkTouch);
+            final InventoryBehavior.SelectionStrategy strategy = ((Baritone) ctx.baritone()).getInventoryBehavior().resolveSelectionStrategy(slot);
+            if (strategy != null) {
+                strategy.run();
+            }
         }
     }
 

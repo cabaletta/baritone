@@ -20,6 +20,7 @@ package baritone.utils;
 import baritone.Baritone;
 import baritone.PerformanceCritical;
 import baritone.api.utils.IPlayerContext;
+import baritone.api.utils.InventorySlot;
 import baritone.utils.accessor.IItemTool;
 import it.unimi.dsi.fastutil.HashCommon;
 import it.unimi.dsi.fastutil.objects.Reference2DoubleOpenHashMap;
@@ -27,11 +28,13 @@ import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.init.Enchantments;
+import net.minecraft.init.Items;
 import net.minecraft.init.MobEffects;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemSword;
 import net.minecraft.item.ItemTool;
 
+import java.util.Comparator;
 import java.util.function.ToDoubleFunction;
 
 /**
@@ -84,7 +87,9 @@ public final class ToolSet {
      * @return A double containing the destruction speed with the best tool
      */
     private double getBestDestructionSpeed(IBlockState state) {
-        final ItemStack stack = ctx.player().inventory.getStackInSlot(this.getBestSlot(state, false, true));
+        final ItemStack stack = isAutoTool()
+                ? ctx.inventory().itemAt(this.getBestSlot(state, false))
+                : ctx.player().getHeldItemMainhand();
         return calculateSpeedVsBlock(stack, state) * avoidanceMultiplier(state.getBlock());
     }
 
@@ -93,13 +98,12 @@ public final class ToolSet {
      * harvest level order; there is a chance for multiple at the same with modded tools
      * but in that case we don't really care.
      *
-     * @param itemStack a possibly empty ItemStack
+     * @param stack a possibly empty ItemStack
      * @return The tool's harvest level, or {@code -1} if the stack isn't a tool
      */
-    private static int getMaterialCost(ItemStack itemStack) {
-        if (itemStack.getItem() instanceof ItemTool) {
-            ItemTool tool = (ItemTool) itemStack.getItem();
-            return ((IItemTool) tool).getHarvestLevel();
+    private static int getMaterialCost(ItemStack stack) {
+        if (stack.getItem() instanceof IItemTool) {
+            return ((IItemTool) stack.getItem()).getHarvestLevel();
         } else {
             return -1;
         }
@@ -111,51 +115,36 @@ public final class ToolSet {
      *
      * @param state the blockstate to be mined
      * @param preferSilkTouch whether to prefer silk touch tools
-     * @param pathingCalculation whether the call to this method is for pathing calculation
      * @return An int containing the index in the tools array that worked best
      */
-    public int getBestSlot(IBlockState state, boolean preferSilkTouch, boolean pathingCalculation) {
+    public InventorySlot getBestSlot(IBlockState state, boolean preferSilkTouch) {
+        final Comparator<ItemStack> compare = Comparator
+                // Prioritize mining speed over everything
+                .<ItemStack>comparingDouble(stack -> calculateSpeedVsBlock(stack, state))
+                // Prioritize silk touch tools, if preferSilkTouch is true, over reduced material cost
+                .thenComparing(ToolSet::hasSilkTouch, (a, b) -> preferSilkTouch ? Boolean.compare(a, b) : 0)
+                // Minimize material cost
+                .thenComparing(Comparator.comparingInt(ToolSet::getMaterialCost).reversed());
 
-        /*
-        If we actually want know what efficiency our held item has instead of the best one
-        possible, this lets us make pathing depend on the actual tool to be used (if auto tool is disabled)
-        */
-        if (!Baritone.settings().autoTool.value && pathingCalculation) {
-            return ctx.player().inventory.currentItem;
-        }
-
-        int best = 0;
-        double highestSpeed = Double.NEGATIVE_INFINITY;
-        int lowestCost = Integer.MIN_VALUE;
-        boolean bestSilkTouch = false;
-        for (int i = 0; i < 9; i++) {
-            ItemStack itemStack = ctx.player().inventory.getStackInSlot(i);
-            if (!Baritone.settings().useSwordToMine.value && itemStack.getItem() instanceof ItemSword) {
-                continue;
-            }
-
-            if (Baritone.settings().itemSaver.value && (itemStack.getItemDamage() + Baritone.settings().itemSaverThreshold.value) >= itemStack.getMaxDamage() && itemStack.getMaxDamage() > 1) {
-                continue;
-            }
-            double speed = calculateSpeedVsBlock(itemStack, state);
-            boolean silkTouch = hasSilkTouch(itemStack);
-            if (speed > highestSpeed) {
-                highestSpeed = speed;
-                best = i;
-                lowestCost = getMaterialCost(itemStack);
-                bestSilkTouch = silkTouch;
-            } else if (speed == highestSpeed) {
-                int cost = getMaterialCost(itemStack);
-                if ((cost < lowestCost && (silkTouch || !bestSilkTouch)) ||
-                        (preferSilkTouch && !bestSilkTouch && silkTouch)) {
-                    highestSpeed = speed;
-                    best = i;
-                    lowestCost = cost;
-                    bestSilkTouch = silkTouch;
+        return ((Baritone) ctx.baritone()).getInventoryBehavior().findBestAccessibleMatching(
+                compare,
+                stack -> {
+                    if (!Baritone.settings().useSwordToMine.value && stack.getItem() instanceof ItemSword) {
+                        return false;
+                    }
+                    if (Baritone.settings().itemSaver.value
+                            && stack.getItemDamage() + Baritone.settings().itemSaverThreshold.value >= stack.getMaxDamage()
+                            && stack.getMaxDamage() > 1
+                    ) {
+                        return false;
+                    }
+                    return true;
                 }
-            }
-        }
-        return best;
+        );
+    }
+
+    public static boolean isAutoTool() {
+        return Baritone.settings().autoTool.value && !Baritone.settings().assumeExternalAutoTool.value;
     }
 
     /**

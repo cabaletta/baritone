@@ -23,7 +23,8 @@ import baritone.api.utils.Helper;
 import baritone.api.utils.InventorySlot;
 import baritone.api.utils.Pair;
 import baritone.utils.ToolSet;
-import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Reference2BooleanMap;
+import it.unimi.dsi.fastutil.objects.Reference2BooleanOpenHashMap;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
@@ -140,6 +141,7 @@ public final class InventoryBehavior extends Behavior implements Helper {
     }
 
     private InventorySlot bestToolAgainst(final Block against, final Class<? extends ItemTool> cla$$) {
+        // TODO: Replace with ToolSet.getBestSlot
         return this.findBestSlotMatching(
                 Comparator.comparingDouble(stack -> ToolSet.calculateSpeedVsBlock(stack, against.getDefaultState())),
                 stack -> {
@@ -189,11 +191,11 @@ public final class InventoryBehavior extends Behavior implements Helper {
     }
 
     public boolean canSelectItem(Predicate<? super ItemStack> desired) {
-        return this.resolveSelectionStrategy(desired) != null;
+        return this.resolveSelectionStrategy(this.findSlotMatching(desired)) != null;
     }
 
     public boolean trySelectItem(Predicate<? super ItemStack> desired) {
-        final SelectionStrategy strategy = this.resolveSelectionStrategy(desired);
+        final SelectionStrategy strategy = this.resolveSelectionStrategy(this.findSlotMatching(desired));
         if (strategy != null) {
             strategy.run();
             // TODO: Consider cases where returning the SelectionType is needed/useful to the caller
@@ -202,8 +204,7 @@ public final class InventoryBehavior extends Behavior implements Helper {
         return false;
     }
 
-    public SelectionStrategy resolveSelectionStrategy(Predicate<? super ItemStack> desired) {
-        final InventorySlot slot = this.findSlotMatching(desired);
+    public SelectionStrategy resolveSelectionStrategy(final InventorySlot slot) {
         if (slot != null) {
             switch (slot.getType()) {
                 case HOTBAR:
@@ -232,6 +233,7 @@ public final class InventoryBehavior extends Behavior implements Helper {
                     if (this.canAccessInventory()) {
                         return SelectionStrategy.of(SelectionType.ENQUEUED, () -> {
                             // TODO: Determine if hotbar swap can be immediate, and return type accordingly
+                            //       Also don't only swap into slot 7 that's silly
                             requestSwapWithHotBar(slot.getInventoryIndex(), 7);
                             ctx.player().inventory.currentItem = 7;
                         });
@@ -242,6 +244,14 @@ public final class InventoryBehavior extends Behavior implements Helper {
             }
         }
         return null;
+    }
+
+    public InventorySlot findBestAccessibleMatching(final Comparator<? super ItemStack> comparator,
+                                                    final Predicate<? super ItemStack> filter) {
+        final Stream<Pair<InventorySlot, ItemStack>> accessible = this.canAccessInventory()
+                ? ctx.inventory().allSlots()
+                : Stream.concat(ctx.inventory().hotbarSlots(), Stream.of(ctx.inventory().offhand()));
+        return this.findBestMatching0(accessible, comparator, filter);
     }
 
     public InventorySlot findSlotMatching(final Predicate<? super ItemStack> filter) {
@@ -320,7 +330,7 @@ public final class InventoryBehavior extends Behavior implements Helper {
 
     private static final class ItemInteractionHelper {
 
-        private static final Map<Class<? extends Item>, Boolean> CACHE = new Reference2ReferenceOpenHashMap<>();
+        private static final Reference2BooleanMap<Class<? extends Item>> CACHE = new Reference2BooleanOpenHashMap<>();
 
         public static boolean couldInteract(final ItemStack stack) {
             if (stack.isEmpty()) {
