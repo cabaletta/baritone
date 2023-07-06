@@ -28,7 +28,6 @@ import java.util.stream.Stream;
 
 /**
  * @author Brady
- * @since 7/4/2023
  */
 public final class BaritoneInventory implements IBaritoneInventory {
 

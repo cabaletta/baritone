@@ -577,23 +577,23 @@ public interface MovementHelper extends ActionCosts, Helper {
     /**
      * AutoTool for a specific block
      *
-     * @param ctx The player context
-     * @param b   the blockstate to mine
+     * @param ctx   The player context
+     * @param state The blockstate to mine
      */
-    static void switchToBestToolFor(IPlayerContext ctx, IBlockState b) {
-        switchToBestToolFor(ctx, b, new ToolSet(ctx.player()), BaritoneAPI.getSettings().preferSilkTouch.value);
+    static void switchToBestToolFor(IPlayerContext ctx, IBlockState state) {
+        switchToBestToolFor(ctx, state, new ToolSet(ctx.player()), Baritone.settings().preferSilkTouch.value);
     }
 
     /**
      * AutoTool for a specific block with precomputed ToolSet data
      *
-     * @param ctx The player context
-     * @param b   the blockstate to mine
-     * @param ts  previously calculated ToolSet
+     * @param ctx   The player context
+     * @param state The blockstate to mine
+     * @param ts    Previously calculated ToolSet
      */
-    static void switchToBestToolFor(IPlayerContext ctx, IBlockState b, ToolSet ts, boolean preferSilkTouch) {
+    static void switchToBestToolFor(IPlayerContext ctx, IBlockState state, ToolSet ts, boolean preferSilkTouch) {
         if (Baritone.settings().autoTool.value && !Baritone.settings().assumeExternalAutoTool.value) {
-            ctx.player().inventory.currentItem = ts.getBestSlot(b.getBlock(), preferSilkTouch);
+            ctx.player().inventory.currentItem = ts.getBestSlot(state, preferSilkTouch, false);
         }
     }
 

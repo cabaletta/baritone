@@ -332,7 +332,7 @@ public final class InventoryBehavior extends Behavior implements Helper {
                     final Method onItemUse        = itemClass.getMethod(Helper1.name, Helper1.parameters);
                     final Method onItemRightClick = itemClass.getMethod(Helper2.name, Helper2.parameters);
 
-                    // If the declaring class isn't Item, then the method is overriden
+                    // If the declaring class isn't Item, then the method is overridden
                     return onItemUse.getDeclaringClass() != Item.class
                             || onItemRightClick.getDeclaringClass() != Item.class;
                 } catch (NoSuchMethodException ignored) {

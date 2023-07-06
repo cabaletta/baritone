@@ -50,7 +50,7 @@ public final class ToolSet {
     /**
      * My buddy leijurv owned me so we have this to not create a new lambda instance.
      */
-    private final ToDoubleFunction<Block> backendCalculation;
+    private final ToDoubleFunction<IBlockState> backendCalculation;
 
     private final EntityPlayerSP player;
 
@@ -69,12 +69,23 @@ public final class ToolSet {
     /**
      * Using the best tool on the hotbar, how fast we can mine this block
      *
-     * @param state the blockstate to be mined
+     * @param state the state to be mined
      * @return the speed of how fast we'll mine it. 1/(time in ticks)
      */
     @PerformanceCritical
     public double getStrVsBlock(IBlockState state) {
-        return this.breakStrengthCache.computeIfAbsent(state.getBlock(), this.backendCalculation);
+        return this.breakStrengthCache.computeIfAbsent(state, this.backendCalculation);
+    }
+
+    /**
+     * Calculate how effectively a block can be destroyed
+     *
+     * @param state the block state to be mined
+     * @return A double containing the destruction ticks with the best tool
+     */
+    private double getBestDestructionTime(IBlockState state) {
+        final ItemStack stack = player.inventory.getStackInSlot(this.getBestSlot(state, false, true));
+        return calculateSpeedVsBlock(stack, state) * avoidanceMultiplier(state.getBlock());
     }
 
     /**
@@ -85,7 +96,7 @@ public final class ToolSet {
      * @param itemStack a possibly empty ItemStack
      * @return The tool's harvest level, or {@code -1} if the stack isn't a tool
      */
-    private int getMaterialCost(ItemStack itemStack) {
+    private static int getMaterialCost(ItemStack itemStack) {
         if (itemStack.getItem() instanceof ItemTool) {
             ItemTool tool = (ItemTool) itemStack.getItem();
             return ((IItemTool) tool).getHarvestLevel();
@@ -94,22 +105,16 @@ public final class ToolSet {
         }
     }
 
-    public boolean hasSilkTouch(ItemStack stack) {
-        return EnchantmentHelper.getEnchantmentLevel(Enchantments.SILK_TOUCH, stack) > 0;
-    }
-
     /**
      * Calculate which tool on the hotbar is best for mining, depending on an override setting,
      * related to auto tool movement cost, it will either return current selected slot, or the best slot.
      *
-     * @param b the blockstate to be mined
+     * @param state the blockstate to be mined
+     * @param preferSilkTouch whether to prefer silk touch tools
+     * @param pathingCalculation whether the call to this method is for pathing calculation
      * @return An int containing the index in the tools array that worked best
      */
-    public int getBestSlot(Block b, boolean preferSilkTouch) {
-        return getBestSlot(b, preferSilkTouch, false);
-    }
-
-    public int getBestSlot(Block b, boolean preferSilkTouch, boolean pathingCalculation) {
+    public int getBestSlot(IBlockState state, boolean preferSilkTouch, boolean pathingCalculation) {
 
         /*
         If we actually want know what efficiency our held item has instead of the best one
@@ -123,7 +128,6 @@ public final class ToolSet {
         double highestSpeed = Double.NEGATIVE_INFINITY;
         int lowestCost = Integer.MIN_VALUE;
         boolean bestSilkTouch = false;
-        IBlockState blockState = b.getDefaultState();
         for (int i = 0; i < 9; i++) {
             ItemStack itemStack = player.inventory.getStackInSlot(i);
             if (!Baritone.settings().useSwordToMine.value && itemStack.getItem() instanceof ItemSword) {
@@ -133,7 +137,7 @@ public final class ToolSet {
             if (Baritone.settings().itemSaver.value && (itemStack.getItemDamage() + Baritone.settings().itemSaverThreshold.value) >= itemStack.getMaxDamage() && itemStack.getMaxDamage() > 1) {
                 continue;
             }
-            double speed = calculateSpeedVsBlock(itemStack, blockState);
+            double speed = calculateSpeedVsBlock(itemStack, state);
             boolean silkTouch = hasSilkTouch(itemStack);
             if (speed > highestSpeed) {
                 highestSpeed = speed;
@@ -155,27 +159,12 @@ public final class ToolSet {
     }
 
     /**
-     * Calculate how effectively a block can be destroyed
-     *
-     * @param b the blockstate to be mined
-     * @return A double containing the destruction ticks with the best tool
-     */
-    private double getBestDestructionTime(Block b) {
-        ItemStack stack = player.inventory.getStackInSlot(getBestSlot(b, false, true));
-        return calculateSpeedVsBlock(stack, b.getDefaultState()) * avoidanceMultiplier(b);
-    }
-
-    private double avoidanceMultiplier(Block b) {
-        return Baritone.settings().blocksToAvoidBreaking.value.contains(b) ? Baritone.settings().avoidBreakingMultiplier.value : 1;
-    }
-
-    /**
      * Calculates how long would it take to mine the specified block given the best tool
      * in this toolset is used. A negative value is returned if the specified block is unbreakable.
      *
      * @param item  the item to mine it with
      * @param state the blockstate to be mined
-     * @return how long it would take in ticks
+     * @return the speed of how fast we'll mine it. 1/(time in ticks)
      */
     public static double calculateSpeedVsBlock(ItemStack item, IBlockState state) {
         float hardness;
@@ -206,6 +195,15 @@ public final class ToolSet {
         } else {
             return speed / 100;
         }
+    }
+
+    private static double avoidanceMultiplier(Block block) {
+        return Baritone.settings().blocksToAvoidBreaking.value.contains(block)
+                ? Baritone.settings().avoidBreakingMultiplier.value : 1;
+    }
+
+    private static boolean hasSilkTouch(ItemStack stack) {
+        return EnchantmentHelper.getEnchantmentLevel(Enchantments.SILK_TOUCH, stack) > 0;
     }
 
     /**
@@ -252,9 +250,9 @@ public final class ToolSet {
      * See the License for the specific language governing permissions and
      * limitations under the License.
      */
-    private static final class Cache extends Reference2DoubleOpenHashMap<Block> {
+    private static final class Cache extends Reference2DoubleOpenHashMap<IBlockState> {
 
-        public double computeIfAbsent(final Block key, final ToDoubleFunction<Block> mappingFunction) {
+        public double computeIfAbsent(final IBlockState key, final ToDoubleFunction<IBlockState> mappingFunction) {
             int pos = this.find(key);
             if (pos >= 0) {
                 return this.value[pos];
@@ -265,13 +263,13 @@ public final class ToolSet {
             }
         }
 
-        private int find(final Block k) {
+        private int find(final IBlockState k) {
             if (((k) == (null))) return containsNullKey ? n : -(n + 1);
             Object curr;
             final Object[] key = this.key;
             int pos;
             // The starting point.
-            if (((curr = key[pos = (it.unimi.dsi.fastutil.HashCommon.mix(System.identityHashCode(k))) & mask]) == (null))) return -(pos + 1);
+            if (((curr = key[pos = (HashCommon.mix(System.identityHashCode(k))) & mask]) == (null))) return -(pos + 1);
             if (((k) == (curr))) return pos;
             // There's always an unused entry.
             while (true) {
@@ -280,7 +278,7 @@ public final class ToolSet {
             }
         }
 
-        private void insert(int pos, Block k, double v) {
+        private void insert(int pos, IBlockState k, double v) {
             if (pos == this.n) {
                 this.containsNullKey = true;
             }
