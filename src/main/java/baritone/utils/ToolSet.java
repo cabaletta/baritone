@@ -19,12 +19,12 @@ package baritone.utils;
 
 import baritone.Baritone;
 import baritone.PerformanceCritical;
+import baritone.api.utils.IPlayerContext;
 import baritone.utils.accessor.IItemTool;
 import it.unimi.dsi.fastutil.HashCommon;
 import it.unimi.dsi.fastutil.objects.Reference2DoubleOpenHashMap;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.init.Enchantments;
 import net.minecraft.init.MobEffects;
@@ -52,17 +52,17 @@ public final class ToolSet {
      */
     private final ToDoubleFunction<IBlockState> backendCalculation;
 
-    private final EntityPlayerSP player;
+    private final IPlayerContext ctx;
 
-    public ToolSet(EntityPlayerSP player) {
+    public ToolSet(IPlayerContext ctx) {
+        this.ctx = ctx;
         this.breakStrengthCache = new Cache();
-        this.player = player;
 
         if (Baritone.settings().considerPotionEffects.value) {
             double amplifier = this.potionAmplifier();
-            this.backendCalculation = block -> amplifier * this.getBestDestructionTime(block);
+            this.backendCalculation = block -> amplifier * this.getBestDestructionSpeed(block);
         } else {
-            this.backendCalculation = this::getBestDestructionTime;
+            this.backendCalculation = this::getBestDestructionSpeed;
         }
     }
 
@@ -81,10 +81,10 @@ public final class ToolSet {
      * Calculate how effectively a block can be destroyed
      *
      * @param state the block state to be mined
-     * @return A double containing the destruction ticks with the best tool
+     * @return A double containing the destruction speed with the best tool
      */
-    private double getBestDestructionTime(IBlockState state) {
-        final ItemStack stack = player.inventory.getStackInSlot(this.getBestSlot(state, false, true));
+    private double getBestDestructionSpeed(IBlockState state) {
+        final ItemStack stack = ctx.player().inventory.getStackInSlot(this.getBestSlot(state, false, true));
         return calculateSpeedVsBlock(stack, state) * avoidanceMultiplier(state.getBlock());
     }
 
@@ -121,7 +121,7 @@ public final class ToolSet {
         possible, this lets us make pathing depend on the actual tool to be used (if auto tool is disabled)
         */
         if (!Baritone.settings().autoTool.value && pathingCalculation) {
-            return player.inventory.currentItem;
+            return ctx.player().inventory.currentItem;
         }
 
         int best = 0;
@@ -129,7 +129,7 @@ public final class ToolSet {
         int lowestCost = Integer.MIN_VALUE;
         boolean bestSilkTouch = false;
         for (int i = 0; i < 9; i++) {
-            ItemStack itemStack = player.inventory.getStackInSlot(i);
+            ItemStack itemStack = ctx.player().inventory.getStackInSlot(i);
             if (!Baritone.settings().useSwordToMine.value && itemStack.getItem() instanceof ItemSword) {
                 continue;
             }
@@ -213,11 +213,11 @@ public final class ToolSet {
      */
     private double potionAmplifier() {
         double speed = 1;
-        if (player.isPotionActive(MobEffects.HASTE)) {
-            speed *= 1 + (player.getActivePotionEffect(MobEffects.HASTE).getAmplifier() + 1) * 0.2;
+        if (ctx.player().isPotionActive(MobEffects.HASTE)) {
+            speed *= 1 + (ctx.player().getActivePotionEffect(MobEffects.HASTE).getAmplifier() + 1) * 0.2;
         }
-        if (player.isPotionActive(MobEffects.MINING_FATIGUE)) {
-            switch (player.getActivePotionEffect(MobEffects.MINING_FATIGUE).getAmplifier()) {
+        if (ctx.player().isPotionActive(MobEffects.MINING_FATIGUE)) {
+            switch (ctx.player().getActivePotionEffect(MobEffects.MINING_FATIGUE).getAmplifier()) {
                 case 0:
                     speed *= 0.3;
                     break;

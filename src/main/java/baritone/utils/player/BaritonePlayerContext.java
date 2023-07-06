@@ -18,6 +18,7 @@
 package baritone.utils.player;
 
 import baritone.Baritone;
+import baritone.api.IBaritone;
 import baritone.api.cache.IWorldData;
 import baritone.api.utils.*;
 import net.minecraft.client.Minecraft;
@@ -45,6 +46,11 @@ public final class BaritonePlayerContext implements IPlayerContext {
         this.mc = mc;
         this.playerController = new BaritonePlayerController(mc);
         this.inventory = new BaritoneInventory(this);
+    }
+
+    @Override
+    public IBaritone baritone() {
+        return this.baritone;
     }
 
     @Override
