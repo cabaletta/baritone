@@ -23,6 +23,7 @@ import baritone.api.behavior.IElytraBehavior;
 import baritone.api.behavior.look.IAimProcessor;
 import baritone.api.behavior.look.ITickableAimProcessor;
 import baritone.api.event.events.*;
+import baritone.api.event.events.type.EventState;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalYLevel;
 import baritone.api.pathing.movement.IMovement;
@@ -75,6 +76,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
 
     // :sunglasses:
     private NetherPathfinderContext context;
+    private boolean forceResetContext;
     private final PathManager pathManager;
     private final ElytraProcess process;
 
@@ -364,6 +366,24 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
     }
 
     @Override
+    public void onWorldEvent(WorldEvent event) {
+        if (event.getWorld() != null) {
+            if (event.getState() == EventState.PRE) {
+                // Reset the context when it's safe to do so on the next game tick
+                this.forceResetContext = true;
+            }
+        } else {
+            if (event.getState() == EventState.POST) {
+                // Exiting the world, just destroy and invalidate the context
+                if (this.context != null) {
+                    this.context.destroy();
+                    this.context = null;
+                }
+            }
+        }
+    }
+
+    @Override
     public void onChunkEvent(ChunkEvent event) {
         if (event.isPostPopulate()) {
             final Chunk chunk = ctx.world().getChunk(event.getX(), event.getZ());
@@ -435,11 +455,12 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
 
         // Setup/reset context
         final long netherSeed = Baritone.settings().elytraNetherSeed.value;
-        if (this.context == null || this.context.getSeed() != netherSeed) {
+        if (this.context == null || this.context.getSeed() != netherSeed || this.forceResetContext) {
             if (this.context != null) {
                 this.context.destroy();
             }
             this.context = new NetherPathfinderContext(netherSeed);
+            this.forceResetContext = false;
 
             if (this.isActive()) {
                 // TODO: Re-pack chunks?
