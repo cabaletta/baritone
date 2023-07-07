@@ -148,9 +148,6 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                 }
             }
             if (current == null) {
-                if (baritone.getElytraBehavior().isActive()) {
-                    safeToCancel = baritone.getElytraBehavior().isSafeToCancel();
-                }
                 return;
             }
             safeToCancel = current.onTick();
@@ -312,7 +309,10 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
     }
 
     public boolean isSafeToCancel() {
-        return current == null || safeToCancel;
+        if (current == null) {
+            return !baritone.getElytraBehavior().isActive() || baritone.getElytraBehavior().isSafeToCancel();
+        }
+        return safeToCancel;
     }
 
     public void requestPause() {
