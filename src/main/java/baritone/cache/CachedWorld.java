@@ -23,6 +23,7 @@ import baritone.api.IBaritone;
 import baritone.api.cache.ICachedWorld;
 import baritone.api.cache.IWorldData;
 import baritone.api.utils.Helper;
+import com.google.common.cache.CacheBuilder;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.util.math.BlockPos;
@@ -35,7 +36,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
 /**
@@ -69,7 +69,7 @@ public final class CachedWorld implements ICachedWorld, Helper {
      * All chunk positions pending packing. This map will be updated in-place if a new update to the chunk occurs
      * while waiting in the queue for the packer thread to get to it.
      */
-    private final Map<ChunkPos, Chunk> toPackMap = new ConcurrentHashMap<>();
+    private final Map<ChunkPos, Chunk> toPackMap = CacheBuilder.newBuilder().softValues().<ChunkPos, Chunk>build().asMap();
 
     private final int dimension;
 
