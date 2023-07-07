@@ -1278,11 +1278,6 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
                 if (this.goal == null) {
                     this.goal = new GoalYLevel(31);
                 }
-                this.state = State.VALIDATE_PATH;
-                return new PathingCommandContext(this.goal, PathingCommandType.SET_GOAL_AND_PAUSE, new WalkOffCalculationContext(baritone));
-            }
-
-            if (this.state == State.VALIDATE_PATH) {
                 final IPathExecutor executor = baritone.getPathingBehavior().getCurrent();
                 if (executor != null && executor.getPath().getGoal() == this.goal) {
                     final IMovement fall = executor.getPath().movements().stream()
@@ -1315,7 +1310,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
                         return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
                     }
                 }
-                return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
+                return new PathingCommandContext(this.goal, PathingCommandType.SET_GOAL_AND_PAUSE, new WalkOffCalculationContext(baritone));
             }
 
             // yucky
@@ -1373,8 +1368,6 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
                 switch (this.state) {
                     case LOCATE_JUMP:
                         return "Finding spot to jump off";
-                    case VALIDATE_PATH:
-                        return "Validating path";
                     case PAUSE:
                         return "Waiting for elytra path";
                     case GET_TO_JUMP:
