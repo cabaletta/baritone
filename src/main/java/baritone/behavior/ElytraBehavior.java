@@ -1041,12 +1041,13 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
     }
 
     private List<Vec3d> simulate(final ITickableAimProcessor aimProcessor, final Vec3d goalDelta, final float pitch,
-                                 final int ticks, int ticksBoosted, final int ticksBoostDelay, final boolean ignoreLava) {
+                                 final int ticks, final int ticksBoosted, final int ticksBoostDelay, final boolean ignoreLava) {
         Vec3d delta = goalDelta;
         Vec3d motion = ctx.playerMotion();
         AxisAlignedBB hitbox = ctx.player().getEntityBoundingBox();
         List<Vec3d> displacement = new ArrayList<>(ticks + 1);
         displacement.add(Vec3d.ZERO);
+        int remainingTicksBoosted = ticksBoosted;
 
         for (int i = 0; i < ticks; i++) {
             final double cx = hitbox.minX + (hitbox.maxX - hitbox.minX) * 0.5D;
@@ -1081,7 +1082,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
             hitbox = hitbox.offset(motion);
             displacement.add(displacement.get(displacement.size() - 1).add(motion));
 
-            if (i >= ticksBoostDelay && ticksBoosted-- > 0) {
+            if (i >= ticksBoostDelay && remainingTicksBoosted-- > 0) {
                 // See EntityFireworkRocket
                 motion = motion.add(
                         lookDirection.x * 0.1 + (lookDirection.x * 1.5 - motion.x) * 0.5,
@@ -1348,8 +1349,9 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
                         return "Begin flying";
                     case FLYING:
                         return "Flying";
+                    default:
+                        return "Unknown";
                 }
-                return "Unknown";
             };
             return "Elytra - " + status.get();
         }

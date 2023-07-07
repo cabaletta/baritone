@@ -17,7 +17,6 @@
 
 package baritone.command.defaults;
 
-import baritone.Baritone;
 import baritone.api.IBaritone;
 import baritone.api.command.Command;
 import baritone.api.command.argument.IArgConsumer;

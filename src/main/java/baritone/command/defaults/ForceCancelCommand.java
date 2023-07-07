@@ -17,7 +17,6 @@
 
 package baritone.command.defaults;
 
-import baritone.Baritone;
 import baritone.api.IBaritone;
 import baritone.api.behavior.IPathingBehavior;
 import baritone.api.command.Command;
