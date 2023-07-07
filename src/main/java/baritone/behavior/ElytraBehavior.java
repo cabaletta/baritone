@@ -1399,6 +1399,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         public WalkOffCalculationContext(IBaritone baritone) {
             super(baritone, true);
             this.allowFallIntoLava = true;
+            this.minFallHeight = 8;
             this.maxFallHeightNoWater = 10000;
         }
 
