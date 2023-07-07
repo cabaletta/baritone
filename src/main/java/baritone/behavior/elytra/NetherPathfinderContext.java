@@ -27,6 +27,7 @@ import net.minecraft.world.chunk.BlockStateContainer;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 
+import java.lang.ref.SoftReference;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -47,8 +48,16 @@ public final class NetherPathfinderContext {
         this.executor = Executors.newSingleThreadExecutor();
     }
 
-    public void queueForPacking(Chunk chunk) {
-        this.executor.submit(() -> NetherPathfinder.insertChunkData(this.context, chunk.x, chunk.z, pack(chunk)));
+    public void queueForPacking(final Chunk chunkIn) {
+        final SoftReference<Chunk> ref = new SoftReference<>(chunkIn);
+        this.executor.execute(() -> {
+            // TODO: Prioritize packing recent chunks and/or ones that the path goes through,
+            //       and prune the oldest chunks per chunkPackerQueueMaxSize
+            final Chunk chunk = ref.get();
+            if (chunk != null) {
+                NetherPathfinder.insertChunkData(this.context, chunk.x, chunk.z, pack(chunk));
+            }
+        });
     }
 
     public CompletableFuture<PathSegment> pathFindAsync(final BlockPos src, final BlockPos dst) {
@@ -74,9 +83,9 @@ public final class NetherPathfinderContext {
      * @param startX The start X coordinate
      * @param startY The start Y coordinate
      * @param startZ The start Z coordinate
-     * @param endX The end X coordinate
-     * @param endY The end Y coordinate
-     * @param endZ The end Z coordinate
+     * @param endX   The end X coordinate
+     * @param endY   The end Y coordinate
+     * @param endZ   The end Z coordinate
      * @return {@code true} if there is visibility between the points
      */
     public boolean raytrace(final double startX, final double startY, final double startZ,
@@ -89,7 +98,7 @@ public final class NetherPathfinderContext {
      * visibility between the two points.
      *
      * @param start The starting point
-     * @param end The ending point
+     * @param end   The ending point
      * @return {@code true} if there is visibility between the points
      */
     public boolean raytrace(final Vec3d start, final Vec3d end) {
@@ -151,9 +160,7 @@ public final class NetherPathfinderContext {
                     for (int z = 0; z < 16; z++) {
                         for (int x = 0; x < 16; x++) {
                             IBlockState state = bsc.get(x, y1, z);
-                            if (state.getMaterial() != Material.AIR) {
-                                packed[x | (z << 4) | (y << 8)] = true;
-                            }
+                            packed[x | (z << 4) | (y << 8)] = state.getMaterial() != Material.AIR;
                         }
                     }
                 }
