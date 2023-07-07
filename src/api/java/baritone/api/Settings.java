@@ -48,19 +48,6 @@ import java.util.function.Consumer;
  */
 public final class Settings {
 
-    public final Setting<Integer> elytraSimulationTicks = new Setting<>(20);
-    public final Setting<Integer> elytraPitchRange = new Setting<>(25);
-    public final Setting<Double> elytraFireworkSpeed = new Setting<>(0.6);
-    public final Setting<Integer> elytraFireworkSetbackUseDelay = new Setting<>(15);
-    public final Setting<Double> elytraMinimumAvoidance = new Setting<>(0.2);
-    public final Setting<Boolean> conserveFireworks = new Setting<>(true);
-    public final Setting<Boolean> renderRaytraces = new Setting<>(false);
-    public final Setting<Boolean> renderHitboxRaytraces = new Setting<>(false);
-    public final Setting<Boolean> renderElytraSimulation = new Setting<>(false);
-    public final Setting<Boolean> elytraFreeLook = new Setting<>(false);
-    public final Setting<Boolean> elytraAutoJump = new Setting<>(false);
-    public final Setting<Boolean> smoothLook = new Setting<>(false);
-
     /**
      * Allow Baritone to break blocks
      */
@@ -749,6 +736,17 @@ public final class Settings {
     public final Setting<Boolean> blockFreeLook = new Setting<>(false);
 
     /**
+     * Automatically elytra fly without having to force the client-sided rotations. Requires {@link #freeLook}.
+     */
+    public final Setting<Boolean> elytraFreeLook = new Setting<>(false);
+
+    /**
+     * Forces the client-sided rotations to an average of the last 10 ticks of server-sided rotations.
+     * Requires {@link #freeLook}.
+     */
+    public final Setting<Boolean> smoothLook = new Setting<>(false);
+
+    /**
      * When true, the player will remain with its existing look direction as often as possible.
      * Although, in some cases this can get it stuck, hence this setting to disable that behavior.
      */
@@ -1332,6 +1330,63 @@ public final class Settings {
      * Desktop notification on mine fail
      */
     public final Setting<Boolean> notificationOnMineFail = new Setting<>(true);
+
+    /**
+     * The number of ticks of elytra movement to simulate while firework boost is not active. Higher values are
+     * computationally more expensive.
+     */
+    public final Setting<Integer> elytraSimulationTicks = new Setting<>(20);
+
+    /**
+     * The maximum allowed deviation in pitch from a direct line-of-sight to the flight target. Higher values are
+     * computationally more expensive.
+     */
+    public final Setting<Integer> elytraPitchRange = new Setting<>(25);
+
+    /**
+     * The minimum speed that the player can drop to (in blocks/tick) before a firework is automatically deployed.
+     */
+    public final Setting<Double> elytraFireworkSpeed = new Setting<>(0.6);
+
+    /**
+     * The delay after the player's position is set-back by the server that a firework may be automatically deployed.
+     * Value is in ticks.
+     */
+    public final Setting<Integer> elytraFireworkSetbackUseDelay = new Setting<>(15);
+
+    /**
+     * The minimum padding value that is added to the player's hitbox when considering which point to fly to on the
+     * path. High values can result in points not being considered which are otherwise safe to fly to. Low values can
+     * result in flight paths which are extremely tight, and there's the possibility of crashing due to getting too low
+     * to the ground.
+     */
+    public final Setting<Double> elytraMinimumAvoidance = new Setting<>(0.2);
+
+    /**
+     * If enabled, avoids using fireworks when descending along the flight path.
+     */
+    public final Setting<Boolean> conserveFireworks = new Setting<>(true);
+
+    /**
+     * Renders the raytraces that are performed by the elytra fly calculation.
+     */
+    public final Setting<Boolean> renderRaytraces = new Setting<>(false);
+
+    /**
+     * Renders the raytraces that are used in the hitbox part of the elytra fly calculation.
+     * Requires {@link #renderRaytraces}.
+     */
+    public final Setting<Boolean> renderHitboxRaytraces = new Setting<>(false);
+
+    /**
+     * Renders the best elytra flight path that was simulated each tick.
+     */
+    public final Setting<Boolean> renderElytraSimulation = new Setting<>(false);
+
+    /**
+     * Automatically path to and jump off of ledges to initiate elytra flight when grounded.
+     */
+    public final Setting<Boolean> elytraAutoJump = new Setting<>(false);
 
     /**
      * A map of lowercase setting field names to their respective setting
