@@ -1208,6 +1208,10 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         }
     }
 
+    public boolean isSafeToCancel() {
+        return !this.isActive() || !(this.process.state == State.FLYING || this.process.state == State.START_FLYING);
+    }
+
     private final class ElytraProcess implements IBaritoneProcess {
 
         private State state;

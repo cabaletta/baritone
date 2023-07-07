@@ -148,6 +148,9 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                 }
             }
             if (current == null) {
+                if (baritone.getElytraBehavior().isActive()) {
+                    safeToCancel = baritone.getElytraBehavior().isSafeToCancel();
+                }
                 return;
             }
             safeToCancel = current.onTick();
