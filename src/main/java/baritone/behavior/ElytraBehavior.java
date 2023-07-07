@@ -66,11 +66,6 @@ import static baritone.utils.BaritoneMath.fastFloor;
 
 public final class ElytraBehavior extends Behavior implements IElytraBehavior, Helper {
 
-    /**
-     * 2b2t seed
-     */
-    private static final long NETHER_SEED = 146008555100680L;
-
     // Used exclusively for PathRenderer
     public List<Pair<Vec3d, Vec3d>> clearLines;
     public List<Pair<Vec3d, Vec3d>> blockedLines;
@@ -79,7 +74,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
     public List<BetterBlockPos> visiblePath;
 
     // :sunglasses:
-    private final NetherPathfinderContext context;
+    private NetherPathfinderContext context;
     private final PathManager pathManager;
     private final ElytraProcess process;
 
@@ -113,7 +108,6 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
 
     public ElytraBehavior(Baritone baritone) {
         super(baritone);
-        this.context = new NetherPathfinderContext(NETHER_SEED);
         this.clearLines = new CopyOnWriteArrayList<>();
         this.blockedLines = new CopyOnWriteArrayList<>();
         this.pathManager = this.new PathManager();
@@ -436,6 +430,21 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
                 // it doesn't matter if get() fails since the solution can just be recalculated synchronously
             } finally {
                 this.solver = null;
+            }
+        }
+
+        // Setup/reset context
+        final long netherSeed = Baritone.settings().elytraNetherSeed.value;
+        if (this.context == null || this.context.getSeed() != netherSeed) {
+            if (this.context != null) {
+                this.context.destroy();
+            }
+            this.context = new NetherPathfinderContext(netherSeed);
+
+            if (this.isActive()) {
+                // TODO: Re-pack chunks?
+                logDirect("Nether seed changed, recalculating path");
+                this.pathManager.pathToDestination();
             }
         }
 

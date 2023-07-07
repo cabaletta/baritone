@@ -1389,6 +1389,12 @@ public final class Settings {
     public final Setting<Boolean> elytraAutoJump = new Setting<>(false);
 
     /**
+     * The seed used to generate chunks for long distance elytra path-finding in the nether.
+     * Defaults to 2b2t's nether seed.
+     */
+    public final Setting<Long> elytraNetherSeed = new Setting<>(146008555100680L);
+
+    /**
      * A map of lowercase setting field names to their respective setting
      */
     public final Map<String, Setting<?>> byLowerName;
