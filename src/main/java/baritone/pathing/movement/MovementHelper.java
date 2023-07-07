@@ -581,20 +581,9 @@ public interface MovementHelper extends ActionCosts, Helper {
      * @param state The blockstate to mine
      */
     static void switchToBestToolFor(IPlayerContext ctx, IBlockState state) {
-        switchToBestToolFor(ctx, state, new ToolSet(ctx), Baritone.settings().preferSilkTouch.value);
-    }
-
-    /**
-     * AutoTool for a specific block with precomputed ToolSet data
-     *
-     * @param ctx   The player context
-     * @param state The blockstate to mine
-     * @param ts    Previously calculated ToolSet
-     */
-    static void switchToBestToolFor(IPlayerContext ctx, IBlockState state, ToolSet ts, boolean preferSilkTouch) {
         if (ToolSet.isAutoTool()) {
             // TODO: Submit through InventoryBehavior, instead of executing the strategy here
-            final InventorySlot slot = ts.getBestSlot(state, preferSilkTouch);
+            final InventorySlot slot = new ToolSet(ctx).getBestSlot(state, Baritone.settings().preferSilkTouch.value, null);
             final InventoryBehavior.SelectionStrategy strategy = ((Baritone) ctx.baritone()).getInventoryBehavior().resolveSelectionStrategy(slot);
             if (strategy != null) {
                 strategy.run();

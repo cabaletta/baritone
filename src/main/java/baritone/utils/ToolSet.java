@@ -33,6 +33,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemSword;
 
 import java.util.Comparator;
+import java.util.function.Predicate;
 import java.util.function.ToDoubleFunction;
 
 /**
@@ -86,7 +87,7 @@ public final class ToolSet {
      */
     private double getBestDestructionSpeed(IBlockState state) {
         final ItemStack stack = isAutoTool()
-                ? ctx.inventory().itemAt(this.getBestSlot(state, false))
+                ? ctx.inventory().itemAt(this.getBestSlot(state, false, null))
                 : ctx.player().getHeldItemMainhand();
         return calculateSpeedVsBlock(stack, state) * avoidanceMultiplier(state.getBlock());
     }
@@ -113,9 +114,11 @@ public final class ToolSet {
      *
      * @param state the blockstate to be mined
      * @param preferSilkTouch whether to prefer silk touch tools
+     * @param extra An additional filter to apply on top of the default, setting-based ones, may be {@code null}
      * @return An int containing the index in the tools array that worked best
      */
-    public InventorySlot getBestSlot(IBlockState state, boolean preferSilkTouch) {
+    public InventorySlot getBestSlot(final IBlockState state, final boolean preferSilkTouch,
+                                     final Predicate<? super ItemStack> extra) {
         final Comparator<ItemStack> compare = Comparator
                 // Prioritize mining speed over everything
                 .<ItemStack>comparingDouble(stack -> calculateSpeedVsBlock(stack, state))
@@ -136,7 +139,7 @@ public final class ToolSet {
                     ) {
                         return false;
                     }
-                    return true;
+                    return extra == null || extra.test(stack);
                 }
         );
     }

@@ -90,6 +90,10 @@ public final class InventoryBehavior extends Behavior implements Helper {
         }
     }
 
+    private InventorySlot bestToolAgainst(final Block against, final Class<? extends ItemTool> cla$$) {
+        return new ToolSet(ctx).getBestSlot(against.getDefaultState(), Baritone.settings().preferSilkTouch.value, stack -> cla$$.isInstance(stack.getItem()));
+    }
+
     public boolean attemptToPutOnHotbar(int inMainInvy, IntPredicate disallowedHotbar) {
         OptionalInt destination = getTempHotbarSlot(disallowedHotbar);
         if (destination.isPresent()) {
@@ -135,25 +139,6 @@ public final class InventoryBehavior extends Behavior implements Helper {
         ticksSinceLastInventoryMove = 0;
         lastTickRequestedMove = null;
         return true;
-    }
-
-    private InventorySlot bestToolAgainst(final Block against, final Class<? extends ItemTool> cla$$) {
-        // TODO: Replace with ToolSet.getBestSlot
-        return this.findBestSlotMatching(
-                Comparator.comparingDouble(stack -> ToolSet.calculateSpeedVsBlock(stack, against.getDefaultState())),
-                stack -> {
-                    if (stack.isEmpty()) {
-                        return false;
-                    }
-                    if (Baritone.settings().itemSaver.value
-                            && stack.getItemDamage() + Baritone.settings().itemSaverThreshold.value >= stack.getMaxDamage()
-                            && stack.getMaxDamage() > 1
-                    ) {
-                        return false;
-                    }
-                    return cla$$.isInstance(stack.getItem());
-                }
-        );
     }
 
     public boolean hasGenericThrowaway() {
