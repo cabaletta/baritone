@@ -37,6 +37,11 @@ public final class CustomGoalProcess extends BaritoneProcessHelper implements IC
     private Goal goal;
 
     /**
+     * The most recent goal. Not invalidated upon {@link #onLostControl()}
+     */
+    private Goal mostRecentGoal;
+
+    /**
      * The current process state.
      *
      * @see State
@@ -50,6 +55,7 @@ public final class CustomGoalProcess extends BaritoneProcessHelper implements IC
     @Override
     public void setGoal(Goal goal) {
         this.goal = goal;
+        this.mostRecentGoal = goal;
         if (this.state == State.NONE) {
             this.state = State.GOAL_SET;
         }
@@ -66,6 +72,11 @@ public final class CustomGoalProcess extends BaritoneProcessHelper implements IC
     @Override
     public Goal getGoal() {
         return this.goal;
+    }
+
+    @Override
+    public Goal mostRecentGoal() {
+        return this.mostRecentGoal;
     }
 
     @Override

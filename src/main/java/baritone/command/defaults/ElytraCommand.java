@@ -42,7 +42,7 @@ public class ElytraCommand extends Command {
     public void execute(String label, IArgConsumer args) throws CommandException {
         ICustomGoalProcess customGoalProcess = baritone.getCustomGoalProcess();
         args.requireMax(0);
-        Goal iGoal = customGoalProcess.getGoal();
+        Goal iGoal = customGoalProcess.mostRecentGoal();
         if (iGoal == null) {
             throw new CommandInvalidStateException("No goal has been set");
         }
