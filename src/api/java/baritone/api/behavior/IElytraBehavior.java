@@ -19,7 +19,19 @@ package baritone.api.behavior;
 
 import net.minecraft.util.math.BlockPos;
 
+import java.util.concurrent.CompletableFuture;
+
 public interface IElytraBehavior extends IBehavior {
+
+    /**
+     * Marks the nether pathfinder context to be reset when it is safe to do so. Because this operation is not
+     * immediate, a {@link CompletableFuture} is returned that will complete after the context has been reset.
+     *
+     * @return A {@link CompletableFuture} that is completed when the context is reset
+     */
+    CompletableFuture<Void> resetContext();
+
+    void repackChunks();
 
     void pathTo(BlockPos destination);
 

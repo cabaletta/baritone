@@ -41,6 +41,7 @@ import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.movements.MovementFall;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.PathingCommandContext;
+import baritone.utils.accessor.IChunkProviderClient;
 import baritone.utils.accessor.IEntityFireworkRocket;
 import it.unimi.dsi.fastutil.floats.FloatArrayList;
 import it.unimi.dsi.fastutil.floats.FloatIterator;
@@ -76,7 +77,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
 
     // :sunglasses:
     private NetherPathfinderContext context;
-    private boolean forceResetContext;
+    private CompletableFuture<Void> forceResetContext;
     private final PathManager pathManager;
     private final ElytraProcess process;
 
@@ -370,7 +371,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         if (event.getWorld() != null) {
             if (event.getState() == EventState.PRE) {
                 // Reset the context when it's safe to do so on the next game tick
-                this.forceResetContext = true;
+                this.resetContext();
             }
         } else {
             if (event.getState() == EventState.POST) {
@@ -430,6 +431,20 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
     }
 
     @Override
+    public CompletableFuture<Void> resetContext() {
+        if (this.forceResetContext == null) {
+            this.forceResetContext = new CompletableFuture<>();
+        }
+        return this.forceResetContext;
+    }
+
+    @Override
+    public void repackChunks() {
+        ((IChunkProviderClient) ctx.world().getChunkProvider()).loadedChunks().values()
+                .forEach(this.context::queueForPacking);
+    }
+
+    @Override
     public boolean isActive() {
         return baritone.getPathingControlManager().mostRecentInControl()
                 .filter(process -> this.process == process).isPresent();
@@ -455,15 +470,16 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
 
         // Setup/reset context
         final long netherSeed = Baritone.settings().elytraNetherSeed.value;
-        if (this.context == null || this.context.getSeed() != netherSeed || this.forceResetContext) {
+        if (this.context == null || this.context.getSeed() != netherSeed || this.forceResetContext != null) {
             if (this.context != null) {
                 this.context.destroy();
             }
             this.context = new NetherPathfinderContext(netherSeed);
-            this.forceResetContext = false;
-
-            if (this.isActive()) {
-                // TODO: Re-pack chunks?
+            if (this.forceResetContext != null) {
+                this.forceResetContext.complete(null);
+                this.forceResetContext = null;
+            }
+            if (this.context.getSeed() != netherSeed && this.isActive()) {
                 logDirect("Nether seed changed, recalculating path");
                 this.pathManager.pathToDestination();
             }

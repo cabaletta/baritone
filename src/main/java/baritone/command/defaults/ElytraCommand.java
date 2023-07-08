@@ -18,6 +18,7 @@
 package baritone.command.defaults;
 
 import baritone.api.IBaritone;
+import baritone.api.behavior.IElytraBehavior;
 import baritone.api.command.Command;
 import baritone.api.command.argument.IArgConsumer;
 import baritone.api.command.exception.CommandException;
@@ -40,30 +41,52 @@ public class ElytraCommand extends Command {
 
     @Override
     public void execute(String label, IArgConsumer args) throws CommandException {
-        ICustomGoalProcess customGoalProcess = baritone.getCustomGoalProcess();
-        args.requireMax(0);
-        Goal iGoal = customGoalProcess.mostRecentGoal();
-        if (iGoal == null) {
-            throw new CommandInvalidStateException("No goal has been set");
+        final ICustomGoalProcess customGoalProcess = baritone.getCustomGoalProcess();
+        final IElytraBehavior elytra = baritone.getElytraBehavior();
+        if (!args.hasAny()) {
+            Goal iGoal = customGoalProcess.mostRecentGoal();
+            if (iGoal == null) {
+                throw new CommandInvalidStateException("No goal has been set");
+            }
+            final int x, y, z;
+            if (iGoal instanceof GoalXZ) {
+                GoalXZ goal = (GoalXZ) iGoal;
+                x = goal.getX();
+                y = 64;
+                z = goal.getZ();
+            } else if (iGoal instanceof GoalBlock) {
+                GoalBlock goal = (GoalBlock) iGoal;
+                x = goal.x;
+                y = goal.y;
+                z = goal.z;
+            } else {
+                throw new CommandInvalidStateException("The goal must be a GoalXZ or GoalBlock");
+            }
+            if (y <= 0 || y >= 128) {
+                throw new CommandInvalidStateException("The y of the goal is not between 0 and 128");
+            }
+            elytra.pathTo(new BlockPos(x, y, z));
+            return;
         }
-        final int x, y, z;
-        if (iGoal instanceof GoalXZ) {
-            GoalXZ goal = (GoalXZ) iGoal;
-            x = goal.getX();
-            y = 64;
-            z = goal.getZ();
-        } else if (iGoal instanceof GoalBlock) {
-            GoalBlock goal = (GoalBlock) iGoal;
-            x = goal.x;
-            y = goal.y;
-            z = goal.z;
-        } else {
-            throw new CommandInvalidStateException("The goal must be a GoalXZ or GoalBlock");
+
+        final String action = args.getString();
+        switch (action) {
+            case "reset": {
+                elytra.resetContext().whenComplete((result, ex) -> {
+                    logDirect("Context reset, repacking chunks");
+                    elytra.repackChunks();
+                });
+                break;
+            }
+            case "repack": {
+                elytra.repackChunks();
+                logDirect("Queued all loaded chunks for repacking");
+                break;
+            }
+            default: {
+                throw new CommandInvalidStateException("Invalid action");
+            }
         }
-        if (y <= 0 || y >= 128) {
-            throw new CommandInvalidStateException("The y of the goal is not between 0 and 128");
-        }
-        baritone.getElytraBehavior().pathTo(new BlockPos(x, y, z));
     }
 
     @Override
