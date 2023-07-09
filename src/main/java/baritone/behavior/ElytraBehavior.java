@@ -386,7 +386,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
 
     @Override
     public void onChunkEvent(ChunkEvent event) {
-        if (event.isPostPopulate()) {
+        if (event.isPostPopulate() && this.context != null) {
             final Chunk chunk = ctx.world().getChunk(event.getX(), event.getZ());
             this.context.queueForPacking(chunk);
         }
@@ -1069,13 +1069,13 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
                 // Ensure that the goal is visible along the entire simulated path
                 // Reverse order iteration since the last position is most likely to fail
                 for (int i = result.steps.size() - 1; i >= 1; i--) {
-                    if (!clearView(context.start.add(result.steps.get(i)), goal, false)) {
+                    if (!clearView(context.start.add(result.steps.get(i)), goal, context.ignoreLava)) {
                         continue outer;
                     }
                 }
             } else {
                 // Ensure that the goal is visible from the final position
-                if (!clearView(context.start.add(result.steps.get(result.steps.size() - 1)), goal, false)) {
+                if (!clearView(context.start.add(result.steps.get(result.steps.size() - 1)), goal, context.ignoreLava)) {
                     continue;
                 }
             }
