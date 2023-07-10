@@ -394,9 +394,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
 
     @Override
     public void onBlockChange(BlockChangeEvent event) {
-        event.getAffectedChunks().stream()
-                .map(pos -> ctx.world().getChunk(pos.x, pos.z))
-                .forEach(this.context::queueForPacking);
+        this.context.queueBlockUpdate(event);
     }
 
     @Override

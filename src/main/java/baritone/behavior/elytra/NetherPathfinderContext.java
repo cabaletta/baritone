@@ -17,6 +17,7 @@
 
 package baritone.behavior.elytra;
 
+import baritone.api.event.events.BlockChangeEvent;
 import baritone.utils.accessor.IBitArray;
 import baritone.utils.accessor.IBlockStateContainer;
 import dev.babbaj.pathfinder.NetherPathfinder;
@@ -26,6 +27,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.BitArray;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.chunk.BlockStateContainer;
 import net.minecraft.world.chunk.Chunk;
@@ -62,6 +64,20 @@ public final class NetherPathfinderContext {
                 long ptr = NetherPathfinder.getOrCreateChunk(this.context, chunk.x, chunk.z);
                 writeChunkData(chunk, ptr);
             }
+        });
+    }
+
+    public void queueBlockUpdate(BlockChangeEvent event) {
+        this.executor.execute(() -> {
+            ChunkPos chunkPos = event.getChunkPos();
+            long ptr = NetherPathfinder.getChunkPointer(this.context, chunkPos.x, chunkPos.z);
+            if (ptr == 0) return; // this shouldn't ever happen
+            event.getBlocks().forEach(pair -> {
+                BlockPos pos = pair.first();
+                if (pos.getY() >= 128) return;
+                boolean isSolid = pair.second() != AIR_BLOCK_STATE;
+                Octree.setBlock(ptr, pos.getX() & 15, pos.getY(), pos.getZ() & 15, isSolid);
+            });
         });
     }
 
