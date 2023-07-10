@@ -35,6 +35,5 @@ public class Behavior implements IBehavior {
     protected Behavior(Baritone baritone) {
         this.baritone = baritone;
         this.ctx = baritone.getPlayerContext();
-        baritone.registerBehavior(this);
     }
 }

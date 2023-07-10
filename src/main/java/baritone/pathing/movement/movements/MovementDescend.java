@@ -20,7 +20,6 @@ package baritone.pathing.movement.movements;
 import baritone.api.IBaritone;
 import baritone.api.pathing.movement.MovementStatus;
 import baritone.api.utils.BetterBlockPos;
-import baritone.api.utils.Rotation;
 import baritone.api.utils.RotationUtils;
 import baritone.api.utils.input.Input;
 import baritone.pathing.movement.CalculationContext;
@@ -30,14 +29,14 @@ import baritone.pathing.movement.MovementState;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.pathing.MutableMoveResult;
 import com.google.common.collect.ImmutableSet;
-import java.util.Set;
-import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.FallingBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
+
+import java.util.Set;
 
 public class MovementDescend extends Movement {
 
@@ -233,11 +232,10 @@ public class MovementDescend extends Movement {
         if (safeMode()) {
             double destX = (src.getX() + 0.5) * 0.17 + (dest.getX() + 0.5) * 0.83;
             double destZ = (src.getZ() + 0.5) * 0.17 + (dest.getZ() + 0.5) * 0.83;
-            LocalPlayer player = ctx.player();
             state.setTarget(new MovementState.MovementTarget(
-                    new Rotation(RotationUtils.calcRotationFromVec3d(ctx.playerHead(),
+                    RotationUtils.calcRotationFromVec3d(ctx.playerHead(),
                             new Vec3(destX, dest.getY(), destZ),
-                            new Rotation(player.getYRot(), player.getXRot())).getYaw(), player.getXRot()),
+                            ctx.playerRotations()).withPitch(ctx.playerRotations().getPitch()),
                     false
             )).setInput(Input.MOVE_FORWARD, true);
             return state;

@@ -25,10 +25,11 @@ import baritone.api.event.listener.IGameEventListener;
 import baritone.api.utils.Helper;
 import baritone.cache.WorldProvider;
 import baritone.utils.BlockStateInterface;
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.LevelChunk;
+
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * @author Brady
@@ -114,7 +115,7 @@ public final class GameEventHandler implements IEventBus, Helper {
         if (event.getState() == EventState.POST) {
             cache.closeWorld();
             if (event.getWorld() != null) {
-                cache.initWorld(event.getWorld().dimension(), event.getWorld().dimensionType());
+                cache.initWorld(event.getWorld());
             }
         }
 

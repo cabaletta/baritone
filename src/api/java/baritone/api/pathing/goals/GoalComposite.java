@@ -68,6 +68,24 @@ public class GoalComposite implements Goal {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        GoalComposite goal = (GoalComposite) o;
+        return Arrays.equals(goals, goal.goals);
+    }
+
+    @Override
+    public int hashCode() {
+        return Arrays.hashCode(goals);
+    }
+
+    @Override
     public String toString() {
         return "GoalComposite" + Arrays.toString(goals);
     }
