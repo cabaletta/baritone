@@ -42,6 +42,8 @@ import java.util.concurrent.TimeUnit;
  */
 public final class NetherPathfinderContext {
 
+    private static final IBlockState AIR_BLOCK_STATE = Blocks.AIR.getDefaultState();
+
     private final long context;
     private final long seed;
     private final ExecutorService executor;
@@ -147,36 +149,6 @@ public final class NetherPathfinderContext {
 
     public long getSeed() {
         return this.seed;
-    }
-
-    private static final IBlockState AIR_BLOCK_STATE = Blocks.AIR.getDefaultState();
-
-    private static boolean[] pack(Chunk chunk) {
-        try {
-            boolean[] packed = new boolean[16 * 16 * 128];
-            ExtendedBlockStorage[] chunkInternalStorageArray = chunk.getBlockStorageArray();
-            for (int y0 = 0; y0 < 8; y0++) {
-                ExtendedBlockStorage extendedblockstorage = chunkInternalStorageArray[y0];
-                if (extendedblockstorage == null) {
-                    continue;
-                }
-                BlockStateContainer bsc = extendedblockstorage.getData();
-                int yReal = y0 << 4;
-                for (int y1 = 0; y1 < 16; y1++) {
-                    int y = y1 | yReal;
-                    for (int z = 0; z < 16; z++) {
-                        for (int x = 0; x < 16; x++) {
-                            IBlockState state = bsc.get(x, y1, z);
-                            packed[x | (z << 4) | (y << 8)] = state != AIR_BLOCK_STATE;
-                        }
-                    }
-                }
-            }
-            return packed;
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException(e);
-        }
     }
 
     private static void writeChunkData(Chunk chunk, long ptr) {
