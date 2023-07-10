@@ -31,16 +31,16 @@ import java.util.Set;
  */
 public final class BlockChangeEvent {
 
-    private final Set<ChunkPos> affectedChunks;
+    private final ChunkPos chunk;
     private final List<Pair<BlockPos, IBlockState>> blocks;
 
     public BlockChangeEvent(ChunkPos pos, List<Pair<BlockPos, IBlockState>> blocks) {
-        this.affectedChunks = Collections.singleton(pos);
+        this.chunk = pos;
         this.blocks = blocks;
     }
 
-    public Set<ChunkPos> getAffectedChunks() {
-        return this.affectedChunks;
+    public ChunkPos getChunkPos() {
+        return this.chunk;
     }
 
     public List<Pair<BlockPos, IBlockState>> getBlocks() {

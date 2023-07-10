@@ -28,6 +28,7 @@ import baritone.cache.CachedChunk;
 import baritone.cache.WorldProvider;
 import baritone.utils.BlockStateInterface;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 
@@ -117,9 +118,8 @@ public final class GameEventHandler implements IEventBus, Helper {
             if (keepingTrackOf) {
                 baritone.getWorldProvider().ifWorldLoaded(worldData -> {
                     final World world = baritone.getPlayerContext().world();
-                    event.getAffectedChunks().stream()
-                            .map(pos -> world.getChunk(pos.x, pos.z))
-                            .forEach(worldData.getCachedWorld()::queueForPacking);
+                    ChunkPos pos = event.getChunkPos();
+                    worldData.getCachedWorld().queueForPacking(world.getChunk(pos.x, pos.z));
                 });
             }
         }
