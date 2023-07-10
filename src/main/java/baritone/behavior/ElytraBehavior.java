@@ -33,8 +33,8 @@ import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
 import baritone.api.utils.*;
 import baritone.api.utils.input.Input;
-import baritone.behavior.elytra.NetherPathfinderContext;
 import baritone.behavior.elytra.NetherPath;
+import baritone.behavior.elytra.NetherPathfinderContext;
 import baritone.behavior.elytra.PathCalculationException;
 import baritone.behavior.elytra.UnpackedSegment;
 import baritone.pathing.movement.CalculationContext;
@@ -54,7 +54,10 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.play.server.SPacketPlayerPosLook;
 import net.minecraft.util.EnumHand;
-import net.minecraft.util.math.*;
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.chunk.Chunk;
 
 import java.util.*;
@@ -716,9 +719,9 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         public final IAimProcessor aimProcessor;
 
         public SolverContext(boolean async) {
-            this.path       = ElytraBehavior.this.pathManager.getPath();
+            this.path = ElytraBehavior.this.pathManager.getPath();
             this.playerNear = ElytraBehavior.this.pathManager.getNear();
-            this.start      = ElytraBehavior.this.ctx.playerFeetAsVec();
+            this.start = ElytraBehavior.this.ctx.playerFeetAsVec();
             this.ignoreLava = ElytraBehavior.this.ctx.player().isInLava();
 
             final Integer fireworkTicksExisted;
@@ -863,10 +866,10 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
 
     private Optional<EntityFireworkRocket> getAttachedFirework() {
         return ctx.world().loadedEntityList.stream()
-            .filter(x -> x instanceof EntityFireworkRocket)
-            .filter(x -> Objects.equals(((IEntityFireworkRocket) x).getBoostedEntity(), ctx.player()))
-            .map(x -> (EntityFireworkRocket) x)
-            .findFirst();
+                .filter(x -> x instanceof EntityFireworkRocket)
+                .filter(x -> Objects.equals(((IEntityFireworkRocket) x).getBoostedEntity(), ctx.player()))
+                .map(x -> (EntityFireworkRocket) x)
+                .findFirst();
     }
 
     private boolean isHitboxClear(final SolverContext context, final Vec3d dest, final Double growAmount) {
@@ -1113,9 +1116,15 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
             // Collision box while the player is in motion, with additional padding for safety
             final AxisAlignedBB inMotion = hitbox.expand(motion.x, motion.y, motion.z).grow(0.01);
 
-            for (int x = fastFloor(inMotion.minX); x < fastCeil(inMotion.maxX); x++) {
-                for (int y = fastFloor(inMotion.minY); y < fastCeil(inMotion.maxY); y++) {
-                    for (int z = fastFloor(inMotion.minZ); z < fastCeil(inMotion.maxZ); z++) {
+            int xmin = fastFloor(inMotion.minX);
+            int xmax = fastCeil(inMotion.maxX);
+            int ymin = fastFloor(inMotion.minY);
+            int ymax = fastCeil(inMotion.maxY);
+            int zmin = fastFloor(inMotion.minZ);
+            int zmax = fastCeil(inMotion.maxZ);
+            for (int x = xmin; x < xmax; x++) {
+                for (int y = ymin; y < ymax; y++) {
+                    for (int z = zmin; z < zmax; z++) {
                         if (!this.passable(x, y, z, ignoreLava)) {
                             return null;
                         }
