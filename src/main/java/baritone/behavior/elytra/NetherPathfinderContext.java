@@ -17,10 +17,14 @@
 
 package baritone.behavior.elytra;
 
+import baritone.utils.accessor.IBitArray;
+import baritone.utils.accessor.IBlockStateContainer;
 import dev.babbaj.pathfinder.NetherPathfinder;
+import dev.babbaj.pathfinder.Octree;
 import dev.babbaj.pathfinder.PathSegment;
-import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.init.Blocks;
+import net.minecraft.util.BitArray;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.chunk.BlockStateContainer;
@@ -55,7 +59,8 @@ public final class NetherPathfinderContext {
             //       and prune the oldest chunks per chunkPackerQueueMaxSize
             final Chunk chunk = ref.get();
             if (chunk != null) {
-                NetherPathfinder.insertChunkData(this.context, chunk.x, chunk.z, pack(chunk));
+                long ptr = NetherPathfinder.getOrCreateChunk(this.context, chunk.x, chunk.z);
+                writeChunkData(chunk, ptr);
             }
         });
     }
@@ -144,6 +149,8 @@ public final class NetherPathfinderContext {
         return this.seed;
     }
 
+    private static final IBlockState AIR_BLOCK_STATE = Blocks.AIR.getDefaultState();
+
     private static boolean[] pack(Chunk chunk) {
         try {
             boolean[] packed = new boolean[16 * 16 * 128];
@@ -160,12 +167,59 @@ public final class NetherPathfinderContext {
                     for (int z = 0; z < 16; z++) {
                         for (int x = 0; x < 16; x++) {
                             IBlockState state = bsc.get(x, y1, z);
-                            packed[x | (z << 4) | (y << 8)] = state.getMaterial() != Material.AIR;
+                            packed[x | (z << 4) | (y << 8)] = state != AIR_BLOCK_STATE;
                         }
                     }
                 }
             }
             return packed;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static void writeChunkData(Chunk chunk, long ptr) {
+        try {
+            ExtendedBlockStorage[] chunkInternalStorageArray = chunk.getBlockStorageArray();
+            for (int y0 = 0; y0 < 8; y0++) {
+                final ExtendedBlockStorage extendedblockstorage = chunkInternalStorageArray[y0];
+                if (extendedblockstorage == null) {
+                    continue;
+                }
+                final BlockStateContainer bsc = extendedblockstorage.getData();
+                final int airId = ((IBlockStateContainer) bsc).getPalette().idFor(AIR_BLOCK_STATE);
+                // pasted from FasterWorldScanner
+                final BitArray array = ((IBlockStateContainer) bsc).getStorage();
+                if (array == null) continue;
+                final long[] longArray = array.getBackingLongArray();
+                final int arraySize = array.size();
+                final int bitsPerEntry = ((IBitArray) array).getBitsPerEntry();
+                final long maxEntryValue = ((IBitArray) array).getMaxEntryValue();
+
+                final int yReal = y0 << 4;
+                for (int idx = 0, kl = bitsPerEntry - 1; idx < arraySize; idx++, kl += bitsPerEntry) {
+                    final int i = idx * bitsPerEntry;
+                    final int j = i >> 6;
+                    final int l = i & 63;
+                    final int k = kl >> 6;
+                    final long jl = longArray[j] >>> l;
+
+                    final int id;
+                    if (j == k) {
+                        id = (int) (jl & maxEntryValue);
+                    } else {
+                        id = (int) ((jl | longArray[k] << (64 - l)) & maxEntryValue);
+                    }
+                    Octree.setBlock(ptr,
+                            ((idx & 255) & 15),
+                            yReal + (idx >> 8),
+                            ((idx & 255) >> 4),
+                            id != airId
+                    );
+                }
+            }
+            Octree.setIsFromJava(ptr);
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException(e);
