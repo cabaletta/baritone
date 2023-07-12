@@ -47,8 +47,8 @@ public class ElytraCommand extends Command {
             final String osArch = System.getProperty("os.arch");
             final String osName = System.getProperty("os.name");
             throw new CommandInvalidStateException(String.format(
-                    "legacy architectures are not supported. your CPU is %s and your operating system is %s." +
-                            "supported architectures are x86_64 or arm64, supported operating systems are windows," +
+                    "legacy architectures are not supported. your CPU is %s and your operating system is %s. " +
+                            "supported architectures are x86_64 or arm64, supported operating systems are windows, " +
                             "linux, and mac",
                     osArch, osName
             ));
