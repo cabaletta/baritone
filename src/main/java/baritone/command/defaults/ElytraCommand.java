@@ -43,6 +43,17 @@ public class ElytraCommand extends Command {
     public void execute(String label, IArgConsumer args) throws CommandException {
         final ICustomGoalProcess customGoalProcess = baritone.getCustomGoalProcess();
         final IElytraBehavior elytra = baritone.getElytraBehavior();
+        if (!elytra.isLoaded()) {
+            final String osArch = System.getProperty("os.arch");
+            final String osName = System.getProperty("os.name");
+            throw new CommandInvalidStateException(String.format(
+                    "legacy architectures are not supported. your CPU is %s and your operating system is %s." +
+                            "supported architectures are x86_64 or arm64, supported operating systems are windows," +
+                            "linux, and mac",
+                    osArch, osName
+            ));
+        }
+
         if (!args.hasAny()) {
             Goal iGoal = customGoalProcess.mostRecentGoal();
             if (iGoal == null) {

@@ -41,4 +41,14 @@ public interface IElytraBehavior extends IBehavior {
      * Returns {@code true} if the current {@link IElytraBehavior} is actively pathing.
      */
     boolean isActive();
+
+    /**
+     * @return {@code true} if the native library loaded and elytra is actually usable
+     */
+    boolean isLoaded();
+
+    /*
+     * FOR INTERNAL USE ONLY. MAY BE REMOVED AT ANY TIME.
+     */
+    boolean isSafeToCancel();
 }

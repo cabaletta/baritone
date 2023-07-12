@@ -21,6 +21,7 @@ import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.Settings;
 import baritone.api.behavior.IBehavior;
+import baritone.api.behavior.IElytraBehavior;
 import baritone.api.event.listener.IEventBus;
 import baritone.api.process.IBaritoneProcess;
 import baritone.api.utils.IPlayerContext;
@@ -107,7 +108,7 @@ public class Baritone implements IBaritone {
 
         {
             this.lookBehavior         = this.registerBehavior(LookBehavior::new);
-            this.elytraBehavior       = this.registerBehavior(ElytraBehavior::new);
+            this.elytraBehavior       = this.registerBehavior(ElytraBehavior::create);
             this.pathingBehavior      = this.registerBehavior(PathingBehavior::new);
             this.inventoryBehavior    = this.registerBehavior(InventoryBehavior::new);
             this.inputOverrideHandler = this.registerBehavior(InputOverrideHandler::new);
@@ -240,7 +241,7 @@ public class Baritone implements IBaritone {
     }
 
     @Override
-    public ElytraBehavior getElytraBehavior() {
+    public IElytraBehavior getElytraBehavior() {
         return this.elytraBehavior;
     }
 

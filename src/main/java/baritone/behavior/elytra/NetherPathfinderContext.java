@@ -222,4 +222,8 @@ public final class NetherPathfinderContext {
 
         private Visibility() {}
     }
+
+    public static boolean isSupported() {
+        return NetherPathfinder.isThisSystemSupported();
+    }
 }

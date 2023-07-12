@@ -19,12 +19,14 @@ package baritone.behavior;
 
 import baritone.Baritone;
 import baritone.api.IBaritone;
+import baritone.api.Settings;
 import baritone.api.behavior.IElytraBehavior;
 import baritone.api.behavior.look.IAimProcessor;
 import baritone.api.behavior.look.ITickableAimProcessor;
 import baritone.api.event.events.*;
 import baritone.api.event.events.type.EventState;
 import baritone.api.pathing.goals.Goal;
+import baritone.api.pathing.goals.GoalBlock;
 import baritone.api.pathing.goals.GoalYLevel;
 import baritone.api.pathing.movement.IMovement;
 import baritone.api.pathing.path.IPathExecutor;
@@ -33,13 +35,12 @@ import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
 import baritone.api.utils.*;
 import baritone.api.utils.input.Input;
-import baritone.behavior.elytra.NetherPath;
-import baritone.behavior.elytra.NetherPathfinderContext;
-import baritone.behavior.elytra.PathCalculationException;
-import baritone.behavior.elytra.UnpackedSegment;
+import baritone.behavior.elytra.*;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.movements.MovementFall;
 import baritone.utils.BlockStateInterface;
+import baritone.utils.IRenderer;
+import baritone.utils.PathRenderer;
 import baritone.utils.PathingCommandContext;
 import baritone.utils.accessor.IChunkProviderClient;
 import baritone.utils.accessor.IEntityFireworkRocket;
@@ -60,7 +61,9 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.chunk.Chunk;
 
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.*;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -112,7 +115,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
     private Solution pendingSolution;
     private boolean solveNextTick;
 
-    public ElytraBehavior(Baritone baritone) {
+    private ElytraBehavior(Baritone baritone) {
         super(baritone);
         this.clearLines = new CopyOnWriteArrayList<>();
         this.blockedLines = new CopyOnWriteArrayList<>();
@@ -370,6 +373,45 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
     }
 
     @Override
+    public void onRenderPass(RenderEvent event) {
+        final Settings settings = Baritone.settings();
+        if (this.visiblePath != null) {
+            PathRenderer.drawPath(this.visiblePath, 0, Color.RED, false, 0, 0, 0.0D);
+        }
+        if (this.aimPos != null) {
+            PathRenderer.drawGoal(ctx.player(), new GoalBlock(this.aimPos), event.getPartialTicks(), Color.GREEN);
+        }
+        if (!this.clearLines.isEmpty() && settings.renderRaytraces.value) {
+            IRenderer.startLines(Color.GREEN, settings.pathRenderLineWidthPixels.value, settings.renderPathIgnoreDepth.value);
+            for (Pair<Vec3d, Vec3d> line : this.clearLines) {
+                IRenderer.emitLine(line.first(), line.second());
+            }
+            IRenderer.endLines(settings.renderPathIgnoreDepth.value);
+        }
+        if (!this.blockedLines.isEmpty() && Baritone.settings().renderRaytraces.value) {
+            IRenderer.startLines(Color.BLUE, settings.pathRenderLineWidthPixels.value, settings.renderPathIgnoreDepth.value);
+            for (Pair<Vec3d, Vec3d> line : this.blockedLines) {
+                IRenderer.emitLine(line.first(), line.second());
+            }
+            IRenderer.endLines(settings.renderPathIgnoreDepth.value);
+        }
+        if (this.simulationLine != null && Baritone.settings().renderElytraSimulation.value) {
+            IRenderer.startLines(new Color(0x36CCDC), settings.pathRenderLineWidthPixels.value, settings.renderPathIgnoreDepth.value);
+            final Vec3d offset = new Vec3d(
+                    ctx.player().prevPosX + (ctx.player().posX - ctx.player().prevPosX) * event.getPartialTicks(),
+                    ctx.player().prevPosY + (ctx.player().posY - ctx.player().prevPosY) * event.getPartialTicks(),
+                    ctx.player().prevPosZ + (ctx.player().posZ - ctx.player().prevPosZ) * event.getPartialTicks()
+            );
+            for (int i = 0; i < this.simulationLine.size() - 1; i++) {
+                final Vec3d src = this.simulationLine.get(i).add(offset);
+                final Vec3d dst = this.simulationLine.get(i + 1).add(offset);
+                IRenderer.emitLine(src, dst);
+            }
+            IRenderer.endLines(settings.renderPathIgnoreDepth.value);
+        }
+    }
+
+    @Override
     public void onWorldEvent(WorldEvent event) {
         if (event.getWorld() != null) {
             if (event.getState() == EventState.PRE) {
@@ -449,6 +491,16 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
     public boolean isActive() {
         return baritone.getPathingControlManager().mostRecentInControl()
                 .filter(process -> this.process == process).isPresent();
+    }
+
+    @Override
+    public boolean isLoaded() {
+        return true;
+    }
+
+    @Override
+    public boolean isSafeToCancel() {
+        return !this.isActive() || !(this.process.state == State.FLYING || this.process.state == State.START_FLYING);
     }
 
     @Override
@@ -1261,10 +1313,6 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         }
     }
 
-    public boolean isSafeToCancel() {
-        return !this.isActive() || !(this.process.state == State.FLYING || this.process.state == State.START_FLYING);
-    }
-
     private final class ElytraProcess implements IBaritoneProcess {
 
         private State state;
@@ -1442,5 +1490,11 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         GET_TO_JUMP,
         START_FLYING,
         FLYING
+    }
+
+    public static <T extends Behavior & IElytraBehavior> T create(final Baritone baritone) {
+        return (T) (NetherPathfinderContext.isSupported()
+                ? new ElytraBehavior(baritone)
+                : new NullElytraBehavior(baritone));
     }
 }

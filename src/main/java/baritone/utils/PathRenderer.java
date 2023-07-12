@@ -17,15 +17,12 @@
 
 package baritone.utils;
 
-import baritone.Baritone;
 import baritone.api.BaritoneAPI;
 import baritone.api.event.events.RenderEvent;
 import baritone.api.pathing.goals.*;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.IPlayerContext;
-import baritone.api.utils.Pair;
 import baritone.api.utils.interfaces.IGoalRenderPos;
-import baritone.behavior.ElytraBehavior;
 import baritone.behavior.PathingBehavior;
 import baritone.pathing.path.PathExecutor;
 import net.minecraft.block.state.IBlockState;
@@ -102,44 +99,6 @@ public final class PathRenderer implements IRenderer {
             drawPath(next.getPath().positions(), 0, settings.colorNextPath.value, settings.fadePath.value, 10, 20);
         }
 
-        final ElytraBehavior elytra = behavior.baritone.getElytraBehavior();
-
-        if (elytra.visiblePath != null) {
-            drawPath(elytra.visiblePath, 0, Color.RED, false, 0, 0, 0.0D);
-        }
-        if (elytra.aimPos != null) {
-            drawGoal(ctx.player(), new GoalBlock(elytra.aimPos), partialTicks, Color.GREEN);
-        }
-        if (!elytra.clearLines.isEmpty() && Baritone.settings().renderRaytraces.value) {
-            IRenderer.startLines(Color.GREEN, settings.pathRenderLineWidthPixels.value, settings.renderPathIgnoreDepth.value);
-            for (Pair<Vec3d, Vec3d> line : elytra.clearLines) {
-                emitLine(line.first(), line.second());
-            }
-            IRenderer.endLines(settings.renderPathIgnoreDepth.value);
-        }
-        if (!elytra.blockedLines.isEmpty() && Baritone.settings().renderRaytraces.value) {
-            IRenderer.startLines(Color.BLUE, settings.pathRenderLineWidthPixels.value, settings.renderPathIgnoreDepth.value);
-            for (Pair<Vec3d, Vec3d> line : elytra.blockedLines) {
-                emitLine(line.first(), line.second());
-            }
-            IRenderer.endLines(settings.renderPathIgnoreDepth.value);
-        }
-        if (elytra.simulationLine != null && Baritone.settings().renderElytraSimulation.value) {
-            IRenderer.startLines(new Color(0x36CCDC), settings.pathRenderLineWidthPixels.value, settings.renderPathIgnoreDepth.value);
-            final Vec3d offset = new Vec3d(
-                ctx.player().prevPosX + (ctx.player().posX - ctx.player().prevPosX) * partialTicks,
-                ctx.player().prevPosY + (ctx.player().posY - ctx.player().prevPosY) * partialTicks,
-                ctx.player().prevPosZ + (ctx.player().posZ - ctx.player().prevPosZ) * partialTicks
-            );
-            for (int i = 0; i < elytra.simulationLine.size() - 1; i++) {
-                final Vec3d src = elytra.simulationLine.get(i).add(offset);
-                final Vec3d dst = elytra.simulationLine.get(i + 1).add(offset);
-                emitLine(src, dst);
-            }
-            IRenderer.endLines(settings.renderPathIgnoreDepth.value);
-        }
-
-
         // If there is a path calculation currently running, render the path calculation process
         behavior.getInProgress().ifPresent(currentlyRunning -> {
             currentlyRunning.bestPathSoFar().ifPresent(p -> {
@@ -153,11 +112,11 @@ public final class PathRenderer implements IRenderer {
         });
     }
 
-    private static void drawPath(List<BetterBlockPos> positions, int startIndex, Color color, boolean fadeOut, int fadeStart0, int fadeEnd0) {
+    public static void drawPath(List<BetterBlockPos> positions, int startIndex, Color color, boolean fadeOut, int fadeStart0, int fadeEnd0) {
         drawPath(positions, startIndex, color, fadeOut, fadeStart0, fadeEnd0, 0.5D);
     }
 
-    private static void drawPath(List<BetterBlockPos> positions, int startIndex, Color color, boolean fadeOut, int fadeStart0, int fadeEnd0, double offset) {
+    public static void drawPath(List<BetterBlockPos> positions, int startIndex, Color color, boolean fadeOut, int fadeStart0, int fadeEnd0, double offset) {
         IRenderer.startLines(color, settings.pathRenderLineWidthPixels.value, settings.renderPathIgnoreDepth.value);
 
         int fadeStart = fadeStart0 + startIndex;
@@ -197,18 +156,6 @@ public final class PathRenderer implements IRenderer {
         }
 
         IRenderer.endLines(settings.renderPathIgnoreDepth.value);
-    }
-
-    private static void emitLine(Vec3d start, Vec3d end) {
-        emitLine(start.x, start.y, start.z, end.x, end.y, end.z);
-    }
-
-    private static void emitLine(double x1, double y1, double z1, double x2, double y2, double z2) {
-        double vpX = renderManager.viewerPosX;
-        double vpY = renderManager.viewerPosY;
-        double vpZ = renderManager.viewerPosZ;
-        buffer.pos(x1 - vpX, y1 - vpY, z1 - vpZ).color(color[0], color[1], color[2], color[3]).endVertex();
-        buffer.pos(x2 - vpX, y2 - vpY, z2 - vpZ).color(color[0], color[1], color[2], color[3]).endVertex();
     }
 
     private static void emitPathLine(double x1, double y1, double z1, double x2, double y2, double z2, double offset) {
@@ -255,7 +202,7 @@ public final class PathRenderer implements IRenderer {
         IRenderer.endLines(settings.renderSelectionBoxesIgnoreDepth.value);
     }
 
-    private static void drawGoal(Entity player, Goal goal, float partialTicks, Color color) {
+    public static void drawGoal(Entity player, Goal goal, float partialTicks, Color color) {
         drawGoal(player, goal, partialTicks, color, true);
     }
 
