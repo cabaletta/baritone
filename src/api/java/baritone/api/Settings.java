@@ -1395,6 +1395,21 @@ public final class Settings {
     public final Setting<Long> elytraNetherSeed = new Setting<>(146008555100680L);
 
     /**
+     * Automatically swap the current elytra with a new one when the durability gets too low
+     */
+    public final Setting<Boolean> elytraAutoSwap = new Setting<>(true);
+
+    /**
+     * The minimum durability an elytra can have before being swapped
+     */
+    public final Setting<Integer> elytraMinimumDurability = new Setting<>(5);
+
+    /**
+     * The number of ticks between doing inventory clicks
+     */
+    public final Setting<Integer> elytraInventoryTicks = new Setting<>(5);
+
+    /**
      * A map of lowercase setting field names to their respective setting
      */
     public final Map<String, Setting<?>> byLowerName;
