@@ -68,7 +68,7 @@ public class Baritone implements IBaritone {
 
     private final List<IBehavior> behaviors;
     private final PathingBehavior pathingBehavior;
-    private final ElytraBehavior elytraBehavior;
+    private final IElytraBehavior elytraBehavior;
     private final LookBehavior lookBehavior;
     private final InventoryBehavior inventoryBehavior;
     private final InputOverrideHandler inputOverrideHandler;
