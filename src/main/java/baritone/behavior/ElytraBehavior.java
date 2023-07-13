@@ -544,6 +544,8 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
             }
         }
 
+        tickInventoryTransactions();
+
         // Certified mojang employee incident
         if (this.remainingFireworkTicks > 0) {
             this.remainingFireworkTicks--;
@@ -1283,12 +1285,15 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
     }
 
     private void trySwapElytra() {
-        if (!Baritone.settings().elytraAutoSwap.value) return;
-        if (!transactionQueue.isEmpty()) return;
+        if (!Baritone.settings().elytraAutoSwap.value || !transactionQueue.isEmpty()) {
+            return;
+        }
 
         ItemStack chest = ctx.player().inventory.armorInventory.get(2);
-        if (chest.getItem() != Items.ELYTRA) return;
-        if (chest.getItem().getMaxDamage() - chest.getItemDamage() > Baritone.settings().elytraMinimumDurability.value) return;
+        if (chest.getItem() != Items.ELYTRA
+            || chest.getItem().getMaxDamage() - chest.getItemDamage() > Baritone.settings().elytraMinimumDurability.value) {
+            return;
+        }
 
         int goodElytraSlot = findGoodElytra();
         if (goodElytraSlot != -1) {
@@ -1382,8 +1387,6 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
                 logDirect("Failed to get to jump off spot, canceling");
                 return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
             }
-
-            tickInventoryTransactions();
 
             if (ctx.player().isElytraFlying()) {
                 this.state = State.FLYING;
