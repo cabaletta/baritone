@@ -199,12 +199,10 @@ public final class NetherPathfinderContext {
                     } else {
                         id = (int) ((jl | longArray[k] << (64 - l)) & maxEntryValue);
                     }
-                    Octree.setBlock(ptr,
-                            ((idx & 255) & 15),
-                            yReal + (idx >> 8),
-                            ((idx & 255) >> 4),
-                            id != airId
-                    );
+                    int x = (idx & 15);
+                    int y = yReal + (idx >> 8);
+                    int z = ((idx >> 4) & 15);
+                    Octree.setBlock(ptr, x, y, z, id != airId);
                 }
             }
             Octree.setIsFromJava(ptr);

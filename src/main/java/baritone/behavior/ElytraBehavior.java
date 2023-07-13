@@ -51,10 +51,12 @@ import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.item.EntityFireworkRocket;
 import net.minecraft.init.Items;
+import net.minecraft.inventory.ClickType;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.play.server.SPacketPlayerPosLook;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
@@ -114,6 +116,10 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
     private Future<Solution> solver;
     private Solution pendingSolution;
     private boolean solveNextTick;
+
+    // auto swap
+    private int invTickCountdown = 0;
+    private final Queue<Runnable> transactionQueue = new LinkedList<>();
 
     private ElytraBehavior(Baritone baritone) {
         super(baritone);
@@ -538,6 +544,8 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
             }
         }
 
+        tickInventoryTransactions();
+
         // Certified mojang employee incident
         if (this.remainingFireworkTicks > 0) {
             this.remainingFireworkTicks--;
@@ -584,6 +592,8 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         if (this.pathManager.getPath().isEmpty()) {
             return;
         }
+
+        trySwapElytra();
 
         if (ctx.player().collidedHorizontally) {
             logDirect("hbonk");
@@ -1246,6 +1256,53 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
     private static boolean passable(IBlockState state, boolean ignoreLava) {
         Material mat = state.getMaterial();
         return mat == Material.AIR || (ignoreLava && mat == Material.LAVA);
+    }
+
+    private void tickInventoryTransactions() {
+        if (invTickCountdown <= 0) {
+            Runnable r = transactionQueue.poll();
+            if (r != null) {
+                r.run();
+                invTickCountdown = Baritone.settings().ticksBetweenInventoryMoves.value;
+            }
+        }
+        if (invTickCountdown > 0) invTickCountdown--;
+    }
+
+    private void queueWindowClick(int windowId, int slotId, int button, ClickType type) {
+        transactionQueue.add(() -> ctx.playerController().windowClick(windowId, slotId, button, type, ctx.player()));
+    }
+
+    private int findGoodElytra() {
+        NonNullList<ItemStack> invy = ctx.player().inventory.mainInventory;
+        for (int i = 0; i < invy.size(); i++) {
+            ItemStack slot = invy.get(i);
+            if (slot.getItem() == Items.ELYTRA && (slot.getItem().getMaxDamage() - slot.getItemDamage()) > Baritone.settings().elytraMinimumDurability.value) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private void trySwapElytra() {
+        if (!Baritone.settings().elytraAutoSwap.value || !transactionQueue.isEmpty()) {
+            return;
+        }
+
+        ItemStack chest = ctx.player().inventory.armorInventory.get(2);
+        if (chest.getItem() != Items.ELYTRA
+            || chest.getItem().getMaxDamage() - chest.getItemDamage() > Baritone.settings().elytraMinimumDurability.value) {
+            return;
+        }
+
+        int goodElytraSlot = findGoodElytra();
+        if (goodElytraSlot != -1) {
+            final int CHEST_SLOT = 6;
+            final int slotId = goodElytraSlot < 9 ? goodElytraSlot + 36 : goodElytraSlot;
+            queueWindowClick(ctx.player().inventoryContainer.windowId, slotId, 0, ClickType.PICKUP);
+            queueWindowClick(ctx.player().inventoryContainer.windowId, CHEST_SLOT, 0, ClickType.PICKUP);
+            queueWindowClick(ctx.player().inventoryContainer.windowId, slotId, 0, ClickType.PICKUP);
+        }
     }
 
     /**
