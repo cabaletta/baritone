@@ -110,6 +110,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
     private final int[] nextTickBoostCounter;
 
     private BlockStateInterface bsi;
+    private BlockStateOctreeInterface boi;
     private BlockPos destination;
 
     private final ExecutorService solverExecutor;
@@ -299,7 +300,8 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
                 // not loaded yet?
                 return;
             }
-            if (!passable(ctx.world().getBlockState(path.get(rangeStartIncl)), false)) {
+            final BetterBlockPos rangeStart = path.get(rangeStartIncl);
+            if (!ElytraBehavior.this.passable(rangeStart.x, rangeStart.y, rangeStart.z, false)) {
                 // we're in a wall
                 return; // previous iterations of this function SHOULD have fixed this by now :rage_cat:
             }
@@ -575,7 +577,9 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
             return;
         }
 
+        // ctx AND context???? :DDD
         this.bsi = new BlockStateInterface(ctx);
+        this.boi = new BlockStateOctreeInterface(context);
         this.pathManager.tick();
 
         final int playerNear = this.pathManager.getNear();
@@ -1250,12 +1254,12 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
     }
 
     private boolean passable(int x, int y, int z, boolean ignoreLava) {
-        return passable(this.bsi.get0(x, y, z), ignoreLava);
-    }
-
-    private static boolean passable(IBlockState state, boolean ignoreLava) {
-        Material mat = state.getMaterial();
-        return mat == Material.AIR || (ignoreLava && mat == Material.LAVA);
+        if (ignoreLava) {
+            final Material mat = this.bsi.get0(x, y, z).getMaterial();
+            return mat == Material.AIR || mat == Material.LAVA;
+        } else {
+            return !this.boi.get0(x, y, z);
+        }
     }
 
     private void tickInventoryTransactions() {

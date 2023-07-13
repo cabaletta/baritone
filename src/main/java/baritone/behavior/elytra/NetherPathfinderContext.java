@@ -46,7 +46,8 @@ public final class NetherPathfinderContext {
 
     private static final IBlockState AIR_BLOCK_STATE = Blocks.AIR.getDefaultState();
 
-    private final long context;
+    // Visible for access in BlockStateOctreeInterface
+    final long context;
     private final long seed;
     private final ExecutorService executor;
 
