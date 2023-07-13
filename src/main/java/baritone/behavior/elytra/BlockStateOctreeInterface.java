@@ -27,20 +27,22 @@ public final class BlockStateOctreeInterface {
 
     private final long context;
     private long chunkPtr;
-    private int prevChunkX;
-    private int prevChunkZ;
+
+    // Guarantee that the first lookup will fetch the context by setting MAX_VALUE
+    private int prevChunkX = Integer.MAX_VALUE;
+    private int prevChunkZ = Integer.MAX_VALUE;
 
     public BlockStateOctreeInterface(final NetherPathfinderContext context) {
         this.context = context.context;
     }
 
     public boolean get0(final int x, final int y, final int z) {
-        if (y < 0 || y >= 128) {
+        if ((y | (128 - y)) < 0) {
             return false;
         }
         final int chunkX = x >> 4;
         final int chunkZ = z >> 4;
-        if (chunkX != this.prevChunkX || chunkZ != this.prevChunkZ || this.chunkPtr == 0) {
+        if (((chunkX ^ this.prevChunkX) | (chunkZ ^ this.prevChunkZ)) != 0) {
             this.prevChunkX = chunkX;
             this.prevChunkZ = chunkZ;
             this.chunkPtr = NetherPathfinder.getOrCreateChunk(this.context, chunkX, chunkZ);
