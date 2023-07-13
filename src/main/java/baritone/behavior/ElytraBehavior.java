@@ -119,7 +119,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
 
     // auto swap
     private int tickCounter;
-    private int tickLastTransaction = -Baritone.settings().elytraInventoryTicks.value;
+    private int tickLastTransaction = -Baritone.settings().ticksBetweenInventoryMoves.value;
     private final Queue<Runnable> transactionQueue = new LinkedList<>();
 
     private ElytraBehavior(Baritone baritone) {
@@ -1258,7 +1258,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
     }
 
     private void tickInventoryTransactions() {
-        if (tickCounter - tickLastTransaction > Baritone.settings().elytraInventoryTicks.value) {
+        if (tickCounter - tickLastTransaction > Baritone.settings().ticksBetweenInventoryMoves.value) {
             Runnable r = transactionQueue.poll();
             if (r != null) {
                 r.run();

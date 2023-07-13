@@ -1405,11 +1405,6 @@ public final class Settings {
     public final Setting<Integer> elytraMinimumDurability = new Setting<>(5);
 
     /**
-     * The number of ticks between doing inventory clicks
-     */
-    public final Setting<Integer> elytraInventoryTicks = new Setting<>(5);
-
-    /**
      * A map of lowercase setting field names to their respective setting
      */
     public final Map<String, Setting<?>> byLowerName;
