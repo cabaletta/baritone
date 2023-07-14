@@ -17,6 +17,7 @@
 
 package baritone.api.pathing.goals;
 
+import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.SettingsUtil;
 import baritone.api.utils.interfaces.IGoalRenderPos;
 import net.minecraft.core.BlockPos;
@@ -64,6 +65,26 @@ public class GoalBlock implements Goal, IGoalRenderPos {
         int yDiff = y - this.y;
         int zDiff = z - this.z;
         return calculate(xDiff, yDiff, zDiff);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        GoalBlock goal = (GoalBlock) o;
+        return x == goal.x
+                && y == goal.y
+                && z == goal.z;
+    }
+
+    @Override
+    public int hashCode() {
+        return (int) BetterBlockPos.longHash(x, y, z) * 905165533;
     }
 
     @Override

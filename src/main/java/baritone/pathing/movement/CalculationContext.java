@@ -91,8 +91,8 @@ public class CalculationContext {
         this.baritone = baritone;
         LocalPlayer player = baritone.getPlayerContext().player();
         this.world = baritone.getPlayerContext().world();
-        this.worldData = (WorldData) baritone.getWorldProvider().getCurrentWorld();
-        this.bsi = new BlockStateInterface(world, worldData, forUseOnAnotherThread);
+        this.worldData = (WorldData) baritone.getPlayerContext().worldData();
+        this.bsi = new BlockStateInterface(baritone.getPlayerContext(), forUseOnAnotherThread);
         this.toolSet = new ToolSet(player);
         this.hasThrowaway = Baritone.settings().allowPlace.value && ((Baritone) baritone).getInventoryBehavior().hasGenericThrowaway();
         this.hasWaterBucket = Baritone.settings().allowWaterBucketFall.value && Inventory.isHotbarSlot(player.getInventory().findSlotMatchingItem(STACK_BUCKET_WATER)) && world.dimension() != Level.NETHER;

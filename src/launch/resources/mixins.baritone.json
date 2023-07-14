@@ -20,6 +20,8 @@
     "MixinLootContext",
     "MixinMinecraft",
     "MixinNetworkManager",
+    "MixinPalettedContainer",
+    "MixinPalettedContainer$IData",
     "MixinPlayerController",
     "MixinScreen",
     "MixinWorldRenderer"

@@ -19,13 +19,15 @@ package baritone.utils;
 
 import baritone.api.BaritoneAPI;
 import baritone.api.Settings;
-import baritone.api.utils.Helper;
 import baritone.utils.accessor.IEntityRenderManager;
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.texture.TextureManager;
 import com.mojang.blaze3d.vertex.*;
 import com.mojang.math.Matrix4f;
-import java.awt.*;
 import net.minecraft.world.phys.AABB;
+
+import java.awt.*;
 
 import static org.lwjgl.opengl.GL11.*;
 
@@ -33,7 +35,8 @@ public interface IRenderer {
 
     Tesselator tessellator = Tesselator.getInstance();
     BufferBuilder buffer = tessellator.getBuilder();
-    IEntityRenderManager renderManager = (IEntityRenderManager) Helper.mc.getEntityRenderDispatcher();
+    IEntityRenderManager renderManager = (IEntityRenderManager) Minecraft.getInstance().getEntityRenderDispatcher();
+    TextureManager textureManager = Minecraft.getInstance().getTextureManager();
     Settings settings = BaritoneAPI.getSettings();
 
     float[] color = new float[] {1.0F, 1.0F, 1.0F, 255.0F};
@@ -57,6 +60,8 @@ public interface IRenderer {
         if (ignoreDepth) {
             RenderSystem.disableDepthTest();
         }
+        //TODO: check
+        buffer.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
     }
 
     static void startLines(Color color, float lineWidth, boolean ignoreDepth) {
@@ -64,6 +69,7 @@ public interface IRenderer {
     }
 
     static void endLines(boolean ignoredDepth) {
+        tessellator.end();
         if (ignoredDepth) {
             RenderSystem.enableDepthTest();
         }
@@ -73,12 +79,10 @@ public interface IRenderer {
         RenderSystem.disableBlend();
     }
 
-    static void drawAABB(PoseStack stack, AABB aabb) {
+    static void emitAABB(PoseStack stack, AABB aabb) {
         AABB toDraw = aabb.move(-renderManager.renderPosX(), -renderManager.renderPosY(), -renderManager.renderPosZ());
 
         Matrix4f matrix4f = stack.last().pose();
-        //TODO: check
-        buffer.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
         // bottom
         buffer.vertex(matrix4f, (float) toDraw.minX, (float) toDraw.minY, (float) toDraw.minZ).color(color[0], color[1], color[2], color[3]).endVertex();
         buffer.vertex(matrix4f, (float) toDraw.maxX, (float) toDraw.minY, (float) toDraw.minZ).color(color[0], color[1], color[2], color[3]).endVertex();
@@ -106,10 +110,15 @@ public interface IRenderer {
         buffer.vertex(matrix4f, (float) toDraw.maxX, (float) toDraw.maxY, (float) toDraw.maxZ).color(color[0], color[1], color[2], color[3]).endVertex();
         buffer.vertex(matrix4f, (float) toDraw.minX, (float) toDraw.minY, (float) toDraw.maxZ).color(color[0], color[1], color[2], color[3]).endVertex();
         buffer.vertex(matrix4f, (float) toDraw.minX, (float) toDraw.maxY, (float) toDraw.maxZ).color(color[0], color[1], color[2], color[3]).endVertex();
-        tessellator.end();
     }
 
-    static void drawAABB(PoseStack stack, AABB aabb, double expand) {
-        drawAABB(stack, aabb.inflate(expand, expand, expand));
+    static void emitAABB(PoseStack stack, AABB aabb, double expand) {
+        emitAABB(stack, aabb.inflate(expand, expand, expand));
+    }
+
+    static void drawAABB(PoseStack stack, AABB aabb) {
+        buffer.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
+        emitAABB(stack, aabb);
+        tessellator.end();
     }
 }
