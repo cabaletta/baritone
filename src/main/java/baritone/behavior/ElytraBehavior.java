@@ -1393,6 +1393,23 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
             }
 
             if (ctx.player().isElytraFlying()) {
+                if (ctx.player().getDistanceSqToCenter(ElytraBehavior.this.pathManager.path.getLast()) < (5 * 5)) {
+                    this.state = State.LANDING;
+                }
+            }
+
+            if (this.state == State.LANDING) {
+                if (ctx.player().isElytraFlying()) {
+                    BetterBlockPos endPos = ElytraBehavior.this.pathManager.path.getLast();
+                    Vec3d from = ctx.player().getPositionVector();
+                    Vec3d to = new Vec3d(endPos.x, from.y, endPos.z);
+                    Rotation rotation = RotationUtils.calcRotationFromVec3d(from, to, ctx.playerRotations());
+                    baritone.getLookBehavior().updateTarget(rotation, false);
+                } else {
+                    this.onLostControl();
+                    return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
+                }
+            } else if (ctx.player().isElytraFlying()) {
                 this.state = State.FLYING;
                 this.goal = null;
                 baritone.getInputOverrideHandler().clearAllKeys();
@@ -1508,6 +1525,8 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
                         return "Begin flying";
                     case FLYING:
                         return "Flying";
+                    case LANDING:
+                        return "Landing";
                     default:
                         return "Unknown";
                 }
@@ -1550,7 +1569,8 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         PAUSE,
         GET_TO_JUMP,
         START_FLYING,
-        FLYING
+        FLYING,
+        LANDING
     }
 
     public static <T extends Behavior & IElytraBehavior> T create(final Baritone baritone) {

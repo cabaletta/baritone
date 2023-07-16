@@ -47,6 +47,10 @@ public final class NetherPath extends AbstractList<BetterBlockPos> {
         return this.backing.size();
     }
 
+    public BetterBlockPos getLast() {
+        return this.backing.get(this.backing.size() - 1);
+    }
+
     public Vec3d getVec(int index) {
         final BetterBlockPos pos = this.get(index);
         return new Vec3d(pos.x, pos.y, pos.z);
