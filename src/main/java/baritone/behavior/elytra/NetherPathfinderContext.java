@@ -17,6 +17,7 @@
 
 package baritone.behavior.elytra;
 
+import baritone.Baritone;
 import baritone.api.event.events.BlockChangeEvent;
 import baritone.utils.accessor.IBitArray;
 import baritone.utils.accessor.IBlockStateContainer;
@@ -33,11 +34,13 @@ import net.minecraft.world.chunk.BlockStateContainer;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 
+import javax.annotation.Nonnull;
 import java.lang.ref.SoftReference;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Stream;
 
 /**
  * @author Brady
@@ -55,7 +58,7 @@ public final class NetherPathfinderContext {
     public NetherPathfinderContext(long seed) {
         this.context = NetherPathfinder.newContext(seed);
         this.seed = seed;
-        this.executor = Executors.newSingleThreadExecutor();
+        this.executor = new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS, new WorkQueue());
     }
 
     public void queueCacheCulling(int chunkX, int chunkZ, int maxDistanceBlocks, BlockStateOctreeInterface boi) {
@@ -220,6 +223,221 @@ public final class NetherPathfinderContext {
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException(e);
+        }
+    }
+
+    private static final class WorkQueue extends TrollBlockingQueue<Runnable> {
+
+        private final ConcurrentLinkedDeque<Runnable> path;
+        private final ConcurrentLinkedDeque<Runnable> chunk;
+
+        private final ReentrantLock takeLock = new ReentrantLock();
+        private final ReentrantLock putLock = new ReentrantLock();
+        private final Condition notEmpty = takeLock.newCondition();
+
+        public WorkQueue() {
+            this.path = new ConcurrentLinkedDeque<>();
+            this.chunk = new ConcurrentLinkedDeque<>();
+        }
+
+        private void signalNotEmpty() {
+            final ReentrantLock takeLock = this.takeLock;
+            takeLock.lock();
+            try {
+                this.notEmpty.signal();
+            } finally {
+                takeLock.unlock();
+            }
+        }
+
+        @Override
+        public boolean offer(@Nonnull Runnable runnable) {
+            final ReentrantLock putLock = this.putLock;
+            putLock.lock();
+            try {
+                if (runnable instanceof ForkJoinTask) {
+                    this.path.offer(runnable);
+                } else {
+                    // Put new chunks at the head of the queue
+                    this.chunk.offerFirst(runnable);
+                    // Purge oldest chunks
+                    while (this.chunk.size() > Baritone.settings().chunkPackerQueueMaxSize.value) {
+                        this.chunk.removeLast();
+                    }
+                }
+            } finally {
+                putLock.unlock();
+            }
+            signalNotEmpty();
+            return true;
+        }
+
+        @Override
+        public Runnable take() throws InterruptedException {
+            Runnable x;
+            final ReentrantLock takeLock = this.takeLock;
+            takeLock.lockInterruptibly();
+            try {
+                while (size() == 0) {
+                    notEmpty.await();
+                }
+                x = dequeue();
+                if (!isEmpty()) {
+                    notEmpty.signal();
+                }
+            } finally {
+                takeLock.unlock();
+            }
+            return x;
+        }
+
+        @Override
+        public Runnable poll(long timeout, TimeUnit unit) throws InterruptedException {
+            Runnable x;
+            long nanos = unit.toNanos(timeout);
+            final ReentrantLock takeLock = this.takeLock;
+            takeLock.lockInterruptibly();
+            try {
+                while (isEmpty()) {
+                    if (nanos <= 0)
+                        return null;
+                    nanos = notEmpty.awaitNanos(nanos);
+                }
+                x = dequeue();
+                if (!isEmpty())
+                    notEmpty.signal();
+            } finally {
+                takeLock.unlock();
+            }
+            return x;
+        }
+
+        @Override
+        public boolean remove(Object o) {
+            takeLock.lock();
+            putLock.lock();
+            try {
+                return this.path.remove(o) || this.chunk.remove(o);
+            } finally {
+                takeLock.unlock();
+                putLock.unlock();
+            }
+        }
+
+        @Override
+        public int drainTo(Collection<? super Runnable> c) {
+            final ReentrantLock takeLock = this.takeLock;
+            takeLock.lock();
+            int n = size();
+            try {
+                if (!this.path.isEmpty()) {
+                    c.add(this.path.remove());
+                }
+                if (!this.chunk.isEmpty()) {
+                    c.add(this.chunk.remove());
+                }
+            } finally {
+                takeLock.unlock();
+            }
+            return n;
+        }
+
+        @Override
+        public int size() {
+            takeLock.lock();
+            putLock.lock();
+            try {
+                return this.path.size() + this.chunk.size();
+            } finally {
+                takeLock.unlock();
+                putLock.unlock();
+            }
+        }
+
+        @Override
+        public boolean isEmpty() {
+            return this.size() == 0;
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public synchronized @Nonnull <T> T[] toArray(@Nonnull T[] a) {
+            takeLock.lock();
+            putLock.lock();
+            try {
+                return (T[]) Stream.concat(this.path.stream(), this.chunk.stream()).toArray(Runnable[]::new);
+            } finally {
+                takeLock.unlock();
+                putLock.unlock();
+            }
+        }
+
+        private Runnable dequeue() {
+            return !this.path.isEmpty() ? this.path.remove() : this.chunk.remove();
+        }
+    }
+
+    @SuppressWarnings("NullableProblems")
+    private static class TrollBlockingQueue<T> extends AbstractQueue<T> implements BlockingQueue<T> {
+
+        @Override
+        public Iterator<T> iterator() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public int size() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void put(T t) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean offer(T t, long timeout, TimeUnit unit) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public T take() throws InterruptedException {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public T poll(long timeout, TimeUnit unit) throws InterruptedException {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public int remainingCapacity() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public int drainTo(Collection<? super T> c) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public int drainTo(Collection<? super T> c, int maxElements) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean offer(T t) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public T poll() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public T peek() {
+            throw new UnsupportedOperationException();
         }
     }
 
