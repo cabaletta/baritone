@@ -520,7 +520,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         }
         final long now = System.currentTimeMillis();
         if ((now - this.timeLastCacheCull) / 1000 > Baritone.settings().elytraTimeBetweenCacheCullSecs.value) {
-            this.context.queueCacheCulling(ctx.player().chunkCoordX, ctx.player().chunkCoordZ, Baritone.settings().elytraCacheCullDistance.value);
+            this.context.queueCacheCulling(ctx.player().chunkCoordX, ctx.player().chunkCoordZ, Baritone.settings().elytraCacheCullDistance.value, this.boi);
             this.timeLastCacheCull = now;
         }
 

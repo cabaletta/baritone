@@ -45,6 +45,7 @@ import java.util.concurrent.TimeUnit;
 public final class NetherPathfinderContext {
 
     private static final IBlockState AIR_BLOCK_STATE = Blocks.AIR.getDefaultState();
+    public final Object cacheLock = new Object();
 
     // Visible for access in BlockStateOctreeInterface
     final long context;
@@ -57,8 +58,13 @@ public final class NetherPathfinderContext {
         this.executor = Executors.newSingleThreadExecutor();
     }
 
-    public void queueCacheCulling(int chunkX, int chunkZ, int maxDistanceBlocks) {
-        this.executor.execute(() -> NetherPathfinder.cullFarChunks(this.context, chunkX, chunkZ, maxDistanceBlocks));
+    public void queueCacheCulling(int chunkX, int chunkZ, int maxDistanceBlocks, BlockStateOctreeInterface boi) {
+        this.executor.execute(() -> {
+            synchronized (this.cacheLock) {
+                boi.chunkPtr = 0L;
+                NetherPathfinder.cullFarChunks(this.context, chunkX, chunkZ, maxDistanceBlocks);
+            }
+        });
     }
 
     public void queueForPacking(final Chunk chunkIn) {

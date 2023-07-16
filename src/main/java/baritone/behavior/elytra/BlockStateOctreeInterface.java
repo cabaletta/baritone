@@ -25,15 +25,17 @@ import dev.babbaj.pathfinder.Octree;
  */
 public final class BlockStateOctreeInterface {
 
-    private final long context;
-    private long chunkPtr;
+    private final NetherPathfinderContext context;
+    private final long contextPtr;
+    volatile long chunkPtr;
 
     // Guarantee that the first lookup will fetch the context by setting MAX_VALUE
     private int prevChunkX = Integer.MAX_VALUE;
     private int prevChunkZ = Integer.MAX_VALUE;
 
     public BlockStateOctreeInterface(final NetherPathfinderContext context) {
-        this.context = context.context;
+        this.context = context;
+        this.contextPtr = context.context;
     }
 
     public boolean get0(final int x, final int y, final int z) {
@@ -42,11 +44,14 @@ public final class BlockStateOctreeInterface {
         }
         final int chunkX = x >> 4;
         final int chunkZ = z >> 4;
-        if (((chunkX ^ this.prevChunkX) | (chunkZ ^ this.prevChunkZ)) != 0) {
+        long pointer = this.chunkPtr;
+        if (pointer == 0 | ((chunkX ^ this.prevChunkX) | (chunkZ ^ this.prevChunkZ)) != 0) {
             this.prevChunkX = chunkX;
             this.prevChunkZ = chunkZ;
-            this.chunkPtr = NetherPathfinder.getOrCreateChunk(this.context, chunkX, chunkZ);
+            synchronized (this.context.cacheLock) {
+                this.chunkPtr = pointer = NetherPathfinder.getOrCreateChunk(this.contextPtr, chunkX, chunkZ);
+            }
         }
-        return Octree.getBlock(this.chunkPtr, x & 0xF, y & 0x7F, z & 0xF);
+        return Octree.getBlock(pointer, x & 0xF, y & 0x7F, z & 0xF);
     }
 }
