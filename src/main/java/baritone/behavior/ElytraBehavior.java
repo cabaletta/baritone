@@ -306,7 +306,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
                 return; // previous iterations of this function SHOULD have fixed this by now :rage_cat:
             }
 
-            if (this.ticksNearUnchanged > 100) {
+            if (ElytraBehavior.this.process.state != State.LANDING && this.ticksNearUnchanged > 100) {
                 this.pathRecalcSegment(rangeEndExcl - 1)
                         .thenRun(() -> {
                             logDirect("Recalculating segment, no progress in last 100 ticks");
@@ -1393,14 +1393,15 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
             }
 
             if (ctx.player().isElytraFlying()) {
-                if (ctx.player().getDistanceSqToCenter(ElytraBehavior.this.pathManager.path.getLast()) < (5 * 5)) {
+                final BetterBlockPos last = ElytraBehavior.this.pathManager.path.getLast();
+                if (last != null && ctx.player().getDistanceSqToCenter(last) < (5 * 5)) {
                     this.state = State.LANDING;
                 }
             }
 
             if (this.state == State.LANDING) {
-                if (ctx.player().isElytraFlying()) {
-                    BetterBlockPos endPos = ElytraBehavior.this.pathManager.path.getLast();
+                final BetterBlockPos endPos = ElytraBehavior.this.pathManager.path.getLast();
+                if (ctx.player().isElytraFlying() && endPos != null) {
                     Vec3d from = ctx.player().getPositionVector();
                     Vec3d to = new Vec3d(endPos.x, from.y, endPos.z);
                     Rotation rotation = RotationUtils.calcRotationFromVec3d(from, to, ctx.playerRotations());
