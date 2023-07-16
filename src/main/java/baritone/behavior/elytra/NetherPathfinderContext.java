@@ -57,6 +57,10 @@ public final class NetherPathfinderContext {
         this.executor = Executors.newSingleThreadExecutor();
     }
 
+    public void queueCacheCulling(int chunkX, int chunkZ, int maxDistanceBlocks) {
+        this.executor.execute(() -> NetherPathfinder.cullFarChunks(this.context, chunkX, chunkZ, maxDistanceBlocks));
+    }
+
     public void queueForPacking(final Chunk chunkIn) {
         final SoftReference<Chunk> ref = new SoftReference<>(chunkIn);
         this.executor.execute(() -> {

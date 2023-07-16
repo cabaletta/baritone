@@ -118,9 +118,11 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
     private Solution pendingSolution;
     private boolean solveNextTick;
 
+    private long timeLastCacheCull = 0L;
+
     // auto swap
     private int invTickCountdown = 0;
-    private final Queue<Runnable> transactionQueue = new LinkedList<>();
+    private final Queue<Runnable> invTransactionQueue = new LinkedList<>();
 
     private ElytraBehavior(Baritone baritone) {
         super(baritone);
@@ -515,6 +517,11 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
     public void onTick(final TickEvent event) {
         if (event.getType() == TickEvent.Type.OUT) {
             return;
+        }
+        final long now = System.currentTimeMillis();
+        if ((now - this.timeLastCacheCull) / 1000 > Baritone.settings().elytraTimeBetweenCacheCullSecs.value) {
+            this.context.queueCacheCulling(ctx.player().chunkCoordX, ctx.player().chunkCoordZ, Baritone.settings().elytraCacheCullDistance.value);
+            this.timeLastCacheCull = now;
         }
 
         // Fetch the previous solution, regardless of if it's going to be used
@@ -1264,7 +1271,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
 
     private void tickInventoryTransactions() {
         if (invTickCountdown <= 0) {
-            Runnable r = transactionQueue.poll();
+            Runnable r = invTransactionQueue.poll();
             if (r != null) {
                 r.run();
                 invTickCountdown = Baritone.settings().ticksBetweenInventoryMoves.value;
@@ -1274,7 +1281,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
     }
 
     private void queueWindowClick(int windowId, int slotId, int button, ClickType type) {
-        transactionQueue.add(() -> ctx.playerController().windowClick(windowId, slotId, button, type, ctx.player()));
+        invTransactionQueue.add(() -> ctx.playerController().windowClick(windowId, slotId, button, type, ctx.player()));
     }
 
     private int findGoodElytra() {
@@ -1289,7 +1296,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
     }
 
     private void trySwapElytra() {
-        if (!Baritone.settings().elytraAutoSwap.value || !transactionQueue.isEmpty()) {
+        if (!Baritone.settings().elytraAutoSwap.value || !invTransactionQueue.isEmpty()) {
             return;
         }
 
