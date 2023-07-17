@@ -29,6 +29,7 @@ public interface IElytraProcess extends IBaritoneProcess {
      *
      * @return A {@link CompletableFuture} that is completed when the context is reset
      */
+    @Deprecated
     CompletableFuture<Void> resetContext();
 
     void repackChunks();

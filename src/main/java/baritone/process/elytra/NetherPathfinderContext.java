@@ -52,7 +52,6 @@ public final class NetherPathfinderContext {
     final long context;
     private final long seed;
     private final ExecutorService executor;
-    private final AtomicInteger packQueueSize = new AtomicInteger();
 
     public NetherPathfinderContext(long seed) {
         this.context = NetherPathfinder.newContext(seed);

@@ -18,6 +18,8 @@
 package baritone.process;
 
 import baritone.Baritone;
+import baritone.api.event.events.*;
+import baritone.api.event.listener.AbstractGameEventListener;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalYLevel;
 import baritone.api.pathing.movement.IMovement;
@@ -43,7 +45,7 @@ import net.minecraft.util.math.Vec3d;
 import java.util.concurrent.*;
 import java.util.function.Supplier;
 
-public class ElytraProcess extends BaritoneProcessHelper implements IBaritoneProcess, IElytraProcess {
+public class ElytraProcess extends BaritoneProcessHelper implements IBaritoneProcess, IElytraProcess, AbstractGameEventListener {
     public State state;
     private Goal goal;
     private LegacyElytraBehavior behavior;
@@ -51,7 +53,7 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
     private ElytraProcess(Baritone baritone) {
         super(baritone);
         this.behavior = new LegacyElytraBehavior(baritone, this);
-        baritone.getGameEventHandler().registerEventListener(this.behavior);
+        baritone.getGameEventHandler().registerEventListener(this);
     }
 
     public static <T extends IElytraProcess> T create(final Baritone baritone) {
@@ -62,7 +64,7 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
 
     @Override
     public boolean isActive() {
-        return behavior.destination != null;
+        return behavior != null;
     }
 
     @Override
@@ -177,15 +179,11 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
     }
 
     @Override
-    public boolean isTemporary() {
-        return false;
-    }
-
-    @Override
     public void onLostControl() {
         this.goal = null;
-        this.state = State.START_FLYING;
-        behavior.cancel();
+        this.state = State.START_FLYING; // TODO: null state?
+        if (this.behavior != null) this.behavior.cancel();
+        this.behavior = null;
     }
 
 
@@ -220,17 +218,22 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
 
     @Override
     public void repackChunks() {
-        behavior.repackChunks();
+        this.behavior.repackChunks();
     }
 
     @Override
     public void pathTo(BlockPos destination) {
-        behavior.pathTo(destination);
+        this.behavior = new LegacyElytraBehavior(this.baritone, this);
+        if (ctx.world() != null) {
+            this.behavior.repackChunks();
+        }
+        this.behavior.pathTo(destination);
     }
 
     @Override
     public void cancel() {
-        behavior.cancel();
+        if (this.behavior != null) this.behavior.cancel();
+        this.behavior = null;
     }
 
     @Override
@@ -240,7 +243,7 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
 
     @Override
     public boolean isSafeToCancel() {
-        return behavior.isSafeToCancel();
+        return !this.isActive() || !(this.state == State.FLYING || this.state == State.START_FLYING);
     }
 
     public enum State {
@@ -251,5 +254,39 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
         START_FLYING,
         FLYING,
         LANDING
+    }
+
+    @Override
+    public void onRenderPass(RenderEvent event) {
+        if (this.behavior != null) this.behavior.onRenderPass(event);
+    }
+
+    @Override
+    public void onWorldEvent(WorldEvent event) {
+        if (this.behavior != null) this.behavior.onWorldEvent(event);
+    }
+
+    @Override
+    public void onChunkEvent(ChunkEvent event) {
+        if (this.behavior != null) this.behavior.onChunkEvent(event);
+    }
+
+    @Override
+    public void onBlockChange(BlockChangeEvent event) {
+        if (this.behavior != null) this.behavior.onBlockChange(event);
+    }
+
+    @Override
+    public void onReceivePacket(PacketEvent event) {
+        if (this.behavior != null) this.behavior.onReceivePacket(event);
+    }
+
+    public void onTickBeforePathingBehavior(final TickEvent event) {
+        if (this.behavior != null) this.behavior.onTick(event);
+    }
+
+    @Override
+    public void onPostTick(TickEvent event) {
+        if (this.behavior != null) this.behavior.onPostTick(event);
     }
 }

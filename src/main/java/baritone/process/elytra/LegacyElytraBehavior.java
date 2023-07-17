@@ -24,7 +24,6 @@ import baritone.api.behavior.look.IAimProcessor;
 import baritone.api.behavior.look.ITickableAimProcessor;
 import baritone.api.event.events.*;
 import baritone.api.event.events.type.EventState;
-import baritone.api.event.listener.AbstractGameEventListener;
 import baritone.api.pathing.goals.GoalBlock;
 import baritone.api.utils.*;
 import baritone.pathing.movement.CalculationContext;
@@ -51,6 +50,7 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 
 import java.awt.*;
@@ -63,7 +63,7 @@ import static baritone.api.pathing.movement.ActionCosts.COST_INF;
 import static baritone.utils.BaritoneMath.fastCeil;
 import static baritone.utils.BaritoneMath.fastFloor;
 
-public final class LegacyElytraBehavior  implements AbstractGameEventListener, Helper {
+public final class LegacyElytraBehavior implements Helper {
     private final Baritone baritone;
     private final IPlayerContext ctx;
 
@@ -76,7 +76,7 @@ public final class LegacyElytraBehavior  implements AbstractGameEventListener, H
     public List<BetterBlockPos> visiblePath;
 
     // :sunglasses:
-    private NetherPathfinderContext context;
+    private NetherPathfinderContext context; // TODO: make this final
     private CompletableFuture<Void> forceResetContext;
     public final PathManager pathManager;
     private final ElytraProcess process;
@@ -125,6 +125,8 @@ public final class LegacyElytraBehavior  implements AbstractGameEventListener, H
         this.process = process;
         this.solverExecutor = Executors.newSingleThreadExecutor();
         this.nextTickBoostCounter = new int[2];
+
+        this.context = new NetherPathfinderContext(Baritone.settings().elytraNetherSeed.value);
     }
 
     public final class PathManager {
@@ -370,7 +372,6 @@ public final class LegacyElytraBehavior  implements AbstractGameEventListener, H
         }
     }
 
-    @Override
     public void onRenderPass(RenderEvent event) {
         final Settings settings = Baritone.settings();
         if (this.visiblePath != null) {
@@ -409,7 +410,7 @@ public final class LegacyElytraBehavior  implements AbstractGameEventListener, H
         }
     }
 
-    @Override
+    // TODO: move this logic to ElytraProcess
     public void onWorldEvent(WorldEvent event) {
         if (event.getWorld() != null) {
             if (event.getState() == EventState.PRE) {
@@ -427,7 +428,6 @@ public final class LegacyElytraBehavior  implements AbstractGameEventListener, H
         }
     }
 
-    @Override
     public void onChunkEvent(ChunkEvent event) {
         if (event.isPostPopulate() && this.context != null) {
             final Chunk chunk = ctx.world().getChunk(event.getX(), event.getZ());
@@ -435,12 +435,16 @@ public final class LegacyElytraBehavior  implements AbstractGameEventListener, H
         }
     }
 
-    @Override
+    public void uploadRenderDistance(World world) {
+        ((IChunkProviderClient) world.getChunkProvider()).loadedChunks().forEach((l, chunk) -> {
+            this.context.queueForPacking(chunk);
+        });
+    }
+
     public void onBlockChange(BlockChangeEvent event) {
         this.context.queueBlockUpdate(event);
     }
 
-    @Override
     public void onReceivePacket(PacketEvent event) {
         if (event.getPacket() instanceof SPacketPlayerPosLook) {
             ctx.minecraft().addScheduledTask(() -> {
@@ -486,11 +490,6 @@ public final class LegacyElytraBehavior  implements AbstractGameEventListener, H
                 .filter(process -> this.process == process).isPresent();
     }
 
-    public boolean isSafeToCancel() {
-        return !this.isActive() || !(this.process.state == ElytraProcess.State.FLYING || this.process.state == ElytraProcess.State.START_FLYING);
-    }
-
-    @Override
     public void onTick(final TickEvent event) {
         if (event.getType() == TickEvent.Type.OUT) {
             return;
@@ -629,7 +628,6 @@ public final class LegacyElytraBehavior  implements AbstractGameEventListener, H
         );
     }
 
-    @Override
     public void onPostTick(TickEvent event) {
         if (event.getType() == TickEvent.Type.IN && this.solveNextTick) {
             // We're at the end of the tick, the player's position likely updated and the closest path node could've
