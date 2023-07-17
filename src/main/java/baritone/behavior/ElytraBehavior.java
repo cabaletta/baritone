@@ -518,11 +518,6 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         if (event.getType() == TickEvent.Type.OUT) {
             return;
         }
-        final long now = System.currentTimeMillis();
-        if ((now - this.timeLastCacheCull) / 1000 > Baritone.settings().elytraTimeBetweenCacheCullSecs.value) {
-            this.context.queueCacheCulling(ctx.player().chunkCoordX, ctx.player().chunkCoordZ, Baritone.settings().elytraCacheCullDistance.value, this.boi);
-            this.timeLastCacheCull = now;
-        }
 
         // Fetch the previous solution, regardless of if it's going to be used
         this.pendingSolution = null;
@@ -594,6 +589,12 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
                 Math.max(playerNear - 30, 0),
                 Math.min(playerNear + 100, path.size())
         );
+
+        final long now = System.currentTimeMillis();
+        if ((now - this.timeLastCacheCull) / 1000 > Baritone.settings().elytraTimeBetweenCacheCullSecs.value) {
+            this.context.queueCacheCulling(ctx.player().chunkCoordX, ctx.player().chunkCoordZ, Baritone.settings().elytraCacheCullDistance.value, this.boi);
+            this.timeLastCacheCull = now;
+        }
     }
 
     /**
