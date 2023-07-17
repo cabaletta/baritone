@@ -195,7 +195,7 @@ public final class LegacyElytraBehavior implements Helper {
             }
 
             this.recalculating = true;
-            final List<BetterBlockPos> after = this.path.subList(upToIncl, this.path.size());
+            final List<BetterBlockPos> after = this.path.subList(upToIncl + 1, this.path.size());
             final boolean complete = this.completePath;
 
             return this.path0(ctx.playerFeet(), this.path.get(upToIncl), segment -> segment.append(after.stream(), complete))
@@ -288,6 +288,7 @@ public final class LegacyElytraBehavior implements Helper {
             while (rangeEndExcl < path.size() && ctx.world().isBlockLoaded(path.get(rangeEndExcl), false)) {
                 rangeEndExcl++;
             }
+            // rangeEndExcl now represents an index either not in the path, or just outside render distance
             if (rangeStartIncl >= rangeEndExcl) {
                 // not loaded yet?
                 return;
