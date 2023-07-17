@@ -70,13 +70,6 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
 
     @Override
     public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
-        IBaritoneProcess procLastTick = baritone.getPathingControlManager().mostRecentInControl().orElse(null);
-        // this is true if the pause process was running or any other processes that causes us to not tick
-        skippedThisTick = procLastTick != null && procLastTick.priority() > this.priority();
-        if (skippedThisTick) {
-            return new PathingCommand(null, PathingCommandType.DEFER);
-        }
-
         this.behavior.onTick();
         if (calcFailed) {
             onLostControl();
@@ -292,6 +285,7 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
 
     @Override
     public void onPostTick(TickEvent event) {
-        if (this.behavior != null && !skippedThisTick) this.behavior.onPostTick(event);
+        IBaritoneProcess procThisTick = baritone.getPathingControlManager().mostRecentInControl().orElse(null);
+        if (this.behavior != null && procThisTick == this) this.behavior.onPostTick(event);
     }
 }
