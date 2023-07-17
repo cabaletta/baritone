@@ -228,16 +228,16 @@ public final class NetherPathfinderContext {
 
     private static final class WorkQueue extends TrollBlockingQueue<Runnable> {
 
-        private final ConcurrentLinkedDeque<Runnable> path;
-        private final ConcurrentLinkedDeque<Runnable> chunk;
+        private final LinkedList<Runnable> path;
+        private final LinkedList<Runnable> chunk;
 
         private final ReentrantLock takeLock = new ReentrantLock();
         private final ReentrantLock putLock = new ReentrantLock();
         private final Condition notEmpty = takeLock.newCondition();
 
         public WorkQueue() {
-            this.path = new ConcurrentLinkedDeque<>();
-            this.chunk = new ConcurrentLinkedDeque<>();
+            this.path = new LinkedList<>();
+            this.chunk = new LinkedList<>();
         }
 
         private void signalNotEmpty() {
