@@ -491,11 +491,7 @@ public final class LegacyElytraBehavior implements Helper {
                 .filter(process -> this.process == process).isPresent();
     }
 
-    public void onTick(final TickEvent event) {
-        if (event.getType() == TickEvent.Type.OUT) {
-            return;
-        }
-
+    public void onTick() {
         // Fetch the previous solution, regardless of if it's going to be used
         this.pendingSolution = null;
         if (this.solver != null) {

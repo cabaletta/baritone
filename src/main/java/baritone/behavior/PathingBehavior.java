@@ -94,7 +94,6 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
 
     @Override
     public void onTick(TickEvent event) {
-        ((ElytraProcess) baritone.getElytraProcess()).onTickBeforePathingBehavior(event);
         dispatchEvents();
         if (event.getType() == TickEvent.Type.OUT) {
             secretInternalSegmentCancel();
