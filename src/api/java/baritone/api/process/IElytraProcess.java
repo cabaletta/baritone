@@ -15,13 +15,13 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.api.behavior;
+package baritone.api.process;
 
 import net.minecraft.util.math.BlockPos;
 
 import java.util.concurrent.CompletableFuture;
 
-public interface IElytraBehavior extends IBehavior {
+public interface IElytraProcess extends IBaritoneProcess {
 
     /**
      * Marks the nether pathfinder context to be reset when it is safe to do so. Because this operation is not
@@ -36,11 +36,6 @@ public interface IElytraBehavior extends IBehavior {
     void pathTo(BlockPos destination);
 
     void cancel();
-
-    /**
-     * Returns {@code true} if the current {@link IElytraBehavior} is actively pathing.
-     */
-    boolean isActive();
 
     /**
      * @return {@code true} if the native library loaded and elytra is actually usable

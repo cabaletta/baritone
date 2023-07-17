@@ -180,7 +180,7 @@ public class ExecutionControlCommands {
                     paused[0] = false;
                 }
                 baritone.getPathingBehavior().cancelEverything();
-                baritone.getElytraBehavior().cancel();
+                baritone.getElytraProcess().cancel(); // TODO: this shouldnt be necessary
                 logDirect("ok canceled");
             }
 

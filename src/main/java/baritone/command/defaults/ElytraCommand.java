@@ -18,7 +18,6 @@
 package baritone.command.defaults;
 
 import baritone.api.IBaritone;
-import baritone.api.behavior.IElytraBehavior;
 import baritone.api.command.Command;
 import baritone.api.command.argument.IArgConsumer;
 import baritone.api.command.exception.CommandException;
@@ -27,6 +26,7 @@ import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalBlock;
 import baritone.api.pathing.goals.GoalXZ;
 import baritone.api.process.ICustomGoalProcess;
+import baritone.api.process.IElytraProcess;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.Arrays;
@@ -42,7 +42,7 @@ public class ElytraCommand extends Command {
     @Override
     public void execute(String label, IArgConsumer args) throws CommandException {
         final ICustomGoalProcess customGoalProcess = baritone.getCustomGoalProcess();
-        final IElytraBehavior elytra = baritone.getElytraBehavior();
+        final IElytraProcess elytra = baritone.getElytraProcess();
         if (!elytra.isLoaded()) {
             final String osArch = System.getProperty("os.arch");
             final String osName = System.getProperty("os.name");

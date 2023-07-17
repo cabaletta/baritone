@@ -15,11 +15,12 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.behavior.elytra;
+package baritone.process.elytra;
 
 import baritone.Baritone;
-import baritone.api.behavior.IElytraBehavior;
-import baritone.behavior.Behavior;
+import baritone.api.process.IElytraProcess;
+import baritone.api.process.PathingCommand;
+import baritone.utils.BaritoneProcessHelper;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.concurrent.CompletableFuture;
@@ -27,9 +28,9 @@ import java.util.concurrent.CompletableFuture;
 /**
  * @author Brady
  */
-public final class NullElytraBehavior extends Behavior implements IElytraBehavior {
+public final class NullElytraProcess extends BaritoneProcessHelper implements IElytraProcess {
 
-    public NullElytraBehavior(Baritone baritone) {
+    public NullElytraProcess(Baritone baritone) {
         super(baritone);
     }
 
@@ -56,6 +57,21 @@ public final class NullElytraBehavior extends Behavior implements IElytraBehavio
     @Override
     public boolean isActive() {
         return false;
+    }
+
+    @Override
+    public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
+        throw new UnsupportedOperationException("Called onTick on NullElytraProcess");
+    }
+
+    @Override
+    public void onLostControl() {
+
+    }
+
+    @Override
+    public String displayName0() {
+        return "NullElytraProcess";
     }
 
     @Override

@@ -39,7 +39,7 @@ public class ForceCancelCommand extends Command {
         IPathingBehavior pathingBehavior = baritone.getPathingBehavior();
         pathingBehavior.cancelEverything();
         pathingBehavior.forceCancel();
-        baritone.getElytraBehavior().cancel();
+        baritone.getElytraProcess().cancel();
         logDirect("ok force canceled");
     }
 

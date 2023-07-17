@@ -15,33 +15,23 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.behavior;
+package baritone.process.elytra;
 
 import baritone.Baritone;
 import baritone.api.IBaritone;
 import baritone.api.Settings;
-import baritone.api.behavior.IElytraBehavior;
 import baritone.api.behavior.look.IAimProcessor;
 import baritone.api.behavior.look.ITickableAimProcessor;
 import baritone.api.event.events.*;
 import baritone.api.event.events.type.EventState;
-import baritone.api.pathing.goals.Goal;
+import baritone.api.event.listener.AbstractGameEventListener;
 import baritone.api.pathing.goals.GoalBlock;
-import baritone.api.pathing.goals.GoalYLevel;
-import baritone.api.pathing.movement.IMovement;
-import baritone.api.pathing.path.IPathExecutor;
-import baritone.api.process.IBaritoneProcess;
-import baritone.api.process.PathingCommand;
-import baritone.api.process.PathingCommandType;
 import baritone.api.utils.*;
-import baritone.api.utils.input.Input;
-import baritone.behavior.elytra.*;
 import baritone.pathing.movement.CalculationContext;
-import baritone.pathing.movement.movements.MovementFall;
+import baritone.process.ElytraProcess;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.IRenderer;
 import baritone.utils.PathRenderer;
-import baritone.utils.PathingCommandContext;
 import baritone.utils.accessor.IChunkProviderClient;
 import baritone.utils.accessor.IEntityFireworkRocket;
 import it.unimi.dsi.fastutil.floats.FloatArrayList;
@@ -67,14 +57,16 @@ import java.awt.*;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.*;
-import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
 import static baritone.api.pathing.movement.ActionCosts.COST_INF;
 import static baritone.utils.BaritoneMath.fastCeil;
 import static baritone.utils.BaritoneMath.fastFloor;
 
-public final class ElytraBehavior extends Behavior implements IElytraBehavior, Helper {
+public final class LegacyElytraBehavior  implements AbstractGameEventListener, Helper {
+    private final Baritone baritone;
+    private final IPlayerContext ctx;
+
 
     // Used exclusively for PathRenderer
     public List<Pair<Vec3d, Vec3d>> clearLines;
@@ -86,7 +78,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
     // :sunglasses:
     private NetherPathfinderContext context;
     private CompletableFuture<Void> forceResetContext;
-    private final PathManager pathManager;
+    public final PathManager pathManager;
     private final ElytraProcess process;
 
     /**
@@ -111,7 +103,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
 
     private BlockStateInterface bsi;
     private BlockStateOctreeInterface boi;
-    private BlockPos destination;
+    public BlockPos destination;
 
     private final ExecutorService solverExecutor;
     private Future<Solution> solver;
@@ -124,24 +116,20 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
     private int invTickCountdown = 0;
     private final Queue<Runnable> invTransactionQueue = new LinkedList<>();
 
-    private ElytraBehavior(Baritone baritone) {
-        super(baritone);
+    public LegacyElytraBehavior(Baritone baritone, ElytraProcess process) {
+        this.baritone = baritone;
+        this.ctx = baritone.getPlayerContext();
         this.clearLines = new CopyOnWriteArrayList<>();
         this.blockedLines = new CopyOnWriteArrayList<>();
         this.pathManager = this.new PathManager();
-        this.process = new ElytraProcess();
+        this.process = process;
         this.solverExecutor = Executors.newSingleThreadExecutor();
         this.nextTickBoostCounter = new int[2];
     }
 
-    @Override
-    public void onLoad() {
-        baritone.getPathingControlManager().registerProcess(this.process);
-    }
+    public final class PathManager {
 
-    private final class PathManager {
-
-        private NetherPath path;
+        public NetherPath path;
         private boolean completePath;
         private boolean recalculating;
 
@@ -177,7 +165,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
 
         public CompletableFuture<Void> pathToDestination(final BlockPos from) {
             final long start = System.nanoTime();
-            return this.path0(from, ElytraBehavior.this.destination, UnaryOperator.identity())
+            return this.path0(from, LegacyElytraBehavior.this.destination, UnaryOperator.identity())
                     .thenRun(() -> {
                         final double distance = this.path.get(0).distanceTo(this.path.get(this.path.size() - 1));
                         if (this.completePath) {
@@ -231,7 +219,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
             final List<BetterBlockPos> before = this.path.subList(0, afterIncl + 1);
             final long start = System.nanoTime();
 
-            this.path0(this.path.get(afterIncl), ElytraBehavior.this.destination, segment -> segment.prepend(before.stream()))
+            this.path0(this.path.get(afterIncl), LegacyElytraBehavior.this.destination, segment -> segment.prepend(before.stream()))
                     .thenRun(() -> {
                         final int recompute = this.path.size() - before.size() - 1;
                         final double distance = this.path.get(0).distanceTo(this.path.get(recompute));
@@ -282,7 +270,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
 
         // mickey resigned
         private CompletableFuture<Void> path0(BlockPos src, BlockPos dst, UnaryOperator<UnpackedSegment> operator) {
-            return ElytraBehavior.this.context.pathFindAsync(src, dst)
+            return LegacyElytraBehavior.this.context.pathFindAsync(src, dst)
                     .thenApply(UnpackedSegment::from)
                     .thenApply(operator)
                     .thenAcceptAsync(this::setPath, ctx.minecraft()::addScheduledTask);
@@ -303,12 +291,12 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
                 return;
             }
             final BetterBlockPos rangeStart = path.get(rangeStartIncl);
-            if (!ElytraBehavior.this.passable(rangeStart.x, rangeStart.y, rangeStart.z, false)) {
+            if (!LegacyElytraBehavior.this.passable(rangeStart.x, rangeStart.y, rangeStart.z, false)) {
                 // we're in a wall
                 return; // previous iterations of this function SHOULD have fixed this by now :rage_cat:
             }
 
-            if (ElytraBehavior.this.process.state != State.LANDING && this.ticksNearUnchanged > 100) {
+            if (LegacyElytraBehavior.this.process.state != ElytraProcess.State.LANDING && this.ticksNearUnchanged > 100) {
                 this.pathRecalcSegment(rangeEndExcl - 1)
                         .thenRun(() -> {
                             logDirect("Recalculating segment, no progress in last 100 ticks");
@@ -318,7 +306,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
             }
 
             for (int i = rangeStartIncl; i < rangeEndExcl - 1; i++) {
-                if (!ElytraBehavior.this.clearView(this.path.getVec(i), this.path.getVec(i + 1), false)) {
+                if (!LegacyElytraBehavior.this.clearView(this.path.getVec(i), this.path.getVec(i + 1), false)) {
                     // obstacle. where do we return to pathing?
                     // find the next valid segment
                     final BetterBlockPos blockage = this.path.get(i);
@@ -461,7 +449,6 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         }
     }
 
-    @Override
     public void pathTo(BlockPos destination) {
         this.destination = destination;
         if (!Baritone.settings().elytraAutoJump.value || ctx.player().isElytraFlying()) {
@@ -469,7 +456,6 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         }
     }
 
-    @Override
     public void cancel() {
         this.destination = null;
         this.pathManager.clear();
@@ -483,7 +469,6 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         Arrays.fill(this.nextTickBoostCounter, 0);
     }
 
-    @Override
     public CompletableFuture<Void> resetContext() {
         if (this.forceResetContext == null) {
             this.forceResetContext = new CompletableFuture<>();
@@ -491,26 +476,18 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         return this.forceResetContext;
     }
 
-    @Override
     public void repackChunks() {
         ((IChunkProviderClient) ctx.world().getChunkProvider()).loadedChunks().values()
                 .forEach(this.context::queueForPacking);
     }
 
-    @Override
     public boolean isActive() {
         return baritone.getPathingControlManager().mostRecentInControl()
                 .filter(process -> this.process == process).isPresent();
     }
 
-    @Override
-    public boolean isLoaded() {
-        return true;
-    }
-
-    @Override
     public boolean isSafeToCancel() {
-        return !this.isActive() || !(this.process.state == State.FLYING || this.process.state == State.START_FLYING);
+        return !this.isActive() || !(this.process.state == ElytraProcess.State.FLYING || this.process.state == ElytraProcess.State.START_FLYING);
     }
 
     @Override
@@ -598,9 +575,9 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
     }
 
     /**
-     * Called by {@link ElytraProcess#onTick(boolean, boolean)} when the process is in control and the player is flying
+     * Called by {@link baritone.process.ElytraProcess#onTick(boolean, boolean)} when the process is in control and the player is flying
      */
-    private void tick() {
+    public void tick() {
         if (this.pathManager.getPath().isEmpty()) {
             return;
         }
@@ -770,8 +747,8 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         ) {
             // Prioritize boosting fireworks over regular ones
             // TODO: Take the minimum boost time into account?
-            if (!baritone.getInventoryBehavior().throwaway(true, ElytraBehavior::isBoostingFireworks) &&
-                    !baritone.getInventoryBehavior().throwaway(true, ElytraBehavior::isFireworks)) {
+            if (!baritone.getInventoryBehavior().throwaway(true, LegacyElytraBehavior::isBoostingFireworks) &&
+                    !baritone.getInventoryBehavior().throwaway(true, LegacyElytraBehavior::isFireworks)) {
                 logDirect("no fireworks");
                 return;
             }
@@ -793,21 +770,21 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         public final IAimProcessor aimProcessor;
 
         public SolverContext(boolean async) {
-            this.path = ElytraBehavior.this.pathManager.getPath();
-            this.playerNear = ElytraBehavior.this.pathManager.getNear();
-            this.start = ElytraBehavior.this.ctx.playerFeetAsVec();
-            this.ignoreLava = ElytraBehavior.this.ctx.player().isInLava();
+            this.path = LegacyElytraBehavior.this.pathManager.getPath();
+            this.playerNear = LegacyElytraBehavior.this.pathManager.getNear();
+            this.start = LegacyElytraBehavior.this.ctx.playerFeetAsVec();
+            this.ignoreLava = LegacyElytraBehavior.this.ctx.player().isInLava();
 
             final Integer fireworkTicksExisted;
-            if (async && ElytraBehavior.this.deployedFireworkLastTick) {
-                final int[] counter = ElytraBehavior.this.nextTickBoostCounter;
+            if (async && LegacyElytraBehavior.this.deployedFireworkLastTick) {
+                final int[] counter = LegacyElytraBehavior.this.nextTickBoostCounter;
                 fireworkTicksExisted = counter[1] > counter[0] ? 0 : null;
             } else {
-                fireworkTicksExisted = ElytraBehavior.this.getAttachedFirework().map(e -> e.ticksExisted).orElse(null);
+                fireworkTicksExisted = LegacyElytraBehavior.this.getAttachedFirework().map(e -> e.ticksExisted).orElse(null);
             }
-            this.boost = new FireworkBoost(fireworkTicksExisted, ElytraBehavior.this.minimumBoostTicks);
+            this.boost = new FireworkBoost(fireworkTicksExisted, LegacyElytraBehavior.this.minimumBoostTicks);
 
-            ITickableAimProcessor aim = ElytraBehavior.this.baritone.getLookBehavior().getAimProcessor().fork();
+            ITickableAimProcessor aim = LegacyElytraBehavior.this.baritone.getLookBehavior().getAimProcessor().fork();
             if (async) {
                 // async computation is done at the end of a tick, advance by 1 to prepare for the next tick
                 aim.advance(1);
@@ -1001,7 +978,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         return this.context.raytrace(8, src, dst, NetherPathfinderContext.Visibility.ALL);
     }
 
-    private boolean clearView(Vec3d start, Vec3d dest, boolean ignoreLava) {
+    public boolean clearView(Vec3d start, Vec3d dest, boolean ignoreLava) {
         final boolean clear;
         if (!ignoreLava) {
             // if start == dest then the cpp raytracer dies
@@ -1303,7 +1280,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
 
         ItemStack chest = ctx.player().inventory.armorInventory.get(2);
         if (chest.getItem() != Items.ELYTRA
-            || chest.getItem().getMaxDamage() - chest.getItemDamage() > Baritone.settings().elytraMinimumDurability.value) {
+                || chest.getItem().getMaxDamage() - chest.getItemDamage() > Baritone.settings().elytraMinimumDurability.value) {
             return;
         }
 
@@ -1382,172 +1359,10 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         }
     }
 
-    private final class ElytraProcess implements IBaritoneProcess {
-
-        private State state;
-        private Goal goal;
-
-        @Override
-        public boolean isActive() {
-            return ElytraBehavior.this.destination != null;
-        }
-
-        @Override
-        public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
-            if (calcFailed) {
-                onLostControl();
-                logDirect("Failed to get to jump off spot, canceling");
-                return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
-            }
-
-            if (ctx.player().isElytraFlying()) {
-                final BetterBlockPos last = ElytraBehavior.this.pathManager.path.getLast();
-                if (last != null && ctx.player().getDistanceSqToCenter(last) < (5 * 5)) {
-                    this.state = State.LANDING;
-                }
-            }
-
-            if (this.state == State.LANDING) {
-                final BetterBlockPos endPos = ElytraBehavior.this.pathManager.path.getLast();
-                if (ctx.player().isElytraFlying() && endPos != null) {
-                    Vec3d from = ctx.player().getPositionVector();
-                    Vec3d to = new Vec3d(endPos.x, from.y, endPos.z);
-                    Rotation rotation = RotationUtils.calcRotationFromVec3d(from, to, ctx.playerRotations());
-                    baritone.getLookBehavior().updateTarget(rotation, false);
-                } else {
-                    this.onLostControl();
-                    return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
-                }
-            } else if (ctx.player().isElytraFlying()) {
-                this.state = State.FLYING;
-                this.goal = null;
-                baritone.getInputOverrideHandler().clearAllKeys();
-                ElytraBehavior.this.tick();
-                return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
-            }
-
-            if (this.state == State.FLYING || this.state == State.START_FLYING) {
-                this.state = ctx.player().onGround && Baritone.settings().elytraAutoJump.value
-                        ? State.LOCATE_JUMP
-                        : State.START_FLYING;
-            }
-
-            if (this.state == State.LOCATE_JUMP) {
-                if (this.goal == null) {
-                    this.goal = new GoalYLevel(31);
-                }
-                final IPathExecutor executor = baritone.getPathingBehavior().getCurrent();
-                if (executor != null && executor.getPath().getGoal() == this.goal) {
-                    final IMovement fall = executor.getPath().movements().stream()
-                            .filter(movement -> movement instanceof MovementFall)
-                            .findFirst().orElse(null);
-
-                    if (fall != null) {
-                        final BetterBlockPos from = new BetterBlockPos(
-                                (fall.getSrc().x + fall.getDest().x) / 2,
-                                (fall.getSrc().y + fall.getDest().y) / 2,
-                                (fall.getSrc().z + fall.getDest().z) / 2
-                        );
-                        ElytraBehavior.this.pathManager.pathToDestination(from).whenComplete((result, ex) -> {
-                            if (!ElytraBehavior.this.clearView(new Vec3d(from), ElytraBehavior.this.pathManager.getPath().getVec(0), false)) {
-                                onLostControl();
-                                // TODO: Get to higher ground and then look again
-                                logDirect("Can't see start of path from jump spot, canceling");
-                                return;
-                            }
-                            if (ex == null) {
-                                this.state = State.GET_TO_JUMP;
-                                return;
-                            }
-                            onLostControl();
-                        });
-                        this.state = State.PAUSE;
-                    } else {
-                        onLostControl();
-                        logDirect("Jump off path didn't include a fall movement, canceling");
-                        return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
-                    }
-                }
-                return new PathingCommandContext(this.goal, PathingCommandType.SET_GOAL_AND_PAUSE, new WalkOffCalculationContext(baritone));
-            }
-
-            // yucky
-            if (this.state == State.PAUSE) {
-                return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
-            }
-
-            if (this.state == State.GET_TO_JUMP) {
-                final IPathExecutor executor = baritone.getPathingBehavior().getCurrent();
-                final boolean canStartFlying = ctx.player().fallDistance > 1.0f
-                        && !isSafeToCancel
-                        && executor != null
-                        && executor.getPath().movements().get(executor.getPosition()) instanceof MovementFall;
-
-                if (canStartFlying) {
-                    this.state = State.START_FLYING;
-                } else {
-                    return new PathingCommand(null, PathingCommandType.SET_GOAL_AND_PATH);
-                }
-            }
-
-            if (this.state == State.START_FLYING) {
-                if (!isSafeToCancel) {
-                    // owned
-                    baritone.getPathingBehavior().secretInternalSegmentCancel();
-                }
-                baritone.getInputOverrideHandler().clearAllKeys();
-                if (ctx.player().fallDistance > 1.0f) {
-                    baritone.getInputOverrideHandler().setInputForceState(Input.JUMP, true);
-                }
-            }
-            return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
-        }
-
-        @Override
-        public boolean isTemporary() {
-            return false;
-        }
-
-        @Override
-        public void onLostControl() {
-            this.goal = null;
-            this.state = State.START_FLYING;
-            ElytraBehavior.this.cancel();
-        }
-
-        @Override
-        public double priority() {
-            return 10;
-        }
-
-        @Override
-        public String displayName0() {
-            final Supplier<String> status = () -> {
-                switch (this.state) {
-                    case LOCATE_JUMP:
-                        return "Finding spot to jump off";
-                    case PAUSE:
-                        return "Waiting for elytra path";
-                    case GET_TO_JUMP:
-                        return "Walking to takeoff";
-                    case START_FLYING:
-                        return "Begin flying";
-                    case FLYING:
-                        return "Flying";
-                    case LANDING:
-                        return "Landing";
-                    default:
-                        return "Unknown";
-                }
-            };
-            return "Elytra - " + status.get();
-        }
-    }
-
     /**
      * Custom calculation context which makes the player fall into lava
      */
-    private static final class WalkOffCalculationContext extends CalculationContext {
+    public static final class WalkOffCalculationContext extends CalculationContext {
 
         public WalkOffCalculationContext(IBaritone baritone) {
             super(baritone, true);
@@ -1572,19 +1387,5 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         }
     }
 
-    private enum State {
-        LOCATE_JUMP,
-        VALIDATE_PATH,
-        PAUSE,
-        GET_TO_JUMP,
-        START_FLYING,
-        FLYING,
-        LANDING
-    }
 
-    public static <T extends Behavior & IElytraBehavior> T create(final Baritone baritone) {
-        return (T) (NetherPathfinderContext.isSupported()
-                ? new ElytraBehavior(baritone)
-                : new NullElytraBehavior(baritone));
-    }
 }
