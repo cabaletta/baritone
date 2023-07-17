@@ -34,7 +34,10 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 
 import java.lang.ref.SoftReference;
-import java.util.concurrent.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author Brady
@@ -47,15 +50,12 @@ public final class NetherPathfinderContext {
     // Visible for access in BlockStateOctreeInterface
     final long context;
     private final long seed;
-    private final ThreadPoolExecutor executor;
-    private final ExecutorService executorHighPriority;
+    private final ExecutorService executor;
 
     public NetherPathfinderContext(long seed) {
         this.context = NetherPathfinder.newContext(seed);
         this.seed = seed;
-
-        this.executor = new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
-        this.executorHighPriority = Executors.newSingleThreadExecutor();
+        this.executor = Executors.newSingleThreadExecutor();
     }
 
     public void queueCacheCulling(int chunkX, int chunkZ, int maxDistanceBlocks, BlockStateOctreeInterface boi) {
@@ -68,58 +68,46 @@ public final class NetherPathfinderContext {
     }
 
     public void queueForPacking(final Chunk chunkIn) {
-        if (this.executor.getQueue().size() > 50000) {
-            return;
-        }
         final SoftReference<Chunk> ref = new SoftReference<>(chunkIn);
         this.executor.execute(() -> {
-            synchronized (this.cacheLock) {
-                // TODO: Prioritize packing recent chunks and/or ones that the path goes through,
-                //       and prune the oldest chunks per chunkPackerQueueMaxSize
-                final Chunk chunk = ref.get();
-                if (chunk != null) {
-                    long ptr = NetherPathfinder.getOrCreateChunk(this.context, chunk.x, chunk.z);
-                    writeChunkData(chunk, ptr);
-                }
+            // TODO: Prioritize packing recent chunks and/or ones that the path goes through,
+            //       and prune the oldest chunks per chunkPackerQueueMaxSize
+            final Chunk chunk = ref.get();
+            if (chunk != null) {
+                long ptr = NetherPathfinder.getOrCreateChunk(this.context, chunk.x, chunk.z);
+                writeChunkData(chunk, ptr);
             }
         });
     }
 
     public void queueBlockUpdate(BlockChangeEvent event) {
-        if (this.executor.getQueue().size() > 50000) {
-            return;
-        }
         this.executor.execute(() -> {
-            synchronized (this.cacheLock) {
-                ChunkPos chunkPos = event.getChunkPos();
-                long ptr = NetherPathfinder.getChunkPointer(this.context, chunkPos.x, chunkPos.z);
-                if (ptr == 0) return; // this shouldn't ever happen
-                event.getBlocks().forEach(pair -> {
-                    BlockPos pos = pair.first();
-                    if (pos.getY() >= 128) return;
-                    boolean isSolid = pair.second() != AIR_BLOCK_STATE;
-                    Octree.setBlock(ptr, pos.getX() & 15, pos.getY(), pos.getZ() & 15, isSolid);
-                });
-            }
+            ChunkPos chunkPos = event.getChunkPos();
+            long ptr = NetherPathfinder.getChunkPointer(this.context, chunkPos.x, chunkPos.z);
+            if (ptr == 0) return; // this shouldn't ever happen
+            event.getBlocks().forEach(pair -> {
+                BlockPos pos = pair.first();
+                if (pos.getY() >= 128) return;
+                boolean isSolid = pair.second() != AIR_BLOCK_STATE;
+                Octree.setBlock(ptr, pos.getX() & 15, pos.getY(), pos.getZ() & 15, isSolid);
+            });
         });
     }
 
     public CompletableFuture<PathSegment> pathFindAsync(final BlockPos src, final BlockPos dst) {
         return CompletableFuture.supplyAsync(() -> {
-            synchronized (this.cacheLock) {
-                final PathSegment segment = NetherPathfinder.pathFind(
-                        this.context,
-                        src.getX(), src.getY(), src.getZ(),
-                        dst.getX(), dst.getY(), dst.getZ(),
-                        true,
-                        10000
-                );
-                if (segment == null) {
-                    throw new PathCalculationException("Path calculation failed");
-                }
-                return segment;
+            final PathSegment segment = NetherPathfinder.pathFind(
+                    this.context,
+                    src.getX(), src.getY(), src.getZ(),
+                    dst.getX(), dst.getY(), dst.getZ(),
+                    true,
+                    10000
+            );
+            if (segment == null) {
+                throw new PathCalculationException("Path calculation failed");
             }
-        }, this.executorHighPriority);
+            return segment;
+        }, this.executor);
     }
 
     /**
