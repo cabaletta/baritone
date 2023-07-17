@@ -28,6 +28,7 @@ import baritone.behavior.PathingBehavior;
 import baritone.pathing.path.PathExecutor;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Matrix3f;
 import com.mojang.math.Matrix4f;
 import net.minecraft.client.renderer.blockentity.BeaconRenderer;
 import net.minecraft.core.BlockPos;
@@ -45,8 +46,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-
-import static org.lwjgl.opengl.GL11.*;
 
 /**
  * @author Brady
@@ -168,31 +167,35 @@ public final class PathRenderer implements IRenderer {
                 IRenderer.glColor(color, alpha);
             }
 
-            emitLine(stack, start.x, start.y, start.z, end.x, end.y, end.z);
+            emitPathLine(stack, start.x, start.y, start.z, end.x, end.y, end.z);
         }
 
         IRenderer.endLines(settings.renderPathIgnoreDepth.value);
     }
 
-    private static void emitLine(PoseStack stack, double x1, double y1, double z1, double x2, double y2, double z2) {
-        Matrix4f matrix4f = stack.last().pose();
+    private static void emitPathLine(PoseStack stack, double x1, double y1, double z1, double x2, double y2, double z2) {
         double vpX = posX();
         double vpY = posY();
         double vpZ = posZ();
         boolean renderPathAsFrickinThingy = !settings.renderPathAsLine.value;
 
-        buffer.vertex(matrix4f, (float) (x1 + 0.5D - vpX), (float) (y1 + 0.5D - vpY), (float) (z1 + 0.5D - vpZ)).color(color[0], color[1], color[2], color[3]).endVertex();
-        buffer.vertex(matrix4f, (float) (x2 + 0.5D - vpX), (float) (y2 + 0.5D - vpY), (float) (z2 + 0.5D - vpZ)).color(color[0], color[1], color[2], color[3]).endVertex();
-
+        IRenderer.emitLine(stack,
+                x1 + 0.5D - vpX, y1 + 0.5D - vpY, z1 + 0.5D - vpZ,
+                x2 + 0.5D - vpX, y2 + 0.5D - vpY, z2 + 0.5D - vpZ
+        );
         if (renderPathAsFrickinThingy) {
-            buffer.vertex(matrix4f, (float) (x2 + 0.5D - vpX), (float) (y2 + 0.5D - vpY), (float) (z2 + 0.5D - vpZ)).color(color[0], color[1], color[2], color[3]).endVertex();
-            buffer.vertex(matrix4f, (float) (x2 + 0.5D - vpX), (float) (y2 + 0.53D - vpY), (float) (z2 + 0.5D - vpZ)).color(color[0], color[1], color[2], color[3]).endVertex();
-
-            buffer.vertex(matrix4f, (float) (x2 + 0.5D - vpX), (float) (y2 + 0.53D - vpY), (float) (z2 + 0.5D - vpZ)).color(color[0], color[1], color[2], color[3]).endVertex();
-            buffer.vertex(matrix4f, (float) (x1 + 0.5D - vpX), (float) (y1 + 0.53D - vpY), (float) (z1 + 0.5D - vpZ)).color(color[0], color[1], color[2], color[3]).endVertex();
-
-            buffer.vertex(matrix4f, (float) (x1 + 0.5D - vpX), (float) (y1 + 0.53D - vpY), (float) (z1 + 0.5D - vpZ)).color(color[0], color[1], color[2], color[3]).endVertex();
-            buffer.vertex(matrix4f, (float) (x1 + 0.5D - vpX), (float) (y1 + 0.5D - vpY), (float) (z1 + 0.5D - vpZ)).color(color[0], color[1], color[2], color[3]).endVertex();
+            IRenderer.emitLine(stack,
+                    x2 + 0.5D - vpX, y2 + 0.5D - vpY, z2 + 0.5D - vpZ,
+                    x2 + 0.5D - vpX, y2 + 0.53D - vpY, z2 + 0.5D - vpZ
+            );
+            IRenderer.emitLine(stack,
+                    x2 + 0.5D - vpX, y2 + 0.53D - vpY, z2 + 0.5D - vpZ,
+                    x1 + 0.5D - vpX, y1 + 0.53D - vpY, z1 + 0.5D - vpZ
+            );
+            IRenderer.emitLine(stack,
+                    x1 + 0.5D - vpX, y1 + 0.53D - vpY, z1 + 0.5D - vpZ,
+                    x1 + 0.5D - vpX, y1 + 0.5D - vpY, z1 + 0.5D - vpZ
+            );
         }
     }
 
@@ -256,8 +259,6 @@ public final class PathRenderer implements IRenderer {
             maxY = ctx.world().getMaxBuildHeight();
 
             if (settings.renderGoalXZBeacon.value) {
-                glPushAttrib(GL_LIGHTING_BIT);
-
                 //TODO: check
                 textureManager.bindForSetup(TEXTURE_BEACON_BEAM);
                 if (settings.renderGoalIgnoreDepth.value) {
@@ -289,8 +290,6 @@ public final class PathRenderer implements IRenderer {
                 if (settings.renderGoalIgnoreDepth.value) {
                     RenderSystem.enableDepthTest();
                 }
-
-                glPopAttrib();
                 return;
             }
 
@@ -341,15 +340,10 @@ public final class PathRenderer implements IRenderer {
         renderHorizontalQuad(stack, minX, maxX, minZ, maxZ, y1);
         renderHorizontalQuad(stack, minX, maxX, minZ, maxZ, y2);
 
-        Matrix4f matrix4f = stack.last().pose();
-        buffer.vertex(matrix4f, (float) minX, (float) minY, (float) minZ).color(color[0], color[1], color[2], color[3]).endVertex();
-        buffer.vertex(matrix4f, (float) minX, (float) maxY, (float) minZ).color(color[0], color[1], color[2], color[3]).endVertex();
-        buffer.vertex(matrix4f, (float) maxX, (float) minY, (float) minZ).color(color[0], color[1], color[2], color[3]).endVertex();
-        buffer.vertex(matrix4f, (float) maxX, (float) maxY, (float) minZ).color(color[0], color[1], color[2], color[3]).endVertex();
-        buffer.vertex(matrix4f, (float) maxX, (float) minY, (float) maxZ).color(color[0], color[1], color[2], color[3]).endVertex();
-        buffer.vertex(matrix4f, (float) maxX, (float) maxY, (float) maxZ).color(color[0], color[1], color[2], color[3]).endVertex();
-        buffer.vertex(matrix4f, (float) minX, (float) minY, (float) maxZ).color(color[0], color[1], color[2], color[3]).endVertex();
-        buffer.vertex(matrix4f, (float) minX, (float) maxY, (float) maxZ).color(color[0], color[1], color[2], color[3]).endVertex();
+        IRenderer.emitLine(stack, minX, minY, minZ, minX, maxY, minZ);
+        IRenderer.emitLine(stack, maxX, minY, minZ, maxX, maxY, minZ);
+        IRenderer.emitLine(stack, maxX, minY, maxZ, maxX, maxY, maxZ);
+        IRenderer.emitLine(stack, minX, minY, maxZ, minX, maxY, maxZ);
 
         if (setupRender) {
             IRenderer.endLines(settings.renderGoalIgnoreDepth.value);
@@ -358,18 +352,10 @@ public final class PathRenderer implements IRenderer {
 
     private static void renderHorizontalQuad(PoseStack stack, double minX, double maxX, double minZ, double maxZ, double y) {
         if (y != 0) {
-            Matrix4f matrix4f = stack.last().pose();
-            buffer.vertex(matrix4f, (float) minX, (float) y, (float) minZ).color(color[0], color[1], color[2], color[3]).endVertex();
-            buffer.vertex(matrix4f, (float) maxX, (float) y, (float) minZ).color(color[0], color[1], color[2], color[3]).endVertex();
-
-            buffer.vertex(matrix4f, (float) maxX, (float) y, (float) minZ).color(color[0], color[1], color[2], color[3]).endVertex();
-            buffer.vertex(matrix4f, (float) maxX, (float) y, (float) maxZ).color(color[0], color[1], color[2], color[3]).endVertex();
-
-            buffer.vertex(matrix4f, (float) maxX, (float) y, (float) maxZ).color(color[0], color[1], color[2], color[3]).endVertex();
-            buffer.vertex(matrix4f, (float) minX, (float) y, (float) maxZ).color(color[0], color[1], color[2], color[3]).endVertex();
-
-            buffer.vertex(matrix4f, (float) minX, (float) y, (float) maxZ).color(color[0], color[1], color[2], color[3]).endVertex();
-            buffer.vertex(matrix4f, (float) minX, (float) y, (float) minZ).color(color[0], color[1], color[2], color[3]).endVertex();
+            IRenderer.emitLine(stack, minX, y, minZ, maxX, y, minZ);
+            IRenderer.emitLine(stack, maxX, y, minZ, maxX, y, maxZ);
+            IRenderer.emitLine(stack, maxX, y, maxZ, minX, y, maxZ);
+            IRenderer.emitLine(stack, minX, y, maxZ, minX, y, minZ);
         }
     }
 }

@@ -43,7 +43,6 @@ import java.awt.*;
 import java.util.Collections;
 
 import static baritone.api.command.IBaritoneChatControl.FORCE_COMMAND_PREFIX;
-import static org.lwjgl.opengl.GL11.*;
 
 public class GuiClick extends Screen implements Helper {
 
