@@ -22,9 +22,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 /**
  * @author Brady

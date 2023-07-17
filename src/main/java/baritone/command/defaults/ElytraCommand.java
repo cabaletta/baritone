@@ -59,7 +59,9 @@ public class ElytraCommand extends Command {
             if (iGoal == null) {
                 throw new CommandInvalidStateException("No goal has been set");
             }
-            final int x, y, z;
+            final int x;
+            final int y;
+            final int z;
             if (iGoal instanceof GoalXZ) {
                 GoalXZ goal = (GoalXZ) iGoal;
                 x = goal.getX();
