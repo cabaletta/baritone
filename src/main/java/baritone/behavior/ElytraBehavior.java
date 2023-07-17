@@ -391,21 +391,21 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         if (this.aimPos != null) {
             PathRenderer.drawGoal(ctx.player(), new GoalBlock(this.aimPos), event.getPartialTicks(), Color.GREEN);
         }
-        if (!this.clearLines.isEmpty() && settings.renderRaytraces.value) {
+        if (!this.clearLines.isEmpty() && settings.elytraRenderRaytraces.value) {
             IRenderer.startLines(Color.GREEN, settings.pathRenderLineWidthPixels.value, settings.renderPathIgnoreDepth.value);
             for (Pair<Vec3d, Vec3d> line : this.clearLines) {
                 IRenderer.emitLine(line.first(), line.second());
             }
             IRenderer.endLines(settings.renderPathIgnoreDepth.value);
         }
-        if (!this.blockedLines.isEmpty() && Baritone.settings().renderRaytraces.value) {
+        if (!this.blockedLines.isEmpty() && Baritone.settings().elytraRenderRaytraces.value) {
             IRenderer.startLines(Color.BLUE, settings.pathRenderLineWidthPixels.value, settings.renderPathIgnoreDepth.value);
             for (Pair<Vec3d, Vec3d> line : this.blockedLines) {
                 IRenderer.emitLine(line.first(), line.second());
             }
             IRenderer.endLines(settings.renderPathIgnoreDepth.value);
         }
-        if (this.simulationLine != null && Baritone.settings().renderElytraSimulation.value) {
+        if (this.simulationLine != null && Baritone.settings().elytraRenderSimulation.value) {
             IRenderer.startLines(new Color(0x36CCDC), settings.pathRenderLineWidthPixels.value, settings.renderPathIgnoreDepth.value);
             final Vec3d offset = new Vec3d(
                     ctx.player().prevPosX + (ctx.player().posX - ctx.player().prevPosX) * event.getPartialTicks(),
@@ -754,7 +754,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
             logDebug("waiting for elytraFireworkSetbackUseDelay: " + this.remainingSetBackTicks);
             return;
         }
-        final boolean useOnDescend = !Baritone.settings().conserveFireworks.value || ctx.player().posY < goingTo.y + 5;
+        final boolean useOnDescend = !Baritone.settings().elytraConserveFireworks.value || ctx.player().posY < goingTo.y + 5;
         final double currentSpeed = new Vec3d(
                 ctx.player().motionX,
                 // ignore y component if we are BOTH below where we want to be AND descending
@@ -985,7 +985,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
         };
 
         // Use non-batching method without early failure
-        if (Baritone.settings().renderHitboxRaytraces.value) {
+        if (Baritone.settings().elytraRenderHitboxRaytraces.value) {
             boolean clear = true;
             for (int i = 0; i < 8; i++) {
                 final Vec3d s = new Vec3d(src[i * 3], src[i * 3 + 1], src[i * 3 + 2]);
@@ -1010,7 +1010,7 @@ public final class ElytraBehavior extends Behavior implements IElytraBehavior, H
             clear = ctx.world().rayTraceBlocks(start, dest, false, false, false) == null;
         }
 
-        if (Baritone.settings().renderRaytraces.value) {
+        if (Baritone.settings().elytraRenderRaytraces.value) {
             (clear ? this.clearLines : this.blockedLines).add(new Pair<>(start, dest));
         }
         return clear;

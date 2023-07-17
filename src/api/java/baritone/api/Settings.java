@@ -1366,23 +1366,23 @@ public final class Settings {
     /**
      * If enabled, avoids using fireworks when descending along the flight path.
      */
-    public final Setting<Boolean> conserveFireworks = new Setting<>(true);
+    public final Setting<Boolean> elytraConserveFireworks = new Setting<>(true);
 
     /**
      * Renders the raytraces that are performed by the elytra fly calculation.
      */
-    public final Setting<Boolean> renderRaytraces = new Setting<>(false);
+    public final Setting<Boolean> elytraRenderRaytraces = new Setting<>(false);
 
     /**
      * Renders the raytraces that are used in the hitbox part of the elytra fly calculation.
-     * Requires {@link #renderRaytraces}.
+     * Requires {@link #elytraRenderRaytraces}.
      */
-    public final Setting<Boolean> renderHitboxRaytraces = new Setting<>(false);
+    public final Setting<Boolean> elytraRenderHitboxRaytraces = new Setting<>(false);
 
     /**
      * Renders the best elytra flight path that was simulated each tick.
      */
-    public final Setting<Boolean> renderElytraSimulation = new Setting<>(false);
+    public final Setting<Boolean> elytraRenderSimulation = new Setting<>(false);
 
     /**
      * Automatically path to and jump off of ledges to initiate elytra flight when grounded.
