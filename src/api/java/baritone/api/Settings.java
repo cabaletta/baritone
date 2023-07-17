@@ -742,10 +742,21 @@ public final class Settings {
     public final Setting<Boolean> elytraFreeLook = new Setting<>(false);
 
     /**
-     * Forces the client-sided rotations to an average of the last 10 ticks of server-sided rotations.
+     * Forces the client-sided yaw rotation to an average of the last {@link #smoothLookTicks} of server-sided rotations.
      * Requires {@link #freeLook}.
      */
-    public final Setting<Boolean> smoothLook = new Setting<>(false);
+    public final Setting<Boolean> smoothLookYaw = new Setting<>(false);
+
+    /**
+     * Forces the client-sided pitch rotation to an average of the last {@link #smoothLookTicks} of server-sided rotations.
+     * Requires {@link #freeLook}.
+     */
+    public final Setting<Boolean> smoothLookPitch = new Setting<>(false);
+
+    /**
+     * The number of ticks to average across for {@link #smoothLookYaw} and {@link #smoothLookPitch};
+     */
+    public final Setting<Integer> smoothLookTicks = new Setting<>(10);
 
     /**
      * When true, the player will remain with its existing look direction as often as possible.

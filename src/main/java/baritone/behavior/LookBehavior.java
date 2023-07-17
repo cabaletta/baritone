@@ -26,9 +26,10 @@ import baritone.api.event.events.*;
 import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.Rotation;
 import baritone.behavior.look.ForkableRandom;
-import com.google.common.collect.EvictingQueue;
 import net.minecraft.network.play.client.CPacketPlayer;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.Optional;
 
 public final class LookBehavior extends Behavior implements ILookBehavior {
@@ -52,12 +53,14 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
 
     private final AimProcessor processor;
 
-    private final EvictingQueue<Float> smoothYawBuffer;
+    private final Deque<Float> smoothYawBuffer;
+    private final Deque<Float> smoothPitchBuffer;
 
     public LookBehavior(Baritone baritone) {
         super(baritone);
         this.processor = new AimProcessor(baritone.getPlayerContext());
-        this.smoothYawBuffer = EvictingQueue.create(10);
+        this.smoothYawBuffer = new ArrayDeque<>();
+        this.smoothPitchBuffer = new ArrayDeque<>();
     }
 
     @Override
@@ -100,15 +103,22 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
             case POST: {
                 // Reset the player's rotations back to their original values
                 if (this.prevRotation != null) {
-                    if (Baritone.settings().smoothLook.value) {
-                        this.smoothYawBuffer.add(this.target.rotation.getYaw());
-                        ctx.player().rotationYaw = (float) this.smoothYawBuffer.stream()
-                            .mapToDouble(d -> d).average().orElseGet(this.prevRotation::getYaw);
-                        ctx.player().rotationPitch = this.prevRotation.getPitch();
-                    } else {
-                        ctx.player().rotationYaw = this.prevRotation.getYaw();
-                        ctx.player().rotationPitch = this.prevRotation.getPitch();
+                    this.smoothYawBuffer.add(this.target.rotation.getYaw());
+                    while (this.smoothYawBuffer.size() > Baritone.settings().smoothLookTicks.value) {
+                        this.smoothYawBuffer.pop();
                     }
+                    this.smoothPitchBuffer.add(this.target.rotation.getPitch());
+                    while (this.smoothPitchBuffer.size() > Baritone.settings().smoothLookTicks.value) {
+                        this.smoothPitchBuffer.pop();
+                    }
+
+                    ctx.player().rotationYaw = Baritone.settings().smoothLookYaw.value
+                            ? (float) this.smoothYawBuffer.stream().mapToDouble(d -> d).average().orElseGet(this.prevRotation::getYaw)
+                            : this.prevRotation.getYaw();
+                    ctx.player().rotationPitch = Baritone.settings().smoothLookPitch.value
+                            ? (float) this.smoothPitchBuffer.stream().mapToDouble(d -> d).average().orElseGet(this.prevRotation::getPitch)
+                            : this.prevRotation.getPitch();
+
                     this.prevRotation = null;
                 }
                 // The target is done being used for this game tick, so it can be invalidated
