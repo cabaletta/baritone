@@ -439,6 +439,7 @@ public final class LegacyElytraBehavior implements Helper {
         if (this.solver != null) {
             this.solver.cancel(true);
         }
+        this.solverExecutor.shutdown();
         this.context.destroy();
     }
 
