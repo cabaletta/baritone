@@ -94,6 +94,15 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
         if (ctx.player().isElytraFlying()) {
             final BetterBlockPos last = behavior.pathManager.path.getLast();
             if (last != null && ctx.player().getDistanceSqToCenter(last) < (5 * 5)) {
+                if (Baritone.settings().notificationOnPathComplete.value) {
+                    logNotification("Pathing complete", false);
+                }
+                if (Baritone.settings().disconnectOnArrival.value) {
+                    // don't be active when the user logs back in
+                    this.onLostControl();
+                    ctx.world().sendQuittingDisconnectingPacket();
+                    return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
+                }
                 this.state = State.LANDING;
             }
         }
