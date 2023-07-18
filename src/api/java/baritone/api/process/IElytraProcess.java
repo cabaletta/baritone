@@ -19,24 +19,21 @@ package baritone.api.process;
 
 import net.minecraft.util.math.BlockPos;
 
-import java.util.concurrent.CompletableFuture;
-
 public interface IElytraProcess extends IBaritoneProcess {
-
-    /**
-     * Marks the nether pathfinder context to be reset when it is safe to do so. Because this operation is not
-     * immediate, a {@link CompletableFuture} is returned that will complete after the context has been reset.
-     *
-     * @return A {@link CompletableFuture} that is completed when the context is reset
-     */
-    @Deprecated
-    CompletableFuture<Void> resetContext();
 
     void repackChunks();
 
+    /**
+     * @return Where it is currently flying to, null if not active
+     */
+    BlockPos currentDestination();
+
     void pathTo(BlockPos destination);
 
-    void cancel();
+    /**
+     * Resets the state of the process but will maintain the same destination and will try to keep flying
+     */
+    void resetState();
 
     /**
      * @return {@code true} if the native library loaded and elytra is actually usable

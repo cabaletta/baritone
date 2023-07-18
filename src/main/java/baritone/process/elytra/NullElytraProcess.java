@@ -35,13 +35,13 @@ public final class NullElytraProcess extends BaritoneProcessHelper implements IE
     }
 
     @Override
-    public CompletableFuture<Void> resetContext() {
-        throw new UnsupportedOperationException("Called resetContext() on NullElytraBehavior");
+    public void repackChunks() {
+        throw new UnsupportedOperationException("Called repackChunks() on NullElytraBehavior");
     }
 
     @Override
-    public void repackChunks() {
-        throw new UnsupportedOperationException("Called repackChunks() on NullElytraBehavior");
+    public BlockPos currentDestination() {
+        return null;
     }
 
     @Override
@@ -50,8 +50,8 @@ public final class NullElytraProcess extends BaritoneProcessHelper implements IE
     }
 
     @Override
-    public void cancel() {
-        throw new UnsupportedOperationException("Called cancel() on NullElytraBehavior");
+    public void resetState() {
+
     }
 
     @Override

@@ -85,10 +85,11 @@ public class ElytraCommand extends Command {
         final String action = args.getString();
         switch (action) {
             case "reset": {
-                elytra.resetContext().whenComplete((result, ex) -> {
-                    logDirect("Context reset, repacking chunks");
-                    elytra.repackChunks();
-                });
+                BlockPos destination = elytra.currentDestination();
+                elytra.onLostControl();
+                elytra.pathTo(destination);
+                elytra.repackChunks();
+                logDirect("Reset state but still flying to same goal");
                 break;
             }
             case "repack": {

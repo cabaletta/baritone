@@ -19,6 +19,7 @@ package baritone.process;
 
 import baritone.Baritone;
 import baritone.api.event.events.*;
+import baritone.api.event.events.type.EventState;
 import baritone.api.event.listener.AbstractGameEventListener;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalYLevel;
@@ -42,9 +43,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
 
-import java.util.concurrent.*;
-import java.util.function.Supplier;
-
 public class ElytraProcess extends BaritoneProcessHelper implements IBaritoneProcess, IElytraProcess, AbstractGameEventListener {
     public State state;
     private Goal goal;
@@ -63,14 +61,32 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
                 : new NullElytraProcess(baritone));
     }
 
+
+
     @Override
     public boolean isActive() {
         return behavior != null;
     }
 
     @Override
+    public void resetState() {
+        BlockPos destination = this.currentDestination();
+        this.onLostControl();
+        this.pathTo(destination);
+        this.repackChunks();
+    }
+
+    @Override
     public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
-        this.behavior.onTick();
+        final long seedSetting = Baritone.settings().elytraNetherSeed.value;
+        if (this.behavior != null && seedSetting != behavior.context.getSeed()) {
+            logDirect("Nether seed changed, recalculating path");
+            this.resetState();
+        }
+
+        if (this.behavior != null) {
+            this.behavior.onTick();
+        }
         if (calcFailed) {
             onLostControl();
             logDirect("Failed to get to jump off spot, canceling");
@@ -184,43 +200,23 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
     public void onLostControl() {
         this.goal = null;
         this.state = State.START_FLYING; // TODO: null state?
-        if (this.behavior != null) this.behavior.cancel();
+        if (this.behavior != null) this.behavior.destroy();
         this.behavior = null;
     }
 
-
-
     @Override
     public String displayName0() {
-        final Supplier<String> status = () -> {
-            switch (this.state) {
-                case LOCATE_JUMP:
-                    return "Finding spot to jump off";
-                case PAUSE:
-                    return "Waiting for elytra path";
-                case GET_TO_JUMP:
-                    return "Walking to takeoff";
-                case START_FLYING:
-                    return "Begin flying";
-                case FLYING:
-                    return "Flying";
-                case LANDING:
-                    return "Landing";
-                default:
-                    return "Unknown";
-            }
-        };
-        return "Elytra - " + status.get();
-    }
-
-    @Override
-    public CompletableFuture<Void> resetContext() {
-        return behavior.resetContext();
+        return "Elytra - " + this.state.description;
     }
 
     @Override
     public void repackChunks() {
         this.behavior.repackChunks();
+    }
+
+    @Override
+    public BlockPos currentDestination() {
+        return this.behavior != null ? this.behavior.destination : null;
     }
 
     @Override
@@ -230,12 +226,6 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
             this.behavior.repackChunks();
         }
         this.behavior.pathTo(destination);
-    }
-
-    @Override
-    public void cancel() {
-        if (this.behavior != null) this.behavior.cancel();
-        this.behavior = null;
     }
 
     @Override
@@ -249,13 +239,19 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
     }
 
     public enum State {
-        LOCATE_JUMP,
-        VALIDATE_PATH,
-        PAUSE,
-        GET_TO_JUMP,
-        START_FLYING,
-        FLYING,
-        LANDING
+        LOCATE_JUMP("Finding spot to jump off"),
+        VALIDATE_PATH("Validating path"),
+        PAUSE("Waiting for elytra path"),
+        GET_TO_JUMP("Walking to takeoff"),
+        START_FLYING("Begin flying"),
+        FLYING("Flying"),
+        LANDING("Landing");
+
+        public String description;
+
+        State(String desc) {
+            this.description = desc;
+        }
     }
 
     @Override
@@ -265,7 +261,13 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
 
     @Override
     public void onWorldEvent(WorldEvent event) {
-        if (this.behavior != null) this.behavior.onWorldEvent(event);
+        if (event.getWorld() != null && event.getState() == EventState.POST) {
+            // Exiting the world, just destroy
+            if (this.behavior != null) {
+                this.behavior.destroy();
+                this.behavior = new LegacyElytraBehavior(baritone, this);
+            }
+        }
     }
 
     @Override

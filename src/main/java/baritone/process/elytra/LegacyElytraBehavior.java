@@ -23,7 +23,6 @@ import baritone.api.Settings;
 import baritone.api.behavior.look.IAimProcessor;
 import baritone.api.behavior.look.ITickableAimProcessor;
 import baritone.api.event.events.*;
-import baritone.api.event.events.type.EventState;
 import baritone.api.pathing.goals.GoalBlock;
 import baritone.api.utils.*;
 import baritone.pathing.movement.CalculationContext;
@@ -50,7 +49,6 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 
 import java.awt.*;
@@ -76,8 +74,7 @@ public final class LegacyElytraBehavior implements Helper {
     public List<BetterBlockPos> visiblePath;
 
     // :sunglasses:
-    private NetherPathfinderContext context; // TODO: make this final
-    private CompletableFuture<Void> forceResetContext;
+    public final NetherPathfinderContext context; // TODO: make this final
     public final PathManager pathManager;
     private final ElytraProcess process;
 
@@ -102,8 +99,8 @@ public final class LegacyElytraBehavior implements Helper {
     private final int[] nextTickBoostCounter;
 
     private BlockStateInterface bsi;
-    private BlockStateOctreeInterface boi;
-    public BlockPos destination;
+    private final BlockStateOctreeInterface boi;
+    public BlockPos destination; // TODO: make this final?
 
     private final ExecutorService solverExecutor;
     private Future<Solution> solver;
@@ -127,6 +124,7 @@ public final class LegacyElytraBehavior implements Helper {
         this.nextTickBoostCounter = new int[2];
 
         this.context = new NetherPathfinderContext(Baritone.settings().elytraNetherSeed.value);
+        this.boi = new BlockStateOctreeInterface(context);
     }
 
     public final class PathManager {
@@ -411,35 +409,11 @@ public final class LegacyElytraBehavior implements Helper {
         }
     }
 
-    // TODO: move this logic to ElytraProcess
-    public void onWorldEvent(WorldEvent event) {
-        if (event.getWorld() != null) {
-            if (event.getState() == EventState.PRE) {
-                // Reset the context when it's safe to do so on the next game tick
-                this.resetContext();
-            }
-        } else {
-            if (event.getState() == EventState.POST) {
-                // Exiting the world, just destroy and invalidate the context
-                if (this.context != null) {
-                    this.context.destroy();
-                    this.context = null;
-                }
-            }
-        }
-    }
-
     public void onChunkEvent(ChunkEvent event) {
         if (event.isPostPopulate() && this.context != null) {
             final Chunk chunk = ctx.world().getChunk(event.getX(), event.getZ());
             this.context.queueForPacking(chunk);
         }
-    }
-
-    public void uploadRenderDistance(World world) {
-        ((IChunkProviderClient) world.getChunkProvider()).loadedChunks().forEach((l, chunk) -> {
-            this.context.queueForPacking(chunk);
-        });
     }
 
     public void onBlockChange(BlockChangeEvent event) {
@@ -461,34 +435,16 @@ public final class LegacyElytraBehavior implements Helper {
         }
     }
 
-    public void cancel() {
-        this.destination = null;
-        this.pathManager.clear();
-        this.remainingFireworkTicks = 0;
-        this.remainingSetBackTicks = 0;
+    public void destroy() {
         if (this.solver != null) {
             this.solver.cancel(true);
-            this.solver = null;
         }
-        this.pendingSolution = null;
-        Arrays.fill(this.nextTickBoostCounter, 0);
-    }
-
-    public CompletableFuture<Void> resetContext() {
-        if (this.forceResetContext == null) {
-            this.forceResetContext = new CompletableFuture<>();
-        }
-        return this.forceResetContext;
+        this.context.destroy();
     }
 
     public void repackChunks() {
         ((IChunkProviderClient) ctx.world().getChunkProvider()).loadedChunks().values()
                 .forEach(this.context::queueForPacking);
-    }
-
-    public boolean isActive() {
-        return baritone.getPathingControlManager().mostRecentInControl()
-                .filter(process -> this.process == process).isPresent();
     }
 
     public void onTick() {
@@ -501,23 +457,6 @@ public final class LegacyElytraBehavior implements Helper {
                 // it doesn't matter if get() fails since the solution can just be recalculated synchronously
             } finally {
                 this.solver = null;
-            }
-        }
-
-        // Setup/reset context
-        final long netherSeed = Baritone.settings().elytraNetherSeed.value;
-        if (this.context == null || this.context.getSeed() != netherSeed || this.forceResetContext != null) {
-            if (this.context != null) {
-                this.context.destroy();
-            }
-            this.context = new NetherPathfinderContext(netherSeed);
-            if (this.forceResetContext != null) {
-                this.forceResetContext.complete(null);
-                this.forceResetContext = null;
-            }
-            if (this.context.getSeed() != netherSeed && this.isActive()) {
-                logDirect("Nether seed changed, recalculating path");
-                this.pathManager.pathToDestination();
             }
         }
 
@@ -554,7 +493,6 @@ public final class LegacyElytraBehavior implements Helper {
 
         // ctx AND context???? :DDD
         this.bsi = new BlockStateInterface(ctx);
-        this.boi = new BlockStateOctreeInterface(context);
         this.pathManager.tick();
 
         final int playerNear = this.pathManager.getNear();
