@@ -47,7 +47,6 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
     public State state;
     private Goal goal;
     private LegacyElytraBehavior behavior;
-    private boolean skippedThisTick = false;
 
     private ElytraProcess(Baritone baritone) {
         super(baritone);
@@ -247,7 +246,7 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
         FLYING("Flying"),
         LANDING("Landing");
 
-        public String description;
+        public final String description;
 
         State(String desc) {
             this.description = desc;
