@@ -89,9 +89,6 @@ public interface IRenderer {
     }
 
     static void emitLine(PoseStack stack, double x1, double y1, double z1, double x2, double y2, double z2) {
-        final Matrix4f matrix4f = stack.last().pose();
-        final Matrix3f normal = stack.last().normal();
-
         final double dx = x2 - x1;
         final double dy = y2 - y1;
         final double dz = z2 - z1;
@@ -101,34 +98,49 @@ public interface IRenderer {
         final float ny = (float) (dy * invMag);
         final float nz = (float) (dz * invMag);
 
-        buffer.vertex(matrix4f, (float) x1, (float) y1, (float) z1)
-                .color(color[0], color[1], color[2], color[3])
-                .normal(normal, nx, ny, nz)
-                .endVertex();
-        buffer.vertex(matrix4f, (float) x2, (float) y2, (float) z2)
-                .color(color[0], color[1], color[2], color[3])
-                .normal(normal, nx, ny, nz)
-                .endVertex();
+        emitLine(stack, x1, y1, z1, x2, y2, z2, nx, ny, nz);
+    }
+
+    static void emitLine(PoseStack stack,
+                         double x1, double y1, double z1,
+                         double x2, double y2, double z2,
+                         double nx, double ny, double nz) {
+        emitLine(stack,
+                (float) x1, (float) y1, (float) z1,
+                (float) x2, (float) y2, (float) z2,
+                (float) nx, (float) ny, (float) nz
+        );
+    }
+
+    static void emitLine(PoseStack stack,
+                         float x1, float y1, float z1,
+                         float x2, float y2, float z2,
+                         float nx, float ny, float nz) {
+        final Matrix4f matrix4f = stack.last().pose();
+        final Matrix3f normal = stack.last().normal();
+
+        buffer.vertex(matrix4f, x1, y1, z1).color(color[0], color[1], color[2], color[3]).normal(normal, nx, ny, nz).endVertex();
+        buffer.vertex(matrix4f, x2, y2, z2).color(color[0], color[1], color[2], color[3]).normal(normal, nx, ny, nz).endVertex();
     }
 
     static void emitAABB(PoseStack stack, AABB aabb) {
         AABB toDraw = aabb.move(-renderManager.renderPosX(), -renderManager.renderPosY(), -renderManager.renderPosZ());
 
         // bottom
-        emitLine(stack, toDraw.minX, toDraw.minY, toDraw.minZ, toDraw.maxX, toDraw.minY, toDraw.minZ);
-        emitLine(stack, toDraw.maxX, toDraw.minY, toDraw.minZ, toDraw.maxX, toDraw.minY, toDraw.maxZ);
-        emitLine(stack, toDraw.maxX, toDraw.minY, toDraw.maxZ, toDraw.minX, toDraw.minY, toDraw.maxZ);
-        emitLine(stack, toDraw.minX, toDraw.minY, toDraw.maxZ, toDraw.minX, toDraw.minY, toDraw.minZ);
+        emitLine(stack, toDraw.minX, toDraw.minY, toDraw.minZ, toDraw.maxX, toDraw.minY, toDraw.minZ, 1.0, 0.0, 0.0);
+        emitLine(stack, toDraw.maxX, toDraw.minY, toDraw.minZ, toDraw.maxX, toDraw.minY, toDraw.maxZ, 0.0, 0.0, 1.0);
+        emitLine(stack, toDraw.maxX, toDraw.minY, toDraw.maxZ, toDraw.minX, toDraw.minY, toDraw.maxZ, -1.0, 0.0, 0.0);
+        emitLine(stack, toDraw.minX, toDraw.minY, toDraw.maxZ, toDraw.minX, toDraw.minY, toDraw.minZ, 0.0, 0.0, -1.0);
         // top
-        emitLine(stack, toDraw.minX, toDraw.maxY, toDraw.minZ, toDraw.maxX, toDraw.maxY, toDraw.minZ);
-        emitLine(stack, toDraw.maxX, toDraw.maxY, toDraw.minZ, toDraw.maxX, toDraw.maxY, toDraw.maxZ);
-        emitLine(stack, toDraw.maxX, toDraw.maxY, toDraw.maxZ, toDraw.minX, toDraw.maxY, toDraw.maxZ);
-        emitLine(stack, toDraw.minX, toDraw.maxY, toDraw.maxZ, toDraw.minX, toDraw.maxY, toDraw.minZ);
+        emitLine(stack, toDraw.minX, toDraw.maxY, toDraw.minZ, toDraw.maxX, toDraw.maxY, toDraw.minZ, 1.0, 0.0, 0.0);
+        emitLine(stack, toDraw.maxX, toDraw.maxY, toDraw.minZ, toDraw.maxX, toDraw.maxY, toDraw.maxZ, 0.0, 0.0, 1.0);
+        emitLine(stack, toDraw.maxX, toDraw.maxY, toDraw.maxZ, toDraw.minX, toDraw.maxY, toDraw.maxZ, -1.0, 0.0, 0.0);
+        emitLine(stack, toDraw.minX, toDraw.maxY, toDraw.maxZ, toDraw.minX, toDraw.maxY, toDraw.minZ, 0.0, 0.0, -1.0);
         // corners
-        emitLine(stack, toDraw.minX, toDraw.minY, toDraw.minZ, toDraw.minX, toDraw.maxY, toDraw.minZ);
-        emitLine(stack, toDraw.maxX, toDraw.minY, toDraw.minZ, toDraw.maxX, toDraw.maxY, toDraw.minZ);
-        emitLine(stack, toDraw.maxX, toDraw.minY, toDraw.maxZ, toDraw.maxX, toDraw.maxY, toDraw.maxZ);
-        emitLine(stack, toDraw.minX, toDraw.minY, toDraw.maxZ, toDraw.minX, toDraw.maxY, toDraw.maxZ);
+        emitLine(stack, toDraw.minX, toDraw.minY, toDraw.minZ, toDraw.minX, toDraw.maxY, toDraw.minZ, 0.0, 1.0, 0.0);
+        emitLine(stack, toDraw.maxX, toDraw.minY, toDraw.minZ, toDraw.maxX, toDraw.maxY, toDraw.minZ, 0.0, 1.0, 0.0);
+        emitLine(stack, toDraw.maxX, toDraw.minY, toDraw.maxZ, toDraw.maxX, toDraw.maxY, toDraw.maxZ, 0.0, 1.0, 0.0);
+        emitLine(stack, toDraw.minX, toDraw.minY, toDraw.maxZ, toDraw.minX, toDraw.maxY, toDraw.maxZ, 0.0, 1.0, 0.0);
     }
 
     static void emitAABB(PoseStack stack, AABB aabb, double expand) {

@@ -340,10 +340,13 @@ public final class PathRenderer implements IRenderer {
         renderHorizontalQuad(stack, minX, maxX, minZ, maxZ, y1);
         renderHorizontalQuad(stack, minX, maxX, minZ, maxZ, y2);
 
-        IRenderer.emitLine(stack, minX, minY, minZ, minX, maxY, minZ);
-        IRenderer.emitLine(stack, maxX, minY, minZ, maxX, maxY, minZ);
-        IRenderer.emitLine(stack, maxX, minY, maxZ, maxX, maxY, maxZ);
-        IRenderer.emitLine(stack, minX, minY, maxZ, minX, maxY, maxZ);
+        for (double y = minY; y < maxY; y += 16) {
+            double max = Math.min(maxY, y + 16);
+            IRenderer.emitLine(stack, minX, y, minZ, minX, max, minZ, 0.0, 1.0, 0.0);
+            IRenderer.emitLine(stack, maxX, y, minZ, maxX, max, minZ, 0.0, 1.0, 0.0);
+            IRenderer.emitLine(stack, maxX, y, maxZ, maxX, max, maxZ, 0.0, 1.0, 0.0);
+            IRenderer.emitLine(stack, minX, y, maxZ, minX, max, maxZ, 0.0, 1.0, 0.0);
+        }
 
         if (setupRender) {
             IRenderer.endLines(settings.renderGoalIgnoreDepth.value);
@@ -352,10 +355,10 @@ public final class PathRenderer implements IRenderer {
 
     private static void renderHorizontalQuad(PoseStack stack, double minX, double maxX, double minZ, double maxZ, double y) {
         if (y != 0) {
-            IRenderer.emitLine(stack, minX, y, minZ, maxX, y, minZ);
-            IRenderer.emitLine(stack, maxX, y, minZ, maxX, y, maxZ);
-            IRenderer.emitLine(stack, maxX, y, maxZ, minX, y, maxZ);
-            IRenderer.emitLine(stack, minX, y, maxZ, minX, y, minZ);
+            IRenderer.emitLine(stack, minX, y, minZ, maxX, y, minZ, 1.0, 0.0, 0.0);
+            IRenderer.emitLine(stack, maxX, y, minZ, maxX, y, maxZ, 0.0, 0.0, 1.0);
+            IRenderer.emitLine(stack, maxX, y, maxZ, minX, y, maxZ, -1.0, 0.0, 0.0);
+            IRenderer.emitLine(stack, minX, y, maxZ, minX, y, minZ, 0.0, 0.0, -1.0);
         }
     }
 }
