@@ -74,7 +74,7 @@ public final class LegacyElytraBehavior implements Helper {
     public List<BetterBlockPos> visiblePath;
 
     // :sunglasses:
-    public final NetherPathfinderContext context; // TODO: make this final
+    public final NetherPathfinderContext context;
     public final PathManager pathManager;
     private final ElytraProcess process;
 
@@ -100,7 +100,7 @@ public final class LegacyElytraBehavior implements Helper {
 
     private BlockStateInterface bsi;
     private final BlockStateOctreeInterface boi;
-    public BlockPos destination; // TODO: make this final?
+    public final BlockPos destination;
 
     private final ExecutorService solverExecutor;
     private Future<Solution> solver;
@@ -113,13 +113,14 @@ public final class LegacyElytraBehavior implements Helper {
     private int invTickCountdown = 0;
     private final Queue<Runnable> invTransactionQueue = new LinkedList<>();
 
-    public LegacyElytraBehavior(Baritone baritone, ElytraProcess process) {
+    public LegacyElytraBehavior(Baritone baritone, ElytraProcess process, BlockPos destination) {
         this.baritone = baritone;
         this.ctx = baritone.getPlayerContext();
         this.clearLines = new CopyOnWriteArrayList<>();
         this.blockedLines = new CopyOnWriteArrayList<>();
         this.pathManager = this.new PathManager();
         this.process = process;
+        this.destination = destination;
         this.solverExecutor = Executors.newSingleThreadExecutor();
         this.nextTickBoostCounter = new int[2];
 
@@ -428,8 +429,7 @@ public final class LegacyElytraBehavior implements Helper {
         }
     }
 
-    public void pathTo(BlockPos destination) {
-        this.destination = destination;
+    public void pathTo() {
         if (!Baritone.settings().elytraAutoJump.value || ctx.player().isElytraFlying()) {
             this.pathManager.pathToDestination();
         }

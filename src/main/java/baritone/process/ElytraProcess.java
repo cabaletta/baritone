@@ -42,15 +42,14 @@ import baritone.utils.PathingCommandContext;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
-
 public class ElytraProcess extends BaritoneProcessHelper implements IBaritoneProcess, IElytraProcess, AbstractGameEventListener {
+
     public State state;
     private Goal goal;
     private LegacyElytraBehavior behavior;
 
     private ElytraProcess(Baritone baritone) {
         super(baritone);
-        this.behavior = new LegacyElytraBehavior(baritone, this);
         baritone.getGameEventHandler().registerEventListener(this);
     }
 
@@ -60,11 +59,9 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
                 : new NullElytraProcess(baritone));
     }
 
-
-
     @Override
     public boolean isActive() {
-        return behavior != null;
+        return this.behavior != null;
     }
 
     @Override
@@ -78,7 +75,7 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
     @Override
     public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
         final long seedSetting = Baritone.settings().elytraNetherSeed.value;
-        if (seedSetting != behavior.context.getSeed()) {
+        if (seedSetting != this.behavior.context.getSeed()) {
             logDirect("Nether seed changed, recalculating path");
             this.resetState();
         }
@@ -232,11 +229,11 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
 
     @Override
     public void pathTo(BlockPos destination) {
-        this.behavior = new LegacyElytraBehavior(this.baritone, this);
+        this.behavior = new LegacyElytraBehavior(this.baritone, this, destination);
         if (ctx.world() != null) {
             this.behavior.repackChunks();
         }
-        this.behavior.pathTo(destination);
+        this.behavior.pathTo();
     }
 
     @Override
@@ -275,7 +272,7 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
         if (event.getWorld() != null && event.getState() == EventState.POST && this.behavior != null) {
             // Exiting the world, just destroy
             this.behavior.destroy();
-            this.behavior = new LegacyElytraBehavior(baritone, this);
+            this.behavior = null;
         }
     }
 
