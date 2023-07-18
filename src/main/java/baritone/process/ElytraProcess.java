@@ -78,14 +78,13 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
     @Override
     public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
         final long seedSetting = Baritone.settings().elytraNetherSeed.value;
-        if (this.behavior != null && seedSetting != behavior.context.getSeed()) {
+        if (seedSetting != behavior.context.getSeed()) {
             logDirect("Nether seed changed, recalculating path");
             this.resetState();
         }
 
-        if (this.behavior != null) {
-            this.behavior.onTick();
-        }
+        this.behavior.onTick();
+
         if (calcFailed) {
             onLostControl();
             logDirect("Failed to get to jump off spot, canceling");
@@ -199,8 +198,10 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
     public void onLostControl() {
         this.goal = null;
         this.state = State.START_FLYING; // TODO: null state?
-        if (this.behavior != null) this.behavior.destroy();
-        this.behavior = null;
+        if (this.behavior != null) {
+            this.behavior.destroy();
+            this.behavior = null;
+        }
     }
 
     @Override
@@ -210,7 +211,9 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
 
     @Override
     public void repackChunks() {
-        this.behavior.repackChunks();
+        if (this.behavior != null) {
+            this.behavior.repackChunks();
+        }
     }
 
     @Override
@@ -260,12 +263,10 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
 
     @Override
     public void onWorldEvent(WorldEvent event) {
-        if (event.getWorld() != null && event.getState() == EventState.POST) {
+        if (event.getWorld() != null && event.getState() == EventState.POST && this.behavior != null) {
             // Exiting the world, just destroy
-            if (this.behavior != null) {
-                this.behavior.destroy();
-                this.behavior = new LegacyElytraBehavior(baritone, this);
-            }
+            this.behavior.destroy();
+            this.behavior = new LegacyElytraBehavior(baritone, this);
         }
     }
 
