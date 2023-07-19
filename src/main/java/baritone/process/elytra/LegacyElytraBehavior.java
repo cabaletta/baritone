@@ -18,14 +18,12 @@
 package baritone.process.elytra;
 
 import baritone.Baritone;
-import baritone.api.IBaritone;
 import baritone.api.Settings;
 import baritone.api.behavior.look.IAimProcessor;
 import baritone.api.behavior.look.ITickableAimProcessor;
 import baritone.api.event.events.*;
 import baritone.api.pathing.goals.GoalBlock;
 import baritone.api.utils.*;
-import baritone.pathing.movement.CalculationContext;
 import baritone.process.ElytraProcess;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.IRenderer;
@@ -36,7 +34,6 @@ import it.unimi.dsi.fastutil.floats.FloatArrayList;
 import it.unimi.dsi.fastutil.floats.FloatIterator;
 import it.unimi.dsi.fastutil.longs.Long2ReferenceOpenHashMap;
 import net.minecraft.block.material.Material;
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.item.EntityFireworkRocket;
 import net.minecraft.init.Items;
 import net.minecraft.inventory.ClickType;
@@ -57,7 +54,6 @@ import java.util.List;
 import java.util.concurrent.*;
 import java.util.function.UnaryOperator;
 
-import static baritone.api.pathing.movement.ActionCosts.COST_INF;
 import static baritone.utils.BaritoneMath.fastCeil;
 import static baritone.utils.BaritoneMath.fastFloor;
 
@@ -1292,34 +1288,4 @@ public final class LegacyElytraBehavior implements Helper {
             return result;
         }
     }
-
-    /**
-     * Custom calculation context which makes the player fall into lava
-     */
-    public static final class WalkOffCalculationContext extends CalculationContext {
-
-        public WalkOffCalculationContext(IBaritone baritone) {
-            super(baritone, true);
-            this.allowFallIntoLava = true;
-            this.minFallHeight = 8;
-            this.maxFallHeightNoWater = 10000;
-        }
-
-        @Override
-        public double costOfPlacingAt(int x, int y, int z, IBlockState current) {
-            return COST_INF;
-        }
-
-        @Override
-        public double breakCostMultiplierAt(int x, int y, int z, IBlockState current) {
-            return COST_INF;
-        }
-
-        @Override
-        public double placeBucketCost() {
-            return COST_INF;
-        }
-    }
-
-
 }

@@ -18,6 +18,7 @@
 package baritone.process;
 
 import baritone.Baritone;
+import baritone.api.IBaritone;
 import baritone.api.event.events.*;
 import baritone.api.event.events.type.EventState;
 import baritone.api.event.listener.AbstractGameEventListener;
@@ -33,14 +34,18 @@ import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.Rotation;
 import baritone.api.utils.RotationUtils;
 import baritone.api.utils.input.Input;
+import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.movements.MovementFall;
 import baritone.process.elytra.LegacyElytraBehavior;
 import baritone.process.elytra.NetherPathfinderContext;
 import baritone.process.elytra.NullElytraProcess;
 import baritone.utils.BaritoneProcessHelper;
 import baritone.utils.PathingCommandContext;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
+
+import static baritone.api.pathing.movement.ActionCosts.COST_INF;
 
 public class ElytraProcess extends BaritoneProcessHelper implements IBaritoneProcess, IElytraProcess, AbstractGameEventListener {
 
@@ -165,7 +170,7 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
                     return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
                 }
             }
-            return new PathingCommandContext(this.goal, PathingCommandType.SET_GOAL_AND_PAUSE, new LegacyElytraBehavior.WalkOffCalculationContext(baritone));
+            return new PathingCommandContext(this.goal, PathingCommandType.SET_GOAL_AND_PAUSE, new WalkOffCalculationContext(baritone));
         }
 
         // yucky
@@ -295,5 +300,33 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
     public void onPostTick(TickEvent event) {
         IBaritoneProcess procThisTick = baritone.getPathingControlManager().mostRecentInControl().orElse(null);
         if (this.behavior != null && procThisTick == this) this.behavior.onPostTick(event);
+    }
+
+    /**
+     * Custom calculation context which makes the player fall into lava
+     */
+    public static final class WalkOffCalculationContext extends CalculationContext {
+
+        public WalkOffCalculationContext(IBaritone baritone) {
+            super(baritone, true);
+            this.allowFallIntoLava = true;
+            this.minFallHeight = 8;
+            this.maxFallHeightNoWater = 10000;
+        }
+
+        @Override
+        public double costOfPlacingAt(int x, int y, int z, IBlockState current) {
+            return COST_INF;
+        }
+
+        @Override
+        public double breakCostMultiplierAt(int x, int y, int z, IBlockState current) {
+            return COST_INF;
+        }
+
+        @Override
+        public double placeBucketCost() {
+            return COST_INF;
+        }
     }
 }
