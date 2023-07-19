@@ -15,16 +15,14 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.api.behavior;
-
-import baritone.api.event.listener.AbstractGameEventListener;
-import baritone.api.event.listener.IGameEventListener;
+package baritone.process.elytra;
 
 /**
- * A behavior is simply a type that is able to listen to events.
- *
  * @author Brady
- * @see IGameEventListener
- * @since 9/23/2018
  */
-public interface IBehavior extends AbstractGameEventListener {}
+public final class PathCalculationException extends RuntimeException {
+
+    public PathCalculationException(final String message) {
+        super(message);
+    }
+}

@@ -15,7 +15,7 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.behavior.elytra;
+package baritone.process.elytra;
 
 import baritone.api.event.events.BlockChangeEvent;
 import baritone.utils.accessor.IBitArray;
@@ -38,6 +38,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author Brady

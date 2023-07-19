@@ -21,9 +21,9 @@ import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.Settings;
 import baritone.api.behavior.IBehavior;
-import baritone.api.behavior.IElytraBehavior;
 import baritone.api.event.listener.IEventBus;
 import baritone.api.process.IBaritoneProcess;
+import baritone.api.process.IElytraProcess;
 import baritone.api.utils.IPlayerContext;
 import baritone.behavior.*;
 import baritone.cache.WorldProvider;
@@ -66,9 +66,7 @@ public class Baritone implements IBaritone {
 
     private final GameEventHandler gameEventHandler;
 
-    private final List<IBehavior> behaviors;
     private final PathingBehavior pathingBehavior;
-    private final IElytraBehavior elytraBehavior;
     private final LookBehavior lookBehavior;
     private final InventoryBehavior inventoryBehavior;
     private final InputOverrideHandler inputOverrideHandler;
@@ -81,6 +79,7 @@ public class Baritone implements IBaritone {
     private final ExploreProcess exploreProcess;
     private final FarmProcess farmProcess;
     private final InventoryPauserProcess inventoryPauserProcess;
+    private final ElytraProcess elytraProcess;
 
     private final PathingControlManager pathingControlManager;
     private final SelectionManager selectionManager;
@@ -93,7 +92,6 @@ public class Baritone implements IBaritone {
 
     Baritone(Minecraft mc) {
         this.mc = mc;
-        this.behaviors = new ArrayList<>();
         this.gameEventHandler = new GameEventHandler(this);
 
         this.directory = mc.gameDir.toPath().resolve("baritone");
@@ -108,7 +106,6 @@ public class Baritone implements IBaritone {
 
         {
             this.lookBehavior         = this.registerBehavior(LookBehavior::new);
-            this.elytraBehavior       = this.registerBehavior(ElytraBehavior::create);
             this.pathingBehavior      = this.registerBehavior(PathingBehavior::new);
             this.inventoryBehavior    = this.registerBehavior(InventoryBehavior::new);
             this.inputOverrideHandler = this.registerBehavior(InputOverrideHandler::new);
@@ -125,18 +122,16 @@ public class Baritone implements IBaritone {
             this.exploreProcess          = this.registerProcess(ExploreProcess::new);
             this.farmProcess             = this.registerProcess(FarmProcess::new);
             this.inventoryPauserProcess  = this.registerProcess(InventoryPauserProcess::new);
+            this.elytraProcess           = this.registerProcess(ElytraProcess::create);
             this.registerProcess(BackfillProcess::new);
         }
 
         this.worldProvider = new WorldProvider(this);
         this.selectionManager = new SelectionManager(this);
         this.commandManager = new CommandManager(this);
-
-        this.behaviors.forEach(IBehavior::onLoad);
     }
 
     public void registerBehavior(IBehavior behavior) {
-        this.behaviors.add(behavior);
         this.gameEventHandler.registerEventListener(behavior);
     }
 
@@ -241,8 +236,8 @@ public class Baritone implements IBaritone {
     }
 
     @Override
-    public IElytraBehavior getElytraBehavior() {
-        return this.elytraBehavior;
+    public IElytraProcess getElytraProcess() {
+        return this.elytraProcess;
     }
 
     @Override

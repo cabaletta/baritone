@@ -17,7 +17,6 @@
 
 package baritone.api;
 
-import baritone.api.behavior.IElytraBehavior;
 import baritone.api.behavior.ILookBehavior;
 import baritone.api.behavior.IPathingBehavior;
 import baritone.api.cache.IWorldProvider;
@@ -40,12 +39,6 @@ public interface IBaritone {
      * @see IPathingBehavior
      */
     IPathingBehavior getPathingBehavior();
-
-    /**
-     * @return The {@link IElytraBehavior} instance
-     * @see IElytraBehavior
-     */
-    IElytraBehavior getElytraBehavior();
 
     /**
      * @return The {@link ILookBehavior} instance
@@ -94,6 +87,12 @@ public interface IBaritone {
      * @see IGetToBlockProcess
      */
     IGetToBlockProcess getGetToBlockProcess();
+
+    /**
+     * @return The {@link IElytraProcess} instance
+     * @see IElytraProcess
+     */
+    IElytraProcess getElytraProcess();
 
     /**
      * @return The {@link IWorldProvider} instance
