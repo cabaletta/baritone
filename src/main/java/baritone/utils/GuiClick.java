@@ -22,7 +22,6 @@ import baritone.api.BaritoneAPI;
 import baritone.api.pathing.goals.GoalBlock;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.Helper;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Matrix4f;
 import com.mojang.math.Vector4f;
@@ -44,7 +43,6 @@ import java.awt.*;
 import java.util.Collections;
 
 import static baritone.api.command.IBaritoneChatControl.FORCE_COMMAND_PREFIX;
-import static org.lwjgl.opengl.GL11.*;
 
 public class GuiClick extends Screen implements Helper {
 
@@ -127,22 +125,11 @@ public class GuiClick extends Screen implements Helper {
             // drawSingleSelectionBox WHEN?
             PathRenderer.drawManySelectionBoxes(modelViewStack, e, Collections.singletonList(currentMouseOver), Color.CYAN);
             if (clickStart != null && !clickStart.equals(currentMouseOver)) {
-                RenderSystem.enableBlend();
-                RenderSystem.blendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
-                //TODO: check
-                IRenderer.glColor(Color.RED, 0.4F);
-                RenderSystem.lineWidth(Baritone.settings().pathRenderLineWidthPixels.value);
-                RenderSystem.disableTexture();
-                RenderSystem.depthMask(false);
-                RenderSystem.disableDepthTest();
+                IRenderer.startLines(Color.RED, Baritone.settings().pathRenderLineWidthPixels.value, true);
                 BetterBlockPos a = new BetterBlockPos(currentMouseOver);
                 BetterBlockPos b = new BetterBlockPos(clickStart);
-                IRenderer.drawAABB(modelViewStack, new AABB(Math.min(a.x, b.x), Math.min(a.y, b.y), Math.min(a.z, b.z), Math.max(a.x, b.x) + 1, Math.max(a.y, b.y) + 1, Math.max(a.z, b.z) + 1));
-                RenderSystem.enableDepthTest();
-
-                RenderSystem.depthMask(true);
-                RenderSystem.enableTexture();
-                RenderSystem.disableBlend();
+                IRenderer.emitAABB(modelViewStack, new AABB(Math.min(a.x, b.x), Math.min(a.y, b.y), Math.min(a.z, b.z), Math.max(a.x, b.x) + 1, Math.max(a.y, b.y) + 1, Math.max(a.z, b.z) + 1));
+                IRenderer.endLines(true);
             }
         }
     }

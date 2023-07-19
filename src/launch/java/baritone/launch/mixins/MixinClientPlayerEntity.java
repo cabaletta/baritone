@@ -62,31 +62,14 @@ public class MixinClientPlayerEntity {
             method = "tick",
             at = @At(
                     value = "INVOKE",
-                    target = "net/minecraft/client/player/LocalPlayer.isPassenger()Z",
-                    shift = At.Shift.BY,
-                    by = -3
+                    target = "net/minecraft/client/player/AbstractClientPlayer.tick()V",
+                    shift = At.Shift.AFTER
             )
     )
     private void onPreUpdate(CallbackInfo ci) {
         IBaritone baritone = BaritoneAPI.getProvider().getBaritoneForPlayer((LocalPlayer) (Object) this);
         if (baritone != null) {
             baritone.getGameEventHandler().onPlayerUpdate(new PlayerUpdateEvent(EventState.PRE));
-        }
-    }
-
-    @Inject(
-            method = "tick",
-            at = @At(
-                    value = "INVOKE",
-                    target = "net/minecraft/client/player/LocalPlayer.sendPosition()V",
-                    shift = At.Shift.BY,
-                    by = 2
-            )
-    )
-    private void onPostUpdate(CallbackInfo ci) {
-        IBaritone baritone = BaritoneAPI.getProvider().getBaritoneForPlayer((LocalPlayer) (Object) this);
-        if (baritone != null) {
-            baritone.getGameEventHandler().onPlayerUpdate(new PlayerUpdateEvent(EventState.POST));
         }
     }
 

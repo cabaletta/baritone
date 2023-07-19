@@ -159,7 +159,7 @@ public class PathingControlManager implements IPathingControlManager {
             if (newGoal.isInGoal(current.getPath().getDest())) {
                 return false;
             }
-            return !newGoal.toString().equals(current.getPath().getGoal().toString());
+            return !newGoal.equals(current.getPath().getGoal());
         }
         return false;
     }

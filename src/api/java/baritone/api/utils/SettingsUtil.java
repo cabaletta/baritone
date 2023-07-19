@@ -46,12 +46,10 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-
 public class SettingsUtil {
 
-    private static final Path SETTINGS_PATH = Minecraft.getInstance().gameDirectory.toPath().resolve("baritone").resolve("settings.txt");
+    public static final String SETTINGS_DEFAULT_NAME = "settings.txt";
     private static final Pattern SETTING_PATTERN = Pattern.compile("^(?<setting>[^ ]+) +(?<value>.+)"); // key and value split by the first space
-    private static final String[] JAVA_ONLY_SETTINGS = {"logger", "notifier", "toaster"};
 
 
     private static boolean isComment(String line) {
@@ -70,12 +68,12 @@ public class SettingsUtil {
         }
     }
 
-    public static void readAndApply(Settings settings) {
+    public static void readAndApply(Settings settings, String settingsName) {
         try {
-            forEachLine(SETTINGS_PATH, line -> {
+            forEachLine(settingsByName(settingsName), line -> {
                 Matcher matcher = SETTING_PATTERN.matcher(line);
                 if (!matcher.matches()) {
-                    System.out.println("Invalid syntax in setting file: " + line);
+                    Helper.HELPER.logDirect("Invalid syntax in setting file: " + line);
                     return;
                 }
 
@@ -84,27 +82,31 @@ public class SettingsUtil {
                 try {
                     parseAndApply(settings, settingName, settingValue);
                 } catch (Exception ex) {
-                    System.out.println("Unable to parse line " + line);
+                    Helper.HELPER.logDirect("Unable to parse line " + line);
                     ex.printStackTrace();
                 }
             });
         } catch (NoSuchFileException ignored) {
-            System.out.println("Baritone settings file not found, resetting.");
+            Helper.HELPER.logDirect("Baritone settings file not found, resetting.");
         } catch (Exception ex) {
-            System.out.println("Exception while reading Baritone settings, some settings may be reset to default values!");
+            Helper.HELPER.logDirect("Exception while reading Baritone settings, some settings may be reset to default values!");
             ex.printStackTrace();
         }
     }
 
     public static synchronized void save(Settings settings) {
-        try (BufferedWriter out = Files.newBufferedWriter(SETTINGS_PATH)) {
+        try (BufferedWriter out = Files.newBufferedWriter(settingsByName(SETTINGS_DEFAULT_NAME))) {
             for (Settings.Setting setting : modifiedSettings(settings)) {
                 out.write(settingToString(setting) + "\n");
             }
         } catch (Exception ex) {
-            System.out.println("Exception thrown while saving Baritone settings!");
+            Helper.HELPER.logDirect("Exception thrown while saving Baritone settings!");
             ex.printStackTrace();
         }
+    }
+
+    private static Path settingsByName(String name) {
+        return Minecraft.getInstance().gameDirectory.toPath().resolve("baritone").resolve(name);
     }
 
     public static List<Settings.Setting> modifiedSettings(Settings settings) {
@@ -114,7 +116,7 @@ public class SettingsUtil {
                 System.out.println("NULL SETTING?" + setting.getName());
                 continue;
             }
-            if (javaOnlySetting(setting)) {
+            if (setting.isJavaOnly()) {
                 continue; // NO
             }
             if (setting.value == setting.defaultValue) {
@@ -168,7 +170,7 @@ public class SettingsUtil {
     }
 
     public static String settingToString(Settings.Setting setting) throws IllegalStateException {
-        if (javaOnlySetting(setting)) {
+        if (setting.isJavaOnly()) {
             return setting.getName();
         }
 
@@ -176,18 +178,14 @@ public class SettingsUtil {
     }
 
     /**
-     * This should always be the same as whether the setting can be parsed from or serialized to a string
+     * Deprecated. Use {@link Settings.Setting#isJavaOnly()} instead.
      *
      * @param setting The Setting
      * @return true if the setting can not be set or read by the user
      */
+    @Deprecated
     public static boolean javaOnlySetting(Settings.Setting setting) {
-        for (String name : JAVA_ONLY_SETTINGS) { // no JAVA_ONLY_SETTINGS.contains(...) because that would be case sensitive
-            if (setting.getName().equalsIgnoreCase(name)) {
-                return true;
-            }
-        }
-        return false;
+        return setting.isJavaOnly();
     }
 
     public static void parseAndApply(Settings settings, String settingName, String settingValue) throws IllegalStateException, NumberFormatException {

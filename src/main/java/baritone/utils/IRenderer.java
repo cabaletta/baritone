@@ -19,21 +19,25 @@ package baritone.utils;
 
 import baritone.api.BaritoneAPI;
 import baritone.api.Settings;
-import baritone.api.utils.Helper;
 import baritone.utils.accessor.IEntityRenderManager;
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.math.Matrix3f;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.texture.TextureManager;
 import com.mojang.blaze3d.vertex.*;
 import com.mojang.math.Matrix4f;
-import java.awt.*;
 import net.minecraft.world.phys.AABB;
 
-import static org.lwjgl.opengl.GL11.*;
+import java.awt.*;
 
 public interface IRenderer {
 
     Tesselator tessellator = Tesselator.getInstance();
     BufferBuilder buffer = tessellator.getBuilder();
-    IEntityRenderManager renderManager = (IEntityRenderManager) Helper.mc.getEntityRenderDispatcher();
+    IEntityRenderManager renderManager = (IEntityRenderManager) Minecraft.getInstance().getEntityRenderDispatcher();
+    TextureManager textureManager = Minecraft.getInstance().getTextureManager();
     Settings settings = BaritoneAPI.getSettings();
 
     float[] color = new float[] {1.0F, 1.0F, 1.0F, 255.0F};
@@ -48,15 +52,23 @@ public interface IRenderer {
 
     static void startLines(Color color, float alpha, float lineWidth, boolean ignoreDepth) {
         RenderSystem.enableBlend();
-        RenderSystem.blendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
+        RenderSystem.blendFuncSeparate(
+                GlStateManager.SourceFactor.SRC_ALPHA,
+                GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
+                GlStateManager.SourceFactor.ONE,
+                GlStateManager.DestFactor.ZERO
+        );
         glColor(color, alpha);
         RenderSystem.lineWidth(lineWidth);
         RenderSystem.disableTexture();
         RenderSystem.depthMask(false);
+        RenderSystem.disableCull();
 
         if (ignoreDepth) {
             RenderSystem.disableDepthTest();
         }
+        RenderSystem.setShader(GameRenderer::getRendertypeLinesShader);
+        buffer.begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR_NORMAL);
     }
 
     static void startLines(Color color, float lineWidth, boolean ignoreDepth) {
@@ -64,52 +76,73 @@ public interface IRenderer {
     }
 
     static void endLines(boolean ignoredDepth) {
+        tessellator.end();
         if (ignoredDepth) {
             RenderSystem.enableDepthTest();
         }
 
+        RenderSystem.enableCull();
         RenderSystem.depthMask(true);
         RenderSystem.enableTexture();
         RenderSystem.disableBlend();
     }
 
-    static void drawAABB(PoseStack stack, AABB aabb) {
-        AABB toDraw = aabb.move(-renderManager.renderPosX(), -renderManager.renderPosY(), -renderManager.renderPosZ());
+    static void emitLine(PoseStack stack, double x1, double y1, double z1, double x2, double y2, double z2) {
+        final double dx = x2 - x1;
+        final double dy = y2 - y1;
+        final double dz = z2 - z1;
 
-        Matrix4f matrix4f = stack.last().pose();
-        //TODO: check
-        buffer.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
-        // bottom
-        buffer.vertex(matrix4f, (float) toDraw.minX, (float) toDraw.minY, (float) toDraw.minZ).color(color[0], color[1], color[2], color[3]).endVertex();
-        buffer.vertex(matrix4f, (float) toDraw.maxX, (float) toDraw.minY, (float) toDraw.minZ).color(color[0], color[1], color[2], color[3]).endVertex();
-        buffer.vertex(matrix4f, (float) toDraw.maxX, (float) toDraw.minY, (float) toDraw.minZ).color(color[0], color[1], color[2], color[3]).endVertex();
-        buffer.vertex(matrix4f, (float) toDraw.maxX, (float) toDraw.minY, (float) toDraw.maxZ).color(color[0], color[1], color[2], color[3]).endVertex();
-        buffer.vertex(matrix4f, (float) toDraw.maxX, (float) toDraw.minY, (float) toDraw.maxZ).color(color[0], color[1], color[2], color[3]).endVertex();
-        buffer.vertex(matrix4f, (float) toDraw.minX, (float) toDraw.minY, (float) toDraw.maxZ).color(color[0], color[1], color[2], color[3]).endVertex();
-        buffer.vertex(matrix4f, (float) toDraw.minX, (float) toDraw.minY, (float) toDraw.maxZ).color(color[0], color[1], color[2], color[3]).endVertex();
-        buffer.vertex(matrix4f, (float) toDraw.minX, (float) toDraw.minY, (float) toDraw.minZ).color(color[0], color[1], color[2], color[3]).endVertex();
-        // top
-        buffer.vertex(matrix4f, (float) toDraw.minX, (float) toDraw.maxY, (float) toDraw.minZ).color(color[0], color[1], color[2], color[3]).endVertex();
-        buffer.vertex(matrix4f, (float) toDraw.maxX, (float) toDraw.maxY, (float) toDraw.minZ).color(color[0], color[1], color[2], color[3]).endVertex();
-        buffer.vertex(matrix4f, (float) toDraw.maxX, (float) toDraw.maxY, (float) toDraw.minZ).color(color[0], color[1], color[2], color[3]).endVertex();
-        buffer.vertex(matrix4f, (float) toDraw.maxX, (float) toDraw.maxY, (float) toDraw.maxZ).color(color[0], color[1], color[2], color[3]).endVertex();
-        buffer.vertex(matrix4f, (float) toDraw.maxX, (float) toDraw.maxY, (float) toDraw.maxZ).color(color[0], color[1], color[2], color[3]).endVertex();
-        buffer.vertex(matrix4f, (float) toDraw.minX, (float) toDraw.maxY, (float) toDraw.maxZ).color(color[0], color[1], color[2], color[3]).endVertex();
-        buffer.vertex(matrix4f, (float) toDraw.minX, (float) toDraw.maxY, (float) toDraw.maxZ).color(color[0], color[1], color[2], color[3]).endVertex();
-        buffer.vertex(matrix4f, (float) toDraw.minX, (float) toDraw.maxY, (float) toDraw.minZ).color(color[0], color[1], color[2], color[3]).endVertex();
-        // corners
-        buffer.vertex(matrix4f, (float) toDraw.minX, (float) toDraw.minY, (float) toDraw.minZ).color(color[0], color[1], color[2], color[3]).endVertex();
-        buffer.vertex(matrix4f, (float) toDraw.minX, (float) toDraw.maxY, (float) toDraw.minZ).color(color[0], color[1], color[2], color[3]).endVertex();
-        buffer.vertex(matrix4f, (float) toDraw.maxX, (float) toDraw.minY, (float) toDraw.minZ).color(color[0], color[1], color[2], color[3]).endVertex();
-        buffer.vertex(matrix4f, (float) toDraw.maxX, (float) toDraw.maxY, (float) toDraw.minZ).color(color[0], color[1], color[2], color[3]).endVertex();
-        buffer.vertex(matrix4f, (float) toDraw.maxX, (float) toDraw.minY, (float) toDraw.maxZ).color(color[0], color[1], color[2], color[3]).endVertex();
-        buffer.vertex(matrix4f, (float) toDraw.maxX, (float) toDraw.maxY, (float) toDraw.maxZ).color(color[0], color[1], color[2], color[3]).endVertex();
-        buffer.vertex(matrix4f, (float) toDraw.minX, (float) toDraw.minY, (float) toDraw.maxZ).color(color[0], color[1], color[2], color[3]).endVertex();
-        buffer.vertex(matrix4f, (float) toDraw.minX, (float) toDraw.maxY, (float) toDraw.maxZ).color(color[0], color[1], color[2], color[3]).endVertex();
-        tessellator.end();
+        final double invMag = 1.0 / Math.sqrt(dx * dx + dy * dy + dz * dz);
+        final float nx = (float) (dx * invMag);
+        final float ny = (float) (dy * invMag);
+        final float nz = (float) (dz * invMag);
+
+        emitLine(stack, x1, y1, z1, x2, y2, z2, nx, ny, nz);
     }
 
-    static void drawAABB(PoseStack stack, AABB aabb, double expand) {
-        drawAABB(stack, aabb.inflate(expand, expand, expand));
+    static void emitLine(PoseStack stack,
+                         double x1, double y1, double z1,
+                         double x2, double y2, double z2,
+                         double nx, double ny, double nz) {
+        emitLine(stack,
+                (float) x1, (float) y1, (float) z1,
+                (float) x2, (float) y2, (float) z2,
+                (float) nx, (float) ny, (float) nz
+        );
+    }
+
+    static void emitLine(PoseStack stack,
+                         float x1, float y1, float z1,
+                         float x2, float y2, float z2,
+                         float nx, float ny, float nz) {
+        final Matrix4f matrix4f = stack.last().pose();
+        final Matrix3f normal = stack.last().normal();
+
+        buffer.vertex(matrix4f, x1, y1, z1).color(color[0], color[1], color[2], color[3]).normal(normal, nx, ny, nz).endVertex();
+        buffer.vertex(matrix4f, x2, y2, z2).color(color[0], color[1], color[2], color[3]).normal(normal, nx, ny, nz).endVertex();
+    }
+
+    static void emitAABB(PoseStack stack, AABB aabb) {
+        AABB toDraw = aabb.move(-renderManager.renderPosX(), -renderManager.renderPosY(), -renderManager.renderPosZ());
+
+        // bottom
+        emitLine(stack, toDraw.minX, toDraw.minY, toDraw.minZ, toDraw.maxX, toDraw.minY, toDraw.minZ, 1.0, 0.0, 0.0);
+        emitLine(stack, toDraw.maxX, toDraw.minY, toDraw.minZ, toDraw.maxX, toDraw.minY, toDraw.maxZ, 0.0, 0.0, 1.0);
+        emitLine(stack, toDraw.maxX, toDraw.minY, toDraw.maxZ, toDraw.minX, toDraw.minY, toDraw.maxZ, -1.0, 0.0, 0.0);
+        emitLine(stack, toDraw.minX, toDraw.minY, toDraw.maxZ, toDraw.minX, toDraw.minY, toDraw.minZ, 0.0, 0.0, -1.0);
+        // top
+        emitLine(stack, toDraw.minX, toDraw.maxY, toDraw.minZ, toDraw.maxX, toDraw.maxY, toDraw.minZ, 1.0, 0.0, 0.0);
+        emitLine(stack, toDraw.maxX, toDraw.maxY, toDraw.minZ, toDraw.maxX, toDraw.maxY, toDraw.maxZ, 0.0, 0.0, 1.0);
+        emitLine(stack, toDraw.maxX, toDraw.maxY, toDraw.maxZ, toDraw.minX, toDraw.maxY, toDraw.maxZ, -1.0, 0.0, 0.0);
+        emitLine(stack, toDraw.minX, toDraw.maxY, toDraw.maxZ, toDraw.minX, toDraw.maxY, toDraw.minZ, 0.0, 0.0, -1.0);
+        // corners
+        emitLine(stack, toDraw.minX, toDraw.minY, toDraw.minZ, toDraw.minX, toDraw.maxY, toDraw.minZ, 0.0, 1.0, 0.0);
+        emitLine(stack, toDraw.maxX, toDraw.minY, toDraw.minZ, toDraw.maxX, toDraw.maxY, toDraw.minZ, 0.0, 1.0, 0.0);
+        emitLine(stack, toDraw.maxX, toDraw.minY, toDraw.maxZ, toDraw.maxX, toDraw.maxY, toDraw.maxZ, 0.0, 1.0, 0.0);
+        emitLine(stack, toDraw.minX, toDraw.minY, toDraw.maxZ, toDraw.minX, toDraw.maxY, toDraw.maxZ, 0.0, 1.0, 0.0);
+    }
+
+    static void emitAABB(PoseStack stack, AABB aabb, double expand) {
+        emitAABB(stack, aabb.inflate(expand, expand, expand));
     }
 }
