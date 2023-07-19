@@ -28,7 +28,6 @@ import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.texture.TextureManager;
 import com.mojang.blaze3d.vertex.*;
 import com.mojang.math.Matrix4f;
-import net.minecraft.util.Mth;
 import net.minecraft.world.phys.AABB;
 
 import java.awt.*;
@@ -93,7 +92,7 @@ public interface IRenderer {
         final double dy = y2 - y1;
         final double dz = z2 - z1;
 
-        final double invMag = Mth.fastInvSqrt(dx * dx + dy * dy + dz * dz);
+        final double invMag = 1.0 / Math.sqrt(dx * dx + dy * dy + dz * dz);
         final float nx = (float) (dx * invMag);
         final float ny = (float) (dy * invMag);
         final float nz = (float) (dz * invMag);
