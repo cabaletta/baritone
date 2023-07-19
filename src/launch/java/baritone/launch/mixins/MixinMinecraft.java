@@ -19,6 +19,7 @@ package baritone.launch.mixins;
 
 import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
+import baritone.api.event.events.PlayerUpdateEvent;
 import baritone.api.event.events.TickEvent;
 import baritone.api.event.events.WorldEvent;
 import baritone.api.event.events.type.EventState;
@@ -79,7 +80,21 @@ public class MixinMinecraft {
 
             baritone.getGameEventHandler().onTick(tickProvider.apply(EventState.PRE, type));
         }
+    }
 
+    @Inject(
+            method = "tick",
+            at = @At(
+                    value = "INVOKE",
+                    target = "net/minecraft/client/multiplayer/ClientLevel.tickEntities()V",
+                    shift = At.Shift.AFTER
+            )
+    )
+    private void postUpdateEntities(CallbackInfo ci) {
+        IBaritone baritone = BaritoneAPI.getProvider().getBaritoneForPlayer(this.player);
+        if (baritone != null) {
+            baritone.getGameEventHandler().onPlayerUpdate(new PlayerUpdateEvent(EventState.POST));
+        }
     }
 
     @Inject(
