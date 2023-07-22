@@ -27,6 +27,8 @@ import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
 import baritone.behavior.PathingBehavior;
 import baritone.pathing.path.PathExecutor;
+import baritone.process.CustomGoalProcess;
+import baritone.process.ElytraProcess;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.*;
@@ -109,10 +111,6 @@ public class PathingControlManager implements IPathingControlManager {
                 p.cancelSegmentIfSafe();
                 break;
             case FORCE_REVALIDATE_GOAL_AND_PATH:
-                if (!p.isPathing() && !p.getInProgress().isPresent()) {
-                    p.secretInternalSetGoalAndPath(command);
-                }
-                break;
             case REVALIDATE_GOAL_AND_PATH:
                 if (!p.isPathing() && !p.getInProgress().isPresent()) {
                     p.secretInternalSetGoalAndPath(command);
@@ -209,7 +207,13 @@ public class PathingControlManager implements IPathingControlManager {
             } else if (exec.commandType != PathingCommandType.DEFER) {
                 inControlThisTick = proc;
                 if (!proc.isTemporary()) {
-                    iterator.forEachRemaining(IBaritoneProcess::onLostControl);
+                    iterator.forEachRemaining(it -> {
+                        // TODO: find a better way to make these behave well together
+                        if (proc instanceof CustomGoalProcess && it instanceof ElytraProcess) {
+                            return;
+                        }
+                        it.onLostControl();
+                    });
                 }
                 return exec;
             }
