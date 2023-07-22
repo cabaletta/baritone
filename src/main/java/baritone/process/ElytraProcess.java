@@ -42,14 +42,21 @@ import baritone.process.elytra.NullElytraProcess;
 import baritone.utils.BaritoneProcessHelper;
 import baritone.utils.PathingCommandContext;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
+
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.Queue;
+import java.util.Set;
 
 import static baritone.api.pathing.movement.ActionCosts.COST_INF;
 
 public class ElytraProcess extends BaritoneProcessHelper implements IBaritoneProcess, IElytraProcess, AbstractGameEventListener {
 
     public State state;
+    private boolean goingToLandingSpot;
     private Goal goal;
     private LegacyElytraBehavior behavior;
 
@@ -93,8 +100,8 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
             return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
         }
 
-        if (ctx.player().isElytraFlying()) {
-            final BetterBlockPos last = behavior.pathManager.path.getLast();
+        if (ctx.player().isElytraFlying() && this.state != State.LANDING) {
+            final BetterBlockPos last = this.behavior.pathManager.path.getLast();
             if (last != null && ctx.player().getDistanceSqToCenter(last) < (5 * 5)) {
                 if (Baritone.settings().notificationOnPathComplete.value) {
                     logNotification("Pathing complete", false);
@@ -104,6 +111,14 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
                     this.onLostControl();
                     ctx.world().sendQuittingDisconnectingPacket();
                     return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
+                }
+                if (!goingToLandingSpot) {
+                    BlockPos landingSpot = findSafeLandingSpot();
+                    if (landingSpot != null) {
+                        this.pathTo(landingSpot);
+                        this.goingToLandingSpot = true;
+                        return this.onTick(calcFailed, isSafeToCancel);
+                    }
                 }
                 this.state = State.LANDING;
             }
@@ -208,6 +223,7 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
     @Override
     public void onLostControl() {
         this.goal = null;
+        this.goingToLandingSpot = false;
         this.state = State.START_FLYING; // TODO: null state?
         if (this.behavior != null) {
             this.behavior.destroy();
@@ -234,6 +250,7 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
 
     @Override
     public void pathTo(BlockPos destination) {
+        this.onLostControl();
         this.behavior = new LegacyElytraBehavior(this.baritone, this, destination);
         if (ctx.world() != null) {
             this.behavior.repackChunks();
@@ -253,7 +270,6 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
 
     public enum State {
         LOCATE_JUMP("Finding spot to jump off"),
-        VALIDATE_PATH("Validating path"),
         PAUSE("Waiting for elytra path"),
         GET_TO_JUMP("Walking to takeoff"),
         START_FLYING("Begin flying"),
@@ -328,5 +344,47 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
         public double placeBucketCost() {
             return COST_INF;
         }
+    }
+
+    private static boolean isInBounds(BlockPos pos) {
+        return pos.getY() >= 0 && pos.getY() < 128;
+    }
+
+    private boolean isSafeLandingSpot(BlockPos pos) {
+        BlockPos.MutableBlockPos mut = new BlockPos.MutableBlockPos(pos);
+        while (mut.getY() >= 0) {
+            IBlockState state = ctx.world().getBlockState(mut);
+            if (state.getMaterial().isLiquid()) { // lava
+                return false;
+            }
+            if (state.getMaterial().blocksMovement() && state.getBlock() != Blocks.MAGMA) {
+                return true;
+            }
+            mut.setPos(mut.getX(), mut.getY() - 1, mut.getZ());
+        }
+        return false; // void
+    }
+
+    private BlockPos findSafeLandingSpot() {
+        final BlockPos start = new BlockPos(ctx.playerFeet());
+        Queue<BlockPos> queue = new LinkedList<>();
+        Set<BlockPos> visited = new HashSet<>();
+        queue.add(start);
+
+        while (!queue.isEmpty()) {
+            BlockPos pos = queue.poll();
+            if (ctx.world().isBlockLoaded(pos) && isInBounds(pos) && ctx.world().getBlockState(pos).getBlock() == Blocks.AIR) {
+                if (isSafeLandingSpot(pos)) {
+                    return pos;
+                }
+                if (visited.add(pos.north())) queue.add(pos.north());
+                if (visited.add(pos.east())) queue.add(pos.east());
+                if (visited.add(pos.south())) queue.add(pos.south());
+                if (visited.add(pos.west())) queue.add(pos.west());
+                if (visited.add(pos.up())) queue.add(pos.up());
+                if (visited.add(pos.down())) queue.add(pos.down());
+            }
+        }
+        return null;
     }
 }
