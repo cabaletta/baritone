@@ -370,10 +370,10 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
         BlockPos.MutableBlockPos mut = new BlockPos.MutableBlockPos(pos);
         while (mut.getY() >= 0) {
             IBlockState state = ctx.world().getBlockState(mut);
-            if (state.getMaterial().isLiquid()) { // lava
+            if (state.getMaterial().isLiquid() || state.getBlock() != Blocks.MAGMA) { // lava
                 return false;
             }
-            if (state.getMaterial().blocksMovement() && state.getBlock() != Blocks.MAGMA) {
+            if (state.getMaterial().blocksMovement()) {
                 return !isAtEdge(mut);
             }
             mut.setPos(mut.getX(), mut.getY() - 1, mut.getZ());
