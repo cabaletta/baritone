@@ -374,7 +374,7 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
             IBlockState state = ctx.world().getBlockState(mut);
             Block block = state.getBlock();
 
-            if (block == Blocks.NETHERRACK || block == Blocks.GRAVEL || state.getMaterial() == Material.ROCK) {
+            if (block == Blocks.NETHERRACK || block == Blocks.GRAVEL || block == Blocks.NETHER_BRICK) {
                 return true;
             } else if (block != Blocks.AIR) {
                 return false;
