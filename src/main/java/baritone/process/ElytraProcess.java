@@ -43,14 +43,21 @@ import baritone.process.elytra.NetherPathfinderContext;
 import baritone.process.elytra.NullElytraProcess;
 import baritone.utils.BaritoneProcessHelper;
 import baritone.utils.PathingCommandContext;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
+
+import java.util.*;
 
 import static baritone.api.pathing.movement.ActionCosts.COST_INF;
 
 public class ElytraProcess extends BaritoneProcessHelper implements IBaritoneProcess, IElytraProcess, AbstractGameEventListener {
     public State state;
+    private boolean goingToLandingSpot;
+    private BetterBlockPos landingSpot;
     private Goal goal;
     private LegacyElytraBehavior behavior;
 
@@ -95,8 +102,8 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
         }
 
         if (ctx.player().isElytraFlying() && this.state != State.LANDING) {
-            final BetterBlockPos last = behavior.pathManager.path.getLast();
-            if (last != null && ctx.player().getDistanceSqToCenter(last) < (5 * 5)) {
+            final BetterBlockPos last = this.behavior.pathManager.path.getLast();
+            if (last != null && ctx.player().getDistanceSqToCenter(last) < 1) {
                 if (Baritone.settings().notificationOnPathComplete.value) {
                     logNotification("Pathing complete", false);
                 }
@@ -106,15 +113,26 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
                     ctx.world().sendQuittingDisconnectingPacket();
                     return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
                 }
+                if (!goingToLandingSpot) {
+                    BetterBlockPos landingSpot = findSafeLandingSpot();
+                    if (landingSpot != null) {
+                        this.pathTo(landingSpot);
+                        this.landingSpot = landingSpot;
+                        this.goingToLandingSpot = true;
+                        return this.onTick(calcFailed, isSafeToCancel);
+                    }
+                    // don't spam call findLandingSpot if it somehow fails (it's slow)
+                    this.goingToLandingSpot = true;
+                }
                 this.state = State.LANDING;
             }
         }
 
         if (this.state == State.LANDING) {
-            final BetterBlockPos endPos = behavior.pathManager.path.getLast();
+            final BetterBlockPos endPos = this.landingSpot != null ? this.landingSpot : behavior.pathManager.path.getLast();
             if (ctx.player().isElytraFlying() && endPos != null) {
                 Vec3d from = ctx.player().getPositionVector();
-                Vec3d to = new Vec3d(endPos.x, from.y, endPos.z);
+                Vec3d to = new Vec3d(((double) endPos.x) + 0.5, from.y, ((double) endPos.z) + 0.5);
                 Rotation rotation = RotationUtils.calcRotationFromVec3d(from, to, ctx.playerRotations());
                 baritone.getLookBehavior().updateTarget(rotation, false);
             } else {
@@ -209,6 +227,7 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
     @Override
     public void onLostControl() {
         this.goal = null;
+        this.goingToLandingSpot = false;
         this.state = State.START_FLYING; // TODO: null state?
         if (this.behavior != null) {
             this.behavior.destroy();
@@ -358,5 +377,65 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
         public double placeBucketCost() {
             return COST_INF;
         }
+    }
+
+    private static boolean isInBounds(BlockPos pos) {
+        return pos.getY() >= 0 && pos.getY() < 128;
+    }
+
+    private boolean isAtEdge(BlockPos pos) {
+        return ctx.world().isAirBlock(pos.north())
+                || ctx.world().isAirBlock(pos.south())
+                || ctx.world().isAirBlock(pos.east())
+                || ctx.world().isAirBlock(pos.west())
+                // corners
+                || ctx.world().isAirBlock(pos.north().west())
+                || ctx.world().isAirBlock(pos.north().east())
+                || ctx.world().isAirBlock(pos.south().west())
+                || ctx.world().isAirBlock(pos.south().east());
+    }
+
+    private boolean isSafeLandingSpot(BlockPos pos, LongOpenHashSet checkedSpots) {
+        BlockPos.MutableBlockPos mut = new BlockPos.MutableBlockPos(pos);
+        while (mut.getY() >= 0) {
+            if (checkedSpots.contains(mut.toLong())) {
+                return false;
+            }
+            checkedSpots.add(mut.toLong());
+            IBlockState state = ctx.world().getBlockState(mut);
+            Block block = state.getBlock();
+
+            if (block == Blocks.NETHERRACK || block == Blocks.GRAVEL || block == Blocks.NETHER_BRICK) {
+                return !isAtEdge(mut);
+            } else if (block != Blocks.AIR) {
+                return false;
+            }
+            mut.setPos(mut.getX(), mut.getY() - 1, mut.getZ());
+        }
+        return false; // void
+    }
+
+    private BetterBlockPos findSafeLandingSpot() {
+        final BetterBlockPos start = ctx.playerFeet();
+        Queue<BetterBlockPos> queue = new PriorityQueue<>(Comparator.<BetterBlockPos>comparingInt(pos -> (pos.x - start.x) * (pos.x - start.x) + (pos.z - start.z) * (pos.z - start.z)).thenComparingInt(pos -> -pos.y));
+        Set<BetterBlockPos> visited = new HashSet<>();
+        LongOpenHashSet checkedPositions = new LongOpenHashSet();
+        queue.add(start);
+
+        while (!queue.isEmpty()) {
+            BetterBlockPos pos = queue.poll();
+            if (ctx.world().isBlockLoaded(pos) && isInBounds(pos) && ctx.world().getBlockState(pos).getBlock() == Blocks.AIR) {
+                if (isSafeLandingSpot(pos, checkedPositions)) {
+                    return pos;
+                }
+                if (visited.add(pos.north())) queue.add(pos.north());
+                if (visited.add(pos.east())) queue.add(pos.east());
+                if (visited.add(pos.south())) queue.add(pos.south());
+                if (visited.add(pos.west())) queue.add(pos.west());
+                if (visited.add(pos.up())) queue.add(pos.up());
+                if (visited.add(pos.down())) queue.add(pos.down());
+            }
+        }
+        return null;
     }
 }
