@@ -41,6 +41,8 @@ import baritone.process.elytra.NetherPathfinderContext;
 import baritone.process.elytra.NullElytraProcess;
 import baritone.utils.BaritoneProcessHelper;
 import baritone.utils.PathingCommandContext;
+import net.minecraft.block.Block;
+import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
@@ -370,11 +372,12 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
         BlockPos.MutableBlockPos mut = new BlockPos.MutableBlockPos(pos);
         while (mut.getY() >= 0) {
             IBlockState state = ctx.world().getBlockState(mut);
-            if (state.getMaterial().isLiquid() || state.getBlock() != Blocks.MAGMA) { // lava
+            Block block = state.getBlock();
+
+            if (block == Blocks.NETHERRACK || block == Blocks.GRAVEL || state.getMaterial() == Material.ROCK) {
+                return true;
+            } else if (block != Blocks.AIR) {
                 return false;
-            }
-            if (state.getMaterial().blocksMovement()) {
-                return !isAtEdge(mut);
             }
             mut.setPos(mut.getX(), mut.getY() - 1, mut.getZ());
         }
