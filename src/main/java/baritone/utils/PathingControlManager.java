@@ -207,13 +207,7 @@ public class PathingControlManager implements IPathingControlManager {
             } else if (exec.commandType != PathingCommandType.DEFER) {
                 inControlThisTick = proc;
                 if (!proc.isTemporary()) {
-                    iterator.forEachRemaining(it -> {
-                        // TODO: find a better way to make these behave well together
-                        if (proc instanceof CustomGoalProcess && it instanceof ElytraProcess) {
-                            return;
-                        }
-                        it.onLostControl();
-                    });
+                    iterator.forEachRemaining(IBaritoneProcess::onLostControl);
                 }
                 return exec;
             }
