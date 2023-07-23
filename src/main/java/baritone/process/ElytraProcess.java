@@ -48,11 +48,9 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.Vec3i;
 
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Queue;
-import java.util.Set;
+import java.util.*;
 
 import static baritone.api.pathing.movement.ActionCosts.COST_INF;
 
@@ -373,12 +371,11 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
         BlockPos.MutableBlockPos mut = new BlockPos.MutableBlockPos(pos);
         checkedSpots.add(mut.toLong());
         while (mut.getY() >= 0) {
-
             IBlockState state = ctx.world().getBlockState(mut);
             Block block = state.getBlock();
 
             if (block == Blocks.NETHERRACK || block == Blocks.GRAVEL || block == Blocks.NETHER_BRICK) {
-                return true;
+                return !isAtEdge(mut);
             } else if (block != Blocks.AIR) {
                 return false;
             }
@@ -392,7 +389,8 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
 
     private BetterBlockPos findSafeLandingSpot() {
         final BetterBlockPos start = ctx.playerFeet();
-        Queue<BetterBlockPos> queue = new LinkedList<>();
+        Queue<BetterBlockPos> queue = new PriorityQueue<>(Comparator.<BetterBlockPos>comparingInt(Vec3i::getY).reversed());
+        //Queue<BetterBlockPos> queue = new LinkedList<>();
         Set<BetterBlockPos> visited = new HashSet<>();
         LongOpenHashSet checkedPositions = new LongOpenHashSet();
         queue.add(start);
