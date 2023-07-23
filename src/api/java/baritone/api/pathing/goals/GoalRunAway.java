@@ -23,6 +23,7 @@ import it.unimi.dsi.fastutil.doubles.DoubleOpenHashSet;
 import net.minecraft.core.BlockPos;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 /**
  * Useful for automated combat (retreating specifically)
@@ -122,6 +123,29 @@ public class GoalRunAway implements Goal {
             }
         }
         return maxInside;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        GoalRunAway goal = (GoalRunAway) o;
+        return distanceSq == goal.distanceSq
+                && Arrays.equals(from, goal.from)
+                && Objects.equals(maintainY, goal.maintainY);
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = Arrays.hashCode(from);
+        hash = hash * 1196803141 + distanceSq;
+        hash = hash * -2053788840 + maintainY;
+        return hash;
     }
 
     @Override
