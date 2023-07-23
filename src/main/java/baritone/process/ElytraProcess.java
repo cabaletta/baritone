@@ -43,12 +43,10 @@ import baritone.utils.BaritoneProcessHelper;
 import baritone.utils.PathingCommandContext;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.block.Block;
-import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.Vec3i;
 
 import java.util.*;
 
@@ -369,8 +367,11 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
 
     private boolean isSafeLandingSpot(BlockPos pos, LongOpenHashSet checkedSpots) {
         BlockPos.MutableBlockPos mut = new BlockPos.MutableBlockPos(pos);
-        checkedSpots.add(mut.toLong());
         while (mut.getY() >= 0) {
+            if (checkedSpots.contains(mut.toLong())) {
+                return false;
+            }
+            checkedSpots.add(mut.toLong());
             IBlockState state = ctx.world().getBlockState(mut);
             Block block = state.getBlock();
 
@@ -380,16 +381,13 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
                 return false;
             }
             mut.setPos(mut.getX(), mut.getY() - 1, mut.getZ());
-            if (checkedSpots.contains(mut.toLong())) {
-                return false;
-            }
         }
         return false; // void
     }
 
     private BetterBlockPos findSafeLandingSpot() {
         final BetterBlockPos start = ctx.playerFeet();
-        Queue<BetterBlockPos> queue = new PriorityQueue<>(Comparator.<BetterBlockPos>comparingInt(pos -> (pos.x-start.x)*(pos.x-start.x) + (pos.z-start.z)*(pos.z-start.z)).thenComparingInt(pos -> -pos.y));
+        Queue<BetterBlockPos> queue = new PriorityQueue<>(Comparator.<BetterBlockPos>comparingInt(pos -> (pos.x - start.x) * (pos.x - start.x) + (pos.z - start.z) * (pos.z - start.z)).thenComparingInt(pos -> -pos.y));
         Set<BetterBlockPos> visited = new HashSet<>();
         LongOpenHashSet checkedPositions = new LongOpenHashSet();
         queue.add(start);
@@ -400,7 +398,6 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
                 if (isSafeLandingSpot(pos, checkedPositions)) {
                     return pos;
                 }
-                checkedPositions.add(pos.toLong());
                 if (visited.add(pos.north())) queue.add(pos.north());
                 if (visited.add(pos.east())) queue.add(pos.east());
                 if (visited.add(pos.south())) queue.add(pos.south());
