@@ -389,8 +389,7 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
 
     private BetterBlockPos findSafeLandingSpot() {
         final BetterBlockPos start = ctx.playerFeet();
-        Queue<BetterBlockPos> queue = new PriorityQueue<>(Comparator.<BetterBlockPos>comparingInt(Vec3i::getY).reversed());
-        //Queue<BetterBlockPos> queue = new LinkedList<>();
+        Queue<BetterBlockPos> queue = new PriorityQueue<>(Comparator.<BetterBlockPos>comparingInt(pos -> (pos.x-start.x)*(pos.x-start.x) + (pos.z-start.z)*(pos.z-start.z)).thenComparingInt(pos -> -pos.y));
         Set<BetterBlockPos> visited = new HashSet<>();
         LongOpenHashSet checkedPositions = new LongOpenHashSet();
         queue.add(start);
