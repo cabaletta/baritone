@@ -49,15 +49,16 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.chunk.Chunk;
 
 import java.awt.*;
-import java.util.*;
 import java.util.List;
+import java.util.Queue;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.function.UnaryOperator;
 
 import static baritone.utils.BaritoneMath.fastCeil;
 import static baritone.utils.BaritoneMath.fastFloor;
 
-public final class LegacyElytraBehavior implements Helper {
+public final class ElytraBehavior implements Helper {
     private final Baritone baritone;
     private final IPlayerContext ctx;
 
@@ -109,7 +110,7 @@ public final class LegacyElytraBehavior implements Helper {
     private int invTickCountdown = 0;
     private final Queue<Runnable> invTransactionQueue = new LinkedList<>();
 
-    public LegacyElytraBehavior(Baritone baritone, ElytraProcess process, BlockPos destination) {
+    public ElytraBehavior(Baritone baritone, ElytraProcess process, BlockPos destination) {
         this.baritone = baritone;
         this.ctx = baritone.getPlayerContext();
         this.clearLines = new CopyOnWriteArrayList<>();
@@ -162,7 +163,7 @@ public final class LegacyElytraBehavior implements Helper {
 
         public CompletableFuture<Void> pathToDestination(final BlockPos from) {
             final long start = System.nanoTime();
-            return this.path0(from, LegacyElytraBehavior.this.destination, UnaryOperator.identity())
+            return this.path0(from, ElytraBehavior.this.destination, UnaryOperator.identity())
                     .thenRun(() -> {
                         final double distance = this.path.get(0).distanceTo(this.path.get(this.path.size() - 1));
                         if (this.completePath) {
@@ -216,7 +217,7 @@ public final class LegacyElytraBehavior implements Helper {
             final List<BetterBlockPos> before = this.path.subList(0, afterIncl + 1);
             final long start = System.nanoTime();
 
-            this.path0(this.path.get(afterIncl), LegacyElytraBehavior.this.destination, segment -> segment.prepend(before.stream()))
+            this.path0(this.path.get(afterIncl), ElytraBehavior.this.destination, segment -> segment.prepend(before.stream()))
                     .thenRun(() -> {
                         final int recompute = this.path.size() - before.size() - 1;
                         final double distance = this.path.get(0).distanceTo(this.path.get(recompute));
@@ -267,7 +268,7 @@ public final class LegacyElytraBehavior implements Helper {
 
         // mickey resigned
         private CompletableFuture<Void> path0(BlockPos src, BlockPos dst, UnaryOperator<UnpackedSegment> operator) {
-            return LegacyElytraBehavior.this.context.pathFindAsync(src, dst)
+            return ElytraBehavior.this.context.pathFindAsync(src, dst)
                     .thenApply(UnpackedSegment::from)
                     .thenApply(operator)
                     .thenAcceptAsync(this::setPath, ctx.minecraft()::addScheduledTask);
@@ -289,12 +290,12 @@ public final class LegacyElytraBehavior implements Helper {
                 return;
             }
             final BetterBlockPos rangeStart = path.get(rangeStartIncl);
-            if (!LegacyElytraBehavior.this.passable(rangeStart.x, rangeStart.y, rangeStart.z, false)) {
+            if (!ElytraBehavior.this.passable(rangeStart.x, rangeStart.y, rangeStart.z, false)) {
                 // we're in a wall
                 return; // previous iterations of this function SHOULD have fixed this by now :rage_cat:
             }
 
-            if (LegacyElytraBehavior.this.process.state != ElytraProcess.State.LANDING && this.ticksNearUnchanged > 100) {
+            if (ElytraBehavior.this.process.state != ElytraProcess.State.LANDING && this.ticksNearUnchanged > 100) {
                 this.pathRecalcSegment(rangeEndExcl - 1)
                         .thenRun(() -> {
                             logDirect("Recalculating segment, no progress in last 100 ticks");
@@ -304,7 +305,7 @@ public final class LegacyElytraBehavior implements Helper {
             }
 
             for (int i = rangeStartIncl; i < rangeEndExcl - 1; i++) {
-                if (!LegacyElytraBehavior.this.clearView(this.path.getVec(i), this.path.getVec(i + 1), false)) {
+                if (!ElytraBehavior.this.clearView(this.path.getVec(i), this.path.getVec(i + 1), false)) {
                     // obstacle. where do we return to pathing?
                     // find the next valid segment
                     final BetterBlockPos blockage = this.path.get(i);
@@ -677,8 +678,8 @@ public final class LegacyElytraBehavior implements Helper {
         ) {
             // Prioritize boosting fireworks over regular ones
             // TODO: Take the minimum boost time into account?
-            if (!baritone.getInventoryBehavior().throwaway(true, LegacyElytraBehavior::isBoostingFireworks) &&
-                    !baritone.getInventoryBehavior().throwaway(true, LegacyElytraBehavior::isFireworks)) {
+            if (!baritone.getInventoryBehavior().throwaway(true, ElytraBehavior::isBoostingFireworks) &&
+                    !baritone.getInventoryBehavior().throwaway(true, ElytraBehavior::isFireworks)) {
                 logDirect("no fireworks");
                 return;
             }
@@ -700,21 +701,21 @@ public final class LegacyElytraBehavior implements Helper {
         public final IAimProcessor aimProcessor;
 
         public SolverContext(boolean async) {
-            this.path = LegacyElytraBehavior.this.pathManager.getPath();
-            this.playerNear = LegacyElytraBehavior.this.pathManager.getNear();
-            this.start = LegacyElytraBehavior.this.ctx.playerFeetAsVec();
-            this.ignoreLava = LegacyElytraBehavior.this.ctx.player().isInLava();
+            this.path = ElytraBehavior.this.pathManager.getPath();
+            this.playerNear = ElytraBehavior.this.pathManager.getNear();
+            this.start = ElytraBehavior.this.ctx.playerFeetAsVec();
+            this.ignoreLava = ElytraBehavior.this.ctx.player().isInLava();
 
             final Integer fireworkTicksExisted;
-            if (async && LegacyElytraBehavior.this.deployedFireworkLastTick) {
-                final int[] counter = LegacyElytraBehavior.this.nextTickBoostCounter;
+            if (async && ElytraBehavior.this.deployedFireworkLastTick) {
+                final int[] counter = ElytraBehavior.this.nextTickBoostCounter;
                 fireworkTicksExisted = counter[1] > counter[0] ? 0 : null;
             } else {
-                fireworkTicksExisted = LegacyElytraBehavior.this.getAttachedFirework().map(e -> e.ticksExisted).orElse(null);
+                fireworkTicksExisted = ElytraBehavior.this.getAttachedFirework().map(e -> e.ticksExisted).orElse(null);
             }
-            this.boost = new FireworkBoost(fireworkTicksExisted, LegacyElytraBehavior.this.minimumBoostTicks);
+            this.boost = new FireworkBoost(fireworkTicksExisted, ElytraBehavior.this.minimumBoostTicks);
 
-            ITickableAimProcessor aim = LegacyElytraBehavior.this.baritone.getLookBehavior().getAimProcessor().fork();
+            ITickableAimProcessor aim = ElytraBehavior.this.baritone.getLookBehavior().getAimProcessor().fork();
             if (async) {
                 // async computation is done at the end of a tick, advance by 1 to prepare for the next tick
                 aim.advance(1);

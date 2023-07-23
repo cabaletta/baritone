@@ -38,7 +38,7 @@ import baritone.api.utils.RotationUtils;
 import baritone.api.utils.input.Input;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.movements.MovementFall;
-import baritone.process.elytra.LegacyElytraBehavior;
+import baritone.process.elytra.ElytraBehavior;
 import baritone.process.elytra.NetherPathfinderContext;
 import baritone.process.elytra.NullElytraProcess;
 import baritone.utils.BaritoneProcessHelper;
@@ -59,7 +59,7 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
     private boolean goingToLandingSpot;
     private BetterBlockPos landingSpot;
     private Goal goal;
-    private LegacyElytraBehavior behavior;
+    private ElytraBehavior behavior;
 
     private ElytraProcess(Baritone baritone) {
         super(baritone);
@@ -260,7 +260,7 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
     @Override
     public void pathTo(BlockPos destination) {
         this.onLostControl();
-        this.behavior = new LegacyElytraBehavior(this.baritone, this, destination);
+        this.behavior = new ElytraBehavior(this.baritone, this, destination);
         if (ctx.world() != null) {
             this.behavior.repackChunks();
         }
