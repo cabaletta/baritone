@@ -1377,7 +1377,7 @@ public final class Settings {
     /**
      * If enabled, avoids using fireworks when descending along the flight path.
      */
-    public final Setting<Boolean> elytraConserveFireworks = new Setting<>(true);
+    public final Setting<Boolean> elytraConserveFireworks = new Setting<>(false);
 
     /**
      * Renders the raytraces that are performed by the elytra fly calculation.
