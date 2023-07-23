@@ -41,6 +41,7 @@ import baritone.process.elytra.NetherPathfinderContext;
 import baritone.process.elytra.NullElytraProcess;
 import baritone.utils.BaritoneProcessHelper;
 import baritone.utils.PathingCommandContext;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
@@ -368,9 +369,11 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
                 || ctx.world().isAirBlock(pos.south().east());
     }
 
-    private boolean isSafeLandingSpot(BlockPos pos) {
+    private boolean isSafeLandingSpot(BlockPos pos, LongOpenHashSet checkedSpots) {
         BlockPos.MutableBlockPos mut = new BlockPos.MutableBlockPos(pos);
+        checkedSpots.add(mut.toLong());
         while (mut.getY() >= 0) {
+
             IBlockState state = ctx.world().getBlockState(mut);
             Block block = state.getBlock();
 
@@ -380,6 +383,9 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
                 return false;
             }
             mut.setPos(mut.getX(), mut.getY() - 1, mut.getZ());
+            if (checkedSpots.contains(mut.toLong())) {
+                return false;
+            }
         }
         return false; // void
     }
@@ -388,14 +394,16 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
         final BetterBlockPos start = ctx.playerFeet();
         Queue<BetterBlockPos> queue = new LinkedList<>();
         Set<BetterBlockPos> visited = new HashSet<>();
+        LongOpenHashSet checkedPositions = new LongOpenHashSet();
         queue.add(start);
 
         while (!queue.isEmpty()) {
             BetterBlockPos pos = queue.poll();
             if (ctx.world().isBlockLoaded(pos) && isInBounds(pos) && ctx.world().getBlockState(pos).getBlock() == Blocks.AIR) {
-                if (isSafeLandingSpot(pos)) {
+                if (isSafeLandingSpot(pos, checkedPositions)) {
                     return pos;
                 }
+                checkedPositions.add(pos.toLong());
                 if (visited.add(pos.north())) queue.add(pos.north());
                 if (visited.add(pos.east())) queue.add(pos.east());
                 if (visited.add(pos.south())) queue.add(pos.south());
