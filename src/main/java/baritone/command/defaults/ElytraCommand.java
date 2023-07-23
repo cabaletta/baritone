@@ -22,12 +22,10 @@ import baritone.api.command.Command;
 import baritone.api.command.argument.IArgConsumer;
 import baritone.api.command.exception.CommandException;
 import baritone.api.command.exception.CommandInvalidStateException;
+import baritone.api.command.helpers.TabCompleteHelper;
 import baritone.api.pathing.goals.Goal;
-import baritone.api.pathing.goals.GoalBlock;
-import baritone.api.pathing.goals.GoalXZ;
 import baritone.api.process.ICustomGoalProcess;
 import baritone.api.process.IElytraProcess;
-import net.minecraft.util.math.BlockPos;
 
 import java.util.Arrays;
 import java.util.List;
@@ -43,15 +41,12 @@ public class ElytraCommand extends Command {
     public void execute(String label, IArgConsumer args) throws CommandException {
         final ICustomGoalProcess customGoalProcess = baritone.getCustomGoalProcess();
         final IElytraProcess elytra = baritone.getElytraProcess();
+        if (args.hasExactlyOne() && args.peekString().equals("supported")) {
+            logDirect(elytra.isLoaded() ? "yes" : unsupportedSystemMessage());
+            return;
+        }
         if (!elytra.isLoaded()) {
-            final String osArch = System.getProperty("os.arch");
-            final String osName = System.getProperty("os.name");
-            throw new CommandInvalidStateException(String.format(
-                    "legacy architectures are not supported. your CPU is %s and your operating system is %s. " +
-                            "supported architectures are x86_64 or arm64, supported operating systems are windows, " +
-                            "linux, and mac",
-                    osArch, osName
-            ));
+            throw new CommandInvalidStateException(unsupportedSystemMessage());
         }
 
         if (!args.hasAny()) {
@@ -87,7 +82,11 @@ public class ElytraCommand extends Command {
 
     @Override
     public Stream<String> tabComplete(String label, IArgConsumer args) throws CommandException {
-        return Stream.empty();
+        TabCompleteHelper helper = new TabCompleteHelper();
+        if (args.hasExactlyOne()) {
+            helper.append("reset", "repack", "supported");
+        }
+        return helper.filterPrefix(args.getString()).stream();
     }
 
     @Override
@@ -97,6 +96,25 @@ public class ElytraCommand extends Command {
 
     @Override
     public List<String> getLongDesc() {
-        return Arrays.asList();
+        return Arrays.asList(
+                "The elytra command tells baritone to, in the nether, automatically fly to the current goal.",
+                "",
+                "Usage:",
+                "> elytra - fly to the current goal",
+                "> elytra reset - Resets the state of the process, but will try to keep flying to the same goal.",
+                "> elytra repack - Queues all of the chunks in render distance to be given to the native library.",
+                "> elytra supported - Tells you if baritone ships a native library that is compatible with your PC."
+        );
+    }
+
+    private static String unsupportedSystemMessage() {
+        final String osArch = System.getProperty("os.arch");
+        final String osName = System.getProperty("os.name");
+        return String.format(
+                "Legacy architectures are not supported. your CPU is %s and your operating system is %s. " +
+                        "Supported architectures are 64 bit x86, and 64 bit arm, supported operating systems are Windows, " +
+                        "Linux, and Mac",
+                osArch, osName
+        );
     }
 }
