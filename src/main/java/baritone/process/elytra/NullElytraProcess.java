@@ -18,6 +18,7 @@
 package baritone.process.elytra;
 
 import baritone.Baritone;
+import baritone.api.pathing.goals.Goal;
 import baritone.api.process.IElytraProcess;
 import baritone.api.process.PathingCommand;
 import baritone.utils.BaritoneProcessHelper;
@@ -46,6 +47,11 @@ public final class NullElytraProcess extends BaritoneProcessHelper implements IE
 
     @Override
     public void pathTo(BlockPos destination) {
+        throw new UnsupportedOperationException("Called pathTo() on NullElytraBehavior");
+    }
+
+    @Override
+    public void pathTo(Goal destination) {
         throw new UnsupportedOperationException("Called pathTo() on NullElytraBehavior");
     }
 

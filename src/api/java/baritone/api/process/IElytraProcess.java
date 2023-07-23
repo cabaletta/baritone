@@ -17,6 +17,7 @@
 
 package baritone.api.process;
 
+import baritone.api.pathing.goals.Goal;
 import net.minecraft.util.math.BlockPos;
 
 public interface IElytraProcess extends IBaritoneProcess {
@@ -29,6 +30,8 @@ public interface IElytraProcess extends IBaritoneProcess {
     BlockPos currentDestination();
 
     void pathTo(BlockPos destination);
+
+    void pathTo(Goal destination);
 
     /**
      * Resets the state of the process but will maintain the same destination and will try to keep flying

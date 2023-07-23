@@ -23,6 +23,8 @@ import baritone.api.event.events.*;
 import baritone.api.event.events.type.EventState;
 import baritone.api.event.listener.AbstractGameEventListener;
 import baritone.api.pathing.goals.Goal;
+import baritone.api.pathing.goals.GoalBlock;
+import baritone.api.pathing.goals.GoalXZ;
 import baritone.api.pathing.goals.GoalYLevel;
 import baritone.api.pathing.movement.IMovement;
 import baritone.api.pathing.path.IPathExecutor;
@@ -53,7 +55,6 @@ import java.util.*;
 import static baritone.api.pathing.movement.ActionCosts.COST_INF;
 
 public class ElytraProcess extends BaritoneProcessHelper implements IBaritoneProcess, IElytraProcess, AbstractGameEventListener {
-
     public State state;
     private boolean goingToLandingSpot;
     private BetterBlockPos landingSpot;
@@ -235,6 +236,11 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
     }
 
     @Override
+    public double priority() {
+        return 0; // higher priority than CustomGoalProcess
+    }
+
+    @Override
     public String displayName0() {
         return "Elytra - " + this.state.description;
     }
@@ -259,6 +265,30 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
             this.behavior.repackChunks();
         }
         this.behavior.pathTo();
+    }
+
+    @Override
+    public void pathTo(Goal iGoal) {
+        final int x;
+        final int y;
+        final int z;
+        if (iGoal instanceof GoalXZ) {
+            GoalXZ goal = (GoalXZ) iGoal;
+            x = goal.getX();
+            y = 64;
+            z = goal.getZ();
+        } else if (iGoal instanceof GoalBlock) {
+            GoalBlock goal = (GoalBlock) iGoal;
+            x = goal.x;
+            y = goal.y;
+            z = goal.z;
+        } else {
+            throw new IllegalArgumentException("The goal must be a GoalXZ or GoalBlock");
+        }
+        if (y <= 0 || y >= 128) {
+            throw new IllegalArgumentException("The y of the goal is not between 0 and 128");
+        }
+        this.pathTo(new BlockPos(x, y, z));
     }
 
     @Override

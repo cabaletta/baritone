@@ -59,26 +59,11 @@ public class ElytraCommand extends Command {
             if (iGoal == null) {
                 throw new CommandInvalidStateException("No goal has been set");
             }
-            final int x;
-            final int y;
-            final int z;
-            if (iGoal instanceof GoalXZ) {
-                GoalXZ goal = (GoalXZ) iGoal;
-                x = goal.getX();
-                y = 64;
-                z = goal.getZ();
-            } else if (iGoal instanceof GoalBlock) {
-                GoalBlock goal = (GoalBlock) iGoal;
-                x = goal.x;
-                y = goal.y;
-                z = goal.z;
-            } else {
-                throw new CommandInvalidStateException("The goal must be a GoalXZ or GoalBlock");
+            try {
+                elytra.pathTo(iGoal);
+            } catch (IllegalArgumentException ex) {
+                throw new CommandInvalidStateException(ex.getMessage());
             }
-            if (y <= 0 || y >= 128) {
-                throw new CommandInvalidStateException("The y of the goal is not between 0 and 128");
-            }
-            elytra.pathTo(new BlockPos(x, y, z));
             return;
         }
 
