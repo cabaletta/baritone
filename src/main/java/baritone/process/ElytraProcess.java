@@ -383,36 +383,57 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
         return pos.getY() >= 0 && pos.getY() < 128;
     }
 
-    private boolean isAtEdge(BlockPos pos) {
-        return ctx.world().isAirBlock(pos.north())
-                || ctx.world().isAirBlock(pos.south())
-                || ctx.world().isAirBlock(pos.east())
-                || ctx.world().isAirBlock(pos.west())
-                // corners
-                || ctx.world().isAirBlock(pos.north().west())
-                || ctx.world().isAirBlock(pos.north().east())
-                || ctx.world().isAirBlock(pos.south().west())
-                || ctx.world().isAirBlock(pos.south().east());
+    private boolean isSafeBlock(Block block) {
+        return block == Blocks.NETHERRACK || block == Blocks.GRAVEL || block == Blocks.NETHER_BRICK;
+    }
+    private boolean isSafeBlock(BlockPos pos) {
+        return isSafeBlock(ctx.world().getBlockState(pos).getBlock());
     }
 
-    private boolean isSafeLandingSpot(BlockPos pos, LongOpenHashSet checkedSpots) {
+    private boolean isAtEdge(BlockPos pos) {
+        return !isSafeBlock(pos.north())
+                || !isSafeBlock(pos.south())
+                || !isSafeBlock(pos.east())
+                || !isSafeBlock(pos.west())
+                // corners
+                || !isSafeBlock(pos.north().west())
+                || !isSafeBlock(pos.north().east())
+                || !isSafeBlock(pos.south().west())
+                || !isSafeBlock(pos.south().east());
+    }
+
+    private boolean isColumnAir(BlockPos landingSpot, int minHeight) {
+        BlockPos.MutableBlockPos mut = new BlockPos.MutableBlockPos(landingSpot);
+        final int maxY = mut.getY() + minHeight;
+        for (int y = mut.getY() + 1; y <= maxY; y++) {
+            mut.setPos(mut.getX(), y, mut.getZ());
+            if (!ctx.world().isAirBlock(mut)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private BetterBlockPos checkLandingSpot(BlockPos pos, LongOpenHashSet checkedSpots) {
         BlockPos.MutableBlockPos mut = new BlockPos.MutableBlockPos(pos);
         while (mut.getY() >= 0) {
             if (checkedSpots.contains(mut.toLong())) {
-                return false;
+                return null;
             }
             checkedSpots.add(mut.toLong());
-            IBlockState state = ctx.world().getBlockState(mut);
-            Block block = state.getBlock();
+            Block block = ctx.world().getBlockState(mut).getBlock();
 
-            if (block == Blocks.NETHERRACK || block == Blocks.GRAVEL || block == Blocks.NETHER_BRICK) {
-                return !isAtEdge(mut);
+            if (isSafeBlock(block)) {
+                if (!isAtEdge(mut)) {
+                    return new BetterBlockPos(mut);
+                }
+                return null;
             } else if (block != Blocks.AIR) {
-                return false;
+                return null;
             }
             mut.setPos(mut.getX(), mut.getY() - 1, mut.getZ());
         }
-        return false; // void
+        return null; // void
     }
 
     private BetterBlockPos findSafeLandingSpot() {
@@ -425,8 +446,9 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
         while (!queue.isEmpty()) {
             BetterBlockPos pos = queue.poll();
             if (ctx.world().isBlockLoaded(pos) && isInBounds(pos) && ctx.world().getBlockState(pos).getBlock() == Blocks.AIR) {
-                if (isSafeLandingSpot(pos, checkedPositions)) {
-                    return pos;
+                BetterBlockPos actualLandingSpot = checkLandingSpot(pos, checkedPositions);
+                if (actualLandingSpot != null && isColumnAir(actualLandingSpot, 15)) {
+                    return actualLandingSpot.up(15);
                 }
                 if (visited.add(pos.north())) queue.add(pos.north());
                 if (visited.add(pos.east())) queue.add(pos.east());
