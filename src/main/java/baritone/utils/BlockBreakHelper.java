@@ -17,7 +17,6 @@
 
 package baritone.utils;
 
-import baritone.api.utils.Helper;
 import baritone.api.utils.IPlayerContext;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.phys.BlockHitResult;
@@ -27,7 +26,7 @@ import net.minecraft.world.phys.HitResult;
  * @author Brady
  * @since 8/25/2018
  */
-public final class BlockBreakHelper implements Helper {
+public final class BlockBreakHelper {
 
     private final IPlayerContext ctx;
     private boolean didBreakLastTick;

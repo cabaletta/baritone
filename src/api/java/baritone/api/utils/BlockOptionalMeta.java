@@ -18,6 +18,7 @@
 package baritone.api.utils;
 
 import baritone.api.utils.accessor.IItemStack;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import io.netty.util.concurrent.ThreadPerTaskExecutor;
 import net.minecraft.client.Minecraft;
@@ -41,6 +42,7 @@ import net.minecraft.world.level.CustomSpawner;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.dimension.LevelStem;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraft.world.level.storage.ServerLevelData;
@@ -57,47 +59,89 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
-import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public final class BlockOptionalMeta {
+    // id or id[] or id[properties] where id and properties are any text with at least one character
+    private static final Pattern PATTERN = Pattern.compile("^(?<id>.+?)(?:\\[(?<properties>.+?)?\\])?$");
 
     private final Block block;
+    private final String propertiesDescription; // exists so toString() can return something more useful than a list of all blockstates
     private final Set<BlockState> blockstates;
-    private final ImmutableSet<Integer> stateHashes;
-    private final ImmutableSet<Integer> stackHashes;
-    private static final Pattern pattern = Pattern.compile("^(.+?)(?::(\\d+))?$");
+    private final Set<Integer> stateHashes;
+    private final Set<Integer> stackHashes;
     private static LootDataManager lootTables;
     private static Map<Block, List<Item>> drops = new HashMap<>();
 
     public BlockOptionalMeta(@Nonnull Block block) {
         this.block = block;
-        this.blockstates = getStates(block);
+        this.propertiesDescription = "{}";
+        this.blockstates = getStates(block, Collections.emptyMap());
         this.stateHashes = getStateHashes(blockstates);
         this.stackHashes = getStackHashes(blockstates);
     }
 
     public BlockOptionalMeta(@Nonnull String selector) {
-        Matcher matcher = pattern.matcher(selector);
+        Matcher matcher = PATTERN.matcher(selector);
 
         if (!matcher.find()) {
             throw new IllegalArgumentException("invalid block selector");
         }
 
-        MatchResult matchResult = matcher.toMatchResult();
+        block = BlockUtils.stringToBlockRequired(matcher.group("id"));
 
-        block = BlockUtils.stringToBlockRequired(matchResult.group(1));
-        blockstates = getStates(block);
+        String props = matcher.group("properties");
+        Map<Property<?>, ?> properties = props == null || props.equals("") ? Collections.emptyMap() : parseProperties(block, props);
+
+        propertiesDescription = props == null ? "{}" : "{" + props.replace("=", ":") + "}";
+        blockstates = getStates(block, properties);
         stateHashes = getStateHashes(blockstates);
         stackHashes = getStackHashes(blockstates);
     }
 
-    private static Set<BlockState> getStates(@Nonnull Block block) {
-        return new HashSet<>(block.getStateDefinition().getPossibleStates());
+    private static <C extends Comparable<C>, P extends Property<C>> P castToIProperty(Object value) {
+        //noinspection unchecked
+        return (P) value;
+    }
+
+    private static Map<Property<?>, ?> parseProperties(Block block, String raw) {
+        ImmutableMap.Builder<Property<?>, Object> builder = ImmutableMap.builder();
+        for (String pair : raw.split(",")) {
+            String[] parts = pair.split("=");
+            if (parts.length != 2) {
+                throw new IllegalArgumentException(String.format("\"%s\" is not a valid property-value pair", pair));
+            }
+            String rawKey = parts[0];
+            String rawValue = parts[1];
+            Property<?> key = block.getStateDefinition().getProperty(rawKey);
+            Comparable<?> value = castToIProperty(key).getValue(rawValue)
+                    .orElseThrow(() -> new IllegalArgumentException(String.format(
+                            "\"%s\" is not a valid value for %s on %s",
+                            rawValue, key, block
+                    )));
+            builder.put(key, value);
+        }
+        return builder.build();
+    }
+
+    private static Set<BlockState> getStates(@Nonnull Block block, @Nonnull Map<Property<?>, ?> properties) {
+        return block.getStateDefinition().getPossibleStates().stream()
+                .filter(blockstate -> properties.entrySet().stream().allMatch(entry ->
+                        blockstate.getValue(entry.getKey()) == entry.getValue()
+                ))
+                .collect(Collectors.toSet());
     }
 
     private static ImmutableSet<Integer> getStateHashes(Set<BlockState> blockstates) {
@@ -145,7 +189,7 @@ public final class BlockOptionalMeta {
 
     @Override
     public String toString() {
-        return String.format("BlockOptionalMeta{block=%s}", block);
+        return String.format("BlockOptionalMeta{block=%s,properties=%s}", block, propertiesDescription);
     }
 
     public BlockState getAnyBlockState() {
@@ -154,6 +198,14 @@ public final class BlockOptionalMeta {
         }
 
         return null;
+    }
+
+    public Set<BlockState> getAllBlockStates() {
+        return blockstates;
+    }
+
+    public Set<Integer> stackHashes() {
+        return stackHashes;
     }
 
     private static Method getVanillaServerPack;

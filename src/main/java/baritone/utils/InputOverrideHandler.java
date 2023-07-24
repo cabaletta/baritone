@@ -23,8 +23,8 @@ import baritone.api.event.events.TickEvent;
 import baritone.api.utils.IInputOverrideHandler;
 import baritone.api.utils.input.Input;
 import baritone.behavior.Behavior;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.KeyboardInput;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -99,7 +99,7 @@ public final class InputOverrideHandler extends Behavior implements IInputOverri
             }
         } else {
             if (ctx.player().input.getClass() == PlayerMovementInput.class) { // allow other movement inputs that aren't this one, e.g. for a freecam
-                ctx.player().input = new KeyboardInput(Minecraft.getInstance().options);
+                ctx.player().input = new KeyboardInput(ctx.minecraft().options);
             }
         }
         // only set it if it was previously incorrect
