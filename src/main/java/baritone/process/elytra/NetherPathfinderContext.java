@@ -38,7 +38,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author Brady
@@ -46,7 +45,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 public final class NetherPathfinderContext {
 
     private static final IBlockState AIR_BLOCK_STATE = Blocks.AIR.getDefaultState();
-    public final Object cacheLock = new Object();
+    // This lock must be held while there are active pointers to chunks in java,
+    // but we just hold it for the entire tick so we don't have to think much about it.
+    public final Object cullingLock = new Object();
 
     // Visible for access in BlockStateOctreeInterface
     final long context;
@@ -61,7 +62,7 @@ public final class NetherPathfinderContext {
 
     public void queueCacheCulling(int chunkX, int chunkZ, int maxDistanceBlocks, BlockStateOctreeInterface boi) {
         this.executor.execute(() -> {
-            synchronized (this.cacheLock) {
+            synchronized (this.cullingLock) {
                 boi.chunkPtr = 0L;
                 NetherPathfinder.cullFarChunks(this.context, chunkX, chunkZ, maxDistanceBlocks);
             }

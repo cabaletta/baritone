@@ -446,6 +446,17 @@ public final class ElytraBehavior implements Helper {
     }
 
     public void onTick() {
+        synchronized (this.context.cullingLock) {
+            this.onTick0();
+        }
+        final long now = System.currentTimeMillis();
+        if ((now - this.timeLastCacheCull) / 1000 > Baritone.settings().elytraTimeBetweenCacheCullSecs.value) {
+            this.context.queueCacheCulling(ctx.player().chunkCoordX, ctx.player().chunkCoordZ, Baritone.settings().elytraCacheCullDistance.value, this.boi);
+            this.timeLastCacheCull = now;
+        }
+    }
+
+    private void onTick0() {
         // Fetch the previous solution, regardless of if it's going to be used
         this.pendingSolution = null;
         if (this.solver != null) {
@@ -498,12 +509,6 @@ public final class ElytraBehavior implements Helper {
                 Math.max(playerNear - 30, 0),
                 Math.min(playerNear + 100, path.size())
         );
-
-        final long now = System.currentTimeMillis();
-        if ((now - this.timeLastCacheCull) / 1000 > Baritone.settings().elytraTimeBetweenCacheCullSecs.value) {
-            this.context.queueCacheCulling(ctx.player().chunkCoordX, ctx.player().chunkCoordZ, Baritone.settings().elytraCacheCullDistance.value, this.boi);
-            this.timeLastCacheCull = now;
-        }
     }
 
     /**
