@@ -259,6 +259,9 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
 
     @Override
     public void pathTo(BlockPos destination) {
+        if (ctx.player() == null || ctx.player().dimension != -1) {
+            return;
+        }
         this.onLostControl();
         this.behavior = new ElytraBehavior(this.baritone, this, destination);
         if (ctx.world() != null) {
