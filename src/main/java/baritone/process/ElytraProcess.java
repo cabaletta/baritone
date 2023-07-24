@@ -81,8 +81,10 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
     public void resetState() {
         BlockPos destination = this.currentDestination();
         this.onLostControl();
-        this.pathTo(destination);
-        this.repackChunks();
+        if (destination != null) {
+            this.pathTo(destination);
+            this.repackChunks();
+        }
     }
 
     @Override
