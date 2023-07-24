@@ -39,7 +39,7 @@ public final class BlockStateOctreeInterface {
     }
 
     public boolean get0(final int x, final int y, final int z) {
-        if ((y | (128 - y)) < 0) {
+        if ((y | (127 - y)) < 0) {
             return false;
         }
         final int chunkX = x >> 4;
