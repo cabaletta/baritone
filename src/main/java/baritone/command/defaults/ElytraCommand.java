@@ -54,6 +54,9 @@ public class ElytraCommand extends Command {
             if (iGoal == null) {
                 throw new CommandInvalidStateException("No goal has been set");
             }
+            if (ctx.player().dimension != -1) {
+                throw new CommandInvalidStateException("Only works in the nether");
+            }
             try {
                 elytra.pathTo(iGoal);
             } catch (IllegalArgumentException ex) {
