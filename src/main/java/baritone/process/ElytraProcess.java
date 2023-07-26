@@ -58,6 +58,7 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
     public State state;
     private boolean goingToLandingSpot;
     private BetterBlockPos landingSpot;
+    private boolean reachedGoal; // this basically just prevents potential notification spam
     private Goal goal;
     private ElytraBehavior behavior;
 
@@ -81,8 +82,10 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
     public void resetState() {
         BlockPos destination = this.currentDestination();
         this.onLostControl();
-        this.pathTo(destination);
-        this.repackChunks();
+        if (destination != null) {
+            this.pathTo(destination);
+            this.repackChunks();
+        }
     }
 
     @Override
@@ -104,27 +107,29 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
         if (ctx.player().isElytraFlying() && this.state != State.LANDING) {
             final BetterBlockPos last = this.behavior.pathManager.path.getLast();
             if (last != null && ctx.player().getDistanceSqToCenter(last) < 1) {
-                if (Baritone.settings().notificationOnPathComplete.value) {
+                if (Baritone.settings().notificationOnPathComplete.value && !reachedGoal) {
                     logNotification("Pathing complete", false);
                 }
-                if (Baritone.settings().disconnectOnArrival.value) {
+                if (Baritone.settings().disconnectOnArrival.value && !reachedGoal) {
                     // don't be active when the user logs back in
                     this.onLostControl();
                     ctx.world().sendQuittingDisconnectingPacket();
                     return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
                 }
+                reachedGoal = true;
+
                 if (!goingToLandingSpot) {
                     BetterBlockPos landingSpot = findSafeLandingSpot();
+                    // if this fails we will just keep orbiting the last node until we run out of rockets or the user intervenes
                     if (landingSpot != null) {
                         this.pathTo(landingSpot);
                         this.landingSpot = landingSpot;
                         this.goingToLandingSpot = true;
-                        return this.onTick(calcFailed, isSafeToCancel);
                     }
-                    // don't spam call findLandingSpot if it somehow fails (it's slow)
-                    this.goingToLandingSpot = true;
+                } else {
+                    // we are goingToLandingSpot and we are in the in the last node of the path
+                    this.state = State.LANDING;
                 }
-                this.state = State.LANDING;
             }
         }
 
@@ -228,6 +233,7 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
     public void onLostControl() {
         this.goal = null;
         this.goingToLandingSpot = false;
+        this.reachedGoal = false;
         this.state = State.START_FLYING; // TODO: null state?
         if (this.behavior != null) {
             this.behavior.destroy();
