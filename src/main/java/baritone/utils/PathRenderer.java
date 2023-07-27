@@ -41,8 +41,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import static org.lwjgl.opengl.GL11.*;
-
 /**
  * @author Brady
  * @since 8/9/2018
@@ -239,8 +237,6 @@ public final class PathRenderer implements IRenderer {
             GoalXZ goalPos = (GoalXZ) goal;
 
             if (settings.renderGoalXZBeacon.value) {
-                glPushAttrib(GL_LIGHTING_BIT);
-
                 textureManager.bindTexture(TileEntityBeaconRenderer.TEXTURE_BEACON_BEAM);
 
                 if (settings.renderGoalIgnoreDepth.value) {
@@ -262,8 +258,6 @@ public final class PathRenderer implements IRenderer {
                 if (settings.renderGoalIgnoreDepth.value) {
                     GlStateManager.enableDepth();
                 }
-
-                glPopAttrib();
                 return;
             }
 

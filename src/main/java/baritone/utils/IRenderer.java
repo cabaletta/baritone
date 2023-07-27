@@ -57,6 +57,7 @@ public interface IRenderer {
         GlStateManager.glLineWidth(lineWidth);
         GlStateManager.disableTexture2D();
         GlStateManager.depthMask(false);
+        GlStateManager.disableLighting();
 
         if (ignoreDepth) {
             GlStateManager.disableDepth();
@@ -77,6 +78,7 @@ public interface IRenderer {
         GlStateManager.depthMask(true);
         GlStateManager.enableTexture2D();
         GlStateManager.disableBlend();
+        GlStateManager.enableLighting();
     }
 
     static void emitAABB(AxisAlignedBB aabb) {
