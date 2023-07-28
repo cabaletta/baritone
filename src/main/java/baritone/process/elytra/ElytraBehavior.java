@@ -701,15 +701,26 @@ public final class ElytraBehavior implements Helper {
         public final NetherPath path;
         public final int playerNear;
         public final Vec3d start;
+        public final Vec3d motion;
+        public final AxisAlignedBB boundingBox;
         public final boolean ignoreLava;
         public final FireworkBoost boost;
         public final IAimProcessor aimProcessor;
 
+        /**
+         * Creates a new SolverContext using the current state of the path, player, and firework boost at the time of
+         * construction.
+         *
+         * @param async Whether the computation is being done asynchronously at the end of a game tick.
+         */
         public SolverContext(boolean async) {
             this.path = ElytraBehavior.this.pathManager.getPath();
             this.playerNear = ElytraBehavior.this.pathManager.getNear();
-            this.start = ElytraBehavior.this.ctx.playerFeetAsVec();
-            this.ignoreLava = ElytraBehavior.this.ctx.player().isInLava();
+
+            this.start = ctx.playerFeetAsVec();
+            this.motion = ctx.playerMotion();
+            this.boundingBox = ctx.player().getEntityBoundingBox();
+            this.ignoreLava = ctx.player().isInLava();
 
             final Integer fireworkTicksExisted;
             if (async && ElytraBehavior.this.deployedFireworkLastTick) {
@@ -741,6 +752,8 @@ public final class ElytraBehavior implements Helper {
             return this.path == other.path  // Contents aren't modified, just compare by reference
                     && this.playerNear == other.playerNear
                     && Objects.equals(this.start, other.start)
+                    && Objects.equals(this.motion, other.motion)
+                    && Objects.equals(this.boundingBox, other.boundingBox)
                     && this.ignoreLava == other.ignoreLava
                     && Objects.equals(this.boost, other.boost);
         }
@@ -752,6 +765,11 @@ public final class ElytraBehavior implements Helper {
         private final int minimumBoostTicks;
         private final int maximumBoostTicks;
 
+        /**
+         * @param fireworkTicksExisted The ticksExisted of the attached firework entity, or {@code null} if no entity.
+         * @param minimumBoostTicks    The minimum number of boost ticks that the attached firework entity, if any, will
+         *                             provide.
+         */
         public FireworkBoost(final Integer fireworkTicksExisted, final int minimumBoostTicks) {
             this.fireworkTicksExisted = fireworkTicksExisted;
 
@@ -870,7 +888,7 @@ public final class ElytraBehavior implements Helper {
             return true;
         }
 
-        final AxisAlignedBB bb = ctx.player().getEntityBoundingBox().grow(growAmount);
+        final AxisAlignedBB bb = context.boundingBox.grow(growAmount);
 
         final double ox = dest.x - start.x;
         final double oy = dest.y - start.y;
@@ -1032,13 +1050,12 @@ public final class ElytraBehavior implements Helper {
         while (pitches.hasNext()) {
             final float pitch = pitches.nextFloat();
             final List<Vec3d> displacement = this.simulate(
-                    context.aimProcessor.fork(),
+                    context,
                     goalDelta,
                     pitch,
                     ticks,
                     ticksBoosted,
-                    ticksBoostDelay,
-                    context.ignoreLava
+                    ticksBoostDelay
             );
             if (displacement == null) {
                 continue;
@@ -1074,11 +1091,12 @@ public final class ElytraBehavior implements Helper {
         return null;
     }
 
-    private List<Vec3d> simulate(final ITickableAimProcessor aimProcessor, final Vec3d goalDelta, final float pitch,
-                                 final int ticks, final int ticksBoosted, final int ticksBoostDelay, final boolean ignoreLava) {
+    private List<Vec3d> simulate(final SolverContext context, final Vec3d goalDelta, final float pitch, final int ticks,
+                                 final int ticksBoosted, final int ticksBoostDelay) {
+        final ITickableAimProcessor aimProcessor = context.aimProcessor.fork();
         Vec3d delta = goalDelta;
-        Vec3d motion = ctx.playerMotion();
-        AxisAlignedBB hitbox = ctx.player().getEntityBoundingBox();
+        Vec3d motion = context.motion;
+        AxisAlignedBB hitbox = context.boundingBox;
         List<Vec3d> displacement = new ArrayList<>(ticks + 1);
         displacement.add(Vec3d.ZERO);
         int remainingTicksBoosted = ticksBoosted;
@@ -1112,7 +1130,7 @@ public final class ElytraBehavior implements Helper {
             for (int x = xmin; x < xmax; x++) {
                 for (int y = ymin; y < ymax; y++) {
                     for (int z = zmin; z < zmax; z++) {
-                        if (!this.passable(x, y, z, ignoreLava)) {
+                        if (!this.passable(x, y, z, context.ignoreLava)) {
                             return null;
                         }
                     }
