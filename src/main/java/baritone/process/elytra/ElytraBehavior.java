@@ -62,13 +62,12 @@ public final class ElytraBehavior implements Helper {
     private final Baritone baritone;
     private final IPlayerContext ctx;
 
-
-    // Used exclusively for PathRenderer
-    public List<Pair<Vec3d, Vec3d>> clearLines;
-    public List<Pair<Vec3d, Vec3d>> blockedLines;
-    public List<Vec3d> simulationLine;
-    public BlockPos aimPos;
-    public List<BetterBlockPos> visiblePath;
+    // Render stuff
+    private final List<Pair<Vec3d, Vec3d>> clearLines;
+    private final List<Pair<Vec3d, Vec3d>> blockedLines;
+    private List<Vec3d> simulationLine;
+    private BlockPos aimPos;
+    private List<BetterBlockPos> visiblePath;
 
     // :sunglasses:
     public final NetherPathfinderContext context;
