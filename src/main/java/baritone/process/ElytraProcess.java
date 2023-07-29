@@ -427,14 +427,12 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
 
     private boolean hasAirBubble(BlockPos pos) {
         final int radius = 2; // Half of 5, as we're counting blocks in each direction from the center
-
+        BlockPos.MutableBlockPos mut = new BlockPos.MutableBlockPos();
         for (int x = -radius; x <= radius; x++) {
             for (int y = -radius; y <= radius; y++) {
                 for (int z = -radius; z <= radius; z++) {
-                    BlockPos currentPos = pos.add(x, y, z);
-                    IBlockState blockState = ctx.world().getBlockState(currentPos);
-
-                    if (blockState.getBlock() != Blocks.AIR) {
+                    mut.setPos(pos.getX() + x, pos.getY() + y, pos.getZ() + z);
+                    if (!ctx.world().isAirBlock(mut)) {
                         return false;
                     }
                 }
