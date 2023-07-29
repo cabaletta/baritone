@@ -104,8 +104,18 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
             return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
         }
 
-        if (ctx.player().isElytraFlying() && this.state != State.LANDING) {
+        if (ctx.player().isElytraFlying() && this.state != State.LANDING && this.behavior.pathManager.isComplete()) {
             final BetterBlockPos last = this.behavior.pathManager.path.getLast();
+            if (last != null && ctx.player().getDistanceSqToCenter(last) < (48 * 48) && !goingToLandingSpot) {
+                BetterBlockPos landingSpot = findSafeLandingSpot(last);
+                // if this fails we will just keep orbiting the last node until we run out of rockets or the user intervenes
+                if (landingSpot != null) {
+                    this.pathTo(landingSpot);
+                    this.landingSpot = landingSpot;
+                    this.goingToLandingSpot = true;
+                }
+            }
+
             if (last != null && ctx.player().getDistanceSqToCenter(last) < 1) {
                 if (Baritone.settings().notificationOnPathComplete.value && !reachedGoal) {
                     logNotification("Pathing complete", false);
@@ -118,16 +128,8 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
                 }
                 reachedGoal = true;
 
-                if (!goingToLandingSpot) {
-                    BetterBlockPos landingSpot = findSafeLandingSpot();
-                    // if this fails we will just keep orbiting the last node until we run out of rockets or the user intervenes
-                    if (landingSpot != null) {
-                        this.pathTo(landingSpot);
-                        this.landingSpot = landingSpot;
-                        this.goingToLandingSpot = true;
-                    }
-                } else {
-                    // we are goingToLandingSpot and we are in the in the last node of the path
+                // we are goingToLandingSpot and we are in the last node of the path
+                if (this.goingToLandingSpot) {
                     this.state = State.LANDING;
                 }
             }
@@ -423,6 +425,25 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
         return true;
     }
 
+    private boolean hasAirBubble(BlockPos pos) {
+        final int radius = 2; // Half of 5, as we're counting blocks in each direction from the center
+
+        for (int x = -radius; x <= radius; x++) {
+            for (int y = -radius; y <= radius; y++) {
+                for (int z = -radius; z <= radius; z++) {
+                    BlockPos currentPos = pos.add(x, y, z);
+                    IBlockState blockState = ctx.world().getBlockState(currentPos);
+
+                    if (blockState.getBlock() != Blocks.AIR) {
+                        return false;
+                    }
+                }
+            }
+        }
+
+        return true;
+    }
+
     private BetterBlockPos checkLandingSpot(BlockPos pos, LongOpenHashSet checkedSpots) {
         BlockPos.MutableBlockPos mut = new BlockPos.MutableBlockPos(pos);
         while (mut.getY() >= 0) {
@@ -445,8 +466,7 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
         return null; // void
     }
 
-    private BetterBlockPos findSafeLandingSpot() {
-        final BetterBlockPos start = ctx.playerFeet();
+    private BetterBlockPos findSafeLandingSpot(BetterBlockPos start) {
         Queue<BetterBlockPos> queue = new PriorityQueue<>(Comparator.<BetterBlockPos>comparingInt(pos -> (pos.x - start.x) * (pos.x - start.x) + (pos.z - start.z) * (pos.z - start.z)).thenComparingInt(pos -> -pos.y));
         Set<BetterBlockPos> visited = new HashSet<>();
         LongOpenHashSet checkedPositions = new LongOpenHashSet();
@@ -456,7 +476,7 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
             BetterBlockPos pos = queue.poll();
             if (ctx.world().isBlockLoaded(pos) && isInBounds(pos) && ctx.world().getBlockState(pos).getBlock() == Blocks.AIR) {
                 BetterBlockPos actualLandingSpot = checkLandingSpot(pos, checkedPositions);
-                if (actualLandingSpot != null && isColumnAir(actualLandingSpot, 15)) {
+                if (actualLandingSpot != null && isColumnAir(actualLandingSpot, 15) && hasAirBubble(actualLandingSpot.up(15))) {
                     return actualLandingSpot.up(15);
                 }
                 if (visited.add(pos.north())) queue.add(pos.north());
