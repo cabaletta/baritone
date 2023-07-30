@@ -27,6 +27,8 @@ import baritone.behavior.LookBehavior;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.player.PlayerCapabilities;
+import net.minecraft.item.ItemElytra;
+import net.minecraft.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -122,5 +124,20 @@ public class MixinEntityPlayerSP {
         if (baritone != null) {
             ((LookBehavior) baritone.getLookBehavior()).pig();
         }
+    }
+
+    @Redirect(
+            method = "onLivingUpdate",
+            at = @At(
+                    value = "INVOKE",
+                    target = "net/minecraft/item/ItemElytra.isUsable(Lnet/minecraft/item/ItemStack;)Z"
+            )
+    )
+    private boolean isElytraUsable(ItemStack stack) {
+        IBaritone baritone = BaritoneAPI.getProvider().getBaritoneForPlayer((EntityPlayerSP) (Object) this);
+        if (baritone != null && baritone.getPathingBehavior().isPathing()) {
+            return false;
+        }
+        return ItemElytra.isUsable(stack);
     }
 }
