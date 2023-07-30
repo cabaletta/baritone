@@ -84,6 +84,8 @@ public final class ElytraBehavior implements Helper {
      */
     private int remainingSetBackTicks;
 
+    public boolean landingMode;
+
     /**
      * The most recent minimum number of firework boost ticks, equivalent to {@code 10 * (1 + Flight)}
      * <p>
@@ -583,7 +585,7 @@ public final class ElytraBehavior implements Helper {
 
     private Solution solveAngles(final SolverContext context) {
         final NetherPath path = context.path;
-        final int playerNear = context.playerNear;
+        final int playerNear = landingMode ? path.size() - 1 : context.playerNear;
         final Vec3d start = context.start;
         Solution solution = null;
 
@@ -668,6 +670,9 @@ public final class ElytraBehavior implements Helper {
     private void tickUseFireworks(final Vec3d start, final Vec3d goingTo, final boolean isBoosted, final boolean forceUseFirework) {
         if (this.remainingSetBackTicks > 0) {
             logDebug("waiting for elytraFireworkSetbackUseDelay: " + this.remainingSetBackTicks);
+            return;
+        }
+        if (this.landingMode) {
             return;
         }
         final boolean useOnDescend = !Baritone.settings().elytraConserveFireworks.value || ctx.player().posY < goingTo.y + 5;

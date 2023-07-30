@@ -88,6 +88,8 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
         }
     }
 
+    private static final String AUTO_JUMP_FAILURE_MSG = "Failed to compute a walking path to a spot to jump off from. Consider starting from a higher location, near an overhang. Or, you can disable elytraAutoJump and just manually begin gliding.";
+
     @Override
     public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
         final long seedSetting = Baritone.settings().elytraNetherSeed.value;
@@ -100,13 +102,14 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
 
         if (calcFailed) {
             onLostControl();
-            logDirect("Failed to get to jump off spot, canceling");
+            logDirect(AUTO_JUMP_FAILURE_MSG);
             return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
         }
 
         if (ctx.player().isElytraFlying() && this.state != State.LANDING && this.behavior.pathManager.isComplete()) {
             final BetterBlockPos last = this.behavior.pathManager.path.getLast();
             if (last != null && ctx.player().getDistanceSqToCenter(last) < (48 * 48) && !goingToLandingSpot) {
+                logDirect("Path complete, picking a nearby safe landing spot...");
                 BetterBlockPos landingSpot = findSafeLandingSpot(last);
                 // if this fails we will just keep orbiting the last node until we run out of rockets or the user intervenes
                 if (landingSpot != null) {
@@ -131,6 +134,7 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
                 // we are goingToLandingSpot and we are in the last node of the path
                 if (this.goingToLandingSpot) {
                     this.state = State.LANDING;
+                    logDirect("Above the landing spot, landing...");
                 }
             }
         }
@@ -141,17 +145,30 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
                 Vec3d from = ctx.player().getPositionVector();
                 Vec3d to = new Vec3d(((double) endPos.x) + 0.5, from.y, ((double) endPos.z) + 0.5);
                 Rotation rotation = RotationUtils.calcRotationFromVec3d(from, to, ctx.playerRotations());
-                baritone.getLookBehavior().updateTarget(rotation, false);
-            } else {
-                this.onLostControl();
-                return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
+                baritone.getLookBehavior().updateTarget(new Rotation(rotation.getYaw(), 0), false); // this will be overwritten, probably, by behavior tick
+
+                if (ctx.player().posY < endPos.y - LANDING_COLUMN_HEIGHT) {
+                    logDirect("bad landing spot, trying again...");
+                    badLandingSpots.add(endPos);
+                }
             }
-        } else if (ctx.player().isElytraFlying()) {
-            this.state = State.FLYING;
+        }
+
+        if (ctx.player().isElytraFlying()) {
+            behavior.landingMode = this.state == State.LANDING;
             this.goal = null;
             baritone.getInputOverrideHandler().clearAllKeys();
             behavior.tick();
             return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
+        } else if (this.state == State.LANDING) {
+            if (Math.sqrt(ctx.player().motionX * ctx.player().motionX + ctx.player().motionZ * ctx.player().motionZ) > 0.001) {
+                logDirect("Landed, but still moving, waiting for velocity to die down... " + ctx.player().motionX + " " + ctx.player().motionZ);
+                baritone.getInputOverrideHandler().setInputForceState(Input.SNEAK, true);
+                return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
+            }
+            baritone.getInputOverrideHandler().clearAllKeys();
+            this.onLostControl();
+            return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
         }
 
         if (this.state == State.FLYING || this.state == State.START_FLYING) {
@@ -177,12 +194,6 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
                             (fall.getSrc().z + fall.getDest().z) / 2
                     );
                     behavior.pathManager.pathToDestination(from).whenComplete((result, ex) -> {
-                        if (!behavior.clearView(new Vec3d(from), behavior.pathManager.getPath().getVec(0), false)) {
-                            onLostControl();
-                            // TODO: Get to higher ground and then look again
-                            logDirect("Can't see start of path from jump spot, canceling");
-                            return;
-                        }
                         if (ex == null) {
                             this.state = State.GET_TO_JUMP;
                             return;
@@ -192,7 +203,7 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
                     this.state = State.PAUSE;
                 } else {
                     onLostControl();
-                    logDirect("Jump off path didn't include a fall movement, canceling");
+                    logDirect(AUTO_JUMP_FAILURE_MSG);
                     return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
                 }
             }
@@ -397,6 +408,7 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
     private boolean isSafeBlock(Block block) {
         return block == Blocks.NETHERRACK || block == Blocks.GRAVEL || block == Blocks.NETHER_BRICK;
     }
+
     private boolean isSafeBlock(BlockPos pos) {
         return isSafeBlock(ctx.world().getBlockState(pos).getBlock());
     }
@@ -464,6 +476,9 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
         return null; // void
     }
 
+    private static final int LANDING_COLUMN_HEIGHT = 15;
+    private Set<BetterBlockPos> badLandingSpots = new HashSet<>();
+
     private BetterBlockPos findSafeLandingSpot(BetterBlockPos start) {
         Queue<BetterBlockPos> queue = new PriorityQueue<>(Comparator.<BetterBlockPos>comparingInt(pos -> (pos.x - start.x) * (pos.x - start.x) + (pos.z - start.z) * (pos.z - start.z)).thenComparingInt(pos -> -pos.y));
         Set<BetterBlockPos> visited = new HashSet<>();
@@ -474,8 +489,8 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
             BetterBlockPos pos = queue.poll();
             if (ctx.world().isBlockLoaded(pos) && isInBounds(pos) && ctx.world().getBlockState(pos).getBlock() == Blocks.AIR) {
                 BetterBlockPos actualLandingSpot = checkLandingSpot(pos, checkedPositions);
-                if (actualLandingSpot != null && isColumnAir(actualLandingSpot, 15) && hasAirBubble(actualLandingSpot.up(15))) {
-                    return actualLandingSpot.up(15);
+                if (actualLandingSpot != null && isColumnAir(actualLandingSpot, LANDING_COLUMN_HEIGHT) && hasAirBubble(actualLandingSpot.up(LANDING_COLUMN_HEIGHT)) && !badLandingSpots.contains(actualLandingSpot.up(LANDING_COLUMN_HEIGHT))) {
+                    return actualLandingSpot.up(LANDING_COLUMN_HEIGHT);
                 }
                 if (visited.add(pos.north())) queue.add(pos.north());
                 if (visited.add(pos.east())) queue.add(pos.east());
