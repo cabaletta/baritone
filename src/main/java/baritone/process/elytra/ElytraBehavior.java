@@ -366,6 +366,10 @@ public final class ElytraBehavior implements Helper {
             }
             this.playerNear = index;
         }
+
+        public boolean isComplete() {
+            return this.completePath;
+        }
     }
 
     public void onRenderPass(RenderEvent event) {
