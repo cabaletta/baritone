@@ -113,7 +113,7 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
                 BetterBlockPos landingSpot = findSafeLandingSpot(last);
                 // if this fails we will just keep orbiting the last node until we run out of rockets or the user intervenes
                 if (landingSpot != null) {
-                    this.pathTo(landingSpot);
+                    this.pathTo0(landingSpot, true);
                     this.landingSpot = landingSpot;
                     this.goingToLandingSpot = true;
                 }
@@ -248,6 +248,7 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
     public void onLostControl() {
         this.goal = null;
         this.goingToLandingSpot = false;
+        this.landingSpot = null;
         this.reachedGoal = false;
         this.state = State.START_FLYING; // TODO: null state?
         if (this.behavior != null) {
@@ -280,11 +281,15 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
 
     @Override
     public void pathTo(BlockPos destination) {
+        this.pathTo0(destination, false);
+    }
+
+    private void pathTo0(BlockPos destination, boolean appendDestination) {
         if (ctx.player() == null || ctx.player().dimension != -1) {
             return;
         }
         this.onLostControl();
-        this.behavior = new ElytraBehavior(this.baritone, this, destination);
+        this.behavior = new ElytraBehavior(this.baritone, this, destination, appendDestination);
         if (ctx.world() != null) {
             this.behavior.repackChunks();
         }
@@ -440,7 +445,7 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
     }
 
     private boolean hasAirBubble(BlockPos pos) {
-        final int radius = 2; // Half of 5, as we're counting blocks in each direction from the center
+        final int radius = 4; // Half of the full width, rounded down, as we're counting blocks in each direction from the center
         BlockPos.MutableBlockPos mut = new BlockPos.MutableBlockPos();
         for (int x = -radius; x <= radius; x++) {
             for (int y = -radius; y <= radius; y++) {
