@@ -59,6 +59,24 @@ public class GoalYLevel implements Goal, ActionCosts {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        GoalYLevel goal = (GoalYLevel) o;
+        return level == goal.level;
+    }
+
+    @Override
+    public int hashCode() {
+        return level * 1271009915;
+    }
+
+    @Override
     public String toString() {
         return String.format(
                 "GoalYLevel{y=%s}",

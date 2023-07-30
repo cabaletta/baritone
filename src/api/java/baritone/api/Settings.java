@@ -17,10 +17,12 @@
 
 package baritone.api;
 
+import baritone.api.utils.Helper;
 import baritone.api.utils.NotificationHelper;
 import baritone.api.utils.SettingsUtil;
 import baritone.api.utils.TypeUtils;
 import baritone.api.utils.gui.BaritoneToast;
+import net.minecraft.client.GuiMessageTag;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Vec3i;
 import net.minecraft.network.chat.Component;
@@ -28,6 +30,10 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import java.awt.*;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -67,6 +73,16 @@ public final class Settings {
      * Allow Baritone to move items in your inventory to your hotbar
      */
     public final Setting<Boolean> allowInventory = new Setting<>(false);
+
+    /**
+     * Wait this many ticks between InventoryBehavior moving inventory items
+     */
+    public final Setting<Integer> ticksBetweenInventoryMoves = new Setting<>(1);
+
+    /**
+     * Come to a halt before doing any inventory moves. Intended for anticheat such as 2b2t
+     */
+    public final Setting<Boolean> inventoryMoveOnlyIfStationary = new Setting<>(false);
 
     /**
      * Disable baritone's auto-tool at runtime, but still assume that another mod will provide auto tool functionality
@@ -610,6 +626,13 @@ public final class Settings {
     public final Setting<Boolean> pruneRegionsFromRAM = new Setting<>(true);
 
     /**
+     * The chunk packer queue can never grow to larger than this, if it does, the oldest chunks are discarded
+     * <p>
+     * The newest chunks are kept, so that if you're moving in a straight line quickly then stop, your immediate render distance is still included
+     */
+    public final Setting<Integer> chunkPackerQueueMaxSize = new Setting<>(2000);
+
+    /**
      * Fill in blocks behind you
      */
     public final Setting<Boolean> backfill = new Setting<>(false);
@@ -711,6 +734,17 @@ public final class Settings {
     public final Setting<Boolean> freeLook = new Setting<>(true);
 
     /**
+     * Break and place blocks without having to force the client-sided rotations. Requires {@link #freeLook}.
+     */
+    public final Setting<Boolean> blockFreeLook = new Setting<>(false);
+
+    /**
+     * When true, the player will remain with its existing look direction as often as possible.
+     * Although, in some cases this can get it stuck, hence this setting to disable that behavior.
+     */
+    public final Setting<Boolean> remainWithExistingLookDirection = new Setting<>(true);
+
+    /**
      * Will cause some minor behavioral differences to ensure that Baritone works on anticheats.
      * <p>
      * At the moment this will silently set the player's rotations when using freeLook so you're not sprinting in
@@ -771,6 +805,11 @@ public final class Settings {
      * Use a short Baritone prefix [B] instead of [Baritone] when logging to chat
      */
     public final Setting<Boolean> shortBaritonePrefix = new Setting<>(false);
+
+    /**
+     * Use a modern message tag instead of a prefix when logging to chat
+     */
+    public final Setting<Boolean> useMessageTag = new Setting<>(false);
 
     /**
      * Echo commands to chat when they are run
@@ -844,6 +883,11 @@ public final class Settings {
      * if world has negative y values, subtract the min world height to get the value to put here
      */
     public final Setting<Integer> minYLevelWhileMining = new Setting<>(0);
+
+    /**
+     * Sets the maximum y level to mine ores at.
+     */
+    public final Setting<Integer> maxYLevelWhileMining = new Setting<>(2031);
 
     /**
      * This will only allow baritone to mine exposed ores, can be used to stop ore obfuscators on servers that use them.
@@ -1141,13 +1185,18 @@ public final class Settings {
      * via {@link Consumer#andThen(Consumer)} or it can completely be overriden via setting
      * {@link Setting#value};
      */
-    public final Setting<Consumer<Component>> logger = new Setting<>(msg -> Minecraft.getInstance().gui.getChat().addMessage(msg));
+    @JavaOnly
+    public final Setting<Consumer<Component>> logger = new Setting<>((msg) -> {
+            final GuiMessageTag tag = useMessageTag.value ? Helper.MESSAGE_TAG : null;
+            Minecraft.getInstance().gui.getChat().addMessage(msg, null, tag);
+    });
 
     /**
      * The function that is called when Baritone will send a desktop notification. This function can be added to
      * via {@link Consumer#andThen(Consumer)} or it can completely be overriden via setting
      * {@link Setting#value};
      */
+    @JavaOnly
     public final Setting<BiConsumer<String, Boolean>> notifier = new Setting<>(NotificationHelper::notify);
 
     /**
@@ -1155,6 +1204,7 @@ public final class Settings {
      * via {@link Consumer#andThen(Consumer)} or it can completely be overriden via setting
      * {@link Setting#value};
      */
+    @JavaOnly
     public final Setting<BiConsumer<Component, Component>> toaster = new Setting<>(BaritoneToast::addOrUpdate);
 
     /**
@@ -1304,6 +1354,7 @@ public final class Settings {
         public T value;
         public final T defaultValue;
         private String name;
+        private boolean javaOnly;
 
         @SuppressWarnings("unchecked")
         private Setting(T value) {
@@ -1312,6 +1363,7 @@ public final class Settings {
             }
             this.value = value;
             this.defaultValue = value;
+            this.javaOnly = false;
         }
 
         /**
@@ -1348,7 +1400,24 @@ public final class Settings {
         public final Type getType() {
             return settingTypes.get(this);
         }
+
+        /**
+         * This should always be the same as whether the setting can be parsed from or serialized to a string; in other
+         * words, the only way to modify it is by writing to {@link #value} programatically.
+         *
+         * @return {@code true} if the setting can not be set or read by the user
+         */
+        public boolean isJavaOnly() {
+            return javaOnly;
+        }
     }
+
+    /**
+     * Marks a {@link Setting} field as being {@link Setting#isJavaOnly() Java-only}
+     */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.FIELD)
+    private @interface JavaOnly {}
 
     // here be dragons
 
@@ -1365,6 +1434,7 @@ public final class Settings {
                     Setting<?> setting = (Setting<?>) field.get(this);
                     String name = field.getName();
                     setting.name = name;
+                    setting.javaOnly = field.isAnnotationPresent(JavaOnly.class);
                     name = name.toLowerCase();
                     if (tmpByName.containsKey(name)) {
                         throw new IllegalStateException("Duplicate setting name");

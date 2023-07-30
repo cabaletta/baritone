@@ -380,6 +380,8 @@ public class ArgConsumer implements IArgConsumer {
     public <T extends IDatatype> Stream<String> tabCompleteDatatype(T datatype) {
         try {
             return datatype.tabComplete(this.context);
+        } catch (CommandException ignored) {
+            // NOP
         } catch (Exception e) {
             e.printStackTrace();
         }
