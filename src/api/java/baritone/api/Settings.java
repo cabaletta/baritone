@@ -1358,7 +1358,7 @@ public final class Settings {
     /**
      * The minimum speed that the player can drop to (in blocks/tick) before a firework is automatically deployed.
      */
-    public final Setting<Double> elytraFireworkSpeed = new Setting<>(0.6);
+    public final Setting<Double> elytraFireworkSpeed = new Setting<>(1.2);
 
     /**
      * The delay after the player's position is set-back by the server that a firework may be automatically deployed.
@@ -1393,7 +1393,7 @@ public final class Settings {
     /**
      * Renders the best elytra flight path that was simulated each tick.
      */
-    public final Setting<Boolean> elytraRenderSimulation = new Setting<>(false);
+    public final Setting<Boolean> elytraRenderSimulation = new Setting<>(true);
 
     /**
      * Automatically path to and jump off of ledges to initiate elytra flight when grounded.
