@@ -263,8 +263,8 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
     private void destroyBehaviorAsync() {
         ElytraBehavior behavior = this.behavior;
         if (behavior != null) {
-            Baritone.getExecutor().execute(behavior::destroy);
             this.behavior = null;
+            Baritone.getExecutor().execute(behavior::destroy);
         }
     }
 
