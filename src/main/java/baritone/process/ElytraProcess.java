@@ -252,8 +252,13 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
         this.landingSpot = null;
         this.reachedGoal = false;
         this.state = State.START_FLYING; // TODO: null state?
-        if (this.behavior != null) {
-            this.behavior.destroy();
+        destroyBehaviorAsync();
+    }
+
+    private void destroyBehaviorAsync() {
+        ElytraBehavior behavior = this.behavior;
+        if (behavior != null) {
+            Baritone.getExecutor().execute(behavior::destroy);
             this.behavior = null;
         }
     }
@@ -353,10 +358,9 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
 
     @Override
     public void onWorldEvent(WorldEvent event) {
-        if (event.getWorld() != null && event.getState() == EventState.POST && this.behavior != null) {
+        if (event.getWorld() != null && event.getState() == EventState.POST) {
             // Exiting the world, just destroy
-            this.behavior.destroy();
-            this.behavior = null;
+            destroyBehaviorAsync();
         }
     }
 
