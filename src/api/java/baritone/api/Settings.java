@@ -745,16 +745,10 @@ public final class Settings {
      * Forces the client-sided yaw rotation to an average of the last {@link #smoothLookTicks} of server-sided rotations.
      * Requires {@link #freeLook}.
      */
-    public final Setting<Boolean> smoothLookYaw = new Setting<>(false);
+    public final Setting<Boolean> smoothLook = new Setting<>(false);
 
     /**
-     * Forces the client-sided pitch rotation to an average of the last {@link #smoothLookTicks} of server-sided rotations.
-     * Requires {@link #freeLook}.
-     */
-    public final Setting<Boolean> smoothLookPitch = new Setting<>(false);
-
-    /**
-     * The number of ticks to average across for {@link #smoothLookYaw} and {@link #smoothLookPitch};
+     * The number of ticks to average across for {@link #smoothLook};
      */
     public final Setting<Integer> smoothLookTicks = new Setting<>(10);
 
