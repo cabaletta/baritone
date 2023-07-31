@@ -117,9 +117,9 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
                         ctx.player().rotationPitch = this.prevRotation.getPitch();
                     } else if ((ctx.player().isElytraFlying() && Baritone.settings().elytraSmoothLook.value) || (!ctx.player().isElytraFlying() && Baritone.settings().smoothLook.value)) {
                         ctx.player().rotationYaw = (float) this.smoothYawBuffer.stream().mapToDouble(d -> d).average().orElseGet(this.prevRotation::getYaw);
-                        ctx.player().rotationPitch = ctx.player().isElytraFlying()
-                                ? (float) this.smoothPitchBuffer.stream().mapToDouble(d -> d).average().orElseGet(this.prevRotation::getPitch)
-                                : this.prevRotation.getPitch();
+                        if (ctx.player().isElytraFlying()) {
+                            ctx.player().rotationPitch = (float) this.smoothPitchBuffer.stream().mapToDouble(d -> d).average().orElseGet(this.prevRotation::getPitch);
+                        }
                     }
 
                     this.prevRotation = null;
