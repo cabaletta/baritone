@@ -49,7 +49,7 @@ public final class UnpackedSegment {
         return new UnpackedSegment(Stream.concat(other, this.path), this.finished);
     }
 
-    public NetherPath collect() {
+    public List<BetterBlockPos> collect() {
         final List<BetterBlockPos> path = this.path.collect(Collectors.toList());
 
         // Remove backtracks
@@ -67,7 +67,7 @@ public final class UnpackedSegment {
             }
         }
 
-        return new NetherPath(path);
+        return path;
     }
 
     public boolean isFinished() {

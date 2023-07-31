@@ -99,6 +99,7 @@ public final class ElytraBehavior implements Helper {
     private BlockStateInterface bsi;
     private final BlockStateOctreeInterface boi;
     public final BlockPos destination;
+    private final boolean appendDestination;
 
     private final ExecutorService solverExecutor;
     private Future<Solution> solver;
@@ -111,7 +112,7 @@ public final class ElytraBehavior implements Helper {
     private int invTickCountdown = 0;
     private final Queue<Runnable> invTransactionQueue = new LinkedList<>();
 
-    public ElytraBehavior(Baritone baritone, ElytraProcess process, BlockPos destination) {
+    public ElytraBehavior(Baritone baritone, ElytraProcess process, BlockPos destination, boolean appendDestination) {
         this.baritone = baritone;
         this.ctx = baritone.getPlayerContext();
         this.clearLines = new CopyOnWriteArrayList<>();
@@ -119,6 +120,7 @@ public final class ElytraBehavior implements Helper {
         this.pathManager = this.new PathManager();
         this.process = process;
         this.destination = destination;
+        this.appendDestination = appendDestination;
         this.solverExecutor = Executors.newSingleThreadExecutor();
         this.nextTickBoostCounter = new int[2];
 
@@ -252,7 +254,15 @@ public final class ElytraBehavior implements Helper {
         }
 
         private void setPath(final UnpackedSegment segment) {
-            this.path = segment.collect();
+            List<BetterBlockPos> path = segment.collect();
+            if (ElytraBehavior.this.appendDestination) {
+                BlockPos dest = ElytraBehavior.this.destination;
+                BlockPos last = !path.isEmpty() ? path.get(path.size() - 1) : null;
+                if (last != null && ElytraBehavior.this.clearView(new Vec3d(dest), new Vec3d(last), false)) {
+                    path.add(new BetterBlockPos(dest));
+                }
+            }
+            this.path = new NetherPath(path);
             this.completePath = segment.isFinished();
             this.playerNear = 0;
             this.ticksNearUnchanged = 0;
