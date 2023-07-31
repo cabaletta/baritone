@@ -348,7 +348,7 @@ public final class ElytraBehavior implements Helper {
                     return;
                 }
             }
-            if (!canSeeAny) {
+            if (!canSeeAny && rangeStartIncl < rangeEndExcl - 2 && process.state != ElytraProcess.State.GET_TO_JUMP) {
                 this.pathRecalcSegment(rangeEndExcl - 1).thenRun(() -> logDirect("Recalculated segment since no path points were visible"));
             }
         }
