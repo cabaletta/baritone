@@ -164,10 +164,11 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
             return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
         } else if (this.state == State.LANDING) {
             if (Math.sqrt(ctx.player().motionX * ctx.player().motionX + ctx.player().motionZ * ctx.player().motionZ) > 0.001) {
-                logDirect("Landed, but still moving, waiting for velocity to die down... " + ctx.player().motionX + " " + ctx.player().motionZ);
+                logDirect("Landed, but still moving, waiting for velocity to die down... ");
                 baritone.getInputOverrideHandler().setInputForceState(Input.SNEAK, true);
                 return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
             }
+            logDirect("Done :)");
             baritone.getInputOverrideHandler().clearAllKeys();
             this.onLostControl();
             return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);

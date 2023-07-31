@@ -634,7 +634,10 @@ public final class ElytraBehavior implements Helper {
 
                 for (final Pair<Vec3d, Integer> candidate : candidates) {
                     final Integer augment = candidate.second();
-                    final Vec3d dest = candidate.first().add(0, augment, 0);
+                    Vec3d dest = candidate.first().add(0, augment, 0);
+                    if (landingMode) {
+                        dest = dest.add(0.5, 0.5, 0.5);
+                    }
 
                     if (augment != 0) {
                         if (i + lookahead >= path.size()) {
@@ -1079,7 +1082,10 @@ public final class ElytraBehavior implements Helper {
                 continue;
             }
             final Vec3d last = displacement.get(displacement.size() - 1);
-            final double goodness = goalDirection.dotProduct(last.normalize());
+            double goodness = goalDirection.dotProduct(last.normalize());
+            if (landingMode) {
+                goodness = -goalDelta.subtract(last).length();
+            }
             final PitchResult bestSoFar = bestResults.peek();
             if (bestSoFar == null || goodness > bestSoFar.dot) {
                 bestResults.push(new PitchResult(pitch, goodness, displacement));
