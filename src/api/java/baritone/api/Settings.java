@@ -1432,6 +1432,11 @@ public final class Settings {
     public final Setting<Boolean> elytraAllowLandOnNetherFortress = new Setting<>(false);
 
     /**
+     * Has the user read and understood the elytra terms and conditions
+     */
+    public final Setting<Boolean> elytraTermsAccepted = new Setting<>(false);
+
+    /**
      * A map of lowercase setting field names to their respective setting
      */
     public final Map<String, Setting<?>> byLowerName;
