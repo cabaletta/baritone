@@ -129,12 +129,12 @@ public final class PathRenderer implements IRenderer {
             int dirY = end.y - start.y;
             int dirZ = end.z - start.z;
 
-            /*while (next + 1 < positions.size() && (!fadeOut || next + 1 < fadeStart) &&
+            while (next + 1 < positions.size() && (!fadeOut || next + 1 < fadeStart) &&
                     (dirX == positions.get(next + 1).x - end.x &&
                             dirY == positions.get(next + 1).y - end.y &&
                             dirZ == positions.get(next + 1).z - end.z)) {
                 end = positions.get(++next);
-            }*/
+            }
 
             if (fadeOut) {
                 float alpha;
