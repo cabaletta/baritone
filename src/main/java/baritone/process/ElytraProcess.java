@@ -149,9 +149,7 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
 
                 if (ctx.player().posY < endPos.y - LANDING_COLUMN_HEIGHT) {
                     logDirect("bad landing spot, trying again...");
-                    badLandingSpots.add(endPos);
-                    goingToLandingSpot = false;
-                    this.state = State.FLYING;
+                    landingSpotIsBad(endPos);
                 }
             }
         }
@@ -243,6 +241,13 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
             }
         }
         return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
+    }
+
+    public void landingSpotIsBad(BetterBlockPos endPos) {
+        badLandingSpots.add(endPos);
+        goingToLandingSpot = false;
+        this.landingSpot = null;
+        this.state = State.FLYING;
     }
 
     @Override

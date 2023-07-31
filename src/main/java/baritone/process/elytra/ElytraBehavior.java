@@ -219,8 +219,9 @@ public final class ElytraBehavior implements Helper {
             this.recalculating = true;
             final List<BetterBlockPos> before = this.path.subList(0, afterIncl + 1);
             final long start = System.nanoTime();
+            final BetterBlockPos pathStart = this.path.get(afterIncl);
 
-            this.path0(this.path.get(afterIncl), ElytraBehavior.this.destination, segment -> segment.prepend(before.stream()))
+            this.path0(pathStart, ElytraBehavior.this.destination, segment -> segment.prepend(before.stream()))
                     .thenRun(() -> {
                         final int recompute = this.path.size() - before.size() - 1;
                         final double distance = this.path.get(0).distanceTo(this.path.get(recompute));
@@ -237,6 +238,10 @@ public final class ElytraBehavior implements Helper {
                             final Throwable cause = ex.getCause();
                             if (cause instanceof PathCalculationException) {
                                 logDirect("Failed to compute next segment");
+                                if (ctx.player().getDistanceSq(pathStart) < 16 * 16) {
+                                    logDirect("Player is near the segment start, therefore repeating this calculation is pointless. Marking as complete");
+                                    completePath = true;
+                                }
                             } else {
                                 logUnhandledException(cause);
                             }
@@ -260,6 +265,9 @@ public final class ElytraBehavior implements Helper {
                 BlockPos last = !path.isEmpty() ? path.get(path.size() - 1) : null;
                 if (last != null && ElytraBehavior.this.clearView(new Vec3d(dest), new Vec3d(last), false)) {
                     path.add(new BetterBlockPos(dest));
+                } else {
+                    logDirect("unable to land at " + ElytraBehavior.this.destination);
+                    process.landingSpotIsBad(new BetterBlockPos(ElytraBehavior.this.destination));
                 }
             }
             this.path = new NetherPath(path);
