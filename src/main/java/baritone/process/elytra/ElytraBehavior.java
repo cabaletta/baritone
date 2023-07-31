@@ -323,7 +323,11 @@ public final class ElytraBehavior implements Helper {
                 return;
             }
 
+            boolean canSeeAny = false;
             for (int i = rangeStartIncl; i < rangeEndExcl - 1; i++) {
+                if (ElytraBehavior.this.clearView(ctx.playerFeetAsVec(), this.path.getVec(i), false)) {
+                    canSeeAny = true;
+                }
                 if (!ElytraBehavior.this.clearView(this.path.getVec(i), this.path.getVec(i + 1), false)) {
                     // obstacle. where do we return to pathing?
                     // find the next valid segment
@@ -343,6 +347,9 @@ public final class ElytraBehavior implements Helper {
                             });
                     return;
                 }
+            }
+            if (!canSeeAny) {
+                this.pathRecalcSegment(rangeEndExcl - 1).thenRun(() -> logDirect("Recalculated segment since no path points were visible"));
             }
         }
 
