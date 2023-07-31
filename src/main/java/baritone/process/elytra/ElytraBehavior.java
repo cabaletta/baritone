@@ -467,6 +467,11 @@ public final class ElytraBehavior implements Helper {
             this.solver.cancel(true);
         }
         this.solverExecutor.shutdown();
+        try {
+            while (!this.solverExecutor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS)) {}
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         this.context.destroy();
     }
 
