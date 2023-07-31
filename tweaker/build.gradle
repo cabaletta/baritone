@@ -26,7 +26,7 @@ plugins {
 unimined.minecraft {
     runs.client = {
         mainClass = "net.minecraft.launchwrapper.Launch"
-        args.addAll(["--tweakClass", "baritone.launch.BaritoneTweaker"])
+        args.addAll(["--tweakClass", "baritone.launch.tweaker.BaritoneTweaker"])
     }
 }
 

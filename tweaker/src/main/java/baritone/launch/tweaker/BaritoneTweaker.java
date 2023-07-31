@@ -15,7 +15,7 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.launch;
+package baritone.launch.tweaker;
 
 import io.github.impactdevelopment.simpletweaker.SimpleTweaker;
 import net.minecraft.launchwrapper.Launch;
