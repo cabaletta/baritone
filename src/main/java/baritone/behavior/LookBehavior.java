@@ -112,10 +112,10 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
                         this.smoothPitchBuffer.pop();
                     }
 
-                    if (Baritone.settings().freeLook.value) {
+                    if ((ctx.player().isElytraFlying() && Baritone.settings().elytraFreeLook.value) || (!ctx.player().isElytraFlying() && Baritone.settings().freeLook.value)) {
                         ctx.player().rotationYaw = this.prevRotation.getYaw();
                         ctx.player().rotationPitch = this.prevRotation.getPitch();
-                    } else if (Baritone.settings().smoothLook.value) {
+                    } else if ((ctx.player().isElytraFlying() && Baritone.settings().elytraSmoothLook.value) || (!ctx.player().isElytraFlying() && Baritone.settings().smoothLook.value)) {
                         ctx.player().rotationYaw = (float) this.smoothYawBuffer.stream().mapToDouble(d -> d).average().orElseGet(this.prevRotation::getYaw);
                         ctx.player().rotationPitch = ctx.player().isElytraFlying()
                                 ? (float) this.smoothPitchBuffer.stream().mapToDouble(d -> d).average().orElseGet(this.prevRotation::getPitch)
@@ -328,12 +328,8 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
                 final Settings settings = Baritone.settings();
                 final boolean antiCheat = settings.antiCheatCompatibility.value;
                 final boolean blockFreeLook = settings.blockFreeLook.value;
-                final boolean freeLook = settings.freeLook.value;
 
-                if (!freeLook && !settings.smoothLook.value) return CLIENT;
                 if (!blockFreeLook && blockInteract) return CLIENT;
-
-
 
                 // Regardless of if antiCheatCompatibility is enabled, if a blockInteract is requested then the player
                 // rotation needs to be set somehow, otherwise Baritone will halt since objectMouseOver() will just be
