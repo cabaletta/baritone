@@ -1427,6 +1427,11 @@ public final class Settings {
     public final Setting<Integer> elytraCacheCullDistance = new Setting<>(5000);
 
     /**
+     * Should elytra consider nether brick a valid landing block
+     */
+    public final Setting<Boolean> elytraAllowLandOnNetherFortress = new Setting<>(false);
+
+    /**
      * A map of lowercase setting field names to their respective setting
      */
     public final Map<String, Setting<?>> byLowerName;

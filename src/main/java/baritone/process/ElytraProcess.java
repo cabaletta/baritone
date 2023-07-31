@@ -423,7 +423,7 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
     }
 
     private boolean isSafeBlock(Block block) {
-        return block == Blocks.NETHERRACK || block == Blocks.GRAVEL || block == Blocks.NETHER_BRICK;
+        return block == Blocks.NETHERRACK || block == Blocks.GRAVEL || (block == Blocks.NETHER_BRICK && Baritone.settings().elytraAllowLandOnNetherFortress.value);
     }
 
     private boolean isSafeBlock(BlockPos pos) {
