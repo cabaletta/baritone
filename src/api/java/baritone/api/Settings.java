@@ -737,24 +737,22 @@ public final class Settings {
     public final Setting<Boolean> blockFreeLook = new Setting<>(false);
 
     /**
-     * Automatically elytra fly without having to force the client-sided rotations. Requires {@link #freeLook}.
+     * Automatically elytra fly without having to force the client-sided rotations.
      */
     public final Setting<Boolean> elytraFreeLook = new Setting<>(false);
 
     /**
      * Forces the client-sided yaw rotation to an average of the last {@link #smoothLookTicks} of server-sided rotations.
-     * Requires {@link #freeLook}.
      */
-    public final Setting<Boolean> smoothLookYaw = new Setting<>(false);
+    public final Setting<Boolean> smoothLook = new Setting<>(false);
 
     /**
-     * Forces the client-sided pitch rotation to an average of the last {@link #smoothLookTicks} of server-sided rotations.
-     * Requires {@link #freeLook}.
+     * Same as {@link #smoothLook} but for elytra flying.
      */
-    public final Setting<Boolean> smoothLookPitch = new Setting<>(false);
+    public final Setting<Boolean> elytraSmoothLook = new Setting<>(true);
 
     /**
-     * The number of ticks to average across for {@link #smoothLookYaw} and {@link #smoothLookPitch};
+     * The number of ticks to average across for {@link #smoothLook};
      */
     public final Setting<Integer> smoothLookTicks = new Setting<>(10);
 
