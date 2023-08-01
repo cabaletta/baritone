@@ -325,7 +325,7 @@ public final class ElytraBehavior implements Helper {
 
             boolean canSeeAny = false;
             for (int i = rangeStartIncl; i < rangeEndExcl - 1; i++) {
-                if (ElytraBehavior.this.clearView(ctx.playerFeetAsVec(), this.path.getVec(i), false)) {
+                if (ElytraBehavior.this.clearView(ctx.playerFeetAsVec(), this.path.getVec(i), false) || ElytraBehavior.this.clearView(ctx.playerHead(), this.path.getVec(i), false)) {
                     canSeeAny = true;
                 }
                 if (!ElytraBehavior.this.clearView(this.path.getVec(i), this.path.getVec(i + 1), false)) {
