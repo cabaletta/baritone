@@ -754,7 +754,7 @@ public final class Settings {
     /**
      * The number of ticks to average across for {@link #smoothLook};
      */
-    public final Setting<Integer> smoothLookTicks = new Setting<>(10);
+    public final Setting<Integer> smoothLookTicks = new Setting<>(5);
 
     /**
      * When true, the player will remain with its existing look direction as often as possible.
