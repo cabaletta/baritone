@@ -115,8 +115,8 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
                 if (landingSpot != null) {
                     this.pathTo0(landingSpot, true);
                     this.landingSpot = landingSpot;
-                    this.goingToLandingSpot = true;
                 }
+                this.goingToLandingSpot = true;
             }
 
             if (last != null && ctx.player().getDistanceSqToCenter(last) < 1) {
@@ -504,7 +504,7 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
 
         while (!queue.isEmpty()) {
             BetterBlockPos pos = queue.poll();
-            if (ctx.world().isBlockLoaded(pos) && isInBounds(pos) && ctx.world().getBlockState(pos).getBlock() == Blocks.AIR) {
+            if (ctx.world().isBlockLoaded(pos, false) && isInBounds(pos) && ctx.world().getBlockState(pos).getBlock() == Blocks.AIR) {
                 BetterBlockPos actualLandingSpot = checkLandingSpot(pos, checkedPositions);
                 if (actualLandingSpot != null && isColumnAir(actualLandingSpot, LANDING_COLUMN_HEIGHT) && hasAirBubble(actualLandingSpot.up(LANDING_COLUMN_HEIGHT)) && !badLandingSpots.contains(actualLandingSpot.up(LANDING_COLUMN_HEIGHT))) {
                     return actualLandingSpot.up(LANDING_COLUMN_HEIGHT);
