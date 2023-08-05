@@ -106,8 +106,8 @@ public final class LitematicaHelper {
         int mx = schematic.getOffsetMinCorner().getX();
         int my = schematic.getOffsetMinCorner().getY();
         int mz = schematic.getOffsetMinCorner().getZ();
-        int sx = (schematic.getX() - 1) * -1;
-        int sz = (schematic.getZ() - 1) * -1;
+        int sx = (schematic.widthX() - 1) * -1;
+        int sz = (schematic.lengthZ() - 1) * -1;
 
         Vec3i correctedOrigin;
         Mirror mirror = LitematicaHelper.getMirror(i);
@@ -188,16 +188,16 @@ public final class LitematicaHelper {
      */
     public static LitematicaSchematic blackMagicFuckery(LitematicaSchematic schemIn, int i) {
         LitematicaSchematic tempSchem = schemIn.getCopy(LitematicaHelper.getRotation(i).ordinal() % 2 == 1);
-        for (int yCounter = 0; yCounter < schemIn.getY(); yCounter++) {
-            for (int zCounter = 0; zCounter < schemIn.getZ(); zCounter++) {
-                for (int xCounter = 0; xCounter < schemIn.getX(); xCounter++) {
+        for (int yCounter = 0; yCounter < schemIn.heightY(); yCounter++) {
+            for (int zCounter = 0; zCounter < schemIn.lengthZ(); zCounter++) {
+                for (int xCounter = 0; xCounter < schemIn.widthX(); xCounter++) {
                     Vec3i xyzHolder = new Vec3i(xCounter, yCounter, zCounter);
-                    xyzHolder = LitematicaHelper.doMirroring(xyzHolder, schemIn.getX() - 1, schemIn.getZ() - 1, LitematicaHelper.getMirror(i));
+                    xyzHolder = LitematicaHelper.doMirroring(xyzHolder, schemIn.widthX() - 1, schemIn.lengthZ() - 1, LitematicaHelper.getMirror(i));
                     for (int turns = 0; turns < LitematicaHelper.getRotation(i).ordinal(); turns++) {
                         if ((turns % 2) == 0) {
-                            xyzHolder = LitematicaHelper.rotate(xyzHolder, schemIn.getX() - 1, schemIn.getZ() - 1);
+                            xyzHolder = LitematicaHelper.rotate(xyzHolder, schemIn.widthX() - 1, schemIn.lengthZ() - 1);
                         } else {
-                            xyzHolder = LitematicaHelper.rotate(xyzHolder, schemIn.getZ() - 1, schemIn.getX() - 1);
+                            xyzHolder = LitematicaHelper.rotate(xyzHolder, schemIn.lengthZ() - 1, schemIn.widthX() - 1);
                         }
                     }
                     IBlockState state = schemIn.getDirect(xCounter, yCounter, zCounter);

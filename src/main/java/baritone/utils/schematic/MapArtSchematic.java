@@ -46,7 +46,7 @@ public class MapArtSchematic extends MaskSchematic {
             for (int z = 0; z < schematic.lengthZ(); z++) {
                 IBlockState[] column = schematic.getColumn(x, z);
 
-                OptionalInt lowestBlockY = lastIndexMatching(column, state -> !(state == null || state.getBlock() instanceof BlockAir));
+                OptionalInt lowestBlockY = lastIndexMatching(column, state -> !(state.getBlock() instanceof BlockAir));
                 if (lowestBlockY.isPresent()) {
                     heightMap[x][z] = lowestBlockY.getAsInt();
                 } else {

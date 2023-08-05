@@ -62,6 +62,11 @@ public final class LitematicaSchematic extends StaticSchematic {
         fillInSchematic();
     }
 
+    @Override
+    public boolean inSchematic(int x, int y, int z, IBlockState currentBlockState) {
+        return x >= 0 && x < widthX() && y >= 0 && y < heightY() && z >= 0 && z < lengthZ() && states[x][y][z] != null;
+    }
+
     /**
      * @return Array of subregion names.
      */
@@ -230,27 +235,6 @@ public final class LitematicaSchematic extends StaticSchematic {
      */
     public Vec3i getOffsetMinCorner() {
         return offsetMinCorner;
-    }
-
-    /**
-     * @return x size of the schematic.
-     */
-    public int getX() {
-        return this.x;
-    }
-
-    /**
-     * @return y size of the schematic.
-     */
-    public int getY() {
-        return this.y;
-    }
-
-    /**
-     * @return z size of the schematic.
-     */
-    public int getZ() {
-        return this.z;
     }
 
     /**
