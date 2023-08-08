@@ -1,0 +1,21 @@
+{
+    "components": [
+        {
+            "important": true,
+            "uid": "net.minecraft",
+            "version": "1.12.2"
+        },
+        {
+            "cachedName": "Baritone",
+            "cachedRequires": [
+                {
+                    "equals": "1.12.2",
+                    "uid": "net.minecraft"
+                }
+            ],
+            "cachedVersion": "1.2.15",
+            "uid": "cabeletta.baritone"
+        }
+    ],
+    "formatVersion": 1
+}

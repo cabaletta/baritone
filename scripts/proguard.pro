@@ -17,6 +17,7 @@
 -dontwarn org.lwjgl.**
 
 -keep class baritone.api.** { *; } # this is the keep api
+-keep class baritone.install.** { *; } # this is the keep installer
 
 # service provider needs these class names
 -keep class baritone.BaritoneProvider

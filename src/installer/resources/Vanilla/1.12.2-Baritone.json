@@ -1,0 +1,62 @@
+{
+    "id": "1.12.2-Baritone",
+    "type": "release",
+    "inheritsFrom": "1.12.2",
+    "jar": "1.12.2",
+    "time": "2020-06-08T00:05:00Z",
+    "releaseTime": "2020-06-08T00:05:00Z",
+    "downloads": {},
+    "minimumLauncherVersion": 0,
+    "mainClass": "net.minecraft.launchwrapper.Launch",
+    "minecraftArguments": "--username ${auth_player_name} --version ${version_name} --gameDir ${game_directory} --assetsDir ${assets_root} --assetIndex ${assets_index_name} --uuid ${auth_uuid} --accessToken ${auth_access_token} --userType ${user_type} --tweakClass baritone.launch.BaritoneTweaker",
+    "libraries": [
+        {
+            "name": "net.minecraft:launchwrapper:1.12",
+            "downloads": {
+                "artifact": {
+                    "path": "net/minecraft/launchwrapper/1.12/launchwrapper-1.12.jar",
+                    "sha1": "111e7bea9c968cdb3d06ef4632bf7ff0824d0f36",
+                    "size": 32999,
+                    "url": "https://libraries.minecraft.net/net/minecraft/launchwrapper/1.12/launchwrapper-1.12.jar"
+                }
+            }
+        },
+        {
+            "name": "cabaletta:baritone-standalone:1.2",
+            "url": "https://impactdevelopment.github.io/maven/"
+        },
+        {
+            "name": "com.github.ImpactDevelopment:SimpleTweaker:1.2",
+            "downloads": {
+                "artifact": {
+                    "path": "com/github/ImpactDevelopment/SimpleTweaker/1.2/SimpleTweaker-1.2.jar",
+                    "sha1": "d1d3856e7d9ba0c43f6d6a1d488cdd35e5098127",
+                    "size": 9938,
+                    "url": "https://impactdevelopment.github.io/maven/com/github/ImpactDevelopment/SimpleTweaker/1.2/SimpleTweaker-1.2.jar"
+                }
+            }
+        },
+        {
+            "name": "org.spongepowered:mixin:0.7.11-SNAPSHOT",
+            "downloads": {
+                "artifact": {
+                    "path": "org/spongepowered/mixin/0.7.11-SNAPSHOT/mixin-0.7.11-SNAPSHOT.jar",
+                    "sha1": "7a670207bdb97db418118ad1e9bb42424ff3776d",
+                    "size": 1017668,
+                    "url": "https://impactdevelopment.github.io/maven/org/spongepowered/mixin/0.7.11-SNAPSHOT/mixin-0.7.11-SNAPSHOT.jar"
+                }
+            }
+        },
+        {
+            "name": "org.ow2.asm:asm-all:5.2",
+            "downloads": {
+                "artifact": {
+                    "path": "org/ow2/asm/asm-all/5.2/asm-all-5.2.jar",
+                    "sha1": "2ea49e08b876bbd33e0a7ce75c8f371d29e1f10a",
+                    "size": 247787,
+                    "url": "https://repo1.maven.org/maven2/org/ow2/asm/asm-all/5.2/asm-all-5.2.jar"
+                }
+            }
+        }
+    ]
+}
