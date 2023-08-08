@@ -20,6 +20,7 @@ package baritone.command;
 import baritone.Baritone;
 import baritone.api.BaritoneAPI;
 import baritone.api.Settings;
+import baritone.api.command.argument.IArgConsumer;
 import baritone.api.command.argument.ICommandArgument;
 import baritone.api.command.exception.CommandNotEnoughArgumentsException;
 import baritone.api.command.exception.CommandNotFoundException;
@@ -69,7 +70,7 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             event.cancel();
             String commandStr = msg.substring(forceRun ? FORCE_COMMAND_PREFIX.length() : prefix.length());
             if (!runCommand(commandStr) && !commandStr.trim().isEmpty()) {
-                new CommandNotFoundException(CommandManager.expand(commandStr).getFirst()).handle(null, null);
+                new CommandNotFoundException(CommandManager.expand(commandStr).getFirst()).handle(null, (IArgConsumer) null);
             }
         } else if ((settings.chatControl.value || settings.chatControlAnyway.value) && runCommand(msg)) {
             event.cancel();

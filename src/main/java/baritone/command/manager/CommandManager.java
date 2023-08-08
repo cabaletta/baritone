@@ -145,7 +145,7 @@ public class CommandManager implements ICommandManager {
                         ? (ICommandException) t
                         : new CommandUnhandledException(t);
 
-                exception.handle(command, args.getArgs());
+                exception.handle(command, this.args);
             }
         }
 
