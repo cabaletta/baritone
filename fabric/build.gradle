@@ -1,0 +1,122 @@
+/*
+ * This file is part of Baritone.
+ *
+ * Baritone is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Baritone is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+import baritone.gradle.task.CreateDistTask
+import baritone.gradle.task.ProguardTask
+
+plugins {
+    id "com.github.johnrengelman.shadow" version "7.0.0"
+}
+
+archivesBaseName = archivesBaseName + "-fabric"
+
+minecraft {
+    fabric {
+        devFallbackNamespace = "searge"
+    }
+}
+
+mappings {
+    // fabric uses newer mixin...
+    // in reality, fields from this class should become constants at compile time
+    getStub("COMBINED").withMappings(["intermediary", "official"]) {
+        c("org.objectweb.asm.Opcodes", "org.spongepowered.asm.lib.Opcodes")
+    }
+}
+
+configurations {
+    common
+    shadowCommon // Don't use shadow from the shadow plugin because we don't want IDEA to index this.
+    compileClasspath.extendsFrom common
+    runtimeClasspath.extendsFrom common
+}
+
+repositories {
+    maven {
+        name = "Legacy Fabric"
+        url = "https://maven.legacyfabric.net/"
+    }
+}
+
+dependencies {
+    fabric "net.fabricmc:fabric-loader:${project.fabric_version}"
+
+    mappings "net.legacyfabric:intermediary:${rootProject.minecraft_version}:v2"
+
+    // because of multiple sourcesets `common project(":")` doesn't work
+    for (sourceSet in rootProject.sourceSets) {
+        if (sourceSet == rootProject.sourceSets.test) continue
+        if (sourceSet == rootProject.sourceSets.schematica_api) continue
+        common sourceSet.output
+        shadowCommon sourceSet.output
+    }
+}
+
+processResources {
+    inputs.property "version", project.version
+
+    filesMatching("fabric.mod.json") {
+        expand "version": project.version
+    }
+}
+
+shadowJar {
+    configurations = [project.configurations.shadowCommon]
+    classifier "dev-shadow"
+}
+
+remapJar {
+    inputFile.set shadowJar.archiveFile
+    dependsOn shadowJar
+    classifier null
+}
+
+jar {
+    classifier "dev"
+}
+
+components.java {
+    withVariantsFromConfiguration(project.configurations.shadowRuntimeElements) {
+        skip()
+    }
+}
+
+task proguard(type: ProguardTask) {
+    url 'https://github.com/Guardsquare/proguard/releases/download/v7.2.1/proguard-7.2.1.zip'
+    extract 'proguard-7.2.1/lib/proguard.jar'
+    compType "fabric"
+}
+
+task createDist(type: CreateDistTask, dependsOn: proguard) {
+    compType "fabric"
+}
+
+build.finalizedBy(createDist)
+
+publishing {
+    publications {
+        mavenFabric(MavenPublication) {
+            artifactId = rootProject.archives_base_name + "-" + project.name
+            from components.java
+        }
+    }
+
+    // See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
+    repositories {
+        // Add repositories to publish to here.
+    }
+}

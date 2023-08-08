@@ -15,25 +15,8 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-repositories {
-    maven {
-        name = 'WagYourMaven'
-        url = 'https://maven.wagyourtail.xyz/releases'
-    }
-    maven {
-        name = 'ForgeMaven'
-        url = 'https://maven.minecraftforge.net/'
-    }
-    maven {
-        name = 'FabricMaven'
-        url = 'https://maven.fabricmc.net/'
-    }
-    mavenCentral()
-}
+package baritone.launch;import net.minecraftforge.fml.common.Mod;
 
-dependencies {
-    implementation group: 'com.google.code.gson', name: 'gson', version: '2.9.0'
-    implementation group: 'commons-io', name: 'commons-io', version: '2.6'
-
-    implementation group: 'xyz.wagyourtail.unimined', name: 'xyz.wagyourtail.unimined.gradle.plugin', version: '0.4.9'
+@Mod(modid = "baritoe")
+public class BaritoneForgeModXD {
 }

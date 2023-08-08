@@ -59,7 +59,7 @@ public final class MCEditSchematic extends StaticSchematic {
                         // additional is 0 through 15 inclusive since it's & 0xF above
                         blockID |= additional[blockInd] << 8;
                     }
-                    Block block = Block.REGISTRY.getObjectById(blockID);
+                    Block block = Block.getBlockById(blockID);
                     int meta = metadata[blockInd] & 0xFF;
                     this.states[x][z][y] = block.getStateFromMeta(meta);
                 }

@@ -93,7 +93,7 @@ public final class LitematicaSchematic extends StaticSchematic {
         IBlockState[] blockList = new IBlockState[blockStatePalette.tagCount()];
 
         for (int i = 0; i < blockStatePalette.tagCount(); i++) {
-            Block block = Block.REGISTRY.getObject(new ResourceLocation((((NBTTagCompound) blockStatePalette.get(i)).getString("Name"))));
+            Block block = Block.getBlockFromName(((NBTTagCompound) blockStatePalette.get(i)).getString("Name"));
             NBTTagCompound properties = ((NBTTagCompound) blockStatePalette.get(i)).getCompoundTag("Properties");
 
             blockList[i] = getBlockState(block, properties);
@@ -123,7 +123,7 @@ public final class LitematicaSchematic extends StaticSchematic {
      * @author Emerson
      */
     private static <T extends Comparable<T>> IBlockState setPropertyValue(IBlockState state, IProperty<T> property, String value) {
-        Optional<T> parsed = property.parseValue(value).toJavaUtil();
+        Optional<T> parsed = Optional.ofNullable(property.parseValue(value).orNull());
         if (parsed.isPresent()) {
             return state.withProperty(property, parsed.get());
         } else {

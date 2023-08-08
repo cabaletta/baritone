@@ -1,0 +1,4 @@
+before_install:
+  - curl -s "https://get.sdkman.io" | bash
+  - sdk install java 17.0.5-tem
+  - sdk use java 17.0.5-tem

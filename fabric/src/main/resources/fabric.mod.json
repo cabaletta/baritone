@@ -1,0 +1,31 @@
+
+{
+  "schemaVersion": 1,
+  "id": "baritoe",
+  "version": "${version}",
+
+  "name": "Baritone",
+  "description": "Google Maps for Blockgame",
+  "authors": [
+    "leijurv", "Brady"
+  ],
+  "contact": {
+    "homepage": "https://github.com/cabaletta/baritone",
+    "sources": "https://github.com/cabaletta/baritone"
+  },
+
+  "license": "LGPL-3.0",
+  "icon": "assets/baritone/icon.png",
+
+  "environment": "*",
+  "entrypoints": {
+  },
+  "mixins": [
+      "mixins.baritone.json"
+  ],
+
+  "depends": {
+    "fabricloader": ">=0.11.0",
+    "minecraft": "1.12.2"
+  }
+}
