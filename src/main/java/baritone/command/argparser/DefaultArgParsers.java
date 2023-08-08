@@ -19,6 +19,7 @@ package baritone.command.argparser;
 
 import baritone.api.command.argparser.IArgParser;
 import baritone.api.command.argument.ICommandArgument;
+import net.minecraft.item.Item;
 
 import java.util.Arrays;
 import java.util.List;
@@ -114,11 +115,43 @@ public class DefaultArgParsers {
         }
     }
 
+    public static class ItemArgumentParser implements IArgParser.Stateless<Item> {
+        public static final ItemArgumentParser INSTANCE = new ItemArgumentParser();
+
+        @Override
+        public Class<Item> getTarget() {
+            return Item.class;
+        }
+
+        @Override
+        public Item parseArg(ICommandArgument arg) throws Exception {
+            /*
+            String value = arg.getValue();
+            Item item = Item.getByNameOrId(value);
+            if (item == null) {
+                for (IRecipe recipe : CraftingManager.REGISTRY) {
+                    if (recipe.getRecipeOutput().getDisplayName().equalsIgnoreCase(value)) {
+                        return recipe.getRecipeOutput().getItem();
+                    }
+                }
+                throw new IllegalArgumentException("invalid item");
+            } else {
+                return item;
+            }/**/
+            Item item = Item.getByNameOrId(arg.getValue());
+            if (item == null) {
+                throw new IllegalArgumentException("invalid item");
+            }
+            return item;
+        }
+    }
+
     public static final List<IArgParser<?>> ALL = Arrays.asList(
             IntArgumentParser.INSTANCE,
             LongArgumentParser.INSTANCE,
             FloatArgumentParser.INSTANCE,
             DoubleArgumentParser.INSTANCE,
-            BooleanArgumentParser.INSTANCE
+            BooleanArgumentParser.INSTANCE,
+            ItemArgumentParser.INSTANCE
     );
 }
