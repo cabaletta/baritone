@@ -1,3 +1,6 @@
+import baritone.gradle.task.CreateDistTask
+import baritone.gradle.task.ProguardTask
+
 /*
  * This file is part of Baritone.
  *
@@ -135,4 +138,45 @@ javadoc {
     options.encoding "UTF-8" // allow emoji in comments :^)
     source = sourceSets.api.allJava
     classpath += sourceSets.api.compileClasspath
+}
+
+
+task removeChecksum {
+    doLast {
+        delete "$rootDir/dist/checksums.txt"
+    }
+}
+
+subprojects {
+    task proguard(type: ProguardTask, dependsOn: remapJar) {
+        url 'https://github.com/Guardsquare/proguard/releases/download/v7.2.1/proguard-7.2.1.zip'
+        extract 'proguard-7.2.1/lib/proguard.jar'
+        compType project.name
+        artifactPath = remapJar.archiveFile
+    }
+
+    task createDist(type: CreateDistTask, dependsOn: proguard) {
+        compType project.name == "tweaker" ? null : project.name
+        artifactApiPath = proguard.artifactApiPath
+        artifactStandalonePath = proguard.artifactStandalonePath
+        artifactUnoptimizedPath = proguard.artifactUnoptimizedPath
+    }
+
+    build.finalizedBy(createDist)
+
+    publishing {
+        publications {
+            mavenFabric(MavenPublication) {
+                artifactId = rootProject.archives_base_name + "-" + project.name
+                from components.java
+            }
+        }
+
+        // See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
+        repositories {
+            // Add repositories to publish to here.
+        }
+    }
+
+    createDist.dependsOn(removeChecksum)
 }

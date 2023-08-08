@@ -20,6 +20,7 @@ package baritone.gradle.task;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.Optional;
+import org.gradle.api.tasks.OutputFile;
 import org.gradle.api.tasks.TaskAction;
 
 import java.io.File;
@@ -51,10 +52,6 @@ class BaritoneGradleTask extends DefaultTask {
             ARTIFACT_STANDALONE         = "%s-standalone-%s.jar";
 
     protected String artifactName, artifactVersion;
-    protected Path
-        artifactPath,
-        artifactUnoptimizedPath, artifactApiPath, artifactStandalonePath, // these are different for forge builds
-        proguardOut;
 
 
     @Input
@@ -79,20 +76,6 @@ class BaritoneGradleTask extends DefaultTask {
             this.artifactVersion = compType + "-" + getProject().getVersion();
         } else {
             this.artifactVersion = getProject().getVersion().toString();
-        }
-
-        this.artifactPath = this.getBuildFile(formatVersion(ARTIFACT_STANDARD));
-
-        this.artifactUnoptimizedPath = this.getBuildFile(formatVersion(ARTIFACT_UNOPTIMIZED));
-        this.artifactApiPath         = this.getBuildFile(formatVersion(ARTIFACT_API));
-        this.artifactStandalonePath  = this.getBuildFile(formatVersion(ARTIFACT_STANDALONE));
-
-        this.proguardOut = this.getTemporaryFile(PROGUARD_EXPORT_PATH);
-    }
-
-    protected void verifyArtifacts() throws IllegalStateException {
-        if (!Files.exists(this.artifactPath)) {
-            throw new IllegalStateException("Artifact not found! Run build first! Missing file: " + this.artifactPath);
         }
     }
 

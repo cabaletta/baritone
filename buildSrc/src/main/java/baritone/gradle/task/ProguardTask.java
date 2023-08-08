@@ -18,11 +18,12 @@
 package baritone.gradle.task;
 
 import baritone.gradle.util.Determinizer;
+import groovy.lang.Closure;
 import org.apache.commons.io.IOUtils;
+import org.gradle.api.Task;
+import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.plugins.JavaPluginConvention;
-import org.gradle.api.tasks.Input;
-import org.gradle.api.tasks.TaskAction;
-import org.gradle.api.tasks.TaskCollection;
+import org.gradle.api.tasks.*;
 import org.gradle.api.tasks.compile.ForkOptions;
 import org.gradle.api.tasks.compile.JavaCompile;
 import org.gradle.internal.jvm.Jvm;
@@ -47,7 +48,7 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
  * @author Brady
  * @since 10/11/2018
  */
-public class ProguardTask extends BaritoneGradleTask {
+public abstract class ProguardTask extends BaritoneGradleTask {
 
     @Input
     private String url;
@@ -63,11 +64,37 @@ public class ProguardTask extends BaritoneGradleTask {
         return extract;
     }
 
+    @InputFile
+    abstract public RegularFileProperty getArtifactPath();
+
+    @OutputFile
+    @Optional
+    abstract public RegularFileProperty getArtifactUnoptimizedPath();
+
+    @OutputFile
+    @Optional
+    abstract public RegularFileProperty getArtifactApiPath();
+
+    @OutputFile
+    @Optional
+    abstract public RegularFileProperty getArtifactStandalonePath();
+
+    protected Path proguardOut;
+
+    @Override
+    public Task configure(Closure closure) {
+        super.doFirst();
+
+        getArtifactUnoptimizedPath().fileValue(this.getBuildFile(formatVersion(ARTIFACT_UNOPTIMIZED)).toFile());
+        getArtifactApiPath().fileValue(this.getBuildFile(formatVersion(ARTIFACT_API)).toFile());
+        getArtifactStandalonePath().fileValue(this.getBuildFile(formatVersion(ARTIFACT_STANDALONE)).toFile());
+
+        return super.configure(closure);
+    }
+
     @TaskAction
     protected void exec() throws Exception {
-        super.doFirst();
-        super.verifyArtifacts();
-
+        this.proguardOut = this.getTemporaryFile(PROGUARD_EXPORT_PATH);
         // "Haha brady why don't you make separate tasks"
         processArtifact();
         downloadProguard();
@@ -78,6 +105,14 @@ public class ProguardTask extends BaritoneGradleTask {
         cleanup();
     }
 
+    private void processArtifact() throws Exception {
+        if (Files.exists(getArtifactUnoptimizedPath().getAsFile().get().toPath())) {
+            Files.delete(getArtifactUnoptimizedPath().getAsFile().get().toPath());
+        }
+
+        Determinizer.determinize(this.getArtifactPath().get().toString(), getArtifactUnoptimizedPath().getAsFile().get().toString());
+    }
+
     MinecraftProvider<?, ?> provider = this.getProject().getExtensions().getByType(MinecraftProvider.class);
 
     private File getMcJar() {
@@ -86,14 +121,6 @@ public class ProguardTask extends BaritoneGradleTask {
 
     private boolean isMcJar(File f) {
         return this.getProject().getConfigurations().getByName(Constants.MINECRAFT_COMBINED_PROVIDER).getFiles().contains(f);
-    }
-
-    private void processArtifact() throws Exception {
-        if (Files.exists(this.artifactUnoptimizedPath)) {
-            Files.delete(this.artifactUnoptimizedPath);
-        }
-
-        Determinizer.determinize(this.artifactPath.toString(), this.artifactUnoptimizedPath.toString());
     }
 
     private void downloadProguard() throws Exception {
@@ -214,7 +241,7 @@ public class ProguardTask extends BaritoneGradleTask {
 
         // Setup the template that will be used to derive the API and Standalone configs
         List<String> template = Files.readAllLines(getTemporaryFile(PROGUARD_CONFIG_DEST));
-        template.add(0, "-injars '" + this.artifactPath.toString() + "'");
+        template.add(0, "-injars '" + this.getArtifactPath().get().toString() + "'");
         template.add(1, "-outjars '" + this.getTemporaryFile(PROGUARD_EXPORT_PATH) + "'");
 
         template.add(2, "-libraryjars  <java.home>/jmods/java.base.jmod(!**.jar;!module-info.class)");
@@ -267,12 +294,12 @@ public class ProguardTask extends BaritoneGradleTask {
 
     private void proguardApi() throws Exception {
         runProguard(getTemporaryFile(compType+PROGUARD_API_CONFIG));
-        Determinizer.determinize(this.proguardOut.toString(), this.artifactApiPath.toString());
+        Determinizer.determinize(this.proguardOut.toString(), getArtifactApiPath().get().toString());
     }
 
     private void proguardStandalone() throws Exception {
         runProguard(getTemporaryFile(compType+PROGUARD_STANDALONE_CONFIG));
-        Determinizer.determinize(this.proguardOut.toString(), this.artifactStandalonePath.toString());
+        Determinizer.determinize(this.proguardOut.toString(), getArtifactStandalonePath().get().toString());
     }
 
     private void cleanup() {
