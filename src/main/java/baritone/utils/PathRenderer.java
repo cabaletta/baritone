@@ -54,7 +54,7 @@ public final class PathRenderer implements IRenderer {
         if (ctx.world() == null) {
             return;
         }
-        if (ctx.minecraft().currentScreen instanceof GuiClick) {
+        if (ctx.minecraft().currentScreen instanceof GuiClick && behavior.baritone == BaritoneAPI.getProvider().getPrimaryBaritone()) {
             ((GuiClick) ctx.minecraft().currentScreen).onRender();
         }
 

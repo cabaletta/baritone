@@ -73,6 +73,11 @@ public final class BaritonePlayerController implements IPlayerController {
     }
 
     @Override
+    public void setGameType(GameType type) {
+        mc.playerController.setGameType(type);
+    }
+
+    @Override
     public GameType getGameType() {
         return mc.playerController.getCurrentGameType();
     }

@@ -17,6 +17,7 @@
 
 package baritone.api;
 
+import baritone.api.bot.IUserManager;
 import baritone.api.cache.IWorldScanner;
 import baritone.api.command.ICommand;
 import baritone.api.command.ICommandSystem;
@@ -107,6 +108,11 @@ public interface IBaritoneProvider {
      * @return The {@link IWorldScanner} instance.
      */
     IWorldScanner getWorldScanner();
+
+    /**
+     * @return The {@link IUserManager} instance.
+     */
+    IUserManager getUserManager();
 
     /**
      * Returns the {@link ICommandSystem} instance. This is not bound to a specific {@link IBaritone}

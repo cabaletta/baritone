@@ -1296,6 +1296,13 @@ public final class Settings {
     public final Setting<Boolean> desktopNotifications = new Setting<>(false);
 
     /**
+     * Having this setting enabled keeps vanilla collision working. If disabled, bots will ignore
+     * collision boxes and be able to walk inside each other without issues. This should only be
+     * disabled when multiple bots are are needed to simultaneously use narrow tunnels.
+     */
+    public final Setting<Boolean> botCollision = new Setting<>(true);
+
+    /**
      * Desktop notification on path complete
      */
     public final Setting<Boolean> notificationOnPathComplete = new Setting<>(true);

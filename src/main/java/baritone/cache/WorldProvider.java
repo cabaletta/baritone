@@ -18,6 +18,7 @@
 package baritone.cache;
 
 import baritone.Baritone;
+import baritone.api.BaritoneAPI;
 import baritone.api.cache.IWorldProvider;
 import baritone.api.utils.IPlayerContext;
 import baritone.utils.accessor.IAnvilChunkLoader;
@@ -158,6 +159,10 @@ public class WorldProvider implements IWorldProvider {
             worldDir = baritone.getDirectory().resolve(folderName);
             // Just write the readme to the baritone directory instead of each server save in it
             readmeDir = baritone.getDirectory();
+        }
+
+        if (this.baritone != BaritoneAPI.getProvider().getPrimaryBaritone()) {
+            worldDir = worldDir.resolve("bot");
         }
 
         return Optional.of(new Tuple<>(worldDir, readmeDir));

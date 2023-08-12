@@ -42,6 +42,7 @@ import java.lang.reflect.Field;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -216,6 +217,7 @@ public class ProguardTask extends BaritoneGradleTask {
         Process p = new ProcessBuilder(this.getJavaBinPathForProguard(), "-verbose").start();
         String out = IOUtils.toString(p.getInputStream(), "UTF-8").split("\n")[0].split("Opened ")[1].replace("]", "");
         template.add(2, "-libraryjars '" + out + "'");
+        template.add(3, "-libraryjars '" + Paths.get(out).resolveSibling("jce.jar") + "'");
 
         // API config doesn't require any changes from the changes that we made to the template
         Files.write(getTemporaryFile(PROGUARD_API_CONFIG), template);

@@ -19,7 +19,9 @@
     "MixinEntityLivingBase",
     "MixinEntityPlayerSP",
     "MixinEntityRenderer",
+    "MixinGameSettings",
     "MixinGuiScreen",
+    "MixinIntegratedServer",
     "MixinItemStack",
     "MixinItemTool",
     "MixinMinecraft",
@@ -31,6 +33,7 @@
     "MixinRenderList",
     "MixinStateImplementation",
     "MixinTabCompleter",
+    "MixinThreadLanServerPing",
     "MixinVboRenderList",
     "MixinWorldClient"
   ]

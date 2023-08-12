@@ -46,6 +46,7 @@ public final class DefaultCommands {
                 new LitematicaCommand(baritone),
                 new ComeCommand(baritone),
                 new AxisCommand(baritone),
+                new BotCommand(baritone),
                 new ForceCancelCommand(baritone),
                 new GcCommand(baritone),
                 new InvertCommand(baritone),
