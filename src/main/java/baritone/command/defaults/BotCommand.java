@@ -113,7 +113,7 @@ public class BotCommand extends Command {
 
     @Override
     public String getShortDesc() {
-        return "Set a goal to the axes";
+        return "Manage bots";
     }
 
     @Override
