@@ -15,11 +15,23 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-repositories {
-    mavenCentral()
-}
+package baritone.utils;
 
-dependencies {
-    implementation group: 'com.google.code.gson', name: 'gson', version: '2.8.5'
-    implementation group: 'commons-io', name: 'commons-io', version: '2.6'
+/**
+ * @author Brady
+ */
+public final class BaritoneMath {
+
+    private static final double FLOOR_DOUBLE_D = 1_073_741_824.0;
+    private static final int FLOOR_DOUBLE_I = 1_073_741_824;
+
+    private BaritoneMath() {}
+
+    public static int fastFloor(final double v) {
+        return (int) (v + FLOOR_DOUBLE_D) - FLOOR_DOUBLE_I;
+    }
+
+    public static int fastCeil(final double v) {
+        return FLOOR_DOUBLE_I - (int) (FLOOR_DOUBLE_D - v);
+    }
 }

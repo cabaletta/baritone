@@ -27,6 +27,7 @@ import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.Vec3d;
 
 import java.awt.*;
 
@@ -121,5 +122,17 @@ public interface IRenderer {
         buffer.begin(GL_LINES, DefaultVertexFormats.POSITION_COLOR);
         emitAABB(aabb);
         tessellator.draw();
+    }
+
+    static void emitLine(Vec3d start, Vec3d end) {
+        emitLine(start.x, start.y, start.z, end.x, end.y, end.z);
+    }
+
+    static void emitLine(double x1, double y1, double z1, double x2, double y2, double z2) {
+        double vpX = renderManager.viewerPosX;
+        double vpY = renderManager.viewerPosY;
+        double vpZ = renderManager.viewerPosZ;
+        buffer.pos(x1 - vpX, y1 - vpY, z1 - vpZ).color(color[0], color[1], color[2], color[3]).endVertex();
+        buffer.pos(x2 - vpX, y2 - vpY, z2 - vpZ).color(color[0], color[1], color[2], color[3]).endVertex();
     }
 }

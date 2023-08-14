@@ -56,5 +56,10 @@ public enum PathingCommandType {
     /**
      * Go and ask the next process what to do
      */
-    DEFER
+    DEFER,
+
+    /**
+     * Sets the goal and calculates a path, but pauses instead of immediately starting the path.
+     */
+    SET_GOAL_AND_PAUSE
 }

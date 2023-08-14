@@ -15,15 +15,33 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.gradle.util;
+package baritone.api.event.events;
+
+import baritone.api.utils.Pair;
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
+
+import java.util.List;
 
 /**
- * All credits go to AsmLibGradle and its contributors.
- *
- * @see <a href="https://github.com/pozzed/AsmLibGradle/blob/8f917dbc3939eab7a3d9daf54d9d285fdf34f4b2/src/main/java/net/futureclient/asmlib/forgegradle/MappingType.java">Original Source</a>
+ * @author Brady
  */
-public enum MappingType {
-    SEARGE,
-    NOTCH,
-    CUSTOM // forgegradle
+public final class BlockChangeEvent {
+
+    private final ChunkPos chunk;
+    private final List<Pair<BlockPos, IBlockState>> blocks;
+
+    public BlockChangeEvent(ChunkPos pos, List<Pair<BlockPos, IBlockState>> blocks) {
+        this.chunk = pos;
+        this.blocks = blocks;
+    }
+
+    public ChunkPos getChunkPos() {
+        return this.chunk;
+    }
+
+    public List<Pair<BlockPos, IBlockState>> getBlocks() {
+        return this.blocks;
+    }
 }

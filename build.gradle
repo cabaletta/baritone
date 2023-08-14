@@ -22,7 +22,7 @@ buildscript {
     repositories {
         maven {
             name = 'forge'
-            url = 'http://files.minecraftforge.net/maven'
+            url = 'https://files.minecraftforge.net/maven'
         }
         maven {
             name = 'SpongePowered'
@@ -32,18 +32,19 @@ buildscript {
     }
 
     dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
-        classpath 'org.spongepowered:mixingradle:0.6-SNAPSHOT'
+        classpath 'net.minecraftforge.gradle:ForgeGradle:4.+' // TODO: 5.+. `doHackyStuff` relies on 4.x internals.
+        classpath 'org.spongepowered:mixingradle:0.7-SNAPSHOT'
     }
 }
-
 
 import baritone.gradle.task.CreateDistTask
 import baritone.gradle.task.ProguardTask
 
 apply plugin: 'java'
-apply plugin: 'maven'
-apply plugin: 'net.minecraftforge.gradle.tweaker-client'
+apply plugin: 'maven-publish'
+apply plugin: 'net.minecraftforge.gradle'
+apply from: 'hacks.gradle'
+ext.doHackyStuff(Class.forName('net.minecraftforge.gradle.mcp.task.GenerateSRG')) // TODO: fg 5.0 - `ext.doHackyStuff(Class.forName('net.minecraftforge.gradle.mcp.tasks.GenerateSRG'))`
 apply plugin: 'org.spongepowered.mixin'
 
 sourceCompatibility = targetCompatibility = '1.8'
@@ -53,8 +54,19 @@ compileJava {
 }
 
 sourceSets {
+    api {
+        compileClasspath += main.compileClasspath
+    }
+    main {
+        compileClasspath += api.output
+    }
+    test {
+        compileClasspath += main.compileClasspath + main.runtimeClasspath + main.output
+        runtimeClasspath += main.compileClasspath + main.runtimeClasspath + main.output
+    }
     launch {
         compileClasspath += main.compileClasspath + main.runtimeClasspath + main.output
+        runtimeClasspath += main.compileClasspath + main.runtimeClasspath + main.output
     }
 
     schematica_api {
@@ -67,13 +79,26 @@ sourceSets {
 }
 
 minecraft {
-    version = '1.12.2'
-    mappings = 'stable_39'
-    tweakClass = 'baritone.launch.BaritoneTweaker'
-    runDir = 'run'
+    mappings channel: 'stable', version: '39-1.12'
+    runs {
+        def nativesOutput = extractNatives.output // TODO: fg 5.0 - `def nativesOutput = extractNatives.output.get()`
+        println("[Baritoe] Detected natives: ${nativesOutput}")
+        client {
+            workingDirectory project.file('run')
+            source sourceSets.launch
 
-    // The sources jar should use SRG names not MCP to ensure compatibility with all mappings
-    makeObfSourceJar = true
+            main 'net.minecraft.launchwrapper.Launch'
+
+            args '--gameDir', '.'
+            args '--version', '1.12.2'
+            args '--assetsDir', downloadAssets.output
+            args '--assetIndex', '{asset_index}'
+            args '--accessToken', 'INVALID'
+
+            args '--tweakClass', 'baritone.launch.BaritoneTweaker'
+            jvmArgs "-Dorg.lwjgl.librarypath=${nativesOutput}"
+        }
+    }
 }
 
 repositories {
@@ -88,23 +113,74 @@ repositories {
         name = 'impactdevelopment-repo'
         url = 'https://impactdevelopment.github.io/maven/'
     }
+
+    maven {
+        name = 'babbaj-repo'
+        url = 'https://babbaj.github.io/maven/'
+    }
+}
+
+// fix forge gradle 4+ bug with 1.12.2
+afterEvaluate {
+    configurations.minecraft {
+        exclude group: 'net.minecraftforge', module: 'mergetool'
+    }
+}
+
+// lwjgl2 hack for running game on arm64 mac os
+afterEvaluate {
+    def os = org.gradle.internal.os.OperatingSystem.current()
+    if (os.isMacOsX()) {
+        def arch = System.getProperty("os.arch").toLowerCase()
+        println("Detected Mac OS X running on ${arch}")
+        if (arch == "aarch64") {
+            println("Configurating aarch64 dependencies.")
+
+            configurations.minecraft {
+                exclude group: 'ca.weblite', module: 'java-objc-bridge'
+            }
+
+            dependencies {
+                // https://github.com/MinecraftMachina/lwjgl/releases/download/2.9.4-20150209-mmachina.2/lwjgl-platform-2.9.4-nightly-20150209-natives-osx.jar
+                minecraft files("libs/lwjgl-platform-2.9.4-nightly-20150209-natives-osx.jar")
+                // TODO: use prism launcher maven
+                // https://github.com/MinecraftMachina/Java-Objective-C-Bridge/releases/download/1.1.0-mmachina.1/java-objc-bridge-1.1.jar
+                minecraft files("libs/java-objc-bridge-1.1.jar") // TODO: use prism launcher maven
+                minecraft(group: 'net.java.dev.jna', name: 'jna') {
+                    version {
+                        strictly '5.12.1'
+                    }
+                }
+            }
+        }
+    }
 }
 
 dependencies {
-    runtime launchCompile('com.github.ImpactDevelopment:SimpleTweaker:1.2')
-    runtime launchCompile('org.spongepowered:mixin:0.7.11-SNAPSHOT') {
-        // Mixin includes a lot of dependencies that are too up-to-date
-        exclude module: 'launchwrapper'
-        exclude module: 'guava'
-        exclude module: 'gson'
-        exclude module: 'commons-io'
-        exclude module: 'log4j-core'
+    minecraft group: 'net.minecraft', name: 'joined', version: '1.12.2'
+    implementation(group: 'net.minecraft', name: 'launchwrapper', version: '1.12') {
+        transitive = false
     }
+
+    def asmVersion = '9.5'
+    implementation group: 'org.ow2.asm', name: 'asm', version: asmVersion
+    implementation group: 'org.ow2.asm', name: 'asm-tree', version: asmVersion
+    implementation group: 'org.ow2.asm', name: 'asm-commons', version: asmVersion
+    implementation group: 'org.ow2.asm', name: 'asm-analysis', version: asmVersion
+    implementation group: 'org.ow2.asm', name: 'asm-util', version: asmVersion
+
+    launchImplementation('com.github.ImpactDevelopment:SimpleTweaker:1.2')
+    launchImplementation('org.spongepowered:mixin:0.7.11-SNAPSHOT') {
+        // Mixin includes a lot of dependencies that are too up-to-date
+        transitive = false
+    }
+    launchAnnotationProcessor 'org.spongepowered:mixin:0.8.4-SNAPSHOT:processor'
+    launchImplementation('dev.babbaj:nether-pathfinder:1.2')
+    implementation 'dev.babbaj:nether-pathfinder:1.2'
     testImplementation 'junit:junit:4.12'
 }
 
 mixin {
-    defaultObfuscationEnv searge
     add sourceSets.launch, 'mixins.baritone.refmap.json'
 }
 
@@ -130,7 +206,7 @@ jar {
     manifest {
         attributes(
                 'MixinConfigs': 'mixins.baritone.json',
-
+                'TweakClass': 'baritone.launch.BaritoneTweaker',
                 'Implementation-Title': 'Baritone',
                 'Implementation-Version': version
         )
@@ -145,25 +221,3 @@ task proguard(type: ProguardTask) {
 task createDist(type: CreateDistTask, dependsOn: proguard)
 
 build.finalizedBy(createDist)
-
-install {
-    def jarApiName = String.format("%s-api-%s", rootProject.name, version.toString())
-    def jarApiForgeName = String.format("%s-api-forge-%s", rootProject.name, version.toString())
-    def jarSAName = String.format("%s-standalone-%s", rootProject.name, version.toString())
-    def jarSAForgeName = String.format("%s-standalone-forge-%s", rootProject.name, version.toString())
-
-    artifacts {
-        archives file("$buildDir/libs/"+jarApiName+".jar")
-        archives file("$buildDir/libs/"+jarApiForgeName+".jar")
-        archives file("$buildDir/libs/"+jarSAName+".jar")
-        archives file("$buildDir/libs/"+jarSAForgeName+".jar")
-    }
-    repositories.mavenInstaller {
-		addFilter('api') { artifact, file -> artifact.name == "baritone-api" }
-		addFilter('api-forge') { artifact, file -> artifact.name == "baritone-api-forge" }
-		addFilter('standalone') { artifact, file -> artifact.name == "baritone-standalone" }
-		addFilter('standalone-forge') { artifact, file -> artifact.name == "baritone-standalone-forge" }
-    }
-}
-
-install.dependsOn(build)

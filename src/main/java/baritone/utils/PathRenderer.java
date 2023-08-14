@@ -19,7 +19,6 @@ package baritone.utils;
 
 import baritone.api.BaritoneAPI;
 import baritone.api.event.events.RenderEvent;
-import baritone.api.pathing.calc.IPath;
 import baritone.api.pathing.goals.*;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.IPlayerContext;
@@ -90,33 +89,36 @@ public final class PathRenderer implements IRenderer {
         // Render the current path, if there is one
         if (current != null && current.getPath() != null) {
             int renderBegin = Math.max(current.getPosition() - 3, 0);
-            drawPath(current.getPath(), renderBegin, settings.colorCurrentPath.value, settings.fadePath.value, 10, 20);
+            drawPath(current.getPath().positions(), renderBegin, settings.colorCurrentPath.value, settings.fadePath.value, 10, 20);
         }
 
         if (next != null && next.getPath() != null) {
-            drawPath(next.getPath(), 0, settings.colorNextPath.value, settings.fadePath.value, 10, 20);
+            drawPath(next.getPath().positions(), 0, settings.colorNextPath.value, settings.fadePath.value, 10, 20);
         }
 
         // If there is a path calculation currently running, render the path calculation process
         behavior.getInProgress().ifPresent(currentlyRunning -> {
             currentlyRunning.bestPathSoFar().ifPresent(p -> {
-                drawPath(p, 0, settings.colorBestPathSoFar.value, settings.fadePath.value, 10, 20);
+                drawPath(p.positions(), 0, settings.colorBestPathSoFar.value, settings.fadePath.value, 10, 20);
             });
 
             currentlyRunning.pathToMostRecentNodeConsidered().ifPresent(mr -> {
-                drawPath(mr, 0, settings.colorMostRecentConsidered.value, settings.fadePath.value, 10, 20);
+                drawPath(mr.positions(), 0, settings.colorMostRecentConsidered.value, settings.fadePath.value, 10, 20);
                 drawManySelectionBoxes(ctx.player(), Collections.singletonList(mr.getDest()), settings.colorMostRecentConsidered.value);
             });
         });
     }
 
-    private static void drawPath(IPath path, int startIndex, Color color, boolean fadeOut, int fadeStart0, int fadeEnd0) {
+    public static void drawPath(List<BetterBlockPos> positions, int startIndex, Color color, boolean fadeOut, int fadeStart0, int fadeEnd0) {
+        drawPath(positions, startIndex, color, fadeOut, fadeStart0, fadeEnd0, 0.5D);
+    }
+
+    public static void drawPath(List<BetterBlockPos> positions, int startIndex, Color color, boolean fadeOut, int fadeStart0, int fadeEnd0, double offset) {
         IRenderer.startLines(color, settings.pathRenderLineWidthPixels.value, settings.renderPathIgnoreDepth.value);
 
         int fadeStart = fadeStart0 + startIndex;
         int fadeEnd = fadeEnd0 + startIndex;
 
-        List<BetterBlockPos> positions = path.positions();
         for (int i = startIndex, next; i < positions.size() - 1; i = next) {
             BetterBlockPos start = positions.get(i);
             BetterBlockPos end = positions.get(next = i + 1);
@@ -147,30 +149,31 @@ public final class PathRenderer implements IRenderer {
                 IRenderer.glColor(color, alpha);
             }
 
-            emitLine(start.x, start.y, start.z, end.x, end.y, end.z);
+            emitPathLine(start.x, start.y, start.z, end.x, end.y, end.z, offset);
         }
 
         IRenderer.endLines(settings.renderPathIgnoreDepth.value);
     }
 
-    private static void emitLine(double x1, double y1, double z1, double x2, double y2, double z2) {
+    private static void emitPathLine(double x1, double y1, double z1, double x2, double y2, double z2, double offset) {
+        final double extraOffset = offset + 0.03D;
         double vpX = renderManager.viewerPosX;
         double vpY = renderManager.viewerPosY;
         double vpZ = renderManager.viewerPosZ;
         boolean renderPathAsFrickinThingy = !settings.renderPathAsLine.value;
 
-        buffer.pos(x1 + 0.5D - vpX, y1 + 0.5D - vpY, z1 + 0.5D - vpZ).color(color[0], color[1], color[2], color[3]).endVertex();
-        buffer.pos(x2 + 0.5D - vpX, y2 + 0.5D - vpY, z2 + 0.5D - vpZ).color(color[0], color[1], color[2], color[3]).endVertex();
+        buffer.pos(x1 + offset - vpX, y1 + offset - vpY, z1 + offset - vpZ).color(color[0], color[1], color[2], color[3]).endVertex();
+        buffer.pos(x2 + offset - vpX, y2 + offset - vpY, z2 + offset - vpZ).color(color[0], color[1], color[2], color[3]).endVertex();
 
         if (renderPathAsFrickinThingy) {
-            buffer.pos(x2 + 0.5D - vpX, y2 + 0.5D - vpY, z2 + 0.5D - vpZ).color(color[0], color[1], color[2], color[3]).endVertex();
-            buffer.pos(x2 + 0.5D - vpX, y2 + 0.53D - vpY, z2 + 0.5D - vpZ).color(color[0], color[1], color[2], color[3]).endVertex();
+            buffer.pos(x2 + offset - vpX, y2 + offset - vpY, z2 + offset - vpZ).color(color[0], color[1], color[2], color[3]).endVertex();
+            buffer.pos(x2 + offset - vpX, y2 + extraOffset - vpY, z2 + offset - vpZ).color(color[0], color[1], color[2], color[3]).endVertex();
 
-            buffer.pos(x2 + 0.5D - vpX, y2 + 0.53D - vpY, z2 + 0.5D - vpZ).color(color[0], color[1], color[2], color[3]).endVertex();
-            buffer.pos(x1 + 0.5D - vpX, y1 + 0.53D - vpY, z1 + 0.5D - vpZ).color(color[0], color[1], color[2], color[3]).endVertex();
+            buffer.pos(x2 + offset - vpX, y2 + extraOffset - vpY, z2 + offset - vpZ).color(color[0], color[1], color[2], color[3]).endVertex();
+            buffer.pos(x1 + offset - vpX, y1 + extraOffset - vpY, z1 + offset - vpZ).color(color[0], color[1], color[2], color[3]).endVertex();
 
-            buffer.pos(x1 + 0.5D - vpX, y1 + 0.53D - vpY, z1 + 0.5D - vpZ).color(color[0], color[1], color[2], color[3]).endVertex();
-            buffer.pos(x1 + 0.5D - vpX, y1 + 0.5D - vpY, z1 + 0.5D - vpZ).color(color[0], color[1], color[2], color[3]).endVertex();
+            buffer.pos(x1 + offset - vpX, y1 + extraOffset - vpY, z1 + offset - vpZ).color(color[0], color[1], color[2], color[3]).endVertex();
+            buffer.pos(x1 + offset - vpX, y1 + offset - vpY, z1 + offset - vpZ).color(color[0], color[1], color[2], color[3]).endVertex();
         }
     }
 
@@ -196,7 +199,7 @@ public final class PathRenderer implements IRenderer {
         IRenderer.endLines(settings.renderSelectionBoxesIgnoreDepth.value);
     }
 
-    private static void drawGoal(Entity player, Goal goal, float partialTicks, Color color) {
+    public static void drawGoal(Entity player, Goal goal, float partialTicks, Color color) {
         drawGoal(player, goal, partialTicks, color, true);
     }
 

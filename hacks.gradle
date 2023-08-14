@@ -1,0 +1,161 @@
+/*
+ * This file is part of Baritone.
+ *
+ * Baritone is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Baritone is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+ext.doHackyStuff = { final Class<?> clazz ->
+    def withExtension = { final File file, final String extension ->
+        def i = file.getName().lastIndexOf('.')
+        def name = file.getName().substring(0, i)
+        return new File(file.getParent(), "$name.$extension")
+    }
+
+    // https://github.com/MinecraftForge/ForgeGradle/blob/6639464b29b0923187eee0a609e546ba9f1b998b/src/patcher/java/net/minecraftforge/gradle/patcher/PatcherPlugin.java#L545
+    // https://github.com/MinecraftForge/ForgeGradle/blob/6639464b29b0923187eee0a609e546ba9f1b998b/src/userdev/java/net/minecraftforge/gradle/userdev/UserDevPlugin.java#L149
+    // create createMcp2Obf task
+    this.tasks.register('createMcpToObf', clazz)
+            .configure { task ->
+                task.setNotch(true)
+                task.setReverse(true)
+            }
+    afterEvaluate {
+        def createMcp2Obf = this.tasks.getByName('createMcpToObf')
+        def createMcp2Srg = this.tasks.getByName('createMcpToSrg')
+
+        // configure createMcp2Obf task
+        if (createMcp2Obf.getSrg() == null) {
+            createMcp2Obf.setSrg(createMcp2Srg.getSrg())
+            createMcp2Obf.setMappings(createMcp2Srg.getMappings())
+            createMcp2Obf.dependsOn(createMcp2Srg)
+        }
+
+        def createSrgCopyTask = { final Task tsrgTask ->
+            def srgCopyTask = this.tasks.register("${tsrgTask.name}Srg", tsrgTask.getClass())
+            tsrgTask.getDependsOn().forEach({ dep ->
+                srgCopyTask.get().dependsOn(dep)
+            })
+            // https://github.com/MinecraftForge/ForgeGradle/blob/6639464b29b0923187eee0a609e546ba9f1b998b/src/mcp/java/net/minecraftforge/gradle/mcp/task/GenerateSRG.java#L39
+            srgCopyTask.configure { task ->
+                task.setSrg(tsrgTask.getSrg())
+                task.setMappings(tsrgTask.getMappings())
+                // https://github.com/MinecraftForge/SrgUtils/blob/bb2ca35bb8d349a122ef512dedd24f54f7cd0bdf/src/main/java/net/minecraftforge/srgutils/IMappingFile.java#L44
+                task.setFormat('SRG')
+                task.setNotch(tsrgTask.getNotch())
+                task.setReverse(tsrgTask.getReverse())
+                task.setOutput(withExtension(tsrgTask.getOutput(), 'srg'))
+            }
+            return srgCopyTask
+        }
+        def createMcp2ObfSrgCopyTask = createSrgCopyTask(createMcp2Obf)
+        createMcp2Obf.dependsOn(createMcp2ObfSrgCopyTask)
+        def createMcp2SrgSrgCopyTask = createSrgCopyTask(createMcp2Srg)
+        createMcp2Srg.dependsOn(createMcp2SrgSrgCopyTask)
+
+        this.sourceSets.forEach({ set ->
+            def compileTask = this.project.tasks[set.compileJavaTaskName]
+            if (!(compileTask instanceof JavaCompile)) {
+                println("[Baritoe] Non-java compile task for ${set} of type ${compileTask}")
+                return
+            }
+            compileTask.dependsOn(createMcp2Obf)
+            compileTask.doFirst {
+                // inject legacy notch srg file
+                def createMcp2ObfSrgCopy = createMcp2ObfSrgCopyTask.get()
+                def reobfNotchSrgFileArgument = "-AreobfNotchSrgFile=${createMcp2ObfSrgCopy.output.canonicalPath}"
+                compileTask.options.compilerArgs += reobfNotchSrgFileArgument
+                println("[Baritoe] Injecting compiler argument: ${reobfNotchSrgFileArgument}")
+
+                // inject legacy notch srg out file
+                def outTSrgFileArgument = '-AoutTsrgFile='
+                def compilerArgsIterator = compileTask.options.compilerArgs.listIterator()
+                while (compilerArgsIterator.hasNext()) {
+                    def compilerArg = compilerArgsIterator.next()
+                    if (compilerArg.startsWith(outTSrgFileArgument)) {
+                        def argumentFileValue = new File(compilerArg.substring(outTSrgFileArgument.length(), compilerArg.length()))
+                        def outNotchSrgFile = withExtension(argumentFileValue, 'notch.srg')
+                        def outNotchSrgFileArgument = "-AoutNotchSrgFile=${outNotchSrgFile.canonicalPath}"
+                        println("[Baritoe] Injecting compiler argument: ${outNotchSrgFileArgument}")
+                        compilerArgsIterator.add(outNotchSrgFileArgument)
+                    }
+                }
+            }
+        })
+
+        // register reobf jars
+        def reobfExtension = this.project.getExtensions().getByName('reobf')
+        if (!reobfExtension) {
+            throw new IllegalStateException("Could not find \"reobf\" extension")
+        }
+        def reobfNotchJar = reobfExtension.create(jar.getName())
+        reobfNotchJar.dependsOn(createMcp2Obf)
+        reobfNotchJar.setMappings(createMcp2Obf.getOutput())
+
+        // even more horrible hack :) for outNotchSrgFile injection
+        reobfNotchJar.doFirst {
+            // https://github.com/MinecraftForge/ForgeGradle/blob/6639464b29b0923187eee0a609e546ba9f1b998b/src/userdev/java/net/minecraftforge/gradle/userdev/tasks/RenameJar.java#L96
+            def extraMappings = reobfNotchJar.getExtraMappings()
+            println("[Baritoe] Extra mappings: ${extraMappings}")
+            def copy = new ArrayList<>()
+            extraMappings.forEach { extraMapping ->
+                copy.add(withExtension(extraMapping, 'notch.srg'))
+            }
+            println("[Baritoe] New extra mappings: ${copy}")
+            reobfNotchJar.setExtraMappings(copy)
+        }
+    }
+}
+
+// TODO: In-complete fg 5.0 port. Currently doesn't handle mixin notch srg mapping hack.
+//ext.doHackyStuff = { final Class<?> clazz ->
+//    afterEvaluate {
+//        def createMcp2Srg = this.tasks.getByName('createMcpToSrg')
+//        def createMcpToObf = this.tasks.register('createMcpToObf', clazz)
+//        createMcpToObf.configure { task ->
+//            task.setNotch(true)
+//            task.setReverse(true)
+//            task.getSrg().set(createMcp2Srg.getSrg().get())
+//            task.getMappings().set(createMcp2Srg.getMappings().get())
+//            task.dependsOn(createMcp2Srg)
+//        }
+//        reobf {
+//            jar {
+//                dependsOn(createMcpToObf)
+//                getMappings().set(createMcpToObf.get().getOutput().get())
+//            }
+//        }
+//        this.sourceSets.forEach({ set ->
+//            def compileTask = this.project.tasks[set.compileJavaTaskName]
+//            if (!(compileTask instanceof JavaCompile)) {
+//                println("[Baritoe] Non-java compile task for ${set} of type ${compileTask}")
+//                return
+//            }
+//            compileTask.dependsOn(createMcpToObf)
+//            compileTask.doFirst {
+//                def reobfTSrgFile = '-AreobfTsrgFile='
+//                def compilerArgsIterator = compileTask.options.compilerArgs.listIterator()
+//                while (compilerArgsIterator.hasNext()) {
+//                    def compilerArg = compilerArgsIterator.next()
+//                    if (compilerArg.startsWith(reobfTSrgFile)) {
+//                        compilerArgsIterator.remove()
+//                        def toInject = "-AreobfTsrgFile=${createMcpToObf.get().output.get().asFile.canonicalPath}"
+//                        compilerArgsIterator.add(toInject)
+//                        println("[Baritoe] Injecting compiler argument: ${toInject}")
+//                    }
+//                }
+//                println("[Baritoe] Compiler arguments: ${compileTask.options.compilerArgs}")
+//            }
+//        })
+//    }
+//}

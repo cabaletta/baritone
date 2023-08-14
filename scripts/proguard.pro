@@ -92,9 +92,9 @@
 -libraryjars 'tempLibraries/text2speech-1.10.3.jar'
 
 -libraryjars 'tempLibraries/mixin-0.7.11-SNAPSHOT.jar'
--libraryjars 'tempLibraries/launchwrapper-1.11.jar' # TODO why does only 1.11.jar exist?
+-libraryjars 'tempLibraries/launchwrapper-1.12.jar'
 
-
+-libraryjars 'tempLibraries/nether-pathfinder-.jar'
 
 
 # Keep - Applications. Keep all application classes, along with their 'main'

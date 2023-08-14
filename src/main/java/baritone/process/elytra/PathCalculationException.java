@@ -15,11 +15,14 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-repositories {
-    mavenCentral()
-}
+package baritone.process.elytra;
 
-dependencies {
-    implementation group: 'com.google.code.gson', name: 'gson', version: '2.8.5'
-    implementation group: 'commons-io', name: 'commons-io', version: '2.6'
+/**
+ * @author Brady
+ */
+public final class PathCalculationException extends RuntimeException {
+
+    public PathCalculationException(final String message) {
+        super(message);
+    }
 }

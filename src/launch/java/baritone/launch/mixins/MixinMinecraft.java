@@ -35,9 +35,11 @@ import net.minecraft.util.math.BlockPos;
 import org.spongepowered.asm.lib.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.Slice;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
@@ -52,8 +54,12 @@ public class MixinMinecraft {
 
     @Shadow
     public EntityPlayerSP player;
+
     @Shadow
     public WorldClient world;
+
+    @Unique
+    private BiFunction<EventState, TickEvent.Type, TickEvent> tickProvider;
 
     @Inject(
             method = "init",
@@ -69,22 +75,45 @@ public class MixinMinecraft {
                     value = "FIELD",
                     opcode = Opcodes.GETFIELD,
                     target = "net/minecraft/client/Minecraft.currentScreen:Lnet/minecraft/client/gui/GuiScreen;",
-                    ordinal = 5,
-                    shift = At.Shift.BY,
-                    by = -3
+                    ordinal = 0,
+                    shift = At.Shift.BEFORE
+            ),
+            slice = @Slice(
+                    from = @At(
+                            value = "FIELD",
+                            opcode = Opcodes.PUTFIELD,
+                            target = "net/minecraft/client/Minecraft.leftClickCounter:I"
+                    )
             )
     )
     private void runTick(CallbackInfo ci) {
-        final BiFunction<EventState, TickEvent.Type, TickEvent> tickProvider = TickEvent.createNextProvider();
+        this.tickProvider = TickEvent.createNextProvider();
 
         for (IBaritone baritone : BaritoneAPI.getProvider().getAllBaritones()) {
-
             TickEvent.Type type = baritone.getPlayerContext().player() != null && baritone.getPlayerContext().world() != null
                     ? TickEvent.Type.IN
                     : TickEvent.Type.OUT;
-
-            baritone.getGameEventHandler().onTick(tickProvider.apply(EventState.PRE, type));
+            baritone.getGameEventHandler().onTick(this.tickProvider.apply(EventState.PRE, type));
         }
+    }
+
+    @Inject(
+            method = "runTick",
+            at = @At("RETURN")
+    )
+    private void postRunTick(CallbackInfo ci) {
+        if (this.tickProvider == null) {
+            return;
+        }
+
+        for (IBaritone baritone : BaritoneAPI.getProvider().getAllBaritones()) {
+            TickEvent.Type type = baritone.getPlayerContext().player() != null && baritone.getPlayerContext().world() != null
+                    ? TickEvent.Type.IN
+                    : TickEvent.Type.OUT;
+            baritone.getGameEventHandler().onPostTick(this.tickProvider.apply(EventState.POST, type));
+        }
+
+        this.tickProvider = null;
     }
 
     @Inject(
@@ -98,6 +127,8 @@ public class MixinMinecraft {
     private void postUpdateEntities(CallbackInfo ci) {
         IBaritone baritone = BaritoneAPI.getProvider().getBaritoneForPlayer(this.player);
         if (baritone != null) {
+            // Intentionally call this after all entities have been updated. That way, any modification to rotations
+            // can be recognized by other entity code. (Fireworks and Pigs, for example)
             baritone.getGameEventHandler().onPlayerUpdate(new PlayerUpdateEvent(EventState.POST));
         }
     }

@@ -15,11 +15,11 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-repositories {
-    mavenCentral()
-}
+package baritone.utils.accessor;
 
-dependencies {
-    implementation group: 'com.google.code.gson', name: 'gson', version: '2.8.5'
-    implementation group: 'commons-io', name: 'commons-io', version: '2.6'
+import net.minecraft.entity.EntityLivingBase;
+
+public interface IEntityFireworkRocket {
+
+    EntityLivingBase getBoostedEntity();
 }

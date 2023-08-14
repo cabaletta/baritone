@@ -57,29 +57,36 @@ public final class ChunkEvent {
     /**
      * @return The state of the event
      */
-    public final EventState getState() {
+    public EventState getState() {
         return this.state;
     }
 
     /**
      * @return The type of chunk event that occurred;
      */
-    public final Type getType() {
+    public Type getType() {
         return this.type;
     }
 
     /**
      * @return The Chunk X position.
      */
-    public final int getX() {
+    public int getX() {
         return this.x;
     }
 
     /**
      * @return The Chunk Z position.
      */
-    public final int getZ() {
+    public int getZ() {
         return this.z;
+    }
+
+    /**
+     * @return {@code true} if the event was fired after a chunk population
+     */
+    public boolean isPostPopulate() {
+        return this.state == EventState.POST && this.type.isPopulate();
     }
 
     public enum Type {
@@ -106,6 +113,10 @@ public final class ChunkEvent {
          * <p>
          * And it's a partial chunk
          */
-        POPULATE_PARTIAL
+        POPULATE_PARTIAL;
+
+        public final boolean isPopulate() {
+            return this == POPULATE_FULL || this == POPULATE_PARTIAL;
+        }
     }
 }

@@ -51,7 +51,7 @@ public abstract class MixinEntityLivingBase extends Entity {
     @Unique
     private RotationMoveEvent elytraRotationEvent;
 
-    public MixinEntityLivingBase(World worldIn) {
+    private MixinEntityLivingBase(World worldIn) {
         super(worldIn);
     }
 
@@ -123,7 +123,8 @@ public abstract class MixinEntityLivingBase extends Entity {
     private void onMoveRelative(EntityLivingBase self, float strafe, float up, float forward, float friction) {
         Optional<IBaritone> baritone = this.getBaritone();
         if (!baritone.isPresent()) {
-            moveRelative(strafe, up, forward, friction);
+            // If a shadow is used here it breaks on Forge
+            this.moveRelative(strafe, up, forward, friction);
             return;
         }
 

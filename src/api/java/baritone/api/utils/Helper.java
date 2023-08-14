@@ -230,4 +230,11 @@ public interface Helper {
     default void logDirect(String message) {
         logDirect(message, BaritoneAPI.getSettings().logAsToast.value);
     }
+
+    default void logUnhandledException(final Throwable exception) {
+        HELPER.logDirect("An unhandled exception occurred. " +
+                        "The error is in your game's log, please report this at https://github.com/cabaletta/baritone/issues",
+                TextFormatting.RED);
+        exception.printStackTrace();
+    }
 }
