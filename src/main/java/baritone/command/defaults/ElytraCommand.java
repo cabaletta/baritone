@@ -67,7 +67,6 @@ public class ElytraCommand extends Command {
                     warn2b2t();
                 }
             } else {
-                // only gatekeep if they are standing on the ground, don't mess them up in midair lol
                 gatekeep();
             }
             Goal iGoal = customGoalProcess.mostRecentGoal();
