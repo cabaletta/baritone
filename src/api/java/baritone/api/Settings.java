@@ -1421,6 +1421,16 @@ public final class Settings {
     public final Setting<Integer> elytraMinimumDurability = new Setting<>(5);
 
     /**
+     * The minimum fireworks before landing early for safety
+     */
+    public final Setting<Integer> elytraMinFireworksBeforeLanding = new Setting<>(5);
+
+    /**
+     * Automatically land when elytra is almost out of durability, or almost out of fireworks
+     */
+    public final Setting<Boolean> elytraAllowEmergencyLand = new Setting<>(true);
+
+    /**
      * Time between culling far away chunks from the nether pathfinder chunk cache
      */
     public final Setting<Long> elytraTimeBetweenCacheCullSecs = new Setting<>(TimeUnit.MINUTES.toSeconds(3));

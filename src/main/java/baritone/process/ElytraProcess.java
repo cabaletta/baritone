@@ -47,6 +47,9 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
+import net.minecraft.init.Items;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
@@ -112,11 +115,21 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
             return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
         }
 
-        if (ctx.player().isElytraFlying() && this.state != State.LANDING && this.behavior.pathManager.isComplete()) {
+        boolean safetyLanding = false;
+        if (ctx.player().isElytraFlying() && shouldLandForSafety()) {
+            if (Baritone.settings().elytraAllowEmergencyLand.value) {
+                logDirect("Emergency landing - almost out of elytra durability or fireworks");
+                safetyLanding = true;
+            } else {
+                logDirect("almost out of elytra durability or fireworks, but I'm going to continue since elytraAllowEmergencyLand is false");
+            }
+        }
+        if (ctx.player().isElytraFlying() && this.state != State.LANDING && (this.behavior.pathManager.isComplete() || safetyLanding)) {
             final BetterBlockPos last = this.behavior.pathManager.path.getLast();
-            if (last != null && ctx.player().getDistanceSqToCenter(last) < (48 * 48) && !goingToLandingSpot) {
+            logDirect((last != null) + " " + this.state + " " + safetyLanding + " " + goingToLandingSpot);
+            if (last != null && (ctx.player().getDistanceSqToCenter(last) < (48 * 48) || safetyLanding) && (!goingToLandingSpot || (safetyLanding && this.landingSpot == null))) {
                 logDirect("Path complete, picking a nearby safe landing spot...");
-                BetterBlockPos landingSpot = findSafeLandingSpot(last);
+                BetterBlockPos landingSpot = findSafeLandingSpot(ctx.playerFeet());
                 // if this fails we will just keep orbiting the last node until we run out of rockets or the user intervenes
                 if (landingSpot != null) {
                     this.pathTo0(landingSpot, true);
@@ -185,6 +198,11 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
         }
 
         if (this.state == State.LOCATE_JUMP) {
+            if (shouldLandForSafety()) {
+                logDirect("Not taking off, because elytra durability or fireworks are so low that I would immediately emergency land anyway.");
+                onLostControl();
+                return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
+            }
             if (this.goal == null) {
                 this.goal = new GoalYLevel(31);
             }
@@ -336,6 +354,25 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
             throw new IllegalArgumentException("The y of the goal is not between 0 and 128");
         }
         this.pathTo(new BlockPos(x, y, z));
+    }
+
+    private boolean shouldLandForSafety() {
+        ItemStack chest = ctx.player().inventory.armorInventory.get(2);
+        if (chest.getItem() != Items.ELYTRA || chest.getItem().getMaxDamage() - chest.getItemDamage() < Baritone.settings().elytraMinimumDurability.value) {
+            // elytrabehavior replaces when durability <= minimumDurability, so if durability < minimumDurability then we can reasonably assume that the elytra will soon be broken without replacement
+            return true;
+        }
+        NonNullList<ItemStack> inv = ctx.player().inventory.mainInventory;
+        int qty = 0;
+        for (int i = 0; i < 36; i++) {
+            if (ElytraBehavior.isFireworks(inv.get(i))) {
+                qty += inv.get(i).getCount();
+            }
+        }
+        if (qty <= Baritone.settings().elytraMinFireworksBeforeLanding.value) {
+            return true;
+        }
+        return false;
     }
 
     @Override

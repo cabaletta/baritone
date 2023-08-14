@@ -887,7 +887,7 @@ public final class ElytraBehavior implements Helper {
         }
     }
 
-    private static boolean isFireworks(final ItemStack itemStack) {
+    public static boolean isFireworks(final ItemStack itemStack) {
         if (itemStack.getItem() != Items.FIREWORKS) {
             return false;
         }
