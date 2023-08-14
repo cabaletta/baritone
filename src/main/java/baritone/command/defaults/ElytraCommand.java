@@ -184,15 +184,6 @@ public class ElytraCommand extends Command {
         logDirect(gatekeep);
     }
 
-    private boolean detect2b2tPlayers() {
-        // if any cached worlds are 2b2t worlds
-        try (Stream<Path> stream = Files.list(((Baritone) baritone).getDirectory())) {
-            return stream.anyMatch(path -> path.getFileName().toString().toLowerCase().contains("2b2t"));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     private boolean detectOn2b2t() {
         ServerData data = ctx.minecraft().getCurrentServerData();
         return data != null && data.serverIP.toLowerCase().contains("2b2t");
