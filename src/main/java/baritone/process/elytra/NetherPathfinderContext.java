@@ -17,6 +17,7 @@
 
 package baritone.process.elytra;
 
+import baritone.Baritone;
 import baritone.api.event.events.BlockChangeEvent;
 import baritone.utils.accessor.IBitArray;
 import baritone.utils.accessor.IBlockStateContainer;
@@ -103,7 +104,9 @@ public final class NetherPathfinderContext {
                     src.getX(), src.getY(), src.getZ(),
                     dst.getX(), dst.getY(), dst.getZ(),
                     true,
-                    10000
+                    false,
+                    10000,
+                    !Baritone.settings().elytraPredictTerrain.value
             );
             if (segment == null) {
                 throw new PathCalculationException("Path calculation failed");
