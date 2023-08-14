@@ -61,6 +61,7 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
     private boolean reachedGoal; // this basically just prevents potential notification spam
     private Goal goal;
     private ElytraBehavior behavior;
+    private boolean predictingTerrain;
 
     private ElytraProcess(Baritone baritone) {
         super(baritone);
@@ -95,6 +96,11 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
         final long seedSetting = Baritone.settings().elytraNetherSeed.value;
         if (seedSetting != this.behavior.context.getSeed()) {
             logDirect("Nether seed changed, recalculating path");
+            this.resetState();
+        }
+        if (predictingTerrain != Baritone.settings().elytraPredictTerrain.value) {
+            logDirect("elytraPredictTerrain setting changed, recalculating path");
+            predictingTerrain = Baritone.settings().elytraPredictTerrain.value;
             this.resetState();
         }
 
@@ -300,6 +306,7 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
             return;
         }
         this.onLostControl();
+        this.predictingTerrain = Baritone.settings().elytraPredictTerrain.value;
         this.behavior = new ElytraBehavior(this.baritone, this, destination, appendDestination);
         if (ctx.world() != null) {
             this.behavior.repackChunks();
