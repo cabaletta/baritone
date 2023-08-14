@@ -175,8 +175,8 @@ dependencies {
         transitive = false
     }
     launchAnnotationProcessor 'org.spongepowered:mixin:0.8.4-SNAPSHOT:processor'
-    launchImplementation('dev.babbaj:nether-pathfinder:0.41')
-    implementation 'dev.babbaj:nether-pathfinder:0.41'
+    launchImplementation('dev.babbaj:nether-pathfinder:1.2')
+    implementation 'dev.babbaj:nether-pathfinder:1.2'
     testImplementation 'junit:junit:4.12'
 }
 

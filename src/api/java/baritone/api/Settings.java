@@ -1405,6 +1405,12 @@ public final class Settings {
     public final Setting<Long> elytraNetherSeed = new Setting<>(146008555100680L);
 
     /**
+     * Whether nether-pathfinder should generate terrain based on {@link #elytraNetherSeed}.
+     * If false all chunks that haven't been loaded are assumed to be air.
+     */
+    public final Setting<Boolean> elytraPredictTerrain = new Setting<>(true);
+
+    /**
      * Automatically swap the current elytra with a new one when the durability gets too low
      */
     public final Setting<Boolean> elytraAutoSwap = new Setting<>(true);
