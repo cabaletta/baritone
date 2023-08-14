@@ -199,7 +199,7 @@ public class ElytraCommand extends Command {
         return data != null && data.serverIP.toLowerCase().contains("2b2t");
     }
 
-    private static final long OLD_2B2T_SEED = -4172144997902289642L;
+    private static final long OLD_2B2T_SEED = -4100785268875389365L;
     private static final long NEW_2B2T_SEED = 146008555100680L;
 
     @Override
