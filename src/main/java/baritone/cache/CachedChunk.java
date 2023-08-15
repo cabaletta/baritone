@@ -218,7 +218,7 @@ public final class CachedChunk {
                 // nether roof is always unbreakable
                 return Blocks.BEDROCK.defaultBlockState();
             }
-            if (y < 5 && dimension.natural()) {
+            if (y < -59 && dimension.natural()) {
                 // solid blocks below 5 are commonly bedrock
                 // however, returning bedrock always would be a little yikes
                 // discourage paths that include breaking blocks below 5 a little more heavily just so that it takes paths breaking what's known to be stone (at 5 or above) instead of what could maybe be bedrock (below 5)
