@@ -129,7 +129,7 @@ public final class NetherPathfinderContext {
      */
     public boolean raytrace(final double startX, final double startY, final double startZ,
                             final double endX, final double endY, final double endZ) {
-        return NetherPathfinder.isVisible(this.context, true, startX, startY, startZ, endX, endY, endZ);
+        return NetherPathfinder.isVisible(this.context, NetherPathfinder.CACHE_MISS_SOLID, startX, startY, startZ, endX, endY, endZ);
     }
 
     /**
@@ -141,24 +141,24 @@ public final class NetherPathfinderContext {
      * @return {@code true} if there is visibility between the points
      */
     public boolean raytrace(final Vec3d start, final Vec3d end) {
-        return NetherPathfinder.isVisible(this.context, true, start.x, start.y, start.z, end.x, end.y, end.z);
+        return NetherPathfinder.isVisible(this.context, NetherPathfinder.CACHE_MISS_SOLID, start.x, start.y, start.z, end.x, end.y, end.z);
     }
 
     public boolean raytrace(final int count, final double[] src, final double[] dst, final int visibility) {
         switch (visibility) {
             case Visibility.ALL:
-                return NetherPathfinder.isVisibleMulti(this.context, true, count, src, dst, false) == -1;
+                return NetherPathfinder.isVisibleMulti(this.context, NetherPathfinder.CACHE_MISS_SOLID, count, src, dst, false) == -1;
             case Visibility.NONE:
-                return NetherPathfinder.isVisibleMulti(this.context, true, count, src, dst, true) == -1;
+                return NetherPathfinder.isVisibleMulti(this.context, NetherPathfinder.CACHE_MISS_SOLID, count, src, dst, true) == -1;
             case Visibility.ANY:
-                return NetherPathfinder.isVisibleMulti(this.context, true, count, src, dst, true) != -1;
+                return NetherPathfinder.isVisibleMulti(this.context, NetherPathfinder.CACHE_MISS_SOLID, count, src, dst, true) != -1;
             default:
                 throw new IllegalArgumentException("lol");
         }
     }
 
     public void raytrace(final int count, final double[] src, final double[] dst, final boolean[] hitsOut, final double[] hitPosOut) {
-        NetherPathfinder.raytrace(this.context, true, count, src, dst, hitsOut, hitPosOut);
+        NetherPathfinder.raytrace(this.context, NetherPathfinder.CACHE_MISS_SOLID, count, src, dst, hitsOut, hitPosOut);
     }
 
     public void cancel() {
