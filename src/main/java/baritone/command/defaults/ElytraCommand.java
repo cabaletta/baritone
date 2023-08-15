@@ -34,9 +34,6 @@ import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.event.ClickEvent;
 import net.minecraft.util.text.event.HoverEvent;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
@@ -103,16 +100,7 @@ public class ElytraCommand extends Command {
     }
 
     private void warn2b2t() {
-        if (!Baritone.settings().elytraPredictTerrain.value) {
-            if (ctx.playerFeet().distanceSq(0, 0, 0) > 2000 * 2000) {
-                TextComponentString clippy = new TextComponentString("");
-                clippy.appendText("It looks like you're on 2b2t and more than 2000 blocks from spawn. It is recommended that you ");
-                TextComponentString predictTerrain = new TextComponentString("enable elytraPredictTerrain");
-                predictTerrain.getStyle().setUnderlined(true).setBold(true).setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TextComponentString(Baritone.settings().prefix.value + "set elytraPredictTerrain true"))).setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, FORCE_COMMAND_PREFIX + "set elytraPredictTerrain true"));
-                clippy.appendSibling(predictTerrain);
-                logDirect(clippy);
-            }
-        } else {
+        if (Baritone.settings().elytraPredictTerrain.value) {
             long seed = Baritone.settings().elytraNetherSeed.value;
             if (seed != NEW_2B2T_SEED && seed != OLD_2B2T_SEED) {
                 logDirect(new TextComponentString("It looks like you're on 2b2t, but elytraNetherSeed is incorrect.")); // match color
@@ -128,11 +116,11 @@ public class ElytraCommand extends Command {
         TextComponentString olderSeed = new TextComponentString("the older seed (click here)");
         olderSeed.getStyle().setUnderlined(true).setBold(true).setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TextComponentString(Baritone.settings().prefix.value + "set elytraNetherSeed " + OLD_2B2T_SEED))).setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, FORCE_COMMAND_PREFIX + "set elytraNetherSeed " + OLD_2B2T_SEED));
         clippy.appendSibling(olderSeed);
-        clippy.appendText(". Once you're further out into newer terrain generation (this includes everything 1.12 and upwards), you should try ");
+        clippy.appendText(". Once you're further out into newer terrain generation (this includes everything up through 1.12), you should try ");
         TextComponentString newerSeed = new TextComponentString("the newer seed (click here)");
         newerSeed.getStyle().setUnderlined(true).setBold(true).setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TextComponentString(Baritone.settings().prefix.value + "set elytraNetherSeed " + NEW_2B2T_SEED))).setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, FORCE_COMMAND_PREFIX + "set elytraNetherSeed " + NEW_2B2T_SEED));
         clippy.appendSibling(newerSeed);
-        clippy.appendText(". ");
+        clippy.appendText(". Once you get into 1.19 terrain, the terrain becomes unpredictable again, due to custom non-vanilla generation, and you should set #elytraPredictTerrain to false. ");
         return clippy;
     }
 
@@ -154,15 +142,19 @@ public class ElytraCommand extends Command {
         gatekeep.appendSibling(gatekeep4);
         gatekeep.appendText("\n");
         if (detectOn2b2t()) {
-            TextComponentString gatekeep5 = new TextComponentString("It looks like you're on 2b2t, so elytraPredictTerrain is defaulting to true. ");
+            TextComponentString gatekeep5 = new TextComponentString("It looks like you're on 2b2t. ");
             gatekeep5.appendSibling(suggest2b2tSeeds());
-            if (Baritone.settings().elytraNetherSeed.value == NEW_2B2T_SEED) {
-                gatekeep5.appendText("You are using the newer seed. ");
-            } else if (Baritone.settings().elytraNetherSeed.value == OLD_2B2T_SEED) {
-                gatekeep5.appendText("You are using the older seed. ");
+            if (!Baritone.settings().elytraPredictTerrain.value) {
+                gatekeep5.appendText(Baritone.settings().prefix.value + "elytraPredictTerrain is currently disabled. ");
             } else {
-                gatekeep5.appendText("Defaulting to the newer seed. ");
-                Baritone.settings().elytraNetherSeed.value = NEW_2B2T_SEED;
+                if (Baritone.settings().elytraNetherSeed.value == NEW_2B2T_SEED) {
+                    gatekeep5.appendText("You are using the newer seed. ");
+                } else if (Baritone.settings().elytraNetherSeed.value == OLD_2B2T_SEED) {
+                    gatekeep5.appendText("You are using the older seed. ");
+                } else {
+                    gatekeep5.appendText("Defaulting to the newer seed. ");
+                    Baritone.settings().elytraNetherSeed.value = NEW_2B2T_SEED;
+                }
             }
             gatekeep.appendSibling(gatekeep5);
         } else {
@@ -185,8 +177,9 @@ public class ElytraCommand extends Command {
     }
 
     private boolean detectOn2b2t() {
+        if (true) return true;
         ServerData data = ctx.minecraft().getCurrentServerData();
-        return data != null && data.serverIP.toLowerCase().contains("2b2t");
+        return data != null && data.serverIP.toLowerCase().contains("2b2t.org");
     }
 
     private static final long OLD_2B2T_SEED = -4100785268875389365L;

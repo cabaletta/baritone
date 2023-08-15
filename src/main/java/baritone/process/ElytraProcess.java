@@ -126,7 +126,6 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
         }
         if (ctx.player().isElytraFlying() && this.state != State.LANDING && (this.behavior.pathManager.isComplete() || safetyLanding)) {
             final BetterBlockPos last = this.behavior.pathManager.path.getLast();
-            logDirect((last != null) + " " + this.state + " " + safetyLanding + " " + goingToLandingSpot);
             if (last != null && (ctx.player().getDistanceSqToCenter(last) < (48 * 48) || safetyLanding) && (!goingToLandingSpot || (safetyLanding && this.landingSpot == null))) {
                 logDirect("Path complete, picking a nearby safe landing spot...");
                 BetterBlockPos landingSpot = findSafeLandingSpot(ctx.playerFeet());
