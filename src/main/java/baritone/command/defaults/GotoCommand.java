@@ -29,6 +29,7 @@ import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.BlockOptionalMeta;
 
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -51,9 +52,11 @@ public class GotoCommand extends Command {
             baritone.getCustomGoalProcess().setGoalAndPath(goal);
             return;
         }
-        args.requireMax(1);
-        BlockOptionalMeta destination = args.getDatatypeFor(ForBlockOptionalMeta.INSTANCE);
-        baritone.getGetToBlockProcess().getToBlock(destination);
+        List<BlockOptionalMeta> destinations = new ArrayList<BlockOptionalMeta>();
+        while(args.hasAny()) {
+            destinations.add(args.getDatatypeFor(ForBlockOptionalMeta.INSTANCE));
+        }
+        baritone.getGetToBlockProcess().getToBlock(destinations);
     }
 
     @Override

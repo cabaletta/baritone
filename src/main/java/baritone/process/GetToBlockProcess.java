@@ -36,13 +36,18 @@ import net.minecraft.inventory.ContainerPlayer;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public final class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBlockProcess {
 
-    private BlockOptionalMeta gettingTo;
+    private List<BlockOptionalMeta> gettingTo;
     private List<BlockPos> knownLocations;
     private List<BlockPos> blacklist; // locations we failed to calc to
     private BlockPos start;
+
+    private String strGettingTo() {
+        return gettingTo.stream().map(bom -> bom.toString()).collect(Collectors.joining("/"));
+    }
 
     private int tickCount = 0;
     private int arrivalTickCount = 0;
@@ -52,9 +57,9 @@ public final class GetToBlockProcess extends BaritoneProcessHelper implements IG
     }
 
     @Override
-    public void getToBlock(BlockOptionalMeta block) {
+    public void getToBlock(List<BlockOptionalMeta> blocks) {
         onLostControl();
-        gettingTo = block;
+        gettingTo = blocks;
         start = ctx.playerFeet();
         blacklist = new ArrayList<>();
         arrivalTickCount = 0;
@@ -85,7 +90,7 @@ public final class GetToBlockProcess extends BaritoneProcessHelper implements IG
                     }
                 }, PathingCommandType.FORCE_REVALIDATE_GOAL_AND_PATH);
             }
-            logDirect("No known locations of " + gettingTo + ", canceling GetToBlock");
+            logDirect("No known locations of " + strGettingTo() + ", canceling GetToBlock");
             if (isSafeToCancel) {
                 onLostControl();
             }
@@ -94,11 +99,11 @@ public final class GetToBlockProcess extends BaritoneProcessHelper implements IG
         Goal goal = new GoalComposite(knownLocations.stream().map(this::createGoal).toArray(Goal[]::new));
         if (calcFailed) {
             if (Baritone.settings().blacklistClosestOnFailure.value) {
-                logDirect("Unable to find any path to " + gettingTo + ", blacklisting presumably unreachable closest instances...");
+                logDirect("Unable to find any path to " + strGettingTo() + ", blacklisting presumably unreachable closest instances...");
                 blacklistClosest();
                 return onTick(false, isSafeToCancel); // gamer moment
             } else {
-                logDirect("Unable to find any path to " + gettingTo + ", canceling GetToBlock");
+                logDirect("Unable to find any path to " + strGettingTo() + ", canceling GetToBlock");
                 if (isSafeToCancel) {
                     onLostControl();
                 }
@@ -113,7 +118,8 @@ public final class GetToBlockProcess extends BaritoneProcessHelper implements IG
         }
         if (goal.isInGoal(ctx.playerFeet()) && goal.isInGoal(baritone.getPathingBehavior().pathStart()) && isSafeToCancel) {
             // we're there
-            if (rightClickOnArrival(gettingTo.getBlock())) {
+            // currently don't know matched position/BOM, so will only right click if all BOM's in gettingTo are right clickable
+            if (!gettingTo.stream().anyMatch(bom -> !rightClickOnArrival(bom.getBlock()))) {
                 if (rightClick()) {
                     onLostControl();
                     return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
@@ -187,22 +193,23 @@ public final class GetToBlockProcess extends BaritoneProcessHelper implements IG
     @Override
     public String displayName0() {
         if (knownLocations.isEmpty()) {
-            return "Exploring randomly to find " + gettingTo + ", no known locations";
+            return "Exploring randomly to find " + strGettingTo() + ", no known locations";
         }
-        return "Get To " + gettingTo + ", " + knownLocations.size() + " known locations";
+        return "Get To " + strGettingTo() + ", " + knownLocations.size() + " known locations";
     }
 
     private synchronized void rescan(List<BlockPos> known, CalculationContext context) {
-        List<BlockPos> positions = MineProcess.searchWorld(context, new BlockOptionalMetaLookup(gettingTo), 64, known, blacklist, Collections.emptyList());
+        List<BlockPos> positions = MineProcess.searchWorld(context, new BlockOptionalMetaLookup(gettingTo.toArray(new BlockOptionalMeta[0])), 64, known, blacklist, Collections.emptyList());
         positions.removeIf(blacklist::contains);
         knownLocations = positions;
     }
 
     private Goal createGoal(BlockPos pos) {
-        if (walkIntoInsteadOfAdjacent(gettingTo.getBlock())) {
+        // determines which actions to take (action done iff should be done for all target blocks))
+        if (!gettingTo.stream().anyMatch(bom -> !walkIntoInsteadOfAdjacent(bom.getBlock()))) {
             return new GoalTwoBlocks(pos);
         }
-        if (blockOnTopMustBeRemoved(gettingTo.getBlock()) && baritone.bsi.get0(pos.up()).isBlockNormalCube()) {
+        if (!gettingTo.stream().anyMatch(bom -> !blockOnTopMustBeRemoved(bom.getBlock())) && baritone.bsi.get0(pos.up()).isBlockNormalCube()) {
             return new GoalBlock(pos.up());
         }
         return new GoalGetToBlock(pos);
