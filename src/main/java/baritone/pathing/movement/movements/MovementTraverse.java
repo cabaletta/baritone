@@ -32,14 +32,7 @@ import baritone.pathing.movement.MovementState;
 import baritone.utils.BlockStateInterface;
 import com.google.common.collect.ImmutableSet;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.block.AirBlock;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.CarpetBlock;
-import net.minecraft.world.level.block.DoorBlock;
-import net.minecraft.world.level.block.FenceGateBlock;
-import net.minecraft.world.level.block.LadderBlock;
-import net.minecraft.world.level.block.SlabBlock;
+import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.SlabType;
 import net.minecraft.world.phys.Vec3;
@@ -240,10 +233,16 @@ public class MovementTraverse extends Movement {
                 }
             }
         }
-
+        boolean swim = Baritone.settings().swimInWater.value &&
+                MovementHelper.isLiquid(ctx, src) &&
+                MovementHelper.isLiquid(ctx, dest) &&
+                (ctx.player().isSwimming() || (ctx.world().getBlockState(dest.below()).equals(pb1) &&
+                        ctx.world().getBlockState(src.below()).equals(pb1))) &&
+                ctx.playerFeetAsVec().y >= src.y - 1;
         boolean isTheBridgeBlockThere = MovementHelper.canWalkOn(ctx, positionToPlace) || ladder || MovementHelper.canUseFrostWalker(ctx, positionToPlace);
         BlockPos feet = ctx.playerFeet();
-        if (feet.getY() != dest.getY() && !ladder) {
+        state.setInput(Input.JUMP, false);
+        if (feet.getY() != dest.getY() && !ladder && !swim) {
             logDebug("Wrong Y coordinate");
             if (feet.getY() < dest.getY()) {
                 System.out.println("In movement traverse");
@@ -283,6 +282,9 @@ public class MovementTraverse extends Movement {
                 }
             }
             MovementHelper.moveTowards(ctx, state, against);
+            if (swim) {
+                state.setTarget(new MovementState.MovementTarget(new Rotation(state.getTarget().getRotation().get().getYaw(), -30), true));
+            }
             return state;
         } else {
             wasTheBridgeBlockAlwaysThere = false;

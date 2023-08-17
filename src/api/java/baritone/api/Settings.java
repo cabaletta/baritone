@@ -29,6 +29,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+
 import java.awt.*;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -37,8 +38,8 @@ import java.lang.annotation.Target;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -763,6 +764,11 @@ public final class Settings {
      * Continue sprinting while in water
      */
     public final Setting<Boolean> sprintInWater = new Setting<>(true);
+
+    /**
+     * Attempt to enter the underwater swimming state
+     */
+    public final Setting<Boolean> swimInWater = new Setting<>(true);
 
     /**
      * When GetToBlockProcess or MineProcess fails to calculate a path, instead of just giving up, mark the closest instance
