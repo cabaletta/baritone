@@ -177,7 +177,6 @@ public class ElytraCommand extends Command {
     }
 
     private boolean detectOn2b2t() {
-        if (true) return true;
         ServerData data = ctx.minecraft().getCurrentServerData();
         return data != null && data.serverIP.toLowerCase().contains("2b2t.org");
     }
