@@ -63,7 +63,6 @@ public class ProguardTask extends BaritoneGradleTask {
 
     private List<String> requiredLibraries;
 
-    private File mixin;
     private File pathfinder;
 
     @TaskAction
@@ -75,7 +74,7 @@ public class ProguardTask extends BaritoneGradleTask {
         downloadProguard();
         extractProguard();
         generateConfigs();
-        acquireDependencies();
+        pathfinder = acquireDependencies().filter(file -> file.getName().contains("nether-pathfinder")).findAny().get();
         processArtifact();
         proguardApi();
         proguardStandalone();
