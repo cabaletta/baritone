@@ -334,12 +334,19 @@ public final class ElytraBehavior implements Helper {
                 }
                 if (!ElytraBehavior.this.clearView(this.path.getVec(i), this.path.getVec(i + 1), false)) {
                     // obstacle. where do we return to pathing?
-                    // find the next valid segment
+                    // if the end of render distance is closer to goal, then that's fine, otherwise we'd be "digging our hole deeper" and making an already bad backtrack worse
+                    int rejoinMainPathAt;
+                    if (this.path.get(rangeEndExcl - 1).distanceSq(this.path.get(path.size() - 1)) < ctx.playerFeet().distanceSq(this.path.get(path.size() - 1))) {
+                        rejoinMainPathAt = rangeEndExcl - 1; // rejoin after current render distance
+                    } else {
+                        rejoinMainPathAt = path.size() - 1; // large backtrack detected. ignore render distance, rejoin later on
+                    }
+
                     final BetterBlockPos blockage = this.path.get(i);
-                    final double distance = ctx.playerFeet().distanceTo(this.path.get(rangeEndExcl - 1));
+                    final double distance = ctx.playerFeet().distanceTo(this.path.get(rejoinMainPathAt));
 
                     final long start = System.nanoTime();
-                    this.pathRecalcSegment(rangeEndExcl - 1)
+                    this.pathRecalcSegment(rejoinMainPathAt)
                             .thenRun(() -> {
                                 logDirect(String.format("Recalculated segment around path blockage near %s %s %s (next %.1f blocks in %.4f seconds)",
                                         SettingsUtil.maybeCensor(blockage.x),
