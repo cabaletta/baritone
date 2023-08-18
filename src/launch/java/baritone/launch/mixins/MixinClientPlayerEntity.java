@@ -121,5 +121,5 @@ public class MixinClientPlayerEntity {
             return false;
         }
         return ElytraItem.isFlyEnabled(stack);
-    } // bradyfix is this right?
+    }
 }

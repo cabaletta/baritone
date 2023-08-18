@@ -34,6 +34,7 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.Slice;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.function.BiFunction;
@@ -61,21 +62,12 @@ public class MixinMinecraft {
         BaritoneAPI.getProvider().getPrimaryBaritone();
     }
 
-
     @Inject(
             method = "tick",
             at = @At(
-//<<<<<<< HEAD
                     value = "FIELD",
                     opcode = Opcodes.GETFIELD,
-                    target = "Lnet/minecraft/client/Minecraft;screen:Lnet/minecraft/client/gui/screens/Screen;",
-                    ordinal = 4,
-                    shift = At.Shift.BY,
-                    by = -3
-/*=======
-                    value = "FIELD",
-                    opcode = Opcodes.GETFIELD,
-                    target = "net/minecraft/client/Minecraft.currentScreen:Lnet/minecraft/client/gui/GuiScreen;",
+                    target = "net/minecraft/client/Minecraft.screen:Lnet/minecraft/client/gui/screens/Screen;",
                     ordinal = 0,
                     shift = At.Shift.BEFORE
             ),
@@ -83,10 +75,8 @@ public class MixinMinecraft {
                     from = @At(
                             value = "FIELD",
                             opcode = Opcodes.PUTFIELD,
-                            target = "net/minecraft/client/Minecraft.leftClickCounter:I"
+                            target = "net/minecraft/client/Minecraft.missTime:I"
                     )
->>>>>>> master*/
-                    // bradyfix ^
             )
     )
     private void runTick(CallbackInfo ci) {

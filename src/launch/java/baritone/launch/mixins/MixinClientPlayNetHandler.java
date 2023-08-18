@@ -183,7 +183,7 @@ public class MixinClientPlayNetHandler {
 
         List<Pair<BlockPos, BlockState>> changes = new ArrayList<>();
         packetIn.runUpdates((mutPos, state) -> {
-            changes.add(new Pair<>(mutPos.immutable(), state)); // bradyfix is this right
+            changes.add(new Pair<>(mutPos.immutable(), state));
         });
         if (changes.isEmpty()) {
             return;
@@ -192,28 +192,6 @@ public class MixinClientPlayNetHandler {
                 new ChunkPos(changes.get(0).first()),
                 changes
         ));
-        ChunkPos[] chunkPos = new ChunkPos[1];
-        packetIn.runUpdates((pos, state) -> {
-            if (CachedChunk.BLOCKS_TO_KEEP_TRACK_OF.contains(state.getBlock())) {
-                chunkPos[0] = new ChunkPos(pos);
-            }
-        });
-        if (chunkPos[0] == null) {
-            return;
-        }
-        for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
-            LocalPlayer player = ibaritone.getPlayerContext().player();
-            if (player != null && player.connection == (ClientPacketListener) (Object) this) {
-                ibaritone.getGameEventHandler().onChunkEvent(
-                        new ChunkEvent(
-                                EventState.POST,
-                                ChunkEvent.Type.POPULATE_FULL,
-                                chunkPos[0].x,
-                                chunkPos[0].z
-                        )
-                );
-            }
-        }
     }
 
     @Inject(

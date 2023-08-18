@@ -51,7 +51,7 @@ public abstract class MixinLivingEntity extends Entity {
     @Unique
     private RotationMoveEvent elytraRotationEvent;
 
-    public MixinLivingEntity(EntityType<?> entityTypeIn, Level worldIn) {
+    private MixinLivingEntity(EntityType<?> entityTypeIn, Level worldIn) {
         super(entityTypeIn, worldIn);
     }
 
@@ -111,33 +111,6 @@ public abstract class MixinLivingEntity extends Entity {
             this.elytraRotationEvent = null;
         }
     }
-    // bradyfix in 1.12.2 this is a redirect of moveRelative as called from travel, but it looks like in 1.19.4 we're doing it in MixinEntity as injecting into moveRelative itself, is that right?
-    /*@Redirect(
-            method = "travel",
-            at = @At(
-                    value = "INVOKE",
-                    target = "net/minecraft/entity/EntityLivingBase.moveRelative(FFFF)V"
-            )
-    )
-    private void onMoveRelative(EntityLivingBase self, float strafe, float up, float forward, float friction) {
-        Optional<IBaritone> baritone = this.getBaritone();
-        if (!baritone.isPresent()) {
-            // If a shadow is used here it breaks on Forge
-            this.moveRelative(strafe, up, forward, friction);
-            return;
-        }
-
-        RotationMoveEvent event = new RotationMoveEvent(RotationMoveEvent.Type.MOTION_UPDATE, this.rotationYaw, this.rotationPitch);
-        baritone.get().getGameEventHandler().onPlayerRotationMove(event);
-
-        this.rotationYaw = event.getYaw();
-        this.rotationPitch = event.getPitch();
-
-        this.moveRelative(strafe, up, forward, friction);
-
-        this.rotationYaw = event.getOriginal().getYaw();
-        this.rotationPitch = event.getOriginal().getPitch();
-    }*/
 
     @Unique
     private Optional<IBaritone> getBaritone() {
