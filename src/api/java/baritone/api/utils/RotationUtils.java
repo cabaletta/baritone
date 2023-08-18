@@ -19,7 +19,6 @@ package baritone.api.utils;
 
 import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
-import java.util.Optional;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -33,6 +32,8 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
+import java.util.Optional;
+
 /**
  * @author Brady
  * @since 9/25/2018
@@ -43,11 +44,13 @@ public final class RotationUtils {
      * Constant that a degree value is multiplied by to get the equivalent radian value
      */
     public static final double DEG_TO_RAD = Math.PI / 180.0;
+    public static final float DEG_TO_RAD_F = (float) DEG_TO_RAD;
 
     /**
      * Constant that a radian value is multiplied by to get the equivalent degree value
      */
     public static final double RAD_TO_DEG = 180.0 / Math.PI;
+    public static final float RAD_TO_DEG_F = (float) RAD_TO_DEG;
 
     /**
      * Offsets from the root block position to the center of each side.
@@ -128,12 +131,17 @@ public final class RotationUtils {
      * @param rotation The input rotation
      * @return Look vector for the rotation
      */
-    public static Vec3 calcVector3dFromRotation(Rotation rotation) {
-        float f = Mth.cos(-rotation.getYaw() * (float) DEG_TO_RAD - (float) Math.PI);
-        float f1 = Mth.sin(-rotation.getYaw() * (float) DEG_TO_RAD - (float) Math.PI);
-        float f2 = -Mth.cos(-rotation.getPitch() * (float) DEG_TO_RAD);
-        float f3 = Mth.sin(-rotation.getPitch() * (float) DEG_TO_RAD);
-        return new Vec3((double) (f1 * f2), (double) f3, (double) (f * f2));
+    public static Vec3 calcLookDirectionFromRotation(Rotation rotation) {
+        float flatZ = Mth.cos((-rotation.getYaw() * DEG_TO_RAD_F) - (float) Math.PI);
+        float flatX = Mth.sin((-rotation.getYaw() * DEG_TO_RAD_F) - (float) Math.PI);
+        float pitchBase = -Mth.cos(-rotation.getPitch() * DEG_TO_RAD_F);
+        float pitchHeight = Mth.sin(-rotation.getPitch() * DEG_TO_RAD_F);
+        return new Vec3(flatX * pitchBase, pitchHeight, flatZ * pitchBase);
+    }
+
+    @Deprecated
+    public static Vec3 calcVec3dFromRotation(Rotation rotation) {
+        return calcLookDirectionFromRotation(rotation);
     }
 
     /**

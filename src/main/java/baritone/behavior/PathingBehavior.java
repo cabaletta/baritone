@@ -33,6 +33,7 @@ import baritone.pathing.calc.AbstractNodeCostSearch;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.path.PathExecutor;
+import baritone.process.ElytraProcess;
 import baritone.utils.PathRenderer;
 import baritone.utils.PathingCommandContext;
 import baritone.utils.pathing.Favoring;
@@ -308,7 +309,10 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
     }
 
     public boolean isSafeToCancel() {
-        return current == null || safeToCancel;
+        if (current == null) {
+            return !baritone.getElytraProcess().isActive() || baritone.getElytraProcess().isSafeToCancel();
+        }
+        return safeToCancel;
     }
 
     public void requestPause() {
@@ -351,7 +355,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
     }
 
     // just cancel the current path
-    private void secretInternalSegmentCancel() {
+    public void secretInternalSegmentCancel() {
         queuePathEvent(PathEvent.CANCELED);
         synchronized (pathPlanLock) {
             getInProgress().ifPresent(AbstractNodeCostSearch::cancel);

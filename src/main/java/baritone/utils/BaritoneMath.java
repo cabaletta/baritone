@@ -15,27 +15,23 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.api.command.exception;
+package baritone.utils;
 
-import baritone.api.command.ICommand;
-import baritone.api.command.argument.ICommandArgument;
+/**
+ * @author Brady
+ */
+public final class BaritoneMath {
 
-import java.util.List;
+    private static final double FLOOR_DOUBLE_D = 1_073_741_824.0;
+    private static final int FLOOR_DOUBLE_I = 1_073_741_824;
 
-import static baritone.api.utils.Helper.HELPER;
+    private BaritoneMath() {}
 
-public class CommandUnhandledException extends RuntimeException implements ICommandException {
-
-    public CommandUnhandledException(String message) {
-        super(message);
+    public static int fastFloor(final double v) {
+        return (int) (v + FLOOR_DOUBLE_D) - FLOOR_DOUBLE_I;
     }
 
-    public CommandUnhandledException(Throwable cause) {
-        super(cause);
-    }
-
-    @Override
-    public void handle(ICommand command, List<ICommandArgument> args) {
-        HELPER.logUnhandledException(this);
+    public static int fastCeil(final double v) {
+        return FLOOR_DOUBLE_I - (int) (FLOOR_DOUBLE_D - v);
     }
 }

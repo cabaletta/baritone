@@ -34,6 +34,9 @@ public interface AbstractGameEventListener extends IGameEventListener {
     default void onTick(TickEvent event) {}
 
     @Override
+    default void onPostTick(TickEvent event) {}
+
+    @Override
     default void onPlayerUpdate(PlayerUpdateEvent event) {}
 
     @Override
@@ -44,6 +47,9 @@ public interface AbstractGameEventListener extends IGameEventListener {
 
     @Override
     default void onChunkEvent(ChunkEvent event) {}
+
+    @Override
+    default void onBlockChange(BlockChangeEvent event) {}
 
     @Override
     default void onRenderPass(RenderEvent event) {}

@@ -20,22 +20,28 @@ package baritone.launch.mixins;
 import baritone.Baritone;
 import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
+import baritone.api.event.events.BlockChangeEvent;
 import baritone.api.event.events.ChatEvent;
 import baritone.api.event.events.ChunkEvent;
 import baritone.api.event.events.type.EventState;
+import baritone.api.utils.Pair;
 import baritone.cache.CachedChunk;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.network.chat.Component;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.game.*;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.block.state.BlockState;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Brady
@@ -68,12 +74,14 @@ public class MixinClientPlayNetHandler {
         }
     }*/
 
-    @Shadow @Final private Minecraft minecraft;
+    @Shadow
+    @Final
+    private Minecraft minecraft;
 
     @Inject(
-        method = "sendChat(Ljava/lang/String;)V",
-        at = @At("HEAD"),
-        cancellable = true
+            method = "sendChat(Ljava/lang/String;)V",
+            at = @At("HEAD"),
+            cancellable = true
     )
     private void sendChatMessage(String string, CallbackInfo ci) {
         ChatEvent event = new ChatEvent(string);
@@ -168,9 +176,22 @@ public class MixinClientPlayNetHandler {
             at = @At("RETURN")
     )
     private void postHandleMultiBlockChange(ClientboundSectionBlocksUpdatePacket packetIn, CallbackInfo ci) {
-        if (!Baritone.settings().repackOnAnyBlockChange.value) {
+        IBaritone baritone = BaritoneAPI.getProvider().getBaritoneForConnection((ClientPacketListener) (Object) this);
+        if (baritone == null) {
             return;
         }
+
+        List<Pair<BlockPos, BlockState>> changes = new ArrayList<>();
+        packetIn.runUpdates((mutPos, state) -> {
+            changes.add(new Pair<>(mutPos.immutable(), state)); // bradyfix is this right
+        });
+        if (changes.isEmpty()) {
+            return;
+        }
+        baritone.getGameEventHandler().onBlockChange(new BlockChangeEvent(
+                new ChunkPos(changes.get(0).first()),
+                changes
+        ));
         ChunkPos[] chunkPos = new ChunkPos[1];
         packetIn.runUpdates((pos, state) -> {
             if (CachedChunk.BLOCKS_TO_KEEP_TRACK_OF.contains(state.getBlock())) {
@@ -210,4 +231,71 @@ public class MixinClientPlayNetHandler {
             }
         }
     }
+
+    /*
+    @Inject(
+            method = "handleChunkData",
+            at = @At(
+                    value = "INVOKE",
+                    target = "net/minecraft/world/chunk/Chunk.read(Lnet/minecraft/network/PacketBuffer;IZ)V"
+            )
+    )
+    private void preRead(SPacketChunkData packetIn, CallbackInfo ci) {
+        IBaritone baritone = BaritoneAPI.getProvider().getBaritoneForConnection((NetHandlerPlayClient) (Object) this);
+        if (baritone == null) {
+            return;
+        }
+        baritone.getGameEventHandler().onChunkEvent(
+                new ChunkEvent(
+                        EventState.PRE,
+                        packetIn.isFullChunk() ? ChunkEvent.Type.POPULATE_FULL : ChunkEvent.Type.POPULATE_PARTIAL,
+                        packetIn.getChunkX(),
+                        packetIn.getChunkZ()
+                )
+        );
+    }
+
+    @Inject(
+            method = "handleChunkData",
+            at = @At("RETURN")
+    )
+    private void postHandleChunkData(SPacketChunkData packetIn, CallbackInfo ci) {
+        IBaritone baritone = BaritoneAPI.getProvider().getBaritoneForConnection((NetHandlerPlayClient) (Object) this);
+        if (baritone == null) {
+            return;
+        }
+        baritone.getGameEventHandler().onChunkEvent(
+                new ChunkEvent(
+                        EventState.POST,
+                        packetIn.isFullChunk() ? ChunkEvent.Type.POPULATE_FULL : ChunkEvent.Type.POPULATE_PARTIAL,
+                        packetIn.getChunkX(),
+                        packetIn.getChunkZ()
+                )
+        );
+    }
+
+    @Inject(
+            method = "handleBlockChange",
+            at = @At("RETURN")
+    )
+    private void postHandleBlockChange(SPacketBlockChange packetIn, CallbackInfo ci) {
+        IBaritone baritone = BaritoneAPI.getProvider().getBaritoneForConnection((NetHandlerPlayClient) (Object) this);
+        if (baritone == null) {
+            return;
+        }
+
+        final ChunkPos pos = new ChunkPos(packetIn.getBlockPosition().getX() >> 4, packetIn.getBlockPosition().getZ() >> 4);
+        final Pair<BlockPos, IBlockState> changed = new Pair<>(packetIn.getBlockPosition(), packetIn.getBlockState());
+        baritone.getGameEventHandler().onBlockChange(new BlockChangeEvent(pos, Collections.singletonList(changed)));
+    }
+
+    @Inject(
+            method = "handleMultiBlockChange",
+            at = @At("RETURN")
+    )
+    private void postHandleMultiBlockChange(SPacketMultiBlockChange packetIn, CallbackInfo ci) {
+
+    }
+
+     */
 }

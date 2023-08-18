@@ -89,6 +89,10 @@ public interface IPlayerContext {
         return new Vec3(player().position().x, player().position().y + player().getEyeHeight(), player().position().z);
     }
 
+    default Vec3 playerMotion() {
+        return player().getDeltaMovement();
+    }
+
     BetterBlockPos viewerPos();
 
     default Rotation playerRotations() {

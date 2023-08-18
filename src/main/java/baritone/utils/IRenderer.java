@@ -27,6 +27,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 
@@ -40,7 +41,7 @@ public interface IRenderer {
     TextureManager textureManager = Minecraft.getInstance().getTextureManager();
     Settings settings = BaritoneAPI.getSettings();
 
-    float[] color = new float[] {1.0F, 1.0F, 1.0F, 255.0F};
+    float[] color = new float[]{1.0F, 1.0F, 1.0F, 255.0F};
 
     static void glColor(Color color, float alpha) {
         float[] colorComponents = color.getColorComponents(null);
@@ -143,5 +144,17 @@ public interface IRenderer {
 
     static void emitAABB(PoseStack stack, AABB aabb, double expand) {
         emitAABB(stack, aabb.inflate(expand, expand, expand));
+    }
+
+    static void emitLine(Vec3 start, Vec3 end) {
+        emitLine(start.x, start.y, start.z, end.x, end.y, end.z);
+    }
+
+    static void emitLine(double x1, double y1, double z1, double x2, double y2, double z2) {
+        double vpX = renderManager.renderPosX();
+        double vpY = renderManager.renderPosY();
+        double vpZ = renderManager.renderPosZ();
+        buffer.vertex(x1 - vpX, y1 - vpY, z1 - vpZ).color(color[0], color[1], color[2], color[3]).endVertex();
+        buffer.vertex(x2 - vpX, y2 - vpY, z2 - vpZ).color(color[0], color[1], color[2], color[3]).endVertex();
     }
 }

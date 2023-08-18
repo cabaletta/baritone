@@ -19,14 +19,12 @@ package baritone.api.utils;
 
 import baritone.api.BaritoneAPI;
 import baritone.api.Settings;
-import baritone.api.utils.gui.BaritoneToast;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.GuiMessageTag;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 
-import java.awt.*;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.stream.Stream;
@@ -236,5 +234,12 @@ public interface Helper {
      */
     default void logDirect(String message) {
         logDirect(message, BaritoneAPI.getSettings().logAsToast.value);
+    }
+
+    default void logUnhandledException(final Throwable exception) {
+        HELPER.logDirect("An unhandled exception occurred. " +
+                        "The error is in your game's log, please report this at https://github.com/cabaletta/baritone/issues",
+                ChatFormatting.RED);
+        exception.printStackTrace();
     }
 }

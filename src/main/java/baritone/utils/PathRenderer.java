@@ -19,7 +19,6 @@ package baritone.utils;
 
 import baritone.api.BaritoneAPI;
 import baritone.api.event.events.RenderEvent;
-import baritone.api.pathing.calc.IPath;
 import baritone.api.pathing.goals.*;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.IPlayerContext;
@@ -38,7 +37,6 @@ import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import org.joml.Matrix4f;
 
 import java.awt.*;
 import java.util.Arrays;
@@ -110,33 +108,36 @@ public final class PathRenderer implements IRenderer {
         // Render the current path, if there is one
         if (current != null && current.getPath() != null) {
             int renderBegin = Math.max(current.getPosition() - 3, 0);
-            drawPath(event.getModelViewStack(), current.getPath(), renderBegin, settings.colorCurrentPath.value, settings.fadePath.value, 10, 20);
+            drawPath(event.getModelViewStack(), current.getPath().positions(), renderBegin, settings.colorCurrentPath.value, settings.fadePath.value, 10, 20);
         }
 
         if (next != null && next.getPath() != null) {
-            drawPath(event.getModelViewStack(), next.getPath(), 0, settings.colorNextPath.value, settings.fadePath.value, 10, 20);
+            drawPath(event.getModelViewStack(), next.getPath().positions(), 0, settings.colorNextPath.value, settings.fadePath.value, 10, 20);
         }
 
         // If there is a path calculation currently running, render the path calculation process
         behavior.getInProgress().ifPresent(currentlyRunning -> {
             currentlyRunning.bestPathSoFar().ifPresent(p -> {
-                drawPath(event.getModelViewStack(), p, 0, settings.colorBestPathSoFar.value, settings.fadePath.value, 10, 20);
+                drawPath(event.getModelViewStack(), p.positions(), 0, settings.colorBestPathSoFar.value, settings.fadePath.value, 10, 20);
             });
 
             currentlyRunning.pathToMostRecentNodeConsidered().ifPresent(mr -> {
-                drawPath(event.getModelViewStack(), mr, 0, settings.colorMostRecentConsidered.value, settings.fadePath.value, 10, 20);
+                drawPath(event.getModelViewStack(), mr.positions(), 0, settings.colorMostRecentConsidered.value, settings.fadePath.value, 10, 20);
                 drawManySelectionBoxes(event.getModelViewStack(), ctx.player(), Collections.singletonList(mr.getDest()), settings.colorMostRecentConsidered.value);
             });
         });
     }
 
-    private static void drawPath(PoseStack stack, IPath path, int startIndex, Color color, boolean fadeOut, int fadeStart0, int fadeEnd0) {
+    public static void drawPath(PoseStack stack, List<BetterBlockPos> positions, int startIndex, Color color, boolean fadeOut, int fadeStart0, int fadeEnd0) {
+        drawPath(stack, positions, startIndex, color, fadeOut, fadeStart0, fadeEnd0, 0.5D);
+    }
+
+    public static void drawPath(PoseStack stack, List<BetterBlockPos> positions, int startIndex, Color color, boolean fadeOut, int fadeStart0, int fadeEnd0, double offset) {
         IRenderer.startLines(color, settings.pathRenderLineWidthPixels.value, settings.renderPathIgnoreDepth.value);
 
         int fadeStart = fadeStart0 + startIndex;
         int fadeEnd = fadeEnd0 + startIndex;
 
-        List<BetterBlockPos> positions = path.positions();
         for (int i = startIndex, next; i < positions.size() - 1; i = next) {
             BetterBlockPos start = positions.get(i);
             BetterBlockPos end = positions.get(next = i + 1);
@@ -166,34 +167,36 @@ public final class PathRenderer implements IRenderer {
                 IRenderer.glColor(color, alpha);
             }
 
-            emitPathLine(stack, start.x, start.y, start.z, end.x, end.y, end.z);
+            emitPathLine(stack, start.x, start.y, start.z, end.x, end.y, end.z, offset);
         }
 
         IRenderer.endLines(settings.renderPathIgnoreDepth.value);
     }
 
-    private static void emitPathLine(PoseStack stack, double x1, double y1, double z1, double x2, double y2, double z2) {
+    private static void emitPathLine(PoseStack stack, double x1, double y1, double z1, double x2, double y2, double z2, double offset) {
+        final double extraOffset = offset + 0.03D;
+
         double vpX = posX();
         double vpY = posY();
         double vpZ = posZ();
         boolean renderPathAsFrickinThingy = !settings.renderPathAsLine.value;
 
         IRenderer.emitLine(stack,
-                x1 + 0.5D - vpX, y1 + 0.5D - vpY, z1 + 0.5D - vpZ,
-                x2 + 0.5D - vpX, y2 + 0.5D - vpY, z2 + 0.5D - vpZ
+                x1 + offset - vpX, y1 + offset - vpY, z1 + offset - vpZ,
+                x2 + offset - vpX, y2 + offset - vpY, z2 + offset - vpZ
         );
         if (renderPathAsFrickinThingy) {
             IRenderer.emitLine(stack,
-                    x2 + 0.5D - vpX, y2 + 0.5D - vpY, z2 + 0.5D - vpZ,
-                    x2 + 0.5D - vpX, y2 + 0.53D - vpY, z2 + 0.5D - vpZ
+                    x2 + offset - vpX, y2 + offset - vpY, z2 + offset - vpZ,
+                    x2 + offset - vpX, y2 + extraOffset - vpY, z2 + offset - vpZ
             );
             IRenderer.emitLine(stack,
-                    x2 + 0.5D - vpX, y2 + 0.53D - vpY, z2 + 0.5D - vpZ,
-                    x1 + 0.5D - vpX, y1 + 0.53D - vpY, z1 + 0.5D - vpZ
+                    x2 + offset - vpX, y2 + extraOffset - vpY, z2 + offset - vpZ,
+                    x1 + offset - vpX, y1 + extraOffset - vpY, z1 + offset - vpZ
             );
             IRenderer.emitLine(stack,
-                    x1 + 0.5D - vpX, y1 + 0.53D - vpY, z1 + 0.5D - vpZ,
-                    x1 + 0.5D - vpX, y1 + 0.5D - vpY, z1 + 0.5D - vpZ
+                    x1 + offset - vpX, y1 + extraOffset - vpY, z1 + offset - vpZ,
+                    x1 + offset - vpX, y1 + offset - vpY, z1 + offset - vpZ
             );
         }
     }
@@ -215,7 +218,7 @@ public final class PathRenderer implements IRenderer {
         IRenderer.endLines(settings.renderSelectionBoxesIgnoreDepth.value);
     }
 
-    private static void drawGoal(PoseStack stack, IPlayerContext ctx, Goal goal, float partialTicks, Color color) {
+    public static void drawGoal(PoseStack stack, IPlayerContext ctx, Goal goal, float partialTicks, Color color) {
         drawGoal(stack, ctx, goal, partialTicks, color, true);
     }
 

@@ -29,6 +29,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+
 import java.awt.*;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -37,8 +38,9 @@ import java.lang.annotation.Target;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.*;
 import java.util.List;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -739,6 +741,26 @@ public final class Settings {
     public final Setting<Boolean> blockFreeLook = new Setting<>(false);
 
     /**
+     * Automatically elytra fly without having to force the client-sided rotations.
+     */
+    public final Setting<Boolean> elytraFreeLook = new Setting<>(false);
+
+    /**
+     * Forces the client-sided yaw rotation to an average of the last {@link #smoothLookTicks} of server-sided rotations.
+     */
+    public final Setting<Boolean> smoothLook = new Setting<>(false);
+
+    /**
+     * Same as {@link #smoothLook} but for elytra flying.
+     */
+    public final Setting<Boolean> elytraSmoothLook = new Setting<>(true);
+
+    /**
+     * The number of ticks to average across for {@link #smoothLook};
+     */
+    public final Setting<Integer> smoothLookTicks = new Setting<>(5);
+
+    /**
      * When true, the player will remain with its existing look direction as often as possible.
      * Although, in some cases this can get it stuck, hence this setting to disable that behavior.
      */
@@ -1187,8 +1209,8 @@ public final class Settings {
      */
     @JavaOnly
     public final Setting<Consumer<Component>> logger = new Setting<>((msg) -> {
-            final GuiMessageTag tag = useMessageTag.value ? Helper.MESSAGE_TAG : null;
-            Minecraft.getInstance().gui.getChat().addMessage(msg, null, tag);
+        final GuiMessageTag tag = useMessageTag.value ? Helper.MESSAGE_TAG : null;
+        Minecraft.getInstance().gui.getChat().addMessage(msg, null, tag);
     });
 
     /**
@@ -1336,6 +1358,115 @@ public final class Settings {
      * Desktop notification on mine fail
      */
     public final Setting<Boolean> notificationOnMineFail = new Setting<>(true);
+
+    /**
+     * The number of ticks of elytra movement to simulate while firework boost is not active. Higher values are
+     * computationally more expensive.
+     */
+    public final Setting<Integer> elytraSimulationTicks = new Setting<>(20);
+
+    /**
+     * The maximum allowed deviation in pitch from a direct line-of-sight to the flight target. Higher values are
+     * computationally more expensive.
+     */
+    public final Setting<Integer> elytraPitchRange = new Setting<>(25);
+
+    /**
+     * The minimum speed that the player can drop to (in blocks/tick) before a firework is automatically deployed.
+     */
+    public final Setting<Double> elytraFireworkSpeed = new Setting<>(1.2);
+
+    /**
+     * The delay after the player's position is set-back by the server that a firework may be automatically deployed.
+     * Value is in ticks.
+     */
+    public final Setting<Integer> elytraFireworkSetbackUseDelay = new Setting<>(15);
+
+    /**
+     * The minimum padding value that is added to the player's hitbox when considering which point to fly to on the
+     * path. High values can result in points not being considered which are otherwise safe to fly to. Low values can
+     * result in flight paths which are extremely tight, and there's the possibility of crashing due to getting too low
+     * to the ground.
+     */
+    public final Setting<Double> elytraMinimumAvoidance = new Setting<>(0.2);
+
+    /**
+     * If enabled, avoids using fireworks when descending along the flight path.
+     */
+    public final Setting<Boolean> elytraConserveFireworks = new Setting<>(false);
+
+    /**
+     * Renders the raytraces that are performed by the elytra fly calculation.
+     */
+    public final Setting<Boolean> elytraRenderRaytraces = new Setting<>(false);
+
+    /**
+     * Renders the raytraces that are used in the hitbox part of the elytra fly calculation.
+     * Requires {@link #elytraRenderRaytraces}.
+     */
+    public final Setting<Boolean> elytraRenderHitboxRaytraces = new Setting<>(false);
+
+    /**
+     * Renders the best elytra flight path that was simulated each tick.
+     */
+    public final Setting<Boolean> elytraRenderSimulation = new Setting<>(true);
+
+    /**
+     * Automatically path to and jump off of ledges to initiate elytra flight when grounded.
+     */
+    public final Setting<Boolean> elytraAutoJump = new Setting<>(false);
+
+    /**
+     * The seed used to generate chunks for long distance elytra path-finding in the nether.
+     * Defaults to 2b2t's nether seed.
+     */
+    public final Setting<Long> elytraNetherSeed = new Setting<>(146008555100680L);
+
+    /**
+     * Whether nether-pathfinder should generate terrain based on {@link #elytraNetherSeed}.
+     * If false all chunks that haven't been loaded are assumed to be air.
+     */
+    public final Setting<Boolean> elytraPredictTerrain = new Setting<>(true);
+
+    /**
+     * Automatically swap the current elytra with a new one when the durability gets too low
+     */
+    public final Setting<Boolean> elytraAutoSwap = new Setting<>(true);
+
+    /**
+     * The minimum durability an elytra can have before being swapped
+     */
+    public final Setting<Integer> elytraMinimumDurability = new Setting<>(5);
+
+    /**
+     * The minimum fireworks before landing early for safety
+     */
+    public final Setting<Integer> elytraMinFireworksBeforeLanding = new Setting<>(5);
+
+    /**
+     * Automatically land when elytra is almost out of durability, or almost out of fireworks
+     */
+    public final Setting<Boolean> elytraAllowEmergencyLand = new Setting<>(true);
+
+    /**
+     * Time between culling far away chunks from the nether pathfinder chunk cache
+     */
+    public final Setting<Long> elytraTimeBetweenCacheCullSecs = new Setting<>(TimeUnit.MINUTES.toSeconds(3));
+
+    /**
+     * Maximum distance chunks can be before being culled from the nether pathfinder chunk cache
+     */
+    public final Setting<Integer> elytraCacheCullDistance = new Setting<>(5000);
+
+    /**
+     * Should elytra consider nether brick a valid landing block
+     */
+    public final Setting<Boolean> elytraAllowLandOnNetherFortress = new Setting<>(false);
+
+    /**
+     * Has the user read and understood the elytra terms and conditions
+     */
+    public final Setting<Boolean> elytraTermsAccepted = new Setting<>(false);
 
     /**
      * A map of lowercase setting field names to their respective setting

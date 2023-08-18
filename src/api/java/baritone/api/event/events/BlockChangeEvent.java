@@ -15,27 +15,33 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.api.command.exception;
+package baritone.api.event.events;
 
-import baritone.api.command.ICommand;
-import baritone.api.command.argument.ICommandArgument;
+import baritone.api.utils.Pair;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.List;
 
-import static baritone.api.utils.Helper.HELPER;
+/**
+ * @author Brady
+ */
+public final class BlockChangeEvent {
 
-public class CommandUnhandledException extends RuntimeException implements ICommandException {
+    private final ChunkPos chunk;
+    private final List<Pair<BlockPos, BlockState>> blocks;
 
-    public CommandUnhandledException(String message) {
-        super(message);
+    public BlockChangeEvent(ChunkPos pos, List<Pair<BlockPos, BlockState>> blocks) {
+        this.chunk = pos;
+        this.blocks = blocks;
     }
 
-    public CommandUnhandledException(Throwable cause) {
-        super(cause);
+    public ChunkPos getChunkPos() {
+        return this.chunk;
     }
 
-    @Override
-    public void handle(ICommand command, List<ICommandArgument> args) {
-        HELPER.logUnhandledException(this);
+    public List<Pair<BlockPos, BlockState>> getBlocks() {
+        return this.blocks;
     }
 }

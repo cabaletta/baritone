@@ -15,6 +15,7 @@
     "MixinCommandSuggestionHelper",
     "MixinEntity",
     "MixinEntityRenderManager",
+    "MixinFireworkRocketEntity",
     "MixinItemStack",
     "MixinLivingEntity",
     "MixinLootContext",
