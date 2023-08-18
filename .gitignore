@@ -32,3 +32,5 @@ baritone_Client.launch
 
 libs/lwjgl-platform-2.9.4-nightly-20150209-natives-osx.jar
 libs/java-objc-bridge-1.1.jar
+
+mapping
