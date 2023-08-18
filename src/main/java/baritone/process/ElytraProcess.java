@@ -364,7 +364,8 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
             // elytrabehavior replaces when durability <= minimumDurability, so if durability < minimumDurability then we can reasonably assume that the elytra will soon be broken without replacement
             return true;
         }
-        NonNullList<ItemStack> inv = ctx.player().inventoryMenu.getItems();
+
+        NonNullList<ItemStack> inv = ctx.player().getInventory().items;
         int qty = 0;
         for (int i = 0; i < 36; i++) {
             if (ElytraBehavior.isFireworks(inv.get(i))) {
@@ -404,6 +405,8 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
 
     @Override
     public void onRenderPass(RenderEvent event) {
+        System.out.println(event.getPartialTicks() + " " + ctx.player().getXRot() + " " + ctx.player().getYRot() + " " + ctx.player().xRotO + " " + ctx.player().yRotO);
+
         if (this.behavior != null) this.behavior.onRenderPass(event);
     }
 

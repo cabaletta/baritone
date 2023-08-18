@@ -402,6 +402,7 @@ public final class ElytraBehavior implements Helper {
     }
 
     public void onRenderPass(RenderEvent event) {
+
         final Settings settings = Baritone.settings();
         if (this.visiblePath != null) {
             PathRenderer.drawPath(event.getModelViewStack(), this.visiblePath, 0, Color.RED, false, 0, 0, 0.0D);
@@ -412,14 +413,14 @@ public final class ElytraBehavior implements Helper {
         if (!this.clearLines.isEmpty() && settings.elytraRenderRaytraces.value) {
             IRenderer.startLines(Color.GREEN, settings.pathRenderLineWidthPixels.value, settings.renderPathIgnoreDepth.value);
             for (Pair<Vec3, Vec3> line : this.clearLines) {
-                IRenderer.emitLine(line.first(), line.second());
+                IRenderer.emitLine(event.getModelViewStack(), line.first(), line.second());
             }
             IRenderer.endLines(settings.renderPathIgnoreDepth.value);
         }
         if (!this.blockedLines.isEmpty() && Baritone.settings().elytraRenderRaytraces.value) {
             IRenderer.startLines(Color.BLUE, settings.pathRenderLineWidthPixels.value, settings.renderPathIgnoreDepth.value);
             for (Pair<Vec3, Vec3> line : this.blockedLines) {
-                IRenderer.emitLine(line.first(), line.second());
+                IRenderer.emitLine(event.getModelViewStack(), line.first(), line.second());
             }
             IRenderer.endLines(settings.renderPathIgnoreDepth.value);
         }
@@ -429,7 +430,7 @@ public final class ElytraBehavior implements Helper {
             for (int i = 0; i < this.simulationLine.size() - 1; i++) {
                 final Vec3 src = this.simulationLine.get(i).add(offset);
                 final Vec3 dst = this.simulationLine.get(i + 1).add(offset);
-                IRenderer.emitLine(src, dst);
+                IRenderer.emitLine(event.getModelViewStack(), src, dst);
             }
             IRenderer.endLines(settings.renderPathIgnoreDepth.value);
         }
@@ -1272,7 +1273,7 @@ public final class ElytraBehavior implements Helper {
     }
 
     private int findGoodElytra() {
-        NonNullList<ItemStack> invy = ctx.player().inventoryMenu.getItems();
+        NonNullList<ItemStack> invy = ctx.player().getInventory().items;
         for (int i = 0; i < invy.size(); i++) {
             ItemStack slot = invy.get(i);
             if (slot.getItem() == Items.ELYTRA && (slot.getItem().getMaxDamage() - slot.getDamageValue()) > Baritone.settings().elytraMinimumDurability.value) {

@@ -201,23 +201,15 @@ public final class NetherPathfinderContext {
                 long maxEntryValue = (1L << bitsPerEntry) - 1L;
 
                 final int yReal = y0 << 4;
-                for (int idx = 0, kl = bitsPerEntry - 1; idx < arraySize; idx++, kl += bitsPerEntry) {
-                    final int i = idx * bitsPerEntry;
-                    final int j = i >> 6;
-                    final int l = i & 63;
-                    final int k = kl >> 6;
-                    final long jl = longArray[j] >>> l;
-
-                    final int id;
-                    if (j == k) {
-                        id = (int) (jl & maxEntryValue);
-                    } else {
-                        id = (int) ((jl | longArray[k] << (64 - l)) & maxEntryValue);
+                for (int i = 0, idx = 0; i < longArray.length && idx < arraySize; ++i) {
+                    long l = longArray[i];
+                    for (int offset = 0; offset <= (64 - bitsPerEntry) && idx < arraySize; offset += bitsPerEntry, ++idx) {
+                        int value = (int) ((l >> offset) & maxEntryValue);
+                        int x = (idx & 15);
+                        int y = yReal + (idx >> 8);
+                        int z = ((idx >> 4) & 15);
+                        Octree.setBlock(ptr, x, y, z, value != airId);
                     }
-                    int x = (idx & 15);
-                    int y = yReal + (idx >> 8);
-                    int z = ((idx >> 4) & 15);
-                    Octree.setBlock(ptr, x, y, z, id != airId);
                 }
             }
             Octree.setIsFromJava(ptr);

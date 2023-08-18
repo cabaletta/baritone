@@ -146,15 +146,11 @@ public interface IRenderer {
         emitAABB(stack, aabb.inflate(expand, expand, expand));
     }
 
-    static void emitLine(Vec3 start, Vec3 end) {
-        emitLine(start.x, start.y, start.z, end.x, end.y, end.z);
-    }
-
-    static void emitLine(double x1, double y1, double z1, double x2, double y2, double z2) {
+    static void emitLine(PoseStack stack, Vec3 start, Vec3 end) {
         double vpX = renderManager.renderPosX();
         double vpY = renderManager.renderPosY();
         double vpZ = renderManager.renderPosZ();
-        buffer.vertex(x1 - vpX, y1 - vpY, z1 - vpZ).color(color[0], color[1], color[2], color[3]).endVertex();
-        buffer.vertex(x2 - vpX, y2 - vpY, z2 - vpZ).color(color[0], color[1], color[2], color[3]).endVertex();
+        emitLine(stack, start.x - vpX, start.y - vpY, start.z - vpZ, end.x - vpX, end.y - vpY, end.z - vpZ);
     }
+
 }

@@ -82,9 +82,12 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
 
     @Override
     public void onPlayerUpdate(PlayerUpdateEvent event) {
+        System.out.println(event.getState() + " " + ctx.player().getXRot() + " " + ctx.player().getYRot() + " " + ctx.player().xRotO + " " + ctx.player().yRotO);
+
         if (this.target == null) {
             return;
         }
+
         switch (event.getState()) {
             case PRE: {
                 if (this.target.mode == Target.Mode.NONE) {
@@ -92,7 +95,7 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
                     return;
                 }
 
-                this.prevRotation = new Rotation(ctx.player().getXRot(), ctx.player().getYRot());
+                this.prevRotation = new Rotation(ctx.player().getYRot(), ctx.player().getXRot());
                 final Rotation actual = this.processor.peekRotation(this.target.rotation);
                 ctx.player().setYRot(actual.getYaw());
                 ctx.player().setXRot(actual.getPitch());
@@ -110,14 +113,16 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
                         this.smoothPitchBuffer.removeFirst();
                     }
                     if (this.target.mode == Target.Mode.SERVER) {
-                        ctx.player().setXRot(this.prevRotation.getYaw());
-                        ctx.player().setYRot(this.prevRotation.getPitch());
+                        ctx.player().setYRot(this.prevRotation.getYaw());
+                        ctx.player().setXRot(this.prevRotation.getPitch());
                     } else if (ctx.player().isFallFlying() ? Baritone.settings().elytraSmoothLook.value : Baritone.settings().smoothLook.value) {
-                        ctx.player().setXRot((float) this.smoothYawBuffer.stream().mapToDouble(d -> d).average().orElse(this.prevRotation.getYaw()));
+                        ctx.player().setYRot((float) this.smoothYawBuffer.stream().mapToDouble(d -> d).average().orElse(this.prevRotation.getYaw()));
                         if (ctx.player().isFallFlying()) {
-                            ctx.player().setYRot((float) this.smoothPitchBuffer.stream().mapToDouble(d -> d).average().orElse(this.prevRotation.getPitch()));
+                            ctx.player().setXRot((float) this.smoothPitchBuffer.stream().mapToDouble(d -> d).average().orElse(this.prevRotation.getPitch()));
                         }
                     }
+                    //ctx.player().xRotO = prevRotation.getPitch();
+                    //ctx.player().yRotO = prevRotation.getYaw();
                     this.prevRotation = null;
                 }
                 // The target is done being used for this game tick, so it can be invalidated
