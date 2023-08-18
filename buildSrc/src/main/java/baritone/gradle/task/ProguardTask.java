@@ -126,6 +126,9 @@ public class ProguardTask extends BaritoneGradleTask {
             ex.printStackTrace();
         }
 
+        path = findJavaByGradleCurrentRuntime();
+        if (path != null) return path;
+
         try {
             path = findJavaByJavaHome();
             if (path != null) return path;
@@ -133,10 +136,6 @@ public class ProguardTask extends BaritoneGradleTask {
             System.err.println("Unable to find java by JAVA_HOME");
             ex.printStackTrace();
         }
-
-
-        path = findJavaByGradleCurrentRuntime();
-        if (path != null) return path;
 
         throw new Exception("Unable to find java to determine ProGuard libraryjars. Please specify forkOptions.executable in javaCompile," +
                 " JAVA_HOME environment variable, or make sure to run Gradle with the correct JDK (a v1.8 only)");
