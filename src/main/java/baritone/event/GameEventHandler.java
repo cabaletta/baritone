@@ -23,12 +23,17 @@ import baritone.api.event.events.type.EventState;
 import baritone.api.event.listener.IEventBus;
 import baritone.api.event.listener.IGameEventListener;
 import baritone.api.utils.Helper;
+import baritone.api.utils.Pair;
+import baritone.cache.CachedChunk;
 import baritone.cache.WorldProvider;
 import baritone.utils.BlockStateInterface;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.chunk.LevelChunk;
+
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.chunk.LevelChunk;
 
 /**
  * @author Brady
@@ -60,6 +65,11 @@ public final class GameEventHandler implements IEventBus, Helper {
     }
 
     @Override
+    public void onPostTick(TickEvent event) {
+        listeners.forEach(l -> l.onPostTick(event));
+    }
+
+    @Override
     public final void onPlayerUpdate(PlayerUpdateEvent event) {
         listeners.forEach(l -> l.onPlayerUpdate(event));
     }
@@ -75,12 +85,9 @@ public final class GameEventHandler implements IEventBus, Helper {
     }
 
     @Override
-    public final void onChunkEvent(ChunkEvent event) {
+    public void onChunkEvent(ChunkEvent event) {
         EventState state = event.getState();
         ChunkEvent.Type type = event.getType();
-
-        boolean isPostPopulate = state == EventState.POST
-                && (type == ChunkEvent.Type.POPULATE_FULL || type == ChunkEvent.Type.POPULATE_PARTIAL);
 
         Level world = baritone.getPlayerContext().world();
 
@@ -91,7 +98,7 @@ public final class GameEventHandler implements IEventBus, Helper {
                 && type == ChunkEvent.Type.UNLOAD
                 && world.getChunkSource().getChunk(event.getX(), event.getZ(), null, false) != null;
 
-        if (isPostPopulate || isPreUnload) {
+        if (event.isPostPopulate() || isPreUnload) {
             baritone.getWorldProvider().ifWorldLoaded(worldData -> {
                 LevelChunk chunk = world.getChunk(event.getX(), event.getZ());
                 worldData.getCachedWorld().queueForPacking(chunk);
@@ -100,6 +107,25 @@ public final class GameEventHandler implements IEventBus, Helper {
 
 
         listeners.forEach(l -> l.onChunkEvent(event));
+    }
+
+    @Override
+    public void onBlockChange(BlockChangeEvent event) {
+        if (Baritone.settings().repackOnAnyBlockChange.value) {
+            final boolean keepingTrackOf = event.getBlocks().stream()
+                    .map(Pair::second).map(BlockState::getBlock)
+                    .anyMatch(CachedChunk.BLOCKS_TO_KEEP_TRACK_OF::contains);
+
+            if (keepingTrackOf) {
+                baritone.getWorldProvider().ifWorldLoaded(worldData -> {
+                    final Level world = baritone.getPlayerContext().world();
+                    ChunkPos pos = event.getChunkPos();
+                    worldData.getCachedWorld().queueForPacking(world.getChunk(pos.x, pos.z));
+                });
+            }
+        }
+
+        listeners.forEach(l -> l.onBlockChange(event));
     }
 
     @Override
@@ -114,7 +140,7 @@ public final class GameEventHandler implements IEventBus, Helper {
         if (event.getState() == EventState.POST) {
             cache.closeWorld();
             if (event.getWorld() != null) {
-                cache.initWorld(event.getWorld().dimension(), event.getWorld().dimensionType());
+                cache.initWorld(event.getWorld());
             }
         }
 

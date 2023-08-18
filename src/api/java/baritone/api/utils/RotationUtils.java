@@ -19,7 +19,6 @@ package baritone.api.utils;
 
 import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
-import java.util.Optional;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -33,6 +32,8 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
+import java.util.Optional;
+
 /**
  * @author Brady
  * @since 9/25/2018
@@ -43,11 +44,13 @@ public final class RotationUtils {
      * Constant that a degree value is multiplied by to get the equivalent radian value
      */
     public static final double DEG_TO_RAD = Math.PI / 180.0;
+    public static final float DEG_TO_RAD_F = (float) DEG_TO_RAD;
 
     /**
      * Constant that a radian value is multiplied by to get the equivalent degree value
      */
     public static final double RAD_TO_DEG = 180.0 / Math.PI;
+    public static final float RAD_TO_DEG_F = (float) RAD_TO_DEG;
 
     /**
      * Offsets from the root block position to the center of each side.
@@ -128,26 +131,31 @@ public final class RotationUtils {
      * @param rotation The input rotation
      * @return Look vector for the rotation
      */
-    public static Vec3 calcVector3dFromRotation(Rotation rotation) {
-        float f = Mth.cos(-rotation.getYaw() * (float) DEG_TO_RAD - (float) Math.PI);
-        float f1 = Mth.sin(-rotation.getYaw() * (float) DEG_TO_RAD - (float) Math.PI);
-        float f2 = -Mth.cos(-rotation.getPitch() * (float) DEG_TO_RAD);
-        float f3 = Mth.sin(-rotation.getPitch() * (float) DEG_TO_RAD);
-        return new Vec3((double) (f1 * f2), (double) f3, (double) (f * f2));
+    public static Vec3 calcLookDirectionFromRotation(Rotation rotation) {
+        float flatZ = Mth.cos((-rotation.getYaw() * DEG_TO_RAD_F) - (float) Math.PI);
+        float flatX = Mth.sin((-rotation.getYaw() * DEG_TO_RAD_F) - (float) Math.PI);
+        float pitchBase = -Mth.cos(-rotation.getPitch() * DEG_TO_RAD_F);
+        float pitchHeight = Mth.sin(-rotation.getPitch() * DEG_TO_RAD_F);
+        return new Vec3(flatX * pitchBase, pitchHeight, flatZ * pitchBase);
+    }
+
+    @Deprecated
+    public static Vec3 calcVec3dFromRotation(Rotation rotation) {
+        return calcLookDirectionFromRotation(rotation);
     }
 
     /**
      * @param ctx Context for the viewing entity
      * @param pos The target block position
      * @return The optional rotation
-     * @see #reachable(LocalPlayer, BlockPos, double)
+     * @see #reachable(IPlayerContext, BlockPos, double)
      */
     public static Optional<Rotation> reachable(IPlayerContext ctx, BlockPos pos) {
-        return reachable(ctx.player(), pos, ctx.playerController().getBlockReachDistance());
+        return reachable(ctx, pos, false);
     }
 
     public static Optional<Rotation> reachable(IPlayerContext ctx, BlockPos pos, boolean wouldSneak) {
-        return reachable(ctx.player(), pos, ctx.playerController().getBlockReachDistance(), wouldSneak);
+        return reachable(ctx, pos, ctx.playerController().getBlockReachDistance(), wouldSneak);
     }
 
     /**
@@ -157,18 +165,17 @@ public final class RotationUtils {
      * side that is reachable. The return type will be {@link Optional#empty()} if the entity is
      * unable to reach any of the sides of the block.
      *
-     * @param entity             The viewing entity
+     * @param ctx                Context for the viewing entity
      * @param pos                The target block position
      * @param blockReachDistance The block reach distance of the entity
      * @return The optional rotation
      */
-    public static Optional<Rotation> reachable(LocalPlayer entity, BlockPos pos, double blockReachDistance) {
-        return reachable(entity, pos, blockReachDistance, false);
+    public static Optional<Rotation> reachable(IPlayerContext ctx, BlockPos pos, double blockReachDistance) {
+        return reachable(ctx, pos, blockReachDistance, false);
     }
 
-    public static Optional<Rotation> reachable(LocalPlayer entity, BlockPos pos, double blockReachDistance, boolean wouldSneak) {
-        IBaritone baritone = BaritoneAPI.getProvider().getBaritoneForPlayer(entity);
-        if (baritone.getPlayerContext().isLookingAt(pos)) {
+    public static Optional<Rotation> reachable(IPlayerContext ctx, BlockPos pos, double blockReachDistance, boolean wouldSneak) {
+        if (BaritoneAPI.getSettings().remainWithExistingLookDirection.value && ctx.isLookingAt(pos)) {
             /*
              * why add 0.0001?
              * to indicate that we actually have a desired pitch
@@ -179,10 +186,10 @@ public final class RotationUtils {
              *
              * or if you're a normal person literally all this does it ensure that we don't nudge the pitch to a normal level
              */
-            Rotation hypothetical = new Rotation(entity.getYRot(), entity.getXRot() + 0.0001F);
+            Rotation hypothetical = ctx.playerRotations().add(new Rotation(0, 0.0001F));
             if (wouldSneak) {
                 // the concern here is: what if we're looking at it now, but as soon as we start sneaking we no longer are
-                HitResult result = RayTraceUtils.rayTraceTowards(entity, hypothetical, blockReachDistance, true);
+                HitResult result = RayTraceUtils.rayTraceTowards(ctx.player(), hypothetical, blockReachDistance, true);
                 if (result != null && result.getType() == HitResult.Type.BLOCK && ((BlockHitResult) result).getBlockPos().equals(pos)) {
                     return Optional.of(hypothetical); // yes, if we sneaked we would still be looking at the block
                 }
@@ -190,14 +197,14 @@ public final class RotationUtils {
                 return Optional.of(hypothetical);
             }
         }
-        Optional<Rotation> possibleRotation = reachableCenter(entity, pos, blockReachDistance, wouldSneak);
+        Optional<Rotation> possibleRotation = reachableCenter(ctx, pos, blockReachDistance, wouldSneak);
         //System.out.println("center: " + possibleRotation);
         if (possibleRotation.isPresent()) {
             return possibleRotation;
         }
 
-        BlockState state = entity.level().getBlockState(pos);
-        VoxelShape shape = state.getShape(entity.level(), pos);
+        BlockState state = ctx.world().getBlockState(pos);
+        VoxelShape shape = state.getShape(ctx.world(), pos);
         if (shape.isEmpty()) {
             shape = Shapes.block();
         }
@@ -205,7 +212,7 @@ public final class RotationUtils {
             double xDiff = shape.min(Direction.Axis.X) * sideOffset.x + shape.max(Direction.Axis.X) * (1 - sideOffset.x);
             double yDiff = shape.min(Direction.Axis.Y) * sideOffset.y + shape.max(Direction.Axis.Y) * (1 - sideOffset.y);
             double zDiff = shape.min(Direction.Axis.Z) * sideOffset.z + shape.max(Direction.Axis.Z) * (1 - sideOffset.z);
-            possibleRotation = reachableOffset(entity, pos, new Vec3(pos.getX(), pos.getY(), pos.getZ()).add(xDiff, yDiff, zDiff), blockReachDistance, wouldSneak);
+            possibleRotation = reachableOffset(ctx, pos, new Vec3(pos.getX(), pos.getY(), pos.getZ()).add(xDiff, yDiff, zDiff), blockReachDistance, wouldSneak);
             if (possibleRotation.isPresent()) {
                 return possibleRotation;
             }
@@ -218,12 +225,55 @@ public final class RotationUtils {
      * the given offsetted position. The return type will be {@link Optional#empty()} if
      * the entity is unable to reach the block with the offset applied.
      *
-     * @param entity             The viewing entity
+     * @param ctx                Context for the viewing entity
      * @param pos                The target block position
      * @param offsetPos          The position of the block with the offset applied.
      * @param blockReachDistance The block reach distance of the entity
      * @return The optional rotation
      */
+    public static Optional<Rotation> reachableOffset(IPlayerContext ctx, BlockPos pos, Vec3 offsetPos, double blockReachDistance, boolean wouldSneak) {
+        Vec3 eyes = wouldSneak ? RayTraceUtils.inferSneakingEyePosition(ctx.player()) : ctx.player().getEyePosition(1.0F);
+        Rotation rotation = calcRotationFromVec3d(eyes, offsetPos, ctx.playerRotations());
+        Rotation actualRotation = BaritoneAPI.getProvider().getBaritoneForPlayer(ctx.player()).getLookBehavior().getAimProcessor().peekRotation(rotation);
+        HitResult result = RayTraceUtils.rayTraceTowards(ctx.player(), actualRotation, blockReachDistance, wouldSneak);
+        //System.out.println(result);
+        if (result != null && result.getType() == HitResult.Type.BLOCK) {
+            if (((BlockHitResult) result).getBlockPos().equals(pos)) {
+                return Optional.of(rotation);
+            }
+            if (ctx.world().getBlockState(pos).getBlock() instanceof BaseFireBlock && ((BlockHitResult) result).getBlockPos().equals(pos.below())) {
+                return Optional.of(rotation);
+            }
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Determines if the specified entity is able to reach the specified block where it is
+     * looking at the direct center of it's hitbox.
+     *
+     * @param ctx                Context for the viewing entity
+     * @param pos                The target block position
+     * @param blockReachDistance The block reach distance of the entity
+     * @return The optional rotation
+     */
+    public static Optional<Rotation> reachableCenter(IPlayerContext ctx, BlockPos pos, double blockReachDistance, boolean wouldSneak) {
+        return reachableOffset(ctx, pos, VecUtils.calculateBlockCenter(ctx.world(), pos), blockReachDistance, wouldSneak);
+    }
+
+    @Deprecated
+    public static Optional<Rotation> reachable(LocalPlayer entity, BlockPos pos, double blockReachDistance) {
+        return reachable(entity, pos, blockReachDistance, false);
+    }
+
+    @Deprecated
+    public static Optional<Rotation> reachable(LocalPlayer entity, BlockPos pos, double blockReachDistance, boolean wouldSneak) {
+        IBaritone baritone = BaritoneAPI.getProvider().getBaritoneForPlayer(entity);
+        IPlayerContext ctx = baritone.getPlayerContext();
+        return reachable(ctx, pos, blockReachDistance, wouldSneak);
+    }
+
+    @Deprecated
     public static Optional<Rotation> reachableOffset(Entity entity, BlockPos pos, Vec3 offsetPos, double blockReachDistance, boolean wouldSneak) {
         Vec3 eyes = wouldSneak ? RayTraceUtils.inferSneakingEyePosition(entity) : entity.getEyePosition(1.0F);
         Rotation rotation = calcRotationFromVec3d(eyes, offsetPos, new Rotation(entity.getYRot(), entity.getXRot()));
@@ -240,15 +290,7 @@ public final class RotationUtils {
         return Optional.empty();
     }
 
-    /**
-     * Determines if the specified entity is able to reach the specified block where it is
-     * looking at the direct center of it's hitbox.
-     *
-     * @param entity             The viewing entity
-     * @param pos                The target block position
-     * @param blockReachDistance The block reach distance of the entity
-     * @return The optional rotation
-     */
+    @Deprecated
     public static Optional<Rotation> reachableCenter(Entity entity, BlockPos pos, double blockReachDistance, boolean wouldSneak) {
         return reachableOffset(entity, pos, VecUtils.calculateBlockCenter(entity.level(), pos), blockReachDistance, wouldSneak);
     }

@@ -41,7 +41,7 @@ public class ExploreFilterCommand extends Command {
     @Override
     public void execute(String label, IArgConsumer args) throws CommandException {
         args.requireMax(2);
-        File file = args.getDatatypePost(RelativeFile.INSTANCE, mc.gameDirectory.getAbsoluteFile().getParentFile());
+        File file = args.getDatatypePost(RelativeFile.INSTANCE, ctx.minecraft().gameDirectory.getAbsoluteFile().getParentFile());
         boolean invert = false;
         if (args.hasAny()) {
             if (args.getString().equalsIgnoreCase("invert")) {
@@ -65,7 +65,7 @@ public class ExploreFilterCommand extends Command {
     @Override
     public Stream<String> tabComplete(String label, IArgConsumer args) throws CommandException {
         if (args.hasExactlyOne()) {
-            return RelativeFile.tabComplete(args, RelativeFile.gameDir());
+            return RelativeFile.tabComplete(args, RelativeFile.gameDir(ctx.minecraft()));
         }
         return Stream.empty();
     }

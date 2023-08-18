@@ -32,14 +32,7 @@ import baritone.pathing.movement.MovementState;
 import baritone.utils.BlockStateInterface;
 import com.google.common.collect.ImmutableSet;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.block.AirBlock;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.CarpetBlock;
-import net.minecraft.world.level.block.FallingBlock;
-import net.minecraft.world.level.block.FenceGateBlock;
-import net.minecraft.world.level.block.LadderBlock;
-import net.minecraft.world.level.block.SlabBlock;
+import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.SlabType;
 import net.minecraft.world.phys.Vec3;
@@ -196,9 +189,9 @@ public class MovementPillar extends Movement {
         boolean vine = fromDown.getBlock() == Blocks.VINE;
         Rotation rotation = RotationUtils.calcRotationFromVec3d(ctx.playerHead(),
                 VecUtils.getBlockPosCenter(positionToPlace),
-                new Rotation(ctx.player().getYRot(), ctx.player().getXRot()));
+                ctx.playerRotations());
         if (!ladder) {
-            state.setTarget(new MovementState.MovementTarget(new Rotation(ctx.player().getYRot(), rotation.getPitch()), true));
+            state.setTarget(new MovementState.MovementTarget(ctx.playerRotations().withPitch(rotation.getPitch()), true));
         }
 
         boolean blockIsThere = MovementHelper.canWalkOn(ctx, src) || ladder;
@@ -257,7 +250,7 @@ public class MovementPillar extends Movement {
                 Block fr = frState.getBlock();
                 // TODO: Evaluate usage of getMaterial().isReplaceable()
                 if (!(fr instanceof AirBlock || frState.canBeReplaced())) {
-                    RotationUtils.reachable(ctx.player(), src, ctx.playerController().getBlockReachDistance())
+                    RotationUtils.reachable(ctx, src, ctx.playerController().getBlockReachDistance())
                             .map(rot -> new MovementState.MovementTarget(rot, true))
                             .ifPresent(state::setTarget);
                     state.setInput(Input.JUMP, false); // breaking is like 5x slower when you're jumping

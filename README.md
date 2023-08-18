@@ -4,13 +4,16 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/cabaletta/baritone/tree/master"><img src="https://img.shields.io/badge/MC-1.12.2-brightgreen.svg" alt="Minecraft"/></a>
-  <a href="https://github.com/cabaletta/baritone/tree/1.13.2"><img src="https://img.shields.io/badge/MC-1.13.2-yellow.svg" alt="Minecraft"/></a>
-  <a href="https://github.com/cabaletta/baritone/tree/1.14.4"><img src="https://img.shields.io/badge/MC-1.14.4-yellow.svg" alt="Minecraft"/></a>
-  <a href="https://github.com/cabaletta/baritone/tree/1.15.2"><img src="https://img.shields.io/badge/MC-1.15.2-yellow.svg" alt="Minecraft"/></a>
-  <a href="https://github.com/cabaletta/baritone/tree/1.16.5"><img src="https://img.shields.io/badge/MC-1.16.5-brightgreen.svg" alt="Minecraft"/></a>
-  <a href="https://github.com/cabaletta/baritone/tree/1.17.1"><img src="https://img.shields.io/badge/MC-1.17.1-brightgreen.svg" alt="Minecraft"/></a>
-  <a href="https://github.com/cabaletta/baritone/tree/1.18.2"><img src="https://img.shields.io/badge/MC-1.18.2-brightgreen.svg" alt="Minecraft"/></a>
+  <a href="#Baritone"><img src="https://img.shields.io/badge/MC-1.12.2-brightgreen.svg" alt="Minecraft"/></a>
+  <a href="#Baritone"><img src="https://img.shields.io/badge/MC-1.13.2-yellow.svg" alt="Minecraft"/></a>
+  <a href="#Baritone"><img src="https://img.shields.io/badge/MC-1.14.4-yellow.svg" alt="Minecraft"/></a>
+  <a href="#Baritone"><img src="https://img.shields.io/badge/MC-1.15.2-yellow.svg" alt="Minecraft"/></a>
+  <a href="#Baritone"><img src="https://img.shields.io/badge/MC-1.16.5-brightgreen.svg" alt="Minecraft"/></a>
+  <a href="#Baritone"><img src="https://img.shields.io/badge/MC-1.17.1-yellow.svg" alt="Minecraft"/></a>
+  <a href="#Baritone"><img src="https://img.shields.io/badge/MC-1.18.2-brightgreen.svg" alt="Minecraft"/></a>
+  <a href="#Baritone"><img src="https://img.shields.io/badge/MC-1.19.2-brightgreen.svg" alt="Minecraft"/></a>
+  <a href="#Baritone"><img src="https://img.shields.io/badge/MC-1.19.4-brightgreen.svg" alt="Minecraft"/></a>
+  <a href="#Baritone"><img src="https://img.shields.io/badge/MC-1.20.1-brightgreen.svg" alt="Minecraft"/></a>
 </p>
 
 <p align="center">
@@ -28,12 +31,13 @@
   <a href="https://github.com/cabaletta/baritone/commit/"><img src="https://img.shields.io/github/commits-since/cabaletta/baritone/v1.0.0.svg" alt="GitHub commits"/></a>
   <img src="https://img.shields.io/github/languages/code-size/cabaletta/baritone.svg" alt="Code size"/>
   <img src="https://img.shields.io/github/repo-size/cabaletta/baritone.svg" alt="GitHub repo size"/>
-  <img src="https://tokei.rs/b1/github/cabaletta/baritone?category=code" alt="Lines of Code"/>
+  <img src="https://tokei.rs/b1/github/cabaletta/baritone?category=code&style=flat" alt="Lines of Code"/>
+  <img src="https://img.shields.io/badge/Badges-36-blue.svg" alt="yes"/>
 </p>
 
 <p align="center">
   <a href="https://impactclient.net/"><img src="https://img.shields.io/badge/Impact%20integration-v1.2.14%20/%20v1.3.8%20/%20v1.4.6%20/%20v1.5.3%20/%20v1.6.3-brightgreen.svg" alt="Impact integration"/></a>
-  <a href="https://github.com/kami-blue/client"><img src="https://img.shields.io/badge/KAMI%20Blue%20integration-v1.2.14--master-green" alt="KAMI Blue integration"/></a>
+  <a href="https://github.com/lambda-client/lambda"><img src="https://img.shields.io/badge/Lambda%20integration-v1.2.17-brightgreen.svg" alt="Lambda integration"/></a>
   <a href="https://github.com/fr1kin/ForgeHax/"><img src="https://img.shields.io/badge/ForgeHax%20%22integration%22-scuffed-yellow.svg" alt="ForgeHax integration"/></a>
   <a href="https://aristois.net/"><img src="https://img.shields.io/badge/Aristois%20add--on%20integration-v1.6.3-green.svg" alt="Aristois add-on integration"/></a>
   <a href="https://rootnet.dev/"><img src="https://img.shields.io/badge/rootNET%20integration-v1.2.14-green.svg" alt="rootNET integration"/></a>
@@ -42,27 +46,34 @@
 </p>
 
 <p align="center">
-  <a href="http://forthebadge.com/"><img src="https://forthebadge.com/images/badges/built-with-swag.svg" alt="forthebadge"/></a>
-  <a href="http://forthebadge.com/"><img src="https://forthebadge.com/images/badges/mom-made-pizza-rolls.svg" alt="forthebadge"/></a>
+  <a href="http://forthebadge.com/"><img src="https://web.archive.org/web/20230604002050/https://forthebadge.com/images/badges/built-with-swag.svg" alt="forthebadge"/></a>
+  <a href="http://forthebadge.com/"><img src="https://web.archive.org/web/20230604002050/https://forthebadge.com/images/badges/mom-made-pizza-rolls.svg" alt="forthebadge"/></a>
 </p>
 
 A Minecraft pathfinder bot.
 
+Baritone is the pathfinding system used in [Impact](https://impactclient.net/) since 4.4. [Here's](https://www.youtube.com/watch?v=StquF69-_wI) a (very old!) video I made showing off what it can do.
+
 [**Baritone Discord Server**](http://discord.gg/s6fRBAUpmr)
 
-Baritone is the pathfinding system used in [Impact](https://impactclient.net/) since 4.4. There's a [showcase video](https://youtu.be/CZkLXWo4Fg4) made by @Adovin#0730 on Baritone which I recommend. [Here's](https://www.youtube.com/watch?v=StquF69-_wI) a (very old!) video I made showing off what it can do.
+**Quick download links:**
 
-[Tutorial playlist](https://www.youtube.com/playlist?list=PLnwnJ1qsS7CoQl9Si-RTluuzCo_4Oulpa)
+| Forge                                                                                                         | Fabric                                                                                                        |
+|---------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------|
+| [1.12.2 Forge](https://github.com/cabaletta/baritone/releases/download/v1.2.18/baritone-api-forge-1.2.18.jar) |                                                                                                               |
+| [1.16.5 Forge](https://github.com/cabaletta/baritone/releases/download/v1.6.5/baritone-api-forge-1.6.5.jar)   | [1.16.5 Fabric](https://github.com/cabaletta/baritone/releases/download/v1.6.5/baritone-api-fabric-1.6.5.jar) |
+| [1.17.1 Forge](https://github.com/cabaletta/baritone/releases/download/v1.7.3/baritone-api-forge-1.7.3.jar)   | [1.17.1 Fabric](https://github.com/cabaletta/baritone/releases/download/v1.7.3/baritone-api-fabric-1.7.3.jar) |
+| [1.18.2 Forge](https://github.com/cabaletta/baritone/releases/download/v1.8.5/baritone-api-forge-1.8.5.jar)   | [1.18.2 Fabric](https://github.com/cabaletta/baritone/releases/download/v1.8.5/baritone-api-fabric-1.8.5.jar) |
+| [1.19.2 Forge](https://github.com/cabaletta/baritone/releases/download/v1.9.4/baritone-api-forge-1.9.4.jar)   | [1.19.2 Fabric](https://github.com/cabaletta/baritone/releases/download/v1.9.4/baritone-api-fabric-1.9.4.jar) |
+| [1.19.3 Forge](https://github.com/cabaletta/baritone/releases/download/v1.9.1/baritone-api-forge-1.9.1.jar)   | [1.19.3 Fabric](https://github.com/cabaletta/baritone/releases/download/v1.9.1/baritone-api-fabric-1.9.1.jar) |
+| [1.19.4 Forge](https://github.com/cabaletta/baritone/releases/download/v1.9.3/baritone-api-forge-1.9.3.jar)   | [1.19.4 Fabric](https://github.com/cabaletta/baritone/releases/download/v1.9.3/baritone-api-fabric-1.9.3.jar) |
+| [1.20.1 Forge](https://github.com/cabaletta/baritone/releases/download/v1.10.1/baritone-api-forge-1.10.1.jar)   | [1.20.1 Fabric](https://github.com/cabaletta/baritone/releases/download/v1.10.1/baritone-api-fabric-1.10.1.jar) |
 
-The easiest way to install Baritone is to install [Impact](https://impactclient.net/), which comes with Baritone. The second easiest way (for 1.12.2 only) is to 
-install the v1.2.* `api-forge` jar from [releases](https://github.com/cabaletta/baritone/releases). **For 1.12.2 Forge, just click 
-[here](https://github.com/cabaletta/baritone/releases/download/v1.2.17/baritone-api-forge-1.2.17.jar)**. Otherwise, see [Installation & setup](SETUP.md). Once Baritone is installed, look [here](USAGE.md) for instructions on how to use it.
+**Message for 2b2t players looking for 1.19/1.20 Baritone** Download it from right above ^. But also please check back in a few days for Baritone Elytra ([vid 1](https://youtu.be/4bGGPo8yiHo) [vid 2](https://www.youtube.com/watch?v=pUN9nmINe3I)), which will be ported to 1.19/1.20 soon! It will work on 2b2t with its anticheat, that was the whole point of Baritone Elytra (it's fully vanilla compatible). Also join [**the discord**](http://discord.gg/s6fRBAUpmr). Thanks!
 
-For 1.16.5, [click here](https://www.youtube.com/watch?v=_4eVJ9Qz2J8) and see description. If you need Forge or Fabric 1.16.5, look [here](https://github.com/cabaletta/baritone/releases/tag/v1.6.3) and get the `api-forge` or `api-fabric` jar. **For 1.16.5 Fabric, just click [here](https://github.com/cabaletta/baritone/releases/download/v1.6.3/baritone-api-fabric-1.6.3.jar)**.
+**How to immediately get started:** Type `#goto 1000 500` in chat to go to x=1000 z=500. Type `#mine diamond_ore` to mine diamond ore. Type `#stop` to stop. For more, read [the usage page](USAGE.md) and/or watch this [tutorial playlist](https://www.youtube.com/playlist?list=PLnwnJ1qsS7CoQl9Si-RTluuzCo_4Oulpa). Also try `#elytra` for Elytra flying in the Nether using fireworks.
 
-If you need Forge or Fabric 1.17.1, look [here](https://github.com/cabaletta/baritone/releases/tag/v1.7.2) and get the `api-forge` or `api-fabric` jar. **For 1.17.1 Fabric, just click [here](https://github.com/cabaletta/baritone/releases/download/v1.7.2/baritone-api-fabric-1.7.2.jar)**.
-
-If you need Forge or Fabric 1.18.2, look [here](https://github.com/cabaletta/baritone/releases/tag/v1.8.3) and get the `api-forge` or `api-fabric` jar. **For 1.18.2 Fabric, just click [here](https://github.com/cabaletta/baritone/releases/download/v1.8.3/baritone-api-fabric-1.8.3.jar)**. **For 1.18.2 Forge, just click [here](https://github.com/cabaletta/baritone/releases/download/v1.8.3/baritone-api-forge-1.8.3.jar)**.
+For other versions of Minecraft or more complicated situations or for development, see [Installation & setup](SETUP.md). Also consider just installing [Impact](https://impactclient.net/), which comes with Baritone and is easier to install than wrangling with version JSONs and zips. For 1.16.5, [click here](https://www.youtube.com/watch?v=_4eVJ9Qz2J8) and see description. Once Baritone is installed, look [here](USAGE.md) for instructions on how to use it. There's a [showcase video](https://youtu.be/CZkLXWo4Fg4) made by @Adovin#6313 on Baritone which I recommend.
 
 This project is an updated version of [MineBot](https://github.com/leijurv/MineBot/),
 the original version of the bot for Minecraft 1.8.9, rebuilt for 1.12.2 onwards. Baritone focuses on reliability and particularly performance (it's over [30x faster](https://github.com/cabaletta/baritone/pull/180#issuecomment-423822928) than MineBot at calculating paths).

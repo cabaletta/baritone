@@ -18,7 +18,6 @@
 package baritone.gradle.task;
 
 import baritone.gradle.util.Determinizer;
-import org.apache.commons.io.IOUtils;
 import org.gradle.api.plugins.JavaPluginConvention;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.TaskAction;
@@ -31,17 +30,16 @@ import xyz.wagyourtail.unimined.api.minecraft.EnvType;
 import xyz.wagyourtail.unimined.api.minecraft.MinecraftProvider;
 
 import java.io.*;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-
-import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 /**
  * @author Brady
@@ -63,16 +61,21 @@ public class ProguardTask extends BaritoneGradleTask {
         return extract;
     }
 
+    private List<String> requiredLibraries;
+
+    private File pathfinder;
+
     @TaskAction
     protected void exec() throws Exception {
         super.doFirst();
         super.verifyArtifacts();
 
         // "Haha brady why don't you make separate tasks"
-        processArtifact();
         downloadProguard();
         extractProguard();
         generateConfigs();
+        pathfinder = acquireDependencies().filter(file -> file.getName().contains("nether-pathfinder")).findAny().get();
+        processArtifact();
         proguardApi();
         proguardStandalone();
         cleanup();
@@ -93,7 +96,7 @@ public class ProguardTask extends BaritoneGradleTask {
             Files.delete(this.artifactUnoptimizedPath);
         }
 
-        Determinizer.determinize(this.artifactPath.toString(), this.artifactUnoptimizedPath.toString());
+        Determinizer.determinize(this.artifactPath.toString(), this.artifactUnoptimizedPath.toString(), Arrays.asList(pathfinder), false);
     }
 
     private void downloadProguard() throws Exception {
@@ -118,8 +121,7 @@ public class ProguardTask extends BaritoneGradleTask {
         try {
             path = findJavaPathByGradleConfig();
             if (path != null) return path;
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             System.err.println("Unable to find java by javaCompile options");
             ex.printStackTrace();
         }
@@ -127,8 +129,7 @@ public class ProguardTask extends BaritoneGradleTask {
         try {
             path = findJavaByJavaHome();
             if (path != null) return path;
-        }
-        catch(Exception ex) {
+        } catch (Exception ex) {
             System.err.println("Unable to find java by JAVA_HOME");
             ex.printStackTrace();
         }
@@ -136,30 +137,23 @@ public class ProguardTask extends BaritoneGradleTask {
 
         path = findJavaByGradleCurrentRuntime();
         if (path != null) return path;
-        
+
         throw new Exception("Unable to find java to determine ProGuard libraryjars. Please specify forkOptions.executable in javaCompile," +
                 " JAVA_HOME environment variable, or make sure to run Gradle with the correct JDK (a v1.8 only)");
     }
 
     private String findJavaByGradleCurrentRuntime() {
         String path = Jvm.current().getJavaExecutable().getAbsolutePath();
-
-        if (this.validateJavaVersion(path)) {
-            System.out.println("Using Gradle's runtime Java for ProGuard");
-            return path;
-        }
-        return null;
+        System.out.println("Using Gradle's runtime Java for ProGuard");
+        return path;
     }
 
     private String findJavaByJavaHome() {
         final String javaHomeEnv = System.getenv("JAVA_HOME");
         if (javaHomeEnv != null) {
-
             String path = Jvm.forHome(new File(javaHomeEnv)).getJavaExecutable().getAbsolutePath();
-            if (this.validateJavaVersion(path)) {
-                System.out.println("Detected Java path by JAVA_HOME");
-                return path;
-            }
+            System.out.println("Detected Java path by JAVA_HOME");
+            return path;
         }
         return null;
     }
@@ -175,19 +169,11 @@ public class ProguardTask extends BaritoneGradleTask {
             if (javacPath != null) {
                 File javacFile = new File(javacPath);
                 if (javacFile.exists()) {
-                    File[] maybeJava = javacFile.getParentFile().listFiles(new FilenameFilter() {
-                        @Override
-                        public boolean accept(File dir, String name) {
-                            return name.equals("java");
-                        }
-                    });
-
+                    File[] maybeJava = javacFile.getParentFile().listFiles((dir, name) -> name.equals("java"));
                     if (maybeJava != null && maybeJava.length > 0) {
                         String path = maybeJava[0].getAbsolutePath();
-                        if (this.validateJavaVersion(path)) {
-                            System.out.println("Detected Java path by forkOptions");
-                            return path;
-                        }
+                        System.out.println("Detected Java path by forkOptions");
+                        return path;
                     }
                 }
             }
@@ -210,7 +196,7 @@ public class ProguardTask extends BaritoneGradleTask {
     }
 
     private void generateConfigs() throws Exception {
-        Files.copy(getRootRelativeFile(PROGUARD_CONFIG_TEMPLATE), getTemporaryFile(PROGUARD_CONFIG_DEST), REPLACE_EXISTING);
+        Files.copy(getRootRelativeFile(PROGUARD_CONFIG_TEMPLATE), getTemporaryFile(PROGUARD_CONFIG_DEST), StandardCopyOption.REPLACE_EXISTING);
 
         // Setup the template that will be used to derive the API and Standalone configs
         List<String> template = Files.readAllLines(getTemporaryFile(PROGUARD_CONFIG_DEST));
@@ -233,11 +219,11 @@ public class ProguardTask extends BaritoneGradleTask {
             {
                 // Discover all of the libraries that we will need to acquire from gradle
                 final Stream<File> dependencies = acquireDependencies()
-                    // remove MCP mapped jar, and nashorn
-                    .filter(f -> !f.toString().endsWith("-recomp.jar") && !f.getName().startsWith("nashorn") && !f.getName().startsWith("coremods"));
+                        // remove MCP mapped jar, and nashorn
+                        .filter(f -> !f.toString().endsWith("-recomp.jar") && !f.getName().startsWith("nashorn") && !f.getName().startsWith("coremods"));
 
                 libraries = dependencies
-                    .map(f -> isMcJar(f) ? mcJar : f);
+                        .map(f -> isMcJar(f) ? mcJar : f);
             }
             libraries.forEach(f -> {
                 template.add(2, "-libraryjars '" + f + "'");
@@ -250,29 +236,48 @@ public class ProguardTask extends BaritoneGradleTask {
         api.add(2, "-printmapping " + new File(this.getRootRelativeFile(PROGUARD_MAPPING_DIR).toFile(), "mappings-" + addCompTypeFirst("api.txt")));
 
         // API config doesn't require any changes from the changes that we made to the template
-        Files.write(getTemporaryFile(compType+PROGUARD_API_CONFIG), api);
+        Files.write(getTemporaryFile(compType + PROGUARD_API_CONFIG), api);
 
         // For the Standalone config, don't keep the API package
         List<String> standalone = new ArrayList<>(template);
         standalone.removeIf(s -> s.contains("# this is the keep api"));
         standalone.add(2, "-printmapping " + new File(this.getRootRelativeFile(PROGUARD_MAPPING_DIR).toFile(), "mappings-" + addCompTypeFirst("standalone.txt")));
-        Files.write(getTemporaryFile(compType+PROGUARD_STANDALONE_CONFIG), standalone);
+        Files.write(getTemporaryFile(compType + PROGUARD_STANDALONE_CONFIG), standalone);
     }
 
     private Stream<File> acquireDependencies() {
         return getProject().getConvention().getPlugin(JavaPluginConvention.class).getSourceSets().findByName("main").getCompileClasspath().getFiles()
-            .stream()
-            .filter(File::isFile);
+                .stream()
+                .filter(File::isFile);
     }
 
     private void proguardApi() throws Exception {
-        runProguard(getTemporaryFile(compType+PROGUARD_API_CONFIG));
-        Determinizer.determinize(this.proguardOut.toString(), this.artifactApiPath.toString());
+        runProguard(getTemporaryFile(compType + PROGUARD_API_CONFIG));
+        Determinizer.determinize(this.proguardOut.toString(), this.artifactApiPath.toString(), Arrays.asList(pathfinder), false);
     }
 
     private void proguardStandalone() throws Exception {
-        runProguard(getTemporaryFile(compType+PROGUARD_STANDALONE_CONFIG));
-        Determinizer.determinize(this.proguardOut.toString(), this.artifactStandalonePath.toString());
+        runProguard(getTemporaryFile(compType + PROGUARD_STANDALONE_CONFIG));
+        Determinizer.determinize(this.proguardOut.toString(), this.artifactStandalonePath.toString(), Arrays.asList(pathfinder), false);
+    }
+
+    private static final class Pair<A, B> {
+        public final A a;
+        public final B b;
+
+        private Pair(final A a, final B b) {
+            this.a = a;
+            this.b = b;
+        }
+
+        @Override
+        public String toString() {
+            return "Pair{" +
+                    "a=" + this.a +
+                    ", " +
+                    "b=" + this.b +
+                    '}';
+        }
     }
 
     private void cleanup() {
@@ -285,9 +290,11 @@ public class ProguardTask extends BaritoneGradleTask {
         this.url = url;
     }
 
+
     public void setExtract(String extract) {
         this.extract = extract;
     }
+
     private void runProguard(Path config) throws Exception {
         // Delete the existing proguard output file. Proguard probably handles this already, but why not do it ourselves
         if (Files.exists(this.proguardOut)) {
@@ -298,7 +305,7 @@ public class ProguardTask extends BaritoneGradleTask {
         Path workingDirectory = getTemporaryFile("");
         Path proguardJar = workingDirectory.relativize(getTemporaryFile(PROGUARD_JAR));
         config = workingDirectory.relativize(config);
-        
+
         // Honestly, if you still have spaces in your path at this point, you're SOL.
 
         Process p = new ProcessBuilder("java", "-jar", proguardJar.toString(), "@" + config.toString())
@@ -312,6 +319,7 @@ public class ProguardTask extends BaritoneGradleTask {
         // Halt the current thread until the process is complete, if the exit code isn't 0, throw an exception
         int exitCode = p.waitFor();
         if (exitCode != 0) {
+            Thread.sleep(1000);
             throw new IllegalStateException("Proguard exited with code " + exitCode);
         }
     }

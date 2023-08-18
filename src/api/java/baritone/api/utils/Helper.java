@@ -18,13 +18,13 @@
 package baritone.api.utils;
 
 import baritone.api.BaritoneAPI;
-import baritone.api.utils.gui.BaritoneToast;
+import baritone.api.Settings;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.GuiMessageTag;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 
-import java.awt.*;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.stream.Stream;
@@ -44,9 +44,16 @@ public interface Helper {
     Helper HELPER = new Helper() {};
 
     /**
-     * Instance of the game
+     * The main game instance returned by {@link Minecraft#getInstance()}.
+     * Deprecated since {@link IPlayerContext#minecraft()} should be used instead (In the majority of cases).
      */
+    @Deprecated
     Minecraft mc = Minecraft.getInstance();
+
+    /**
+     * The tag to assign to chat messages when {@link Settings#useMessageTag} is {@code true}.
+     */
+    GuiMessageTag MESSAGE_TAG = new GuiMessageTag(0xFF55FF, null, Component.literal("Baritone message."), "Baritone");
 
     static Component getPrefix() {
         // Inner text component
@@ -72,7 +79,7 @@ public interface Helper {
      * @param message The message to display in the popup
      */
     default void logToast(Component title, Component message) {
-        mc.execute(() -> BaritoneAPI.getSettings().toaster.value.accept(title, message));
+        Minecraft.getInstance().execute(() -> BaritoneAPI.getSettings().toaster.value.accept(title, message));
     }
 
     /**
@@ -133,7 +140,7 @@ public interface Helper {
      * @param error   Whether to log as an error
      */
     default void logNotificationDirect(String message, boolean error) {
-        mc.execute(() -> BaritoneAPI.getSettings().notifier.value.accept(message, error));
+        Minecraft.getInstance().execute(() -> BaritoneAPI.getSettings().notifier.value.accept(message, error));
     }
 
     /**
@@ -160,13 +167,15 @@ public interface Helper {
      */
     default void logDirect(boolean logAsToast, Component... components) {
         MutableComponent component = Component.literal("");
-        component.append(getPrefix());
-        component.append(Component.literal(" "));
+        if (!logAsToast && !BaritoneAPI.getSettings().useMessageTag.value) {
+            component.append(getPrefix());
+            component.append(Component.literal(" "));
+        }
         Arrays.asList(components).forEach(component::append);
         if (logAsToast) {
             logToast(getPrefix(), component);
         } else {
-            mc.execute(() -> BaritoneAPI.getSettings().logger.value.accept(component));
+            Minecraft.getInstance().execute(() -> BaritoneAPI.getSettings().logger.value.accept(component));
         }
     }
 
@@ -225,5 +234,12 @@ public interface Helper {
      */
     default void logDirect(String message) {
         logDirect(message, BaritoneAPI.getSettings().logAsToast.value);
+    }
+
+    default void logUnhandledException(final Throwable exception) {
+        HELPER.logDirect("An unhandled exception occurred. " +
+                        "The error is in your game's log, please report this at https://github.com/cabaletta/baritone/issues",
+                ChatFormatting.RED);
+        exception.printStackTrace();
     }
 }

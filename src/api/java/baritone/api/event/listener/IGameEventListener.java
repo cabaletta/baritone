@@ -41,6 +41,14 @@ public interface IGameEventListener {
     void onTick(TickEvent event);
 
     /**
+     * Run once per game tick after the tick is completed
+     *
+     * @param event The event
+     * @see Minecraft#runTick()
+     */
+    void onPostTick(TickEvent event);
+
+    /**
      * Run once per game tick from before and after the player rotation is sent to the server.
      *
      * @param event The event
@@ -69,6 +77,13 @@ public interface IGameEventListener {
      * @param event The event
      */
     void onChunkEvent(ChunkEvent event);
+
+    /**
+     * Runs after a single or multi block change packet is received and processed.
+     *
+     * @param event The event
+     */
+    void onBlockChange(BlockChangeEvent event);
 
     /**
      * Runs once per world render pass.
