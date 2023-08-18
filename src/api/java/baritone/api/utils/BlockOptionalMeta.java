@@ -76,7 +76,6 @@ public final class BlockOptionalMeta {
     private final ImmutableSet<Integer> stateHashes;
     private final ImmutableSet<Integer> stackHashes;
     private static LootDataManager lootTables;
-
     private static Map<Block, List<Item>> drops = new HashMap<>();
 
     public BlockOptionalMeta(@Nonnull Block block) {

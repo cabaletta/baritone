@@ -156,22 +156,23 @@ public enum FasterWorldScanner implements IWorldScanner {
     private List<BlockPos> collectChunkSections(BlockOptionalMetaLookup lookup, LevelChunk chunk, long chunkX, long chunkZ, int playerSection) {
         // iterate over sections relative to player
         List<BlockPos> blocks = new ArrayList<>();
+        int chunkY = chunk.getMinBuildHeight();
         LevelChunkSection[] sections = chunk.getSections();
         int l = sections.length;
         int i = playerSection - 1;
         int j = playerSection;
         for (; i >= 0 || j < l; ++j, --i) {
             if (j < l) {
-                visitSection(lookup, sections[j], blocks, chunkX, chunkZ, j);
+                visitSection(lookup, sections[j], blocks, chunkX, chunkY + j * 16, chunkZ);
             }
             if (i >= 0) {
-                visitSection(lookup, sections[i], blocks, chunkX, chunkZ, i);
+                visitSection(lookup, sections[i], blocks, chunkX, chunkY + i * 16, chunkZ);
             }
         }
         return blocks;
     }
 
-    private void visitSection(BlockOptionalMetaLookup lookup, LevelChunkSection section, List<BlockPos> blocks, long chunkX, long chunkZ, int sectionIdx) {
+    private void visitSection(BlockOptionalMetaLookup lookup, LevelChunkSection section, List<BlockPos> blocks, long chunkX, int sectionY, long chunkZ) {
         if (section == null || section.hasOnlyAir()) {
             return;
         }
@@ -193,9 +194,6 @@ public enum FasterWorldScanner implements IWorldScanner {
         int bitsPerEntry = array.getBits();
         long maxEntryValue = (1L << bitsPerEntry) - 1L;
 
-
-        int yOffset = sectionIdx << 4;
-
         for (int i = 0, idx = 0; i < longArray.length && idx < arraySize; ++i) {
             long l = longArray[i];
             for (int offset = 0; offset <= (64 - bitsPerEntry) && idx < arraySize; offset += bitsPerEntry, ++idx) {
@@ -203,9 +201,9 @@ public enum FasterWorldScanner implements IWorldScanner {
                 if (isInFilter[value]) {
                     //noinspection DuplicateExpressions
                     blocks.add(new BlockPos(
-                            (int) chunkX + ((idx & 255) & 15),
-                            yOffset + (idx >> 8),
-                            (int) chunkZ + ((idx & 255) >> 4)
+                        (int) chunkX + ((idx & 255) & 15),
+                        sectionY + (idx >> 8),
+                        (int) chunkZ + ((idx & 255) >> 4)
                     ));
                 }
             }
