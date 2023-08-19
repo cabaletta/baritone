@@ -1,5 +1,7 @@
 # Warning: Old Branch!!
 
+**Click [here](https://github.com/cabaletta/baritone) to go to the current Baritone readme.**
+
 **This branch (`master`) is Baritone for Minecraft 1.12.2. This is the original version of Minecraft that Baritone was written for, and it was the primary development branch for over 5 years. As such, it's quite mature, and arguably more reliable than Baritone for newer versions of Minecraft. Nevertheless, as of August 2023, with [2b2t's update from 1.12.2 to 1.19.4](https://2b2t.org/update/), I decided to move Baritone's primary development branch accordingly. PRs should now be made against the `1.19.4` branch going forward. This branch might see some fixes going forward, particularly to newer features such as `#elytra`, but it won't be the primary focus anymore.**
 
 The other intermediary branches (`1.13.2`, `1.14.4`, `1.15.2`, `1.16.5`, `1.17.1`, `1.18.2`, `1.19.2`, and `1.19.3`) will probably not receive any updates at all. You can find their last releases in the releases tab, or in the quick download links table.
