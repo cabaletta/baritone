@@ -42,13 +42,8 @@ public class BaritoneTweaker extends SimpleTweaker {
         // noinspection unchecked
         List<String> tweakClasses = (List<String>) Launch.blackboard.get("TweakClasses");
 
-        String obfuscation = ObfuscationServiceMCP.NOTCH;
-        if (tweakClasses.stream().anyMatch(s -> s.contains("net.minecraftforge.fml.common.launcher"))) {
-            obfuscation = ObfuscationServiceMCP.SEARGE;
-        }
-
         MixinEnvironment.getDefaultEnvironment().setSide(MixinEnvironment.Side.CLIENT);
-        MixinEnvironment.getDefaultEnvironment().setObfuscationContext(obfuscation);
+        MixinEnvironment.getDefaultEnvironment().setObfuscationContext(ObfuscationServiceMCP.NOTCH);
 
         Mixins.addConfiguration("mixins.baritone.json");
     }

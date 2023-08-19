@@ -23,6 +23,10 @@ pluginManagement {
             url = 'https://maven.wagyourtail.xyz/snapshots'
         }
         maven {
+            name = 'NeoForge'
+            url = 'https://maven.neoforged.net/releases'
+        }
+        maven {
             name = 'ForgeMaven'
             url = 'https://maven.minecraftforge.net/'
         }
@@ -40,11 +44,3 @@ pluginManagement {
 }
 
 rootProject.name = 'baritone'
-
-include("tweaker")
-if (System.getProperty("Baritone.enabled_platforms") == null) {
-    System.setProperty("Baritone.enabled_platforms", "fabric,forge")
-}
-for (platform in System.getProperty("Baritone.enabled_platforms").split(",")) {
-       include(platform)
-}
