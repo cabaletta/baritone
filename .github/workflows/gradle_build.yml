@@ -28,7 +28,7 @@ jobs:
       run: chmod +x gradlew
       
     - name: Build with Gradle
-      run: ./gradlew build -Pmod_version="$(git describe --always --tags | cut -c2-)"
+      run: ./gradlew build
 
     - name: Archive Artifacts
       uses: actions/upload-artifact@v3
