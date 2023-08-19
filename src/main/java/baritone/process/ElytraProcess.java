@@ -405,8 +405,6 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
 
     @Override
     public void onRenderPass(RenderEvent event) {
-        System.out.println(event.getPartialTicks() + " " + ctx.player().getXRot() + " " + ctx.player().getYRot() + " " + ctx.player().xRotO + " " + ctx.player().yRotO);
-
         if (this.behavior != null) this.behavior.onRenderPass(event);
     }
 

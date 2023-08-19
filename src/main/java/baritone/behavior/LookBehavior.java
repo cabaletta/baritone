@@ -82,7 +82,6 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
 
     @Override
     public void onPlayerUpdate(PlayerUpdateEvent event) {
-        System.out.println(event.getState() + " " + ctx.player().getXRot() + " " + ctx.player().getYRot() + " " + ctx.player().xRotO + " " + ctx.player().yRotO);
 
         if (this.target == null) {
             return;
