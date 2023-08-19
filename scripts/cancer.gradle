@@ -92,7 +92,7 @@ var tweaker = unimined.minecrafts.get(sourceSets.tweaker)
 tweaker.remap(jar, withSourceSet("remapUnoptimizedJar", tweaker.sourceSet)) {
     dependsOn jar
 
-    group "baritone_internal"
+    group "baritone-internal"
 
     destinationDirectory.set(file("$buildDir/tmp/$name"))
     inputFile.set(jar.archiveFile)
@@ -109,7 +109,7 @@ tweaker.remap(jar, withSourceSet("remapUnoptimizedJar", tweaker.sourceSet)) {
 tweaker.remap(apiJarDev, withSourceSet("remapApiJar", tweaker.sourceSet)) {
     dependsOn tasks.apiJarDev
 
-    group "baritone_internal"
+    group "baritone-internal"
 
     destinationDirectory.set(file("$buildDir/tmp/$name"))
     inputFile.set(file("$buildDir/libs/${project.archives_base_name}-api-${project.version}-dev.jar"))
@@ -126,7 +126,7 @@ tweaker.remap(apiJarDev, withSourceSet("remapApiJar", tweaker.sourceSet)) {
 tweaker.remap(standaloneJarDev, withSourceSet("remapStandaloneJar", tweaker.sourceSet)) {
     dependsOn tasks.standaloneJarDev
 
-    group "baritone_internal"
+    group "baritone-internal"
 
     destinationDirectory.set(file("$buildDir/tmp/$name"))
     inputFile.set(file("$buildDir/libs/${project.archives_base_name}-standalone-${project.version}-dev.jar"))
@@ -192,7 +192,7 @@ void createModBuilds(MinecraftConfig minecraft, Jar jar, Task apiJarDevTask, Tas
     var unoptimizedJarDev = tasks.register(withSourceSet("unoptimizedJarDev", minecraft.sourceSet), Jar) {
         dependsOn jar
 
-        group "baritone_internal"
+        group "baritone-internal"
 
         from(minecraft.sourceSet.output)
         from(zipTree(jar.outputs.files.singleFile))
@@ -222,7 +222,7 @@ void createModBuilds(MinecraftConfig minecraft, Jar jar, Task apiJarDevTask, Tas
     var apiJarDev = tasks.register(withSourceSet("apiJarDev", minecraft.sourceSet), Jar) {
         dependsOn apiJarDevTask
 
-        group "baritone_internal"
+        group "baritone-internal"
 
         from(minecraft.sourceSet.output)
         from(zipTree("$buildDir/libs/${project.archives_base_name}-api-${project.version}-dev.jar"))
@@ -252,7 +252,7 @@ void createModBuilds(MinecraftConfig minecraft, Jar jar, Task apiJarDevTask, Tas
     var standaloneJarDev = tasks.register(withSourceSet("standaloneJarDev", minecraft.sourceSet), Jar) {
         dependsOn standaloneJarDevTask
 
-        group "baritone_internal"
+        group "baritone-internal"
 
         from(minecraft.sourceSet.output)
         from(zipTree("$buildDir/libs/${project.archives_base_name}-standalone-${project.version}-dev.jar"))
@@ -283,7 +283,7 @@ void createModBuilds(MinecraftConfig minecraft, Jar jar, Task apiJarDevTask, Tas
     minecraft.remap(unoptimizedJarDev.get(), withSourceSet("remapUnoptimizedJar", minecraft.sourceSet)) {
         dependsOn unoptimizedJarDev
 
-        group "baritone_internal"
+        group "baritone-internal"
 
         destinationDirectory.set(file("$buildDir/tmp/$name"))
         inputFile.set(unoptimizedJarDev.get().archiveFile)
@@ -300,7 +300,7 @@ void createModBuilds(MinecraftConfig minecraft, Jar jar, Task apiJarDevTask, Tas
     minecraft.remap(apiJarDev.get(), withSourceSet("remapApiJar", minecraft.sourceSet)) {
         dependsOn apiJarDev
 
-        group "baritone_internal"
+        group "baritone-internal"
 
         destinationDirectory.set(file("$buildDir/tmp/$name"))
         inputFile.set(apiJarDev.get().archiveFile)
@@ -317,7 +317,7 @@ void createModBuilds(MinecraftConfig minecraft, Jar jar, Task apiJarDevTask, Tas
     minecraft.remap(standaloneJarDev.get(), withSourceSet("remapStandaloneJar", minecraft.sourceSet)) {
         dependsOn standaloneJarDev
 
-        group "baritone_internal"
+        group "baritone-internal"
 
         destinationDirectory.set(file("$buildDir/tmp/$name"))
         inputFile.set(standaloneJarDev.get().archiveFile)
