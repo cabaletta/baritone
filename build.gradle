@@ -1,3 +1,6 @@
+import baritone.gradle.util.Determinizer
+import proguard.gradle.ProGuardTask
+
 /*
  * This file is part of Baritone.
  *
@@ -14,87 +17,57 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
+plugins {
+    id "java"
+    id "xyz.wagyourtail.unimined"
+    id "maven-publish"
+}
 
-allprojects {
-    apply plugin: 'java'
-    apply plugin: "xyz.wagyourtail.unimined"
-    apply plugin: "maven-publish"
+def vers = 'git describe --always --dirty'.execute().text.trim()
+if (vers.isEmpty()) {
+    version = project.mod_version
+    println "using version number: " + project.mod_version
+} else {
+    version = project.mod_version + "-" + vers
+    println "using version number: " + version
+}
 
-    archivesBaseName = rootProject.archives_base_name
-    def vers = 'git describe --always --tags --dirty'.execute().text.trim()
-    if (!vers.startsWith("v")) {
-        println "git doesn't appear to be installed!"
-        println "using version number: " + rootProject.mod_version
-        version = rootProject.mod_version
-    } else {
-        version = vers.substring(1)
-    }
-    group = rootProject.maven_group
-
+base {
+    archivesName = project.archives_base_name + "-unoptimized"
+    group = project.maven_group
     sourceCompatibility = targetCompatibility = JavaVersion.VERSION_17
-
-    repositories {
-        maven {
-            name = 'spongepowered-repo'
-            url = 'https://repo.spongepowered.org/repository/maven-public/'
-        }
-        maven {
-            name = 'fabric-maven'
-            url = 'https://maven.fabricmc.net/'
-        }
-        maven {
-            name = 'impactdevelopment-repo'
-            url = 'https://impactdevelopment.github.io/maven/'
-        }
-        maven {
-            name = "ldtteam"
-            url = "https://maven.parchmentmc.net/"
-        }
-        // for the newer version of launchwrapper
-        maven {
-            name = "multimc-maven"
-            url = "https://files.multimc.org/maven/"
-            metadataSources {
-                artifact()
-            }
-        }
-        mavenCentral()
-        maven {
-            name = 'babbaj-repo'
-            url = 'https://babbaj.github.io/maven/'
-        }
-    }
-
-    dependencies {
-        minecraft "net.minecraft:minecraft:${rootProject.minecraft_version}"
-        // The following line declares the mojmap mappings, you may use other mappings as well
-        mappings "net.fabricmc:intermediary:${rootProject.minecraft_version}:v2"
-        mappings "net.minecraft:minecraft:${rootProject.minecraft_version}:client-mappings"
-        mappings "org.parchmentmc.data:parchment-1.19.2:2022.11.27@zip"
-
-        implementation "org.spongepowered:mixin:0.8.5"
-        implementation "org.ow2.asm:asm:9.3"
-        // The following line declares the yarn mappings you may select this one as well.
-        // mappings "net.fabricmc:yarn:1.17.1+build.32:v2"
-        //launchImplementation('dev.babbaj:nether-pathfinder:1.3.0')
-        implementation 'dev.babbaj:nether-pathfinder:1.3.0'
-    }
-
-    tasks.withType(JavaCompile).configureEach {
-        it.options.encoding = "UTF-8"
-
-        def targetVersion = 17
-        if (JavaVersion.current().isJava9Compatible()) {
-            it.options.release = targetVersion
-        }
-    }
 }
 
-minecraft {
-    runs.off = true
+repositories {
+    maven {
+        name = 'spongepowered-repo'
+        url = 'https://repo.spongepowered.org/repository/maven-public/'
+    }
+    maven {
+        name = 'forge maven'
+        url = 'https://files.minecraftforge.net/maven'
+        metadataSources {
+            mavenPom()
+            artifact()
+        }
+    }
+    maven {
+        name = 'impactdevelopment-repo'
+        url = 'https://impactdevelopment.github.io/maven/'
+    }
+    maven {
+        name = "multimc-maven"
+        url = "https://files.multimc.org/maven/"
+        metadataSources {
+            artifact()
+        }
+    }
+    maven {
+        name = 'babbaj-repo'
+        url = 'https://babbaj.github.io/maven/'
+    }
+    mavenCentral()
 }
-
-archivesBaseName = archivesBaseName + "-common"
 
 sourceSets {
     api {
@@ -121,19 +94,171 @@ sourceSets {
         compileClasspath += schematica_api.output
         runtimeClasspath += schematica_api.output
     }
-}
-
-dependencies {
-    testImplementation 'junit:junit:4.13.2'
+    fabric {
+        compileClasspath += main.compileClasspath + main.runtimeClasspath + main.output + launch.output + api.output
+        runtimeClasspath += main.compileClasspath + main.runtimeClasspath + main.output + launch.output + api.output
+    }
+    forge {
+        compileClasspath += main.compileClasspath + main.runtimeClasspath + main.output + launch.output + api.output
+        runtimeClasspath += main.compileClasspath + main.runtimeClasspath + main.output + launch.output + api.output
+    }
+    tweaker {
+        compileClasspath += main.compileClasspath + main.runtimeClasspath + main.output + launch.output + api.output
+        runtimeClasspath += main.compileClasspath + main.runtimeClasspath + main.output + launch.output + api.output
+    }
 }
 
 jar {
-    from sourceSets.main.output, sourceSets.launch.output, sourceSets.api.output
+    from sourceSets.main.output, sourceSets.launch.output, sourceSets.api.output, sourceSets.tweaker.output
+
+    archiveBaseName = project.archives_base_name + "-unoptimized"
+    archiveClassifier = "dev"
+
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+
+    manifest {
+        attributes(
+            'Implementation-Title': 'Baritone',
+            'Implementation-Version': version,
+        )
+    }
 }
 
-remapJar {
-    targetNamespace = "named"
-    fallbackTargetNamespace = "intermediary"
+
+
+unimined.minecraft([sourceSets.main, sourceSets.api, sourceSets.launch, sourceSets.schematica_api, sourceSets.test]) {
+    version project.minecraft_version
+    side "client"
+
+    mappings {
+        intermediary()
+        mojmap()
+        parchment project.parchment_version
+
+        devFallbackNamespace "intermediary"
+    }
+
+    defaultRemapJar = false
+    runs.off = true
+}
+
+unimined.minecraft(sourceSets.tweaker) {
+    version project.minecraft_version
+    side "client"
+
+    mappings {
+        intermediary()
+        mojmap()
+        parchment project.parchment_version
+
+        devFallbackNamespace "intermediary"
+    }
+
+    runs.config("client") {
+        mainClass = "net.minecraft.launchwrapper.Launch"
+        args.addAll(["--tweakClass", "baritone.launch.BaritoneTweaker"])
+    }
+
+    defaultRemapJar = false
+}
+
+unimined.minecraft(sourceSets.forge) {
+    version project.minecraft_version
+    side "client"
+
+    mappings {
+        intermediary()
+        mojmap()
+        parchment project.parchment_version
+
+        devFallbackNamespace "intermediary"
+    }
+
+    minecraftForge {
+        loader project.forge_version
+        mixinConfig "mixins.baritone.json"
+    }
+
+    defaultRemapJar = false
+}
+
+unimined.minecraft(sourceSets.fabric) {
+    version project.minecraft_version
+    side "client"
+
+    mappings {
+        intermediary()
+        mojmap()
+        parchment project.parchment_version
+
+        devFallbackNamespace "intermediary"
+    }
+
+    fabric {
+        loader project.fabric_version
+    }
+
+    defaultRemapJar = false
+}
+
+configurations {
+    forgeShadow
+}
+
+dependencies {
+    implementation "org.spongepowered:mixin:0.8.5"
+    implementation "org.ow2.asm:asm:9.3"
+    implementation 'dev.babbaj:nether-pathfinder:1.3.0'
+
+    fabricInclude 'dev.babbaj:nether-pathfinder:1.3.0'
+    forgeShadow 'dev.babbaj:nether-pathfinder:1.3.0'
+}
+
+tasks.withType(JavaCompile).configureEach {
+    it.options.encoding = "UTF-8"
+
+    def targetVersion = 17
+    if (JavaVersion.current().isJava9Compatible()) {
+        it.options.release.set targetVersion
+    }
+}
+
+dependencies {
+    implementation "org.spongepowered:mixin:0.8.5"
+
+    // for some reason mixin isn't including these...
+    tweakerImplementation "org.ow2.asm:asm:9.3"
+    tweakerImplementation "org.ow2.asm:asm-tree:9.3"
+    tweakerImplementation "org.ow2.asm:asm-commons:9.3"
+    tweakerImplementation "org.ow2.asm:asm-util:9.3"
+    tweakerImplementation "org.ow2.asm:asm-analysis:9.3"
+
+
+    implementation 'com.github.ImpactDevelopment:SimpleTweaker:1.2'
+    implementation('net.minecraft:launchwrapper:of-2.3') {
+        exclude module: 'lwjgl'
+        exclude module: 'asm-debug-all'
+    }
+
+
+    testImplementation 'junit:junit:4.13.2'
+}
+
+processFabricResources {
+    inputs.property "version", project.version
+
+    filesMatching("fabric.mod.json") {
+        expand "version": project.version
+    }
+}
+
+processForgeResources {
+    inputs.property "version", project.version
+
+    filesMatching("META-INF/mods.toml") {
+        expand "version": project.version
+    }
 }
 
 javadoc {
@@ -142,4 +267,61 @@ javadoc {
     options.encoding "UTF-8" // allow emoji in comments :^)
     source = sourceSets.api.allJava
     classpath += sourceSets.api.compileClasspath
+}
+
+apply from: 'scripts/cancer.gradle'
+
+publishing {
+    publications {
+        create("mavenApi", MavenPublication) {
+            artifactId = "baritone-api"
+
+            artifact(file("$buildDir/libs/${project.archives_base_name}-api-${project.version}.jar"))
+            artifact(file("$buildDir/libs/${project.archives_base_name}-api-forge-${project.version}.jar")) {
+                classifier "forge"
+            }
+            artifact(file("$buildDir/libs/${project.archives_base_name}-api-${project.version}.jar")) {
+                classifier "fabric"
+            }
+            // mappings
+            artifact(file("$buildDir/libs/${project.archives_base_name}-api-${project.version}-mappings.txt")) {
+                classifier "mappings"
+                extension "txt"
+            }
+        }
+        create("mavenStandalone", MavenPublication) {
+            artifactId = "baritone-standalone"
+
+            artifact(file("$buildDir/libs/${project.archives_base_name}-standalone-${project.version}.jar"))
+            artifact(file("$buildDir/libs/${project.archives_base_name}-standalone-forge-${project.version}.jar")) {
+                classifier "forge"
+            }
+            artifact(file("$buildDir/libs/${project.archives_base_name}-standalone-${project.version}.jar")) {
+                classifier "fabric"
+            }
+            // mappings
+            artifact(file("$buildDir/libs/${project.archives_base_name}-standalone-${project.version}-mappings.txt")) {
+                classifier "mappings"
+                extension "txt"
+            }
+        }
+        create("mavenUnoptimized", MavenPublication) {
+            artifactId = "baritone-unoptimized"
+
+            artifact(file("$buildDir/libs/${project.archives_base_name}-unoptimized-${project.version}.jar"))
+            artifact(file("$buildDir/libs/${project.archives_base_name}-unoptimized-forge-${project.version}.jar")) {
+                classifier "forge"
+            }
+            artifact(file("$buildDir/libs/${project.archives_base_name}-unoptimized-${project.version}.jar")) {
+                classifier "fabric"
+            }
+        }
+    }
+}
+
+tasks.withType(AbstractPublishToMaven).configureEach {
+    dependsOn('build')
+    // for some reason these 2 need to be restated for the mappings
+    dependsOn('apiJarDev')
+    dependsOn('standaloneJarDev')
 }

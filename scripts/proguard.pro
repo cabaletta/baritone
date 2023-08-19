@@ -22,9 +22,6 @@
 # progard doesn't like signature polymorphism
 -dontwarn java.lang.invoke.MethodHandle
 
-# please do not change the comment below
--keep class baritone.api.** { *; } # this is the keep api
-
 # service provider needs these class names
 -keep class baritone.BaritoneProvider
 -keep class baritone.api.IBaritoneProvider

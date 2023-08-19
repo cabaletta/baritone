@@ -1,0 +1,353 @@
+import baritone.gradle.util.Determinizer
+import proguard.gradle.ProGuardTask
+import xyz.wagyourtail.unimined.api.minecraft.MinecraftConfig
+
+import java.nio.file.Files
+import java.security.MessageDigest
+
+static String withSourceSet(String name, SourceSet sourceSet) {
+    return sourceSet.name + name.capitalize()
+}
+
+synchronized String sha1(java.nio.file.Path path) {
+    try {
+        var SHA1_DIGEST = MessageDigest.getInstance("SHA-1")
+        SHA1_DIGEST.reset()
+        SHA1_DIGEST.update(Files.readAllBytes(path))
+        return SHA1_DIGEST.digest().encodeHex()
+    } catch (Exception e) {
+        // haha no thanks
+        throw new IllegalStateException(e)
+    }
+}
+
+project.tasks.register("createDist") {
+    group "baritone"
+    doLast {
+        StringBuilder sb = new StringBuilder()
+        // for each in dist
+        file("$projectDir/dist").eachFile { file ->
+            if (file.name == "checksums.txt") return
+            // generate sha1
+            var sha1 = sha1(file.toPath())
+            // append to string
+            sb.append("${sha1}  ${file.name}\n")
+        }
+        // write to file
+        file("$projectDir/dist/checksums.txt").write(sb.toString())
+    }
+}
+
+build.finalizedBy(tasks.createDist)
+
+
+// step 1, proguard main jar
+// get java from gradle
+var javaHome = System.getProperty("java.home")
+// is 9+?
+var javaLoc = []
+if (JavaVersion.current().isJava9Compatible()) {
+    javaLoc += [
+            "$javaHome/jmods/java.base.jmod",
+            "$javaHome/jmods/java.desktop.jmod",
+            "$javaHome/jmods/jdk.unsupported.jmod",
+            "$javaHome/jmods/java.compiler.jmod"
+    ]
+} else {
+    javaLoc += [
+            "$javaHome/lib/rt.jar"
+    ]
+}
+
+tasks.register("apiJarDev", ProGuardTask) {
+    injars(tasks.jar)
+    libraryjars(sourceSets.main.compileClasspath)
+    libraryjars(javaLoc)
+    var out = new File("$buildDir/tmp/${name}/out-api.jar")
+    if (out.exists()) out.delete()
+    outjars(out)
+    keep("class baritone.api.** { *; }")
+    configuration("$projectDir/scripts/proguard.pro")
+    printmapping("$buildDir/libs/${project.archives_base_name}-api-${project.version}-mappings.txt")
+    doLast {
+        Determinizer.determinize(out.absolutePath, "$buildDir/libs/${project.archives_base_name}-api-${project.version}-dev.jar")
+    }
+}
+
+tasks.register("standaloneJarDev", ProGuardTask) {
+    injars(tasks.jar)
+    libraryjars(sourceSets.main.compileClasspath)
+    libraryjars(javaLoc)
+    var out = new File("$buildDir/tmp/${name}/out-standalone.jar")
+    if (out.exists()) out.delete()
+    outjars(out)
+    configuration("$projectDir/scripts/proguard.pro")
+    printmapping("$buildDir/libs/${project.archives_base_name}-standalone-${project.version}-mappings.txt")
+    doLast {
+        Determinizer.determinize(out.absolutePath, "$buildDir/libs/${project.archives_base_name}-standalone-${project.version}-dev.jar")
+    }
+}
+
+var tweaker = unimined.minecrafts.get(sourceSets.tweaker)
+tweaker.remap(jar, withSourceSet("remapUnoptimizedJar", tweaker.sourceSet)) {
+    dependsOn jar
+
+    group "baritone_internal"
+
+    destinationDirectory.set(file("$buildDir/tmp/$name"))
+    inputFile.set(jar.archiveFile)
+    archiveBaseName.set project.archives_base_name + "-unoptimized"
+
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+
+    doLast {
+        Determinizer.determinize(outputs.files.singleFile.absolutePath, "$buildDir/libs/${project.archives_base_name}-unoptimized-${project.version}.jar")
+    }
+}
+
+tweaker.remap(apiJarDev, withSourceSet("remapApiJar", tweaker.sourceSet)) {
+    dependsOn tasks.apiJarDev
+
+    group "baritone_internal"
+
+    destinationDirectory.set(file("$buildDir/tmp/$name"))
+    inputFile.set(file("$buildDir/libs/${project.archives_base_name}-api-${project.version}-dev.jar"))
+    archiveBaseName.set project.archives_base_name + "-api"
+
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+
+    doLast {
+        Determinizer.determinize(outputs.files.singleFile.absolutePath, "$buildDir/libs/${project.archives_base_name}-api-${project.version}.jar")
+    }
+}
+
+tweaker.remap(standaloneJarDev, withSourceSet("remapStandaloneJar", tweaker.sourceSet)) {
+    dependsOn tasks.standaloneJarDev
+
+    group "baritone_internal"
+
+    destinationDirectory.set(file("$buildDir/tmp/$name"))
+    inputFile.set(file("$buildDir/libs/${project.archives_base_name}-standalone-${project.version}-dev.jar"))
+    archiveBaseName.set project.archives_base_name + "-standalone"
+
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+
+    doLast {
+        Determinizer.determinize(outputs.files.singleFile.absolutePath, "$buildDir/libs/${project.archives_base_name}-standalone-${project.version}.jar")
+    }
+}
+
+tasks.register(withSourceSet("createDistUnoptimized", tweaker.sourceSet)) {
+    dependsOn tasks.named(withSourceSet("remapUnoptimizedJar", tweaker.sourceSet))
+    group "baritone-dist"
+    doLast {
+        copy {
+            from("$buildDir/libs/${project.archives_base_name}-unoptimized-${project.version}.jar")
+            into("$projectDir/dist")
+            rename { "${project.archives_base_name}-unoptimized-${project.version}.jar" }
+        }
+    }
+}
+
+tasks.register(withSourceSet("createDistApi", tweaker.sourceSet)) {
+    dependsOn tasks.named(withSourceSet("remapApiJar", tweaker.sourceSet))
+    group "baritone-dist"
+    doLast {
+        copy {
+            from("$buildDir/libs/${project.archives_base_name}-api-${project.version}.jar")
+            from("$buildDir/libs/${project.archives_base_name}-api-${project.version}-mappings.txt")
+            into("$projectDir/dist")
+        }
+    }
+}
+
+tasks.register(withSourceSet("createDistStandalone", tweaker.sourceSet)) {
+    dependsOn tasks.named(withSourceSet("remapStandaloneJar", tweaker.sourceSet))
+    group "baritone-dist"
+    doLast {
+        copy {
+            from("$buildDir/libs/${project.archives_base_name}-standalone-${project.version}.jar")
+            from("$buildDir/libs/${project.archives_base_name}-standalone-${project.version}-mappings.txt")
+            into("$projectDir/dist")
+        }
+    }
+}
+
+tasks.createDist.dependsOn(tasks.named(withSourceSet("createDistUnoptimized", tweaker.sourceSet)))
+tasks.createDist.dependsOn(tasks.named(withSourceSet("createDistApi", tweaker.sourceSet)))
+tasks.createDist.dependsOn(tasks.named(withSourceSet("createDistStandalone", tweaker.sourceSet)))
+
+
+
+
+createModBuilds(unimined.minecrafts.get(sourceSets.forge), jar, tasks.apiJarDev, tasks.standaloneJarDev)
+createModBuilds(unimined.minecrafts.get(sourceSets.fabric), jar, tasks.apiJarDev, tasks.standaloneJarDev)
+
+void createModBuilds(MinecraftConfig minecraft, Jar jar, Task apiJarDevTask, Task standaloneJarDevTask) {
+
+    // step one, merge the jar with the mod-specific stuff
+    var unoptimizedJarDev = tasks.register(withSourceSet("unoptimizedJarDev", minecraft.sourceSet), Jar) {
+        dependsOn jar
+
+        group "baritone_internal"
+
+        from(minecraft.sourceSet.output)
+        from(zipTree(jar.outputs.files.singleFile))
+        archiveBaseName.set project.archives_base_name + "-unoptimized-" + minecraft.sourceSet.name
+        archiveClassifier = "dev"
+
+        preserveFileTimestamps = false
+        reproducibleFileOrder = true
+
+        manifest {
+            attributes(
+                    'MixinConfigs': 'mixins.baritone.json',
+                    "MixinConnector": "baritone.launch.BaritoneMixinConnector",
+
+                    'Implementation-Title': 'Baritone',
+                    'Implementation-Version': version,
+            )
+        }
+    }
+
+    var apiJarDev = tasks.register(withSourceSet("apiJarDev", minecraft.sourceSet), Jar) {
+        dependsOn apiJarDevTask
+
+        group "baritone_internal"
+
+        from(minecraft.sourceSet.output)
+        from(zipTree("$buildDir/libs/${project.archives_base_name}-api-${project.version}-dev.jar"))
+        archiveBaseName.set project.archives_base_name + "-api-" + minecraft.sourceSet.name
+        archiveClassifier = "dev"
+
+        preserveFileTimestamps = false
+        reproducibleFileOrder = true
+
+        manifest {
+            attributes(
+                    'MixinConfigs': 'mixins.baritone.json',
+                    "MixinConnector": "baritone.launch.BaritoneMixinConnector",
+
+                    'Implementation-Title': 'Baritone',
+                    'Implementation-Version': version,
+            )
+        }
+    }
+
+    var standaloneJarDev = tasks.register(withSourceSet("standaloneJarDev", minecraft.sourceSet), Jar) {
+        dependsOn standaloneJarDevTask
+
+        group "baritone_internal"
+
+        from(minecraft.sourceSet.output)
+        from(zipTree("$buildDir/libs/${project.archives_base_name}-standalone-${project.version}-dev.jar"))
+        archiveBaseName.set project.archives_base_name + "-standalone-" + minecraft.sourceSet.name
+        archiveClassifier = "dev"
+
+        preserveFileTimestamps = false
+        reproducibleFileOrder = true
+
+        manifest {
+            attributes(
+                    'MixinConfigs': 'mixins.baritone.json',
+                    "MixinConnector": "baritone.launch.BaritoneMixinConnector",
+
+                    'Implementation-Title': 'Baritone',
+                    'Implementation-Version': version,
+            )
+        }
+    }
+
+    // step two, remapper goes brr
+    minecraft.remap(unoptimizedJarDev.get(), withSourceSet("remapUnoptimizedJar", minecraft.sourceSet)) {
+        dependsOn unoptimizedJarDev
+
+        group "baritone_internal"
+
+        destinationDirectory.set(file("$buildDir/tmp/$name"))
+        inputFile.set(unoptimizedJarDev.get().archiveFile)
+        archiveBaseName.set project.archives_base_name + "-unoptimized-" + minecraft.sourceSet.name
+
+        preserveFileTimestamps = false
+        reproducibleFileOrder = true
+
+        doLast {
+            Determinizer.determinize(outputs.files.singleFile.absolutePath, "$buildDir/libs/${project.archives_base_name}-unoptimized-${minecraft.sourceSet.name}-${project.version}.jar")
+        }
+    }
+
+    minecraft.remap(apiJarDev.get(), withSourceSet("remapApiJar", minecraft.sourceSet)) {
+        dependsOn apiJarDev
+
+        group "baritone_internal"
+
+        destinationDirectory.set(file("$buildDir/tmp/$name"))
+        inputFile.set(apiJarDev.get().archiveFile)
+        archiveBaseName.set project.archives_base_name + "-api-" + minecraft.sourceSet.name
+
+        preserveFileTimestamps = false
+        reproducibleFileOrder = true
+
+        doLast {
+            Determinizer.determinize(outputs.files.singleFile.absolutePath, "$buildDir/libs/${project.archives_base_name}-api-${minecraft.sourceSet.name}-${project.version}.jar")
+        }
+    }
+
+    minecraft.remap(standaloneJarDev.get(), withSourceSet("remapStandaloneJar", minecraft.sourceSet)) {
+        dependsOn standaloneJarDev
+
+        group "baritone_internal"
+
+        destinationDirectory.set(file("$buildDir/tmp/$name"))
+        inputFile.set(standaloneJarDev.get().archiveFile)
+        archiveBaseName.set project.archives_base_name + "-standalone-" + minecraft.sourceSet.name
+
+        preserveFileTimestamps = false
+        reproducibleFileOrder = true
+
+        doLast {
+            Determinizer.determinize(outputs.files.singleFile.absolutePath, "$buildDir/libs/${project.archives_base_name}-standalone-${minecraft.sourceSet.name}-${project.version}.jar")
+        }
+    }
+
+    var unoptimizedDist = tasks.register(withSourceSet("createDistUnoptimized", minecraft.sourceSet)) {
+        dependsOn tasks.named(withSourceSet("remapUnoptimizedJar", minecraft.sourceSet))
+        group "baritone-dist"
+        doFirst {
+            copy {
+                from("$buildDir/libs/${project.archives_base_name}-unoptimized-${minecraft.sourceSet.name}-${project.version}.jar")
+                into("$projectDir/dist")
+            }
+        }
+    }
+
+    var apiDist = tasks.register(withSourceSet("createDistApi", minecraft.sourceSet)) {
+        dependsOn tasks.named(withSourceSet("remapApiJar", minecraft.sourceSet))
+        group "baritone-dist"
+        doFirst {
+            copy {
+                from("$buildDir/libs/${project.archives_base_name}-api-${minecraft.sourceSet.name}-${project.version}.jar")
+                into("$projectDir/dist")
+            }
+        }
+    }
+
+    var standaloneDist = tasks.register(withSourceSet("createDistStandalone", minecraft.sourceSet)) {
+        dependsOn tasks.named(withSourceSet("remapStandaloneJar", minecraft.sourceSet))
+        group "baritone-dist"
+        doFirst {
+            copy {
+                from("$buildDir/libs/${project.archives_base_name}-standalone-${minecraft.sourceSet.name}-${project.version}.jar")
+                into("$projectDir/dist")
+            }
+        }
+    }
+
+    createDist.dependsOn(unoptimizedDist)
+    createDist.dependsOn(apiDist)
+    createDist.dependsOn(standaloneDist)
+}
+
