@@ -127,7 +127,16 @@ jar {
 
 
 
-unimined.minecraft([sourceSets.main, sourceSets.api, sourceSets.launch, sourceSets.schematica_api, sourceSets.test]) {
+unimined.minecraft([
+        sourceSets.main,
+        sourceSets.api,
+        sourceSets.launch,
+        sourceSets.schematica_api,
+        sourceSets.test,
+        sourceSets.fabric,
+        sourceSets.forge,
+        sourceSets.tweaker
+]) {
     version project.minecraft_version
     side "client"
 
@@ -140,63 +149,23 @@ unimined.minecraft([sourceSets.main, sourceSets.api, sourceSets.launch, sourceSe
     }
 
     defaultRemapJar = false
-    runs.off = true
-}
 
-unimined.minecraft(sourceSets.tweaker) {
-    version project.minecraft_version
-    side "client"
-
-    mappings {
-        intermediary()
-        mojmap()
-        parchment project.parchment_version
-
-        devFallbackNamespace "intermediary"
-    }
-
-    runs.config("client") {
-        mainClass = "net.minecraft.launchwrapper.Launch"
-        args.addAll(["--tweakClass", "baritone.launch.BaritoneTweaker"])
-    }
-
-    defaultRemapJar = false
-}
-
-unimined.minecraft(sourceSets.forge) {
-    version project.minecraft_version
-    side "client"
-
-    mappings {
-        intermediary()
-        mojmap()
-        parchment project.parchment_version
-
-        devFallbackNamespace "intermediary"
-    }
-
-    minecraftForge {
-        loader project.forge_version
-        mixinConfig "mixins.baritone.json"
-    }
-
-    defaultRemapJar = false
-}
-
-unimined.minecraft(sourceSets.fabric) {
-    version project.minecraft_version
-    side "client"
-
-    mappings {
-        intermediary()
-        mojmap()
-        parchment project.parchment_version
-
-        devFallbackNamespace "intermediary"
-    }
-
-    fabric {
-        loader project.fabric_version
+    if (sourceSet == sourceSets.tweaker) {
+        runs.config("client") {
+            mainClass = "net.minecraft.launchwrapper.Launch"
+            args.addAll(["--tweakClass", "baritone.launch.BaritoneTweaker"])
+        }
+    } else if (sourceSet == sourceSets.forge) {
+        minecraftForge {
+            loader project.forge_version
+            mixinConfig "mixins.baritone.json"
+        }
+    } else if (sourceSet == sourceSets.fabric) {
+        fabric {
+            loader project.fabric_version
+        }
+    } else {
+        runs.off = true
     }
 
     defaultRemapJar = false

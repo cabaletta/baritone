@@ -202,6 +202,12 @@ void createModBuilds(MinecraftConfig minecraft, Jar jar, Task apiJarDevTask, Tas
         preserveFileTimestamps = false
         reproducibleFileOrder = true
 
+        if (minecraft.sourceSet == sourceSets.forge) {
+            for (file in configurations.forgeShadow.files) {
+                from(zipTree(file))
+            }
+        }
+
         manifest {
             attributes(
                     'MixinConfigs': 'mixins.baritone.json',
@@ -226,6 +232,12 @@ void createModBuilds(MinecraftConfig minecraft, Jar jar, Task apiJarDevTask, Tas
         preserveFileTimestamps = false
         reproducibleFileOrder = true
 
+        if (minecraft.sourceSet == sourceSets.forge) {
+            for (file in configurations.forgeShadow.files) {
+                from(zipTree(file))
+            }
+        }
+
         manifest {
             attributes(
                     'MixinConfigs': 'mixins.baritone.json',
@@ -249,6 +261,12 @@ void createModBuilds(MinecraftConfig minecraft, Jar jar, Task apiJarDevTask, Tas
 
         preserveFileTimestamps = false
         reproducibleFileOrder = true
+
+        if (minecraft.sourceSet == sourceSets.forge) {
+            for (file in configurations.forgeShadow.files) {
+                from(zipTree(file))
+            }
+        }
 
         manifest {
             attributes(
