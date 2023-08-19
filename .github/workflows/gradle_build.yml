@@ -35,9 +35,3 @@ jobs:
       with:
         name: Artifacts
         path: dist/
-        
-    - name: Archive mapping.txt
-      uses: actions/upload-artifact@v3
-      with:
-        name: Mappings
-        path: mapping/
