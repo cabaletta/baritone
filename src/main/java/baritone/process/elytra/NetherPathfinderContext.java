@@ -60,6 +60,10 @@ public final class NetherPathfinderContext {
         this.executor = Executors.newSingleThreadExecutor();
     }
 
+    public boolean hasChunk(ChunkPos pos) {
+        return NetherPathfinder.hasChunkFromJava(this.context, pos.x, pos.z);
+    }
+
     public void queueCacheCulling(int chunkX, int chunkZ, int maxDistanceBlocks, BlockStateOctreeInterface boi) {
         this.executor.execute(() -> {
             synchronized (this.cullingLock) {
