@@ -98,7 +98,7 @@ public final class ElytraBehavior implements Helper {
 
     private BlockStateInterface bsi;
     private final BlockStateOctreeInterface boi;
-    public final BlockPos destination;
+    public final BetterBlockPos destination;
     private final boolean appendDestination;
 
     private final ExecutorService solverExecutor;
@@ -119,7 +119,7 @@ public final class ElytraBehavior implements Helper {
         this.blockedLines = new CopyOnWriteArrayList<>();
         this.pathManager = this.new PathManager();
         this.process = process;
-        this.destination = destination;
+        this.destination = new BetterBlockPos(destination);
         this.appendDestination = appendDestination;
         this.solverExecutor = Executors.newSingleThreadExecutor();
         this.nextTickBoostCounter = new int[2];
@@ -188,16 +188,16 @@ public final class ElytraBehavior implements Helper {
                     });
         }
 
-        public CompletableFuture<Void> pathRecalcSegment(final int upToIncl) {
+        public CompletableFuture<Void> pathRecalcSegment(final OptionalInt upToIncl) {
             if (this.recalculating) {
                 throw new IllegalStateException("already recalculating");
             }
 
             this.recalculating = true;
-            final List<BetterBlockPos> after = this.path.subList(upToIncl + 1, this.path.size());
+            final List<BetterBlockPos> after = upToIncl.isPresent() ? this.path.subList(upToIncl.getAsInt() + 1, this.path.size()) : Collections.emptyList();
             final boolean complete = this.completePath;
 
-            return this.path0(ctx.playerFeet(), this.path.get(upToIncl), segment -> segment.append(after.stream(), complete))
+            return this.path0(ctx.playerFeet(), upToIncl.isPresent() ? this.path.get(upToIncl.getAsInt()) : ElytraBehavior.this.destination, segment -> segment.append(after.stream(), complete || (segment.isFinished() && !upToIncl.isPresent())))
                     .whenComplete((result, ex) -> {
                         this.recalculating = false;
                         if (ex != null) {
@@ -315,7 +315,7 @@ public final class ElytraBehavior implements Helper {
             }
 
             if (ElytraBehavior.this.process.state != ElytraProcess.State.LANDING && this.ticksNearUnchanged > 100) {
-                this.pathRecalcSegment(rangeEndExcl - 1)
+                this.pathRecalcSegment(OptionalInt.of(rangeEndExcl - 1))
                         .thenRun(() -> {
                             logDirect("Recalculating segment, no progress in last 100 ticks");
                         });
@@ -331,15 +331,15 @@ public final class ElytraBehavior implements Helper {
                 if (!ElytraBehavior.this.clearView(this.path.getVec(i), this.path.getVec(i + 1), false)) {
                     // obstacle. where do we return to pathing?
                     // if the end of render distance is closer to goal, then that's fine, otherwise we'd be "digging our hole deeper" and making an already bad backtrack worse
-                    int rejoinMainPathAt;
-                    if (this.path.get(rangeEndExcl - 1).distanceSq(this.path.get(path.size() - 1)) < ctx.playerFeet().distanceSq(this.path.get(path.size() - 1))) {
-                        rejoinMainPathAt = rangeEndExcl - 1; // rejoin after current render distance
+                    OptionalInt rejoinMainPathAt;
+                    if (this.path.get(rangeEndExcl - 1).distanceSq(ElytraBehavior.this.destination) < ctx.playerFeet().distanceSq(ElytraBehavior.this.destination)) {
+                        rejoinMainPathAt = OptionalInt.of(rangeEndExcl - 1); // rejoin after current render distance
                     } else {
-                        rejoinMainPathAt = path.size() - 1; // large backtrack detected. ignore render distance, rejoin later on
+                        rejoinMainPathAt = OptionalInt.empty(); // large backtrack detected. ignore render distance, rejoin later on
                     }
 
                     final BetterBlockPos blockage = this.path.get(i);
-                    final double distance = ctx.playerFeet().distanceTo(this.path.get(rejoinMainPathAt));
+                    final double distance = ctx.playerFeet().distanceTo(this.path.get(rejoinMainPathAt.orElse(path.size() - 1)));
 
                     final long start = System.nanoTime();
                     this.pathRecalcSegment(rejoinMainPathAt)
@@ -356,7 +356,7 @@ public final class ElytraBehavior implements Helper {
                 }
             }
             if (!canSeeAny && rangeStartIncl < rangeEndExcl - 2 && process.state != ElytraProcess.State.GET_TO_JUMP) {
-                this.pathRecalcSegment(rangeEndExcl - 1).thenRun(() -> logDirect("Recalculated segment since no path points were visible"));
+                this.pathRecalcSegment(OptionalInt.of(rangeEndExcl - 1)).thenRun(() -> logDirect("Recalculated segment since no path points were visible"));
             }
         }
 
