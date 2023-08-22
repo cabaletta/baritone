@@ -1,3 +1,13 @@
+# Warning: Old Branch!!
+
+**Click [here](https://github.com/cabaletta/baritone) to go to the current Baritone readme.**
+
+**This branch (`master`) is Baritone for Minecraft 1.12.2. This is the original version of Minecraft that Baritone was written for, and it was the primary development branch for over 5 years. As such, it's quite mature, and arguably more reliable than Baritone for newer versions of Minecraft. Nevertheless, as of August 2023, with [2b2t's update from 1.12.2 to 1.19.4](https://2b2t.org/update/), I decided to move Baritone's primary development branch accordingly. PRs should now be made against the `1.19.4` branch going forward. This branch might see some fixes going forward, particularly to newer features such as `#elytra`, but it won't be the primary focus anymore.**
+
+The other intermediary branches (`1.13.2`, `1.14.4`, `1.15.2`, `1.16.5`, `1.17.1`, `1.18.2`, `1.19.2`, and `1.19.3`) will probably not receive any updates at all. You can find their last releases in the releases tab, or in the quick download links table.
+
+For `1.16.5` and `1.18.2`, the latest release is fully up to date with the code. ZacSharp merged master into some of those versions even after they were deprecated, if you are for some reason really interested in the latest Baritone bugfixes on these versions of Minecraft, you can build from source as of these commits: [1.13.2](https://github.com/cabaletta/baritone/commit/be54b8ee5b5639f80e3d6809ed1abd52444d8a08), [1.14.4](https://github.com/cabaletta/baritone/commit/be54b8ee5b5639f80e3d6809ed1abd52444d8a08), [1.15.2](https://github.com/cabaletta/baritone/commit/45abbb7fa1062cefc26abbb006a02a4edd6faa32), [1.17.1](https://github.com/cabaletta/baritone/commit/cbf0d79c9c5f7454071dc0a5289261ec9ca4373f), [1.19.2](https://github.com/cabaletta/baritone/commit/217dca53633610edc9483fda7a234e46c839fd99). For `1.19.3`, merging [this](https://github.com/cabaletta/baritone/commit/217dca53633610edc9483fda7a234e46c839fd99) commit into it is trivial and is left as an exercise for the reader. For other versions in between these (for example people always ask in the Discord for 1.16.1), you'll have to figure it out yourself.
+
 # Baritone
 <p align="center">
   <a href="https://github.com/cabaletta/baritone/releases/"><img src="https://img.shields.io/github/downloads/cabaletta/baritone/total.svg" alt="GitHub All Releases"/></a>
