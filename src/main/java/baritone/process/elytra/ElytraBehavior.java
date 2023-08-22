@@ -24,6 +24,7 @@ import baritone.api.behavior.look.ITickableAimProcessor;
 import baritone.api.event.events.*;
 import baritone.api.pathing.goals.GoalBlock;
 import baritone.api.utils.*;
+import baritone.api.utils.input.Input;
 import baritone.process.ElytraProcess;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.IRenderer;
@@ -602,6 +603,11 @@ public final class ElytraBehavior implements Helper {
             this.deployedFireworkLastTick = false;
         }
 
+        final boolean inLava = ctx.player().isInLava();
+        if (inLava) {
+            baritone.getInputOverrideHandler().setInputForceState(Input.JUMP, true);
+        }
+
         if (solution == null) {
             logDirect("no solution");
             return;
@@ -620,7 +626,7 @@ public final class ElytraBehavior implements Helper {
                 solution.context.start,
                 solution.goingTo,
                 solution.context.boost.isBoosted(),
-                solution.forceUseFirework
+                solution.forceUseFirework || inLava
         );
     }
 
@@ -1002,7 +1008,7 @@ public final class ElytraBehavior implements Helper {
             // if start == dest then the cpp raytracer dies
             clear = start.equals(dest) || this.context.raytrace(start, dest);
         } else {
-            clear = ctx.world().clip(new ClipContext(start, dest, ClipContext.Block.COLLIDER, ClipContext.Fluid.ANY, ctx.player())).getType() == HitResult.Type.MISS;
+            clear = ctx.world().clip(new ClipContext(start, dest, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, ctx.player())).getType() == HitResult.Type.MISS;
         }
 
         if (Baritone.settings().elytraRenderRaytraces.value) {
