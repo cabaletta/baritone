@@ -19,17 +19,21 @@ package baritone.api.process;
 
 import baritone.api.utils.BlockOptionalMeta;
 import net.minecraft.block.Block;
+import java.util.List;
+import java.util.Arrays;
 
 /**
  * but it rescans the world every once in a while so it doesn't get fooled by its cache
  */
 public interface IGetToBlockProcess extends IBaritoneProcess {
 
-    void getToBlock(BlockOptionalMeta block);
-
+    default void getToBlock(BlockOptionalMeta block) {
+        getToBlock(Arrays.asList(block));
+    }
     default void getToBlock(Block block) {
         getToBlock(new BlockOptionalMeta(block));
     }
+    void getToBlock(List<BlockOptionalMeta> blocks);
 
     boolean blacklistClosest();
 }
