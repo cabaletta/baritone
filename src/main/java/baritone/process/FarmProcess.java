@@ -213,6 +213,14 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
                 continue;
             }
 
+            if (Baritone.settings().mineOnlyInsideSelection.value) {
+                boolean isInSelection = Arrays.stream(baritone.getSelectionManager().getSelections()).anyMatch(selection -> selection.aabb().contains(new Vec3d(pos.getX(), pos.getY(), pos.getZ())));
+
+                if (!isInSelection) {
+                    continue;
+                }
+            }
+
             IBlockState state = ctx.world().getBlockState(pos);
             boolean airAbove = ctx.world().getBlockState(pos.up()).getBlock() instanceof BlockAir;
             if (state.getBlock() == Blocks.FARMLAND) {

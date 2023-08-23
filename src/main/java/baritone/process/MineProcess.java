@@ -40,6 +40,7 @@ import net.minecraft.entity.item.EntityItem;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -453,6 +454,15 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
                     } else {
                         return true;
                     }
+                })
+
+                .filter(pos -> {
+                    if (Baritone.settings().mineOnlyInsideSelection.value) {
+                        boolean isInSelection = Arrays.stream(ctx.baritone.getSelectionManager().getSelections()).anyMatch(selection -> selection.aabb().contains(new Vec3d(pos.getX(), pos.getY(), pos.getZ())));
+
+                        return isInSelection;
+                    }
+                    return true;
                 })
 
                 .filter(pos -> pos.getY() >= Baritone.settings().minYLevelWhileMining.value)
