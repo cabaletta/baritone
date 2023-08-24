@@ -20,14 +20,14 @@ package baritone.gradle.task;
 import baritone.gradle.util.Determinizer;
 import org.gradle.api.plugins.JavaPluginConvention;
 import org.gradle.api.tasks.Input;
+import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.api.tasks.TaskCollection;
 import org.gradle.api.tasks.compile.ForkOptions;
 import org.gradle.api.tasks.compile.JavaCompile;
 import org.gradle.internal.jvm.Jvm;
-import xyz.wagyourtail.unimined.api.Constants;
-import xyz.wagyourtail.unimined.api.minecraft.EnvType;
-import xyz.wagyourtail.unimined.api.minecraft.MinecraftProvider;
+import xyz.wagyourtail.unimined.api.UniminedExtension;
+import xyz.wagyourtail.unimined.api.minecraft.MinecraftConfig;
 
 import java.io.*;
 import java.net.URL;
@@ -35,7 +35,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
@@ -63,8 +62,6 @@ public class ProguardTask extends BaritoneGradleTask {
 
     private List<String> requiredLibraries;
 
-    private File pathfinder;
-
     @TaskAction
     protected void exec() throws Exception {
         super.doFirst();
@@ -74,21 +71,23 @@ public class ProguardTask extends BaritoneGradleTask {
         downloadProguard();
         extractProguard();
         generateConfigs();
-        pathfinder = acquireDependencies().filter(file -> file.getName().contains("nether-pathfinder")).findAny().get();
         processArtifact();
         proguardApi();
         proguardStandalone();
         cleanup();
     }
 
-    MinecraftProvider<?, ?> provider = this.getProject().getExtensions().getByType(MinecraftProvider.class);
+    UniminedExtension ext = getProject().getExtensions().getByType(UniminedExtension.class);
+    SourceSetContainer sourceSets = getProject().getExtensions().getByType(SourceSetContainer.class);
 
     private File getMcJar() {
-        return provider.getMinecraftWithMapping(EnvType.COMBINED, provider.getMcPatcher().getProdNamespace(), provider.getMcPatcher().getProdFallbackNamespace()).toFile();
+        MinecraftConfig mcc = ext.getMinecrafts().get(sourceSets.getByName("main"));
+        return mcc.getMinecraft(mcc.getMcPatcher().getProdNamespace(), mcc.getMcPatcher().getProdNamespace()).toFile();
     }
 
     private boolean isMcJar(File f) {
-        return this.getProject().getConfigurations().getByName(Constants.MINECRAFT_COMBINED_PROVIDER).getFiles().contains(f);
+        MinecraftConfig mcc = ext.getMinecrafts().get(sourceSets.getByName("main"));
+        return mcc.isMinecraftJar(f.toPath());
     }
 
     private void processArtifact() throws Exception {
@@ -96,7 +95,7 @@ public class ProguardTask extends BaritoneGradleTask {
             Files.delete(this.artifactUnoptimizedPath);
         }
 
-        Determinizer.determinize(this.artifactPath.toString(), this.artifactUnoptimizedPath.toString(), Arrays.asList(pathfinder), false);
+        Determinizer.determinize(this.artifactPath.toString(), this.artifactUnoptimizedPath.toString(), List.of(), false);
     }
 
     private void downloadProguard() throws Exception {
@@ -253,12 +252,12 @@ public class ProguardTask extends BaritoneGradleTask {
 
     private void proguardApi() throws Exception {
         runProguard(getTemporaryFile(compType + PROGUARD_API_CONFIG));
-        Determinizer.determinize(this.proguardOut.toString(), this.artifactApiPath.toString(), Arrays.asList(pathfinder), false);
+        Determinizer.determinize(this.proguardOut.toString(), this.artifactApiPath.toString(), List.of(), false);
     }
 
     private void proguardStandalone() throws Exception {
         runProguard(getTemporaryFile(compType + PROGUARD_STANDALONE_CONFIG));
-        Determinizer.determinize(this.proguardOut.toString(), this.artifactStandalonePath.toString(), Arrays.asList(pathfinder), false);
+        Determinizer.determinize(this.proguardOut.toString(), this.artifactStandalonePath.toString(), List.of(), false);
     }
 
     private static final class Pair<A, B> {
