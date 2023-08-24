@@ -20,25 +20,29 @@ package baritone.behavior;
 import baritone.Baritone;
 import baritone.api.event.events.TickEvent;
 import baritone.api.utils.Helper;
+import baritone.api.utils.InventorySlot;
+import baritone.api.utils.Pair;
+import baritone.utils.ItemInteractionHelper;
 import baritone.utils.ToolSet;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.init.Blocks;
 import net.minecraft.inventory.ClickType;
 import net.minecraft.item.*;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.NonNullList;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.OptionalInt;
 import java.util.Random;
+import java.util.function.IntPredicate;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 public final class InventoryBehavior extends Behavior implements Helper {
 
-    int ticksSinceLastInventoryMove;
-    int[] lastTickRequestedMove; // not everything asks every tick, so remember the request while coming to a halt
+    private int ticksSinceLastInventoryMove;
+    private int[] lastTickRequestedMove; // not everything asks every tick, so remember the request while coming to a halt
 
     public InventoryBehavior(Baritone baritone) {
         super(baritone);
@@ -46,31 +50,51 @@ public final class InventoryBehavior extends Behavior implements Helper {
 
     @Override
     public void onTick(TickEvent event) {
-        if (!Baritone.settings().allowInventory.value) {
+        if (event.getType() == TickEvent.Type.OUT) {
             return;
         }
-        if (event.getType() == TickEvent.Type.OUT) {
+        ticksSinceLastInventoryMove++;
+
+        // TODO: Move these checks into "requestSwapWithHotBar" or whatever supersedes it
+        if (!this.canAccessInventory()) {
             return;
         }
         if (ctx.player().openContainer != ctx.player().inventoryContainer) {
             // we have a crafting table or a chest or something open
             return;
         }
-        ticksSinceLastInventoryMove++;
-        if (firstValidThrowaway() >= 9) { // aka there are none on the hotbar, but there are some in main inventory
-            requestSwapWithHotBar(firstValidThrowaway(), 8);
+
+        if (Baritone.settings().allowHotbarManagement.value && baritone.getPathingBehavior().isPathing()) {
+            this.setupHotbar();
         }
-        int pick = bestToolAgainst(Blocks.STONE, ItemPickaxe.class);
-        if (pick >= 9) {
-            requestSwapWithHotBar(pick, 0);
-        }
+
         if (lastTickRequestedMove != null) {
             logDebug("Remembering to move " + lastTickRequestedMove[0] + " " + lastTickRequestedMove[1] + " from a previous tick");
             requestSwapWithHotBar(lastTickRequestedMove[0], lastTickRequestedMove[1]);
         }
     }
 
-    public boolean attemptToPutOnHotbar(int inMainInvy, Predicate<Integer> disallowedHotbar) {
+    private void setupHotbar() {
+        // TODO: Some way of indicating which slots are currently reserved by this setting
+
+        final InventorySlot throwaway = this.findSlotMatching(this::isThrowawayItem);
+        if (throwaway != null && throwaway.getType() == InventorySlot.Type.INVENTORY) {
+            // aka there are none on the hotbar, but there are some in main inventory
+            this.requestSwapWithHotBar(throwaway.getInventoryIndex(), 8);
+            return;
+        }
+
+        final InventorySlot pick = this.bestToolAgainst(Blocks.STONE, ItemPickaxe.class);
+        if (pick != null && pick.getType() == InventorySlot.Type.INVENTORY) {
+            this.requestSwapWithHotBar(pick.getInventoryIndex(), 0);
+        }
+    }
+
+    private InventorySlot bestToolAgainst(final Block against, final Class<? extends ItemTool> cla$$) {
+        return new ToolSet(ctx).getBestSlot(against.getDefaultState(), Baritone.settings().preferSilkTouch.value, stack -> cla$$.isInstance(stack.getItem()));
+    }
+
+    public boolean attemptToPutOnHotbar(int inMainInvy, IntPredicate disallowedHotbar) {
         OptionalInt destination = getTempHotbarSlot(disallowedHotbar);
         if (destination.isPresent()) {
             if (!requestSwapWithHotBar(inMainInvy, destination.getAsInt())) {
@@ -80,7 +104,7 @@ public final class InventoryBehavior extends Behavior implements Helper {
         return true;
     }
 
-    public OptionalInt getTempHotbarSlot(Predicate<Integer> disallowedHotbar) {
+    public OptionalInt getTempHotbarSlot(IntPredicate disallowedHotbar) {
         // we're using 0 and 8 for pickaxe and throwaway
         ArrayList<Integer> candidates = new ArrayList<>();
         for (int i = 1; i < 8; i++) {
@@ -117,114 +141,172 @@ public final class InventoryBehavior extends Behavior implements Helper {
         return true;
     }
 
-    private int firstValidThrowaway() { // TODO offhand idk
-        NonNullList<ItemStack> invy = ctx.player().inventory.mainInventory;
-        for (int i = 0; i < invy.size(); i++) {
-            if (Baritone.settings().acceptableThrowawayItems.value.contains(invy.get(i).getItem())) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
-    private int bestToolAgainst(Block against, Class<? extends ItemTool> cla$$) {
-        NonNullList<ItemStack> invy = ctx.player().inventory.mainInventory;
-        int bestInd = -1;
-        double bestSpeed = -1;
-        for (int i = 0; i < invy.size(); i++) {
-            ItemStack stack = invy.get(i);
-            if (stack.isEmpty()) {
-                continue;
-            }
-            if (Baritone.settings().itemSaver.value && (stack.getItemDamage() + Baritone.settings().itemSaverThreshold.value) >= stack.getMaxDamage() && stack.getMaxDamage() > 1) {
-                continue;
-            }
-            if (cla$$.isInstance(stack.getItem())) {
-                double speed = ToolSet.calculateSpeedVsBlock(stack, against.getDefaultState()); // takes into account enchants
-                if (speed > bestSpeed) {
-                    bestSpeed = speed;
-                    bestInd = i;
-                }
-            }
-        }
-        return bestInd;
-    }
-
     public boolean hasGenericThrowaway() {
-        for (Item item : Baritone.settings().acceptableThrowawayItems.value) {
-            if (throwaway(false, stack -> item.equals(stack.getItem()))) {
-                return true;
-            }
-        }
-        return false;
+        return this.canSelectItem(this::isThrowawayItem);
     }
 
     public boolean selectThrowawayForLocation(boolean select, int x, int y, int z) {
-        IBlockState maybe = baritone.getBuilderProcess().placeAt(x, y, z, baritone.bsi.get0(x, y, z));
-        if (maybe != null && throwaway(select, stack -> stack.getItem() instanceof ItemBlock && maybe.equals(((ItemBlock) stack.getItem()).getBlock().getStateForPlacement(ctx.world(), ctx.playerFeet(), EnumFacing.UP, (float) ctx.player().posX, (float) ctx.player().posY, (float) ctx.player().posZ, stack.getItem().getMetadata(stack.getMetadata()), ctx.player())))) {
-            return true; // gotem
+        final Predicate<Predicate<? super ItemStack>> op = select ? this::trySelectItem : this::canSelectItem;
+
+        final IBlockState maybe = baritone.getBuilderProcess().placeAt(x, y, z, baritone.bsi.get0(x, y, z));
+        if (maybe != null) {
+            return op.test(stack -> {
+                if (!(stack.getItem() instanceof ItemBlock)) {
+                    return false;
+                }
+                Block block = ((ItemBlock) stack.getItem()).getBlock();
+                return maybe.equals(block.getStateForPlacement(
+                        ctx.world(),
+                        ctx.playerFeet(),
+                        EnumFacing.UP,
+                        0.5f, 1.0f, 0.5f,
+                        stack.getItem().getMetadata(stack.getMetadata()),
+                        ctx.player()
+                ));
+            }) || op.test(stack -> {
+                // Since a stack didn't match the desired block state, accept a match of just the block
+                return stack.getItem() instanceof ItemBlock
+                        && ((ItemBlock) stack.getItem()).getBlock().equals(maybe.getBlock());
+            });
         }
-        if (maybe != null && throwaway(select, stack -> stack.getItem() instanceof ItemBlock && ((ItemBlock) stack.getItem()).getBlock().equals(maybe.getBlock()))) {
+        return op.test(this::isThrowawayItem);
+    }
+
+    public boolean canSelectItem(Predicate<? super ItemStack> desired) {
+        return this.resolveSelectionStrategy(this.findSlotMatching(desired)) != null;
+    }
+
+    public boolean trySelectItem(Predicate<? super ItemStack> desired) {
+        final SelectionStrategy strategy = this.resolveSelectionStrategy(this.findSlotMatching(desired));
+        if (strategy != null) {
+            strategy.run();
+            // TODO: Consider cases where returning the SelectionType is needed/useful to the caller
             return true;
         }
-        for (Item item : Baritone.settings().acceptableThrowawayItems.value) {
-            if (throwaway(select, stack -> item.equals(stack.getItem()))) {
-                return true;
-            }
-        }
         return false;
     }
 
-    public boolean throwaway(boolean select, Predicate<? super ItemStack> desired) {
-        return throwaway(select, desired, Baritone.settings().allowInventory.value);
+    public SelectionStrategy resolveSelectionStrategy(final InventorySlot slot) {
+        if (slot != null) {
+            switch (slot.getType()) {
+                case HOTBAR:
+                    return SelectionStrategy.of(SelectionType.IMMEDIATE, () ->
+                            ctx.player().inventory.currentItem = slot.getInventoryIndex());
+                case OFFHAND:
+                    // TODO: It's probably worth adding a parameter to this method so that the caller can indicate what
+                    //       the purpose of the item is. For example, attacks are always done using the main hand, so
+                    //       just switching to a non-interacting hotbar item isn't sufficient.
+                    final ItemStack heldItem = ctx.player().inventory.getCurrentItem();
+
+                    if (!ItemInteractionHelper.couldInteract(heldItem)) {
+                        // Don't need to do anything, the item held in the main hand doesn't have any interaction.
+                        return SelectionStrategy.of(SelectionType.IMMEDIATE, () -> {});
+                    }
+
+                    final InventorySlot hotbar = this.findHotbarMatching(item -> !ItemInteractionHelper.couldInteract(item));
+                    if (hotbar != null) {
+                        return SelectionStrategy.of(SelectionType.IMMEDIATE, () ->
+                                ctx.player().inventory.currentItem = hotbar.getInventoryIndex());
+                    }
+
+                    // TODO: Swap offhand with an unimportant item
+                    break;
+                case INVENTORY:
+                    if (this.canAccessInventory()) {
+                        return SelectionStrategy.of(SelectionType.ENQUEUED, () -> {
+                            // TODO: Determine if hotbar swap can be immediate, and return type accordingly
+                            //       Also don't only swap into slot 7 that's silly
+                            requestSwapWithHotBar(slot.getInventoryIndex(), 7);
+                            ctx.player().inventory.currentItem = 7;
+                        });
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+        return null;
     }
 
-    public boolean throwaway(boolean select, Predicate<? super ItemStack> desired, boolean allowInventory) {
-        EntityPlayerSP p = ctx.player();
-        NonNullList<ItemStack> inv = p.inventory.mainInventory;
-        for (int i = 0; i < 9; i++) {
-            ItemStack item = inv.get(i);
-            // this usage of settings() is okay because it's only called once during pathing
-            // (while creating the CalculationContext at the very beginning)
-            // and then it's called during execution
-            // since this function is never called during cost calculation, we don't need to migrate
-            // acceptableThrowawayItems to the CalculationContext
-            if (desired.test(item)) {
-                if (select) {
-                    p.inventory.currentItem = i;
-                }
-                return true;
-            }
-        }
-        if (desired.test(p.inventory.offHandInventory.get(0))) {
-            // main hand takes precedence over off hand
-            // that means that if we have block A selected in main hand and block B in off hand, right clicking places block B
-            // we've already checked above ^ and the main hand can't possible have an acceptablethrowawayitem
-            // so we need to select in the main hand something that doesn't right click
-            // so not a shovel, not a hoe, not a block, etc
-            for (int i = 0; i < 9; i++) {
-                ItemStack item = inv.get(i);
-                if (item.isEmpty() || item.getItem() instanceof ItemPickaxe) {
-                    if (select) {
-                        p.inventory.currentItem = i;
-                    }
-                    return true;
-                }
-            }
-        }
+    public InventorySlot findBestAccessibleMatching(final Comparator<? super ItemStack> comparator,
+                                                    final Predicate<? super ItemStack> filter) {
+        final Stream<Pair<InventorySlot, ItemStack>> accessible = this.canAccessInventory()
+                ? ctx.inventory().allSlots()
+                : Stream.concat(ctx.inventory().hotbarSlots(), Stream.of(ctx.inventory().offhand()));
+        return this.findBestMatching0(accessible, comparator, filter);
+    }
 
-        if (allowInventory) {
-            for (int i = 9; i < 36; i++) {
-                if (desired.test(inv.get(i))) {
-                    if (select) {
-                        requestSwapWithHotBar(i, 7);
-                        p.inventory.currentItem = 7;
-                    }
-                    return true;
-                }
-            }
-        }
+    public InventorySlot findSlotMatching(final Predicate<? super ItemStack> filter) {
+        return this.findBestSlotMatching(null, filter);
+    }
 
-        return false;
+    /**
+     * Returns an {@link InventorySlot} that contains a stack matching the given predicate. A comparator may be
+     * specified to prioritize slot selection. The comparator may be {@code null}, in which case, the first slot
+     * matching the predicate is returned. The considered slots are in the order of hotbar, offhand, and finally the
+     * main inventory (if {@link #canAccessInventory()} is {@code true}).
+     *
+     * @param comparator A comparator to find the best element, may be {@code null}
+     * @param filter The predicate to match
+     * @return A matching slot, or {@code null} if none.
+     */
+    public InventorySlot findBestSlotMatching(final Comparator<? super ItemStack> comparator, final Predicate<? super ItemStack> filter) {
+        return this.findBestMatching0(ctx.inventory().allSlots(), comparator, filter);
+    }
+
+    public InventorySlot findHotbarMatching(final Predicate<? super ItemStack> filter) {
+        return this.findBestHotbarMatching(null, filter);
+    }
+
+    public InventorySlot findBestHotbarMatching(final Comparator<? super ItemStack> comparator, final Predicate<? super ItemStack> filter) {
+        return this.findBestMatching0(ctx.inventory().hotbarSlots(), comparator, filter);
+    }
+
+    private InventorySlot findBestMatching0(final Stream<Pair<InventorySlot, ItemStack>>    slots,
+                                            final Comparator<? super ItemStack>             comparator,
+                                            final Predicate<? super ItemStack>              filter) {
+        final Stream<Pair<InventorySlot, ItemStack>> filtered = slots.filter(slot -> filter.test(slot.second()));
+        return (comparator != null
+                ? filtered.max((a, b) -> comparator.compare(a.second(), b.second()))
+                : filtered.findFirst()
+        ).map(Pair::first).orElse(null);
+    }
+
+    public boolean canAccessInventory() {
+        return Baritone.settings().allowInventory.value;
+    }
+
+    public boolean isThrowawayItem(ItemStack stack) {
+        return this.isThrowawayItem(stack.getItem());
+    }
+
+    public boolean isThrowawayItem(Item item) {
+        return Baritone.settings().acceptableThrowawayItems.value.contains(item);
+    }
+
+    public interface SelectionStrategy extends Runnable {
+
+        @Override
+        void run();
+
+        SelectionType getType();
+
+        static SelectionStrategy of(final SelectionType type, final Runnable runnable) {
+            return new SelectionStrategy() {
+                @Override
+                public void run() {
+                    runnable.run();
+                }
+
+                @Override
+                public SelectionType getType() {
+                    return type;
+                }
+            };
+        }
+    }
+
+    public enum SelectionType {
+        IMMEDIATE, ENQUEUED
     }
 }

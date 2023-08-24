@@ -75,6 +75,13 @@ public final class Settings {
     public final Setting<Boolean> allowInventory = new Setting<>(false);
 
     /**
+     * Allow Baritone to automatically put useful items (such as tools and throwaway blocks) on the hotbar while
+     * pathing. This can reduce delays when retrieving items due settings like {@link #ticksBetweenInventoryMoves} and
+     * {@link #inventoryMoveOnlyIfStationary}. Requires {@link #allowInventory}.
+     */
+    public final Setting<Boolean> allowHotbarManagement = new Setting<>(false);
+
+    /**
      * Wait this many ticks between InventoryBehavior moving inventory items
      */
     public final Setting<Integer> ticksBetweenInventoryMoves = new Setting<>(1);

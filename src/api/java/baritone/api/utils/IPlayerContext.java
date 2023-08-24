@@ -17,6 +17,7 @@
 
 package baritone.api.utils;
 
+import baritone.api.IBaritone;
 import baritone.api.cache.IWorldData;
 import net.minecraft.block.BlockSlab;
 import net.minecraft.client.Minecraft;
@@ -34,11 +35,15 @@ import java.util.Optional;
  */
 public interface IPlayerContext {
 
+    IBaritone baritone();
+
     Minecraft minecraft();
 
     EntityPlayerSP player();
 
     IPlayerController playerController();
+
+    IBaritoneInventory inventory();
 
     World world();
 

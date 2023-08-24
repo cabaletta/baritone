@@ -269,7 +269,7 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
         for (BlockPos pos : both) {
             boolean soulsand = openSoulsand.contains(pos);
             Optional<Rotation> rot = RotationUtils.reachableOffset(ctx, pos, new Vec3d(pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5), ctx.playerController().getBlockReachDistance(), false);
-            if (rot.isPresent() && isSafeToCancel && baritone.getInventoryBehavior().throwaway(true, soulsand ? this::isNetherWart : this::isPlantable)) {
+            if (rot.isPresent() && isSafeToCancel && baritone.getInventoryBehavior().trySelectItem(soulsand ? this::isNetherWart : this::isPlantable)) {
                 RayTraceResult result = RayTraceUtils.rayTraceTowards(ctx.player(), rot.get(), ctx.playerController().getBlockReachDistance());
                 if (result.typeOfHit == RayTraceResult.Type.BLOCK && result.sideHit == EnumFacing.UP) {
                     baritone.getLookBehavior().updateTarget(rot.get(), true);
@@ -287,7 +287,7 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
                 }
                 Vec3d faceCenter = new Vec3d(pos).add(0.5, 0.5, 0.5).add(new Vec3d(dir.getDirectionVec()).scale(0.5));
                 Optional<Rotation> rot = RotationUtils.reachableOffset(ctx, pos, faceCenter, ctx.playerController().getBlockReachDistance(), false);
-                if (rot.isPresent() && isSafeToCancel && baritone.getInventoryBehavior().throwaway(true, this::isCocoa)) {
+                if (rot.isPresent() && isSafeToCancel && baritone.getInventoryBehavior().trySelectItem(this::isCocoa)) {
                     RayTraceResult result = RayTraceUtils.rayTraceTowards(ctx.player(), rot.get(), ctx.playerController().getBlockReachDistance());
                     if (result.typeOfHit == RayTraceResult.Type.BLOCK && result.sideHit == dir) {
                         baritone.getLookBehavior().updateTarget(rot.get(), true);
@@ -301,7 +301,7 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
         }
         for (BlockPos pos : bonemealable) {
             Optional<Rotation> rot = RotationUtils.reachable(ctx, pos);
-            if (rot.isPresent() && isSafeToCancel && baritone.getInventoryBehavior().throwaway(true, this::isBoneMeal)) {
+            if (rot.isPresent() && isSafeToCancel && baritone.getInventoryBehavior().trySelectItem(this::isBoneMeal)) {
                 baritone.getLookBehavior().updateTarget(rot.get(), true);
                 if (ctx.isLookingAt(pos)) {
                     baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
@@ -323,17 +323,17 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
         for (BlockPos pos : toBreak) {
             goalz.add(new BuilderProcess.GoalBreak(pos));
         }
-        if (baritone.getInventoryBehavior().throwaway(false, this::isPlantable)) {
+        if (baritone.getInventoryBehavior().canSelectItem(this::isPlantable)) {
             for (BlockPos pos : openFarmland) {
                 goalz.add(new GoalBlock(pos.up()));
             }
         }
-        if (baritone.getInventoryBehavior().throwaway(false, this::isNetherWart)) {
+        if (baritone.getInventoryBehavior().canSelectItem(this::isNetherWart)) {
             for (BlockPos pos : openSoulsand) {
                 goalz.add(new GoalBlock(pos.up()));
             }
         }
-        if (baritone.getInventoryBehavior().throwaway(false, this::isCocoa)) {
+        if (baritone.getInventoryBehavior().canSelectItem(this::isCocoa)) {
             for (BlockPos pos : openLog) {
                 for (EnumFacing direction : EnumFacing.Plane.HORIZONTAL) {
                     if (ctx.world().getBlockState(pos.offset(direction)).getBlock() instanceof BlockAir) {
@@ -342,7 +342,7 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
                 }
             }
         }
-        if (baritone.getInventoryBehavior().throwaway(false, this::isBoneMeal)) {
+        if (baritone.getInventoryBehavior().canSelectItem(this::isBoneMeal)) {
             for (BlockPos pos : bonemealable) {
                 goalz.add(new GoalBlock(pos));
             }

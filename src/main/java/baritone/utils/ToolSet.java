@@ -18,62 +18,78 @@
 package baritone.utils;
 
 import baritone.Baritone;
+import baritone.PerformanceCritical;
+import baritone.api.utils.IPlayerContext;
+import baritone.api.utils.InventorySlot;
 import baritone.utils.accessor.IItemTool;
+import it.unimi.dsi.fastutil.HashCommon;
+import it.unimi.dsi.fastutil.objects.Reference2DoubleOpenHashMap;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.init.Enchantments;
 import net.minecraft.init.MobEffects;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemSword;
-import net.minecraft.item.ItemTool;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Function;
+import java.util.Comparator;
+import java.util.function.Predicate;
+import java.util.function.ToDoubleFunction;
 
 /**
  * A cached list of the best tools on the hotbar for any block
  *
  * @author Avery, Brady, leijurv
  */
-public class ToolSet {
+public final class ToolSet {
 
     /**
      * A cache mapping a {@link Block} to how long it will take to break
      * with this toolset, given the optimum tool is used.
      */
-    private final Map<Block, Double> breakStrengthCache;
+    private final Cache breakStrengthCache;
 
     /**
      * My buddy leijurv owned me so we have this to not create a new lambda instance.
      */
-    private final Function<Block, Double> backendCalculation;
+    private final ToDoubleFunction<IBlockState> backendCalculation;
 
-    private final EntityPlayerSP player;
+    private final IPlayerContext ctx;
 
-    public ToolSet(EntityPlayerSP player) {
-        breakStrengthCache = new HashMap<>();
-        this.player = player;
+    public ToolSet(IPlayerContext ctx) {
+        this.ctx = ctx;
+        this.breakStrengthCache = new Cache();
 
         if (Baritone.settings().considerPotionEffects.value) {
-            double amplifier = potionAmplifier();
-            Function<Double, Double> amplify = x -> amplifier * x;
-            backendCalculation = amplify.compose(this::getBestDestructionTime);
+            double amplifier = this.potionAmplifier();
+            this.backendCalculation = block -> amplifier * this.getBestDestructionSpeed(block);
         } else {
-            backendCalculation = this::getBestDestructionTime;
+            this.backendCalculation = this::getBestDestructionSpeed;
         }
     }
 
     /**
      * Using the best tool on the hotbar, how fast we can mine this block
      *
-     * @param state the blockstate to be mined
+     * @param state the state to be mined
      * @return the speed of how fast we'll mine it. 1/(time in ticks)
      */
+    @PerformanceCritical
     public double getStrVsBlock(IBlockState state) {
-        return breakStrengthCache.computeIfAbsent(state.getBlock(), backendCalculation);
+        return this.breakStrengthCache.computeIfAbsent(state, this.backendCalculation);
+    }
+
+    /**
+     * Calculate how effectively a block can be destroyed
+     *
+     * @param state the block state to be mined
+     * @return A double containing the destruction speed with the best tool
+     */
+    private double getBestDestructionSpeed(IBlockState state) {
+        final ItemStack stack = isAutoTool()
+                ? ctx.inventory().itemAt(this.getBestSlot(state, false, null))
+                : ctx.player().getHeldItemMainhand();
+        return calculateSpeedVsBlock(stack, state) * avoidanceMultiplier(state.getBlock());
     }
 
     /**
@@ -81,92 +97,55 @@ public class ToolSet {
      * harvest level order; there is a chance for multiple at the same with modded tools
      * but in that case we don't really care.
      *
-     * @param itemStack a possibly empty ItemStack
-     * @return values from 0 up
+     * @param stack a possibly empty ItemStack
+     * @return The tool's harvest level, or {@code -1} if the stack isn't a tool
      */
-    private int getMaterialCost(ItemStack itemStack) {
-        if (itemStack.getItem() instanceof ItemTool) {
-            ItemTool tool = (ItemTool) itemStack.getItem();
-            return ((IItemTool) tool).getHarvestLevel();
+    private static int getMaterialCost(ItemStack stack) {
+        if (stack.getItem() instanceof IItemTool) {
+            return ((IItemTool) stack.getItem()).getHarvestLevel();
         } else {
             return -1;
         }
-    }
-
-    public boolean hasSilkTouch(ItemStack stack) {
-        return EnchantmentHelper.getEnchantmentLevel(Enchantments.SILK_TOUCH, stack) > 0;
     }
 
     /**
      * Calculate which tool on the hotbar is best for mining, depending on an override setting,
      * related to auto tool movement cost, it will either return current selected slot, or the best slot.
      *
-     * @param b the blockstate to be mined
+     * @param state the blockstate to be mined
+     * @param preferSilkTouch whether to prefer silk touch tools
+     * @param extra An additional filter to apply on top of the default, setting-based ones, may be {@code null}
      * @return An int containing the index in the tools array that worked best
      */
+    public InventorySlot getBestSlot(final IBlockState state, final boolean preferSilkTouch,
+                                     final Predicate<? super ItemStack> extra) {
+        final Comparator<ItemStack> compare = Comparator
+                // Prioritize mining speed over everything
+                .<ItemStack>comparingDouble(stack -> calculateSpeedVsBlock(stack, state))
+                // Prioritize silk touch tools, if preferSilkTouch is true, over reduced material cost
+                .thenComparing(ToolSet::hasSilkTouch, (a, b) -> preferSilkTouch ? Boolean.compare(a, b) : 0)
+                // Minimize material cost
+                .thenComparing(Comparator.comparingInt(ToolSet::getMaterialCost).reversed());
 
-    public int getBestSlot(Block b, boolean preferSilkTouch) {
-        return getBestSlot(b, preferSilkTouch, false);
-    }
-
-    public int getBestSlot(Block b, boolean preferSilkTouch, boolean pathingCalculation) {
-
-        /*
-        If we actually want know what efficiency our held item has instead of the best one
-        possible, this lets us make pathing depend on the actual tool to be used (if auto tool is disabled)
-        */
-        if (!Baritone.settings().autoTool.value && pathingCalculation) {
-            return player.inventory.currentItem;
-        }
-
-        int best = 0;
-        double highestSpeed = Double.NEGATIVE_INFINITY;
-        int lowestCost = Integer.MIN_VALUE;
-        boolean bestSilkTouch = false;
-        IBlockState blockState = b.getDefaultState();
-        for (int i = 0; i < 9; i++) {
-            ItemStack itemStack = player.inventory.getStackInSlot(i);
-            if (!Baritone.settings().useSwordToMine.value && itemStack.getItem() instanceof ItemSword) {
-                continue;
-            }
-
-            if (Baritone.settings().itemSaver.value && (itemStack.getItemDamage() + Baritone.settings().itemSaverThreshold.value) >= itemStack.getMaxDamage() && itemStack.getMaxDamage() > 1) {
-                continue;
-            }
-            double speed = calculateSpeedVsBlock(itemStack, blockState);
-            boolean silkTouch = hasSilkTouch(itemStack);
-            if (speed > highestSpeed) {
-                highestSpeed = speed;
-                best = i;
-                lowestCost = getMaterialCost(itemStack);
-                bestSilkTouch = silkTouch;
-            } else if (speed == highestSpeed) {
-                int cost = getMaterialCost(itemStack);
-                if ((cost < lowestCost && (silkTouch || !bestSilkTouch)) ||
-                        (preferSilkTouch && !bestSilkTouch && silkTouch)) {
-                    highestSpeed = speed;
-                    best = i;
-                    lowestCost = cost;
-                    bestSilkTouch = silkTouch;
+        return ((Baritone) ctx.baritone()).getInventoryBehavior().findBestAccessibleMatching(
+                compare,
+                stack -> {
+                    if (!Baritone.settings().useSwordToMine.value && stack.getItem() instanceof ItemSword) {
+                        return false;
+                    }
+                    if (Baritone.settings().itemSaver.value
+                            && stack.getItemDamage() + Baritone.settings().itemSaverThreshold.value >= stack.getMaxDamage()
+                            && stack.getMaxDamage() > 1
+                    ) {
+                        return false;
+                    }
+                    return extra == null || extra.test(stack);
                 }
-            }
-        }
-        return best;
+        );
     }
 
-    /**
-     * Calculate how effectively a block can be destroyed
-     *
-     * @param b the blockstate to be mined
-     * @return A double containing the destruction ticks with the best tool
-     */
-    private double getBestDestructionTime(Block b) {
-        ItemStack stack = player.inventory.getStackInSlot(getBestSlot(b, false, true));
-        return calculateSpeedVsBlock(stack, b.getDefaultState()) * avoidanceMultiplier(b);
-    }
-
-    private double avoidanceMultiplier(Block b) {
-        return Baritone.settings().blocksToAvoidBreaking.value.contains(b) ? Baritone.settings().avoidBreakingMultiplier.value : 1;
+    public static boolean isAutoTool() {
+        return Baritone.settings().autoTool.value && !Baritone.settings().assumeExternalAutoTool.value;
     }
 
     /**
@@ -175,10 +154,19 @@ public class ToolSet {
      *
      * @param item  the item to mine it with
      * @param state the blockstate to be mined
-     * @return how long it would take in ticks
+     * @return the speed of how fast we'll mine it. 1/(time in ticks)
      */
     public static double calculateSpeedVsBlock(ItemStack item, IBlockState state) {
-        float hardness = state.getBlockHardness(null, null);
+        float hardness;
+        try {
+            // noinspection DataFlowIssue
+            hardness = state.getBlockHardness(null, null);
+        } catch (NullPointerException ignored) {
+            // Just catch the exception and act as if the block is unbreakable. Even in situations where we could
+            // reasonably determine the hardness by passing the correct world/position (not via 'getStrVsBlock' during
+            // performance critical cost calculation), it's not worth it for the sake of consistency.
+            return -1;
+        }
         if (hardness < 0) {
             return -1;
         }
@@ -199,6 +187,15 @@ public class ToolSet {
         }
     }
 
+    private static double avoidanceMultiplier(Block block) {
+        return Baritone.settings().blocksToAvoidBreaking.value.contains(block)
+                ? Baritone.settings().avoidBreakingMultiplier.value : 1;
+    }
+
+    private static boolean hasSilkTouch(ItemStack stack) {
+        return EnchantmentHelper.getEnchantmentLevel(Enchantments.SILK_TOUCH, stack) > 0;
+    }
+
     /**
      * Calculates any modifier to breaking time based on status effects.
      *
@@ -206,11 +203,11 @@ public class ToolSet {
      */
     private double potionAmplifier() {
         double speed = 1;
-        if (player.isPotionActive(MobEffects.HASTE)) {
-            speed *= 1 + (player.getActivePotionEffect(MobEffects.HASTE).getAmplifier() + 1) * 0.2;
+        if (ctx.player().isPotionActive(MobEffects.HASTE)) {
+            speed *= 1 + (ctx.player().getActivePotionEffect(MobEffects.HASTE).getAmplifier() + 1) * 0.2;
         }
-        if (player.isPotionActive(MobEffects.MINING_FATIGUE)) {
-            switch (player.getActivePotionEffect(MobEffects.MINING_FATIGUE).getAmplifier()) {
+        if (ctx.player().isPotionActive(MobEffects.MINING_FATIGUE)) {
+            switch (ctx.player().getActivePotionEffect(MobEffects.MINING_FATIGUE).getAmplifier()) {
                 case 0:
                     speed *= 0.3;
                     break;
@@ -226,5 +223,61 @@ public class ToolSet {
             }
         }
         return speed;
+    }
+
+    /*
+     * Copyright (C) 2002-2022 Sebastiano Vigna
+     *
+     * Licensed under the Apache License, Version 2.0 (the "License");
+     * you may not use this file except in compliance with the License.
+     * You may obtain a copy of the License at
+     *
+     *     http://www.apache.org/licenses/LICENSE-2.0
+     *
+     * Unless required by applicable law or agreed to in writing, software
+     * distributed under the License is distributed on an "AS IS" BASIS,
+     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     * See the License for the specific language governing permissions and
+     * limitations under the License.
+     */
+    private static final class Cache extends Reference2DoubleOpenHashMap<IBlockState> {
+
+        public double computeIfAbsent(final IBlockState key, final ToDoubleFunction<IBlockState> mappingFunction) {
+            int pos = this.find(key);
+            if (pos >= 0) {
+                return this.value[pos];
+            } else {
+                double newValue = mappingFunction.applyAsDouble(key);
+                this.insert(-pos - 1, key, newValue);
+                return newValue;
+            }
+        }
+
+        private int find(final IBlockState k) {
+            if (((k) == (null))) return containsNullKey ? n : -(n + 1);
+            Object curr;
+            final Object[] key = this.key;
+            int pos;
+            // The starting point.
+            if (((curr = key[pos = (HashCommon.mix(System.identityHashCode(k))) & mask]) == (null))) return -(pos + 1);
+            if (((k) == (curr))) return pos;
+            // There's always an unused entry.
+            while (true) {
+                if (((curr = key[pos = (pos + 1) & mask]) == (null))) return -(pos + 1);
+                if (((k) == (curr))) return pos;
+            }
+        }
+
+        private void insert(int pos, IBlockState k, double v) {
+            if (pos == this.n) {
+                this.containsNullKey = true;
+            }
+            final Object[] key = this.key;
+            key[pos] = k;
+            this.value[pos] = v;
+            if (this.size++ >= this.maxFill) {
+                this.rehash(HashCommon.arraySize(this.size + 1, this.f));
+            }
+        }
     }
 }

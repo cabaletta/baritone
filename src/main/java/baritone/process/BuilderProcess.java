@@ -542,7 +542,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
         }
 
-        if (Baritone.settings().allowInventory.value) {
+        if (baritone.getInventoryBehavior().canAccessInventory()) {
             ArrayList<Integer> usefulSlots = new ArrayList<>();
             List<IBlockState> noValidHotbarOption = new ArrayList<>();
             outer:

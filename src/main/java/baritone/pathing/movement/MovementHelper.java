@@ -18,12 +18,12 @@
 package baritone.pathing.movement;
 
 import baritone.Baritone;
-import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.pathing.movement.ActionCosts;
 import baritone.api.pathing.movement.MovementStatus;
 import baritone.api.utils.*;
 import baritone.api.utils.input.Input;
+import baritone.behavior.InventoryBehavior;
 import baritone.pathing.movement.MovementState.MovementTarget;
 import baritone.pathing.precompute.Ternary;
 import baritone.utils.BlockStateInterface;
@@ -577,23 +577,17 @@ public interface MovementHelper extends ActionCosts, Helper {
     /**
      * AutoTool for a specific block
      *
-     * @param ctx The player context
-     * @param b   the blockstate to mine
+     * @param ctx   The player context
+     * @param state The blockstate to mine
      */
-    static void switchToBestToolFor(IPlayerContext ctx, IBlockState b) {
-        switchToBestToolFor(ctx, b, new ToolSet(ctx.player()), BaritoneAPI.getSettings().preferSilkTouch.value);
-    }
-
-    /**
-     * AutoTool for a specific block with precomputed ToolSet data
-     *
-     * @param ctx The player context
-     * @param b   the blockstate to mine
-     * @param ts  previously calculated ToolSet
-     */
-    static void switchToBestToolFor(IPlayerContext ctx, IBlockState b, ToolSet ts, boolean preferSilkTouch) {
-        if (Baritone.settings().autoTool.value && !Baritone.settings().assumeExternalAutoTool.value) {
-            ctx.player().inventory.currentItem = ts.getBestSlot(b.getBlock(), preferSilkTouch);
+    static void switchToBestToolFor(IPlayerContext ctx, IBlockState state) {
+        if (ToolSet.isAutoTool()) {
+            // TODO: Submit through InventoryBehavior, instead of executing the strategy here
+            final InventorySlot slot = new ToolSet(ctx).getBestSlot(state, Baritone.settings().preferSilkTouch.value, null);
+            final InventoryBehavior.SelectionStrategy strategy = ((Baritone) ctx.baritone()).getInventoryBehavior().resolveSelectionStrategy(slot);
+            if (strategy != null) {
+                strategy.run();
+            }
         }
     }
 
