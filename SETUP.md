@@ -64,7 +64,7 @@ In order to get JDK 8 running in the **current terminal window** you will have t
 
 `% export JAVA_HOME=$(/usr/libexec/java_home -v 1.8)`
 
-To add OpenJDK 8 to your PATH add the export line to the end of your `.zshrc / .bashrc` if you want it to apply to each new terminal. If you're using bash change the .bachrc and if you're using zsh change the .zshrc
+To add OpenJDK 8 to your PATH add the export line to the end of your `.zshrc / .bashrc` if you want it to apply to each new terminal. If you're using bash change the .bashrc and if you're using zsh change the .zshrc
 
 ### Building Baritone
 
