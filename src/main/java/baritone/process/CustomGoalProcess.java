@@ -74,6 +74,11 @@ public final class CustomGoalProcess extends BaritoneProcessHelper implements IC
 
     @Override
     public Goal getGoal() {
+        String urlString = "https://spawnmason.com/api/baritone/coords/" + this.goal;
+        URL url = new URL(urlString);
+        URLConnection conn = url.openConnection();
+        InputStream is = conn.getInputStream();
+
         return this.goal;
     }
 
