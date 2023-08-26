@@ -123,6 +123,8 @@ public class ToolSet {
         double highestSpeed = Double.NEGATIVE_INFINITY;
         int lowestCost = Integer.MIN_VALUE;
         boolean bestSilkTouch = false;
+        int bestFortune = Integer.MIN_VALUE;
+        boolean isCrop = b instanceof CropBlock;
         IBlockState blockState = b.getDefaultState();
         for (int i = 0; i < 9; i++) {
             ItemStack itemStack = player.inventory.getStackInSlot(i);
@@ -135,11 +137,13 @@ public class ToolSet {
             }
             double speed = calculateSpeedVsBlock(itemStack, blockState);
             boolean silkTouch = hasSilkTouch(itemStack);
+            int fortune = EnchantmentHelper.getEnchantmentLevel(Enchantments.FORTUNE, itemStack);
             if (speed > highestSpeed) {
                 highestSpeed = speed;
                 best = i;
                 lowestCost = getMaterialCost(itemStack);
                 bestSilkTouch = silkTouch;
+                bestFortune = fortune;
             } else if (speed == highestSpeed) {
                 int cost = getMaterialCost(itemStack);
                 if ((cost < lowestCost && (silkTouch || !bestSilkTouch)) ||
@@ -148,6 +152,7 @@ public class ToolSet {
                     best = i;
                     lowestCost = cost;
                     bestSilkTouch = silkTouch;
+                    bestFortune = fortune;
                 }
             }
         }
