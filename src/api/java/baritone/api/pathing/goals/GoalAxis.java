@@ -33,11 +33,10 @@ public class GoalAxis implements Goal {
         int x = Math.abs(x0);
         int z = Math.abs(z0);
 
-        int shrt = Math.min(x, z);
-        int lng = Math.max(x, z);
-        int diff = lng - shrt;
+        int major = Math.min(x, z);
+        int minor = Math.abs(x - z);
 
-        double flatAxisDistance = Math.min(x, Math.min(z, diff * SQRT_2_OVER_2));
+        double flatAxisDistance = Math.min(major, minor * SQRT_2_OVER_2);
 
         return flatAxisDistance * BaritoneAPI.getSettings().costHeuristic.value + GoalYLevel.calculate(BaritoneAPI.getSettings().axisHeight.value, y);
     }
