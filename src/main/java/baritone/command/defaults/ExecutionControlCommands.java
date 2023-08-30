@@ -23,8 +23,8 @@ import baritone.api.command.argument.IArgConsumer;
 import baritone.api.command.exception.CommandException;
 import baritone.api.command.exception.CommandInvalidStateException;
 import baritone.api.process.IBaritoneProcess;
-import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
+import baritone.api.utils.IExecutionControl;
 
 import java.util.Arrays;
 import java.util.List;
@@ -33,9 +33,8 @@ import java.util.stream.Stream;
 /**
  * Contains the pause, resume, and paused commands.
  * <p>
- * This thing is scoped to hell, private so far you can't even access it using reflection, because you AREN'T SUPPOSED
- * TO USE THIS to pause and resume Baritone. Make your own process that returns {@link PathingCommandType#REQUEST_PAUSE
- * REQUEST_PAUSE} as needed.
+ * Instead of trying to access this in order to pause and resume Baritone, you should instead create your own using
+ * {@link IBaritone#createExecutionControl(String, double)}.
  */
 public class ExecutionControlCommands {
 
@@ -45,49 +44,15 @@ public class ExecutionControlCommands {
     Command cancelCommand;
 
     public ExecutionControlCommands(IBaritone baritone) {
-        // array for mutability, non-field so reflection can't touch it
-        final boolean[] paused = {false};
-        baritone.getPathingControlManager().registerProcess(
-                new IBaritoneProcess() {
-                    @Override
-                    public boolean isActive() {
-                        return paused[0];
-                    }
-
-                    @Override
-                    public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
-                        baritone.getInputOverrideHandler().clearAllKeys();
-                        return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
-                    }
-
-                    @Override
-                    public boolean isTemporary() {
-                        return true;
-                    }
-
-                    @Override
-                    public void onLostControl() {
-                    }
-
-                    @Override
-                    public double priority() {
-                        return DEFAULT_PRIORITY + 1;
-                    }
-
-                    @Override
-                    public String displayName0() {
-                        return "Pause/Resume Commands";
-                    }
-                }
-        );
+        IExecutionControl executionControl = baritone.createExecutionControl("Pause/Resume Commands", IBaritoneProcess.DEFAULT_PRIORITY + 1);
         pauseCommand = new Command(baritone, "pause", "p", "paws") {
             @Override
             public void execute(String label, IArgConsumer args) throws CommandException {
                 args.requireMax(0);
-                if (paused[0]) {
+                if (executionControl.paused()) {
                     throw new CommandInvalidStateException("Already paused");
                 }
-                paused[0] = true;
+                executionControl.pause();
                 logDirect("Paused");
             }
 
@@ -118,10 +83,10 @@ public class ExecutionControlCommands {
             public void execute(String label, IArgConsumer args) throws CommandException {
                 args.requireMax(0);
                 baritone.getBuilderProcess().resume();
-                if (!paused[0]) {
+                if (!executionControl.paused()) {
                     throw new CommandInvalidStateException("Not paused");
                 }
-                paused[0] = false;
+                executionControl.resume();
                 logDirect("Resumed");
             }
 
@@ -149,7 +114,7 @@ public class ExecutionControlCommands {
             @Override
             public void execute(String label, IArgConsumer args) throws CommandException {
                 args.requireMax(0);
-                logDirect(String.format("Baritone is %spaused", paused[0] ? "" : "not "));
+                logDirect(String.format("Baritone is %spaused", executionControl.paused() ? "" : "not "));
             }
 
             @Override
@@ -176,10 +141,7 @@ public class ExecutionControlCommands {
             @Override
             public void execute(String label, IArgConsumer args) throws CommandException {
                 args.requireMax(0);
-                if (paused[0]) {
-                    paused[0] = false;
-                }
-                baritone.getPathingBehavior().cancelEverything();
+                executionControl.stop();
                 logDirect("ok canceled");
             }
 
