@@ -174,9 +174,9 @@ public final class ElytraBehavior implements Helper {
                     .thenRun(() -> {
                         final double distance = this.path.get(0).distanceTo(this.path.get(this.path.size() - 1));
                         if (this.completePath) {
-                            logDirect(String.format("Computed path (%.1f blocks in %.4f seconds)", distance, (System.nanoTime() - start) / 1e9d));
+                            logVerbose(String.format("Computed path (%.1f blocks in %.4f seconds)", distance, (System.nanoTime() - start) / 1e9d));
                         } else {
-                            logDirect(String.format("Computed segment (Next %.1f blocks in %.4f seconds)", distance, (System.nanoTime() - start) / 1e9d));
+                            logVerbose(String.format("Computed segment (Next %.1f blocks in %.4f seconds)", distance, (System.nanoTime() - start) / 1e9d));
                         }
                     })
                     .whenComplete((result, ex) -> {
@@ -231,9 +231,9 @@ public final class ElytraBehavior implements Helper {
                         final double distance = this.path.get(0).distanceTo(this.path.get(recompute));
 
                         if (this.completePath) {
-                            logDirect(String.format("Computed path (%.1f blocks in %.4f seconds)", distance, (System.nanoTime() - start) / 1e9d));
+                            logVerbose(String.format("Computed path (%.1f blocks in %.4f seconds)", distance, (System.nanoTime() - start) / 1e9d));
                         } else {
-                            logDirect(String.format("Computed segment (Next %.1f blocks in %.4f seconds)", distance, (System.nanoTime() - start) / 1e9d));
+                            logVerbose(String.format("Computed segment (Next %.1f blocks in %.4f seconds)", distance, (System.nanoTime() - start) / 1e9d));
                         }
                     })
                     .whenComplete((result, ex) -> {
@@ -243,7 +243,7 @@ public final class ElytraBehavior implements Helper {
                             if (cause instanceof PathCalculationException) {
                                 logDirect("Failed to compute next segment");
                                 if (ctx.player().distanceToSqr(pathStart.getCenter()) < 16 * 16) {
-                                    logDirect("Player is near the segment start, therefore repeating this calculation is pointless. Marking as complete");
+                                    logVerbose("Player is near the segment start, therefore repeating this calculation is pointless. Marking as complete");
                                     completePath = true;
                                 }
                             } else {
@@ -321,7 +321,7 @@ public final class ElytraBehavior implements Helper {
             if (ElytraBehavior.this.process.state != ElytraProcess.State.LANDING && this.ticksNearUnchanged > 100) {
                 this.pathRecalcSegment(OptionalInt.of(rangeEndExcl - 1))
                         .thenRun(() -> {
-                            logDirect("Recalculating segment, no progress in last 100 ticks");
+                            logVerbose("Recalculating segment, no progress in last 100 ticks");
                         });
                 this.ticksNearUnchanged = 0;
                 return;
@@ -348,7 +348,7 @@ public final class ElytraBehavior implements Helper {
                     final long start = System.nanoTime();
                     this.pathRecalcSegment(rejoinMainPathAt)
                             .thenRun(() -> {
-                                logDirect(String.format("Recalculated segment around path blockage near %s %s %s (next %.1f blocks in %.4f seconds)",
+                                logVerbose(String.format("Recalculated segment around path blockage near %s %s %s (next %.1f blocks in %.4f seconds)",
                                         SettingsUtil.maybeCensor(blockage.x),
                                         SettingsUtil.maybeCensor(blockage.y),
                                         SettingsUtil.maybeCensor(blockage.z),
@@ -360,7 +360,7 @@ public final class ElytraBehavior implements Helper {
                 }
             }
             if (!canSeeAny && rangeStartIncl < rangeEndExcl - 2 && process.state != ElytraProcess.State.GET_TO_JUMP) {
-                this.pathRecalcSegment(OptionalInt.of(rangeEndExcl - 1)).thenRun(() -> logDirect("Recalculated segment since no path points were visible"));
+                this.pathRecalcSegment(OptionalInt.of(rangeEndExcl - 1)).thenRun(() -> logVerbose("Recalculated segment since no path points were visible"));
             }
         }
 
@@ -581,10 +581,10 @@ public final class ElytraBehavior implements Helper {
         trySwapElytra();
 
         if (ctx.player().horizontalCollision) {
-            logDirect("hbonk");
+            logVerbose("hbonk");
         }
         if (ctx.player().verticalCollision) {
-            logDirect("vbonk");
+            logVerbose("vbonk");
         }
 
         final SolverContext solverContext = this.new SolverContext(false);
@@ -609,14 +609,14 @@ public final class ElytraBehavior implements Helper {
         }
 
         if (solution == null) {
-            logDirect("no solution");
+            logVerbose("no solution");
             return;
         }
 
         baritone.getLookBehavior().updateTarget(solution.rotation, false);
 
         if (!solution.solvedPitch) {
-            logDirect("no pitch solution, probably gonna crash in a few ticks LOL!!!");
+            logVerbose("no pitch solution, probably gonna crash in a few ticks LOL!!!");
             return;
         } else {
             this.aimPos = new BetterBlockPos(solution.goingTo.x, solution.goingTo.y, solution.goingTo.z);
@@ -758,7 +758,7 @@ public final class ElytraBehavior implements Helper {
                 logDirect("no fireworks");
                 return;
             }
-            logDirect("attempting to use firework" + (forceUseFirework ? " (forced)" : ""));
+            logVerbose("attempting to use firework" + (forceUseFirework ? " (forced)" : ""));
             ctx.playerController().processRightClick(ctx.player(), ctx.world(), InteractionHand.MAIN_HAND);
             this.minimumBoostTicks = 10 * (1 + getFireworkBoost(ctx.player().getItemInHand(InteractionHand.MAIN_HAND)).orElse(0));
             this.remainingFireworkTicks = 10;
@@ -1315,6 +1315,12 @@ public final class ElytraBehavior implements Helper {
             queueWindowClick(ctx.player().inventoryMenu.containerId, slotId, 0, ClickType.PICKUP);
             queueWindowClick(ctx.player().inventoryMenu.containerId, CHEST_SLOT, 0, ClickType.PICKUP);
             queueWindowClick(ctx.player().inventoryMenu.containerId, slotId, 0, ClickType.PICKUP);
+        }
+    }
+
+    void logVerbose(String message) {
+        if (Baritone.settings().elytraChatSpam.value) {
+            logDebug(message);
         }
     }
 }
