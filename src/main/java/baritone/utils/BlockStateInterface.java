@@ -132,7 +132,7 @@ public class BlockStateInterface {
             prevCached = region;
             cached = region;
         }
-        BlockState type = cached.getBlock(x & 511, y, z & 511);
+        BlockState type = cached.getBlock(x & 511, y + world.dimensionType().minY(), z & 511);
         if (type == null) {
             return AIR;
         }
