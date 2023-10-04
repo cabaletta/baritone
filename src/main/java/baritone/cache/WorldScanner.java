@@ -50,10 +50,10 @@ public enum WorldScanner implements IWorldScanner {
         int maxSearchRadiusSq = maxSearchRadius * maxSearchRadius;
         int playerChunkX = ctx.playerFeet().getX() >> 4;
         int playerChunkZ = ctx.playerFeet().getZ() >> 4;
-        int playerY = ctx.playerFeet().getY() - ctx.world().dimensionType().minY();
+        int playerY = ctx.playerFeet().getY();
 
         int playerYBlockStateContainerIndex = playerY >> 4;
-        int[] coordinateIterationOrder = IntStream.range(0, ctx.world().dimensionType().height() / 16).boxed().sorted(Comparator.comparingInt(y -> Math.abs(y - playerYBlockStateContainerIndex))).mapToInt(x -> x).toArray();
+        int[] coordinateIterationOrder = IntStream.range(0, 16).boxed().sorted(Comparator.comparingInt(y -> Math.abs(y - playerYBlockStateContainerIndex))).mapToInt(x -> x).toArray();
 
         int searchRadiusSq = 0;
         boolean foundWithinY = false;
