@@ -21,7 +21,7 @@ allprojects {
     apply plugin: "maven-publish"
 
     archivesBaseName = rootProject.archives_base_name
-    def vers = 'git describe --always --tags --dirty'.execute().text.trim()
+    def vers = 'git describe --always --tags --first-parent --dirty'.execute().text.trim()
     if (!vers.startsWith("v")) {
         println "git doesn't appear to be installed!"
         println "using version number: " + rootProject.mod_version
