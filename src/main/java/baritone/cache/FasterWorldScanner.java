@@ -20,6 +20,7 @@ package baritone.cache;
 import baritone.api.cache.ICachedWorld;
 import baritone.api.cache.IWorldScanner;
 import baritone.api.utils.BetterBlockPos;
+import baritone.api.utils.BlockOptionalMeta;
 import baritone.api.utils.BlockOptionalMetaLookup;
 import baritone.api.utils.IPlayerContext;
 import baritone.utils.accessor.IPalettedContainer;
@@ -45,6 +46,9 @@ import java.util.stream.Stream;
 
 public enum FasterWorldScanner implements IWorldScanner {
     INSTANCE;
+
+    private static final BlockState[] PALETTE_REGISTRY_SENTINEL = new BlockState[0];
+
     @Override
     public List<BlockPos> scanChunkRadius(IPlayerContext ctx, BlockOptionalMetaLookup filter, int max, int yLevelThreshold, int maxSearchRadius) {
         assert ctx.world() != null;
@@ -219,13 +223,18 @@ public enum FasterWorldScanner implements IWorldScanner {
 
     private boolean[] getIncludedFilterIndices(BlockOptionalMetaLookup lookup, Palette<BlockState> palette) {
         boolean commonBlockFound = false;
-        IdMapper<BlockState> paletteMap = getPalette(palette);
-        int size = paletteMap.size();
+        BlockState[] paletteMap = getPalette(palette);
+
+        if (paletteMap == PALETTE_REGISTRY_SENTINEL) {
+            return getIncludedFilterIndicesFromRegistry(lookup);
+        }
+
+        int size = paletteMap.length;
 
         boolean[] isInFilter = new boolean[size];
 
         for (int i = 0; i < size; i++) {
-            BlockState state = paletteMap.byId(i);
+            BlockState state = paletteMap[i];
             if (lookup.has(state)) {
                 isInFilter[i] = true;
                 commonBlockFound = true;
@@ -240,21 +249,34 @@ public enum FasterWorldScanner implements IWorldScanner {
         return isInFilter;
     }
 
+    private boolean[] getIncludedFilterIndicesFromRegistry(BlockOptionalMetaLookup lookup) {
+        boolean[] isInFilter = new boolean[Block.BLOCK_STATE_REGISTRY.size()];
+
+        for (BlockOptionalMeta bom : lookup.blocks()) {
+            for (BlockState state : bom.getAllBlockStates()) {
+                isInFilter[Block.BLOCK_STATE_REGISTRY.getId(state)] = true;
+            }
+        }
+
+        return isInFilter;
+    }
+
     /**
      * cheats to get the actual map of id -> blockstate from the various palette implementations
      */
-    private static IdMapper<BlockState> getPalette(Palette<BlockState> palette) {
+    private static BlockState[] getPalette(Palette<BlockState> palette) {
         if (palette instanceof GlobalPalette) {
-            return Block.BLOCK_STATE_REGISTRY;
+            // copying the entire registry is not nice so we treat it as a special case
+            return PALETTE_REGISTRY_SENTINEL;
         } else {
             FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
             palette.write(buf);
             int size = buf.readVarInt();
-            IdMapper<BlockState> states = new IdMapper<>();
+            BlockState[] states = new BlockState[size];
             for (int i = 0; i < size; i++) {
                 BlockState state = Block.BLOCK_STATE_REGISTRY.byId(buf.readVarInt());
                 assert state != null;
-                states.addMapping(state, i);
+                states[i] = state;
             }
             return states;
         }
