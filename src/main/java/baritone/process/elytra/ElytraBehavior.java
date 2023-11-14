@@ -24,6 +24,7 @@ import baritone.api.behavior.look.ITickableAimProcessor;
 import baritone.api.event.events.*;
 import baritone.api.pathing.goals.GoalBlock;
 import baritone.api.utils.*;
+import baritone.api.utils.input.Input;
 import baritone.process.ElytraProcess;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.IRenderer;
@@ -42,6 +43,7 @@ import net.minecraft.world.entity.projectile.FireworkRocketEntity;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.chunk.ChunkSource;
 import net.minecraft.world.level.chunk.LevelChunk;
@@ -100,7 +102,7 @@ public final class ElytraBehavior implements Helper {
 
     private BlockStateInterface bsi;
     private final BlockStateOctreeInterface boi;
-    public final BlockPos destination;
+    public final BetterBlockPos destination;
     private final boolean appendDestination;
 
     private final ExecutorService solverExecutor;
@@ -121,7 +123,7 @@ public final class ElytraBehavior implements Helper {
         this.blockedLines = new CopyOnWriteArrayList<>();
         this.pathManager = this.new PathManager();
         this.process = process;
-        this.destination = destination;
+        this.destination = new BetterBlockPos(destination);
         this.appendDestination = appendDestination;
         this.solverExecutor = Executors.newSingleThreadExecutor();
         this.nextTickBoostCounter = new int[2];
@@ -172,9 +174,9 @@ public final class ElytraBehavior implements Helper {
                     .thenRun(() -> {
                         final double distance = this.path.get(0).distanceTo(this.path.get(this.path.size() - 1));
                         if (this.completePath) {
-                            logDirect(String.format("Computed path (%.1f blocks in %.4f seconds)", distance, (System.nanoTime() - start) / 1e9d));
+                            logVerbose(String.format("Computed path (%.1f blocks in %.4f seconds)", distance, (System.nanoTime() - start) / 1e9d));
                         } else {
-                            logDirect(String.format("Computed segment (Next %.1f blocks in %.4f seconds)", distance, (System.nanoTime() - start) / 1e9d));
+                            logVerbose(String.format("Computed segment (Next %.1f blocks in %.4f seconds)", distance, (System.nanoTime() - start) / 1e9d));
                         }
                     })
                     .whenComplete((result, ex) -> {
@@ -190,16 +192,16 @@ public final class ElytraBehavior implements Helper {
                     });
         }
 
-        public CompletableFuture<Void> pathRecalcSegment(final int upToIncl) {
+        public CompletableFuture<Void> pathRecalcSegment(final OptionalInt upToIncl) {
             if (this.recalculating) {
                 throw new IllegalStateException("already recalculating");
             }
 
             this.recalculating = true;
-            final List<BetterBlockPos> after = this.path.subList(upToIncl + 1, this.path.size());
+            final List<BetterBlockPos> after = upToIncl.isPresent() ? this.path.subList(upToIncl.getAsInt() + 1, this.path.size()) : Collections.emptyList();
             final boolean complete = this.completePath;
 
-            return this.path0(ctx.playerFeet(), this.path.get(upToIncl), segment -> segment.append(after.stream(), complete))
+            return this.path0(ctx.playerFeet(), upToIncl.isPresent() ? this.path.get(upToIncl.getAsInt()) : ElytraBehavior.this.destination, segment -> segment.append(after.stream(), complete || (segment.isFinished() && !upToIncl.isPresent())))
                     .whenComplete((result, ex) -> {
                         this.recalculating = false;
                         if (ex != null) {
@@ -229,9 +231,9 @@ public final class ElytraBehavior implements Helper {
                         final double distance = this.path.get(0).distanceTo(this.path.get(recompute));
 
                         if (this.completePath) {
-                            logDirect(String.format("Computed path (%.1f blocks in %.4f seconds)", distance, (System.nanoTime() - start) / 1e9d));
+                            logVerbose(String.format("Computed path (%.1f blocks in %.4f seconds)", distance, (System.nanoTime() - start) / 1e9d));
                         } else {
-                            logDirect(String.format("Computed segment (Next %.1f blocks in %.4f seconds)", distance, (System.nanoTime() - start) / 1e9d));
+                            logVerbose(String.format("Computed segment (Next %.1f blocks in %.4f seconds)", distance, (System.nanoTime() - start) / 1e9d));
                         }
                     })
                     .whenComplete((result, ex) -> {
@@ -241,7 +243,7 @@ public final class ElytraBehavior implements Helper {
                             if (cause instanceof PathCalculationException) {
                                 logDirect("Failed to compute next segment");
                                 if (ctx.player().distanceToSqr(pathStart.getCenter()) < 16 * 16) {
-                                    logDirect("Player is near the segment start, therefore repeating this calculation is pointless. Marking as complete");
+                                    logVerbose("Player is near the segment start, therefore repeating this calculation is pointless. Marking as complete");
                                     completePath = true;
                                 }
                             } else {
@@ -302,7 +304,7 @@ public final class ElytraBehavior implements Helper {
 
             int rangeStartIncl = playerNear;
             int rangeEndExcl = playerNear;
-            while (rangeEndExcl < path.size() && ctx.world().isLoaded(path.get(rangeEndExcl))) {
+            while (rangeEndExcl < path.size() && context.hasChunk(new ChunkPos(path.get(rangeEndExcl)))) {
                 rangeEndExcl++;
             }
             // rangeEndExcl now represents an index either not in the path, or just outside render distance
@@ -317,9 +319,9 @@ public final class ElytraBehavior implements Helper {
             }
 
             if (ElytraBehavior.this.process.state != ElytraProcess.State.LANDING && this.ticksNearUnchanged > 100) {
-                this.pathRecalcSegment(rangeEndExcl - 1)
+                this.pathRecalcSegment(OptionalInt.of(rangeEndExcl - 1))
                         .thenRun(() -> {
-                            logDirect("Recalculating segment, no progress in last 100 ticks");
+                            logVerbose("Recalculating segment, no progress in last 100 ticks");
                         });
                 this.ticksNearUnchanged = 0;
                 return;
@@ -332,14 +334,21 @@ public final class ElytraBehavior implements Helper {
                 }
                 if (!ElytraBehavior.this.clearView(this.path.getVec(i), this.path.getVec(i + 1), false)) {
                     // obstacle. where do we return to pathing?
-                    // find the next valid segment
+                    // if the end of render distance is closer to goal, then that's fine, otherwise we'd be "digging our hole deeper" and making an already bad backtrack worse
+                    OptionalInt rejoinMainPathAt;
+                    if (this.path.get(rangeEndExcl - 1).distanceSq(ElytraBehavior.this.destination) < ctx.playerFeet().distanceSq(ElytraBehavior.this.destination)) {
+                        rejoinMainPathAt = OptionalInt.of(rangeEndExcl - 1); // rejoin after current render distance
+                    } else {
+                        rejoinMainPathAt = OptionalInt.empty(); // large backtrack detected. ignore render distance, rejoin later on
+                    }
+
                     final BetterBlockPos blockage = this.path.get(i);
-                    final double distance = ctx.playerFeet().distanceTo(this.path.get(rangeEndExcl - 1));
+                    final double distance = ctx.playerFeet().distanceTo(this.path.get(rejoinMainPathAt.orElse(path.size() - 1)));
 
                     final long start = System.nanoTime();
-                    this.pathRecalcSegment(rangeEndExcl - 1)
+                    this.pathRecalcSegment(rejoinMainPathAt)
                             .thenRun(() -> {
-                                logDirect(String.format("Recalculated segment around path blockage near %s %s %s (next %.1f blocks in %.4f seconds)",
+                                logVerbose(String.format("Recalculated segment around path blockage near %s %s %s (next %.1f blocks in %.4f seconds)",
                                         SettingsUtil.maybeCensor(blockage.x),
                                         SettingsUtil.maybeCensor(blockage.y),
                                         SettingsUtil.maybeCensor(blockage.z),
@@ -351,7 +360,7 @@ public final class ElytraBehavior implements Helper {
                 }
             }
             if (!canSeeAny && rangeStartIncl < rangeEndExcl - 2 && process.state != ElytraProcess.State.GET_TO_JUMP) {
-                this.pathRecalcSegment(rangeEndExcl - 1).thenRun(() -> logDirect("Recalculated segment since no path points were visible"));
+                this.pathRecalcSegment(OptionalInt.of(rangeEndExcl - 1)).thenRun(() -> logVerbose("Recalculated segment since no path points were visible"));
             }
         }
 
@@ -572,10 +581,10 @@ public final class ElytraBehavior implements Helper {
         trySwapElytra();
 
         if (ctx.player().horizontalCollision) {
-            logDirect("hbonk");
+            logVerbose("hbonk");
         }
         if (ctx.player().verticalCollision) {
-            logDirect("vbonk");
+            logVerbose("vbonk");
         }
 
         final SolverContext solverContext = this.new SolverContext(false);
@@ -594,15 +603,20 @@ public final class ElytraBehavior implements Helper {
             this.deployedFireworkLastTick = false;
         }
 
+        final boolean inLava = ctx.player().isInLava();
+        if (inLava) {
+            baritone.getInputOverrideHandler().setInputForceState(Input.JUMP, true);
+        }
+
         if (solution == null) {
-            logDirect("no solution");
+            logVerbose("no solution");
             return;
         }
 
         baritone.getLookBehavior().updateTarget(solution.rotation, false);
 
         if (!solution.solvedPitch) {
-            logDirect("no pitch solution, probably gonna crash in a few ticks LOL!!!");
+            logVerbose("no pitch solution, probably gonna crash in a few ticks LOL!!!");
             return;
         } else {
             this.aimPos = new BetterBlockPos(solution.goingTo.x, solution.goingTo.y, solution.goingTo.z);
@@ -612,7 +626,7 @@ public final class ElytraBehavior implements Helper {
                 solution.context.start,
                 solution.goingTo,
                 solution.context.boost.isBoosted(),
-                solution.forceUseFirework
+                solution.forceUseFirework || inLava
         );
     }
 
@@ -744,7 +758,7 @@ public final class ElytraBehavior implements Helper {
                 logDirect("no fireworks");
                 return;
             }
-            logDirect("attempting to use firework" + (forceUseFirework ? " (forced)" : ""));
+            logVerbose("attempting to use firework" + (forceUseFirework ? " (forced)" : ""));
             ctx.playerController().processRightClick(ctx.player(), ctx.world(), InteractionHand.MAIN_HAND);
             this.minimumBoostTicks = 10 * (1 + getFireworkBoost(ctx.player().getItemInHand(InteractionHand.MAIN_HAND)).orElse(0));
             this.remainingFireworkTicks = 10;
@@ -994,7 +1008,7 @@ public final class ElytraBehavior implements Helper {
             // if start == dest then the cpp raytracer dies
             clear = start.equals(dest) || this.context.raytrace(start, dest);
         } else {
-            clear = ctx.world().clip(new ClipContext(start, dest, ClipContext.Block.COLLIDER, ClipContext.Fluid.ANY, ctx.player())).getType() == HitResult.Type.MISS;
+            clear = ctx.world().clip(new ClipContext(start, dest, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, ctx.player())).getType() == HitResult.Type.MISS;
         }
 
         if (Baritone.settings().elytraRenderRaytraces.value) {
@@ -1301,6 +1315,12 @@ public final class ElytraBehavior implements Helper {
             queueWindowClick(ctx.player().inventoryMenu.containerId, slotId, 0, ClickType.PICKUP);
             queueWindowClick(ctx.player().inventoryMenu.containerId, CHEST_SLOT, 0, ClickType.PICKUP);
             queueWindowClick(ctx.player().inventoryMenu.containerId, slotId, 0, ClickType.PICKUP);
+        }
+    }
+
+    void logVerbose(String message) {
+        if (Baritone.settings().elytraChatSpam.value) {
+            logDebug(message);
         }
     }
 }

@@ -743,7 +743,7 @@ public final class Settings {
     /**
      * Automatically elytra fly without having to force the client-sided rotations.
      */
-    public final Setting<Boolean> elytraFreeLook = new Setting<>(false);
+    public final Setting<Boolean> elytraFreeLook = new Setting<>(true);
 
     /**
      * Forces the client-sided yaw rotation to an average of the last {@link #smoothLookTicks} of server-sided rotations.
@@ -753,7 +753,7 @@ public final class Settings {
     /**
      * Same as {@link #smoothLook} but for elytra flying.
      */
-    public final Setting<Boolean> elytraSmoothLook = new Setting<>(true);
+    public final Setting<Boolean> elytraSmoothLook = new Setting<>(false);
 
     /**
      * The number of ticks to average across for {@link #smoothLook};
@@ -1426,7 +1426,7 @@ public final class Settings {
      * Whether nether-pathfinder should generate terrain based on {@link #elytraNetherSeed}.
      * If false all chunks that haven't been loaded are assumed to be air.
      */
-    public final Setting<Boolean> elytraPredictTerrain = new Setting<>(true);
+    public final Setting<Boolean> elytraPredictTerrain = new Setting<>(false);
 
     /**
      * Automatically swap the current elytra with a new one when the durability gets too low
@@ -1467,6 +1467,11 @@ public final class Settings {
      * Has the user read and understood the elytra terms and conditions
      */
     public final Setting<Boolean> elytraTermsAccepted = new Setting<>(false);
+
+    /**
+     * Verbose chat logging in elytra mode
+     */
+    public final Setting<Boolean> elytraChatSpam = new Setting<>(false);
 
     /**
      * A map of lowercase setting field names to their respective setting

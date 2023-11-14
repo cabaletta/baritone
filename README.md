@@ -8,9 +8,9 @@
   <a href="#Baritone"><img src="https://img.shields.io/badge/MC-1.13.2-yellow.svg" alt="Minecraft"/></a>
   <a href="#Baritone"><img src="https://img.shields.io/badge/MC-1.14.4-yellow.svg" alt="Minecraft"/></a>
   <a href="#Baritone"><img src="https://img.shields.io/badge/MC-1.15.2-yellow.svg" alt="Minecraft"/></a>
-  <a href="#Baritone"><img src="https://img.shields.io/badge/MC-1.16.5-brightgreen.svg" alt="Minecraft"/></a>
+  <a href="#Baritone"><img src="https://img.shields.io/badge/MC-1.16.5-yellow.svg" alt="Minecraft"/></a>
   <a href="#Baritone"><img src="https://img.shields.io/badge/MC-1.17.1-yellow.svg" alt="Minecraft"/></a>
-  <a href="#Baritone"><img src="https://img.shields.io/badge/MC-1.18.2-brightgreen.svg" alt="Minecraft"/></a>
+  <a href="#Baritone"><img src="https://img.shields.io/badge/MC-1.18.2-yellow.svg" alt="Minecraft"/></a>
   <a href="#Baritone"><img src="https://img.shields.io/badge/MC-1.19.2-brightgreen.svg" alt="Minecraft"/></a>
   <a href="#Baritone"><img src="https://img.shields.io/badge/MC-1.19.4-brightgreen.svg" alt="Minecraft"/></a>
   <a href="#Baritone"><img src="https://img.shields.io/badge/MC-1.20.1-brightgreen.svg" alt="Minecraft"/></a>
@@ -60,7 +60,7 @@ Baritone is the pathfinding system used in [Impact](https://impactclient.net/) s
 
 | Forge                                                                                                         | Fabric                                                                                                        |
 |---------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------|
-| [1.12.2 Forge](https://github.com/cabaletta/baritone/releases/download/v1.2.18/baritone-api-forge-1.2.18.jar) |                                                                                                               |
+| [1.12.2 Forge](https://github.com/cabaletta/baritone/releases/download/v1.2.19/baritone-api-forge-1.2.19.jar) |                                                                                                               |
 | [1.16.5 Forge](https://github.com/cabaletta/baritone/releases/download/v1.6.5/baritone-api-forge-1.6.5.jar)   | [1.16.5 Fabric](https://github.com/cabaletta/baritone/releases/download/v1.6.5/baritone-api-fabric-1.6.5.jar) |
 | [1.17.1 Forge](https://github.com/cabaletta/baritone/releases/download/v1.7.3/baritone-api-forge-1.7.3.jar)   | [1.17.1 Fabric](https://github.com/cabaletta/baritone/releases/download/v1.7.3/baritone-api-fabric-1.7.3.jar) |
 | [1.18.2 Forge](https://github.com/cabaletta/baritone/releases/download/v1.8.5/baritone-api-forge-1.8.5.jar)   | [1.18.2 Fabric](https://github.com/cabaletta/baritone/releases/download/v1.8.5/baritone-api-fabric-1.8.5.jar) |
@@ -69,7 +69,7 @@ Baritone is the pathfinding system used in [Impact](https://impactclient.net/) s
 | [1.19.4 Forge](https://github.com/cabaletta/baritone/releases/download/v1.9.3/baritone-api-forge-1.9.3.jar)   | [1.19.4 Fabric](https://github.com/cabaletta/baritone/releases/download/v1.9.3/baritone-api-fabric-1.9.3.jar) |
 | [1.20.1 Forge](https://github.com/cabaletta/baritone/releases/download/v1.10.1/baritone-api-forge-1.10.1.jar)   | [1.20.1 Fabric](https://github.com/cabaletta/baritone/releases/download/v1.10.1/baritone-api-fabric-1.10.1.jar) |
 
-**Message for 2b2t players looking for 1.19/1.20 Baritone** Download it from right above ^. But also please check back in a few days for Baritone Elytra ([vid 1](https://youtu.be/4bGGPo8yiHo) [vid 2](https://www.youtube.com/watch?v=pUN9nmINe3I)), which will be ported to 1.19/1.20 soon! It will work on 2b2t with its anticheat, that was the whole point of Baritone Elytra (it's fully vanilla compatible). Also join [**the discord**](http://discord.gg/s6fRBAUpmr). Thanks!
+**Message for 2b2t players looking for 1.19/1.20 Baritone** If you like, please try the beta for Baritone Elytra for 2b2t, find it in #announcements of [the Baritone discord](http://discord.gg/s6fRBAUpmr). It supports 1.19.4 and 1.20.1, Forge or Fabric. If you have to see it to believe it, watch [this YouTube video](https://youtu.be/NnSlQi-68eQ).
 
 **How to immediately get started:** Type `#goto 1000 500` in chat to go to x=1000 z=500. Type `#mine diamond_ore` to mine diamond ore. Type `#stop` to stop. For more, read [the usage page](USAGE.md) and/or watch this [tutorial playlist](https://www.youtube.com/playlist?list=PLnwnJ1qsS7CoQl9Si-RTluuzCo_4Oulpa). Also try `#elytra` for Elytra flying in the Nether using fireworks.
 
