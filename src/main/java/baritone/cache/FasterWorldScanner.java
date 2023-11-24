@@ -192,7 +192,6 @@ public enum FasterWorldScanner implements IWorldScanner {
             return;
         }
 
-        int yOffset = section.bottomBlockY();
         Palette<BlockState> palette = ((IPalettedContainer<BlockState>) sectionContainer).getPalette();
 
         if (palette instanceof SingleValuePalette) {
@@ -204,7 +203,7 @@ public enum FasterWorldScanner implements IWorldScanner {
                         for (int z = 0; z < 16; ++z) {
                             blocks.add(new BlockPos(
                                 (int) chunkX + x,
-                                yOffset + y,
+                                sectionY + y,
                                 (int) chunkZ + z
                             ));
                         }
