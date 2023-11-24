@@ -69,6 +69,16 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
     private ElytraBehavior behavior;
     private boolean predictingTerrain;
 
+    @Override
+    public void onLostControl() {
+        this.state = State.START_FLYING; // TODO: null state?
+        this.goingToLandingSpot = false;
+        this.landingSpot = null;
+        this.reachedGoal = false;
+        this.goal = null;
+        destroyBehaviorAsync();
+    }
+
     private ElytraProcess(Baritone baritone) {
         super(baritone);
         baritone.getGameEventHandler().registerEventListener(this);
@@ -274,16 +284,6 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
         goingToLandingSpot = false;
         this.landingSpot = null;
         this.state = State.FLYING;
-    }
-
-    @Override
-    public void onLostControl() {
-        this.goal = null;
-        this.goingToLandingSpot = false;
-        this.landingSpot = null;
-        this.reachedGoal = false;
-        this.state = State.START_FLYING; // TODO: null state?
-        destroyBehaviorAsync();
     }
 
     private void destroyBehaviorAsync() {

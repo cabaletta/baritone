@@ -1063,6 +1063,9 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         if (desired.getBlock() instanceof AirBlock && Baritone.settings().buildIgnoreBlocks.value.contains(current.getBlock())) {
             return true;
         }
+        if (!(current.getBlock() instanceof AirBlock) && Baritone.settings().buildIgnoreExisting.value && !itemVerify) {
+            return true;
+        }
         if (Baritone.settings().buildSkipBlocks.value.contains(desired.getBlock()) && !itemVerify) {
             return true;
         }

@@ -29,12 +29,16 @@ repositories {
         name = 'FabricMaven'
         url = 'https://maven.fabricmc.net/'
     }
+    maven {
+        name = 'NeoForgedMaven'
+        url = 'https://maven.neoforged.net/'
+    }
     mavenCentral()
 }
 
 dependencies {
     implementation group: 'com.google.code.gson', name: 'gson', version: '2.9.0'
-    implementation group: 'commons-io', name: 'commons-io', version: '2.6'
+    implementation group: 'commons-io', name: 'commons-io', version: '2.7'
 
-    implementation group: 'xyz.wagyourtail.unimined', name: 'xyz.wagyourtail.unimined.gradle.plugin', version: '0.4.10'
+    implementation group: 'xyz.wagyourtail.unimined', name: 'xyz.wagyourtail.unimined.gradle.plugin', version: '1.0.5'
 }
