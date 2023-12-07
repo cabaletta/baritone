@@ -22,17 +22,26 @@ plugins {
     id "com.github.johnrengelman.shadow" version "8.0.0"
 }
 
-archivesBaseName = archivesBaseName + "-forge"
+archivesBaseName = archivesBaseName + "-neoforge"
 
 unimined.minecraft {
     mappings {
         devFallbackNamespace "intermediary"
     }
 
-    forge {
-        loader project.forge_version
+    neoForged {
+        loader project.neoforge_version
         mixinConfig ["mixins.baritone.json"]
     }
+
+    minecraftRemapper.config {
+        // neoforge adds 1 conflict, where 2 interfaces have a method with the same name on yarn/mojmap,
+        // but the method has different names in the intermediary mappings.
+        // this is a conflict because they have a class that extends both interfaces.
+        // this shouldn't be a problem as long as named mappings don't make the name of those 2 methods different.
+        ignoreConflicts(true)
+    }
+
 }
 
 //loom {
@@ -101,11 +110,11 @@ components.java {
 task proguard(type: ProguardTask) {
     url 'https://github.com/Guardsquare/proguard/releases/download/v7.2.1/proguard-7.2.1.zip'
     extract 'proguard-7.2.1/lib/proguard.jar'
-    compType "forge"
+    compType "neoforge"
 }
 
 task createDist(type: CreateDistTask, dependsOn: proguard) {
-    compType "forge"
+    compType "neoforge"
 }
 
 build.finalizedBy(createDist)

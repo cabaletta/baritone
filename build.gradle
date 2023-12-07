@@ -77,7 +77,9 @@ allprojects {
         // The following line declares the yarn mappings you may select this one as well.
         // mappings "net.fabricmc:yarn:1.17.1+build.32:v2"
         //launchImplementation('dev.babbaj:nether-pathfinder:1.3.0')
-        implementation 'dev.babbaj:nether-pathfinder:1.4.1'
+        implementation "dev.babbaj:nether-pathfinder:${nether_pathfinder_version}"
+
+        implementation 'com.google.code.findbugs:jsr305:3.0.2'
     }
 
     unimined.minecraft(sourceSets.main, true) {
@@ -86,7 +88,7 @@ allprojects {
         mappings {
             intermediary()
             mojmap()
-            parchment("2023.10.22")
+            parchment("1.20.2", "2023.10.22")
         }
     }
 
