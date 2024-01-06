@@ -6,6 +6,7 @@ RUN apt update -y
 
 RUN apt install \
           openjdk-17-jdk \
+	  git \
           --assume-yes
 
 COPY . /code

@@ -171,9 +171,8 @@ public class MixinMinecraft {
             ),
             slice = @Slice(
                     from = @At(
-                            value = "FIELD",
-                            opcode = Opcodes.GETFIELD,
-                            target = "Lnet/minecraft/client/Options;renderDebug:Z"
+                            value = "INVOKE",
+                            target = "Lnet/minecraft/client/gui/components/DebugScreenOverlay;showDebugScreen()Z"
                     ),
                     to = @At(
                             value = "CONSTANT",

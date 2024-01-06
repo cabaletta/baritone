@@ -20,10 +20,10 @@ import baritone.gradle.task.ProguardTask
 //import baritone.gradle.task.TweakerJsonAssembler
 
 plugins {
-    id "com.github.johnrengelman.shadow" version "7.0.0"
+    id "com.github.johnrengelman.shadow" version "8.0.0"
 }
 
-minecraft {
+unimined.minecraft {
     runs.client = {
         mainClass = "net.minecraft.launchwrapper.Launch"
         args.addAll(["--tweakClass", "baritone.launch.BaritoneTweaker"])
@@ -66,18 +66,18 @@ dependencies {
 
 shadowJar {
     configurations = [project.configurations.shadowCommon]
-    classifier "dev-shadow"
+    archiveClassifier.set "dev-shadow"
 }
 
 
 remapJar {
     inputFile.set shadowJar.archiveFile
     dependsOn shadowJar
-    classifier null
+    archiveClassifier.set null
 }
 
 jar {
-    classifier "dev"
+    archiveClassifier.set "dev"
 
     preserveFileTimestamps = false
     reproducibleFileOrder = true
