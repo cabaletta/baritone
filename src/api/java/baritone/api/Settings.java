@@ -29,6 +29,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.*;
 import java.lang.annotation.ElementType;
@@ -50,6 +52,7 @@ import java.util.function.Consumer;
  * @author leijurv
  */
 public final class Settings {
+    private static final Logger LOGGER = LoggerFactory.getLogger("Baritone");
 
     /**
      * Allow Baritone to break blocks
@@ -1216,8 +1219,12 @@ public final class Settings {
      */
     @JavaOnly
     public final Setting<Consumer<Component>> logger = new Setting<>((msg) -> {
-        final GuiMessageTag tag = useMessageTag.value ? Helper.MESSAGE_TAG : null;
-        Minecraft.getInstance().gui.getChat().addMessage(msg, null, tag);
+        try {
+            final GuiMessageTag tag = useMessageTag.value ? Helper.MESSAGE_TAG : null;
+            Minecraft.getInstance().gui.getChat().addMessage(msg, null, tag);
+        } catch (Throwable t) {
+            LOGGER.warn("Failed to log message to chat: " + msg.getString(), t);
+        }
     });
 
     /**
