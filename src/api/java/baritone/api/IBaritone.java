@@ -25,6 +25,7 @@ import baritone.api.event.listener.IEventBus;
 import baritone.api.pathing.calc.IPathingControlManager;
 import baritone.api.process.*;
 import baritone.api.selection.ISelectionManager;
+import baritone.api.utils.IExecutionControl;
 import baritone.api.utils.IInputOverrideHandler;
 import baritone.api.utils.IPlayerContext;
 
@@ -138,6 +139,15 @@ public interface IBaritone {
      * @see ICommandManager
      */
     ICommandManager getCommandManager();
+
+    /**
+     * @param name a user-friendly name for the underlying {@link IBaritoneProcess}
+     * @param priority the priority. Default for {@link IBaritoneProcess} instance is {@link IBaritoneProcess#DEFAULT_PRIORITY}.
+     *                 Any Baritone process with a higher priority will not be paused by this {@link IExecutionControl}.
+     * @return A newly created {@link IExecutionControl} instance
+     * @see IExecutionControl
+     */
+    IExecutionControl createExecutionControl(String name, double priority);
 
     /**
      * Open click

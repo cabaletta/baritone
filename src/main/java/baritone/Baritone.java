@@ -24,6 +24,7 @@ import baritone.api.behavior.IBehavior;
 import baritone.api.event.listener.IEventBus;
 import baritone.api.process.IBaritoneProcess;
 import baritone.api.process.IElytraProcess;
+import baritone.api.utils.IExecutionControl;
 import baritone.api.utils.IPlayerContext;
 import baritone.behavior.*;
 import baritone.cache.WorldProvider;
@@ -31,10 +32,7 @@ import baritone.command.manager.CommandManager;
 import baritone.event.GameEventHandler;
 import baritone.process.*;
 import baritone.selection.SelectionManager;
-import baritone.utils.BlockStateInterface;
-import baritone.utils.GuiClick;
-import baritone.utils.InputOverrideHandler;
-import baritone.utils.PathingControlManager;
+import baritone.utils.*;
 import baritone.utils.player.BaritonePlayerContext;
 import net.minecraft.client.Minecraft;
 
@@ -233,6 +231,11 @@ public class Baritone implements IBaritone {
     @Override
     public CommandManager getCommandManager() {
         return this.commandManager;
+    }
+
+    @Override
+    public IExecutionControl createExecutionControl(String name, double priority) {
+        return new ExecutionControl(name, priority, this);
     }
 
     @Override
