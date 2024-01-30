@@ -48,9 +48,9 @@ public enum WorldScanner implements IWorldScanner {
         ClientChunkCache chunkProvider = (ClientChunkCache) ctx.world().getChunkSource();
 
         int maxSearchRadiusSq = maxSearchRadius * maxSearchRadius;
-        int playerChunkX = ctx.playerFeet().getX() >> 4;
-        int playerChunkZ = ctx.playerFeet().getZ() >> 4;
-        int playerY = ctx.playerFeet().getY() - ctx.world().dimensionType().minY();
+        int playerChunkX = ctx.playerToes().getX() >> 4;
+        int playerChunkZ = ctx.playerToes().getZ() >> 4;
+        int playerY = ctx.playerToes().getY() - ctx.world().dimensionType().minY();
 
         int playerYBlockStateContainerIndex = playerY >> 4;
         int[] coordinateIterationOrder = IntStream.range(0, ctx.world().dimensionType().height() / 16).boxed().sorted(Comparator.comparingInt(y -> Math.abs(y - playerYBlockStateContainerIndex))).mapToInt(x -> x).toArray();
@@ -97,7 +97,7 @@ public enum WorldScanner implements IWorldScanner {
 
         ClientChunkCache chunkProvider = (ClientChunkCache) ctx.world().getChunkSource();
         LevelChunk chunk = chunkProvider.getChunk(pos.x, pos.z, null, false);
-        int playerY = ctx.playerFeet().getY();
+        int playerY = ctx.playerToes().getY();
 
         if (chunk == null || chunk.isEmpty()) {
             return Collections.emptyList();
@@ -118,7 +118,7 @@ public enum WorldScanner implements IWorldScanner {
         ChunkSource chunkProvider = ctx.world().getChunkSource();
         ICachedWorld cachedWorld = ctx.worldData().getCachedWorld();
 
-        BetterBlockPos playerPos = ctx.playerFeet();
+        BetterBlockPos playerPos = ctx.playerToes();
 
         int playerChunkX = playerPos.getX() >> 4;
         int playerChunkZ = playerPos.getZ() >> 4;

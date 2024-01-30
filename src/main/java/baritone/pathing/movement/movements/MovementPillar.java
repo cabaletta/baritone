@@ -168,7 +168,7 @@ public class MovementPillar extends Movement {
             return state;
         }
 
-        if (ctx.playerFeet().y < src.y) {
+        if (ctx.playerToes().y < src.y) {
             return state.setStatus(MovementStatus.UNREACHABLE);
         }
 
@@ -180,7 +180,7 @@ public class MovementPillar extends Movement {
             if (Math.abs(ctx.player().position().x - destCenter.x) > 0.2 || Math.abs(ctx.player().position().z - destCenter.z) > 0.2) {
                 state.setInput(Input.MOVE_FORWARD, true);
             }
-            if (ctx.playerFeet().equals(dest)) {
+            if (ctx.playerToes().equals(dest)) {
                 return state.setStatus(MovementStatus.SUCCESS);
             }
             return state;
@@ -202,7 +202,7 @@ public class MovementPillar extends Movement {
                 return state.setStatus(MovementStatus.UNREACHABLE);
             }
 
-            if (ctx.playerFeet().equals(against.above()) || ctx.playerFeet().equals(dest)) {
+            if (ctx.playerToes().equals(against.above()) || ctx.playerToes().equals(dest)) {
                 return state.setStatus(MovementStatus.SUCCESS);
             }
             if (MovementHelper.isBottomSlab(BlockStateInterface.get(ctx, src.below()))) {
@@ -263,7 +263,7 @@ public class MovementPillar extends Movement {
         }
 
         // If we are at our goal and the block below us is placed
-        if (ctx.playerFeet().equals(dest) && blockIsThere) {
+        if (ctx.playerToes().equals(dest) && blockIsThere) {
             return state.setStatus(MovementStatus.SUCCESS);
         }
 
@@ -272,7 +272,7 @@ public class MovementPillar extends Movement {
 
     @Override
     protected boolean prepared(MovementState state) {
-        if (ctx.playerFeet().equals(src) || ctx.playerFeet().equals(src.below())) {
+        if (ctx.playerToes().equals(src) || ctx.playerToes().equals(src.below())) {
             Block block = BlockStateInterface.getBlock(ctx, src.below());
             if (block == Blocks.LADDER || block == Blocks.VINE) {
                 state.setInput(Input.SNEAK, true);

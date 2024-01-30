@@ -272,7 +272,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
     }
 
     private Optional<Tuple<BetterBlockPos, Rotation>> toBreakNearPlayer(BuilderCalculationContext bcc) {
-        BetterBlockPos center = ctx.playerFeet();
+        BetterBlockPos center = ctx.playerToes();
         BetterBlockPos pathStart = baritone.getPathingBehavior().pathStart();
         for (int dx = -5; dx <= 5; dx++) {
             for (int dy = Baritone.settings().breakFromAbove.value ? -1 : 0; dy <= 5; dy++) {
@@ -317,7 +317,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
     }
 
     private Optional<Placement> searchForPlacables(BuilderCalculationContext bcc, List<BlockState> desirableOnHotbar) {
-        BetterBlockPos center = ctx.playerFeet();
+        BetterBlockPos center = ctx.playerToes();
         for (int dx = -5; dx <= 5; dx++) {
             for (int dy = -5; dy <= 1; dy++) {
                 for (int dz = -5; dz <= 5; dz++) {
@@ -633,7 +633,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
     }
 
     private void recalcNearby(BuilderCalculationContext bcc) {
-        BetterBlockPos center = ctx.playerFeet();
+        BetterBlockPos center = ctx.playerToes();
         int radius = Baritone.settings().builderTickScanRadius.value;
         for (int dx = -radius; dx <= radius; dx++) {
             for (int dy = -radius; dy <= radius; dy++) {
@@ -997,7 +997,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                 .getBlock()
                 .getStateForPlacement(
                     new BlockPlaceContext(
-                        new UseOnContext(ctx.world(), ctx.player(), InteractionHand.MAIN_HAND, stack, new BlockHitResult(new Vec3(ctx.player().position().x, ctx.player().position().y, ctx.player().position().z), Direction.UP, ctx.playerFeet(), false)) {}
+                        new UseOnContext(ctx.world(), ctx.player(), InteractionHand.MAIN_HAND, stack, new BlockHitResult(new Vec3(ctx.player().position().x, ctx.player().position().y, ctx.player().position().z), Direction.UP, ctx.playerToes(), false)) {}
                     )
                 );
             if (itemState != null) {

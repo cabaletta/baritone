@@ -92,7 +92,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
                 if (Baritone.settings().notificationOnMineFail.value) {
                     logNotification("Unable to find any path to " + filter + ", blacklisting presumably unreachable closest instance...", true);
                 }
-                knownOreLocations.stream().min(Comparator.comparingDouble(ctx.playerFeet()::distSqr)).ifPresent(blacklist::add);
+                knownOreLocations.stream().min(Comparator.comparingDouble(ctx.playerToes()::distSqr)).ifPresent(blacklist::add);
                 knownOreLocations.removeIf(blacklist::contains);
             } else {
                 logDirect("Unable to find any path to " + filter + ", canceling mine");
@@ -118,10 +118,10 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
             }
         }
         Optional<BlockPos> shaft = curr.stream()
-                .filter(pos -> pos.getX() == ctx.playerFeet().getX() && pos.getZ() == ctx.playerFeet().getZ())
-                .filter(pos -> pos.getY() >= ctx.playerFeet().getY())
+                .filter(pos -> pos.getX() == ctx.playerToes().getX() && pos.getZ() == ctx.playerToes().getZ())
+                .filter(pos -> pos.getY() >= ctx.playerToes().getY())
                 .filter(pos -> !(BlockStateInterface.get(ctx, pos).getBlock() instanceof AirBlock)) // after breaking a block, it takes mineGoalUpdateInterval ticks for it to actually update this list =(
-                .min(Comparator.comparingDouble(ctx.playerFeet()::distSqr));
+                .min(Comparator.comparingDouble(ctx.playerToes()::distSqr));
         baritone.getInputOverrideHandler().clearAllKeys();
         if (shaft.isPresent() && ctx.player().onGround()) {
             BlockPos pos = shaft.get();
@@ -206,7 +206,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
             } else {
                 return new GoalYLevel(y);
             }*/
-            branchPoint = ctx.playerFeet();
+            branchPoint = ctx.playerToes();
         }
         // TODO shaft mode, mine 1x1 shafts to either side
         // TODO also, see if the GoalRunAway with maintain Y at 11 works even from the surface
@@ -365,7 +365,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         for (BlockOptionalMeta bom : filter.blocks()) {
             Block block = bom.getBlock();
             if (CachedChunk.BLOCKS_TO_KEEP_TRACK_OF.contains(block)) {
-                BetterBlockPos pf = ctx.baritone.getPlayerContext().playerFeet();
+                BetterBlockPos pf = ctx.baritone.getPlayerContext().playerToes();
 
                 // maxRegionDistanceSq 2 means adjacent directly or adjacent diagonally; nothing further than that
                 locs.addAll(ctx.worldData.getCachedWorld().getLocationsOf(
@@ -400,7 +400,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
     private boolean addNearby() {
         List<BlockPos> dropped = droppedItemsScan();
         knownOreLocations.addAll(dropped);
-        BlockPos playerFeet = ctx.playerFeet();
+        BlockPos playerFeet = ctx.playerToes();
         BlockStateInterface bsi = new BlockStateInterface(ctx);
 
 
