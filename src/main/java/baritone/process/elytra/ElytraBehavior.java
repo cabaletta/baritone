@@ -167,7 +167,7 @@ public final class ElytraBehavior implements Helper {
         }
 
         public CompletableFuture<Void> pathToDestination() {
-            return this.pathToDestination(ctx.playerFeet());
+            return this.pathToDestination(ctx.playerToes());
         }
 
         public CompletableFuture<Void> pathToDestination(final BlockPos from) {
@@ -203,7 +203,7 @@ public final class ElytraBehavior implements Helper {
             final List<BetterBlockPos> after = upToIncl.isPresent() ? this.path.subList(upToIncl.getAsInt() + 1, this.path.size()) : Collections.emptyList();
             final boolean complete = this.completePath;
 
-            return this.path0(ctx.playerFeet(), upToIncl.isPresent() ? this.path.get(upToIncl.getAsInt()) : ElytraBehavior.this.destination, segment -> segment.append(after.stream(), complete || (segment.isFinished() && !upToIncl.isPresent())))
+            return this.path0(ctx.playerToes(), upToIncl.isPresent() ? this.path.get(upToIncl.getAsInt()) : ElytraBehavior.this.destination, segment -> segment.append(after.stream(), complete || (segment.isFinished() && !upToIncl.isPresent())))
                     .whenComplete((result, ex) -> {
                         this.recalculating = false;
                         if (ex != null) {
@@ -338,14 +338,14 @@ public final class ElytraBehavior implements Helper {
                     // obstacle. where do we return to pathing?
                     // if the end of render distance is closer to goal, then that's fine, otherwise we'd be "digging our hole deeper" and making an already bad backtrack worse
                     OptionalInt rejoinMainPathAt;
-                    if (this.path.get(rangeEndExcl - 1).distanceSq(ElytraBehavior.this.destination) < ctx.playerFeet().distanceSq(ElytraBehavior.this.destination)) {
+                    if (this.path.get(rangeEndExcl - 1).distanceSq(ElytraBehavior.this.destination) < ctx.playerToes().distanceSq(ElytraBehavior.this.destination)) {
                         rejoinMainPathAt = OptionalInt.of(rangeEndExcl - 1); // rejoin after current render distance
                     } else {
                         rejoinMainPathAt = OptionalInt.empty(); // large backtrack detected. ignore render distance, rejoin later on
                     }
 
                     final BetterBlockPos blockage = this.path.get(i);
-                    final double distance = ctx.playerFeet().distanceTo(this.path.get(rejoinMainPathAt.orElse(path.size() - 1)));
+                    final double distance = ctx.playerToes().distanceTo(this.path.get(rejoinMainPathAt.orElse(path.size() - 1)));
 
                     final long start = System.nanoTime();
                     this.pathRecalcSegment(rejoinMainPathAt)
@@ -383,7 +383,7 @@ public final class ElytraBehavior implements Helper {
             }
 
             int index = this.playerNear;
-            final BetterBlockPos pos = ctx.playerFeet();
+            final BetterBlockPos pos = ctx.playerToes();
             for (int i = index; i >= Math.max(index - 1000, 0); i -= 10) {
                 if (path.get(i).distanceSq(pos) < path.get(index).distanceSq(pos)) {
                     index = i; // intentional: this changes the bound of the loop
@@ -488,7 +488,7 @@ public final class ElytraBehavior implements Helper {
     public void repackChunks() {
         ChunkSource chunkProvider = ctx.world().getChunkSource();
 
-        BetterBlockPos playerPos = ctx.playerFeet();
+        BetterBlockPos playerPos = ctx.playerToes();
 
         int playerChunkX = playerPos.getX() >> 4;
         int playerChunkZ = playerPos.getZ() >> 4;

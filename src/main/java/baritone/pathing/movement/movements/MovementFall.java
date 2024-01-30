@@ -89,7 +89,7 @@ public class MovementFall extends Movement {
             return state;
         }
 
-        BlockPos playerFeet = ctx.playerFeet();
+        BlockPos playerFeet = ctx.playerToes();
         Rotation toDest = RotationUtils.calcRotationFromVec3d(ctx.playerHead(), VecUtils.getBlockPosCenter(dest), ctx.playerRotations());
         Rotation targetRotation = null;
         BlockState destState = ctx.world().getBlockState(dest);
@@ -160,7 +160,7 @@ public class MovementFall extends Movement {
 
     private Direction avoid() {
         for (int i = 0; i < 15; i++) {
-            BlockState state = ctx.world().getBlockState(ctx.playerFeet().below(i));
+            BlockState state = ctx.world().getBlockState(ctx.playerToes().below(i));
             if (state.getBlock() == Blocks.LADDER) {
                 return state.getValue(LadderBlock.FACING);
             }
@@ -172,7 +172,7 @@ public class MovementFall extends Movement {
     public boolean safeToCancel(MovementState state) {
         // if we haven't started walking off the edge yet, or if we're in the process of breaking blocks before doing the fall
         // then it's safe to cancel this
-        return ctx.playerFeet().equals(src) || state.getStatus() != MovementStatus.RUNNING;
+        return ctx.playerToes().equals(src) || state.getStatus() != MovementStatus.RUNNING;
     }
 
     private static BetterBlockPos[] buildPositionsToBreak(BetterBlockPos src, BetterBlockPos dest) {

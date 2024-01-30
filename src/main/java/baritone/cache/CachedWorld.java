@@ -209,7 +209,7 @@ public final class CachedWorld implements ICachedWorld, Helper {
         for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
             IWorldData data = ibaritone.getWorldProvider().getCurrentWorld();
             if (data != null && data.getCachedWorld() == this && ibaritone.getPlayerContext().player() != null) {
-                return ibaritone.getPlayerContext().playerFeet();
+                return ibaritone.getPlayerContext().playerToes();
             }
         }
         CachedChunk mostRecentlyModified = null;

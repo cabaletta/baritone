@@ -97,7 +97,7 @@ public class PathExecutor implements IPathExecutor, Helper {
             return true; // stop bugging me, I'm done
         }
         Movement movement = (Movement) path.movements().get(pathPosition);
-        BetterBlockPos whereAmI = ctx.playerFeet();
+        BetterBlockPos whereAmI = ctx.playerToes();
         if (!movement.getValidPositions().contains(whereAmI)) {
             for (int i = 0; i < pathPosition && i < path.length(); i++) {//this happens for example when you lag out and get teleported back a couple blocks
                 if (((Movement) path.movements().get(i)).getValidPositions().contains(whereAmI)) {
@@ -275,11 +275,11 @@ public class PathExecutor implements IPathExecutor, Helper {
         if (!ctx.player().onGround()) {
             return false;
         }
-        if (!MovementHelper.canWalkOn(ctx, ctx.playerFeet().below())) {
+        if (!MovementHelper.canWalkOn(ctx, ctx.playerToes().below())) {
             // we're in some kind of sketchy situation, maybe parkouring
             return false;
         }
-        if (!MovementHelper.canWalkThrough(ctx, ctx.playerFeet()) || !MovementHelper.canWalkThrough(ctx, ctx.playerFeet().above())) {
+        if (!MovementHelper.canWalkThrough(ctx, ctx.playerToes()) || !MovementHelper.canWalkThrough(ctx, ctx.playerToes().above())) {
             // suffocating?
             return false;
         }
@@ -297,7 +297,7 @@ public class PathExecutor implements IPathExecutor, Helper {
         // the first block of the next path will always overlap
         // no need to pause our very last movement when it would have otherwise cleanly exited with MovementStatus SUCCESS
         positions = positions.subList(1, positions.size());
-        return positions.contains(ctx.playerFeet());
+        return positions.contains(ctx.playerToes());
     }
 
     private boolean possiblyOffPath(Tuple<Double, BlockPos> status, double leniency) {
@@ -321,7 +321,7 @@ public class PathExecutor implements IPathExecutor, Helper {
      * @return Whether or not it was possible to snap to the current player feet
      */
     public boolean snipsnapifpossible() {
-        if (!ctx.player().onGround() && ctx.world().getFluidState(ctx.playerFeet()).isEmpty()) {
+        if (!ctx.player().onGround() && ctx.world().getFluidState(ctx.playerToes()).isEmpty()) {
             // if we're falling in the air, and not in water, don't splice
             return false;
         } else {
@@ -332,7 +332,7 @@ public class PathExecutor implements IPathExecutor, Helper {
                 return false; // so don't
             }
         }
-        int index = path.positions().indexOf(ctx.playerFeet());
+        int index = path.positions().indexOf(ctx.playerToes());
         if (index == -1) {
             return false;
         }
@@ -423,7 +423,7 @@ public class PathExecutor implements IPathExecutor, Helper {
                         }
 
                     }
-                    if (ctx.playerFeet().equals(current.getDest())) {
+                    if (ctx.playerToes().equals(current.getDest())) {
                         pathPosition++;
                         onChangeInPathPosition();
                         onTick();
@@ -457,7 +457,7 @@ public class PathExecutor implements IPathExecutor, Helper {
                 if (!path.positions().contains(fallDest)) {
                     throw new IllegalStateException();
                 }
-                if (ctx.playerFeet().equals(fallDest)) {
+                if (ctx.playerToes().equals(fallDest)) {
                     pathPosition = path.positions().indexOf(fallDest);
                     onChangeInPathPosition();
                     onTick();

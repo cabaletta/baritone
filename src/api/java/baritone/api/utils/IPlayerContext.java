@@ -60,7 +60,7 @@ public interface IPlayerContext {
 
     HitResult objectMouseOver();
 
-    default BetterBlockPos playerFeet() {
+    default BetterBlockPos playerToes() {
         // TODO find a better way to deal with soul sand!!!!!
         BetterBlockPos feet = new BetterBlockPos(player().position().x, player().position().y + 0.1251, player().position().z);
 

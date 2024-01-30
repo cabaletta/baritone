@@ -72,7 +72,7 @@ public final class BaritonePlayerContext implements IPlayerContext {
     @Override
     public BetterBlockPos viewerPos() {
         final Entity entity = this.mc.getCameraEntity();
-        return entity == null ? this.playerFeet() : BetterBlockPos.from(entity.blockPosition());
+        return entity == null ? this.playerToes() : BetterBlockPos.from(entity.blockPosition());
     }
 
     @Override

@@ -68,7 +68,7 @@ public class WaypointBehavior extends Behavior {
     public void onPlayerDeath() {
         if (!Baritone.settings().doDeathWaypoints.value)
             return;
-        Waypoint deathWaypoint = new Waypoint("death", Waypoint.Tag.DEATH, ctx.playerFeet());
+        Waypoint deathWaypoint = new Waypoint("death", Waypoint.Tag.DEATH, ctx.playerToes());
         baritone.getWorldProvider().getCurrentWorld().getWaypoints().addWaypoint(deathWaypoint);
         MutableComponent component = Component.literal("Death position saved.");
         component.setStyle(component.getStyle()

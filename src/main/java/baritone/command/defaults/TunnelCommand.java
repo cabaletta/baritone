@@ -58,20 +58,20 @@ public class TunnelCommand extends Command {
                 int addition = ((width % 2 == 0) ? 0 : 1);
                 switch (enumFacing) {
                     case EAST:
-                        corner1 = new BlockPos(ctx.playerFeet().x, ctx.playerFeet().y, ctx.playerFeet().z - width / 2);
-                        corner2 = new BlockPos(ctx.playerFeet().x + depth, ctx.playerFeet().y + height, ctx.playerFeet().z + width / 2 + addition);
+                        corner1 = new BlockPos(ctx.playerToes().x, ctx.playerToes().y, ctx.playerToes().z - width / 2);
+                        corner2 = new BlockPos(ctx.playerToes().x + depth, ctx.playerToes().y + height, ctx.playerToes().z + width / 2 + addition);
                         break;
                     case WEST:
-                        corner1 = new BlockPos(ctx.playerFeet().x, ctx.playerFeet().y, ctx.playerFeet().z + width / 2 + addition);
-                        corner2 = new BlockPos(ctx.playerFeet().x - depth, ctx.playerFeet().y + height, ctx.playerFeet().z - width / 2);
+                        corner1 = new BlockPos(ctx.playerToes().x, ctx.playerToes().y, ctx.playerToes().z + width / 2 + addition);
+                        corner2 = new BlockPos(ctx.playerToes().x - depth, ctx.playerToes().y + height, ctx.playerToes().z - width / 2);
                         break;
                     case NORTH:
-                        corner1 = new BlockPos(ctx.playerFeet().x - width / 2, ctx.playerFeet().y, ctx.playerFeet().z);
-                        corner2 = new BlockPos(ctx.playerFeet().x + width / 2 + addition, ctx.playerFeet().y + height, ctx.playerFeet().z - depth);
+                        corner1 = new BlockPos(ctx.playerToes().x - width / 2, ctx.playerToes().y, ctx.playerToes().z);
+                        corner2 = new BlockPos(ctx.playerToes().x + width / 2 + addition, ctx.playerToes().y + height, ctx.playerToes().z - depth);
                         break;
                     case SOUTH:
-                        corner1 = new BlockPos(ctx.playerFeet().x + width / 2 + addition, ctx.playerFeet().y, ctx.playerFeet().z);
-                        corner2 = new BlockPos(ctx.playerFeet().x - width / 2, ctx.playerFeet().y + height, ctx.playerFeet().z + depth);
+                        corner1 = new BlockPos(ctx.playerToes().x + width / 2 + addition, ctx.playerToes().y, ctx.playerToes().z);
+                        corner2 = new BlockPos(ctx.playerToes().x - width / 2, ctx.playerToes().y + height, ctx.playerToes().z + depth);
                         break;
                     default:
                         throw new IllegalStateException("Unexpected value: " + enumFacing);
@@ -81,7 +81,7 @@ public class TunnelCommand extends Command {
             }
         } else {
             Goal goal = new GoalStrictDirection(
-                    ctx.playerFeet(),
+                    ctx.playerToes(),
                     ctx.player().getDirection()
             );
             baritone.getCustomGoalProcess().setGoalAndPath(goal);

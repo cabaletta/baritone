@@ -78,7 +78,7 @@ public class MovementDownward extends Movement {
             return state;
         }
 
-        if (ctx.playerFeet().equals(dest)) {
+        if (ctx.playerToes().equals(dest)) {
             return state.setStatus(MovementStatus.SUCCESS);
         } else if (!playerInValidPosition()) {
             return state.setStatus(MovementStatus.UNREACHABLE);

@@ -33,7 +33,6 @@ import baritone.pathing.calc.AbstractNodeCostSearch;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.path.PathExecutor;
-import baritone.process.ElytraProcess;
 import baritone.utils.PathRenderer;
 import baritone.utils.PathingCommandContext;
 import baritone.utils.pathing.Favoring;
@@ -139,8 +138,8 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                     BetterBlockPos calcFrom = inProgress.getStart();
                     Optional<IPath> currentBest = inProgress.bestPathSoFar();
                     if ((current == null || !current.getPath().getDest().equals(calcFrom)) // if current ends in inProgress's start, then we're ok
-                            && !calcFrom.equals(ctx.playerFeet()) && !calcFrom.equals(expectedSegmentStart) // if current starts in our playerFeet or pathStart, then we're ok
-                            && (!currentBest.isPresent() || (!currentBest.get().positions().contains(ctx.playerFeet()) && !currentBest.get().positions().contains(expectedSegmentStart))) // if
+                            && !calcFrom.equals(ctx.playerToes()) && !calcFrom.equals(expectedSegmentStart) // if current starts in our playerFeet or pathStart, then we're ok
+                            && (!currentBest.isPresent() || (!currentBest.get().positions().contains(ctx.playerToes()) && !currentBest.get().positions().contains(expectedSegmentStart))) // if
                     ) {
                         // when it was *just* started, currentBest will be empty so we need to also check calcFrom since that's always present
                         inProgress.cancel(); // cancellation doesn't dispatch any events
@@ -153,7 +152,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
             safeToCancel = current.onTick();
             if (current.failed() || current.finished()) {
                 current = null;
-                if (goal == null || goal.isInGoal(ctx.playerFeet())) {
+                if (goal == null || goal.isInGoal(ctx.playerToes())) {
                     logDebug("All done. At " + goal);
                     queuePathEvent(PathEvent.AT_GOAL);
                     next = null;
@@ -162,7 +161,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                     }
                     return;
                 }
-                if (next != null && !next.getPath().positions().contains(ctx.playerFeet()) && !next.getPath().positions().contains(expectedSegmentStart)) { // can contain either one
+                if (next != null && !next.getPath().positions().contains(ctx.playerToes()) && !next.getPath().positions().contains(expectedSegmentStart)) { // can contain either one
                     // if the current path failed, we may not actually be on the next one, so make sure
                     logDebug("Discarding next path as it does not contain current position");
                     // for example if we had a nicely planned ahead path that starts where current ends
@@ -265,7 +264,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         if (goal == null) {
             return false;
         }
-        if (goal.isInGoal(ctx.playerFeet()) || goal.isInGoal(expectedSegmentStart)) {
+        if (goal.isInGoal(ctx.playerToes()) || goal.isInGoal(expectedSegmentStart)) {
             return false;
         }
         synchronized (pathPlanLock) {
@@ -382,11 +381,11 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
     }
 
     public Optional<Double> estimatedTicksToGoal() {
-        BetterBlockPos currentPos = ctx.playerFeet();
+        BetterBlockPos currentPos = ctx.playerToes();
         if (goal == null || currentPos == null || startPosition == null) {
             return Optional.empty();
         }
-        if (goal.isInGoal(ctx.playerFeet())) {
+        if (goal.isInGoal(ctx.playerToes())) {
             resetEstimatedTicksToGoal();
             return Optional.of(0.0);
         }
@@ -421,7 +420,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
      * @return The starting {@link BlockPos} for a new path
      */
     public BetterBlockPos pathStart() { // TODO move to a helper or util class
-        BetterBlockPos feet = ctx.playerFeet();
+        BetterBlockPos feet = ctx.playerToes();
         if (!MovementHelper.canWalkOn(ctx, feet.below())) {
             if (ctx.player().onGround()) {
                 double playerX = ctx.player().position().x;

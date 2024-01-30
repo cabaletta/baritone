@@ -44,7 +44,6 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
-import net.minecraft.network.chat.MutableComponent;
 
 import static baritone.api.command.IBaritoneChatControl.FORCE_COMMAND_PREFIX;
 
@@ -138,8 +137,8 @@ public class WaypointsCommand extends Command {
             }
             String name = (args.hasExactlyOne() || args.hasExactly(4)) ? args.getString() : "";
             BetterBlockPos pos = args.hasAny()
-                    ? args.getDatatypePost(RelativeBlockPos.INSTANCE, ctx.playerFeet())
-                    : ctx.playerFeet();
+                    ? args.getDatatypePost(RelativeBlockPos.INSTANCE, ctx.playerToes())
+                    : ctx.playerToes();
             args.requireMax(0);
             IWaypoint waypoint = new Waypoint(name, tag, pos);
             ForWaypoints.waypoints(this.baritone).addWaypoint(waypoint);

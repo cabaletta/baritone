@@ -110,7 +110,7 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
     @Override
     public void farm(int range, BlockPos pos) {
         if (pos == null) {
-            center = baritone.getPlayerContext().playerFeet();
+            center = baritone.getPlayerContext().playerToes();
         } else {
             center = pos;
         }
