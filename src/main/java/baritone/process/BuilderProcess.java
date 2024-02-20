@@ -177,15 +177,15 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         if (!format.isPresent()) {
             return false;
         }
-        ISchematic parsed;
+        IStaticSchematic parsed;
         try {
             parsed = format.get().parse(new FileInputStream(schematic));
         } catch (Exception e) {
             e.printStackTrace();
             return false;
         }
-        parsed = applyMapArtAndSelection(origin, (IStaticSchematic) parsed);
-        build(name, parsed, origin);
+        ISchematic schem = applyMapArtAndSelection(origin, parsed);
+        build(name, schem, origin);
         return true;
     }
 
@@ -205,17 +205,10 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         if (SchematicaHelper.isSchematicaPresent()) {
             Optional<Tuple<IStaticSchematic, BlockPos>> schematic = SchematicaHelper.getOpenSchematic();
             if (schematic.isPresent()) {
-                IStaticSchematic s = schematic.get().getA();
+                IStaticSchematic raw = schematic.get().getA();
                 BlockPos origin = schematic.get().getB();
-                ISchematic schem = Baritone.settings().mapArtMode.value ? new MapArtSchematic(s) : s;
-                if (Baritone.settings().buildOnlySelection.value) {
-                    schem = new SelectionSchematic(schem, origin, baritone.getSelectionManager().getSelections());
-                }
-                this.build(
-                        schematic.get().getA().toString(),
-                        schem,
-                        origin
-                );
+                ISchematic schem = applyMapArtAndSelection(origin, raw);
+                this.build(raw.toString(), schem, origin);
             } else {
                 logDirect("No schematic currently open");
             }
