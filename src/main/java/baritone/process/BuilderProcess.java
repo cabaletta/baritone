@@ -440,8 +440,8 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         return onTick(calcFailed, isSafeToCancel, 0);
     }
 
-    public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel, int recursions) {
-        if (recursions > 1000) { // onTick calls itself, don't crash
+    private PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel, int recursions) {
+        if (recursions > 100) { // onTick calls itself, don't crash
             return new PathingCommand(null, PathingCommandType.SET_GOAL_AND_PATH);
         }
         approxPlaceable = approxPlaceable(36);
