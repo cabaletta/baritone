@@ -162,26 +162,26 @@ public enum FasterWorldScanner implements IWorldScanner {
     }
 
 
-
     private List<BlockPos> collectChunkSections(BlockOptionalMetaLookup lookup, LevelChunk chunk, long chunkX, long chunkZ, int playerSection) {
         // iterate over sections relative to player
         List<BlockPos> blocks = new ArrayList<>();
+        int chunkY = chunk.getMinBuildHeight();
         LevelChunkSection[] sections = chunk.getSections();
         int l = sections.length;
         int i = playerSection - 1;
         int j = playerSection;
         for (; i >= 0 || j < l; ++j, --i) {
             if (j < l) {
-                visitSection(lookup, sections[j], blocks, chunkX, chunkZ);
+                visitSection(lookup, sections[j], blocks, chunkX, chunkY + j * 16, chunkZ);
             }
             if (i >= 0) {
-                visitSection(lookup, sections[i], blocks, chunkX, chunkZ);
+                visitSection(lookup, sections[i], blocks, chunkX, chunkY + i * 16, chunkZ);
             }
         }
         return blocks;
     }
 
-    private void visitSection(BlockOptionalMetaLookup lookup, LevelChunkSection section, List<BlockPos> blocks, long chunkX, long chunkZ) {
+    private void visitSection(BlockOptionalMetaLookup lookup, LevelChunkSection section, List<BlockPos> blocks, long chunkX, int sectionY, long chunkZ) {
         if (section == null || section.hasOnlyAir()) {
             return;
         }
@@ -192,7 +192,6 @@ public enum FasterWorldScanner implements IWorldScanner {
             return;
         }
 
-        int yOffset = section.bottomBlockY();
         Palette<BlockState> palette = ((IPalettedContainer<BlockState>) sectionContainer).getPalette();
 
         if (palette instanceof SingleValuePalette) {
@@ -204,7 +203,7 @@ public enum FasterWorldScanner implements IWorldScanner {
                         for (int z = 0; z < 16; ++z) {
                             blocks.add(new BlockPos(
                                 (int) chunkX + x,
-                                yOffset + y,
+                                sectionY + y,
                                 (int) chunkZ + z
                             ));
                         }
@@ -233,7 +232,7 @@ public enum FasterWorldScanner implements IWorldScanner {
                     //noinspection DuplicateExpressions
                     blocks.add(new BlockPos(
                         (int) chunkX + ((idx & 255) & 15),
-                        yOffset + (idx >> 8),
+                        sectionY + (idx >> 8),
                         (int) chunkZ + ((idx & 255) >> 4)
                     ));
                 }

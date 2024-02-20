@@ -204,7 +204,7 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
         }
 
         if (this.state == State.FLYING || this.state == State.START_FLYING) {
-            this.state = ctx.player().isOnGround() && Baritone.settings().elytraAutoJump.value
+            this.state = ctx.player().onGround() && Baritone.settings().elytraAutoJump.value
                     ? State.LOCATE_JUMP
                     : State.START_FLYING;
         }
@@ -322,7 +322,7 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
     }
 
     private void pathTo0(BlockPos destination, boolean appendDestination) {
-        if (ctx.player() == null || ctx.player().level.dimension() != Level.NETHER) {
+        if (ctx.player() == null || ctx.player().level().dimension() != Level.NETHER) {
             return;
         }
         this.onLostControl();

@@ -17,18 +17,38 @@
 
 import baritone.gradle.task.CreateDistTask
 import baritone.gradle.task.ProguardTask
-//import baritone.gradle.task.TweakerJsonAssembler
 
 plugins {
     id "com.github.johnrengelman.shadow" version "8.0.0"
 }
 
+archivesBaseName = archivesBaseName + "-neoforge"
+
 unimined.minecraft {
-    runs.client = {
-        mainClass = "net.minecraft.launchwrapper.Launch"
-        args.addAll(["--tweakClass", "baritone.launch.BaritoneTweaker"])
+    mappings {
+        devFallbackNamespace "intermediary"
     }
+
+    neoForged {
+        loader project.neoforge_version
+        mixinConfig ["mixins.baritone.json"]
+    }
+
+    minecraftRemapper.config {
+        // neoforge adds 1 conflict, where 2 interfaces have a method with the same name on yarn/mojmap,
+        // but the method has different names in the intermediary mappings.
+        // this is a conflict because they have a class that extends both interfaces.
+        // this shouldn't be a problem as long as named mappings don't make the name of those 2 methods different.
+        ignoreConflicts(true)
+    }
+
 }
+
+//loom {
+//    forge {
+//        mixinConfig 'mixins.baritone.json'
+//    }
+//}
 
 configurations {
     common
@@ -38,23 +58,6 @@ configurations {
 }
 
 dependencies {
-    implementation "org.spongepowered:mixin:0.8.5"
-
-    // for some reason mixin isn't including these...
-    implementation "org.ow2.asm:asm:9.3"
-    implementation "org.ow2.asm:asm-tree:9.3"
-    implementation "org.ow2.asm:asm-commons:9.3"
-    implementation "org.ow2.asm:asm-util:9.3"
-    implementation "org.ow2.asm:asm-analysis:9.3"
-
-    implementation 'com.github.ImpactDevelopment:SimpleTweaker:1.2'
-    implementation('net.minecraft:launchwrapper:of-2.3') {
-        exclude module: 'lwjgl'
-        exclude module: 'asm-debug-all'
-    }
-
-    compileOnly 'com.google.code.findbugs:jsr305:3.0.2'
-
     // because of multiple sourcesets `common project(":")` doesn't work
     for (sourceSet in rootProject.sourceSets) {
         if (sourceSet == rootProject.sourceSets.test) continue
@@ -62,13 +65,21 @@ dependencies {
         common sourceSet.output
         shadowCommon sourceSet.output
     }
+    shadowCommon "dev.babbaj:nether-pathfinder:${project.nether_pathfinder_version}"
+}
+
+processResources {
+    inputs.property "version", project.version
+
+    filesMatching("META-INF/mods.toml") {
+        expand "version": project.version
+    }
 }
 
 shadowJar {
     configurations = [project.configurations.shadowCommon]
     archiveClassifier.set "dev-shadow"
 }
-
 
 remapJar {
     inputFile.set shadowJar.archiveFile
@@ -78,9 +89,6 @@ remapJar {
 
 jar {
     archiveClassifier.set "dev"
-
-    preserveFileTimestamps = false
-    reproducibleFileOrder = true
 
     manifest {
         attributes(
@@ -93,19 +101,28 @@ jar {
     }
 }
 
+components.java {
+    withVariantsFromConfiguration(project.configurations.shadowRuntimeElements) {
+        skip()
+    }
+}
+
 task proguard(type: ProguardTask) {
     url 'https://github.com/Guardsquare/proguard/releases/download/v7.2.1/proguard-7.2.1.zip'
     extract 'proguard-7.2.1/lib/proguard.jar'
+    compType "neoforge"
 }
 
-task createDist(type: CreateDistTask, dependsOn: proguard)
+task createDist(type: CreateDistTask, dependsOn: proguard) {
+    compType "neoforge"
+}
 
 build.finalizedBy(createDist)
 
 publishing {
     publications {
-        mavenCommon(MavenPublication) {
-            artifactId = rootProject.archives_base_name
+        mavenFabric(MavenPublication) {
+            artifactId = rootProject.archives_base_name + "-" + project.name
             from components.java
         }
     }

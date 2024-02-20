@@ -25,6 +25,7 @@ import baritone.api.event.events.*;
 import baritone.api.pathing.goals.GoalBlock;
 import baritone.api.utils.*;
 import baritone.api.utils.input.Input;
+import baritone.pathing.movement.MovementHelper;
 import baritone.process.ElytraProcess;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.IRenderer;
@@ -45,9 +46,10 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.level.block.AirBlock;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkSource;
 import net.minecraft.world.level.chunk.LevelChunk;
-import net.minecraft.world.level.material.Material;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -1264,8 +1266,8 @@ public final class ElytraBehavior implements Helper {
 
     private boolean passable(int x, int y, int z, boolean ignoreLava) {
         if (ignoreLava) {
-            final Material mat = this.bsi.get0(x, y, z).getMaterial();
-            return mat == Material.AIR || mat == Material.LAVA;
+            final BlockState state = this.bsi.get0(x, y, z);
+            return state.getBlock() instanceof AirBlock || MovementHelper.isLava(state);
         } else {
             return !this.boi.get0(x, y, z);
         }

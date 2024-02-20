@@ -26,8 +26,6 @@ import baritone.behavior.LookBehavior;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.player.Abilities;
-import net.minecraft.world.item.ElytraItem;
-import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -112,14 +110,14 @@ public class MixinClientPlayerEntity {
             method = "aiStep",
             at = @At(
                     value = "INVOKE",
-                    target = "net/minecraft/world/item/ElytraItem.isFlyEnabled(Lnet/minecraft/world/item/ItemStack;)Z"
+                    target = "Lnet/minecraft/client/player/LocalPlayer;tryToStartFallFlying()Z"
             )
     )
-    private boolean isFlyEnabled(ItemStack stack) {
-        IBaritone baritone = BaritoneAPI.getProvider().getBaritoneForPlayer((LocalPlayer) (Object) this);
+    private boolean tryToStartFallFlying(final LocalPlayer instance) {
+        IBaritone baritone = BaritoneAPI.getProvider().getBaritoneForPlayer(instance);
         if (baritone != null && baritone.getPathingBehavior().isPathing()) {
             return false;
         }
-        return ElytraItem.isFlyEnabled(stack);
+        return instance.tryToStartFallFlying();
     }
 }

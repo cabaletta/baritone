@@ -20,6 +20,7 @@ package baritone.api.utils.gui;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.toasts.Toast;
 import net.minecraft.client.gui.components.toasts.ToastComponent;
 import net.minecraft.network.chat.Component;
@@ -38,7 +39,7 @@ public class BaritoneToast implements Toast {
         this.totalShowTime = totalShowTime;
     }
 
-    public Visibility render(PoseStack matrixStack, ToastComponent toastGui, long delta) {
+    public Visibility render(GuiGraphics gui, ToastComponent toastGui, long delta) {
         if (this.newDisplay) {
             this.firstDrawTime = delta;
             this.newDisplay = false;
@@ -46,15 +47,13 @@ public class BaritoneToast implements Toast {
 
 
         //TODO: check
-        toastGui.getMinecraft().getTextureManager().bindForSetup(new ResourceLocation("textures/gui/toasts.png"));
-        //GlStateManager._color4f(1.0F, 1.0F, 1.0F, 255.0F);
-        toastGui.blit(matrixStack, 0, 0, 0, 32, 160, 32);
+        gui.blit(new ResourceLocation("textures/gui/toasts.png"), 0, 0, 0, 32, 160, 32);
 
         if (this.subtitle == null) {
-            toastGui.getMinecraft().font.draw(matrixStack, this.title, 18, 12, -11534256);
+            gui.drawString(toastGui.getMinecraft().font, this.title, 18, 12, -11534256);
         } else {
-            toastGui.getMinecraft().font.draw(matrixStack, this.title, 18, 7, -11534256);
-            toastGui.getMinecraft().font.draw(matrixStack, this.subtitle, 18, 18, -16777216);
+            gui.drawString(toastGui.getMinecraft().font, this.title, 18, 7, -11534256);
+            gui.drawString(toastGui.getMinecraft().font, this.subtitle, 18, 18, -16777216);
         }
 
         return delta - this.firstDrawTime < totalShowTime ? Visibility.SHOW : Visibility.HIDE;

@@ -167,12 +167,25 @@ public class MixinMinecraft {
             at = @At(
                     value = "FIELD",
                     opcode = Opcodes.GETFIELD,
-                    target = "Lnet/minecraft/client/gui/screens/Screen;passEvents:Z"
+                    target = "Lnet/minecraft/client/Minecraft;screen:Lnet/minecraft/client/gui/screens/Screen;"
+            ),
+            slice = @Slice(
+                    from = @At(
+                            value = "INVOKE",
+                            target = "Lnet/minecraft/client/gui/components/DebugScreenOverlay;showDebugScreen()Z"
+                    ),
+                    to = @At(
+                            value = "CONSTANT",
+                            args = "stringValue=Keybindings"
+                    )
             )
     )
-    private boolean passEvents(Screen screen) {
+    private Screen passEvents(Minecraft instance) {
         // allow user input is only the primary baritone
-        return (BaritoneAPI.getProvider().getPrimaryBaritone().getPathingBehavior().isPathing() && player != null) || screen.passEvents;
+        if (BaritoneAPI.getProvider().getPrimaryBaritone().getPathingBehavior().isPathing() && player != null) {
+            return null;
+        }
+        return instance.screen;
     }
 
     // TODO

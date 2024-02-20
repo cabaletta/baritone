@@ -209,7 +209,7 @@ public final class PathRenderer implements IRenderer {
 
         positions.forEach(pos -> {
             BlockState state = bsi.get0(pos);
-            VoxelShape shape = state.getShape(player.level, pos);
+            VoxelShape shape = state.getShape(player.level(), pos);
             AABB toDraw = shape.isEmpty() ? Shapes.block().bounds() : shape.bounds();
             toDraw = toDraw.move(pos);
             IRenderer.emitAABB(stack, toDraw, .002D);

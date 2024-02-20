@@ -15,33 +15,10 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-pluginManagement {
-    repositories {
-        mavenLocal()
-        maven {
-            name = 'WagYourMaven'
-            url = 'https://maven.wagyourtail.xyz/snapshots'
-        }
-        maven {
-            name = 'ForgeMaven'
-            url = 'https://maven.minecraftforge.net/'
-        }
-        maven {
-            name = 'FabricMaven'
-            url = 'https://maven.fabricmc.net/'
-        }
-        mavenCentral()
-        gradlePluginPortal() {
-            content {
-                excludeGroup "org.apache.logging.log4j"
-            }
-        }
-    }
-}
+package baritone.launch;
 
-rootProject.name = 'baritone'
+import net.neoforged.fml.common.Mod;
 
-include("tweaker")
-for (platform in available_loaders.split(",")) {
-       include(platform)
+@Mod("baritoe")
+public class BaritoneForgeModXD {
 }
