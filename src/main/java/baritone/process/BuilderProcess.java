@@ -1115,7 +1115,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                 if (sch.getBlock() instanceof AirBlock) {
                     // we want this to be air, but they're asking if they can place here
                     // this won't be a schematic block, this will be a throwaway
-                    return placeBlockCost * 2; // we're going to have to break it eventually
+                    return placeBlockCost * Baritone.settings().placeIncorrectBlockPenaltyMultiplier.value; // we're going to have to break it eventually
                 }
                 if (placeable.contains(sch)) {
                     return 0; // thats right we gonna make it FREE to place a block where it should go in a structure
@@ -1128,7 +1128,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                 }
                 // we want it to be something that we don't have
                 // even more of a pain to place something wrong
-                return placeBlockCost * 3;
+                return placeBlockCost * 1.5 * Baritone.settings().placeIncorrectBlockPenaltyMultiplier.value;
             } else {
                 if (hasThrowaway) {
                     return placeBlockCost;
