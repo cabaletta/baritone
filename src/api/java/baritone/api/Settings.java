@@ -386,6 +386,12 @@ public final class Settings {
     public final Setting<Float> blockReachDistance = new Setting<>(4.5f);
 
     /**
+     * How many ticks between breaking a block and starting to break the next block. Default in game is 6 ticks.
+     * Values under 2 will be clamped.
+     */
+    public final Setting<Integer> blockBreakSpeed = new Setting<>(6);
+
+    /**
      * How many degrees to randomize the pitch and yaw every tick. Set to 0 to disable
      */
     public final Setting<Double> randomLooking = new Setting<>(0.01d);
