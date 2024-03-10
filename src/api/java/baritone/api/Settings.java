@@ -385,12 +385,11 @@ public final class Settings {
      */
     public final Setting<Float> blockReachDistance = new Setting<>(4.5f);
 
-
     /**
-     * Delay between breaking a block and starting to break the next block. The vanilla delay is 6 ticks.
-     * Baritone waits an additional 2 ticks on top of this setting value.
+     * How many ticks between breaking a block and starting to break the next block. Default in game is 6 ticks.
+     * Values under 2 will be clamped.
      */
-    public final Setting<Integer> blockBreakDelay = new Setting<>(4);
+    public final Setting<Integer> blockBreakSpeed = new Setting<>(6);
 
     /**
      * How many degrees to randomize the pitch and yaw every tick. Set to 0 to disable

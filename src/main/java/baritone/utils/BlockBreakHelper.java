@@ -28,10 +28,12 @@ import net.minecraft.world.phys.HitResult;
  * @since 8/25/2018
  */
 public final class BlockBreakHelper {
+    // base ticks between block breaks caused by tick logic
+    private static final int BASE_BREAK_DELAY = 2;
 
     private final IPlayerContext ctx;
     private boolean didBreakLastTick;
-    private int breakDelay = 0;
+    private int breakDelayTimer = 0;
 
     BlockBreakHelper(IPlayerContext ctx) {
         this.ctx = ctx;
@@ -50,11 +52,10 @@ public final class BlockBreakHelper {
     }
 
     public void tick(boolean isLeftClick) {
-        if (breakDelay > 0) {
-            breakDelay--;
+        if (breakDelayTimer > 0) {
+            breakDelayTimer--;
             return;
         }
-
         HitResult trace = ctx.objectMouseOver();
         boolean isBlockTrace = trace != null && trace.getType() == HitResult.Type.BLOCK;
 
@@ -75,7 +76,7 @@ public final class BlockBreakHelper {
             didBreakLastTick = true;
         } else if (didBreakLastTick) {
             stopBreakingBlock();
-            breakDelay = BaritoneAPI.getSettings().blockBreakDelay.value;
+            breakDelayTimer = BaritoneAPI.getSettings().blockBreakSpeed.value - BASE_BREAK_DELAY;
             didBreakLastTick = false;
         }
     }
