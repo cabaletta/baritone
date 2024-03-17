@@ -28,6 +28,7 @@ import baritone.api.process.PathingCommandType;
 import baritone.api.schematic.FillSchematic;
 import baritone.api.schematic.ISchematic;
 import baritone.api.schematic.IStaticSchematic;
+import baritone.api.schematic.MaskSchematic;
 import baritone.api.schematic.SubstituteSchematic;
 import baritone.api.schematic.format.ISchematicFormat;
 import baritone.api.utils.*;
@@ -84,6 +85,14 @@ import static baritone.api.pathing.movement.ActionCosts.COST_INF;
 
 public final class BuilderProcess extends BaritoneProcessHelper implements IBuilderProcess {
 
+    private static final Set<Property<?>> ORIENTATION_PROPS =
+            ImmutableSet.of(
+                    RotatedPillarBlock.AXIS, HorizontalDirectionalBlock.FACING,
+                    StairBlock.FACING, StairBlock.HALF, StairBlock.SHAPE,
+                    PipeBlock.NORTH, PipeBlock.EAST, PipeBlock.SOUTH, PipeBlock.WEST, PipeBlock.UP,
+                    TrapDoorBlock.OPEN, TrapDoorBlock.HALF
+            );
+
     private HashSet<BetterBlockPos> incorrectPositions;
     private LongOpenHashSet observedCompleted; // positions that are completed even if they're out of render distance and we can't make sure right now
     private String name;
@@ -110,6 +119,14 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         if (!Baritone.settings().buildSubstitutes.value.isEmpty()) {
             this.schematic = new SubstituteSchematic(this.schematic, Baritone.settings().buildSubstitutes.value);
         }
+        // TODO this preserves the old behavior, but maybe we should bake the setting value right here
+        this.schematic = new MaskSchematic(this.schematic) {
+            @Override
+            public boolean partOfMask(int x, int y, int z, BlockState current) {
+                // partOfMask is only called inside the schematic so desiredState is not null
+                return !Baritone.settings().buildSkipBlocks.value.contains(this.desiredState(x, y, z, current, null).getBlock());
+            }
+        };
         int x = origin.getX();
         int y = origin.getY();
         int z = origin.getZ();
@@ -168,15 +185,15 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         if (!format.isPresent()) {
             return false;
         }
-        ISchematic parsed;
+        IStaticSchematic parsed;
         try {
             parsed = format.get().parse(new FileInputStream(schematic));
         } catch (Exception e) {
             e.printStackTrace();
             return false;
         }
-        parsed = applyMapArtAndSelection(origin, (IStaticSchematic) parsed);
-        build(name, parsed, origin);
+        ISchematic schem = applyMapArtAndSelection(origin, parsed);
+        build(name, schem, origin);
         return true;
     }
 
@@ -196,17 +213,10 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         if (SchematicaHelper.isSchematicaPresent()) {
             Optional<Tuple<IStaticSchematic, BlockPos>> schematic = SchematicaHelper.getOpenSchematic();
             if (schematic.isPresent()) {
-                IStaticSchematic s = schematic.get().getA();
+                IStaticSchematic raw = schematic.get().getA();
                 BlockPos origin = schematic.get().getB();
-                ISchematic schem = Baritone.settings().mapArtMode.value ? new MapArtSchematic(s) : s;
-                if (Baritone.settings().buildOnlySelection.value) {
-                    schem = new SelectionSchematic(schem, origin, baritone.getSelectionManager().getSelections());
-                }
-                this.build(
-                        schematic.get().getA().toString(),
-                        schem,
-                        origin
-                );
+                ISchematic schem = applyMapArtAndSelection(origin, raw);
+                this.build(raw.toString(), schem, origin);
             } else {
                 logDirect("No schematic currently open");
             }
@@ -438,8 +448,8 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         return onTick(calcFailed, isSafeToCancel, 0);
     }
 
-    public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel, int recursions) {
-        if (recursions > 1000) { // onTick calls itself, don't crash
+    private PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel, int recursions) {
+        if (recursions > 100) { // onTick calls itself, don't crash
             return new PathingCommand(null, PathingCommandType.SET_GOAL_AND_PATH);
         }
         approxPlaceable = approxPlaceable(36);
@@ -683,8 +693,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                         continue;
                     }
                     // this is not in render distance
-                    if (!observedCompleted.contains(BetterBlockPos.longHash(blockX, blockY, blockZ))
-                            && !Baritone.settings().buildSkipBlocks.value.contains(schematic.desiredState(x, y, z, current, this.approxPlaceable).getBlock())) {
+                    if (!observedCompleted.contains(BetterBlockPos.longHash(blockX, blockY, blockZ))) {
                         // and we've never seen this position be correct
                         // therefore mark as incorrect
                         incorrectPositions.add(new BetterBlockPos(blockX, blockY, blockZ));
@@ -1009,15 +1018,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         return result;
     }
 
-    public static final Set<Property<?>> orientationProps =
-            ImmutableSet.of(
-                RotatedPillarBlock.AXIS, HorizontalDirectionalBlock.FACING,
-                    StairBlock.FACING, StairBlock.HALF, StairBlock.SHAPE,
-                PipeBlock.NORTH, PipeBlock.EAST, PipeBlock.SOUTH, PipeBlock.WEST, PipeBlock.UP,
-                    TrapDoorBlock.OPEN, TrapDoorBlock.HALF
-            );
-
-    private boolean sameBlockstate(BlockState first, BlockState second) {
+    private static boolean sameBlockstate(BlockState first, BlockState second) {
         if (first.getBlock() != second.getBlock()) {
             return false;
         }
@@ -1030,7 +1031,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         ImmutableMap<Property<?>, Comparable<?>> map2 = second.getValues();
         for (Property<?> prop : map1.keySet()) {
             if (map1.get(prop) != map2.get(prop)
-                    && !(ignoreDirection && orientationProps.contains(prop))
+                    && !(ignoreDirection && ORIENTATION_PROPS.contains(prop))
                     && !ignoredProps.contains(prop.getName())) {
                 return false;
             }
@@ -1038,7 +1039,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         return true;
     }
 
-    private boolean containsBlockState(Collection<BlockState> states, BlockState state) {
+    private static boolean containsBlockState(Collection<BlockState> states, BlockState state) {
         for (BlockState testee : states) {
             if (sameBlockstate(testee, state)) {
                 return true;
@@ -1047,7 +1048,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         return false;
     }
 
-    private boolean valid(BlockState current, BlockState desired, boolean itemVerify) {
+    private static boolean valid(BlockState current, BlockState desired, boolean itemVerify) {
         if (desired == null) {
             return true;
         }
@@ -1064,9 +1065,6 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             return true;
         }
         if (!(current.getBlock() instanceof AirBlock) && Baritone.settings().buildIgnoreExisting.value && !itemVerify) {
-            return true;
-        }
-        if (Baritone.settings().buildSkipBlocks.value.contains(desired.getBlock()) && !itemVerify) {
             return true;
         }
         if (Baritone.settings().buildValidSubstitutes.value.getOrDefault(desired.getBlock(), Collections.emptyList()).contains(current.getBlock()) && !itemVerify) {
@@ -1112,12 +1110,12 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                 return COST_INF;
             }
             BlockState sch = getSchematic(x, y, z, current);
-            if (sch != null && !Baritone.settings().buildSkipBlocks.value.contains(sch.getBlock())) {
+            if (sch != null) {
                 // TODO this can return true even when allowPlace is off.... is that an issue?
                 if (sch.getBlock() instanceof AirBlock) {
                     // we want this to be air, but they're asking if they can place here
                     // this won't be a schematic block, this will be a throwaway
-                    return placeBlockCost * 2; // we're going to have to break it eventually
+                    return placeBlockCost * Baritone.settings().placeIncorrectBlockPenaltyMultiplier.value; // we're going to have to break it eventually
                 }
                 if (placeable.contains(sch)) {
                     return 0; // thats right we gonna make it FREE to place a block where it should go in a structure
@@ -1130,7 +1128,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                 }
                 // we want it to be something that we don't have
                 // even more of a pain to place something wrong
-                return placeBlockCost * 3;
+                return placeBlockCost * 1.5 * Baritone.settings().placeIncorrectBlockPenaltyMultiplier.value;
             } else {
                 if (hasThrowaway) {
                     return placeBlockCost;
@@ -1146,7 +1144,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                 return COST_INF;
             }
             BlockState sch = getSchematic(x, y, z, current);
-            if (sch != null && !Baritone.settings().buildSkipBlocks.value.contains(sch.getBlock())) {
+            if (sch != null) {
                 if (sch.getBlock() instanceof AirBlock) {
                     // it should be air
                     // regardless of current contents, we can break it
