@@ -41,6 +41,7 @@ public class MapArtSchematic extends MaskSchematic {
     private static int[][] generateHeightMap(IStaticSchematic schematic) {
         int[][] heightMap = new int[schematic.widthX()][schematic.lengthZ()];
 
+        int missingColumns = 0;
         for (int x = 0; x < schematic.widthX(); x++) {
             for (int z = 0; z < schematic.lengthZ(); z++) {
                 BlockState[] column = schematic.getColumn(x, z);
@@ -48,11 +49,13 @@ public class MapArtSchematic extends MaskSchematic {
                 if (lowestBlockY.isPresent()) {
                     heightMap[x][z] = lowestBlockY.getAsInt();
                 } else {
-                    System.out.println("Column " + x + "," + z + " has no blocks, but it's apparently map art? wtf");
-                    System.out.println("Letting it be whatever");
-                    heightMap[x][z] = 256;
+                    missingColumns++;
+                    heightMap[x][z] = Integer.MAX_VALUE;
                 }
             }
+        }
+        if (missingColumns != 0) {
+            System.out.println(missingColumns + " columns had no block despite being in a map art, letting them be whatever");
         }
         return heightMap;
     }

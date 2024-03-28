@@ -1059,6 +1059,11 @@ public final class Settings {
     public final Setting<Double> breakCorrectBlockPenaltyMultiplier = new Setting<>(10d);
 
     /**
+     * Multiply the cost of placing a block that's incorrect in the builder's schematic by this coefficient
+     */
+    public final Setting<Double> placeIncorrectBlockPenaltyMultiplier = new Setting<>(2d);
+
+    /**
      * When this setting is true, build a schematic with the highest X coordinate being the origin, instead of the lowest
      */
     public final Setting<Boolean> schematicOrientationX = new Setting<>(false);
