@@ -79,7 +79,7 @@ public class Baritone implements IBaritone {
     private final ExploreProcess exploreProcess;
     private final FarmProcess farmProcess;
     private final InventoryPauserProcess inventoryPauserProcess;
-    private final ElytraProcess elytraProcess;
+    private final IElytraProcess elytraProcess;
 
     private final PathingControlManager pathingControlManager;
     private final SelectionManager selectionManager;

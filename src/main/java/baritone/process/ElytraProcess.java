@@ -84,10 +84,10 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
         baritone.getGameEventHandler().registerEventListener(this);
     }
 
-    public static <T extends IElytraProcess> T create(final Baritone baritone) {
-        return (T) (NetherPathfinderContext.isSupported()
+    public static IElytraProcess create(final Baritone baritone) {
+        return NetherPathfinderContext.isSupported()
                 ? new ElytraProcess(baritone)
-                : new NullElytraProcess(baritone));
+                : new NullElytraProcess(baritone);
     }
 
     @Override
