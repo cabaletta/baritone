@@ -124,7 +124,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             @Override
             public boolean partOfMask(int x, int y, int z, BlockState current) {
                 // partOfMask is only called inside the schematic so desiredState is not null
-                return !Baritone.settings().buildSkipBlocks.value.contains(this.desiredState(x, y, z, current, null).getBlock());
+                return !Baritone.settings().buildSkipBlocks.value.contains(this.desiredState(x, y, z, current, Collections.emptyList()).getBlock());
             }
         };
         int x = origin.getX();
