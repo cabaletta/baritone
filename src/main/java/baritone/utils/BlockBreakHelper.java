@@ -17,6 +17,7 @@
 
 package baritone.utils;
 
+import baritone.api.BaritoneAPI;
 import baritone.api.utils.IPlayerContext;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.phys.BlockHitResult;
@@ -27,9 +28,12 @@ import net.minecraft.world.phys.HitResult;
  * @since 8/25/2018
  */
 public final class BlockBreakHelper {
+    // base ticks between block breaks caused by tick logic
+    private static final int BASE_BREAK_DELAY = 2;
 
     private final IPlayerContext ctx;
     private boolean didBreakLastTick;
+    private int breakDelayTimer = 0;
 
     BlockBreakHelper(IPlayerContext ctx) {
         this.ctx = ctx;
@@ -48,6 +52,10 @@ public final class BlockBreakHelper {
     }
 
     public void tick(boolean isLeftClick) {
+        if (breakDelayTimer > 0) {
+            breakDelayTimer--;
+            return;
+        }
         HitResult trace = ctx.objectMouseOver();
         boolean isBlockTrace = trace != null && trace.getType() == HitResult.Type.BLOCK;
 
@@ -68,6 +76,7 @@ public final class BlockBreakHelper {
             didBreakLastTick = true;
         } else if (didBreakLastTick) {
             stopBreakingBlock();
+            breakDelayTimer = BaritoneAPI.getSettings().blockBreakSpeed.value - BASE_BREAK_DELAY;
             didBreakLastTick = false;
         }
     }
