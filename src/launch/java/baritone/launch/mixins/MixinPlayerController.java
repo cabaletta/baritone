@@ -29,13 +29,17 @@ public abstract class MixinPlayerController implements IPlayerControllerMP {
 
     @Accessor("isDestroying")
     @Override
-    public abstract void setIsHittingBlock(boolean isHittingBlock);
+    public abstract void setIsDestroyingBlock(boolean isDestroyingBlock);
 
-    @Accessor("destroyBlockPos")
+    @Accessor("isDestroying")
     @Override
-    public abstract BlockPos getCurrentBlock();
+    public abstract boolean isDestroyingBlock();
 
     @Invoker("ensureHasSentCarriedItem")
     @Override
     public abstract void callSyncCurrentPlayItem();
+
+    @Accessor("destroyDelay")
+    @Override
+    public abstract void setDestroyDelay(int destroyDelay);
 }

@@ -17,13 +17,13 @@
 
 package baritone.utils.accessor;
 
-import net.minecraft.core.BlockPos;
-
 public interface IPlayerControllerMP {
 
-    void setIsHittingBlock(boolean isHittingBlock);
+    void setIsDestroyingBlock(boolean isDestroyingBlock);
 
-    BlockPos getCurrentBlock();
+    boolean isDestroyingBlock();
 
     void callSyncCurrentPlayItem();
+
+    void setDestroyDelay(int destroyDelay);
 }

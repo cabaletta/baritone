@@ -37,7 +37,7 @@ public interface IPlayerController {
 
     void syncHeldItem();
 
-    boolean hasBrokenBlock();
+    boolean isDestroyingBlock();
 
     boolean onPlayerDamageBlock(BlockPos pos, Direction side);
 
@@ -53,7 +53,9 @@ public interface IPlayerController {
 
     boolean clickBlock(BlockPos loc, Direction face);
 
-    void setHittingBlock(boolean hittingBlock);
+    void setDestroyingBlock(boolean hittingBlock);
+
+    void setDestroyDelay(int destroyDelay);
 
     default double getBlockReachDistance() {
         return this.getGameType().isCreative() ? 5.0F : BaritoneAPI.getSettings().blockReachDistance.value;

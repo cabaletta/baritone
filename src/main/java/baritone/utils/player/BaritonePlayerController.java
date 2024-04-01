@@ -53,8 +53,13 @@ public final class BaritonePlayerController implements IPlayerController {
     }
 
     @Override
-    public boolean hasBrokenBlock() {
-        return ((IPlayerControllerMP) mc.gameMode).getCurrentBlock().getY() == -1;
+    public boolean isDestroyingBlock() {
+        return ((IPlayerControllerMP) mc.gameMode).isDestroyingBlock();
+    }
+
+    @Override
+    public void setDestroyDelay(int destroyDelay) {
+        ((IPlayerControllerMP) mc.gameMode).setDestroyDelay(destroyDelay);
     }
 
     @Override
@@ -94,7 +99,7 @@ public final class BaritonePlayerController implements IPlayerController {
     }
 
     @Override
-    public void setHittingBlock(boolean hittingBlock) {
-        ((IPlayerControllerMP) mc.gameMode).setIsHittingBlock(hittingBlock);
+    public void setDestroyingBlock(boolean destroyingBlock) {
+        ((IPlayerControllerMP) mc.gameMode).setIsDestroyingBlock(destroyingBlock);
     }
 }
