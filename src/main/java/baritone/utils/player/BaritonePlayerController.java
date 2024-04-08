@@ -20,7 +20,6 @@ package baritone.utils.player;
 import baritone.api.utils.IPlayerController;
 import baritone.utils.accessor.IPlayerControllerMP;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -53,13 +52,8 @@ public final class BaritonePlayerController implements IPlayerController {
     }
 
     @Override
-    public boolean isDestroyingBlock() {
-        return ((IPlayerControllerMP) mc.gameMode).isDestroyingBlock();
-    }
-
-    @Override
-    public void setDestroyDelay(int destroyDelay) {
-        ((IPlayerControllerMP) mc.gameMode).setDestroyDelay(destroyDelay);
+    public boolean hasBrokenBlock() {
+        return !((IPlayerControllerMP) mc.gameMode).isHittingBlock();
     }
 
     @Override
@@ -99,7 +93,7 @@ public final class BaritonePlayerController implements IPlayerController {
     }
 
     @Override
-    public void setDestroyingBlock(boolean destroyingBlock) {
-        ((IPlayerControllerMP) mc.gameMode).setIsDestroyingBlock(destroyingBlock);
+    public void setHittingBlock(boolean hittingBlock) {
+        ((IPlayerControllerMP) mc.gameMode).setIsHittingBlock(hittingBlock);
     }
 }

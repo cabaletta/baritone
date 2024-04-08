@@ -387,7 +387,7 @@ public final class Settings {
 
     /**
      * How many ticks between breaking a block and starting to break the next block. Default in game is 6 ticks.
-     * Values under 2 will be clamped.
+     * Values under 1 will be clamped. The delay only applies to non-instant (1-tick) breaks.
      */
     public final Setting<Integer> blockBreakSpeed = new Setting<>(6);
 

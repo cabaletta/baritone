@@ -19,6 +19,7 @@ package baritone.utils;
 
 import baritone.api.BaritoneAPI;
 import baritone.api.utils.IPlayerContext;
+import baritone.utils.accessor.IPlayerControllerMP;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -32,7 +33,7 @@ public final class BlockBreakHelper {
     private static final int BASE_BREAK_DELAY = 1;
 
     private final IPlayerContext ctx;
-    private boolean wasDestroyingBlockLastTick;
+    private boolean wasHitting;
     private int breakDelayTimer = 0;
 
     BlockBreakHelper(IPlayerContext ctx) {
@@ -41,10 +42,10 @@ public final class BlockBreakHelper {
 
     public void stopBreakingBlock() {
         // The player controller will never be null, but the player can be
-        if (ctx.player() != null && wasDestroyingBlockLastTick) {
-            ctx.playerController().setDestroyingBlock(false);
+        if (ctx.player() != null && wasHitting) {
+            ctx.playerController().setHittingBlock(false);
             ctx.playerController().resetBlockRemoving();
-            wasDestroyingBlockLastTick = false;
+            wasHitting = false;
         }
     }
 
@@ -57,8 +58,8 @@ public final class BlockBreakHelper {
         boolean isBlockTrace = trace != null && trace.getType() == HitResult.Type.BLOCK;
 
         if (isLeftClick && isBlockTrace) {
-            ctx.playerController().setDestroyingBlock(wasDestroyingBlockLastTick);
-            if (!ctx.playerController().isDestroyingBlock()) {
+            ctx.playerController().setHittingBlock(wasHitting);
+            if (ctx.playerController().hasBrokenBlock()) {
                 ctx.playerController().syncHeldItem();
                 ctx.playerController().clickBlock(((BlockHitResult) trace).getBlockPos(), ((BlockHitResult) trace).getDirection());
                 ctx.player().swing(InteractionHand.MAIN_HAND);
@@ -66,21 +67,21 @@ public final class BlockBreakHelper {
                 if (ctx.playerController().onPlayerDamageBlock(((BlockHitResult) trace).getBlockPos(), ((BlockHitResult) trace).getDirection())) {
                     ctx.player().swing(InteractionHand.MAIN_HAND);
                 }
-                if (!ctx.playerController().isDestroyingBlock()) { // block broken this tick
+                if (ctx.playerController().hasBrokenBlock()) { // block broken this tick
                     // break delay timer only applies for multi-tick block breaks like vanilla
                     breakDelayTimer = BaritoneAPI.getSettings().blockBreakSpeed.value - BASE_BREAK_DELAY;
                     // must reset controller's destroy delay to prevent the client from delaying itself unnecessarily
-                    ctx.playerController().setDestroyDelay(0);
+                    ((IPlayerControllerMP) ctx.minecraft().gameMode).setDestroyDelay(0);
                 }
             }
             // if true, we're breaking a block. if false, we broke the block this tick
-            wasDestroyingBlockLastTick = ctx.playerController().isDestroyingBlock();
+            wasHitting = !ctx.playerController().hasBrokenBlock();
             // this value will be reset by the MC client handling mouse keys
             // since we're not spoofing the click keybind to the client, the client will stop the break if isDestroyingBlock is true
             // we store and restore this value on the next tick to determine if we're breaking a block
-            ctx.playerController().setDestroyingBlock(false);
+            ctx.playerController().setHittingBlock(false);
         } else {
-            wasDestroyingBlockLastTick = false;
+            wasHitting = false;
         }
     }
 }
