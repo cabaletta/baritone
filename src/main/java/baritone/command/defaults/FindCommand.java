@@ -25,7 +25,6 @@ import baritone.api.command.exception.CommandException;
 import baritone.api.command.helpers.TabCompleteHelper;
 import baritone.api.utils.BetterBlockPos;
 import baritone.cache.CachedChunk;
-import net.minecraft.core.Registry;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.ClickEvent;
@@ -54,7 +53,7 @@ public class FindCommand extends Command {
         while (args.hasAny()) {
             toFind.add(args.getDatatypeFor(BlockById.INSTANCE));
         }
-        BetterBlockPos origin = ctx.playerFeet();
+        BetterBlockPos origin = ctx.playerToes();
         Component[] components = toFind.stream()
                 .flatMap(block ->
                         ctx.worldData().getCachedWorld().getLocationsOf(

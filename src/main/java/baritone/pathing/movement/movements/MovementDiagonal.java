@@ -66,7 +66,7 @@ public class MovementDiagonal extends Movement {
         double y = player.position().y - 1;
         double z = player.position().z;
         //standard
-        if (ctx.playerFeet().equals(src)) {
+        if (ctx.playerToes().equals(src)) {
             return true;
         }
         //both corners are walkable
@@ -75,8 +75,8 @@ public class MovementDiagonal extends Movement {
             return true;
         }
         //we are in a likely unwalkable corner, check for a supporting block
-        if (ctx.playerFeet().equals(new BetterBlockPos(src.x, src.y, dest.z))
-                || ctx.playerFeet().equals(new BetterBlockPos(dest.x, src.y, src.z))) {
+        if (ctx.playerToes().equals(new BetterBlockPos(src.x, src.y, dest.z))
+                || ctx.playerToes().equals(new BetterBlockPos(dest.x, src.y, src.z))) {
             return (MovementHelper.canWalkOn(ctx, new BetterBlockPos(x + offset, y, z + offset))
                     || MovementHelper.canWalkOn(ctx, new BetterBlockPos(x + offset, y, z - offset))
                     || MovementHelper.canWalkOn(ctx, new BetterBlockPos(x - offset, y, z + offset))
@@ -259,9 +259,9 @@ public class MovementDiagonal extends Movement {
             return state;
         }
 
-        if (ctx.playerFeet().equals(dest)) {
+        if (ctx.playerToes().equals(dest)) {
             return state.setStatus(MovementStatus.SUCCESS);
-        } else if (!playerInValidPosition() && !(MovementHelper.isLiquid(ctx, src) && getValidPositions().contains(ctx.playerFeet().above()))) {
+        } else if (!playerInValidPosition() && !(MovementHelper.isLiquid(ctx, src) && getValidPositions().contains(ctx.playerToes().above()))) {
             return state.setStatus(MovementStatus.UNREACHABLE);
         }
         if (dest.y > src.y && ctx.player().position().y < src.y + 0.1 && ctx.player().horizontalCollision) {
@@ -275,7 +275,7 @@ public class MovementDiagonal extends Movement {
     }
 
     private boolean sprint() {
-        if (MovementHelper.isLiquid(ctx, ctx.playerFeet()) && !Baritone.settings().sprintInWater.value) {
+        if (MovementHelper.isLiquid(ctx, ctx.playerToes()) && !Baritone.settings().sprintInWater.value) {
             return false;
         }
         for (int i = 0; i < 4; i++) {

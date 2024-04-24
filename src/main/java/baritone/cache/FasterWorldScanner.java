@@ -26,7 +26,6 @@ import baritone.api.utils.IPlayerContext;
 import baritone.utils.accessor.IPalettedContainer;
 import io.netty.buffer.Unpooled;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.IdMapper;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.util.BitStorage;
 import net.minecraft.world.level.ChunkPos;
@@ -56,7 +55,7 @@ public enum FasterWorldScanner implements IWorldScanner {
         if (maxSearchRadius < 0) {
             throw new IllegalArgumentException("chunkRange must be >= 0");
         }
-        return scanChunksInternal(ctx, filter, getChunkRange(ctx.playerFeet().x >> 4, ctx.playerFeet().z >> 4, maxSearchRadius), max);
+        return scanChunksInternal(ctx, filter, getChunkRange(ctx.playerToes().x >> 4, ctx.playerToes().z >> 4, maxSearchRadius), max);
     }
 
     @Override
@@ -78,7 +77,7 @@ public enum FasterWorldScanner implements IWorldScanner {
         ChunkSource chunkProvider = ctx.world().getChunkSource();
         ICachedWorld cachedWorld = ctx.worldData().getCachedWorld();
 
-        BetterBlockPos playerPos = ctx.playerFeet();
+        BetterBlockPos playerPos = ctx.playerToes();
 
         int playerChunkX = playerPos.getX() >> 4;
         int playerChunkZ = playerPos.getZ() >> 4;
@@ -156,7 +155,7 @@ public enum FasterWorldScanner implements IWorldScanner {
         long chunkX = (long) pos.x << 4;
         long chunkZ = (long) pos.z << 4;
 
-        int playerSectionY = (ctx.playerFeet().y - ctx.world().getMinBuildHeight()) >> 4;
+        int playerSectionY = (ctx.playerToes().y - ctx.world().getMinBuildHeight()) >> 4;
 
         return collectChunkSections(lookup, chunkProvider.getChunk(pos.x, pos.z, false), chunkX, chunkZ, playerSectionY).stream();
     }

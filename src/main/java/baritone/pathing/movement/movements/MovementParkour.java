@@ -255,7 +255,7 @@ public class MovementParkour extends Movement {
         if (state.getStatus() != MovementStatus.RUNNING) {
             return state;
         }
-        if (ctx.playerFeet().y < src.y) {
+        if (ctx.playerToes().y < src.y) {
             // we have fallen
             logDebug("sorry");
             return state.setStatus(MovementStatus.UNREACHABLE);
@@ -264,18 +264,18 @@ public class MovementParkour extends Movement {
             state.setInput(Input.SPRINT, true);
         }
         MovementHelper.moveTowards(ctx, state, dest);
-        if (ctx.playerFeet().equals(dest)) {
+        if (ctx.playerToes().equals(dest)) {
             Block d = BlockStateInterface.getBlock(ctx, dest);
             if (d == Blocks.VINE || d == Blocks.LADDER) {
                 // it physically hurt me to add support for parkour jumping onto a vine
                 // but i did it anyway
                 return state.setStatus(MovementStatus.SUCCESS);
             }
-            if (ctx.player().position().y - ctx.playerFeet().getY() < 0.094) { // lilypads
+            if (ctx.player().position().y - ctx.playerToes().getY() < 0.094) { // lilypads
                 state.setStatus(MovementStatus.SUCCESS);
             }
-        } else if (!ctx.playerFeet().equals(src)) {
-            if (ctx.playerFeet().equals(src.relative(direction)) || ctx.player().position().y - src.y > 0.0001) {
+        } else if (!ctx.playerToes().equals(src)) {
+            if (ctx.playerToes().equals(src.relative(direction)) || ctx.player().position().y - src.y > 0.0001) {
                 if (Baritone.settings().allowPlace.value // see PR #3775
                         && ((Baritone) baritone).getInventoryBehavior().hasGenericThrowaway()
                         && !MovementHelper.canWalkOn(ctx, dest.below())
@@ -296,9 +296,9 @@ public class MovementParkour extends Movement {
                 }
 
                 state.setInput(Input.JUMP, true);
-            } else if (!ctx.playerFeet().equals(dest.relative(direction, -1))) {
+            } else if (!ctx.playerToes().equals(dest.relative(direction, -1))) {
                 state.setInput(Input.SPRINT, false);
-                if (ctx.playerFeet().equals(src.relative(direction, -1))) {
+                if (ctx.playerToes().equals(src.relative(direction, -1))) {
                     MovementHelper.moveTowards(ctx, state, src);
                 } else {
                     MovementHelper.moveTowards(ctx, state, src.relative(direction, -1));
