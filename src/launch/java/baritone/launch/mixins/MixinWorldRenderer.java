@@ -44,9 +44,11 @@ public class MixinWorldRenderer {
             at = @At("RETURN"),
             locals = LocalCapture.CAPTURE_FAILSOFT
     )
-    private void onStartHand(PoseStack matrixStackIn, float partialTicks, long finishTimeNano, boolean drawBlockOutline, Camera activeRenderInfoIn, GameRenderer gameRendererIn, LightTexture lightmapIn, Matrix4f projectionIn, CallbackInfo ci) {
+    private void onStartHand(float f, long l, boolean bl, Camera arg, GameRenderer arg2, LightTexture arg3, Matrix4f matrix4f, Matrix4f matrix4f2, CallbackInfo ci) {
         for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
-            ibaritone.getGameEventHandler().onRenderPass(new RenderEvent(partialTicks, matrixStackIn, projectionIn));
+            PoseStack poseStack = new PoseStack();
+            poseStack.mulPose(matrix4f);
+            ibaritone.getGameEventHandler().onRenderPass(new RenderEvent(f, poseStack, matrix4f2));
         }
     }
 }

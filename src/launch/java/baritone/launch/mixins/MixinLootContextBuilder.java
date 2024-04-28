@@ -19,41 +19,28 @@ package baritone.launch.mixins;
 
 import baritone.api.utils.BlockOptionalMeta;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.ReloadableServerRegistries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.storage.loot.LootContext;
-import net.minecraft.world.level.storage.loot.LootDataManager;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(LootContext.Builder.class)
-public class MixinLootContext {
+public abstract class MixinLootContextBuilder {
 
-    @Redirect(
-            method = "create",
-            at = @At(
-                    value = "INVOKE",
-                    target = "net/minecraft/server/level/ServerLevel.getServer()Lnet/minecraft/server/MinecraftServer;"
-            )
-    )
-    private MinecraftServer getServer(ServerLevel world) {
-        if (world == null) {
-            return null;
+    @Shadow public abstract ServerLevel getLevel();
+
+    @Redirect(method = "create", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/MinecraftServer;reloadableRegistries()Lnet/minecraft/server/ReloadableServerRegistries$Holder;"))
+    private ReloadableServerRegistries.Holder create(MinecraftServer instance) {
+        if (instance != null) {
+            return instance.reloadableRegistries();
         }
-        return world.getServer();
+        if (getLevel() instanceof BlockOptionalMeta.ServerLevelStub sls) {
+            return sls.holder();
+        }
+        return null;
     }
 
-    @Redirect(
-            method = "create",
-            at = @At(
-                    value = "INVOKE",
-                    target = "Lnet/minecraft/server/MinecraftServer;getLootData()Lnet/minecraft/world/level/storage/loot/LootDataManager;"
-            )
-    )
-    private LootDataManager getLootTableManager(MinecraftServer server) {
-        if (server == null) {
-            return BlockOptionalMeta.getManager();
-        }
-        return server.getLootData();
-    }
 }

@@ -18,26 +18,26 @@
 package baritone.api.utils;
 
 import baritone.api.utils.accessor.IItemStack;
+import baritone.api.utils.accessor.ILootTable;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import io.netty.util.concurrent.ThreadPerTaskExecutor;
 import net.minecraft.client.Minecraft;
-import net.minecraft.core.BlockPos;
+import net.minecraft.commands.Commands;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.ReloadableServerRegistries;
+import net.minecraft.server.ReloadableServerResources;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.progress.ChunkProgressListener;
-import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.VanillaPackResources;
 import net.minecraft.server.packs.repository.ServerPacksSource;
-import net.minecraft.server.packs.resources.MultiPackResourceManager;
-import net.minecraft.server.packs.resources.ReloadableResourceManager;
-import net.minecraft.util.Unit;
 import net.minecraft.world.RandomSequences;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.CustomSpawner;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -48,8 +48,8 @@ import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraft.world.level.storage.ServerLevelData;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.level.storage.loot.LootContext;
-import net.minecraft.world.level.storage.loot.LootDataManager;
 import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.Vec3;
@@ -60,7 +60,6 @@ import javax.annotation.Nullable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -75,7 +74,6 @@ public final class BlockOptionalMeta {
     private final Set<BlockState> blockstates;
     private final ImmutableSet<Integer> stateHashes;
     private final ImmutableSet<Integer> stackHashes;
-    private static LootDataManager lootTables;
     private static Map<Block, List<Item>> drops = new HashMap<>();
 
     public BlockOptionalMeta(@Nonnull Block block) {
@@ -218,43 +216,21 @@ public final class BlockOptionalMeta {
         return null;
     }
 
-    public static LootDataManager getManager() {
-        if (lootTables == null) {
-            MultiPackResourceManager resources = new MultiPackResourceManager(PackType.SERVER_DATA, List.of(getVanillaServerPack()));
-            ReloadableResourceManager resourceManager = new ReloadableResourceManager(PackType.SERVER_DATA);
-            lootTables = new LootDataManager();
-            resourceManager.registerReloadListener(lootTables);
-            try {
-                resourceManager.createReload(new ThreadPerTaskExecutor(Thread::new), new ThreadPerTaskExecutor(Thread::new), CompletableFuture.completedFuture(Unit.INSTANCE), resources.listPacks().toList()).done().get();
-            } catch (Exception exception) {
-                throw new RuntimeException(exception);
-            }
-
-        }
-        return lootTables;
-    }
-
     private static synchronized List<Item> drops(Block b) {
         return drops.computeIfAbsent(b, block -> {
-            ResourceLocation lootTableLocation = block.getLootTable();
-            if (lootTableLocation == BuiltInLootTables.EMPTY) {
+            ResourceLocation lootTableLocation = block.getLootTable().location();
+            if (lootTableLocation.equals(BuiltInLootTables.EMPTY.location())) {
                 return Collections.emptyList();
             } else {
                 List<Item> items = new ArrayList<>();
                 try {
+                    ServerLevel lv2 = ServerLevelStub.fastCreate();
 
-                    getManager().getLootTable(lootTableLocation).getRandomItemsRaw(
-                            new LootContext.Builder(
-                                    new LootParams.Builder(ServerLevelStub.fastCreate())
-                                            .withParameter(LootContextParams.ORIGIN, Vec3.atLowerCornerOf(BlockPos.ZERO))
-                                            .withParameter(LootContextParams.TOOL, ItemStack.EMPTY)
-                                            .withOptionalParameter(LootContextParams.BLOCK_ENTITY, null)
-                                            .withParameter(LootContextParams.BLOCK_STATE, block.defaultBlockState())
-                                            .create(LootContextParamSets.BLOCK)
-                            ).withOptionalRandomSeed(1L)
-                                    .create(null),
-                            stack -> items.add(stack.getItem())
-                    );
+                    LootParams.Builder lv5 = new LootParams.Builder(lv2)
+                        .withParameter(LootContextParams.ORIGIN, Vec3.ZERO)
+                        .withParameter(LootContextParams.BLOCK_STATE, b.defaultBlockState())
+                        .withParameter(LootContextParams.TOOL, new ItemStack(Items.NETHERITE_PICKAXE, 1));
+                    getDrops(block, lv5).stream().map(ItemStack::getItem).forEach(items::add);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -263,7 +239,19 @@ public final class BlockOptionalMeta {
         });
     }
 
-    private static class ServerLevelStub extends ServerLevel {
+    private static List<ItemStack> getDrops(Block state, LootParams.Builder params) {
+        ResourceKey<LootTable> lv = state.getLootTable();
+        if (lv == BuiltInLootTables.EMPTY) {
+            return Collections.emptyList();
+        } else {
+            LootParams lv2 = params.withParameter(LootContextParams.BLOCK_STATE, state.defaultBlockState()).create(LootContextParamSets.BLOCK);
+            ServerLevelStub lv3 = (ServerLevelStub) lv2.getLevel();
+            LootTable lv4 = lv3.holder().getLootTable(lv);
+            return((ILootTable) lv4).invokeGetRandomItems(new LootContext.Builder(lv2).withOptionalRandomSeed(1).create(null));
+        }
+    }
+
+    public static class ServerLevelStub extends ServerLevel {
         private static Minecraft client = Minecraft.getInstance();
         private static Unsafe unsafe = getUnsafe();
 
@@ -283,6 +271,15 @@ public final class BlockOptionalMeta {
             } catch (InstantiationException e) {
                 throw new RuntimeException(e);
             }
+        }
+
+        @Override
+        public RegistryAccess registryAccess() {
+            return client.level.registryAccess();
+        }
+
+        public ReloadableServerRegistries.Holder holder() {
+            return new ReloadableServerRegistries.Holder(registryAccess().freeze());
         }
 
         public static Unsafe getUnsafe() {

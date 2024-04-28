@@ -35,6 +35,7 @@ import it.unimi.dsi.fastutil.floats.FloatArrayList;
 import it.unimi.dsi.fastutil.floats.FloatIterator;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundPlayerPositionPacket;
 import net.minecraft.util.Mth;
@@ -44,6 +45,7 @@ import net.minecraft.world.entity.projectile.FireworkRocketEntity;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.Fireworks;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.block.AirBlock;
@@ -922,9 +924,8 @@ public final class ElytraBehavior implements Helper {
         if (itemStack.getItem() != Items.FIREWORK_ROCKET) {
             return false;
         }
-        // If it has NBT data, make sure it won't cause us to explode.
-        final CompoundTag compound = itemStack.getTagElement("Fireworks");
-        return compound == null || !compound.getAllKeys().contains("Explosions");
+        Fireworks fw = itemStack.get(DataComponents.FIREWORKS);
+        return fw != null && fw.explosions().isEmpty();
     }
 
     private static boolean isBoostingFireworks(final ItemStack itemStack) {
@@ -932,11 +933,9 @@ public final class ElytraBehavior implements Helper {
     }
 
     private static OptionalInt getFireworkBoost(final ItemStack itemStack) {
-        if (isFireworks(itemStack)) {
-            final CompoundTag compound = itemStack.getTagElement("Fireworks");
-            if (compound != null && compound.getAllKeys().contains("Flight")) {
-                return OptionalInt.of(compound.getByte("Flight"));
-            }
+        Fireworks fw = itemStack.get(DataComponents.FIREWORKS);
+        if (fw != null && fw.explosions().isEmpty()) {
+            return OptionalInt.of(fw.flightDuration());
         }
         return OptionalInt.empty();
     }
@@ -1292,7 +1291,7 @@ public final class ElytraBehavior implements Helper {
         NonNullList<ItemStack> invy = ctx.player().getInventory().items;
         for (int i = 0; i < invy.size(); i++) {
             ItemStack slot = invy.get(i);
-            if (slot.getItem() == Items.ELYTRA && (slot.getItem().getMaxDamage() - slot.getDamageValue()) > Baritone.settings().elytraMinimumDurability.value) {
+            if (slot.getItem() == Items.ELYTRA && (slot.getMaxDamage() - slot.getDamageValue()) > Baritone.settings().elytraMinimumDurability.value) {
                 return i;
             }
         }
@@ -1306,7 +1305,7 @@ public final class ElytraBehavior implements Helper {
 
         ItemStack chest = ctx.player().getItemBySlot(EquipmentSlot.CHEST);
         if (chest.getItem() != Items.ELYTRA
-                || chest.getItem().getMaxDamage() - chest.getDamageValue() > Baritone.settings().elytraMinimumDurability.value) {
+                || chest.getMaxDamage() - chest.getDamageValue() > Baritone.settings().elytraMinimumDurability.value) {
             return;
         }
 
