@@ -95,6 +95,8 @@ allprojects {
             intermediary()
             mojmap()
             parchment("1.20.6", "2024.05.01")
+
+            devFallbackNamespace "official"
         }
     }
 

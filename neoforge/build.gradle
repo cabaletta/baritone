@@ -25,9 +25,6 @@ plugins {
 archivesBaseName = archivesBaseName + "-neoforge"
 
 unimined.minecraft {
-    mappings {
-        devFallbackNamespace "intermediary"
-    }
 
     neoForged {
         loader project.neoforge_version
