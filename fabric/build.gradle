@@ -78,8 +78,8 @@ components.java {
 }
 
 task proguard(type: ProguardTask) {
-    url 'https://github.com/Guardsquare/proguard/releases/download/v7.2.1/proguard-7.2.1.zip'
-    extract 'proguard-7.2.1/lib/proguard.jar'
+    url 'https://github.com/Guardsquare/proguard/releases/download/v7.2.1/proguard-7.4.2.zip'
+    extract 'proguard-7.4.2/lib/proguard.jar'
     compType "fabric"
 }
 
