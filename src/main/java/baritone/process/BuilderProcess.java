@@ -276,6 +276,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         }
         BlockState state = schematic.desiredState(x - origin.getX(), y - origin.getY(), z - origin.getZ(), current, this.approxPlaceable);
         if (state == null) {
+            logDebug("Schematic contained no block for " + (x - origin.getX()) + " " + (y - origin.getY()) + " " + (z - origin.getZ()));
             return null;
         }
         if (state.getBlock() instanceof AirBlock) {
