@@ -53,6 +53,7 @@ public final class LitematicaSchematic extends StaticSchematic {
         this.y = Math.abs(nbt.getCompound("Metadata").getCompound("EnclosingSize").getInt("y"));
 
         if (rotated) {
+            System.out.println("is rotated");
             this.x = Math.abs(nbt.getCompound("Metadata").getCompound("EnclosingSize").getInt("z"));
             this.z = Math.abs(nbt.getCompound("Metadata").getCompound("EnclosingSize").getInt("x"));
         } else {
@@ -160,6 +161,18 @@ public final class LitematicaSchematic extends StaticSchematic {
         return nbt.getCompound("Regions").getCompound(subReg).getLongArray("BlockStates");
     }
 
+    @Override
+    public boolean inSchematic(int x, int y, int z, BlockState currentState) {
+        for (String subReg : getRegions(nbt)) {
+            if (inSubregion(nbt, subReg, x, y, z)) {
+                System.out.println("found " + x + "," + y + "," + z + " in subregion: " + subReg + " state: " + currentState);
+                return true;
+            }
+        }
+        System.out.println("not found block: " + x + "," + y + "," + z + " state: " + currentState);
+        return false;
+    }
+
     /**
      * Subregion don't have to be the same size as the enclosing size of the schematic. If they are smaller we check here if the current block is part of the subregion.
      *
@@ -169,6 +182,20 @@ public final class LitematicaSchematic extends StaticSchematic {
      * @return if the current block is part of the subregion.
      */
     private static boolean inSubregion(CompoundTag nbt, String subReg, int x, int y, int z) {
+        CompoundTag region = nbt.getCompound("Regions").getCompound(subReg);
+        int sizeX = region.getCompound("Size").getInt("x");
+        int sizeY = region.getCompound("Size").getInt("y");
+        int sizeZ = region.getCompound("Size").getInt("z");
+        int posX = region.getCompound("Position").getInt("x");
+        int posY = region.getCompound("Position").getInt("y");
+        int posZ = region.getCompound("Position").getInt("z");
+
+        boolean weThink = x >= Math.min(posX, posX + sizeX) && x < Math.max(posX, posX + sizeX) &&
+                y >= Math.min(posY, posY + sizeY) && y < Math.max(posY, posY + sizeY) &&
+                z >= Math.min(posZ, posZ + sizeZ) && z < Math.max(posZ, posZ + sizeZ);
+
+        System.out.println("weThink: " + weThink + " x: " + x + " y: " + y + " z: " + z + " subReg: " + subReg);
+
         return x >= 0 && y >= 0 && z >= 0 &&
                 x < Math.abs(nbt.getCompound("Regions").getCompound(subReg).getCompound("Size").getInt("x")) &&
                 y < Math.abs(nbt.getCompound("Regions").getCompound(subReg).getCompound("Size").getInt("y")) &&
@@ -192,6 +219,7 @@ public final class LitematicaSchematic extends StaticSchematic {
      */
     private void fillInSchematic() {
         for (String subReg : getRegions(nbt)) {
+            System.out.println("fillInSchematic for subregion: " + subReg);
             ListTag usedBlockTypes = nbt.getCompound("Regions").getCompound(subReg).getList("BlockStatePalette", 10);
             BlockState[] blockList = getBlockList(usedBlockTypes);
 
@@ -217,6 +245,7 @@ public final class LitematicaSchematic extends StaticSchematic {
         for (int y = 0; y < this.y; y++) {
             for (int z = 0; z < this.z; z++) {
                 for (int x = 0; x < this.x; x++) {
+                    System.out.println("checking x: " + x + " z: " + z + " y: " + y);
                     if (inSubregion(nbt, subReg, x, y, z)) {
                         this.states[x - (offsetMinCorner.getX() - offsetSubregion.getX())][z - (offsetMinCorner.getZ() - offsetSubregion.getZ())][y - (offsetMinCorner.getY() - offsetSubregion.getY())] = blockList[bitArray.getAt(index)];
                         index++;
