@@ -277,7 +277,6 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         BlockState state = schematic.desiredState(x - origin.getX(), y - origin.getY(), z - origin.getZ(), current, this.approxPlaceable);
         // litematica schematics can have multiple sub-regions which don't fully match the schematic's dimensions
         if (state == null) {
-            logDirect("Schematic contained no block for " + (x - origin.getX()) + " " + (y - origin.getY()) + " " + (z - origin.getZ()));
             return null;
         }
         if (state.getBlock() instanceof AirBlock) {
