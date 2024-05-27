@@ -46,6 +46,12 @@ dependencies {
         shadowCommon sourceSet.output
     }
     include "dev.babbaj:nether-pathfinder:${project.nether_pathfinder_version}"
+
+
+    // API
+
+    //modApi("curse.maven:litematica-308892:4946471")
+
 }
 
 processResources {
