@@ -33,7 +33,7 @@ A Minecraft pathfinder bot.
 
 [[dependencies.baritoe]]
 modId="minecraft"
-mandatory=true
+type="required"
 # This version range declares a minimum of the current minecraft version up to but not including the next major version
 versionRange="[1.20.5, 1.20.6]"
 ordering="NONE"
