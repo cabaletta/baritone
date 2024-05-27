@@ -209,11 +209,6 @@ public class LitematicaSchematic extends StaticSchematic {
 
         boolean found = withinX && withinY && withinZ;
 
-        if (found) {
-            System.out.println("found " + x + "," + y + "," + z + " in subregion: " + subReg);
-        } else {
-            // System.out.println("not found " + x + "," + y + "," + z + " in subregion: " + subReg);
-        }
         return found;
     }
 
