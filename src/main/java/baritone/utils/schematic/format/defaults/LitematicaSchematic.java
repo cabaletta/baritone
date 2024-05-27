@@ -39,7 +39,13 @@ import java.util.Optional;
  * @author rycbar
  * @since 22.09.2022
  */
-public final class LitematicaSchematic extends StaticSchematic {
+public class LitematicaSchematic extends StaticSchematic {
+    /**
+     * The format has a property EnclosingSize, which is the size of a
+     * rectangular cuboid that contains all the regions in the schematic.
+     * This vector indicates the offset of this cuboid's minimum corner
+     * from the origin of the schematic.
+     */
     private final Vec3i offsetMinCorner;
     private final CompoundTag nbt;
 
@@ -61,13 +67,16 @@ public final class LitematicaSchematic extends StaticSchematic {
             this.z = Math.abs(nbt.getCompound("Metadata").getCompound("EnclosingSize").getInt("z"));
         }
         this.states = new BlockState[this.x][this.z][this.y];
+
+        System.out.println("schematic sizes are x: " + this.x + " y: " + this.y + " z: " + this.z);
+
         fillInSchematic();
     }
 
     /**
      * @return Array of subregion names.
      */
-    private static String[] getRegions(CompoundTag nbt) {
+    static String[] getRegions(CompoundTag nbt) {
         return nbt.getCompound("Regions").getAllKeys().toArray(new String[0]);
     }
 
@@ -78,12 +87,14 @@ public final class LitematicaSchematic extends StaticSchematic {
      * @return the lower coord of the requested axis.
      */
     private static int getMinOfSubregion(CompoundTag nbt, String subReg, String s) {
-        int a = nbt.getCompound("Regions").getCompound(subReg).getCompound("Position").getInt(s);
-        int b = nbt.getCompound("Regions").getCompound(subReg).getCompound("Size").getInt(s);
-        if (b < 0) {
-            b++;
+
+        int subRegPos = nbt.getCompound("Regions").getCompound(subReg).getCompound("Position").getInt(s);
+        int subRegSize = nbt.getCompound("Regions").getCompound(subReg).getCompound("Size").getInt(s);
+
+        if (subRegSize < 0) {
+            subRegSize++;
         }
-        return Math.min(a, a + b);
+        return Math.min(subRegPos, subRegPos + subRegSize);
 
     }
 
@@ -91,11 +102,16 @@ public final class LitematicaSchematic extends StaticSchematic {
      * @param blockStatePalette List of all different block types used in the schematic.
      * @return Array of BlockStates.
      */
-    private static BlockState[] getBlockList(ListTag blockStatePalette) {
+    static BlockState[] getBlockList(ListTag blockStatePalette) {
+
         BlockState[] blockList = new BlockState[blockStatePalette.size()];
 
         for (int i = 0; i < blockStatePalette.size(); i++) {
-            Block block = BuiltInRegistries.BLOCK.get(new ResourceLocation((((CompoundTag) blockStatePalette.get(i)).getString("Name"))));
+
+            ResourceLocation resLoc = new ResourceLocation((((CompoundTag) blockStatePalette.get(i)).getString("Name")));
+
+            Block block = BuiltInRegistries.BLOCK.get(resLoc);
+
             CompoundTag properties = ((CompoundTag) blockStatePalette.get(i)).getCompound("Properties");
 
             blockList[i] = getBlockState(block, properties);
@@ -137,7 +153,7 @@ public final class LitematicaSchematic extends StaticSchematic {
      * @param amountOfBlockTypes amount of block types in the schematic.
      * @return amount of bits used to encode a block.
      */
-    private static int getBitsPerBlock(int amountOfBlockTypes) {
+    static int getBitsPerBlock(int amountOfBlockTypes) {
         return (int) Math.max(2, Math.ceil(Math.log(amountOfBlockTypes) / Math.log(2)));
     }
 
@@ -147,7 +163,7 @@ public final class LitematicaSchematic extends StaticSchematic {
      *
      * @return the volume of the subregion.
      */
-    private static long getVolume(CompoundTag nbt, String subReg) {
+    static long getVolume(CompoundTag nbt, String subReg) {
         return Math.abs(
                 nbt.getCompound("Regions").getCompound(subReg).getCompound("Size").getInt("x") *
                         nbt.getCompound("Regions").getCompound(subReg).getCompound("Size").getInt("y") *
@@ -157,15 +173,22 @@ public final class LitematicaSchematic extends StaticSchematic {
     /**
      * @return array of Long values.
      */
-    private static long[] getBlockStates(CompoundTag nbt, String subReg) {
+    static long[] getBlockStates(CompoundTag nbt, String subReg) {
         return nbt.getCompound("Regions").getCompound(subReg).getLongArray("BlockStates");
     }
 
     @Override
     public boolean inSchematic(int x, int y, int z, BlockState currentState) {
+      //  System.out.println("called inSchematic: " + x + "," + y + "," + z + " state: " + currentState);
         for (String subReg : getRegions(nbt)) {
-            if (inSubregion(nbt, subReg, x, y, z)) {
-                System.out.println("found " + x + "," + y + "," + z + " in subregion: " + subReg + " state: " + currentState);
+
+            Vec3i offsetSubregionMin = new Vec3i(getMinOfSubregion(nbt, subReg, "x"), getMinOfSubregion(nbt, subReg, "y"), getMinOfSubregion(nbt, subReg, "z"));
+
+         //   System.out.println("loop subReg: " + subReg + " offsetSubregionMin: " + offsetSubregionMin);
+
+
+            if (inSubregion(nbt, subReg, x + this.offsetMinCorner.getX(), y + offsetMinCorner.getY(), z + offsetMinCorner.getZ(), offsetSubregionMin)) {
+                //System.out.println("found " + x + "," + y + "," + z + " in subregion: " + subReg + " state: " + currentState);
                 return true;
             }
         }
@@ -181,25 +204,45 @@ public final class LitematicaSchematic extends StaticSchematic {
      * @param z coord of the block relative to the minimum corner.
      * @return if the current block is part of the subregion.
      */
-    private static boolean inSubregion(CompoundTag nbt, String subReg, int x, int y, int z) {
+    private static boolean inSubregion(CompoundTag nbt, String subReg, int x, int y, int z, Vec3i offsetSubregionMin) {
+
         CompoundTag region = nbt.getCompound("Regions").getCompound(subReg);
-        int sizeX = region.getCompound("Size").getInt("x");
-        int sizeY = region.getCompound("Size").getInt("y");
-        int sizeZ = region.getCompound("Size").getInt("z");
-        int posX = region.getCompound("Position").getInt("x");
-        int posY = region.getCompound("Position").getInt("y");
-        int posZ = region.getCompound("Position").getInt("z");
 
-        boolean weThink = x >= Math.min(posX, posX + sizeX) && x < Math.max(posX, posX + sizeX) &&
-                y >= Math.min(posY, posY + sizeY) && y < Math.max(posY, posY + sizeY) &&
-                z >= Math.min(posZ, posZ + sizeZ) && z < Math.max(posZ, posZ + sizeZ);
+        int xSize = region.getCompound("Size").getInt("x");
+        int ySize = region.getCompound("Size").getInt("y");
+        int zSize = region.getCompound("Size").getInt("z");
 
-        System.out.println("weThink: " + weThink + " x: " + x + " y: " + y + " z: " + z + " subReg: " + subReg);
+        int xPos = region.getCompound("Position").getInt("x");
+        int yPos = region.getCompound("Position").getInt("y");
+        int zPos = region.getCompound("Position").getInt("z");
 
-        return x >= 0 && y >= 0 && z >= 0 &&
-                x < Math.abs(nbt.getCompound("Regions").getCompound(subReg).getCompound("Size").getInt("x")) &&
-                y < Math.abs(nbt.getCompound("Regions").getCompound(subReg).getCompound("Size").getInt("y")) &&
-                z < Math.abs(nbt.getCompound("Regions").getCompound(subReg).getCompound("Size").getInt("z"));
+        int xMin = (xSize >= 0) ? xPos : xPos + xSize + 1;
+        int yMin = (ySize >= 0) ? yPos : yPos + ySize + 1;
+        int zMin = (zSize >= 0) ? zPos : zPos + zSize + 1;
+
+        int xMax = xMin + Math.abs(xSize);
+        int yMax = yMin + Math.abs(ySize);
+        int zMax = zMin + Math.abs(zSize);
+
+        boolean withinX = xSize != 0 && x >= xMin && x < xMax;
+        boolean withinY = ySize != 0 && y >= yMin && y < yMax;
+        boolean withinZ = zSize != 0 && z >= zMin && z < zMax;
+
+        boolean found = withinX && withinY && withinZ;
+
+        if (found) {
+            System.out.println("found " + x + "," + y + "," + z + " in subregion: " + subReg);
+        } else {
+            // System.out.println("not found " + x + "," + y + "," + z + " in subregion: " + subReg);
+        }
+        return found;
+
+//        System.out.println("weThink: " + weThink + " x: " + x + " y: " + y + " z: " + z + " subReg: " + subReg);
+
+//        return x >= 0 && y >= 0 && z >= 0 &&
+//                x < Math.abs(nbt.getCompound("Regions").getCompound(subReg).getCompound("Size").getInt("x")) &&
+//                y < Math.abs(nbt.getCompound("Regions").getCompound(subReg).getCompound("Size").getInt("y")) &&
+//                z < Math.abs(nbt.getCompound("Regions").getCompound(subReg).getCompound("Size").getInt("z"));
     }
 
     /**
@@ -217,10 +260,12 @@ public final class LitematicaSchematic extends StaticSchematic {
     /**
      * reads the file data.
      */
-    private void fillInSchematic() {
+    protected void fillInSchematic() {
         for (String subReg : getRegions(nbt)) {
             System.out.println("fillInSchematic for subregion: " + subReg);
             ListTag usedBlockTypes = nbt.getCompound("Regions").getCompound(subReg).getList("BlockStatePalette", 10);
+
+            // this requires bootstrapped registry stuff
             BlockState[] blockList = getBlockList(usedBlockTypes);
 
             int bitsPerBlock = getBitsPerBlock(usedBlockTypes.size());
@@ -239,15 +284,27 @@ public final class LitematicaSchematic extends StaticSchematic {
      * @param blockList list with the different block types used in the schematic.
      * @param bitArray  bit array that holds the placement pattern.
      */
-    private void writeSubregionIntoSchematic(CompoundTag nbt, String subReg, BlockState[] blockList, LitematicaBitArray bitArray) {
-        Vec3i offsetSubregion = new Vec3i(getMinOfSubregion(nbt, subReg, "x"), getMinOfSubregion(nbt, subReg, "y"), getMinOfSubregion(nbt, subReg, "z"));
+    void writeSubregionIntoSchematic(CompoundTag nbt, String subReg, BlockState[] blockList, LitematicaBitArray bitArray) {
+        Vec3i offsetSubregionMin = new Vec3i(getMinOfSubregion(nbt, subReg, "x"), getMinOfSubregion(nbt, subReg, "y"), getMinOfSubregion(nbt, subReg, "z"));
+
+     //   System.out.println("subReg " + subReg + " offsetSubregionMin: " + offsetSubregionMin);
+
         int index = 0;
+//        for (int y = offsetSubregionMin.getY(); y < offsetSubregionMin.getY() + this.y; y++) {
+//            for (int z = offsetSubregionMin.getZ(); z < offsetSubregionMin.getZ() + this.z; z++) {
+//                for (int x = offsetSubregionMin.getX(); x < offsetSubregionMin.getX()+this.x; x++) {
         for (int y = 0; y < this.y; y++) {
             for (int z = 0; z < this.z; z++) {
                 for (int x = 0; x < this.x; x++) {
-                    System.out.println("checking x: " + x + " z: " + z + " y: " + y);
-                    if (inSubregion(nbt, subReg, x, y, z)) {
-                        this.states[x - (offsetMinCorner.getX() - offsetSubregion.getX())][z - (offsetMinCorner.getZ() - offsetSubregion.getZ())][y - (offsetMinCorner.getY() - offsetSubregion.getY())] = blockList[bitArray.getAt(index)];
+                    // System.out.println("==> checking raw (" + x + "," + y + " ," + z + ") in subReg " + subReg);
+
+                    if (inSubregion(nbt, subReg, x + this.offsetMinCorner.getX(), y + offsetMinCorner.getY(), z + offsetMinCorner.getZ(), offsetSubregionMin)) {
+                        int tmpX = x - (offsetMinCorner.getX() - offsetSubregionMin.getX());
+                        int tmpZ = z - (offsetMinCorner.getZ() - offsetSubregionMin.getZ());
+                        int tmpY = y - (offsetMinCorner.getY() - offsetSubregionMin.getY());
+                        //  System.out.println("setting block state at (" + tmpX + "," + tmpY + " ," + tmpZ + ")");
+                        //this.states[tmpX][tmpZ][tmpY] = blockList[bitArray.getAt(index)];
+                        this.states[x][z][y] = blockList[bitArray.getAt(index)];
                         index++;
                     }
                 }
@@ -307,7 +364,7 @@ public final class LitematicaSchematic extends StaticSchematic {
      * Usage under LGPLv3 with the permission of the author.
      * <a href="https://github.com/maruohon/litematica">...</a>
      */
-    private static class LitematicaBitArray {
+    static class LitematicaBitArray {
         /**
          * The long array that is used to store the data for this BitArray.
          */
