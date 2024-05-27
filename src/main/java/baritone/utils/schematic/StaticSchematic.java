@@ -32,7 +32,7 @@ public class StaticSchematic extends AbstractSchematic implements IStaticSchemat
 
     /**
      * The block states contained within this schematic
-     * these are indexed by [x][z][y]
+     * these are indexed by [x][z][y] not as expected x,y,z
      */
     protected BlockState[][][] states;
 

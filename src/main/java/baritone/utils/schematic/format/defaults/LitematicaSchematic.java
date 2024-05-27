@@ -167,7 +167,7 @@ public class LitematicaSchematic extends StaticSchematic {
 
             Vec3i offsetSubregionMin = new Vec3i(getMinOfSubregion(nbt, subReg, "x"), getMinOfSubregion(nbt, subReg, "y"), getMinOfSubregion(nbt, subReg, "z"));
 
-            if (inSubregion(nbt, subReg, x + this.offsetMinCorner.getX(), y + offsetMinCorner.getY(), z + offsetMinCorner.getZ(), offsetSubregionMin)) {
+            if (inSubregion(nbt, subReg, x + this.offsetMinCorner.getX(), y + offsetMinCorner.getY(), z + offsetMinCorner.getZ())) {
                 //System.out.println("found " + x + "," + y + "," + z + " in subregion: " + subReg + " state: " + currentState);
                 return true;
             }
@@ -183,7 +183,7 @@ public class LitematicaSchematic extends StaticSchematic {
      * @param z coord of the block relative to the minimum corner.
      * @return if the current block is part of the subregion.
      */
-    private static boolean inSubregion(CompoundTag nbt, String subReg, int x, int y, int z, Vec3i offsetSubregionMin) {
+    private static boolean inSubregion(CompoundTag nbt, String subReg, int x, int y, int z) {
 
         CompoundTag region = nbt.getCompound("Regions").getCompound(subReg);
 
@@ -234,7 +234,6 @@ public class LitematicaSchematic extends StaticSchematic {
      */
     protected void fillInSchematic() {
         for (String subReg : getRegions(nbt)) {
-            System.out.println("fillInSchematic for subregion: " + subReg);
             ListTag usedBlockTypes = nbt.getCompound("Regions").getCompound(subReg).getList("BlockStatePalette", 10);
 
             // this requires bootstrapped registry stuff - @TODO can mock in some way?
@@ -262,7 +261,7 @@ public class LitematicaSchematic extends StaticSchematic {
         for (int y = 0; y < this.y; y++) {
             for (int z = 0; z < this.z; z++) {
                 for (int x = 0; x < this.x; x++) {
-                    if (inSubregion(nbt, subReg, x + this.offsetMinCorner.getX(), y + offsetMinCorner.getY(), z + offsetMinCorner.getZ(), offsetSubregionMin)) {
+                    if (inSubregion(nbt, subReg, x + this.offsetMinCorner.getX(), y + offsetMinCorner.getY(), z + offsetMinCorner.getZ())) {
                         this.states[x][z][y] = blockList[bitArray.getAt(index)];
                         index++;
                     }

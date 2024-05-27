@@ -100,9 +100,6 @@ public final class LitematicaHelper {
      * @return the minimum corner coordinates of the schematic, after the original schematic got rotated and mirrored.
      */
     public static Vec3i getCorrectedOrigin(LitematicaSchematic schematic, int i) {
-
-        System.out.println("in get Corrected origin");
-
         int x = LitematicaHelper.getOrigin(i).getX();
         int y = LitematicaHelper.getOrigin(i).getY();
         int z = LitematicaHelper.getOrigin(i).getZ();

@@ -240,6 +240,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                     build(name, schematic2, correctedOrigin);
                 } catch (Exception e) {
                     logDirect("Schematic File could not be loaded.");
+                    // I really really need to know whyyyyy!!!
                     e.printStackTrace();
                 }
             } else {
@@ -276,10 +277,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             return null;
         }
         BlockState state = schematic.desiredState(x - origin.getX(), y - origin.getY(), z - origin.getZ(), current, this.approxPlaceable);
-
         if (state.getBlock() instanceof AirBlock) {
-            System.out.println("Schematic contained Air  block for " + (x - origin.getX()) + " " + (y - origin.getY()) + " " + (z - origin.getZ()));
-
             return null;
         }
         return state;
