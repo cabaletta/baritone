@@ -59,7 +59,8 @@ public final class LitematicaSchematic extends StaticSchematic {
             this.x = Math.abs(nbt.getCompound("Metadata").getCompound("EnclosingSize").getInt("x"));
             this.z = Math.abs(nbt.getCompound("Metadata").getCompound("EnclosingSize").getInt("z"));
         }
-        this.states = new BlockState[this.x][this.z][this.y];
+        // for a rotation x/z needs to be large enough to hold the other dimension
+        this.states = new BlockState[Math.max(this.x,this.z)][Math.max(this.x,this.z)][this.y];
         fillInSchematic();
     }
 
@@ -158,6 +159,12 @@ public final class LitematicaSchematic extends StaticSchematic {
      */
     private static long[] getBlockStates(CompoundTag nbt, String subReg) {
         return nbt.getCompound("Regions").getCompound(subReg).getLongArray("BlockStates");
+    }
+
+
+    @Override
+    public boolean inSchematic(int x, int y, int z, BlockState currentState) {
+        return getDirect(x, y, z) != null;
     }
 
     /**
