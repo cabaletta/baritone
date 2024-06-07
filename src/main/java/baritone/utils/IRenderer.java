@@ -115,11 +115,10 @@ public interface IRenderer {
                          float x1, float y1, float z1,
                          float x2, float y2, float z2,
                          float nx, float ny, float nz) {
-        final Matrix4f matrix4f = stack.last().pose();
-        final Matrix3f normal = stack.last().normal();
+        PoseStack.Pose pose = stack.last();
 
-        buffer.vertex(matrix4f, x1, y1, z1).color(color[0], color[1], color[2], color[3]).normal(normal, nx, ny, nz).endVertex();
-        buffer.vertex(matrix4f, x2, y2, z2).color(color[0], color[1], color[2], color[3]).normal(normal, nx, ny, nz).endVertex();
+        buffer.vertex(pose, x1, y1, z1).color(color[0], color[1], color[2], color[3]).normal(pose, nx, ny, nz).endVertex();
+        buffer.vertex(pose, x2, y2, z2).color(color[0], color[1], color[2], color[3]).normal(pose, nx, ny, nz).endVertex();
     }
 
     static void emitAABB(PoseStack stack, AABB aabb) {

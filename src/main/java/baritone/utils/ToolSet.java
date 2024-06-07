@@ -86,7 +86,7 @@ public class ToolSet {
     private int getMaterialCost(ItemStack itemStack) {
         if (itemStack.getItem() instanceof TieredItem) {
             TieredItem tool = (TieredItem) itemStack.getItem();
-            return tool.getTier().getLevel();
+            return (int) tool.getTier().getAttackDamageBonus();
         } else {
             return -1;
         }
@@ -184,7 +184,7 @@ public class ToolSet {
 
         float speed = item.getDestroySpeed(state);
         if (speed > 1) {
-            int effLevel = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.BLOCK_EFFICIENCY, item);
+            int effLevel = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.EFFICIENCY, item);
             if (effLevel > 0 && !item.isEmpty()) {
                 speed += effLevel * effLevel + 1;
             }
