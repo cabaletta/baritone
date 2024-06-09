@@ -359,6 +359,14 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
                 }
             }
         }
+        if (goalz.isEmpty()) {
+            logDirect("Farm failed");
+            if (Baritone.settings().notificationOnFarmFail.value) {
+                logNotification("Farm failed", true);
+            }
+            onLostControl();
+            return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
+        }
         return new PathingCommand(new GoalComposite(goalz.toArray(new Goal[0])), PathingCommandType.SET_GOAL_AND_PATH);
     }
 
