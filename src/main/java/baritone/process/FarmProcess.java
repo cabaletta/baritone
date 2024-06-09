@@ -256,7 +256,12 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
         }
 
         baritone.getInputOverrideHandler().clearAllKeys();
+        BetterBlockPos playerPos = ctx.playerFeet();
+        double blockReachDistance = ctx.playerController().getBlockReachDistance();
         for (BlockPos pos : toBreak) {
+            if (playerPos.distSqr(pos) > blockReachDistance * blockReachDistance) {
+                continue;
+            }
             Optional<Rotation> rot = RotationUtils.reachable(ctx, pos);
             if (rot.isPresent() && isSafeToCancel) {
                 baritone.getLookBehavior().updateTarget(rot.get(), true);
@@ -270,10 +275,13 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
         ArrayList<BlockPos> both = new ArrayList<>(openFarmland);
         both.addAll(openSoulsand);
         for (BlockPos pos : both) {
+            if (playerPos.distSqr(pos) > blockReachDistance * blockReachDistance) {
+                continue;
+            }
             boolean soulsand = openSoulsand.contains(pos);
-            Optional<Rotation> rot = RotationUtils.reachableOffset(ctx, pos, new Vec3(pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5), ctx.playerController().getBlockReachDistance(), false);
+            Optional<Rotation> rot = RotationUtils.reachableOffset(ctx, pos, new Vec3(pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5), blockReachDistance, false);
             if (rot.isPresent() && isSafeToCancel && baritone.getInventoryBehavior().throwaway(true, soulsand ? this::isNetherWart : this::isPlantable)) {
-                HitResult result = RayTraceUtils.rayTraceTowards(ctx.player(), rot.get(), ctx.playerController().getBlockReachDistance());
+                HitResult result = RayTraceUtils.rayTraceTowards(ctx.player(), rot.get(), blockReachDistance);
                 if (result instanceof BlockHitResult && ((BlockHitResult) result).getDirection() == Direction.UP) {
                     baritone.getLookBehavior().updateTarget(rot.get(), true);
                     if (ctx.isLookingAt(pos)) {
@@ -284,14 +292,17 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
             }
         }
         for (BlockPos pos : openLog) {
+            if (playerPos.distSqr(pos) > blockReachDistance * blockReachDistance) {
+                continue;
+            }
             for (Direction dir : Direction.Plane.HORIZONTAL) {
                 if (!(ctx.world().getBlockState(pos.relative(dir)).getBlock() instanceof AirBlock)) {
                     continue;
                 }
                 Vec3 faceCenter = Vec3.atCenterOf(pos).add(Vec3.atLowerCornerOf(dir.getNormal()).scale(0.5));
-                Optional<Rotation> rot = RotationUtils.reachableOffset(ctx, pos, faceCenter, ctx.playerController().getBlockReachDistance(), false);
+                Optional<Rotation> rot = RotationUtils.reachableOffset(ctx, pos, faceCenter, blockReachDistance, false);
                 if (rot.isPresent() && isSafeToCancel && baritone.getInventoryBehavior().throwaway(true, this::isCocoa)) {
-                    HitResult result = RayTraceUtils.rayTraceTowards(ctx.player(), rot.get(), ctx.playerController().getBlockReachDistance());
+                    HitResult result = RayTraceUtils.rayTraceTowards(ctx.player(), rot.get(), blockReachDistance);
                     if (result instanceof BlockHitResult && ((BlockHitResult) result).getDirection() == dir) {
                         baritone.getLookBehavior().updateTarget(rot.get(), true);
                         if (ctx.isLookingAt(pos)) {
@@ -303,6 +314,9 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
             }
         }
         for (BlockPos pos : bonemealable) {
+            if (playerPos.distSqr(pos) > blockReachDistance * blockReachDistance) {
+                continue;
+            }
             Optional<Rotation> rot = RotationUtils.reachable(ctx, pos);
             if (rot.isPresent() && isSafeToCancel && baritone.getInventoryBehavior().throwaway(true, this::isBoneMeal)) {
                 baritone.getLookBehavior().updateTarget(rot.get(), true);
