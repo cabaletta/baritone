@@ -191,19 +191,19 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
 
     @Override
     public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
-        ArrayList<Block> scan = new ArrayList<>();
-        for (Harvest harvest : Harvest.values()) {
-            scan.add(harvest.block);
-        }
-        if (Baritone.settings().replantCrops.value) {
-            scan.add(Blocks.FARMLAND);
-            scan.add(Blocks.JUNGLE_LOG);
-            if (Baritone.settings().replantNetherWart.value) {
-                scan.add(Blocks.SOUL_SAND);
-            }
-        }
-
         if (Baritone.settings().mineGoalUpdateInterval.value != 0 && tickCount++ % Baritone.settings().mineGoalUpdateInterval.value == 0) {
+            ArrayList<Block> scan = new ArrayList<>();
+            for (Harvest harvest : Harvest.values()) {
+                scan.add(harvest.block);
+            }
+            if (Baritone.settings().replantCrops.value) {
+                scan.add(Blocks.FARMLAND);
+                scan.add(Blocks.JUNGLE_LOG);
+                if (Baritone.settings().replantNetherWart.value) {
+                    scan.add(Blocks.SOUL_SAND);
+                }
+            }
+
             Baritone.getExecutor().execute(() -> locations = BaritoneAPI.getProvider().getWorldScanner().scanChunkRadius(ctx, scan, 256, 10, 10));
         }
         if (locations == null) {
