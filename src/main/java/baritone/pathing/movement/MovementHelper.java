@@ -31,7 +31,11 @@ import baritone.utils.BlockStateInterface;
 import baritone.utils.ToolSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.core.Holder;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.piston.MovingPistonBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -500,14 +504,27 @@ public interface MovementHelper extends ActionCosts, Helper {
     static boolean canUseFrostWalker(CalculationContext context, BlockState state) {
         return context.frostWalker != 0
                 && state == FrostedIceBlock.meltsInto()
-                && ((Integer) state.getValue(LiquidBlock.LEVEL)) == 0;
+                && state.getValue(LiquidBlock.LEVEL) == 0;
     }
 
     static boolean canUseFrostWalker(IPlayerContext ctx, BlockPos pos) {
+        boolean hasFrostWalker = false;
+        OUTER: for (EquipmentSlot slot : EquipmentSlot.values()) {
+            ItemEnchantments itemEnchantments = ctx
+                .player()
+                .getItemBySlot(slot)
+                .getEnchantments();
+            for (Holder<Enchantment> enchant : itemEnchantments.keySet()) {
+                if (enchant.is(Enchantments.FROST_WALKER)) {
+                    hasFrostWalker = true;
+                    break OUTER;
+                }
+            }
+        }
         BlockState state = BlockStateInterface.get(ctx, pos);
-        return EnchantmentHelper.hasFrostWalker(ctx.player())
+        return hasFrostWalker
                 && state == FrostedIceBlock.meltsInto()
-                && ((Integer) state.getValue(LiquidBlock.LEVEL)) == 0;
+                && state.getValue(LiquidBlock.LEVEL) == 0;
     }
 
     /**

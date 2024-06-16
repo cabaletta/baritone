@@ -36,7 +36,7 @@ public enum BlockById implements IDatatypeFor<Block> {
 
     @Override
     public Block get(IDatatypeContext ctx) throws CommandException {
-        ResourceLocation id = new ResourceLocation(ctx.getConsumer().getString());
+        ResourceLocation id = ResourceLocation.parse(ctx.getConsumer().getString());
         Block block;
         if ((block = BuiltInRegistries.BLOCK.getOptional(id).orElse(null)) == null) {
             throw new IllegalArgumentException("no block found by that id");

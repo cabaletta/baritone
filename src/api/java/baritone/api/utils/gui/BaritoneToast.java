@@ -47,7 +47,7 @@ public class BaritoneToast implements Toast {
 
 
         //TODO: check
-        gui.blit(new ResourceLocation("textures/gui/toasts.png"), 0, 0, 0, 32, 160, 32);
+        gui.blit(ResourceLocation.parse("textures/gui/toasts.png"), 0, 0, 0, 32, 160, 32);
 
         if (this.subtitle == null) {
             gui.drawString(toastGui.getMinecraft().font, this.title, 18, 12, -11534256);

@@ -31,6 +31,7 @@ import baritone.utils.BlockStateInterface;
 import baritone.utils.IRenderer;
 import baritone.utils.PathRenderer;
 import baritone.utils.accessor.IFireworkRocketEntity;
+import com.mojang.blaze3d.vertex.BufferBuilder;
 import it.unimi.dsi.fastutil.floats.FloatArrayList;
 import it.unimi.dsi.fastutil.floats.FloatIterator;
 import net.minecraft.core.BlockPos;
@@ -424,28 +425,28 @@ public final class ElytraBehavior implements Helper {
             PathRenderer.drawGoal(event.getModelViewStack(), ctx, new GoalBlock(this.aimPos), event.getPartialTicks(), Color.GREEN);
         }
         if (!this.clearLines.isEmpty() && settings.elytraRenderRaytraces.value) {
-            IRenderer.startLines(Color.GREEN, settings.pathRenderLineWidthPixels.value, settings.renderPathIgnoreDepth.value);
+            BufferBuilder bufferBuilder = IRenderer.startLines(Color.GREEN, settings.pathRenderLineWidthPixels.value, settings.renderPathIgnoreDepth.value);
             for (Pair<Vec3, Vec3> line : this.clearLines) {
-                IRenderer.emitLine(event.getModelViewStack(), line.first(), line.second());
+                IRenderer.emitLine(bufferBuilder, event.getModelViewStack(), line.first(), line.second());
             }
-            IRenderer.endLines(settings.renderPathIgnoreDepth.value);
+            IRenderer.endLines(bufferBuilder, settings.renderPathIgnoreDepth.value);
         }
         if (!this.blockedLines.isEmpty() && Baritone.settings().elytraRenderRaytraces.value) {
-            IRenderer.startLines(Color.BLUE, settings.pathRenderLineWidthPixels.value, settings.renderPathIgnoreDepth.value);
+            BufferBuilder bufferBuilder = IRenderer.startLines(Color.BLUE, settings.pathRenderLineWidthPixels.value, settings.renderPathIgnoreDepth.value);
             for (Pair<Vec3, Vec3> line : this.blockedLines) {
-                IRenderer.emitLine(event.getModelViewStack(), line.first(), line.second());
+                IRenderer.emitLine(bufferBuilder, event.getModelViewStack(), line.first(), line.second());
             }
-            IRenderer.endLines(settings.renderPathIgnoreDepth.value);
+            IRenderer.endLines(bufferBuilder, settings.renderPathIgnoreDepth.value);
         }
         if (this.simulationLine != null && Baritone.settings().elytraRenderSimulation.value) {
-            IRenderer.startLines(new Color(0x36CCDC), settings.pathRenderLineWidthPixels.value, settings.renderPathIgnoreDepth.value);
+            BufferBuilder bufferBuilder = IRenderer.startLines(new Color(0x36CCDC), settings.pathRenderLineWidthPixels.value, settings.renderPathIgnoreDepth.value);
             final Vec3 offset = ctx.player().getPosition(event.getPartialTicks());
             for (int i = 0; i < this.simulationLine.size() - 1; i++) {
                 final Vec3 src = this.simulationLine.get(i).add(offset);
                 final Vec3 dst = this.simulationLine.get(i + 1).add(offset);
-                IRenderer.emitLine(event.getModelViewStack(), src, dst);
+                IRenderer.emitLine(bufferBuilder, event.getModelViewStack(), src, dst);
             }
-            IRenderer.endLines(settings.renderPathIgnoreDepth.value);
+            IRenderer.endLines(bufferBuilder, settings.renderPathIgnoreDepth.value);
         }
     }
 
