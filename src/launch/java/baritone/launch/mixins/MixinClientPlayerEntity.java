@@ -45,18 +45,18 @@ import java.lang.invoke.MethodType;
 @Mixin(LocalPlayer.class)
 public class MixinClientPlayerEntity {
     @Unique
-    private static final MethodHandle MAY_FLY;
-    static {
-        MethodHandle mayFly1;
+    private static final MethodHandle MAY_FLY = baritone$resolveMayFly();
+
+    @Unique
+    private static MethodHandle baritone$resolveMayFly() {
         try {
             var lookup = MethodHandles.publicLookup();
-            mayFly1 = lookup.findVirtual(LocalPlayer.class, "mayFly", MethodType.methodType(boolean.class));
+            return lookup.findVirtual(LocalPlayer.class, "mayFly", MethodType.methodType(boolean.class));
         } catch (NoSuchMethodException e) {
-            mayFly1 = null;
+            return null;
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         }
-        MAY_FLY = mayFly1;
     }
 
     @Inject(
