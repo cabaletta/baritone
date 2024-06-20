@@ -95,8 +95,7 @@ jar {
 }
 
 task proguard(type: ProguardTask) {
-    url 'https://github.com/Guardsquare/proguard/releases/download/v7.2.1/proguard-7.2.1.zip'
-    extract 'proguard-7.2.1/lib/proguard.jar'
+    proguardVersion "7.2.1"
 }
 
 task createDist(type: CreateDistTask, dependsOn: proguard)
