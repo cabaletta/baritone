@@ -44,7 +44,9 @@ dependencies {
 }
 
 var props = new java.util.Properties()
-props.load(project.file("../gradle.properties").text)
+try (var stream = project.file("../gradle.properties").newInputStream()) {
+    props.load(stream)
+}
 var javaVersion = props.getProperty("java_version") as String
 
 java {
