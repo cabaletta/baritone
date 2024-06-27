@@ -43,8 +43,7 @@ dependencies {
     implementation group: 'xyz.wagyourtail.unimined', name: 'xyz.wagyourtail.unimined.gradle.plugin', version: '1.0.5'
 }
 
-
-var props = Properties()
+var props = new java.util.Properties()
 props.load(project.file("../gradle.properties").text)
 var javaVersion = props.getProperty("java_version") as String
 
