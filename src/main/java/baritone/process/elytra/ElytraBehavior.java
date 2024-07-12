@@ -508,9 +508,19 @@ public final class ElytraBehavior implements Helper {
         }
         this.solverExecutor.shutdown();
         try {
-            while (!this.solverExecutor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS)) {}
+            // Attempt to shutdown cleanly
+            if (!this.solverExecutor.awaitTermination(60, TimeUnit.SECONDS)) {
+                // Force a shutdown if clean shutdown fails
+                this.solverExecutor.shutdownNow();
+                if (!this.solverExecutor.awaitTermination(60, TimeUnit.SECONDS)) {
+                    System.err.println("ExecutorService did not terminate");
+                }
+            }
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            // (Re-)Cancel if current thread also interrupted
+            this.solverExecutor.shutdownNow();
+            // Preserve interrupt status
+            Thread.currentThread().interrupt();
         }
         this.context.destroy();
     }
