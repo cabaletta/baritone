@@ -28,6 +28,7 @@ import baritone.api.process.IBaritoneProcess;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 public class ETACommand extends Command {
@@ -50,13 +51,29 @@ public class ETACommand extends Command {
         double ticksRemainingInGoal = pathingBehavior.estimatedTicksToGoal().orElse(Double.NaN);
 
         logDirect(String.format(
-                "Next segment: %.1fs (%.0f ticks)\n" +
-                        "Goal: %.1fs (%.0f ticks)",
-                ticksRemainingInSegment / 20, // we just assume tps is 20, it isn't worth the effort that is needed to calculate it exactly
+                "Next segment: %s (%.0f ticks)\n" +
+                        "Goal: %s (%.0f ticks)",
+                formatTime(ticksRemainingInSegment / 20),
                 ticksRemainingInSegment,
-                ticksRemainingInGoal / 20,
+                formatTime(ticksRemainingInGoal / 20),
                 ticksRemainingInGoal
         ));
+    }
+
+    private String formatTime(double seconds) {
+        long totalSeconds = (long) seconds;
+        long days = TimeUnit.SECONDS.toDays(totalSeconds);
+        long hours = TimeUnit.SECONDS.toHours(totalSeconds) % 24;
+        long minutes = TimeUnit.SECONDS.toMinutes(totalSeconds) % 60;
+        long secs = totalSeconds % 60;
+
+        StringBuilder sb = new StringBuilder();
+        if (days > 0) sb.append(days).append("d ");
+        if (hours > 0) sb.append(hours).append("h ");
+        if (minutes > 0) sb.append(minutes).append("m ");
+        sb.append(secs).append("s");
+
+        return sb.toString();
     }
 
     @Override
