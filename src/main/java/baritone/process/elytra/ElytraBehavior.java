@@ -116,6 +116,9 @@ public final class ElytraBehavior implements Helper {
     private int invTickCountdown = 0;
     private final Queue<Runnable> invTransactionQueue = new LinkedList<>();
 
+    // Track positions for speed calculation
+    private final Deque<PositionTime> positionHistory = new LinkedList<>();
+
     public ElytraBehavior(Baritone baritone, ElytraProcess process, BlockPos destination, boolean appendDestination) {
         this.baritone = baritone;
         this.ctx = baritone.getPlayerContext();
@@ -130,6 +133,33 @@ public final class ElytraBehavior implements Helper {
 
         this.context = new NetherPathfinderContext(Baritone.settings().elytraNetherSeed.value);
         this.boi = new BlockStateOctreeInterface(context);
+    }
+
+    private void updatePositionHistory() {
+        positionHistory.addLast(new PositionTime(ctx.player().position(), System.currentTimeMillis()));
+        // Remove positions older than 20 seconds
+        long cutoffTime = System.currentTimeMillis() - 20_000;
+        while (!positionHistory.isEmpty() && positionHistory.getFirst().timestamp < cutoffTime) {
+            positionHistory.removeFirst();
+        }
+    }
+
+    private double calculateAverageSpeed() {
+        if (positionHistory.size() < 2) return Double.NaN;
+        PositionTime first = positionHistory.getFirst();
+        PositionTime last = positionHistory.getLast();
+        double distance = first.position.distanceTo(last.position);
+        double timeElapsed = (last.timestamp - first.timestamp) / 1000.0;
+        return distance / timeElapsed; // Blocks per second
+    }
+
+    public double calculateETA() {
+        double averageSpeed = calculateAverageSpeed();
+        if (Double.isNaN(averageSpeed)) return Double.NaN;
+        Vec3 currentPosition = ctx.player().position();
+        Vec3 goalPosition = new Vec3(destination.x, destination.y, destination.z);
+        double distanceRemaining = currentPosition.distanceTo(goalPosition);
+        return distanceRemaining / averageSpeed; // Seconds
     }
 
     public final class PathManager {
@@ -221,6 +251,8 @@ public final class ElytraBehavior implements Helper {
             }
 
             this.recalculating = true;
+
+
             final List<BetterBlockPos> before = this.path.subList(0, afterIncl + 1);
             final long start = System.nanoTime();
             final BetterBlockPos pathStart = this.path.get(afterIncl);
@@ -578,7 +610,10 @@ public final class ElytraBehavior implements Helper {
             return;
         }
 
+        updatePositionHistory();
+
         trySwapElytra();
+        replenishFireworks();
 
         if (ctx.player().horizontalCollision) {
             logVerbose("hbonk");
@@ -1283,7 +1318,9 @@ public final class ElytraBehavior implements Helper {
     }
 
     private void queueWindowClick(int windowId, int slotId, int button, ClickType type) {
-        invTransactionQueue.add(() -> ctx.playerController().windowClick(windowId, slotId, button, type, ctx.player()));
+        invTransactionQueue.add(() -> ctx.playerController().windowClick(windowId,
+
+ slotId, button, type, ctx.player()));
     }
 
     private int findGoodElytra() {
@@ -1315,12 +1352,125 @@ public final class ElytraBehavior implements Helper {
             queueWindowClick(ctx.player().inventoryMenu.containerId, slotId, 0, ClickType.PICKUP);
             queueWindowClick(ctx.player().inventoryMenu.containerId, CHEST_SLOT, 0, ClickType.PICKUP);
             queueWindowClick(ctx.player().inventoryMenu.containerId, slotId, 0, ClickType.PICKUP);
+        } else {
+            rechargeElytra();
         }
+    }
+
+    private void replenishFireworks() {
+        if (Baritone.settings().elytraReplenishFireworksInventory.value.equals(true)) {
+            return;
+        }
+
+        // Check if there are fireworks in the hotbar
+        boolean fireworksInHotbar = false;
+        NonNullList<ItemStack> inventory = ctx.player().getInventory().items;
+        for (int i = 0; i < 9; i++) {
+            if (isFireworks(inventory.get(i))) {
+                fireworksInHotbar = true;
+                break;
+            }
+        }
+
+        if (fireworksInHotbar) {
+            return;
+        }
+
+        // Find fireworks in the inventory
+        int fireworksSlot = -1;
+        for (int i = 9; i < inventory.size(); i++) {
+            if (isFireworks(inventory.get(i))) {
+                fireworksSlot = i;
+                break;
+            }
+        }
+
+        if (fireworksSlot == -1) {
+            logDirect("No fireworks in inventory");
+            return;
+        }
+
+        // Move fireworks to the hotbar
+        final int slotId = fireworksSlot < 9 ? fireworksSlot + 36 : fireworksSlot;
+        for (int i = 0; i < 9; i++) {
+            if (inventory.get(i).isEmpty()) {
+                queueWindowClick(ctx.player().inventoryMenu.containerId, slotId, 0, ClickType.PICKUP);
+                queueWindowClick(ctx.player().inventoryMenu.containerId, i + 36, 0, ClickType.PICKUP);
+                queueWindowClick(ctx.player().inventoryMenu.containerId, slotId, 0, ClickType.PICKUP);
+                break;
+            }
+        }
+    }
+
+    private void rechargeElytra() {
+        ItemStack chest = ctx.player().getItemBySlot(EquipmentSlot.CHEST);
+        if (chest.getItem() != Items.ELYTRA
+            || chest.getItem().getMaxDamage() - chest.getDamageValue() > Baritone.settings().elytraMinimumDurability.value) {
+            return;
+        }
+
+        int chestSlotIndex = findSlotWithItem(chest);
+        if (chestSlotIndex == -1) {
+            return;
+        }
+
+        // Swap Elytra to offhand
+        queueWindowClick(ctx.player().inventoryMenu.containerId, chestSlotIndex, 0, ClickType.PICKUP);
+        queueWindowClick(ctx.player().inventoryMenu.containerId, 45, 0, ClickType.PICKUP); // 45 is the offhand slot
+        queueWindowClick(ctx.player().inventoryMenu.containerId, chestSlotIndex, 0, ClickType.PICKUP);
+
+        // Use XP bottles to repair
+        ItemStack xpBottles = findXPBottles();
+        while (xpBottles != null && chest.getDamageValue() > 0) {
+            int xpBottleSlotIndex = findSlotWithItem(xpBottles);
+            if (xpBottleSlotIndex == -1) {
+                break;
+            }
+            queueWindowClick(ctx.player().inventoryMenu.containerId, xpBottleSlotIndex, 0, ClickType.PICKUP);
+            queueWindowClick(ctx.player().inventoryMenu.containerId, xpBottleSlotIndex, 1, ClickType.PICKUP); // Right click to use
+            xpBottles = findXPBottles();
+        }
+
+        // Swap Elytra back to chest slot
+        queueWindowClick(ctx.player().inventoryMenu.containerId, chestSlotIndex, 0, ClickType.PICKUP);
+        queueWindowClick(ctx.player().inventoryMenu.containerId, 6, 0, ClickType.PICKUP); // 6 is the chest slot
+        queueWindowClick(ctx.player().inventoryMenu.containerId, chestSlotIndex, 0, ClickType.PICKUP);
+    }
+
+    private int findSlotWithItem(ItemStack item) {
+        NonNullList<ItemStack> invy = ctx.player().getInventory().items;
+        for (int i = 0; i < invy.size(); i++) {
+            if (ItemStack.isSame(item, invy.get(i))) {
+                return i < 9 ? i + 36 : i; // If the slot is within the hotbar, adjust the index
+            }
+        }
+        return -1;
+    }
+
+    private ItemStack findXPBottles() {
+        NonNullList<ItemStack> invy = ctx.player().getInventory().items;
+        for (ItemStack slot : invy) {
+            if (slot.getItem() == Items.EXPERIENCE_BOTTLE) {
+                return slot;
+            }
+        }
+        return null;
     }
 
     void logVerbose(String message) {
         if (Baritone.settings().elytraChatSpam.value) {
             logDebug(message);
+        }
+    }
+
+    // New class to store position and time for speed calculations
+    private static final class PositionTime {
+        public final Vec3 position;
+        public final long timestamp;
+
+        public PositionTime(Vec3 position, long timestamp) {
+            this.position = position;
+            this.timestamp = timestamp;
         }
     }
 }
