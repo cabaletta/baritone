@@ -1514,6 +1514,7 @@ public final class Settings {
     public final List<Setting<?>> allSettings;
 
     public final Map<Setting<?>, Type> settingTypes;
+    public Setting elytraReplenishFireworksInventory;
 
     public final class Setting<T> {
 
