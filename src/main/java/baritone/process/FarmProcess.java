@@ -42,6 +42,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.AirBlock;
+import net.minecraft.world.level.block.BambooStalkBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.BonemealableBlock;
@@ -95,6 +96,7 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
             Items.NETHER_WART,
             Items.COCOA_BEANS,
             Blocks.SUGAR_CANE.asItem(),
+            Blocks.BAMBOO.asItem(),
             Blocks.CACTUS.asItem()
     );
 
@@ -133,6 +135,15 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
             public boolean readyToHarvest(Level world, BlockPos pos, BlockState state) {
                 if (Baritone.settings().replantCrops.value) {
                     return world.getBlockState(pos.below()).getBlock() instanceof SugarCaneBlock;
+                }
+                return true;
+            }
+        },
+        BAMBOO(Blocks.BAMBOO, null) {
+            @Override
+            public boolean readyToHarvest(Level world, BlockPos pos, BlockState state) {
+                if (Baritone.settings().replantCrops.value) {
+                    return world.getBlockState(pos.below()).getBlock() instanceof BambooStalkBlock;
                 }
                 return true;
             }
