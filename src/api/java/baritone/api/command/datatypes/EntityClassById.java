@@ -30,7 +30,7 @@ public enum EntityClassById implements IDatatypeFor<EntityType> {
 
     @Override
     public EntityType get(IDatatypeContext ctx) throws CommandException {
-        ResourceLocation id = new ResourceLocation(ctx.getConsumer().getString());
+        ResourceLocation id = ResourceLocation.parse(ctx.getConsumer().getString());
         EntityType entity;
         if ((entity = BuiltInRegistries.ENTITY_TYPE.getOptional(id).orElse(null)) == null) {
             throw new IllegalArgumentException("no entity found by that id");

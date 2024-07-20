@@ -94,7 +94,7 @@ public final class LitematicaSchematic extends StaticSchematic {
         BlockState[] blockList = new BlockState[blockStatePalette.size()];
 
         for (int i = 0; i < blockStatePalette.size(); i++) {
-            Block block = BuiltInRegistries.BLOCK.get(new ResourceLocation((((CompoundTag) blockStatePalette.get(i)).getString("Name"))));
+            Block block = BuiltInRegistries.BLOCK.get(ResourceLocation.parse((((CompoundTag) blockStatePalette.get(i)).getString("Name"))));
             CompoundTag properties = ((CompoundTag) blockStatePalette.get(i)).getCompound("Properties");
 
             blockList[i] = getBlockState(block, properties);

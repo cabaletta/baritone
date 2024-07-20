@@ -19,16 +19,19 @@ package baritone.utils;
 
 import baritone.Baritone;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.Holder;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.item.TieredItem;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.item.enchantment.*;
+import net.minecraft.world.item.enchantment.effects.EnchantmentAttributeEffect;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -93,7 +96,15 @@ public class ToolSet {
     }
 
     public boolean hasSilkTouch(ItemStack stack) {
-        return EnchantmentHelper.getItemEnchantmentLevel(Enchantments.SILK_TOUCH, stack) > 0;
+        ItemEnchantments enchantments = stack.getEnchantments();
+        for (Holder<Enchantment> enchant : enchantments.keySet()) {
+            // silk touch enchantment is still special cased as affecting block drops
+            // not possible to add custom attribute via datapack
+            if (enchant.is(Enchantments.SILK_TOUCH) && enchantments.getLevel(enchant) > 0) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -184,9 +195,15 @@ public class ToolSet {
 
         float speed = item.getDestroySpeed(state);
         if (speed > 1) {
-            int effLevel = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.EFFICIENCY, item);
-            if (effLevel > 0 && !item.isEmpty()) {
-                speed += effLevel * effLevel + 1;
+            final ItemEnchantments itemEnchantments = item.getEnchantments();
+            OUTER: for (Holder<Enchantment> enchant : itemEnchantments.keySet()) {
+                List<EnchantmentAttributeEffect> effects = enchant.value().getEffects(EnchantmentEffectComponents.ATTRIBUTES);
+                for (EnchantmentAttributeEffect e : effects) {
+                    if (e.attribute().is(Attributes.MINING_EFFICIENCY.unwrapKey().get())) {
+                        speed += e.amount().calculate(itemEnchantments.getLevel(enchant));
+                        break OUTER;
+                    }
+                }
             }
         }
 
