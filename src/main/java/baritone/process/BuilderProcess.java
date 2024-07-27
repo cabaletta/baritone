@@ -229,19 +229,19 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
     public void buildOpenLitematic(int i) {
         if (LitematicaHelper.isLitematicaPresent()) {
             //if java.lang.NoSuchMethodError is thrown see comment in SchematicPlacementManager
-            if (LitematicaHelper.hasLoadedSchematic()) {
+            if (LitematicaHelper.hasLoadedSchematic(i)) {
                 String name = LitematicaHelper.getName(i);
                 try {
-                    LitematicaSchematic schematic1 = new LitematicaSchematic(NbtIo.readCompressed(Files.newInputStream(LitematicaHelper.getSchematicFile(i).toPath())), false);
+                    LitematicaSchematic schematic1 = new LitematicaSchematic(NbtIo.readCompressed(Files.newInputStream(LitematicaHelper.getSchematicFile(i).toPath())));
                     Vec3i correctedOrigin = LitematicaHelper.getCorrectedOrigin(schematic1, i);
-                    ISchematic schematic2 = LitematicaHelper.blackMagicFuckery(schematic1, i);
+                    ISchematic schematic2 = LitematicaHelper.applyPlacementRotation(schematic1, i);
                     schematic2 = applyMapArtAndSelection(origin, (IStaticSchematic) schematic2);
                     build(name, schematic2, correctedOrigin);
                 } catch (Exception e) {
                     logDirect("Schematic File could not be loaded.");
                 }
             } else {
-                logDirect("No schematic currently loaded");
+                logDirect(String.format("List of placements has no entry %s", i + 1));
             }
         } else {
             logDirect("Litematica is not present");

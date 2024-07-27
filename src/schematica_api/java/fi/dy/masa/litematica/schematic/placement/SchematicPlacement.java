@@ -21,15 +21,13 @@ import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
 
 public class SchematicPlacement extends SchematicPlacementUnloaded {
-    private Rotation rotation;
-    private Mirror mirror;
 
     public Rotation getRotation() {
-        return this.rotation;
+        throw new LinkageError();
     }
 
     public Mirror getMirror() {
-        return this.mirror;
+        throw new LinkageError();
     }
 
 }

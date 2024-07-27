@@ -34,18 +34,9 @@ public class LitematicaCommand extends Command {
 
     @Override
     public void execute(String label, IArgConsumer args) throws CommandException {
-        int schematic = 0;
-        if (args.hasAny()) {
-            args.requireMax(1);
-            if (args.is(Integer.class)) {
-                schematic = args.getAs(Integer.class) - 1;
-            }
-        }
-        try {
-            baritone.getBuilderProcess().buildOpenLitematic(schematic);
-        } catch (IndexOutOfBoundsException e) {
-            logDirect("Pleas provide a valid index.");
-        }
+        args.requireMax(1);
+        int schematic = args.hasAny() ? args.getAs(Integer.class) - 1 : 0;
+        baritone.getBuilderProcess().buildOpenLitematic(schematic);
     }
 
     @Override

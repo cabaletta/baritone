@@ -23,21 +23,17 @@ import javax.annotation.Nullable;
 import java.io.File;
 
 public class SchematicPlacementUnloaded {
-    protected String name = "?";
-    @Nullable
-    protected File schematicFile;
-    protected BlockPos origin = BlockPos.ZERO;
 
     public String getName() {
-        return this.name;
+        throw new LinkageError();
     }
 
     @Nullable
     public File getSchematicFile() {
-        return this.schematicFile;
+        throw new LinkageError();
     }
 
     public BlockPos getOrigin() {
-        return this.origin;
+        throw new LinkageError();
     }
 }
