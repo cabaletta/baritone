@@ -226,6 +226,20 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
     }
 
     @Override
+    public void buildOpenLitematic() {
+        if (LitematicaHelper.isLitematicaPresent()) {
+            Integer selectedIndex = LitematicaHelper.getSelectedIndex();
+            if (selectedIndex != -1) {
+                buildOpenLitematic(selectedIndex);
+            } else {
+                logDirect("No schematic currently selected");
+            }
+        } else {
+            logDirect("Litematica is not present");
+        }
+    }
+
+    @Override
     public void buildOpenLitematic(int i) {
         if (LitematicaHelper.isLitematicaPresent()) {
             //if java.lang.NoSuchMethodError is thrown see comment in SchematicPlacementManager

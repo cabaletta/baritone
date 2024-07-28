@@ -55,6 +55,17 @@ public final class LitematicaHelper {
     }
 
     /**
+     * @return the index of the currently selected schematic. -1 if none selected.
+     */
+    public static Integer getSelectedIndex() {
+        try {
+            return DataManager.getSchematicPlacementManager().getAllSchematicsPlacements().indexOf(DataManager.getSchematicPlacementManager().getSelectedSchematicPlacement());
+        } catch (NullPointerException e) {
+            return -1;
+        }
+    }
+
+    /**
      * @param i index of the Schematic in the schematic placement list.
      * @return the name of the requested schematic.
      */

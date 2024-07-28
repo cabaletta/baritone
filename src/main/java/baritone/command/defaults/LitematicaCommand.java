@@ -40,11 +40,13 @@ public class LitematicaCommand extends Command {
             if (args.is(Integer.class)) {
                 schematic = args.getAs(Integer.class) - 1;
             }
-        }
-        try {
-            baritone.getBuilderProcess().buildOpenLitematic(schematic);
-        } catch (IndexOutOfBoundsException e) {
-            logDirect("Pleas provide a valid index.");
+            try {
+                baritone.getBuilderProcess().buildOpenLitematic(schematic);
+            } catch (IndexOutOfBoundsException e) {
+                logDirect("Pleas provide a valid index.");
+            }
+        } else {
+            baritone.getBuilderProcess().buildOpenLitematic();
         }
     }
 
