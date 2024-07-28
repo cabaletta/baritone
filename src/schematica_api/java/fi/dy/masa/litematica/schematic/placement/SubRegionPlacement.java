@@ -18,14 +18,20 @@
 package fi.dy.masa.litematica.schematic.placement;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.Mirror;
+import net.minecraft.world.level.block.Rotation;
 
-public class SchematicPlacementUnloaded {
+public class SubRegionPlacement {
 
-    public String getName() {
+    public BlockPos getPos() {
         throw new LinkageError();
     }
 
-    public BlockPos getOrigin() {
+    public Rotation getRotation() {
+        throw new LinkageError();
+    }
+
+    public Mirror getMirror() {
         throw new LinkageError();
     }
 }

@@ -17,6 +17,8 @@
 
 package fi.dy.masa.litematica.schematic.placement;
 
+import com.google.common.collect.ImmutableMap;
+import fi.dy.masa.litematica.schematic.LitematicaSchematic;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
 
@@ -30,4 +32,11 @@ public class SchematicPlacement extends SchematicPlacementUnloaded {
         throw new LinkageError();
     }
 
+    public ImmutableMap<String, SubRegionPlacement> getEnabledRelativeSubRegionPlacements() {
+        throw new LinkageError();
+    }
+
+    public LitematicaSchematic getSchematic() {
+        throw new LinkageError();
+    }
 }

@@ -39,14 +39,12 @@ import java.util.Optional;
  * @since 22.09.2022
  */
 public final class LitematicaSchematic extends StaticSchematic {
-    private final Vec3i offsetMinCorner;
 
     /**
      * @param nbtTagCompound a decompressed file stream aka nbt data.
      * @param rotated        if the schematic is rotated by 90°.
      */
     public LitematicaSchematic(CompoundTag nbt) {
-        this.offsetMinCorner = new Vec3i(getMinOfSchematic(nbt, "x"), getMinOfSchematic(nbt, "y"), getMinOfSchematic(nbt, "z"));
         CompoundTag size = nbt.getCompound("Metadata").getCompound("EnclosingSize");
         this.x = Math.abs(size.getInt("x"));
         this.y = Math.abs(size.getInt("y"));
@@ -173,6 +171,7 @@ public final class LitematicaSchematic extends StaticSchematic {
      * reads the file data.
      */
     private void fillInSchematic(CompoundTag nbt) {
+        Vec3i offsetMinCorner = new Vec3i(getMinOfSchematic(nbt, "x"), getMinOfSchematic(nbt, "y"), getMinOfSchematic(nbt, "z"));
         for (CompoundTag subReg : getRegions(nbt)) {
             ListTag usedBlockTypes = subReg.getList("BlockStatePalette", 10);
             BlockState[] blockList = getBlockList(usedBlockTypes);
@@ -182,7 +181,7 @@ public final class LitematicaSchematic extends StaticSchematic {
             long[] blockStateArray = subReg.getLongArray("BlockStates");
 
             LitematicaBitArray bitArray = new LitematicaBitArray(bitsPerBlock, regionVolume, blockStateArray);
-            writeSubregionIntoSchematic(subReg, blockList, bitArray);
+            writeSubregionIntoSchematic(subReg, offsetMinCorner, blockList, bitArray);
         }
     }
 
@@ -192,7 +191,7 @@ public final class LitematicaSchematic extends StaticSchematic {
      * @param blockList list with the different block types used in the schematic.
      * @param bitArray  bit array that holds the placement pattern.
      */
-    private void writeSubregionIntoSchematic(CompoundTag subReg, BlockState[] blockList, LitematicaBitArray bitArray) {
+    private void writeSubregionIntoSchematic(CompoundTag subReg, Vec3i offsetMinCorner, BlockState[] blockList, LitematicaBitArray bitArray) {
         int offsetX = getMinOfSubregion(subReg, "x") - offsetMinCorner.getX();
         int offsetY = getMinOfSubregion(subReg, "y") - offsetMinCorner.getY();
         int offsetZ = getMinOfSubregion(subReg, "z") - offsetMinCorner.getZ();
@@ -207,13 +206,6 @@ public final class LitematicaSchematic extends StaticSchematic {
                 }
             }
         }
-    }
-
-    /**
-     * @return offset from the schematic origin to the minimum Corner as a Vec3i.
-     */
-    public Vec3i getOffsetMinCorner() {
-        return offsetMinCorner;
     }
 
     /**

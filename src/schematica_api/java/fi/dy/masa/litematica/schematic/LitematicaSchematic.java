@@ -15,17 +15,18 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package fi.dy.masa.litematica.schematic.placement;
+package fi.dy.masa.litematica.schematic;
 
+import fi.dy.masa.litematica.schematic.container.LitematicaBlockStateContainer;
 import net.minecraft.core.BlockPos;
 
-public class SchematicPlacementUnloaded {
+public class LitematicaSchematic {
 
-    public String getName() {
+    public LitematicaBlockStateContainer getSubRegionContainer(String name) {
         throw new LinkageError();
     }
 
-    public BlockPos getOrigin() {
+    public BlockPos getAreaSize(String name) {
         throw new LinkageError();
     }
 }
