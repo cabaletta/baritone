@@ -29,6 +29,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.Rotation;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -1088,6 +1090,18 @@ public final class Settings {
      * When this setting is true, build a schematic with the highest Z coordinate being the origin, instead of the lowest
      */
     public final Setting<Boolean> schematicOrientationZ = new Setting<>(false);
+
+    /**
+     * Rotates the schematic before building it.
+     * Possible values are
+     * <ul>
+     *  <li> NONE - No rotation </li>
+     *  <li> CLOCKWISE_90 - Rotate 90° clockwise </li>
+     *  <li> CLOCKWISE_180 - Rotate 180° clockwise </li>
+     *  <li> COUNTERCLOCKWISE_90 - Rotate 270° clockwise </li>
+     * </ul>
+     */
+    public final Setting<Rotation> buildSchematicRotation = new Setting<>(Rotation.NONE);
 
     /**
      * The fallback used by the build command when no extension is specified. This may be useful if schematics of a
