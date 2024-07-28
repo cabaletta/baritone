@@ -71,10 +71,10 @@ public class Determinizer {
                     ByteArrayOutputStream cancer = new ByteArrayOutputStream();
                     copy(jarFile.getInputStream(entry), cancer);
                     String manifest = new String(cancer.toByteArray());
-                    if (!manifest.contains("baritone.launch.BaritoneTweaker")) {
+                    if (!manifest.contains("baritone.launch.tweaker.BaritoneTweaker")) {
                         throw new IllegalStateException("unable to replace");
                     }
-                    manifest = manifest.replace("baritone.launch.BaritoneTweaker", "org.spongepowered.asm.launch.MixinTweaker");
+                    manifest = manifest.replace("baritone.launch.tweaker.BaritoneTweaker", "org.spongepowered.asm.launch.MixinTweaker");
                     jos.write(manifest.getBytes());
                 } else {
                     copy(jarFile.getInputStream(entry), jos);
