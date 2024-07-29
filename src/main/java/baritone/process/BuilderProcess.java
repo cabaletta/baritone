@@ -51,7 +51,6 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
-import net.minecraft.nbt.NbtIo;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.BlockItem;
@@ -232,10 +231,9 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             if (LitematicaHelper.hasLoadedSchematic(i)) {
                 String name = LitematicaHelper.getName(i);
                 try {
-                    LitematicaSchematic schematic1 = new LitematicaSchematic(NbtIo.readCompressed(Files.newInputStream(LitematicaHelper.getSchematicFile(i).toPath())));
-                    Vec3i correctedOrigin = LitematicaHelper.getCorrectedOrigin(schematic1, i);
-                    ISchematic schematic2 = LitematicaHelper.applyPlacementRotation(schematic1, i);
-                    schematic2 = applyMapArtAndSelection(origin, (IStaticSchematic) schematic2);
+                    Tuple<IStaticSchematic, Vec3i> schematic = LitematicaHelper.getSchematic(i);
+                    Vec3i correctedOrigin = schematic.getB();
+                    ISchematic schematic2 = applyMapArtAndSelection(correctedOrigin, schematic.getA());
                     build(name, schematic2, correctedOrigin);
                 } catch (Exception e) {
                     logDirect("Schematic File could not be loaded.");

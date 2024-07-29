@@ -17,17 +17,21 @@
 
 package baritone.utils.schematic.litematica;
 
+import baritone.api.schematic.IStaticSchematic;
 import baritone.utils.schematic.StaticSchematic;
 import baritone.utils.schematic.format.defaults.LitematicaSchematic;
 import fi.dy.masa.litematica.Litematica;
 import fi.dy.masa.litematica.data.DataManager;
 import fi.dy.masa.litematica.schematic.placement.SchematicPlacement;
 import net.minecraft.core.Vec3i;
+import net.minecraft.nbt.NbtIo;
+import net.minecraft.util.Tuple;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
 
-import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 
 /**
  * Helper class that provides access or processes data related to Litmatica schematics.
@@ -69,20 +73,11 @@ public final class LitematicaHelper {
     }
 
     /**
-     * @param i index of the Schematic in the schematic placement list.
-     * @return Filepath of the schematic file.
-     */
-    public static File getSchematicFile(int i) {
-        return getPlacement(i).getSchematicFile();
-    }
-
-    /**
      * @param schematic original schematic.
      * @param i         index of the Schematic in the schematic placement list.
      * @return the minimum corner coordinates of the schematic, after the original schematic got rotated and mirrored.
      */
-    public static Vec3i getCorrectedOrigin(LitematicaSchematic schematic, int i) {
-        SchematicPlacement placement = getPlacement(i);
+    private static Vec3i getCorrectedOrigin(SchematicPlacement placement, LitematicaSchematic schematic) {
         Vec3i origin = placement.getOrigin();
         Vec3i minCorner = schematic.getOffsetMinCorner();
         int sx = 2 - schematic.widthX(); // this is because the position needs to be adjusted
@@ -137,10 +132,12 @@ public final class LitematicaHelper {
      * @param i       index of the Schematic in the schematic placement list.
      * @return get it out rotated and mirrored.
      */
-    public static StaticSchematic applyPlacementRotation(LitematicaSchematic schemIn, int i) {
+    public static Tuple<IStaticSchematic, Vec3i> getSchematic(int i) throws IOException {
         SchematicPlacement placement = getPlacement(i);
         Rotation rotation = placement.getRotation();
         Mirror mirror = placement.getMirror();
+        LitematicaSchematic schemIn = new LitematicaSchematic(NbtIo.readCompressed(Files.newInputStream(placement.getSchematicFile().toPath())));
+        Vec3i origin = getCorrectedOrigin(placement, schemIn);
         boolean flip = rotation == Rotation.CLOCKWISE_90 || rotation == Rotation.COUNTERCLOCKWISE_90;
         BlockState[][][] states = new BlockState[flip ? schemIn.lengthZ() : schemIn.widthX()][flip ? schemIn.widthX() : schemIn.lengthZ()][schemIn.heightY()];
         for (int yCounter = 0; yCounter < schemIn.heightY(); yCounter++) {
@@ -155,6 +152,6 @@ public final class LitematicaHelper {
                 }
             }
         }
-        return new StaticSchematic(states);
+        return new Tuple<>(new StaticSchematic(states), origin);
     }
 }
