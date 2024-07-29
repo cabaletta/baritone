@@ -15,13 +15,13 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package fi.dy.masa.litematica.schematic.container;
+package fi.dy.masa.litematica.world;
 
-import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.Level;
 
-public class LitematicaBlockStateContainer {
-
-    public BlockState get(int x, int y, int z) {
+public abstract class WorldSchematic extends Level {
+    private WorldSchematic() {
+        super(null, null, null, null, null, false, false, 0, 0);
         throw new LinkageError();
     }
 }

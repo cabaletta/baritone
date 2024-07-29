@@ -18,16 +18,15 @@
 package baritone.utils.schematic.litematica;
 
 import baritone.api.schematic.CompositeSchematic;
-import baritone.api.schematic.ISchematic;
 import baritone.api.schematic.IStaticSchematic;
-import baritone.api.schematic.MirroredSchematic;
-import baritone.api.schematic.RotatedSchematic;
 import baritone.utils.schematic.StaticSchematic;
 import fi.dy.masa.litematica.Litematica;
 import fi.dy.masa.litematica.data.DataManager;
-import fi.dy.masa.litematica.schematic.container.LitematicaBlockStateContainer;
 import fi.dy.masa.litematica.schematic.placement.SchematicPlacement;
 import fi.dy.masa.litematica.schematic.placement.SubRegionPlacement;
+import fi.dy.masa.litematica.world.SchematicWorldHandler;
+import fi.dy.masa.litematica.world.WorldSchematic;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.level.block.Mirror;
@@ -106,12 +105,12 @@ public final class LitematicaHelper {
         int minX = Integer.MAX_VALUE;
         int minY = Integer.MAX_VALUE;
         int minZ = Integer.MAX_VALUE;
-        HashMap<Vec3i, ISchematic> subRegions = new HashMap<>();
+        HashMap<Vec3i, StaticSchematic> subRegions = new HashMap<>();
+        WorldSchematic schematicWorld = SchematicWorldHandler.getSchematicWorld();
         for (Map.Entry<String, SubRegionPlacement> entry : placement.getEnabledRelativeSubRegionPlacements().entrySet()) {
             SubRegionPlacement subPlacement = entry.getValue();
             Vec3i pos = transform(subPlacement.getPos(), placement.getMirror(), placement.getRotation());
             Vec3i size = placement.getSchematic().getAreaSize(entry.getKey());
-            BlockState[][][] states = new BlockState[Math.abs(size.getX())][Math.abs(size.getZ())][Math.abs(size.getY())];
             size = transform(size, placement.getMirror(), placement.getRotation());
             size = transform(size, subPlacement.getMirror(), subPlacement.getRotation());
             int mx = Math.min(size.getX() + 1, 0);
@@ -120,36 +119,20 @@ public final class LitematicaHelper {
             minX = Math.min(minX, pos.getX() + mx);
             minY = Math.min(minY, pos.getY() + my);
             minZ = Math.min(minZ, pos.getZ() + mz);
-            LitematicaBlockStateContainer container = placement.getSchematic().getSubRegionContainer(entry.getKey());
+            BlockPos origin = placement.getOrigin().offset(pos).offset(mx, my, mz);
+            BlockState[][][] states = new BlockState[Math.abs(size.getX())][Math.abs(size.getZ())][Math.abs(size.getY())];
             for (int x = 0; x < states.length; x++) {
                 for (int z = 0; z < states[x].length; z++) {
                     for (int y = 0; y < states[x][z].length; y++) {
-                        states[x][z][y] = container.get(x, y, z);
+                        states[x][z][y] = schematicWorld.getBlockState(origin.offset(x, y, z));
                     }
                 }
             }
-            ISchematic schematic = new StaticSchematic(states);
-            Mirror mirror = subPlacement.getMirror();
-            Rotation rotation = subPlacement.getRotation().getRotated(placement.getRotation());
-            if (mirror != Mirror.NONE) {
-                rotation = rotation.getRotated(placement.getRotation()).getRotated(placement.getRotation());
-            }
-            if (mirror == placement.getMirror()) {
-                // nothing :)
-            } else if (mirror != Mirror.NONE && placement.getMirror() != Mirror.NONE) {
-                rotation = rotation.getRotated(Rotation.CLOCKWISE_180);
-            } else if (mirror != Mirror.NONE) {
-                schematic = new MirroredSchematic(schematic, mirror);
-            } else {
-                schematic = new MirroredSchematic(schematic, placement.getMirror());
-            }
-            if (rotation != Rotation.NONE) {
-                schematic = new RotatedSchematic(schematic, rotation);
-            }
+            StaticSchematic schematic = new StaticSchematic(states);
             subRegions.put(pos.offset(mx, my, mz), schematic);
         }
         LitematicaPlacementSchematic composite = new LitematicaPlacementSchematic();
-        for (Map.Entry<Vec3i, ISchematic> entry : subRegions.entrySet()) {
+        for (Map.Entry<Vec3i, StaticSchematic> entry : subRegions.entrySet()) {
             Vec3i pos = entry.getKey().offset(-minX, -minY, -minZ);
             composite.put(entry.getValue(), pos.getX(), pos.getY(), pos.getZ());
         }

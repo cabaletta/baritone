@@ -15,13 +15,11 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package fi.dy.masa.litematica.schematic;
+package fi.dy.masa.litematica.world;
 
-import net.minecraft.core.BlockPos;
+public class SchematicWorldHandler {
 
-public class LitematicaSchematic {
-
-    public BlockPos getAreaSize(String name) {
+    public static WorldSchematic getSchematicWorld() {
         throw new LinkageError();
     }
 }
