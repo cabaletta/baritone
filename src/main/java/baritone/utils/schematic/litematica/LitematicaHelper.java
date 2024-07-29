@@ -68,14 +68,6 @@ public final class LitematicaHelper {
         return DataManager.getSchematicPlacementManager().getAllSchematicsPlacements().get(i);
     }
 
-    /**
-     * @param i index of the Schematic in the schematic placement list.
-     * @return the name of the requested schematic.
-     */
-    public static String getName(int i) {
-        return getPlacement(i).getName();
-    }
-
     private static Vec3i transform(Vec3i in, Mirror mirror, Rotation rotation) {
         int x = in.getX();
         int z = in.getZ();
@@ -131,7 +123,7 @@ public final class LitematicaHelper {
             StaticSchematic schematic = new StaticSchematic(states);
             subRegions.put(pos.offset(mx, my, mz), schematic);
         }
-        LitematicaPlacementSchematic composite = new LitematicaPlacementSchematic();
+        LitematicaPlacementSchematic composite = new LitematicaPlacementSchematic(placement.getName());
         for (Map.Entry<Vec3i, StaticSchematic> entry : subRegions.entrySet()) {
             Vec3i pos = entry.getKey().offset(-minX, -minY, -minZ);
             composite.put(entry.getValue(), pos.getX(), pos.getY(), pos.getZ());
@@ -140,8 +132,11 @@ public final class LitematicaHelper {
     }
 
     private static class LitematicaPlacementSchematic extends CompositeSchematic implements IStaticSchematic {
-        public LitematicaPlacementSchematic() {
+        private final String name;
+
+        public LitematicaPlacementSchematic(String name) {
             super(0, 0, 0);
+            this.name = name;
         }
 
         @Override
@@ -150,6 +145,11 @@ public final class LitematicaHelper {
                 return desiredState(x, y, z, null, Collections.emptyList());
             }
             return null;
+        }
+
+        @Override
+        public String toString() {
+            return name;
         }
     }
 }
