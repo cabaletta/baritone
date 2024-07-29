@@ -17,10 +17,9 @@
 
 package baritone.utils.schematic.litematica;
 
-import baritone.api.schematic.AbstractSchematic;
-import baritone.api.schematic.IStaticSchematic;
-import baritone.api.schematic.ISchematic;
 import baritone.api.schematic.CompositeSchematic;
+import baritone.api.schematic.ISchematic;
+import baritone.api.schematic.IStaticSchematic;
 import baritone.api.schematic.MirroredSchematic;
 import baritone.api.schematic.RotatedSchematic;
 import baritone.utils.schematic.StaticSchematic;
@@ -35,8 +34,8 @@ import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
 
-import java.util.List;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -78,71 +77,50 @@ public final class LitematicaHelper {
         return getPlacement(i).getName();
     }
 
-    /**
-     * @param in     the xyz offsets of the block relative to the schematic minimum corner.
-     * @param sizeX  size of the schematic in the x-axis direction.
-     * @param sizeZ  size of the schematic in the z-axis direction.
-     * @param mirror the mirroring of the schematic placement.
-     * @return the corresponding xyz coordinates after mirroring them according to the given mirroring.
-     */
-    static Vec3i doMirroring(Vec3i in, int sizeX, int sizeZ, Mirror mirror) {
-        int xOut = in.getX();
-        int zOut = in.getZ();
+    private static Vec3i transform(Vec3i in, Mirror mirror, Rotation rotation) {
+        int x = in.getX();
+        int z = in.getZ();
         if (mirror == Mirror.LEFT_RIGHT) {
-            zOut = sizeZ - 1 - in.getZ();
+            z = -z;
         } else if (mirror == Mirror.FRONT_BACK) {
-            xOut = sizeX - 1 - in.getX();
+            x = -x;
         }
-        return new Vec3i(xOut, in.getY(), zOut);
-    }
-
-    /**
-     * @param in    the xyz offsets of the block relative to the schematic minimum corner.
-     * @param sizeX size of the schematic in the x-axis direction.
-     * @param sizeZ size of the schematic in the z-axis direction.
-     * @param rotation the rotation to apply
-     * @return the corresponding xyz coordinates after applying {@code rotation}.
-     */
-    static Vec3i rotate(Vec3i in, int sizeX, int sizeZ, Rotation rotation) {
         switch (rotation) {
             case CLOCKWISE_90:
-                return new Vec3i(sizeZ - 1 - in.getZ(), in.getY(), in.getX());
+                return new Vec3i(-z, in.getY(), x);
             case CLOCKWISE_180:
-                return new Vec3i(sizeX - 1 - in.getX(), in.getY(), sizeZ - 1 - in.getZ());
+                return new Vec3i(-x, in.getY(), -z);
             case COUNTERCLOCKWISE_90:
-                return new Vec3i(in.getZ(), in.getY(), sizeX - 1 - in.getX());
+                return new Vec3i(z, in.getY(), -x);
             default:
-                return in;
+                return new Vec3i(x, in.getY(), z);
         }
     }
 
     /**
-     * @param schemIn give in the original schematic.
-     * @param i       index of the Schematic in the schematic placement list.
-     * @return get it out rotated and mirrored.
+     * @param i   index of the Schematic in the schematic placement list.
+     * @return    The transformed schematic and the position of its minimum corner
      */
     public static Tuple<IStaticSchematic, Vec3i> getSchematic(int i) {
-        // annoying fun fact: you can't just work in placement coordinates and then apply
-        // the placement rotation/mirror to the result because litematica applies the
-        // global transforms *before* applying the local transforms
         SchematicPlacement placement = getPlacement(i);
-        CompositeSchematic composite = new CompositeSchematic(0, 0, 0);
         int minX = Integer.MAX_VALUE;
         int minY = Integer.MAX_VALUE;
         int minZ = Integer.MAX_VALUE;
+        HashMap<Vec3i, ISchematic> subRegions = new HashMap<>();
         for (Map.Entry<String, SubRegionPlacement> entry : placement.getEnabledRelativeSubRegionPlacements().entrySet()) {
             SubRegionPlacement subPlacement = entry.getValue();
-            Vec3i pos = subPlacement.getPos();
+            Vec3i pos = transform(subPlacement.getPos(), placement.getMirror(), placement.getRotation());
             Vec3i size = placement.getSchematic().getAreaSize(entry.getKey());
-            minX = Math.min(pos.getX() + Math.min(size.getX() + 1, 0), minX);
-            minY = Math.min(pos.getY() + Math.min(size.getY() + 1, 0), minY);
-            minZ = Math.min(pos.getZ() + Math.min(size.getZ() + 1, 0), minZ);
-        }
-        for (Map.Entry<String, SubRegionPlacement> entry : placement.getEnabledRelativeSubRegionPlacements().entrySet()) {
-            SubRegionPlacement subPlacement = entry.getValue();
-            Vec3i size = placement.getSchematic().getAreaSize(entry.getKey());
-            LitematicaBlockStateContainer container = placement.getSchematic().getSubRegionContainer(entry.getKey());
             BlockState[][][] states = new BlockState[Math.abs(size.getX())][Math.abs(size.getZ())][Math.abs(size.getY())];
+            size = transform(size, placement.getMirror(), placement.getRotation());
+            size = transform(size, subPlacement.getMirror(), subPlacement.getRotation());
+            int mx = Math.min(size.getX() + 1, 0);
+            int my = Math.min(size.getY() + 1, 0);
+            int mz = Math.min(size.getZ() + 1, 0);
+            minX = Math.min(minX, pos.getX() + mx);
+            minY = Math.min(minY, pos.getY() + my);
+            minZ = Math.min(minZ, pos.getZ() + mz);
+            LitematicaBlockStateContainer container = placement.getSchematic().getSubRegionContainer(entry.getKey());
             for (int x = 0; x < states.length; x++) {
                 for (int z = 0; z < states[x].length; z++) {
                     for (int y = 0; y < states[x][z].length; y++) {
@@ -152,42 +130,35 @@ public final class LitematicaHelper {
             }
             ISchematic schematic = new StaticSchematic(states);
             Mirror mirror = subPlacement.getMirror();
-            Rotation rotation = subPlacement.getRotation();
-            if (placement.getRotation() == Rotation.CLOCKWISE_90 || placement.getRotation() == Rotation.COUNTERCLOCKWISE_90) {
-                mirror = mirror == Mirror.LEFT_RIGHT ? Mirror.FRONT_BACK : Mirror.LEFT_RIGHT;
+            Rotation rotation = subPlacement.getRotation().getRotated(placement.getRotation());
+            if (mirror != Mirror.NONE) {
+                rotation = rotation.getRotated(placement.getRotation()).getRotated(placement.getRotation());
             }
-            if (placement.getMirror() != Mirror.NONE) {
-                rotation = rotation.getRotated(rotation).getRotated(rotation); // inverse rotation
+            if (mirror == placement.getMirror()) {
+                // nothing :)
+            } else if (mirror != Mirror.NONE && placement.getMirror() != Mirror.NONE) {
+                rotation = rotation.getRotated(Rotation.CLOCKWISE_180);
+            } else if (mirror != Mirror.NONE) {
+                schematic = new MirroredSchematic(schematic, mirror);
+            } else {
+                schematic = new MirroredSchematic(schematic, placement.getMirror());
             }
-            schematic = new MirroredSchematic(schematic, mirror);
-            schematic = new RotatedSchematic(schematic, rotation);
-            int mx = Math.min(size.getX() + 1, 0);
-            int my = Math.min(size.getY() + 1, 0);
-            int mz = Math.min(size.getZ() + 1, 0);
-            int sx = 2 - Math.abs(size.getX()); // this is because the position needs to be adjusted
-            int sz = 2 - Math.abs(size.getZ()); // by widthX/lengthZ after every transformation
-            Vec3i minCorner = new Vec3i(mx, my, mz);
-            minCorner = rotate(doMirroring(minCorner, sx, sz, mirror), sx, sz, rotation);
-            Vec3i pos = subPlacement.getPos().offset(minCorner).offset(-minX, -minY, -minZ);
-            composite.put(schematic, pos.getX(), pos.getY(), pos.getZ());
+            if (rotation != Rotation.NONE) {
+                schematic = new RotatedSchematic(schematic, rotation);
+            }
+            subRegions.put(pos.offset(mx, my, mz), schematic);
         }
-        int sx = 2 - composite.widthX(); // this is because the position needs to be adjusted
-        int sz = 2 - composite.lengthZ(); // by widthX/lengthZ after every transformation
-        Vec3i minCorner = new Vec3i(minX, minY, minZ);
-        Mirror mirror = placement.getMirror();
-        Rotation rotation = placement.getRotation();
-        minCorner = rotate(doMirroring(minCorner, sx, sz, mirror), sx, sz, rotation);
-        ISchematic schematic = new MirroredSchematic(composite, mirror);
-        schematic = new RotatedSchematic(schematic, rotation);
-        return new Tuple<>(new LitematicaPlacementSchematic(schematic), placement.getOrigin().offset(minCorner));
+        LitematicaPlacementSchematic composite = new LitematicaPlacementSchematic();
+        for (Map.Entry<Vec3i, ISchematic> entry : subRegions.entrySet()) {
+            Vec3i pos = entry.getKey().offset(-minX, -minY, -minZ);
+            composite.put(entry.getValue(), pos.getX(), pos.getY(), pos.getZ());
+        }
+        return new Tuple<>(composite, placement.getOrigin().offset(minX, minY, minZ));
     }
 
-    private static class LitematicaPlacementSchematic extends AbstractSchematic implements IStaticSchematic {
-        private final ISchematic schematic;
-
-        public LitematicaPlacementSchematic(ISchematic schematic) {
-            super(schematic.widthX(), schematic.heightY(), schematic.lengthZ());
-            this.schematic = schematic;
+    private static class LitematicaPlacementSchematic extends CompositeSchematic implements IStaticSchematic {
+        public LitematicaPlacementSchematic() {
+            super(0, 0, 0);
         }
 
         @Override
@@ -196,16 +167,6 @@ public final class LitematicaHelper {
                 return desiredState(x, y, z, null, Collections.emptyList());
             }
             return null;
-        }
-
-        @Override
-        public BlockState desiredState(int x, int y, int z, BlockState current, List<BlockState> approxPlaceable) {
-            return schematic.desiredState(x, y, z, current, approxPlaceable);
-        }
-
-        @Override
-        public boolean inSchematic(int x, int y, int z, BlockState current) {
-            return schematic.inSchematic(x, y, z, current);
         }
     }
 }
