@@ -140,22 +140,6 @@ public final class LitematicaSchematic extends StaticSchematic {
     }
 
     /**
-     * Subregion don't have to be the same size as the enclosing size of the schematic. If they are smaller we check here if the current block is part of the subregion.
-     *
-     * @param x coord of the block relative to the minimum corner.
-     * @param y coord of the block relative to the minimum corner.
-     * @param z coord of the block relative to the minimum corner.
-     * @return if the current block is part of the subregion.
-     */
-    private static boolean inSubregion(CompoundTag subReg, int x, int y, int z) {
-        CompoundTag size = subReg.getCompound("Size");
-        return x >= 0 && y >= 0 && z >= 0 &&
-                x < Math.abs(size.getInt("x")) &&
-                y < Math.abs(size.getInt("y")) &&
-                z < Math.abs(size.getInt("z"));
-    }
-
-    /**
      * @param s axis.
      * @return the lowest coordinate of that axis of the schematic.
      */
@@ -195,14 +179,16 @@ public final class LitematicaSchematic extends StaticSchematic {
         int offsetX = getMinOfSubregion(subReg, "x") - offsetMinCorner.getX();
         int offsetY = getMinOfSubregion(subReg, "y") - offsetMinCorner.getY();
         int offsetZ = getMinOfSubregion(subReg, "z") - offsetMinCorner.getZ();
+        CompoundTag size = subReg.getCompound("Size");
+        int sizeX = Math.abs(size.getInt("x"));
+        int sizeY = Math.abs(size.getInt("y"));
+        int sizeZ = Math.abs(size.getInt("z"));
         int index = 0;
-        for (int y = 0; y < this.y; y++) {
-            for (int z = 0; z < this.z; z++) {
-                for (int x = 0; x < this.x; x++) {
-                    if (inSubregion(subReg, x, y, z)) {
-                        this.states[x + offsetX][z + offsetZ][y + offsetY] = blockList[bitArray.getAt(index)];
-                        index++;
-                    }
+        for (int y = 0; y < sizeY; y++) {
+            for (int z = 0; z < sizeZ; z++) {
+                for (int x = 0; x < sizeX; x++) {
+                    this.states[x + offsetX][z + offsetZ][y + offsetY] = blockList[bitArray.getAt(index)];
+                    index++;
                 }
             }
         }
