@@ -17,6 +17,8 @@
 
 package baritone.utils.schematic.format.defaults;
 
+import baritone.api.schematic.CompositeSchematic;
+import baritone.api.schematic.IStaticSchematic;
 import baritone.utils.schematic.StaticSchematic;
 import net.minecraft.core.Vec3i;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -29,6 +31,7 @@ import net.minecraft.world.level.block.state.properties.Property;
 import org.apache.commons.lang3.Validate;
 
 import javax.annotation.Nullable;
+import java.util.Collections;
 import java.util.Optional;
 
 /**
@@ -38,18 +41,14 @@ import java.util.Optional;
  * @author rycbar
  * @since 22.09.2022
  */
-public final class LitematicaSchematic extends StaticSchematic {
+public final class LitematicaSchematic extends CompositeSchematic implements IStaticSchematic {
 
     /**
      * @param nbtTagCompound a decompressed file stream aka nbt data.
      * @param rotated        if the schematic is rotated by 90°.
      */
     public LitematicaSchematic(CompoundTag nbt) {
-        CompoundTag size = nbt.getCompound("Metadata").getCompound("EnclosingSize");
-        this.x = Math.abs(size.getInt("x"));
-        this.y = Math.abs(size.getInt("y"));
-        this.z = Math.abs(size.getInt("z"));
-        this.states = new BlockState[this.x][this.z][this.y];
+        super(0, 0, 0);
         fillInSchematic(nbt);
     }
 
@@ -183,15 +182,22 @@ public final class LitematicaSchematic extends StaticSchematic {
         int sizeX = Math.abs(size.getInt("x"));
         int sizeY = Math.abs(size.getInt("y"));
         int sizeZ = Math.abs(size.getInt("z"));
+        BlockState[][][] states = new BlockState[sizeX][sizeZ][sizeY];
         int index = 0;
         for (int y = 0; y < sizeY; y++) {
             for (int z = 0; z < sizeZ; z++) {
                 for (int x = 0; x < sizeX; x++) {
-                    this.states[x + offsetX][z + offsetZ][y + offsetY] = blockList[bitArray.getAt(index)];
+                    states[x][z][y] = blockList[bitArray.getAt(index)];
                     index++;
                 }
             }
         }
+        this.put(new StaticSchematic(states), offsetX, offsetY, offsetZ);
+    }
+
+    @Override
+    public BlockState getDirect(int x, int y, int z) {
+        return desiredState(x, y, z, null, Collections.emptyList());
     }
 
     /**
