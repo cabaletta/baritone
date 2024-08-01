@@ -26,7 +26,7 @@ plugins {
 unimined.minecraft {
     runs.client = {
         mainClass = "net.minecraft.launchwrapper.Launch"
-        args.addAll(["--tweakClass", "baritone.launch.BaritoneTweaker"])
+        args.addAll(["--tweakClass", "baritone.launch.tweaker.BaritoneTweaker"])
     }
 }
 
@@ -94,8 +94,7 @@ jar {
 }
 
 task proguard(type: ProguardTask) {
-    url 'https://github.com/Guardsquare/proguard/releases/download/v7.4.2/proguard-7.4.2.zip'
-    extract 'proguard-7.4.2/lib/proguard.jar'
+    proguardVersion "7.4.2"
 }
 
 task createDist(type: CreateDistTask, dependsOn: proguard)
