@@ -325,7 +325,9 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         }
     }
 
-    private Optional<Placement> searchForPlacables(BuilderCalculationContext bcc, List<BlockState> desirableOnHotbar) {
+    private Optional<List<Placement>> searchForPlacables(BuilderCalculationContext bcc, List<BlockState> desirableOnHotbar) {
+        ArrayList<Placement> list = new ArrayList<>();
+
         BetterBlockPos center = ctx.playerFeet();
         for (int dx = -5; dx <= 5; dx++) {
             for (int dy = -5; dy <= 1; dy++) {
@@ -344,13 +346,14 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                         }
                         desirableOnHotbar.add(desired);
                         Optional<Placement> opt = possibleToPlace(desired, x, y, z, bcc.bsi);
-                        if (opt.isPresent()) {
-                            return opt;
-                        }
+                        opt.ifPresent(list::add);
                     }
+
+                    if (list.size() == Baritone.settings().placementLimit.value) return Optional.of(list);
                 }
             }
         }
+        if (!list.isEmpty()) return Optional.of(list);
         return Optional.empty();
     }
 
@@ -561,14 +564,20 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
         }
         List<BlockState> desirableOnHotbar = new ArrayList<>();
-        Optional<Placement> toPlace = searchForPlacables(bcc, desirableOnHotbar);
+        Optional<List<Placement>> toPlace = searchForPlacables(bcc, desirableOnHotbar);
         if (toPlace.isPresent() && isSafeToCancel && ctx.player().isOnGround() && ticks <= 0) {
-            Rotation rot = toPlace.get().rot;
-            baritone.getLookBehavior().updateTarget(rot, true);
-            ctx.player().getInventory().selected = toPlace.get().hotbarSelection;
-            baritone.getInputOverrideHandler().setInputForceState(Input.SNEAK, true);
-            if ((ctx.isLookingAt(toPlace.get().placeAgainst) && ((BlockHitResult) ctx.objectMouseOver()).getDirection().equals(toPlace.get().side)) || ctx.playerRotations().isReallyCloseTo(rot)) {
-                baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
+            logDebug("We have " + toPlace.get().size() + " placement options right now");
+            for (Placement placement : toPlace.get()) {
+                Rotation rot = placement.rot;
+                baritone.getLookBehavior().updateTarget(rot, true);
+                ctx.player().getInventory().selected = placement.hotbarSelection;
+                baritone.getInputOverrideHandler().setInputForceState(Input.SNEAK, true);
+                if ((ctx.isLookingAt(placement.placeAgainst) &&
+                        ((BlockHitResult) ctx.objectMouseOver()).getDirection().equals(placement.side))
+                        || ctx.playerRotations().isReallyCloseTo(rot)
+                ) {
+                    baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
+                }
             }
             return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
         }
