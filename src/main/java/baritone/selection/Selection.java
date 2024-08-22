@@ -37,7 +37,7 @@ public class Selection implements ISelection {
                 max.z - min.z + 1
         );
 
-        this.aabb = new AABB(this.min);
+        this.aabb = new AABB(min.x, min.y, min.z, max.x + 1, max.y + 1, max.z + 1);
     }
 
     @Override
