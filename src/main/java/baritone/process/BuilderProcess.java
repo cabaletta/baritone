@@ -51,7 +51,6 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
-import net.minecraft.nbt.NbtIo;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.BlockItem;
@@ -229,19 +228,13 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
     public void buildOpenLitematic(int i) {
         if (LitematicaHelper.isLitematicaPresent()) {
             //if java.lang.NoSuchMethodError is thrown see comment in SchematicPlacementManager
-            if (LitematicaHelper.hasLoadedSchematic()) {
-                String name = LitematicaHelper.getName(i);
-                try {
-                    LitematicaSchematic schematic1 = new LitematicaSchematic(NbtIo.readCompressed(Files.newInputStream(LitematicaHelper.getSchematicFile(i).toPath())), false);
-                    Vec3i correctedOrigin = LitematicaHelper.getCorrectedOrigin(schematic1, i);
-                    ISchematic schematic2 = LitematicaHelper.blackMagicFuckery(schematic1, i);
-                    schematic2 = applyMapArtAndSelection(origin, (IStaticSchematic) schematic2);
-                    build(name, schematic2, correctedOrigin);
-                } catch (Exception e) {
-                    logDirect("Schematic File could not be loaded.");
-                }
+            if (LitematicaHelper.hasLoadedSchematic(i)) {
+                Tuple<IStaticSchematic, Vec3i> schematic = LitematicaHelper.getSchematic(i);
+                Vec3i correctedOrigin = schematic.getB();
+                ISchematic schematic2 = applyMapArtAndSelection(correctedOrigin, schematic.getA());
+                build(schematic.getA().toString(), schematic2, correctedOrigin);
             } else {
-                logDirect("No schematic currently loaded");
+                logDirect(String.format("List of placements has no entry %s", i + 1));
             }
         } else {
             logDirect("Litematica is not present");
