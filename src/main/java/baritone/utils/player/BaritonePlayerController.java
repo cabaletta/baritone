@@ -20,7 +20,6 @@ package baritone.utils.player;
 import baritone.api.utils.IPlayerController;
 import baritone.utils.accessor.IPlayerControllerMP;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -54,7 +53,7 @@ public final class BaritonePlayerController implements IPlayerController {
 
     @Override
     public boolean hasBrokenBlock() {
-        return ((IPlayerControllerMP) mc.gameMode).getCurrentBlock().getY() == -1;
+        return !((IPlayerControllerMP) mc.gameMode).isHittingBlock();
     }
 
     @Override

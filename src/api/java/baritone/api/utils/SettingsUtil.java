@@ -149,7 +149,7 @@ public class SettingsUtil {
             throw new IllegalStateException("Missing " + setting.getValueClass() + " " + setting.getName());
         }
 
-        return io.toString(new ParserContext(setting), value);
+        return io.toString(setting.getType(), value);
     }
 
     public static String settingValueToString(Settings.Setting setting) throws IllegalArgumentException {
@@ -196,7 +196,7 @@ public class SettingsUtil {
         }
         Class intendedType = setting.getValueClass();
         ISettingParser ioMethod = Parser.getParser(setting.getType());
-        Object parsed = ioMethod.parse(new ParserContext(setting), settingValue);
+        Object parsed = ioMethod.parse(setting.getType(), settingValue);
         if (!intendedType.isInstance(parsed)) {
             throw new IllegalStateException(ioMethod + " parser returned incorrect type, expected " + intendedType + " got " + parsed + " which is " + parsed.getClass());
         }
@@ -205,24 +205,11 @@ public class SettingsUtil {
 
     private interface ISettingParser<T> {
 
-        T parse(ParserContext context, String raw);
+        T parse(Type type, String raw);
 
-        String toString(ParserContext context, T value);
+        String toString(Type type, T value);
 
         boolean accepts(Type type);
-    }
-
-    private static class ParserContext {
-
-        private final Settings.Setting<?> setting;
-
-        private ParserContext(Settings.Setting<?> setting) {
-            this.setting = setting;
-        }
-
-        private Settings.Setting<?> getSetting() {
-            return this.setting;
-        }
     }
 
     private enum Parser implements ISettingParser {
@@ -256,21 +243,21 @@ public class SettingsUtil {
         ),
         LIST() {
             @Override
-            public Object parse(ParserContext context, String raw) {
-                Type type = ((ParameterizedType) context.getSetting().getType()).getActualTypeArguments()[0];
-                Parser parser = Parser.getParser(type);
+            public Object parse(Type type, String raw) {
+                Type elementType = ((ParameterizedType) type).getActualTypeArguments()[0];
+                Parser parser = Parser.getParser(elementType);
                 return Stream.of(raw.split(","))
-                        .map(s -> parser.parse(context, s))
+                        .map(s -> parser.parse(elementType, s))
                         .collect(Collectors.toList());
             }
 
             @Override
-            public String toString(ParserContext context, Object value) {
-                Type type = ((ParameterizedType) context.getSetting().getType()).getActualTypeArguments()[0];
-                Parser parser = Parser.getParser(type);
+            public String toString(Type type, Object value) {
+                Type elementType = ((ParameterizedType) type).getActualTypeArguments()[0];
+                Parser parser = Parser.getParser(elementType);
 
                 return ((List<?>) value).stream()
-                        .map(o -> parser.toString(context, o))
+                        .map(o -> parser.toString(elementType, o))
                         .collect(Collectors.joining(","));
             }
 
@@ -281,26 +268,26 @@ public class SettingsUtil {
         },
         MAPPING() {
             @Override
-            public Object parse(ParserContext context, String raw) {
-                Type keyType = ((ParameterizedType) context.getSetting().getType()).getActualTypeArguments()[0];
-                Type valueType = ((ParameterizedType) context.getSetting().getType()).getActualTypeArguments()[1];
+            public Object parse(Type type, String raw) {
+                Type keyType = ((ParameterizedType) type).getActualTypeArguments()[0];
+                Type valueType = ((ParameterizedType) type).getActualTypeArguments()[1];
                 Parser keyParser = Parser.getParser(keyType);
                 Parser valueParser = Parser.getParser(valueType);
 
                 return Stream.of(raw.split(",(?=[^,]*->)"))
                         .map(s -> s.split("->"))
-                        .collect(Collectors.toMap(s -> keyParser.parse(context, s[0]), s -> valueParser.parse(context, s[1])));
+                        .collect(Collectors.toMap(s -> keyParser.parse(keyType, s[0]), s -> valueParser.parse(valueType, s[1])));
             }
 
             @Override
-            public String toString(ParserContext context, Object value) {
-                Type keyType = ((ParameterizedType) context.getSetting().getType()).getActualTypeArguments()[0];
-                Type valueType = ((ParameterizedType) context.getSetting().getType()).getActualTypeArguments()[1];
+            public String toString(Type type, Object value) {
+                Type keyType = ((ParameterizedType) type).getActualTypeArguments()[0];
+                Type valueType = ((ParameterizedType) type).getActualTypeArguments()[1];
                 Parser keyParser = Parser.getParser(keyType);
                 Parser valueParser = Parser.getParser(valueType);
 
                 return ((Map<?, ?>) value).entrySet().stream()
-                        .map(o -> keyParser.toString(context, o.getKey()) + "->" + valueParser.toString(context, o.getValue()))
+                        .map(o -> keyParser.toString(keyType, o.getKey()) + "->" + valueParser.toString(valueType, o.getValue()))
                         .collect(Collectors.joining(","));
             }
 
@@ -331,14 +318,14 @@ public class SettingsUtil {
         }
 
         @Override
-        public Object parse(ParserContext context, String raw) {
+        public Object parse(Type type, String raw) {
             Object parsed = this.parser.apply(raw);
             Objects.requireNonNull(parsed);
             return parsed;
         }
 
         @Override
-        public String toString(ParserContext context, Object value) {
+        public String toString(Type type, Object value) {
             return this.toString.apply(value);
         }
 

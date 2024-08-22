@@ -387,7 +387,7 @@ public final class Settings {
 
     /**
      * How many ticks between breaking a block and starting to break the next block. Default in game is 6 ticks.
-     * Values under 2 will be clamped.
+     * Values under 1 will be clamped. The delay only applies to non-instant (1-tick) breaks.
      */
     public final Setting<Integer> blockBreakSpeed = new Setting<>(6);
 
@@ -972,6 +972,11 @@ public final class Settings {
      * Replant nether wart while farming. This setting only has an effect when replantCrops is also enabled
      */
     public final Setting<Boolean> replantNetherWart = new Setting<>(false);
+
+    /**
+     * Farming will scan for at most this many blocks.
+     */
+    public final Setting<Integer> farmMaxScanSize = new Setting<>(256);
 
     /**
      * When the cache scan gives less blocks than the maximum threshold (but still above zero), scan the main world too.

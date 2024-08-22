@@ -26,6 +26,9 @@ import org.gradle.api.tasks.TaskCollection;
 import org.gradle.api.tasks.compile.ForkOptions;
 import org.gradle.api.tasks.compile.JavaCompile;
 import org.gradle.internal.jvm.Jvm;
+import org.gradle.jvm.toolchain.JavaLanguageVersion;
+import org.gradle.jvm.toolchain.JavaLauncher;
+import org.gradle.jvm.toolchain.JavaToolchainService;
 import xyz.wagyourtail.unimined.api.UniminedExtension;
 import xyz.wagyourtail.unimined.api.minecraft.MinecraftConfig;
 
@@ -47,17 +50,10 @@ import java.util.zip.ZipFile;
 public class ProguardTask extends BaritoneGradleTask {
 
     @Input
-    private String url;
+    private String proguardVersion;
 
-    public String getUrl() {
-        return url;
-    }
-
-    @Input
-    private String extract;
-
-    public String getExtract() {
-        return extract;
+    public String getProguardVersion() {
+        return proguardVersion;
     }
 
     private List<String> requiredLibraries;
@@ -99,98 +95,33 @@ public class ProguardTask extends BaritoneGradleTask {
     }
 
     private void downloadProguard() throws Exception {
-        Path proguardZip = getTemporaryFile(PROGUARD_ZIP);
+        Path proguardZip = getTemporaryFile(String.format(PROGUARD_ZIP, proguardVersion));
         if (!Files.exists(proguardZip)) {
-            write(new URL(this.url).openStream(), proguardZip);
+            write(new URL(String.format("https://github.com/Guardsquare/proguard/releases/download/v%s/proguard-%s.zip", proguardVersion, proguardVersion)).openStream(), proguardZip);
         }
     }
 
     private void extractProguard() throws Exception {
-        Path proguardJar = getTemporaryFile(PROGUARD_JAR);
+        Path proguardJar = getTemporaryFile(String.format(PROGUARD_JAR, proguardVersion));
         if (!Files.exists(proguardJar)) {
-            ZipFile zipFile = new ZipFile(getTemporaryFile(PROGUARD_ZIP).toFile());
-            ZipEntry zipJarEntry = zipFile.getEntry(this.extract);
+            ZipFile zipFile = new ZipFile(getTemporaryFile(String.format(PROGUARD_ZIP, proguardVersion)).toFile());
+            ZipEntry zipJarEntry = zipFile.getEntry(String.format("proguard-%s/lib/proguard.jar", proguardVersion));
             write(zipFile.getInputStream(zipJarEntry), proguardJar);
             zipFile.close();
         }
     }
 
-    private String getJavaBinPathForProguard() throws Exception {
-        String path;
-        try {
-            path = findJavaPathByGradleConfig();
-            if (path != null) return path;
-        } catch (Exception ex) {
-            System.err.println("Unable to find java by javaCompile options");
-            ex.printStackTrace();
+    private JavaLauncher getJavaLauncherForProguard() {
+        var toolchains = getProject().getExtensions().getByType(JavaToolchainService.class);
+        var toolchain = toolchains.launcherFor((spec) -> {
+            spec.getLanguageVersion().set(JavaLanguageVersion.of(getProject().findProperty("java_version").toString()));
+        }).getOrNull();
+
+        if (toolchain == null) {
+            throw new IllegalStateException("Java toolchain not found");
         }
 
-        path = findJavaByGradleCurrentRuntime();
-        if (path != null) return path;
-
-        try {
-            path = findJavaByJavaHome();
-            if (path != null) return path;
-        } catch (Exception ex) {
-            System.err.println("Unable to find java by JAVA_HOME");
-            ex.printStackTrace();
-        }
-
-        throw new Exception("Unable to find java to determine ProGuard libraryjars. Please specify forkOptions.executable in javaCompile," +
-                " JAVA_HOME environment variable, or make sure to run Gradle with the correct JDK (a v1.8 only)");
-    }
-
-    private String findJavaByGradleCurrentRuntime() {
-        String path = Jvm.current().getJavaExecutable().getAbsolutePath();
-        System.out.println("Using Gradle's runtime Java for ProGuard");
-        return path;
-    }
-
-    private String findJavaByJavaHome() {
-        final String javaHomeEnv = System.getenv("JAVA_HOME");
-        if (javaHomeEnv != null) {
-            String path = Jvm.forHome(new File(javaHomeEnv)).getJavaExecutable().getAbsolutePath();
-            System.out.println("Detected Java path by JAVA_HOME");
-            return path;
-        }
-        return null;
-    }
-
-    private String findJavaPathByGradleConfig() {
-        final TaskCollection<JavaCompile> javaCompiles = super.getProject().getTasks().withType(JavaCompile.class);
-
-        final JavaCompile compileTask = javaCompiles.iterator().next();
-        final ForkOptions forkOptions = compileTask.getOptions().getForkOptions();
-
-        if (forkOptions != null) {
-            String javacPath = forkOptions.getExecutable();
-            if (javacPath != null) {
-                File javacFile = new File(javacPath);
-                if (javacFile.exists()) {
-                    File[] maybeJava = javacFile.getParentFile().listFiles((dir, name) -> name.equals("java"));
-                    if (maybeJava != null && maybeJava.length > 0) {
-                        String path = maybeJava[0].getAbsolutePath();
-                        System.out.println("Detected Java path by forkOptions");
-                        return path;
-                    }
-                }
-            }
-        }
-        return null;
-    }
-
-    private boolean validateJavaVersion(String java) {
-        //TODO: fix for j16
-//        final JavaVersion javaVersion = new DefaultJvmVersionDetector(new DefaultExecActionFactory(new IdentityFileResolver())).getJavaVersion(java);
-//
-//        if (!javaVersion.getMajorVersion().equals("8")) {
-//            System.out.println("Failed to validate Java version " + javaVersion.toString() + " [" + java + "] for ProGuard libraryjars");
-//            // throw new RuntimeException("Java version incorrect: " + javaVersion.getMajorVersion() + " for " + java);
-//            return false;
-//        }
-//
-//        System.out.println("Validated Java version " + javaVersion.toString() + " [" + java + "] for ProGuard libraryjars");
-        return true;
+        return toolchain;
     }
 
     private void generateConfigs() throws Exception {
@@ -284,13 +215,8 @@ public class ProguardTask extends BaritoneGradleTask {
         } catch (IOException ignored) {}
     }
 
-    public void setUrl(String url) {
-        this.url = url;
-    }
-
-
-    public void setExtract(String extract) {
-        this.extract = extract;
+    public void setProguardVersion(String url) {
+        this.proguardVersion = url;
     }
 
     private void runProguard(Path config) throws Exception {
@@ -299,39 +225,15 @@ public class ProguardTask extends BaritoneGradleTask {
             Files.delete(this.proguardOut);
         }
 
-        // Make paths relative to work directory; fixes spaces in path to config, @"" doesn't work
         Path workingDirectory = getTemporaryFile("");
-        Path proguardJar = workingDirectory.relativize(getTemporaryFile(PROGUARD_JAR));
-        config = workingDirectory.relativize(config);
 
-        // Honestly, if you still have spaces in your path at this point, you're SOL.
+        getProject().javaexec(spec -> {
+            spec.workingDir(workingDirectory.toFile());
+            spec.args("@" + workingDirectory.relativize(config));
+            spec.classpath(getTemporaryFile(String.format(PROGUARD_JAR, proguardVersion)));
 
-        Process p = new ProcessBuilder("java", "-jar", proguardJar.toString(), "@" + config.toString())
-                .directory(workingDirectory.toFile()) // Set the working directory to the temporary folder]
-                .start();
-
-        // We can't do output inherit process I/O with gradle for some reason and have it work, so we have to do this
-        this.printOutputLog(p.getInputStream(), System.out);
-        this.printOutputLog(p.getErrorStream(), System.err);
-
-        // Halt the current thread until the process is complete, if the exit code isn't 0, throw an exception
-        int exitCode = p.waitFor();
-        if (exitCode != 0) {
-            Thread.sleep(1000);
-            throw new IllegalStateException("Proguard exited with code " + exitCode);
-        }
+            spec.executable(getJavaLauncherForProguard().getExecutablePath().getAsFile());
+        }).assertNormalExitValue().rethrowFailure();
     }
 
-    private void printOutputLog(InputStream stream, PrintStream outerr) {
-        new Thread(() -> {
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream))) {
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    outerr.println(line);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }).start();
-    }
 }
