@@ -99,16 +99,6 @@ public interface IPlayerContext {
         return new Rotation(player().getYRot(), player().getXRot());
     }
 
-    static double eyeHeight(boolean ifSneaking) {
-        //final double baseHeight = 1.62;
-        final double baseHeight = 0.65;
-        //sneaking is 24.2215% lower than standing
-        return ifSneaking ? baseHeight * 0.757785 : baseHeight;
-        //return ifSneaking ? Baritone.settings().expectedEyeHeight.value * 0.757785 : Baritone.settings().expectedEyeHeight.value;
-        //return player().getEyeHeight();
-        //return ifSneaking ? 1.27 : 1.62;
-    }
-
     /**
      * Returns the block that the crosshair is currently placed over. Updated once per tick.
      *
