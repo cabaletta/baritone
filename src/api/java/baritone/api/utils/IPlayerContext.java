@@ -17,6 +17,7 @@
 
 package baritone.api.utils;
 
+import baritone.Baritone;
 import baritone.api.cache.IWorldData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -99,8 +100,10 @@ public interface IPlayerContext {
         return new Rotation(player().getYRot(), player().getXRot());
     }
 
-    default double eyeHeight(boolean ifSneaking) {
-        return player().getEyeHeight();
+    static double eyeHeight(boolean ifSneaking) {
+        //sneaking is 24.2215% lower than standing
+        return ifSneaking ? Baritone.settings().expectedEyeHeight.value * 0.757785 : Baritone.settings().expectedEyeHeight.value;
+        //return player().getEyeHeight();
         //return ifSneaking ? 1.27 : 1.62;
     }
 

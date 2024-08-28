@@ -51,6 +51,8 @@ import java.util.function.Consumer;
  */
 public final class Settings {
 
+    public final Setting<Double> expectedEyeHeight = new Setting<>(1.27D);
+
     /**
      * Allow Baritone to break blocks
      */
