@@ -18,6 +18,7 @@
 package baritone.api.utils;
 
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -62,6 +63,6 @@ public final class RayTraceUtils {
     }
 
     public static Vec3 inferSneakingEyePosition(Entity entity) {
-        return new Vec3(entity.getX(), entity.getY() + (entity.getEyeHeight() * 0.757785), entity.getZ());
+        return new Vec3(entity.getX(), entity.getY() + (entity.getEyeHeight(Pose.CROUCHING)), entity.getZ());
     }
 }
