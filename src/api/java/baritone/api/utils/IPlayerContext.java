@@ -99,8 +99,9 @@ public interface IPlayerContext {
         return new Rotation(player().getYRot(), player().getXRot());
     }
 
-    static double eyeHeight(boolean ifSneaking) {
-        return ifSneaking ? 1.27 : 1.62;
+    default double eyeHeight(boolean ifSneaking) {
+        return player().getEyeHeight();
+        //return ifSneaking ? 1.27 : 1.62;
     }
 
     /**
