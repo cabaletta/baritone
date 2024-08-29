@@ -19,7 +19,7 @@ Try `#help` I promise it won't just send you back here =)
 "wtf where is goto death, goto waypoint" -> look at `#help wp` 
 
 just look at `#help` lmao
-
+.
 Watch this [showcase video](https://youtu.be/CZkLXWo4Fg4)!
 
 # Commands
