@@ -19,6 +19,7 @@ package baritone.api.utils;
 
 import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
+import baritone.api.utils.VecUtils;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -260,6 +261,76 @@ public final class RotationUtils {
     public static Optional<Rotation> reachableCenter(IPlayerContext ctx, BlockPos pos, double blockReachDistance, boolean wouldSneak) {
         return reachableOffset(ctx, pos, VecUtils.calculateBlockCenter(ctx.world(), pos), blockReachDistance, wouldSneak);
     }
+
+    /**
+     * Arc interpolator, creates a radius with a center as near as possible from "origin" which touches
+     * both A and B.
+     * <p>
+     * It's an alternative to normal lerp, where if A is in front of origin and B opposite or
+     * near opposite to the former, the line would pass straight through origin
+     *
+     * @param A         Location to return at t = 0
+     * @param B         Location to return at t = 1
+     * @param Origin    Location the center should approximate
+     * @param t         Interpolator value
+     * @return Range of locations forming an arc outwards from Origin, controlled by t
+     */
+    public static Vec3 alerp(Vec3 A, Vec3 B, Vec3 Origin, double t) {
+        Vec3 midpoint = VecUtils.vDivide(A.add(B), new Vec3(2, 2, 2));
+
+        Vec3 normal = ((A.subtract(Origin)).cross(B.subtract(Origin))).normalize();
+
+        Vec3 AB = (B.subtract(A)).normalize();
+
+        Vec3 toCenter = (AB.cross(normal)).normalize();
+
+        Vec3 originToMid = midpoint.subtract(Origin);
+        double projectionLength = originToMid.dot(toCenter);
+
+        Vec3 center = midpoint.subtract(new Vec3(projectionLength, projectionLength, projectionLength).multiply(toCenter));
+
+        double radius = A.distanceTo(center);
+
+        Vec3 vecToA = A.subtract(center);
+        Vec3 vecToB = B.subtract(center);
+
+        double angleA = Mth.atan2(vecToA.dot(toCenter), vecToA.dot(AB));
+        double angleB = Mth.atan2(vecToB.dot(toCenter), vecToB.dot(AB));
+
+        // Ensure we're using the shorter arc
+        if (Mth.abs((float) (angleB - angleA)) > Mth.PI) {
+            if (angleA < angleB) {
+                angleA += 2 * Mth.PI;
+            } else {
+                angleB += 2 * Mth.PI;
+            }
+        }
+
+        // Interpolate the angle
+        double angle = (1 - t) * angleA + t * angleB;
+
+        // Calculate the interpolated point
+        Vec3 asdainside = (new Vec3(Mth.cos((float) angle), Mth.cos((float) angle), Mth.cos((float) angle)).multiply(AB)).add(new Vec3(Mth.sin((float) angle), Mth.sin((float) angle), Mth.sin((float) angle)).multiply(toCenter));
+
+        return center.add((new Vec3(radius, radius, radius)).multiply(asdainside));
+    }
+    /*
+    Using Slerp is also possible, but might be slightly more prone to doing a neck break, and IDK how to implement it lol
+    btw it uses quaternions, so doing a translation back and forth might be more expensive than just using the position to rotation function already implemented here.
+    I might be wrong in a lot of things though, I come from c++, and java is not exactly different, but it's also not exactly the same; I literally have 0 java
+    expertise, and I'm just rawdogging this without tutorials...
+     */
+
+    /*
+    didn't realize that in lookBehavior values in the Target struct and the current lookpos of the player were already angles with no trace of the original position until
+    after I wrote this function; at least if anything happens it should be un-pair proof (if somehow the distance between A, B and the origin is different it will still work as intended)
+     */
+
+    /*
+    also funny story, I created a whole library of vector operations in VecUtils and used them for this function until I realized that the Vec3 library already had
+    most of them, so I undid all that work except for vDivide, which was NOT on Vec3.class, although I do think my implementation did make it all a bit more understandable
+    but that's very subjective.
+     */
 
     @Deprecated
     public static Optional<Rotation> reachable(LocalPlayer entity, BlockPos pos, double blockReachDistance) {
