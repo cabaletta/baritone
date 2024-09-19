@@ -114,13 +114,13 @@ public class MovementTraverse extends Movement {
                 }
                 return WC;
             }
-            if (srcDownBlock == Blocks.LADDER || srcDownBlock == Blocks.VINE) {
+            if (srcDownBlock == Blocks.LADDER || srcDownBlock == Blocks.VINE || srcDownBlock == Blocks.WEEPING_VINES || srcDownBlock == Blocks.TWISTING_VINES || srcDownBlock == Blocks.WEEPING_VINES_PLANT || srcDownBlock == Blocks.TWISTING_VINES_PLANT) {
                 hardness1 *= 5;
                 hardness2 *= 5;
             }
             return WC + hardness1 + hardness2;
         } else {//this is a bridge, so we need to place a block
-            if (srcDownBlock == Blocks.LADDER || srcDownBlock == Blocks.VINE) {
+            if (srcDownBlock == Blocks.LADDER || srcDownBlock == Blocks.VINE || srcDownBlock == Blocks.WEEPING_VINES || srcDownBlock == Blocks.TWISTING_VINES || srcDownBlock == Blocks.WEEPING_VINES_PLANT || srcDownBlock == Blocks.TWISTING_VINES_PLANT) {
                 return COST_INF;
             }
             if (MovementHelper.isReplaceable(destX, y - 1, destZ, destOn, context.bsi)) {
@@ -217,7 +217,7 @@ public class MovementTraverse extends Movement {
         state.setInput(Input.SNEAK, false);
 
         Block fd = BlockStateInterface.get(ctx, src.below()).getBlock();
-        boolean ladder = fd == Blocks.LADDER || fd == Blocks.VINE;
+        boolean ladder = fd == Blocks.LADDER || fd == Blocks.VINE || fd == Blocks.WEEPING_VINES || fd == Blocks.TWISTING_VINES || fd == Blocks.WEEPING_VINES_PLANT || fd == Blocks.TWISTING_VINES_PLANT;
 
         if (pb0.getBlock() instanceof DoorBlock || pb1.getBlock() instanceof DoorBlock) {
             boolean notPassable = pb0.getBlock() instanceof DoorBlock && !MovementHelper.isDoorPassable(ctx, src, dest) || pb1.getBlock() instanceof DoorBlock && !MovementHelper.isDoorPassable(ctx, dest, src);
@@ -370,7 +370,7 @@ public class MovementTraverse extends Movement {
     protected boolean prepared(MovementState state) {
         if (ctx.playerFeet().equals(src) || ctx.playerFeet().equals(src.below())) {
             Block block = BlockStateInterface.getBlock(ctx, src.below());
-            if (block == Blocks.LADDER || block == Blocks.VINE) {
+            if (block == Blocks.LADDER || block == Blocks.VINE || block == Blocks.WEEPING_VINES || block == Blocks.TWISTING_VINES || block == Blocks.WEEPING_VINES_PLANT || block == Blocks.TWISTING_VINES_PLANT) {
                 state.setInput(Input.SNEAK, true);
             }
         }
