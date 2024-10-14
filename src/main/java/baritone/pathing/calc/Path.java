@@ -68,8 +68,9 @@ class Path extends PathBase {
 
     private volatile boolean verified;
 
-    Path(PathNode start, PathNode end, int numNodes, Goal goal, CalculationContext context) {
-        this.start = new BetterBlockPos(start.x, start.y, start.z);
+    Path(BetterBlockPos realStart, PathNode start, PathNode end, int numNodes, Goal goal, CalculationContext context) {
+        this.start = realStart;
+        var startNodePos = new BetterBlockPos(start.x, start.y, start.z);
         this.end = new BetterBlockPos(end.x, end.y, end.z);
         this.numNodes = numNodes;
         this.movements = new ArrayList<>();
@@ -85,6 +86,13 @@ class Path extends PathBase {
             tempPath.addFirst(new BetterBlockPos(current.x, current.y, current.z));
             current = current.previous;
         }
+        if (!realStart.equals(startNodePos)) {
+            PathNode fakeNode = new PathNode(realStart.x, realStart.y, realStart.z, goal);
+            fakeNode.cost = 0;
+            tempNodes.addFirst(fakeNode);
+            tempPath.addFirst(realStart);
+        }
+
         // Can't directly convert from the PathNode pseudo linked list to an array because we don't know how long it is
         // inserting into a LinkedList<E> keeps track of length, then when we addall (which calls .toArray) it's able
         // to performantly do that conversion since it knows the length.
