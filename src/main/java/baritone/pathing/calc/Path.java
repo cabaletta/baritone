@@ -27,6 +27,7 @@ import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.Moves;
 import baritone.pathing.path.CutoffPath;
 import baritone.utils.pathing.PathBase;
+import com.google.common.collect.Lists;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -68,28 +69,34 @@ class Path extends PathBase {
 
     private volatile boolean verified;
 
-    Path(PathNode start, PathNode end, int numNodes, Goal goal, CalculationContext context) {
-        this.start = new BetterBlockPos(start.x, start.y, start.z);
+    Path(BetterBlockPos realStart, PathNode start, PathNode end, int numNodes, Goal goal, CalculationContext context) {
+        this.start = realStart;
         this.end = new BetterBlockPos(end.x, end.y, end.z);
         this.numNodes = numNodes;
         this.movements = new ArrayList<>();
         this.goal = goal;
         this.context = context;
+
+        // If the position the player is at is different from the position we told A* to start from
+        // see PathingBehavior#createPathfinder and https://github.com/cabaletta/baritone/pull/4519
+        var startNodePos = new BetterBlockPos(start.x, start.y, start.z);
+        if (!realStart.equals(startNodePos)) {
+            PathNode fakeNode = new PathNode(realStart.x, realStart.y, realStart.z, goal);
+            fakeNode.cost = 0;
+            start.previous = fakeNode;
+        }
+
         PathNode current = end;
-        LinkedList<BetterBlockPos> tempPath = new LinkedList<>();
-        LinkedList<PathNode> tempNodes = new LinkedList<>();
-        // Repeatedly inserting to the beginning of an arraylist is O(n^2)
-        // Instead, do it into a linked list, then convert at the end
+        List<BetterBlockPos> tempPath = new ArrayList<>();
+        List<PathNode> tempNodes = new ArrayList<>();
         while (current != null) {
-            tempNodes.addFirst(current);
-            tempPath.addFirst(new BetterBlockPos(current.x, current.y, current.z));
+            tempNodes.add(current);
+            tempPath.add(new BetterBlockPos(current.x, current.y, current.z));
             current = current.previous;
         }
-        // Can't directly convert from the PathNode pseudo linked list to an array because we don't know how long it is
-        // inserting into a LinkedList<E> keeps track of length, then when we addall (which calls .toArray) it's able
-        // to performantly do that conversion since it knows the length.
-        this.path = new ArrayList<>(tempPath);
-        this.nodes = new ArrayList<>(tempNodes);
+        // Nodes are traversed last to first so we need to reverse the list
+        this.path = Lists.reverse(tempPath);
+        this.nodes = Lists.reverse(tempNodes);
     }
 
     @Override
