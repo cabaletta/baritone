@@ -44,7 +44,6 @@ import baritone.utils.PathingCommandContext;
 import baritone.utils.schematic.MapArtSchematic;
 import baritone.utils.schematic.SelectionSchematic;
 import baritone.utils.schematic.SchematicSystem;
-import baritone.utils.schematic.format.defaults.LitematicaSchematic;
 import baritone.utils.schematic.litematica.LitematicaHelper;
 import baritone.utils.schematic.schematica.SchematicaHelper;
 import com.google.common.collect.ImmutableMap;
@@ -77,7 +76,6 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.nio.file.Files;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -373,7 +371,11 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             if (!placementPlausible(new BetterBlockPos(x, y, z), toPlace)) {
                 continue;
             }
-            AABB aabb = placeAgainstState.getShape(ctx.world(), placeAgainstPos).bounds();
+            VoxelShape shape = placeAgainstState.getShape(ctx.world(), placeAgainstPos);
+            if (shape.isEmpty()) {
+                continue;
+            }
+            AABB aabb = shape.bounds();
             for (Vec3 placementMultiplier : aabbSideMultipliers(against)) {
                 double placeX = placeAgainstPos.x + aabb.minX * placementMultiplier.x + aabb.maxX * (1 - placementMultiplier.x);
                 double placeY = placeAgainstPos.y + aabb.minY * placementMultiplier.y + aabb.maxY * (1 - placementMultiplier.y);
