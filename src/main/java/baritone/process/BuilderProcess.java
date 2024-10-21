@@ -719,13 +719,16 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         List<BetterBlockPos> sourceLiquids = new ArrayList<>();
         List<BetterBlockPos> flowingLiquids = new ArrayList<>();
         Map<BlockState, Integer> missing = new HashMap<>();
+        List<BetterBlockPos> outOfBounds = new ArrayList<>();
         incorrectPositions.forEach(pos -> {
             BlockState state = bcc.bsi.get0(pos);
             if (state.getBlock() instanceof AirBlock) {
-                if (containsBlockState(approxPlaceable, bcc.getSchematic(pos.x, pos.y, pos.z, state))) {
+                BlockState desired = bcc.getSchematic(pos.x, pos.y, pos.z, state);
+                if (desired == null) {
+                    outOfBounds.add(pos);
+                } else if (containsBlockState(approxPlaceable, desired)) {
                     placeable.add(pos);
                 } else {
-                    BlockState desired = bcc.getSchematic(pos.x, pos.y, pos.z, state);
                     missing.put(desired, 1 + missing.getOrDefault(desired, 0));
                 }
             } else {
@@ -743,6 +746,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                 }
             }
         });
+        incorrectPositions.removeAll(outOfBounds);
         List<Goal> toBreak = new ArrayList<>();
         breakable.forEach(pos -> toBreak.add(breakGoal(pos, bcc)));
         List<Goal> toPlace = new ArrayList<>();
