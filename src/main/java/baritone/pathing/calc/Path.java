@@ -70,21 +70,11 @@ class Path extends PathBase {
     private volatile boolean verified;
 
     Path(BetterBlockPos realStart, PathNode start, PathNode end, int numNodes, Goal goal, CalculationContext context) {
-        this.start = realStart;
         this.end = new BetterBlockPos(end.x, end.y, end.z);
         this.numNodes = numNodes;
         this.movements = new ArrayList<>();
         this.goal = goal;
         this.context = context;
-
-        // If the position the player is at is different from the position we told A* to start from
-        // see PathingBehavior#createPathfinder and https://github.com/cabaletta/baritone/pull/4519
-        var startNodePos = new BetterBlockPos(start.x, start.y, start.z);
-        if (!realStart.equals(startNodePos)) {
-            PathNode fakeNode = new PathNode(realStart.x, realStart.y, realStart.z, goal);
-            fakeNode.cost = 0;
-            start.previous = fakeNode;
-        }
 
         PathNode current = end;
         List<BetterBlockPos> tempPath = new ArrayList<>();
@@ -94,6 +84,22 @@ class Path extends PathBase {
             tempPath.add(new BetterBlockPos(current.x, current.y, current.z));
             current = current.previous;
         }
+
+        // If the position the player is at is different from the position we told A* to start from,
+        // and A* gave us no movements, then add a fake node that will allow a movement to be created
+        // that gets us to the single position in the path.
+        // See PathingBehavior#createPathfinder and https://github.com/cabaletta/baritone/pull/4519
+        var startNodePos = new BetterBlockPos(start.x, start.y, start.z);
+        if (!realStart.equals(startNodePos) && start.equals(end)) {
+            this.start = realStart;
+            PathNode fakeNode = new PathNode(realStart.x, realStart.y, realStart.z, goal);
+            fakeNode.cost = 0;
+            tempNodes.add(fakeNode);
+            tempPath.add(realStart);
+        } else {
+            this.start = startNodePos;
+        }
+
         // Nodes are traversed last to first so we need to reverse the list
         this.path = Lists.reverse(tempPath);
         this.nodes = Lists.reverse(tempNodes);
