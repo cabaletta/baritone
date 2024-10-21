@@ -1529,6 +1529,11 @@ public final class Settings {
     public final Setting<Boolean> elytraChatSpam = new Setting<>(false);
 
     /**
+     * The max amount of blocks baritone can place at once in a burst speed, not a constant speed.
+     */
+    public final Setting<Integer> placementLimit = new Setting<>(3);
+
+    /**
      * A map of lowercase setting field names to their respective setting
      */
     public final Map<String, Setting<?>> byLowerName;
