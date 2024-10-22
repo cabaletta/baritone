@@ -15,13 +15,23 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package fi.dy.masa.litematica.data;
+package fi.dy.masa.litematica.schematic.placement;
 
-import fi.dy.masa.litematica.schematic.placement.SchematicPlacementManager;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.Mirror;
+import net.minecraft.world.level.block.Rotation;
 
-public class DataManager {
+public class SubRegionPlacement {
 
-    public static SchematicPlacementManager getSchematicPlacementManager() {
+    public BlockPos getPos() {
+        throw new LinkageError();
+    }
+
+    public Rotation getRotation() {
+        throw new LinkageError();
+    }
+
+    public Mirror getMirror() {
         throw new LinkageError();
     }
 }

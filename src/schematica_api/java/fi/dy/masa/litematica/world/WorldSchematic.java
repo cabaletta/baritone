@@ -15,29 +15,13 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package fi.dy.masa.litematica.schematic.placement;
+package fi.dy.masa.litematica.world;
 
-import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 
-import javax.annotation.Nullable;
-import java.io.File;
-
-public class SchematicPlacementUnloaded {
-    protected String name = "?";
-    @Nullable
-    protected File schematicFile;
-    protected BlockPos origin = BlockPos.ZERO;
-
-    public String getName() {
-        return this.name;
-    }
-
-    @Nullable
-    public File getSchematicFile() {
-        return this.schematicFile;
-    }
-
-    public BlockPos getOrigin() {
-        return this.origin;
+public abstract class WorldSchematic extends Level {
+    private WorldSchematic() {
+        super(null, null, null, null, null, false, false, 0, 0);
+        throw new LinkageError();
     }
 }
