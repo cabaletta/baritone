@@ -228,12 +228,7 @@ public class SelCommand extends Command {
                         }
                     }
                 }
-                ISchematic schematic = new StaticSchematic() {{
-                    states = blockstates;
-                    x = size.getX();
-                    y = size.getY();
-                    z = size.getZ();
-                }};
+                ISchematic schematic = new StaticSchematic(blockstates);
                 composite.put(schematic, min.x - origin.x, min.y - origin.y, min.z - origin.z);
             }
             clipboard = composite;
