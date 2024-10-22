@@ -757,20 +757,40 @@ public final class Settings {
      */
     public final Setting<Boolean> elytraFreeLook = new Setting<>(true);
 
-    /**
-     * Forces the client-sided yaw rotation to an average of the last {@link #smoothLookTicks} of server-sided rotations.
-     */
-    public final Setting<Boolean> smoothLook = new Setting<>(false);
+    ///**
+    // * Forces the client-sided yaw rotation to an average of the last {@link #smoothLookTicks} of server-sided rotations.
+    // */
+    //public final Setting<Boolean> smoothLook = new Setting<>(false);
+    //
+    ///**
+    // * Same as {@link #smoothLook} but for elytra flying.
+    // */
+    //public final Setting<Boolean> elytraSmoothLook = new Setting<>(false);
+    //
+    ///**
+    // * The number of ticks to average across for {@link #smoothLook};
+    // */
+    //public final Setting<Integer> smoothLookTicks = new Setting<>(5);
+
+    // Old implementation settings...
 
     /**
-     * Same as {@link #smoothLook} but for elytra flying.
+     * Forces global player rotation in both axis to follow a "path" from source looking position(rotation) to target, removing jittering when, for instance, mining blocks.
+     * Uses {@link #interpolatedLookLength} to determine the amount of ticks it takes to complete the path
+     * <p>
+     * TODO: It might be better to use some kind of angular speed instead of a fixed duration for all angles.
+     * <p>
+     * it WILL hinder mining speed, but the main goal here is that neither the client nor the server sees the default jittery-ness of baritone
      */
-    public final Setting<Boolean> elytraSmoothLook = new Setting<>(false);
+    public final Setting<Boolean> interpolatedLook = new Setting<>(false);
 
     /**
-     * The number of ticks to average across for {@link #smoothLook};
+     * Controls time it takes to complete an {@link #interpolatedLook} "cycle".
+     * <p>
+     * In ticks.
      */
-    public final Setting<Integer> smoothLookTicks = new Setting<>(5);
+    public final Setting<Integer> interpolatedLookLength = new Setting<>(10);
+
 
     /**
      * When true, the player will remain with its existing look direction as often as possible.

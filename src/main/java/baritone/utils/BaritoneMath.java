@@ -34,4 +34,9 @@ public final class BaritoneMath {
     public static int fastCeil(final double v) {
         return FLOOR_DOUBLE_I - (int) (FLOOR_DOUBLE_D - v);
     }
+
+    public static double normalize(double value, double maxValue) {
+        if (maxValue == 0) return 0;
+        return value/maxValue;
+    }
 }
