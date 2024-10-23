@@ -38,14 +38,14 @@ configurations {
 }
 
 dependencies {
-    implementation "org.spongepowered:mixin:0.8.5"
+    implementation "org.spongepowered:mixin:${project.mixin_version}"
 
     // for some reason mixin isn't including these...
-    implementation "org.ow2.asm:asm:9.3"
-    implementation "org.ow2.asm:asm-tree:9.3"
-    implementation "org.ow2.asm:asm-commons:9.3"
-    implementation "org.ow2.asm:asm-util:9.3"
-    implementation "org.ow2.asm:asm-analysis:9.3"
+    implementation "org.ow2.asm:asm:${project.asm_version}"
+    implementation "org.ow2.asm:asm-tree:${project.asm_version}"
+    implementation "org.ow2.asm:asm-commons:${project.asm_version}"
+    implementation "org.ow2.asm:asm-util:${project.asm_version}"
+    implementation "org.ow2.asm:asm-analysis:${project.asm_version}"
 
     implementation 'com.github.ImpactDevelopment:SimpleTweaker:1.2'
     implementation('net.minecraft:launchwrapper:of-2.3') {

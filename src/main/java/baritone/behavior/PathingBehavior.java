@@ -265,7 +265,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         if (goal == null) {
             return false;
         }
-        if (goal.isInGoal(ctx.playerFeet()) || goal.isInGoal(expectedSegmentStart)) {
+        if (goal.isInGoal(ctx.playerFeet())) {
             return false;
         }
         synchronized (pathPlanLock) {
@@ -553,7 +553,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         });
     }
 
-    private static AbstractNodeCostSearch createPathfinder(BlockPos start, Goal goal, IPath previous, CalculationContext context) {
+    private AbstractNodeCostSearch createPathfinder(BlockPos start, Goal goal, IPath previous, CalculationContext context) {
         Goal transformed = goal;
         if (Baritone.settings().simplifyUnloadedYCoord.value && goal instanceof IGoalRenderPos) {
             BlockPos pos = ((IGoalRenderPos) goal).getGoalPos();
@@ -562,7 +562,14 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
             }
         }
         Favoring favoring = new Favoring(context.getBaritone().getPlayerContext(), previous, context);
-        return new AStarPathFinder(start.getX(), start.getY(), start.getZ(), transformed, favoring, context);
+        BetterBlockPos feet = ctx.playerFeet();
+        var realStart = new BetterBlockPos(start);
+        var sub = feet.subtract(realStart);
+        if (feet.getY() == realStart.getY() && Math.abs(sub.getX()) <= 1 && Math.abs(sub.getZ()) <= 1) {
+            realStart = feet;
+        }
+        return new AStarPathFinder(realStart, start.getX(), start.getY(), start.getZ(), transformed, favoring, context);
+
     }
 
     @Override

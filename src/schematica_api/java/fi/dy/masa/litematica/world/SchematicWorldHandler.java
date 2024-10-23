@@ -15,13 +15,11 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package fi.dy.masa.litematica.data;
+package fi.dy.masa.litematica.world;
 
-import fi.dy.masa.litematica.schematic.placement.SchematicPlacementManager;
+public class SchematicWorldHandler {
 
-public class DataManager {
-
-    public static SchematicPlacementManager getSchematicPlacementManager() {
+    public static WorldSchematic getSchematicWorld() {
         throw new LinkageError();
     }
 }
