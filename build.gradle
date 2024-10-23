@@ -82,6 +82,7 @@ allprojects {
         compileOnly "org.ow2.asm:asm:${project.asm_version}"
 
         implementation "dev.babbaj:nether-pathfinder:${project.nether_pathfinder_version}"
+        implementation 'com.google.code.findbugs:jsr305:3.0.2'
     }
 
     unimined.minecraft(sourceSets.main, true) {
