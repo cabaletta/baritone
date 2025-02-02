@@ -78,6 +78,16 @@ public final class Settings {
     public final Setting<Boolean> allowPlace = new Setting<>(true);
 
     /**
+     * Allow Baritone to place blocks in fluid source blocks
+     */
+    public final Setting<Boolean> allowPlaceInFluidsSource = new Setting<>(true);
+
+    /**
+     * Allow Baritone to place blocks in flowing fluid
+     */
+    public final Setting<Boolean> allowPlaceInFluidsFlow = new Setting<>(true);
+
+    /**
      * Allow Baritone to move items in your inventory to your hotbar
      */
     public final Setting<Boolean> allowInventory = new Setting<>(false);
