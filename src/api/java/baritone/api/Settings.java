@@ -887,6 +887,11 @@ public final class Settings {
     public final Setting<Boolean> preferSilkTouch = new Setting<>(false);
 
     /**
+     * Always use the highest fortune tool when farming crops.
+     */
+    public final Setting<Boolean> useFortuneForCrops = new Setting<>(false);
+
+    /**
      * Don't stop walking forward when you need to break blocks in your way
      */
     public final Setting<Boolean> walkWhileBreaking = new Setting<>(true);
@@ -1623,7 +1628,8 @@ public final class Settings {
      */
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.FIELD)
-    private @interface JavaOnly {}
+    private @interface JavaOnly {
+    }
 
     // here be dragons
 

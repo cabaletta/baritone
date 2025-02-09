@@ -26,6 +26,7 @@ import net.minecraft.world.item.TieredItem;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.CropBlock;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.HashMap;
@@ -96,6 +97,10 @@ public class ToolSet {
         return EnchantmentHelper.getItemEnchantmentLevel(Enchantments.SILK_TOUCH, stack) > 0;
     }
 
+    public int getFortuneLevel(ItemStack stack) {
+        return EnchantmentHelper.getItemEnchantmentLevel(Enchantments.BLOCK_FORTUNE, stack);
+    }
+
     /**
      * Calculate which tool on the hotbar is best for mining, depending on an override setting,
      * related to auto tool movement cost, it will either return current selected slot, or the best slot.
@@ -123,6 +128,8 @@ public class ToolSet {
         int lowestCost = Integer.MIN_VALUE;
         boolean bestSilkTouch = false;
         BlockState blockState = b.defaultBlockState();
+        boolean isCrop = b instanceof CropBlock;
+        int highestFortune = 0;
         for (int i = 0; i < 9; i++) {
             ItemStack itemStack = player.getInventory().getItem(i);
             if (!Baritone.settings().useSwordToMine.value && itemStack.getItem() instanceof SwordItem) {
@@ -132,21 +139,29 @@ public class ToolSet {
             if (Baritone.settings().itemSaver.value && (itemStack.getDamageValue() + Baritone.settings().itemSaverThreshold.value) >= itemStack.getMaxDamage() && itemStack.getMaxDamage() > 1) {
                 continue;
             }
-            double speed = calculateSpeedVsBlock(itemStack, blockState);
-            boolean silkTouch = hasSilkTouch(itemStack);
-            if (speed > highestSpeed) {
-                highestSpeed = speed;
+            int fortuneLevel = getFortuneLevel(itemStack);
+            if (isCrop && fortuneLevel > highestFortune && Baritone.settings().useFortuneForCrops.value) {
+                highestFortune = fortuneLevel;
                 best = i;
                 lowestCost = getMaterialCost(itemStack);
-                bestSilkTouch = silkTouch;
-            } else if (speed == highestSpeed) {
-                int cost = getMaterialCost(itemStack);
-                if ((cost < lowestCost && (silkTouch || !bestSilkTouch)) ||
-                        (preferSilkTouch && !bestSilkTouch && silkTouch)) {
+                bestSilkTouch = hasSilkTouch(itemStack);
+            } else if (highestFortune == 0) {
+                double speed = calculateSpeedVsBlock(itemStack, blockState);
+                boolean silkTouch = hasSilkTouch(itemStack);
+                if (speed > highestSpeed) {
                     highestSpeed = speed;
                     best = i;
-                    lowestCost = cost;
+                    lowestCost = getMaterialCost(itemStack);
                     bestSilkTouch = silkTouch;
+                } else if (speed == highestSpeed) {
+                    int cost = getMaterialCost(itemStack);
+                    if ((cost < lowestCost && (silkTouch || !bestSilkTouch)) ||
+                            (preferSilkTouch && !bestSilkTouch && silkTouch)) {
+                        highestSpeed = speed;
+                        best = i;
+                        lowestCost = cost;
+                        bestSilkTouch = silkTouch;
+                    }
                 }
             }
         }
