@@ -1628,8 +1628,7 @@ public final class Settings {
      */
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.FIELD)
-    private @interface JavaOnly {
-    }
+    private @interface JavaOnly {}
 
     // here be dragons
 
