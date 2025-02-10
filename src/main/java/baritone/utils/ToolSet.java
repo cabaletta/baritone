@@ -139,29 +139,29 @@ public class ToolSet {
             if (Baritone.settings().itemSaver.value && (itemStack.getDamageValue() + Baritone.settings().itemSaverThreshold.value) >= itemStack.getMaxDamage() && itemStack.getMaxDamage() > 1) {
                 continue;
             }
-            int fortuneLevel = getFortuneLevel(itemStack);
-            if (isCrop && fortuneLevel > highestFortune && Baritone.settings().useFortuneForCrops.value) {
-                highestFortune = fortuneLevel;
+
+            double speed = calculateSpeedVsBlock(itemStack, blockState);
+            boolean silkTouch = hasSilkTouch(itemStack);
+            if (speed > highestSpeed) {
+                highestSpeed = speed;
                 best = i;
                 lowestCost = getMaterialCost(itemStack);
-                bestSilkTouch = hasSilkTouch(itemStack);
-            } else if (highestFortune == 0) {
-                double speed = calculateSpeedVsBlock(itemStack, blockState);
-                boolean silkTouch = hasSilkTouch(itemStack);
-                if (speed > highestSpeed) {
+                bestSilkTouch = silkTouch;
+            } else if (speed == highestSpeed) {
+                int cost = getMaterialCost(itemStack);
+                int fortuneLevel = getFortuneLevel(itemStack);
+                if (Baritone.settings().useFortuneForCrops.value && isCrop && ((fortuneLevel >= highestFortune && cost < lowestCost) || (fortuneLevel > highestFortune && highestFortune == 0))) {
                     highestSpeed = speed;
                     best = i;
-                    lowestCost = getMaterialCost(itemStack);
+                    lowestCost = cost;
                     bestSilkTouch = silkTouch;
-                } else if (speed == highestSpeed) {
-                    int cost = getMaterialCost(itemStack);
-                    if ((cost < lowestCost && (silkTouch || !bestSilkTouch)) ||
-                            (preferSilkTouch && !bestSilkTouch && silkTouch)) {
-                        highestSpeed = speed;
-                        best = i;
-                        lowestCost = cost;
-                        bestSilkTouch = silkTouch;
-                    }
+                    highestFortune = fortuneLevel;
+                } else if ((cost < lowestCost && highestFortune == 0 && (silkTouch || !bestSilkTouch)) ||
+                        (preferSilkTouch && !bestSilkTouch && silkTouch)) {
+                    highestSpeed = speed;
+                    best = i;
+                    lowestCost = cost;
+                    bestSilkTouch = silkTouch;
                 }
             }
         }
