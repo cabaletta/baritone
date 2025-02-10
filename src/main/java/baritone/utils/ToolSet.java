@@ -150,7 +150,7 @@ public class ToolSet {
             } else if (speed == highestSpeed) {
                 int cost = getMaterialCost(itemStack);
                 int fortuneLevel = getFortuneLevel(itemStack);
-                if (Baritone.settings().useFortuneForCrops.value && isCrop && ((fortuneLevel >= highestFortune && cost < lowestCost) || (fortuneLevel > highestFortune && highestFortune == 0))) {
+                if (Baritone.settings().useFortuneForCrops.value && isCrop && (fortuneLevel > highestFortune || (fortuneLevel == highestFortune && cost < lowestCost))) {
                     highestSpeed = speed;
                     best = i;
                     lowestCost = cost;
