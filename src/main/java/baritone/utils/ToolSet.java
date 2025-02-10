@@ -156,8 +156,8 @@ public class ToolSet {
                     lowestCost = cost;
                     bestSilkTouch = silkTouch;
                     highestFortune = fortuneLevel;
-                } else if ((cost < lowestCost && highestFortune == 0 && (silkTouch || !bestSilkTouch)) ||
-                        (preferSilkTouch && !bestSilkTouch && silkTouch)) {
+                } else if (highestFortune == 0 && ((cost < lowestCost && (silkTouch || !bestSilkTouch)) ||
+                        (preferSilkTouch && !bestSilkTouch && silkTouch))) {
                     highestSpeed = speed;
                     best = i;
                     lowestCost = cost;
