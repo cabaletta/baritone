@@ -128,7 +128,11 @@ public final class ElytraBehavior implements Helper {
         this.solverExecutor = Executors.newSingleThreadExecutor();
         this.nextTickBoostCounter = new int[2];
 
-        this.context = new NetherPathfinderContext(Baritone.settings().elytraNetherSeed.value);
+        this.context = new NetherPathfinderContext(
+                Baritone.settings().elytraNetherSeed.value,
+                baritone.getWorldProvider().getCurrentWorld().directory.resolve("cache"),
+                ctx.world()
+        );
         this.boi = new BlockStateOctreeInterface(context);
     }
 
@@ -228,7 +232,7 @@ public final class ElytraBehavior implements Helper {
             this.path0(pathStart, ElytraBehavior.this.destination, segment -> segment.prepend(before.stream()))
                     .thenRun(() -> {
                         final int recompute = this.path.size() - before.size() - 1;
-                        final double distance = this.path.get(0).distanceTo(this.path.get(recompute));
+                        final double distance = recompute > 0 ? this.path.get(0).distanceTo(this.path.get(recompute)) : 0;
 
                         if (this.completePath) {
                             logVerbose(String.format("Computed path (%.1f blocks in %.4f seconds)", distance, (System.nanoTime() - start) / 1e9d));
@@ -289,10 +293,18 @@ public final class ElytraBehavior implements Helper {
             return this.playerNear;
         }
 
+        private static UnpackedSegment adjustSegment(UnpackedSegment segment, int minY) {
+            return new UnpackedSegment(segment.collect().stream().map((pos)-> {
+                return pos.above(minY);
+            }), segment.isFinished());
+        }
+
         // mickey resigned
         private CompletableFuture<Void> path0(BlockPos src, BlockPos dst, UnaryOperator<UnpackedSegment> operator) {
-            return ElytraBehavior.this.context.pathFindAsync(src, dst)
+            final int minY = ctx.world().dimensionType().minY();
+            return ElytraBehavior.this.context.pathFindAsync(src.below(minY), dst.below(minY))
                     .thenApply(UnpackedSegment::from)
+                    .thenApply(segment -> adjustSegment(segment, minY))
                     .thenApply(operator)
                     .thenAcceptAsync(this::setPath, ctx.minecraft()::execute);
         }
@@ -453,7 +465,9 @@ public final class ElytraBehavior implements Helper {
     }
 
     public void onBlockChange(BlockChangeEvent event) {
-        this.context.queueBlockUpdate(event);
+        final int minY = ctx.world().dimensionType().minY();
+        var blocks = event.getBlocks().stream().map((update) -> new Pair<>(update.first().below(minY), update.second())).toList();
+        this.context.queueBlockUpdate(new BlockChangeEvent(event.getChunkPos(), blocks));
     }
 
     public void onReceivePacket(PacketEvent event) {
@@ -999,12 +1013,20 @@ public final class ElytraBehavior implements Helper {
             return clear;
         }
 
+        final int minY = ctx.world().dimensionType().minY();
+        for (int i = 1; i < src.length; i += 3) {
+            src[i] -= minY;
+            dst[i] -= minY;
+        }
         return this.context.raytrace(8, src, dst, NetherPathfinderContext.Visibility.ALL);
     }
 
     public boolean clearView(Vec3 start, Vec3 dest, boolean ignoreLava) {
         final boolean clear;
         if (!ignoreLava) {
+            start = start.subtract(0, ctx.world().dimensionType().minY(), 0);
+            dest = dest.subtract(0, ctx.world().dimensionType().minY(), 0);
+
             // if start == dest then the cpp raytracer dies
             clear = start.equals(dest) || this.context.raytrace(start, dest);
         } else {
@@ -1012,6 +1034,8 @@ public final class ElytraBehavior implements Helper {
         }
 
         if (Baritone.settings().elytraRenderRaytraces.value) {
+            start = start.add(0, ctx.world().dimensionType().minY(), 0);
+            dest = dest.add(0, ctx.world().dimensionType().minY(), 0);
             (clear ? this.clearLines : this.blockedLines).add(new Pair<>(start, dest));
         }
         return clear;
@@ -1267,7 +1291,7 @@ public final class ElytraBehavior implements Helper {
             final Material mat = this.bsi.get0(x, y, z).getMaterial();
             return mat == Material.AIR || mat == Material.LAVA;
         } else {
-            return !this.boi.get0(x, y, z);
+            return !this.boi.get0(x, y-ctx.world().dimensionType().minY(), z);
         }
     }
 

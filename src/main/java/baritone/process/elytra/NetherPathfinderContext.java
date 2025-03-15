@@ -24,8 +24,10 @@ import dev.babbaj.pathfinder.NetherPathfinder;
 import dev.babbaj.pathfinder.Octree;
 import dev.babbaj.pathfinder.PathSegment;
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.BitStorage;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
@@ -34,6 +36,7 @@ import net.minecraft.world.level.chunk.PalettedContainer;
 import net.minecraft.world.phys.Vec3;
 
 import java.lang.ref.SoftReference;
+import java.nio.file.Path;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -53,9 +56,14 @@ public final class NetherPathfinderContext {
     final long context;
     private final long seed;
     private final ExecutorService executor;
+    private final ResourceKey<Level> dimension;
 
-    public NetherPathfinderContext(long seed) {
-        this.context = NetherPathfinder.newContext(seed);
+    public NetherPathfinderContext(long seed, Path cache, Level world) {
+        this.dimension = world.dimension();
+        int dimension = (this.dimension == Level.NETHER) ? NetherPathfinder.DIMENSION_NETHER : (this.dimension == Level.OVERWORLD) ? NetherPathfinder.DIMENSION_OVERWORLD : NetherPathfinder.DIMENSION_END;
+        int height = Math.min(world.dimensionType().height(), 384);
+        // TODO: Support optional limit of Nether to y=127
+        this.context = NetherPathfinder.newContext(seed, cache.toString(), dimension, height, Baritone.settings().elytraCustomAllocator.value);
         this.seed = seed;
         this.executor = Executors.newSingleThreadExecutor();
     }
@@ -81,7 +89,7 @@ public final class NetherPathfinderContext {
             final LevelChunk chunk = ref.get();
             if (chunk != null) {
                 long ptr = NetherPathfinder.getOrCreateChunk(this.context, chunk.getPos().x, chunk.getPos().z);
-                writeChunkData(chunk, ptr);
+                writeChunkData(chunk, ptr, this.context);
             }
         });
     }
@@ -93,7 +101,7 @@ public final class NetherPathfinderContext {
             if (ptr == 0) return; // this shouldn't ever happen
             event.getBlocks().forEach(pair -> {
                 BlockPos pos = pair.first();
-                if (pos.getY() >= 128) return;
+                if(pos.getY() < 0 || pos.getY() >= 384) return;
                 boolean isSolid = pair.second() != AIR_BLOCK_STATE;
                 Octree.setBlock(ptr, pos.getX() & 15, pos.getY(), pos.getZ() & 15, isSolid);
             });
@@ -106,10 +114,12 @@ public final class NetherPathfinderContext {
                     this.context,
                     src.getX(), src.getY(), src.getZ(),
                     dst.getX(), dst.getY(), dst.getZ(),
-                    true,
-                    false,
-                    10000,
-                    !Baritone.settings().elytraPredictTerrain.value
+                    !Baritone.settings().elytraAllowTightSpaces.value, // atleastX4
+                    false, // refine
+                    10000, // timeoutMs
+                    !(Baritone.settings().elytraPredictTerrain.value && this.dimension == Level.NETHER), // useAirIfChunkNotLoaded
+                    // TODO: Determine appropiate cost value
+                    8.0 // fakeChunkCost
             );
             if (segment == null) {
                 throw new PathCalculationException("Path calculation failed");
@@ -186,10 +196,11 @@ public final class NetherPathfinderContext {
         return this.seed;
     }
 
-    private static void writeChunkData(LevelChunk chunk, long ptr) {
+    private static void writeChunkData(LevelChunk chunk, long chunkPtr, long contextPtr) {
         try {
             LevelChunkSection[] chunkInternalStorageArray = chunk.getSections();
-            for (int y0 = 0; y0 < 8; y0++) {
+            final int maxSections = Math.min(chunkInternalStorageArray.length, 24); // pathfinder support stops at 384/16 sections
+            for (int y0 = 0; y0 < maxSections; y0++) {
                 final LevelChunkSection extendedblockstorage = chunkInternalStorageArray[y0];
                 if (extendedblockstorage == null) {
                     continue;
@@ -212,11 +223,17 @@ public final class NetherPathfinderContext {
                         int x = (idx & 15);
                         int y = yReal + (idx >> 8);
                         int z = ((idx >> 4) & 15);
-                        Octree.setBlock(ptr, x, y, z, value != airId);
+
+                        // Avoid unnecessary writes that may trigger a page allocation
+                        // TODO: Make this predictor friendly
+                        if(value != airId) {
+                            Octree.setBlock(chunkPtr, x, y, z, true);
+                        }
                     }
                 }
             }
-            Octree.setIsFromJava(ptr);
+            final ChunkPos pos = chunk.getPos();
+            NetherPathfinder.setChunkState(contextPtr, pos.x, pos.z, true);
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException(e);

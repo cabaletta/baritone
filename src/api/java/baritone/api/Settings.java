@@ -1544,6 +1544,17 @@ public final class Settings {
     public final Setting<Boolean> elytraChatSpam = new Setting<>(false);
 
     /**
+     * May reduce memory usage by using a custom allocator for pathfinding
+     */
+    public final Setting<Boolean> elytraCustomAllocator = new Setting<>(false);
+
+    /**
+     * Allow the pathfinder to attempt flight in tighter spaces, useful in caves but can be dangerous.
+     */
+    public final Setting<Boolean> elytraAllowTightSpaces = new Setting<>(false);
+
+
+    /**
      * A map of lowercase setting field names to their respective setting
      */
     public final Map<String, Setting<?>> byLowerName;

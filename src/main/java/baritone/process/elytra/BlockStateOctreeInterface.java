@@ -39,7 +39,7 @@ public final class BlockStateOctreeInterface {
     }
 
     public boolean get0(final int x, final int y, final int z) {
-        if ((y | (127 - y)) < 0) {
+        if (y < 0 || y > 383) {
             return false;
         }
         final int chunkX = x >> 4;
@@ -49,6 +49,6 @@ public final class BlockStateOctreeInterface {
             this.prevChunkZ = chunkZ;
             this.chunkPtr = NetherPathfinder.getOrCreateChunk(this.contextPtr, chunkX, chunkZ);
         }
-        return Octree.getBlock(this.chunkPtr, x & 0xF, y & 0x7F, z & 0xF);
+        return Octree.getBlock(this.chunkPtr, x & 0xF, y, z & 0xF);
     }
 }

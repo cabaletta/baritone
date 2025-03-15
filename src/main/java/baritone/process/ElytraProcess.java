@@ -54,6 +54,7 @@ import net.minecraft.world.level.block.AirBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.*;
@@ -189,7 +190,9 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
             behavior.landingMode = this.state == State.LANDING;
             this.goal = null;
             baritone.getInputOverrideHandler().clearAllKeys();
-            behavior.tick();
+            synchronized (behavior.context.cullingLock) {
+                behavior.tick();
+            }
             return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
         } else if (this.state == State.LANDING) {
             if (ctx.playerMotion().multiply(1, 0, 1).length() > 0.001) {
@@ -322,11 +325,11 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
     }
 
     private void pathTo0(BlockPos destination, boolean appendDestination) {
-        if (ctx.player() == null || ctx.player().level.dimension() != Level.NETHER) {
+        if (ctx.player() == null) {
             return;
         }
         this.onLostControl();
-        this.predictingTerrain = Baritone.settings().elytraPredictTerrain.value;
+        this.predictingTerrain = ctx.player().level.dimension() == Level.NETHER && Baritone.settings().elytraPredictTerrain.value;
         this.behavior = new ElytraBehavior(this.baritone, this, destination, appendDestination);
         if (ctx.world() != null) {
             this.behavior.repackChunks();
@@ -352,8 +355,12 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
         } else {
             throw new IllegalArgumentException("The goal must be a GoalXZ or GoalBlock");
         }
-        if (y <= 0 || y >= 128) {
-            throw new IllegalArgumentException("The y of the goal is not between 0 and 128");
+
+        // TODO: Optional limit on nether to y=127
+        int minY = ctx.world().dimensionType().minY();
+        int maxY = Math.min(minY + 384, ctx.world().dimensionType().height() + minY);
+        if (y < minY || y >= maxY) {
+            throw new IllegalArgumentException("The goal must have a y value between " + minY + " and " + maxY);
         }
         this.pathTo(new BlockPos(x, y, z));
     }
@@ -465,12 +472,20 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
         }
     }
 
-    private static boolean isInBounds(BlockPos pos) {
-        return pos.getY() >= 0 && pos.getY() < 128;
+    private static boolean isInBounds(Level dim, BlockPos pos) {
+        // TODO: Optionally limit nether to just y=127
+        DimensionType dimType = dim.dimensionType();
+        int minY = dimType.minY();
+        int maxY = Math.min(minY + 384, dimType.height() + minY);
+        return pos.getY() >= minY && pos.getY() < maxY;
     }
 
     private boolean isSafeBlock(Block block) {
-        return block == Blocks.NETHERRACK || block == Blocks.GRAVEL || (block == Blocks.NETHER_BRICKS && Baritone.settings().elytraAllowLandOnNetherFortress.value);
+        return block == Blocks.NETHERRACK || block == Blocks.GRAVEL || block == Blocks.SOUL_SAND || block == Blocks.SOUL_SOIL || (block == Blocks.NETHER_BRICKS && Baritone.settings().elytraAllowLandOnNetherFortress.value)
+                || block == Blocks.STONE || block == Blocks.DEEPSLATE || block == Blocks.GRASS_BLOCK || block == Blocks.SAND || block == Blocks.RED_SAND || block == Blocks.TERRACOTTA
+                || block == Blocks.SNOW || block == Blocks.ICE || block == Blocks.MYCELIUM || block == Blocks.PODZOL
+                || block == Blocks.DARK_OAK_LEAVES || block == Blocks.JUNGLE_LEAVES
+                || block == Blocks.END_STONE;
     }
 
     private boolean isSafeBlock(BlockPos pos) {
@@ -551,7 +566,7 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
 
         while (!queue.isEmpty()) {
             BetterBlockPos pos = queue.poll();
-            if (ctx.world().isLoaded(pos) && isInBounds(pos) && ctx.world().getBlockState(pos).getBlock() == Blocks.AIR) {
+            if (ctx.world().isLoaded(pos) && isInBounds(ctx.world(), pos) && ctx.world().getBlockState(pos).getBlock() == Blocks.AIR) {
                 BetterBlockPos actualLandingSpot = checkLandingSpot(pos, checkedPositions);
                 if (actualLandingSpot != null && isColumnAir(actualLandingSpot, LANDING_COLUMN_HEIGHT) && hasAirBubble(actualLandingSpot.above(LANDING_COLUMN_HEIGHT)) && !badLandingSpots.contains(actualLandingSpot.above(LANDING_COLUMN_HEIGHT))) {
                     return actualLandingSpot.above(LANDING_COLUMN_HEIGHT);
