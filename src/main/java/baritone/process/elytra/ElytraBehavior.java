@@ -522,8 +522,11 @@ public final class ElytraBehavior implements Helper {
     }
 
     public void onTick() {
-        synchronized (this.context.cullingLock) {
+        this.context.readLock.lock();
+        try {
             this.onTick0();
+        } finally {
+            this.context.readLock.unlock();
         }
         final long now = System.currentTimeMillis();
         if ((now - this.timeLastCacheCull) / 1000 > Baritone.settings().elytraTimeBetweenCacheCullSecs.value) {

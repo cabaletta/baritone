@@ -190,8 +190,11 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
             behavior.landingMode = this.state == State.LANDING;
             this.goal = null;
             baritone.getInputOverrideHandler().clearAllKeys();
-            synchronized (behavior.context.cullingLock) {
+            behavior.context.readLock.lock();
+            try {
                 behavior.tick();
+            } finally {
+                behavior.context.readLock.unlock();
             }
             return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
         } else if (this.state == State.LANDING) {
@@ -345,7 +348,7 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
         if (iGoal instanceof GoalXZ) {
             GoalXZ goal = (GoalXZ) iGoal;
             x = goal.getX();
-            y = 64;
+            y = 64; // TODO: if we go above the roof this doesn't work
             z = goal.getZ();
         } else if (iGoal instanceof GoalBlock) {
             GoalBlock goal = (GoalBlock) iGoal;

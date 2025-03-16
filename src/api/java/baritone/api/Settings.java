@@ -1553,6 +1553,10 @@ public final class Settings {
      */
     public final Setting<Boolean> elytraAllowTightSpaces = new Setting<>(false);
 
+    /**
+     * Allow the pathfinder to fly above y 128 in the nether.
+     */
+    public final Setting<Boolean> elytraAllowAboveRoof = new Setting<>(false);
 
     /**
      * A map of lowercase setting field names to their respective setting
