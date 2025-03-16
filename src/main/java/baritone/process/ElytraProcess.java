@@ -359,12 +359,17 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
             throw new IllegalArgumentException("The goal must be a GoalXZ or GoalBlock");
         }
 
-        // TODO: Optional limit on nether to y=127
         int minY = ctx.world().dimensionType().minY();
-        int maxY = Math.min(minY + 384, ctx.world().dimensionType().height() + minY);
+        int maxY = (ctx.world().dimension() == Level.NETHER && !Baritone.settings().elytraAllowAboveRoof.value) ? 127 : Math.min(minY + 384, ctx.world().dimensionType().height() + minY);
         if (y < minY || y >= maxY) {
             throw new IllegalArgumentException("The goal must have a y value between " + minY + " and " + maxY);
         }
+
+        int playerY = (int)ctx.player().getY();
+        if (playerY < minY || playerY >= maxY) {
+            throw new IllegalArgumentException("The player must have a y value between " + minY + " and " + maxY);
+        }
+
         this.pathTo(new BlockPos(x, y, z));
     }
 
