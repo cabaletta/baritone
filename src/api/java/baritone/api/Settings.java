@@ -1559,6 +1559,11 @@ public final class Settings {
     public final Setting<Boolean> elytraAllowAboveRoof = new Setting<>(false);
 
     /**
+     * Allow the pathfinder to access the baritone cache to improve pathing
+     */
+    public final Setting<Boolean> elytraUseBaritoneCache = new Setting<>(true);
+
+    /**
      * A map of lowercase setting field names to their respective setting
      */
     public final Map<String, Setting<?>> byLowerName;

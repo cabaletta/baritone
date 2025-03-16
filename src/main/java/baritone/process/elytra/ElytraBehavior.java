@@ -130,7 +130,7 @@ public final class ElytraBehavior implements Helper {
 
         this.context = new NetherPathfinderContext(
                 Baritone.settings().elytraNetherSeed.value,
-                baritone.getWorldProvider().getCurrentWorld().directory.resolve("cache"),
+                Baritone.settings().elytraUseBaritoneCache.value ? baritone.getWorldProvider().getCurrentWorld().directory.resolve("cache") : null,
                 ctx.world()
         );
         this.boi = new BlockStateOctreeInterface(context);
