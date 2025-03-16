@@ -493,7 +493,7 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
                 || block == Blocks.STONE || block == Blocks.DEEPSLATE || block == Blocks.GRASS_BLOCK || block == Blocks.SAND || block == Blocks.RED_SAND || block == Blocks.TERRACOTTA
                 || block == Blocks.SNOW || block == Blocks.ICE || block == Blocks.MYCELIUM || block == Blocks.PODZOL
                 || block == Blocks.DARK_OAK_LEAVES || block == Blocks.JUNGLE_LEAVES
-                || block == Blocks.END_STONE;
+                || block == Blocks.END_STONE || block == Blocks.BEDROCK;
     }
 
     private boolean isSafeBlock(BlockPos pos) {
