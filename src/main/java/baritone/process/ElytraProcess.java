@@ -348,7 +348,7 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
         if (iGoal instanceof GoalXZ) {
             GoalXZ goal = (GoalXZ) iGoal;
             x = goal.getX();
-            y = 64; // TODO: if we go above the roof this doesn't work
+            y = ctx.world().dimension() == Level.NETHER && ctx.playerFeet().y >= 128 ? 128 : 65;
             z = goal.getZ();
         } else if (iGoal instanceof GoalBlock) {
             GoalBlock goal = (GoalBlock) iGoal;
