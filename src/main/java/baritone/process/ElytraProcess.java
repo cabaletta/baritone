@@ -55,6 +55,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.dimension.DimensionType;
+import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.*;
@@ -179,7 +180,7 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
                 Rotation rotation = RotationUtils.calcRotationFromVec3d(from, to, ctx.playerRotations());
                 baritone.getLookBehavior().updateTarget(new Rotation(rotation.getYaw(), 0), false); // this will be overwritten, probably, by behavior tick
 
-                if (ctx.player().position().y < endPos.y - LANDING_COLUMN_HEIGHT) {
+                if (ctx.player().position().y < endPos.y - this.landingColumnHeight) {
                     logDirect("bad landing spot, trying again...");
                     landingSpotIsBad(endPos);
                 }
@@ -563,10 +564,20 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
         return null; // void
     }
 
-    private static final int LANDING_COLUMN_HEIGHT = 15;
+    private static final int SHORT_LANDING_COLUMN_HEIGHT = 15;
+    private static final int LONG_LANDING_COLUMN_HEIGHT = 39;
+    private int landingColumnHeight = SHORT_LANDING_COLUMN_HEIGHT;
     private Set<BetterBlockPos> badLandingSpots = new HashSet<>();
 
     private BetterBlockPos findSafeLandingSpot(BetterBlockPos start) {
+        if(ctx.player().getY() > ctx.world().getHeight(Heightmap.Types.MOTION_BLOCKING, start.getX(), start.getZ())) {
+            return findSafeLandingSpot_heightmap(start);
+        } else {
+            return findSafeLandingSpot_underground(start);
+        }
+    }
+
+    private BetterBlockPos findSafeLandingSpot_underground(BetterBlockPos start) {
         Queue<BetterBlockPos> queue = new PriorityQueue<>(Comparator.<BetterBlockPos>comparingInt(pos -> (pos.x - start.x) * (pos.x - start.x) + (pos.z - start.z) * (pos.z - start.z)).thenComparingInt(pos -> -pos.y));
         Set<BetterBlockPos> visited = new HashSet<>();
         LongOpenHashSet checkedPositions = new LongOpenHashSet();
@@ -576,8 +587,11 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
             BetterBlockPos pos = queue.poll();
             if (ctx.world().isLoaded(pos) && isInBounds(ctx.world(), pos) && ctx.world().getBlockState(pos).getBlock() == Blocks.AIR) {
                 BetterBlockPos actualLandingSpot = checkLandingSpot(pos, checkedPositions);
-                if (actualLandingSpot != null && isColumnAir(actualLandingSpot, LANDING_COLUMN_HEIGHT) && hasAirBubble(actualLandingSpot.above(LANDING_COLUMN_HEIGHT)) && !badLandingSpots.contains(actualLandingSpot.above(LANDING_COLUMN_HEIGHT))) {
-                    return actualLandingSpot.above(LANDING_COLUMN_HEIGHT);
+                if(actualLandingSpot != null) {
+                    landingColumnHeight = SHORT_LANDING_COLUMN_HEIGHT;
+                    if (isColumnAir(actualLandingSpot, this.landingColumnHeight) && hasAirBubble(actualLandingSpot.above(this.landingColumnHeight)) && !badLandingSpots.contains(actualLandingSpot.above(this.landingColumnHeight))) {
+                        return actualLandingSpot.above(this.landingColumnHeight);
+                    }
                 }
                 if (visited.add(pos.north())) queue.add(pos.north());
                 if (visited.add(pos.east())) queue.add(pos.east());
@@ -585,6 +599,36 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
                 if (visited.add(pos.west())) queue.add(pos.west());
                 if (visited.add(pos.above())) queue.add(pos.above());
                 if (visited.add(pos.below())) queue.add(pos.below());
+            }
+        }
+        return null;
+    }
+
+    private BetterBlockPos findSafeLandingSpot_heightmap(BetterBlockPos start) {
+        Queue<BetterBlockPos> queue = new PriorityQueue<>(Comparator.<BetterBlockPos>comparingInt(pos -> (pos.x - start.x) * (pos.x - start.x) + (pos.z - start.z) * (pos.z - start.z)).thenComparingInt(pos -> -pos.y));
+        Set<BetterBlockPos> visited = new HashSet<>();
+        LongOpenHashSet checkedPositions = new LongOpenHashSet();
+        queue.add(start);
+
+        while (!queue.isEmpty()) {
+            BetterBlockPos qPos = queue.poll();
+            if (!ctx.world().isLoaded(qPos)) continue;
+
+            var height = ctx.world().getHeight(Heightmap.Types.MOTION_BLOCKING, qPos.getX(), qPos.getZ());
+            var pos = new BetterBlockPos(qPos.getX(), height+1, qPos.getZ());
+            if (ctx.world().isLoaded(pos) && isInBounds(ctx.world(), pos) && ctx.world().getBlockState(pos).getBlock() == Blocks.AIR) {
+                BetterBlockPos actualLandingSpot = checkLandingSpot(pos, checkedPositions);
+                if(actualLandingSpot != null) {
+                    landingColumnHeight = ctx.playerFeet().y - actualLandingSpot.y < LONG_LANDING_COLUMN_HEIGHT ? SHORT_LANDING_COLUMN_HEIGHT : LONG_LANDING_COLUMN_HEIGHT;
+                    if (hasAirBubble(actualLandingSpot.above(landingColumnHeight)) && !badLandingSpots.contains(actualLandingSpot.above(landingColumnHeight))) {
+                        return actualLandingSpot.above(landingColumnHeight);
+                    }
+                }
+
+                if (visited.add(pos.north())) queue.add(pos.north());
+                if (visited.add(pos.east())) queue.add(pos.east());
+                if (visited.add(pos.south())) queue.add(pos.south());
+                if (visited.add(pos.west())) queue.add(pos.west());
             }
         }
         return null;
