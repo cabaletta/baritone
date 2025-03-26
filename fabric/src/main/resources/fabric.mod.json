@@ -11,7 +11,8 @@
   ],
   "contact": {
     "homepage": "https://github.com/cabaletta/baritone",
-    "sources": "https://github.com/cabaletta/baritone"
+    "sources": "https://github.com/cabaletta/baritone",
+    "issues": "https://github.com/cabaletta/baritone/issues"
   },
 
   "license": "LGPL-3.0",
@@ -27,5 +28,12 @@
   "depends": {
     "fabricloader": ">=0.11.0",
     "minecraft": "1.19.4"
+  },
+  "custom": {
+    "modmenu": {
+      "links": {
+        "modmenu.discord": "https://discord.gg/s6fRBAUpmr"
+      }
+    }
   }
 }

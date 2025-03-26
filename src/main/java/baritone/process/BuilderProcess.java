@@ -999,6 +999,22 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         return paused ? "Builder Paused" : "Building " + name;
     }
 
+    @Override
+    public Optional<Integer> getMinLayer() {
+        if (Baritone.settings().buildInLayers.value) {
+            return Optional.of(this.layer);
+        }
+        return Optional.empty();
+    }
+
+    @Override
+    public Optional<Integer> getMaxLayer() {
+        if (Baritone.settings().buildInLayers.value) {
+            return Optional.of(this.stopAtHeight);
+        }
+        return Optional.empty();
+    }
+
     private List<BlockState> approxPlaceable(int size) {
         List<BlockState> result = new ArrayList<>();
         for (int i = 0; i < size; i++) {
