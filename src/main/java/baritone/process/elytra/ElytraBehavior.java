@@ -45,6 +45,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.ChunkSource;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.material.Material;
@@ -174,7 +175,7 @@ public final class ElytraBehavior implements Helper {
 
         public CompletableFuture<Void> pathToDestination(final BlockPos from) {
             final long start = System.nanoTime();
-            return this.path0(from, ElytraBehavior.this.destination, UnaryOperator.identity())
+            return this.path0(from, destinationFixed(), UnaryOperator.identity())
                     .thenRun(() -> {
                         final double distance = this.path.get(0).distanceTo(this.path.get(this.path.size() - 1));
                         if (this.completePath) {
@@ -205,7 +206,7 @@ public final class ElytraBehavior implements Helper {
             final List<BetterBlockPos> after = upToIncl.isPresent() ? this.path.subList(upToIncl.getAsInt() + 1, this.path.size()) : Collections.emptyList();
             final boolean complete = this.completePath;
 
-            return this.path0(ctx.playerFeet(), upToIncl.isPresent() ? this.path.get(upToIncl.getAsInt()) : ElytraBehavior.this.destination, segment -> segment.append(after.stream(), complete || (segment.isFinished() && !upToIncl.isPresent())))
+            return this.path0(ctx.playerFeet(), upToIncl.isPresent() ? fixDestination(this.path.get(upToIncl.getAsInt())) : destinationFixed(), segment -> segment.append(after.stream(), complete || (segment.isFinished() && !upToIncl.isPresent())))
                     .whenComplete((result, ex) -> {
                         this.recalculating = false;
                         if (ex != null) {
@@ -229,7 +230,7 @@ public final class ElytraBehavior implements Helper {
             final long start = System.nanoTime();
             final BetterBlockPos pathStart = this.path.get(afterIncl);
 
-            this.path0(pathStart, ElytraBehavior.this.destination, segment -> segment.prepend(before.stream()))
+            this.path0(pathStart, destinationFixed(), segment -> segment.prepend(before.stream()))
                     .thenRun(() -> {
                         final int recompute = this.path.size() - before.size() - 1;
                         final double distance = recompute > 0 ? this.path.get(0).distanceTo(this.path.get(recompute)) : 0;
@@ -269,13 +270,13 @@ public final class ElytraBehavior implements Helper {
         private void setPath(final UnpackedSegment segment) {
             List<BetterBlockPos> path = segment.collect();
             if (ElytraBehavior.this.appendDestination) {
-                BlockPos dest = ElytraBehavior.this.destination;
+                BlockPos dest = destinationFixed();
                 BlockPos last = !path.isEmpty() ? path.get(path.size() - 1) : null;
                 if (last != null && ElytraBehavior.this.clearView(Vec3.atLowerCornerOf(dest), Vec3.atLowerCornerOf(last), false)) {
                     path.add(new BetterBlockPos(dest));
                 } else {
-                    logDirect("unable to land at " + ElytraBehavior.this.destination);
-                    process.landingSpotIsBad(new BetterBlockPos(ElytraBehavior.this.destination));
+                    logDirect("unable to land at " + dest);
+                    process.landingSpotIsBad(new BetterBlockPos(dest));
                 }
             }
             this.path = new NetherPath(path);
@@ -301,6 +302,7 @@ public final class ElytraBehavior implements Helper {
 
         // mickey resigned
         private CompletableFuture<Void> path0(BlockPos src, BlockPos dst, UnaryOperator<UnpackedSegment> operator) {
+            // +64 in overworld to normalize y to 0-384
             final int minY = ctx.world().dimensionType().minY();
             return ElytraBehavior.this.context.pathFindAsync(src.below(minY), dst.below(minY))
                     .thenApply(UnpackedSegment::from)
@@ -348,7 +350,8 @@ public final class ElytraBehavior implements Helper {
                     // obstacle. where do we return to pathing?
                     // if the end of render distance is closer to goal, then that's fine, otherwise we'd be "digging our hole deeper" and making an already bad backtrack worse
                     OptionalInt rejoinMainPathAt;
-                    if (this.path.get(rangeEndExcl - 1).distanceSq(ElytraBehavior.this.destination) < ctx.playerFeet().distanceSq(ElytraBehavior.this.destination)) {
+                    var dest = destinationFixed();
+                    if (this.path.get(rangeEndExcl - 1).distanceSq(dest) < ctx.playerFeet().distanceSq(dest)) {
                         rejoinMainPathAt = OptionalInt.of(rangeEndExcl - 1); // rejoin after current render distance
                     } else {
                         rejoinMainPathAt = OptionalInt.empty(); // large backtrack detected. ignore render distance, rejoin later on
@@ -571,7 +574,7 @@ public final class ElytraBehavior implements Helper {
         final List<BetterBlockPos> path = this.pathManager.getPath();
         if (path.isEmpty()) {
             return;
-        } else if (this.destination == null) {
+        } else if (this.destination == null) { // null check why????
             this.pathManager.clear();
             return;
         }
@@ -594,7 +597,6 @@ public final class ElytraBehavior implements Helper {
         if (this.pathManager.getPath().isEmpty()) {
             return;
         }
-
         trySwapElytra();
 
         if (ctx.player().horizontalCollision) {
@@ -1349,5 +1351,22 @@ public final class ElytraBehavior implements Helper {
         if (Baritone.settings().elytraChatSpam.value) {
             logDebug(message);
         }
+    }
+
+    // so we don't get stuck trying to pathfind through the roof
+    BetterBlockPos fixDestination(BetterBlockPos dst) {
+        if (ctx.world().dimension() == Level.NETHER) {
+            if (ctx.player().getY() >= 128 && dst.y < 128) {
+                return new BetterBlockPos(dst.x, 128, dst.z);
+            }
+            else if (ctx.player().getY() < 128 && dst.y >= 128) {
+                return new BetterBlockPos(dst.x, 64, dst.z);
+            }
+        }
+        return dst;
+    }
+
+    BetterBlockPos destinationFixed() {
+        return fixDestination(this.destination);
     }
 }
