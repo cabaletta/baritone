@@ -1354,7 +1354,7 @@ public final class ElytraBehavior implements Helper {
     }
 
     // so we don't get stuck trying to pathfind through the roof
-    BetterBlockPos fixDestination(BetterBlockPos dst) {
+    private BetterBlockPos fixDestination(BetterBlockPos dst) {
         if (ctx.world().dimension() == Level.NETHER) {
             if (ctx.player().getY() >= 128 && dst.y < 128) {
                 return new BetterBlockPos(dst.x, 128, dst.z);
@@ -1366,7 +1366,7 @@ public final class ElytraBehavior implements Helper {
         return dst;
     }
 
-    BetterBlockPos destinationFixed() {
+    private BetterBlockPos destinationFixed() {
         return fixDestination(this.destination);
     }
 }
