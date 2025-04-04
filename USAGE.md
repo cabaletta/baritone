@@ -86,9 +86,6 @@ There are about a hundred settings, but here are some fun / interesting / import
 - `mineScanDroppedItems`
 - `allowDiagonalAscend`
 
-
-
-
 # Troubleshooting / common issues
 
 ## Why doesn't Baritone respond to any of my chat commands?
