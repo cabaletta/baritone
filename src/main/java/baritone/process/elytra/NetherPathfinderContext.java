@@ -34,8 +34,10 @@ import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.level.chunk.PalettedContainer;
 import net.minecraft.world.phys.Vec3;
+import sun.misc.Unsafe;
 
 import java.lang.ref.SoftReference;
+import java.lang.reflect.Field;
 import java.nio.file.Path;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -44,11 +46,23 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import static net.minecraft.world.level.chunk.LevelChunkSection.SECTION_SIZE;
+
 /**
  * @author Brady
  */
 public final class NetherPathfinderContext {
 
+    private static final Unsafe UNSAFE;
+    static {
+        try {
+            Field f = Unsafe.class.getDeclaredField("theUnsafe");
+            f.setAccessible(true);
+            UNSAFE = (Unsafe) f.get(null);
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
+    }
     private static final BlockState AIR_BLOCK_STATE = Blocks.AIR.defaultBlockState();
     // This lock must be held while there are active pointers to chunks in java,
     // but we just hold it for the entire tick so we don't have to think much about it.
@@ -254,7 +268,9 @@ public final class NetherPathfinderContext {
                     else if (bs == Blocks.BROWN_MUSHROOM.defaultBlockState()) brownMushroomId = i;
                 }
                 if (airId == -1 & caveAirId == -1) {
-                    // TODO: memset
+                    final long bytesInSection = SECTION_SIZE / 8;
+                    UNSAFE.setMemory(chunkPtr + (y0 * bytesInSection), bytesInSection, (byte) 0xFF);
+                    continue;
                 }
                 // pasted from FasterWorldScanner
                 final BitStorage array = ((IPalettedContainer<BlockState>) bsc).getStorage();
@@ -274,9 +290,7 @@ public final class NetherPathfinderContext {
                         int z = ((idx >> 4) & 15);
 
                         // Avoid unnecessary writes that may trigger a page allocation
-                        // TODO: Make this predictor friendly
-                        // TODO: cave air?
-                        if ((value != airId) & value != redMushroomId & value != brownMushroomId) {
+                        if (!(value == airId | value == caveAirId) & value != redMushroomId & value != brownMushroomId) {
                             Octree.setBlock(chunkPtr, x, y, z, true);
                         }
                     }
