@@ -483,10 +483,9 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
     }
 
     private static boolean isInBounds(Level dim, BlockPos pos) {
-        // TODO: Optionally limit nether to just y=127
         DimensionType dimType = dim.dimensionType();
         int minY = dimType.minY();
-        int maxY = Math.min(minY + 384, dimType.height() + minY);
+        int maxY = (dim.dimension() == Level.NETHER && !Baritone.settings().elytraAllowAboveRoof.value) ? 127 : Math.min(minY + 384, dimType.height() + minY);
         return pos.getY() >= minY && pos.getY() < maxY;
     }
 
