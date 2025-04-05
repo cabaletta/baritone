@@ -1546,7 +1546,7 @@ public final class Settings {
     /**
      * May reduce memory usage by using a custom allocator for pathfinding
      */
-    public final Setting<Boolean> elytraCustomAllocator = new Setting<>(false);
+    public final Setting<Boolean> elytraCustomAllocator = new Setting<>(true);
 
     /**
      * Allow the pathfinder to attempt flight in tighter spaces, useful in caves but can be dangerous.
