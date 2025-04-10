@@ -70,6 +70,7 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
     private Goal goal;
     private ElytraBehavior behavior;
     private boolean predictingTerrain;
+    private boolean allowTight;
 
     @Override
     public void onLostControl() {
@@ -116,9 +117,14 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
             logDirect("Nether seed changed, recalculating path");
             this.resetState();
         }
-        if (predictingTerrain != Baritone.settings().elytraPredictTerrain.value) {
-            logDirect("elytraPredictTerrain setting changed, recalculating path");
+        if (predictingTerrain != Baritone.settings().elytraPredictTerrain.value && ctx.player().level.dimension() == Level.NETHER) {
+            logDirect("elytraPredictTerrain setting changed, recalculating path from scratch");
             predictingTerrain = Baritone.settings().elytraPredictTerrain.value;
+            this.resetState();
+        }
+        if (allowTight != Baritone.settings().elytraAllowTightSpaces.value) {
+            logDirect("elytraAllowTightSpaces setting changed, recalculating path from scratch");
+            allowTight = Baritone.settings().elytraAllowTightSpaces.value;
             this.resetState();
         }
 

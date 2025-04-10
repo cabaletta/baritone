@@ -84,10 +84,10 @@ public final class NetherPathfinderContext {
         final int dim;
         if (this.dimension == Level.NETHER) dim = NetherPathfinder.DIMENSION_NETHER;
         else if (this.dimension == Level.END) dim = NetherPathfinder.DIMENSION_END;
-        else dim = NetherPathfinder.DIMENSION_END;
+        else dim = NetherPathfinder.DIMENSION_OVERWORLD;
         int height = Math.min(world.dimensionType().height(), 384);
         if (!Baritone.settings().elytraAllowAboveRoof.value && dim == NetherPathfinder.DIMENSION_NETHER) height = Math.min(height, 128);
-        this.context = NetherPathfinder.newContext(seed, cache.toString(), dim, height, Baritone.settings().elytraCustomAllocator.value);
+        this.context = NetherPathfinder.newContext(seed, cache != null ? cache.toString() : null, dim, height, Baritone.settings().elytraCustomAllocator.value);
         this.seed = seed;
     }
 
