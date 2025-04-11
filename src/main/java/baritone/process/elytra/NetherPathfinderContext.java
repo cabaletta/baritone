@@ -126,10 +126,10 @@ public final class NetherPathfinderContext {
     }
 
     public void queueBlockUpdate(BlockChangeEvent event) {
-        this.readExecutor.execute(() -> {
+        this.writeExecutor.execute(() -> {
             ChunkPos chunkPos = event.getChunkPos();
-            // not inserting or deleting from the cache hashmap so we should be fine not being exclusive
-            readLock.lock();
+            // not inserting or deleting from the cache hashmap but it would still be bad for this function to race with itself
+            writeLock.lock();
             try {
                 long ptr = NetherPathfinder.getChunk(this.context, chunkPos.x, chunkPos.z);
                 if (ptr == 0) return; // this shouldn't ever happen
@@ -140,7 +140,7 @@ public final class NetherPathfinderContext {
                     Octree.setBlock(ptr, pos.getX() & 15, pos.getY(), pos.getZ() & 15, isSolid);
                 });
             } finally {
-                readLock.unlock();
+                writeLock.unlock();
             }
         });
     }
