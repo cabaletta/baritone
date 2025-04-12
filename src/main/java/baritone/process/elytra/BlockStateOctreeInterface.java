@@ -19,6 +19,7 @@ package baritone.process.elytra;
 
 import dev.babbaj.pathfinder.NetherPathfinder;
 import dev.babbaj.pathfinder.Octree;
+import net.minecraft.world.level.dimension.DimensionType;
 
 /**
  * @author Brady
@@ -27,19 +28,22 @@ public final class BlockStateOctreeInterface {
 
     private final NetherPathfinderContext context;
     private final long contextPtr;
+    private final DimensionType dimType;
     transient long chunkPtr;
 
     // Guarantee that the first lookup will fetch the context by setting MAX_VALUE
     private int prevChunkX = Integer.MAX_VALUE;
     private int prevChunkZ = Integer.MAX_VALUE;
 
-    public BlockStateOctreeInterface(final NetherPathfinderContext context) {
+    public BlockStateOctreeInterface(final NetherPathfinderContext context, final DimensionType dimType) {
         this.context = context;
         this.contextPtr = context.context;
+        this.dimType = dimType;
     }
 
     public boolean get0(final int x, final int y, final int z) {
-        if (y < 0 || y > 383) {
+        final int adjustedY = y - dimType.minY();
+        if (adjustedY < 0 || adjustedY > 383) {
             return false;
         }
         final int chunkX = x >> 4;
@@ -49,6 +53,6 @@ public final class BlockStateOctreeInterface {
             this.prevChunkZ = chunkZ;
             this.chunkPtr = NetherPathfinder.getChunkOrDefault(this.contextPtr, chunkX, chunkZ, true);
         }
-        return Octree.getBlock(this.chunkPtr, x & 0xF, y, z & 0xF);
+        return Octree.getBlock(this.chunkPtr, x & 0xF, adjustedY, z & 0xF);
     }
 }

@@ -134,7 +134,7 @@ public final class ElytraBehavior implements Helper {
                 Baritone.settings().elytraUseBaritoneCache.value ? baritone.getWorldProvider().getCurrentWorld().directory.resolve("cache") : null,
                 ctx.world()
         );
-        this.boi = new BlockStateOctreeInterface(context);
+        this.boi = new BlockStateOctreeInterface(context, ctx.world().dimensionType());
     }
 
     public final class PathManager {
@@ -294,19 +294,9 @@ public final class ElytraBehavior implements Helper {
             return this.playerNear;
         }
 
-        private static UnpackedSegment adjustSegment(UnpackedSegment segment, int minY) {
-            return new UnpackedSegment(segment.collect().stream().map((pos)-> {
-                return pos.above(minY);
-            }), segment.isFinished());
-        }
-
         // mickey resigned
         private CompletableFuture<Void> path0(BlockPos src, BlockPos dst, UnaryOperator<UnpackedSegment> operator) {
-            // +64 in overworld to normalize y to 0-384
-            final int minY = ctx.world().dimensionType().minY();
-            return ElytraBehavior.this.context.pathFindAsync(src.below(minY), dst.below(minY))
-                    .thenApply(UnpackedSegment::from)
-                    .thenApply(segment -> adjustSegment(segment, minY))
+            return ElytraBehavior.this.context.pathFindAsync(src, dst)
                     .thenApply(operator)
                     .thenAcceptAsync(this::setPath, ctx.minecraft()::execute);
         }
@@ -468,9 +458,7 @@ public final class ElytraBehavior implements Helper {
     }
 
     public void onBlockChange(BlockChangeEvent event) {
-        final int minY = ctx.world().dimensionType().minY();
-        var blocks = event.getBlocks().stream().map((update) -> new Pair<>(update.first().below(minY), update.second())).toList();
-        this.context.queueBlockUpdate(new BlockChangeEvent(event.getChunkPos(), blocks));
+        this.context.queueBlockUpdate(event);
     }
 
     public void onReceivePacket(PacketEvent event) {
@@ -1018,20 +1006,12 @@ public final class ElytraBehavior implements Helper {
             return clear;
         }
 
-        final int minY = ctx.world().dimensionType().minY();
-        for (int i = 1; i < src.length; i += 3) {
-            src[i] -= minY;
-            dst[i] -= minY;
-        }
         return this.context.raytrace(8, src, dst, NetherPathfinderContext.Visibility.ALL);
     }
 
     public boolean clearView(Vec3 start, Vec3 dest, boolean ignoreLava) {
         final boolean clear;
         if (!ignoreLava) {
-            start = start.subtract(0, ctx.world().dimensionType().minY(), 0);
-            dest = dest.subtract(0, ctx.world().dimensionType().minY(), 0);
-
             // if start == dest then the cpp raytracer dies
             clear = start.equals(dest) || this.context.raytrace(start, dest);
         } else {
@@ -1039,8 +1019,6 @@ public final class ElytraBehavior implements Helper {
         }
 
         if (Baritone.settings().elytraRenderRaytraces.value) {
-            start = start.add(0, ctx.world().dimensionType().minY(), 0);
-            dest = dest.add(0, ctx.world().dimensionType().minY(), 0);
             (clear ? this.clearLines : this.blockedLines).add(new Pair<>(start, dest));
         }
         return clear;
@@ -1296,7 +1274,7 @@ public final class ElytraBehavior implements Helper {
             final Material mat = this.bsi.get0(x, y, z).getMaterial();
             return mat == Material.AIR || mat == Material.LAVA;
         } else {
-            return !this.boi.get0(x, y-ctx.world().dimensionType().minY(), z);
+            return !this.boi.get0(x, y, z);
         }
     }
 
