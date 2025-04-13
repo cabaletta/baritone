@@ -1561,7 +1561,7 @@ public final class Settings {
     /**
      * Allow the pathfinder to access the baritone cache to improve pathing
      */
-    public final Setting<Boolean> elytraUseBaritoneCache = new Setting<>(true);
+    public final Setting<Boolean> elytraUseCache = new Setting<>(true);
 
     /**
      * A map of lowercase setting field names to their respective setting
