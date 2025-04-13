@@ -155,7 +155,7 @@ public final class NetherPathfinderContext {
     public CompletableFuture<UnpackedSegment> pathFindAsync(final BlockPos src, final BlockPos dst) {
         final BlockPos adjustedSrc = src.below(minY);
         final BlockPos adjustedDst = dst.below(minY);
-        boolean generate =  Baritone.settings().elytraPredictTerrain.value && this.dimension == Level.NETHER;
+        boolean generate = Baritone.settings().elytraPredictTerrain.value && this.dimension == Level.NETHER;
         Lock l = generate ? writeLock : readLock;
         ExecutorService exec = generate ? writeExecutor : readExecutor;
         return CompletableFuture.supplyAsync(() -> {

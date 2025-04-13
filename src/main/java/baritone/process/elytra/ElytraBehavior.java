@@ -164,7 +164,9 @@ public final class ElytraBehavior implements Helper {
                 this.ticksNearUnchanged = 0;
             }
 
-            if (ctx.player().position().y < context.maxHeight && ctx.player().position().y > 0) {
+            int minY = ctx.world().dimensionType().minY();
+            int y = ctx.playerFeet().y;
+            if (y >= minY && y < minY + context.maxHeight) {
                 // Obstacles are more important than an incomplete path, handle those first.
                 this.pathfindAroundObstacles();
                 this.attemptNextSegment();
