@@ -340,6 +340,7 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
         }
         this.onLostControl();
         this.predictingTerrain = ctx.player().level.dimension() == Level.NETHER && Baritone.settings().elytraPredictTerrain.value;
+        this.allowTight = Baritone.settings().elytraAllowTightSpaces.value;
         this.behavior = new ElytraBehavior(this.baritone, this, destination, appendDestination);
         if (ctx.world() != null) {
             this.behavior.repackChunks();

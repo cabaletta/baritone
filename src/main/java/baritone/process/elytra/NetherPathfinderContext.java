@@ -69,6 +69,7 @@ public final class NetherPathfinderContext {
     public final ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
     public final ReentrantReadWriteLock.ReadLock readLock = rwl.readLock();
     public final ReentrantReadWriteLock.WriteLock writeLock = rwl.writeLock();
+    public int maxHeight;
 
     // Visible for access in BlockStateOctreeInterface
     final long context;
@@ -87,6 +88,7 @@ public final class NetherPathfinderContext {
         else dim = NetherPathfinder.DIMENSION_OVERWORLD;
         int height = Math.min(world.dimensionType().height(), 384);
         if (!Baritone.settings().elytraAllowAboveRoof.value && dim == NetherPathfinder.DIMENSION_NETHER) height = Math.min(height, 128);
+        this.maxHeight = height;
         this.context = NetherPathfinder.newContext(seed, cache != null ? cache.toString() : null, dim, height, Baritone.settings().elytraCustomAllocator.value);
         this.seed = seed;
     }
@@ -107,7 +109,7 @@ public final class NetherPathfinderContext {
         });
     }
 
-    public void queueForPacking(final LevelChunk chunkIn) {
+    public void queueForPacking(final LevelChunk chunkIn, BlockStateOctreeInterface boi) {
         final SoftReference<LevelChunk> ref = new SoftReference<>(chunkIn);
         this.writeExecutor.execute(() -> {
             // TODO: Prioritize packing recent chunks and/or ones that the path goes through,
@@ -116,6 +118,8 @@ public final class NetherPathfinderContext {
             if (chunk != null) {
                 writeLock.lock();
                 try {
+                    // we might free this chunk
+                    boi.chunkPtr = 0L;
                     long ptr = NetherPathfinder.allocateAndInsertChunk(this.context, chunk.getPos().x, chunk.getPos().z);
                     writeChunkData(chunk, ptr);
                 } finally {

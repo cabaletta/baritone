@@ -164,9 +164,11 @@ public final class ElytraBehavior implements Helper {
                 this.ticksNearUnchanged = 0;
             }
 
-            // Obstacles are more important than an incomplete path, handle those first.
-            this.pathfindAroundObstacles();
-            this.attemptNextSegment();
+            if (ctx.player().position().y < context.maxHeight && ctx.player().position().y > 0) {
+                // Obstacles are more important than an incomplete path, handle those first.
+                this.pathfindAroundObstacles();
+                this.attemptNextSegment();
+            }
         }
 
         public CompletableFuture<Void> pathToDestination() {
@@ -463,7 +465,7 @@ public final class ElytraBehavior implements Helper {
     public void onChunkEvent(ChunkEvent event) {
         if (event.isPostPopulate() && this.context != null) {
             final LevelChunk chunk = ctx.world().getChunk(event.getX(), event.getZ());
-            this.context.queueForPacking(chunk);
+            this.context.queueForPacking(chunk, boi);
         }
     }
 
@@ -518,7 +520,7 @@ public final class ElytraBehavior implements Helper {
                 LevelChunk chunk = chunkProvider.getChunk(x, z, false);
 
                 if (chunk != null && !chunk.isEmpty()) {
-                    this.context.queueForPacking(chunk);
+                    this.context.queueForPacking(chunk, boi);
                 }
             }
         }
@@ -656,7 +658,14 @@ public final class ElytraBehavior implements Helper {
             this.pathManager.updatePlayerNear();
 
             final SolverContext context = this.new SolverContext(true);
-            this.solver = this.solverExecutor.submit(() -> this.solveAngles(context));
+            this.solver = this.solverExecutor.submit(() -> {
+                this.context.readLock.lock();
+                try {
+                    return this.solveAngles(context);
+                } finally {
+                   this.context.readLock.unlock();
+                }
+            });
             this.solveNextTick = false;
         }
     }
@@ -1291,6 +1300,7 @@ public final class ElytraBehavior implements Helper {
         return new Vec3(motionX, motionY, motionZ);
     }
 
+    // any call to this must be done with the lock held
     private boolean passable(int x, int y, int z, boolean ignoreLava) {
         if (ignoreLava) {
             final Material mat = this.bsi.get0(x, y, z).getMaterial();
