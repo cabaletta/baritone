@@ -70,7 +70,7 @@ public final class NetherPathfinderContext {
     public final ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
     public final ReentrantReadWriteLock.ReadLock readLock = rwl.readLock();
     public final ReentrantReadWriteLock.WriteLock writeLock = rwl.writeLock();
-    public int maxHeight;
+    public final int maxHeight;
 
     // Visible for access in BlockStateOctreeInterface
     final long context;
