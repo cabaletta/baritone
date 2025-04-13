@@ -33,6 +33,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.level.chunk.PalettedContainer;
+import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.phys.Vec3;
 import sun.misc.Unsafe;
 
@@ -79,9 +80,11 @@ public final class NetherPathfinderContext {
     // operations that don't make changes to the chunk cache. could use multiple threads but i'm not sure if it would cause problems.
     private final ExecutorService readExecutor = Executors.newSingleThreadExecutor();
     private final ResourceKey<Level> dimension;
+    private final int minY;
 
     public NetherPathfinderContext(long seed, Path cache, Level world) {
         this.dimension = world.dimension();
+        this.minY = world.dimensionType().minY();
         final int dim;
         if (this.dimension == Level.NETHER) dim = NetherPathfinder.DIMENSION_NETHER;
         else if (this.dimension == Level.END) dim = NetherPathfinder.DIMENSION_END;
@@ -138,7 +141,7 @@ public final class NetherPathfinderContext {
                 long ptr = NetherPathfinder.getChunk(this.context, chunkPos.x, chunkPos.z);
                 if (ptr == 0) return; // this shouldn't ever happen
                 event.getBlocks().forEach(pair -> {
-                    BlockPos pos = pair.first();
+                    BlockPos pos = pair.first().below(minY);
                     if (pos.getY() < 0 || pos.getY() >= 384) return;
                     boolean isSolid = pair.second() != AIR_BLOCK_STATE;
                     Octree.setBlock(ptr, pos.getX() & 15, pos.getY(), pos.getZ() & 15, isSolid);
@@ -149,7 +152,9 @@ public final class NetherPathfinderContext {
         });
     }
 
-    public CompletableFuture<PathSegment> pathFindAsync(final BlockPos src, final BlockPos dst) {
+    public CompletableFuture<UnpackedSegment> pathFindAsync(final BlockPos src, final BlockPos dst) {
+        final BlockPos adjustedSrc = src.below(minY);
+        final BlockPos adjustedDst = dst.below(minY);
         boolean generate =  Baritone.settings().elytraPredictTerrain.value && this.dimension == Level.NETHER;
         Lock l = generate ? writeLock : readLock;
         ExecutorService exec = generate ? writeExecutor : readExecutor;
@@ -158,8 +163,8 @@ public final class NetherPathfinderContext {
             try {
                 final PathSegment segment = NetherPathfinder.pathFind(
                         this.context,
-                        src.getX(), src.getY(), src.getZ(),
-                        dst.getX(), dst.getY(), dst.getZ(),
+                        adjustedSrc.getX(), adjustedSrc.getY(), adjustedSrc.getZ(),
+                        adjustedDst.getX(), adjustedDst.getY(), adjustedDst.getZ(),
                         !Baritone.settings().elytraAllowTightSpaces.value, // atleastX4
                         false, // refine
                         10000, // timeoutMs
@@ -170,7 +175,8 @@ public final class NetherPathfinderContext {
                 if (segment == null) {
                     throw new PathCalculationException("Path calculation failed");
                 }
-                return segment;
+
+                return new UnpackedSegment(UnpackedSegment.from(segment).collect().stream().map(pos -> pos.above(minY)), segment.finished);
             } finally {
                 l.unlock();
             }
@@ -191,7 +197,9 @@ public final class NetherPathfinderContext {
      */
     public boolean raytrace(final double startX, final double startY, final double startZ,
                             final double endX, final double endY, final double endZ) {
-        return NetherPathfinder.isVisible(this.context, NetherPathfinder.CACHE_MISS_SOLID, startX, startY, startZ, endX, endY, endZ);
+        final double adjustedStartY = startY - this.minY;
+        final double adjustedEndY = endY - this.minY;
+        return NetherPathfinder.isVisible(this.context, NetherPathfinder.CACHE_MISS_SOLID, startX, adjustedStartY, startZ, endX, adjustedEndY, endZ);
     }
 
     /**
@@ -203,10 +211,21 @@ public final class NetherPathfinderContext {
      * @return {@code true} if there is visibility between the points
      */
     public boolean raytrace(final Vec3 start, final Vec3 end) {
-        return NetherPathfinder.isVisible(this.context, NetherPathfinder.CACHE_MISS_SOLID, start.x, start.y, start.z, end.x, end.y, end.z);
+        final Vec3 adjustedStart = start.subtract(0, this.minY, 0);
+        final Vec3 adjustedEnd = end.subtract(0, this.minY, 0);
+        return NetherPathfinder.isVisible(this.context, NetherPathfinder.CACHE_MISS_SOLID, adjustedStart.x, adjustedStart.y, adjustedStart.z, adjustedEnd.x, adjustedEnd.y, adjustedEnd.z);
     }
 
     public boolean raytrace(final int count, final double[] src, final double[] dst, final int visibility) {
+        if (src.length != count * 3 || dst.length != count * 3) {
+            throw new IllegalArgumentException("Bad array lengths");
+        }
+
+        for(int i = 1; i < src.length; i+= 3) {
+            src[i] -= this.minY;
+            dst[i] -= this.minY;
+        }
+
         switch (visibility) {
             case Visibility.ALL:
                 return NetherPathfinder.isVisibleMulti(this.context, NetherPathfinder.CACHE_MISS_SOLID, count, src, dst, false) == -1;
@@ -220,6 +239,15 @@ public final class NetherPathfinderContext {
     }
 
     public void raytrace(final int count, final double[] src, final double[] dst, final boolean[] hitsOut, final double[] hitPosOut) {
+        if (src.length != count * 3 || dst.length != count * 3) {
+            throw new IllegalArgumentException("Bad array lengths");
+        }
+
+        for(int i = 1; i < src.length; i+= 3) {
+            src[i] -= this.minY;
+            dst[i] -= this.minY;
+        }
+
         NetherPathfinder.raytrace(this.context, NetherPathfinder.CACHE_MISS_SOLID, count, src, dst, hitsOut, hitPosOut);
     }
 
