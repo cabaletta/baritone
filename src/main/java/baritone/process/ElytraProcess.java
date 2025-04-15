@@ -44,6 +44,7 @@ import baritone.process.elytra.NullElytraProcess;
 import baritone.utils.BaritoneProcessHelper;
 import baritone.utils.PathingCommandContext;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -112,20 +113,25 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
 
     @Override
     public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
-        final long seedSetting = Baritone.settings().elytraNetherSeed.value;
-        if (seedSetting != this.behavior.context.getSeed()) {
-            logDirect("Nether seed changed, recalculating path");
-            this.resetState();
-        }
-        if (predictingTerrain != Baritone.settings().elytraPredictTerrain.value && ctx.player().level.dimension() == Level.NETHER) {
-            logDirect("elytraPredictTerrain setting changed, recalculating path from scratch");
-            predictingTerrain = Baritone.settings().elytraPredictTerrain.value;
-            this.resetState();
-        }
-        if (allowTight != Baritone.settings().elytraAllowTightSpaces.value) {
-            logDirect("elytraAllowTightSpaces setting changed, recalculating path from scratch");
-            allowTight = Baritone.settings().elytraAllowTightSpaces.value;
-            this.resetState();
+        try {
+            final long seedSetting = Baritone.settings().elytraNetherSeed.value;
+            if (seedSetting != this.behavior.context.getSeed()) {
+                logDirect("Nether seed changed, recalculating path");
+                this.resetState();
+            }
+            if (predictingTerrain != Baritone.settings().elytraPredictTerrain.value && ctx.player().level.dimension() == Level.NETHER) {
+                logDirect("elytraPredictTerrain setting changed, recalculating path from scratch");
+                predictingTerrain = Baritone.settings().elytraPredictTerrain.value;
+                this.resetState();
+            }
+            if (allowTight != Baritone.settings().elytraAllowTightSpaces.value) {
+                logDirect("elytraAllowTightSpaces setting changed, recalculating path from scratch");
+                allowTight = Baritone.settings().elytraAllowTightSpaces.value;
+                this.resetState();
+            }
+        } catch (IllegalArgumentException e) {
+            logDirect(e.getMessage(), ChatFormatting.RED);
+            return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
         }
 
         this.behavior.onTick();

@@ -134,7 +134,7 @@ public final class ElytraBehavior implements Helper {
                 Baritone.settings().elytraUseCache.value ? baritone.getWorldProvider().getCurrentWorld().directory.resolve("cache") : null,
                 ctx.world()
         );
-        this.boi = new BlockStateOctreeInterface(context, ctx.world().dimensionType());
+        this.boi = new BlockStateOctreeInterface(context);
     }
 
     public final class PathManager {
@@ -152,6 +152,7 @@ public final class ElytraBehavior implements Helper {
             this.clear();
         }
 
+        // requires read lock to be held
         public void tick() {
             // Recalculate closest path node
             this.updatePlayerNear();

@@ -80,7 +80,7 @@ public final class NetherPathfinderContext {
     // operations that don't make changes to the chunk cache. could use multiple threads but i'm not sure if it would cause problems.
     private final ExecutorService readExecutor = Executors.newSingleThreadExecutor();
     private final ResourceKey<Level> dimension;
-    private final int minY;
+    final int minY;
 
     public NetherPathfinderContext(long seed, Path cache, Level world) {
         this.dimension = world.dimension();

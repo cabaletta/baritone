@@ -28,21 +28,21 @@ public final class BlockStateOctreeInterface {
 
     private final NetherPathfinderContext context;
     private final long contextPtr;
-    private final DimensionType dimType;
+    private final int minY;
     transient long chunkPtr;
 
     // Guarantee that the first lookup will fetch the context by setting MAX_VALUE
     private int prevChunkX = Integer.MAX_VALUE;
     private int prevChunkZ = Integer.MAX_VALUE;
 
-    public BlockStateOctreeInterface(final NetherPathfinderContext context, final DimensionType dimType) {
+    public BlockStateOctreeInterface(final NetherPathfinderContext context) {
         this.context = context;
         this.contextPtr = context.context;
-        this.dimType = dimType;
+        this.minY = context.minY;
     }
 
     public boolean get0(final int x, final int y, final int z) {
-        final int adjustedY = y - dimType.minY();
+        final int adjustedY = y - this.minY;
         if (adjustedY < 0 || adjustedY > 383) {
             return false;
         }
