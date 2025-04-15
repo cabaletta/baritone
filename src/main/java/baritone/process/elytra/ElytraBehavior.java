@@ -660,6 +660,7 @@ public final class ElytraBehavior implements Helper {
         }
     }
 
+    // calls passable which requires a read lock
     private Solution solveAngles(final SolverContext context) {
         final NetherPath path = context.path;
         final int playerNear = landingMode ? path.size() - 1 : context.playerNear;
