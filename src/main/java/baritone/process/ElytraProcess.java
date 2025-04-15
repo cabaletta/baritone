@@ -331,6 +331,17 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
 
     @Override
     public void pathTo(BlockPos destination) {
+        int minY = ctx.world().dimensionType().minY();
+        int maxY = (ctx.world().dimension() == Level.NETHER && !Baritone.settings().elytraAllowAboveRoof.value) ? 127 : Math.min(minY + 384, ctx.world().dimensionType().height() + minY);
+        if (destination.getY() < minY || destination.getY() >= maxY) {
+            throw new IllegalArgumentException("The goal must have a y value between " + minY + " and " + maxY);
+        }
+
+        int playerY = (int)ctx.player().getY();
+        if (playerY < minY || playerY >= maxY) {
+            throw new IllegalArgumentException("The player must have a y value between " + minY + " and " + maxY);
+        }
+
         this.pathTo0(destination, false);
     }
 
@@ -366,17 +377,6 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
             z = goal.z;
         } else {
             throw new IllegalArgumentException("The goal must be a GoalXZ or GoalBlock");
-        }
-
-        int minY = ctx.world().dimensionType().minY();
-        int maxY = (ctx.world().dimension() == Level.NETHER && !Baritone.settings().elytraAllowAboveRoof.value) ? 127 : Math.min(minY + 384, ctx.world().dimensionType().height() + minY);
-        if (y < minY || y >= maxY) {
-            throw new IllegalArgumentException("The goal must have a y value between " + minY + " and " + maxY);
-        }
-
-        int playerY = (int)ctx.player().getY();
-        if (playerY < minY || playerY >= maxY) {
-            throw new IllegalArgumentException("The player must have a y value between " + minY + " and " + maxY);
         }
 
         this.pathTo(new BlockPos(x, y, z));

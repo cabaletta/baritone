@@ -82,7 +82,11 @@ public class ElytraCommand extends Command {
         final String action = args.getString();
         switch (action) {
             case "reset": {
-                elytra.resetState();
+                try {
+                    elytra.resetState();
+                } catch (IllegalArgumentException ex) {
+                    throw new CommandInvalidStateException(ex.getMessage());
+                }
                 logDirect("Reset state but still flying to same goal");
                 break;
             }
