@@ -152,7 +152,6 @@ public final class ElytraBehavior implements Helper {
             this.clear();
         }
 
-        // requires read lock to be held
         public void tick() {
             // Recalculate closest path node
             this.updatePlayerNear();
@@ -168,8 +167,13 @@ public final class ElytraBehavior implements Helper {
             int minY = ctx.world().dimensionType().minY();
             int y = ctx.playerFeet().y;
             if (y >= minY && y < minY + context.maxHeight) {
-                // Obstacles are more important than an incomplete path, handle those first.
-                this.pathfindAroundObstacles();
+                context.readLock.lock();
+                try {
+                    // Obstacles are more important than an incomplete path, handle those first.
+                    this.pathfindAroundObstacles();
+                } finally {
+                    context.readLock.unlock();
+                }
                 this.attemptNextSegment();
             }
         }
@@ -306,6 +310,7 @@ public final class ElytraBehavior implements Helper {
                     .thenAcceptAsync(this::setPath, ctx.minecraft()::execute);
         }
 
+        // required read lock to be held
         private void pathfindAroundObstacles() {
             if (this.recalculating) {
                 return;
@@ -518,12 +523,7 @@ public final class ElytraBehavior implements Helper {
     }
 
     public void onTick() {
-        this.context.readLock.lock();
-        try {
-            this.onTick0();
-        } finally {
-            this.context.readLock.unlock();
-        }
+        this.onTick0();
         final long now = System.currentTimeMillis();
         if ((now - this.timeLastCacheCull) / 1000 > Baritone.settings().elytraTimeBetweenCacheCullSecs.value) {
             this.context.queueCacheCulling(ctx.player().chunkPosition().x, ctx.player().chunkPosition().z, Baritone.settings().elytraCacheCullDistance.value, this.boi);
