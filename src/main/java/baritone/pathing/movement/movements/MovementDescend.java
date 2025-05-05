@@ -147,9 +147,9 @@ public class MovementDescend extends Movement {
         int effectiveStartHeight = y;
         for (int fallHeight = 3; true; fallHeight++) {
             int newY = y - fallHeight;
-            if (newY < -64) {
+            if (newY < ctx.world().dimensionType().minY()) {
                 // when pathing in the end, where you could plausibly fall into the void
-                // this check prevents it from getting the block at y=-1 and crashing
+                // this check prevents it from getting the block at y=(below whatever the minimum height is) and crashing
                 return false;
             }
             boolean reachedMinimum = fallHeight >= context.minFallHeight;
