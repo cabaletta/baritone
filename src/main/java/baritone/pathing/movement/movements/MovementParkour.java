@@ -64,10 +64,6 @@ public class MovementParkour extends Movement {
         if (!context.allowParkour) {
             return;
         }
-        if (y == 256 && !context.allowJumpAt256) {
-            return;
-        }
-
         int xDiff = dir.getStepX();
         int zDiff = dir.getStepZ();
         if (!MovementHelper.fullyPassable(context, x + xDiff, y, z + zDiff)) {
