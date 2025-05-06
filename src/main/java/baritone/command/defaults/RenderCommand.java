@@ -43,7 +43,7 @@ public class RenderCommand extends Command {
                 ctx.world().getMinBuildHeight(),
                 origin.z - renderDistance,
                 origin.x + renderDistance,
-                ctx.world().getMinBuildHeight(),
+                ctx.world().getMaxBuildHeight(),
                 origin.z + renderDistance
         );
         logDirect("Done");
