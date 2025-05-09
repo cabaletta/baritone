@@ -63,9 +63,6 @@ public class CalculationContext {
     public final List<Block> allowBreakAnyway;
     public final boolean allowParkour;
     public final boolean allowParkourPlace;
-    @Deprecated
-    @JavaOnly
-    public final boolean allowJumpAt256;
     public final boolean allowJumpAtBuildLimit;
     public final boolean allowParkourAscend;
     public final boolean assumeWalkOnWater;
@@ -107,7 +104,6 @@ public class CalculationContext {
         this.allowBreakAnyway = new ArrayList<>(Baritone.settings().allowBreakAnyway.value);
         this.allowParkour = Baritone.settings().allowParkour.value;
         this.allowParkourPlace = Baritone.settings().allowParkourPlace.value;
-        this.allowJumpAt256 = Baritone.settings().allowJumpAt256.value;
         this.allowJumpAtBuildLimit = Baritone.settings().allowJumpAtBuildLimit.value;
         this.allowParkourAscend = Baritone.settings().allowParkourAscend.value;
         this.assumeWalkOnWater = Baritone.settings().assumeWalkOnWater.value;
