@@ -185,7 +185,14 @@ public final class Settings {
      * <p>
      * Defaults to false because this fails on constantiam. Please let me know if this is ever disabled. Please.
      */
-    public final Setting<Boolean> allowJumpAt256 = new Setting<>(false);
+    public final Setting<Boolean> allowJumpAtBuildLimit = new Setting<>(false);
+
+    /**
+     * Just here so mods that use the API don't break. Does nothing.
+     */
+    @Deprecated
+    @JavaOnly
+    public final Settings<Boolean> allowJumpAt256 = new Setting<>(false);
 
     /**
      * This should be monetized it's so good
