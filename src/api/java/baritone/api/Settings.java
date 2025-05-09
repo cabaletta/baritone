@@ -192,7 +192,7 @@ public final class Settings {
      */
     @Deprecated
     @JavaOnly
-    public final Settings<Boolean> allowJumpAt256 = new Setting<>(false);
+    public final Setting<Boolean> allowJumpAt256 = new Setting<>(false);
 
     /**
      * This should be monetized it's so good
