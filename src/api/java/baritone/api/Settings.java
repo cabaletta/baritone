@@ -1551,6 +1551,13 @@ public final class Settings {
     public final Setting<Boolean> elytraChatSpam = new Setting<>(false);
 
     /**
+     * A custom height limit to contain block placements under
+     * <p>
+     * Prevents Baritone from placing blocks if some servers have different build limits
+     */
+    public final Setting<Integer> blockPlaceHeightLimit = new Setting<>(Integer.MAX_VALUE);
+
+    /**
      * A map of lowercase setting field names to their respective setting
      */
     public final Map<String, Setting<?>> byLowerName;
