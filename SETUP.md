@@ -1,6 +1,6 @@
 # Installation
 
-The easiest way to install Baritone is to install it as Forge/Neoforge/Fabric mod, but if you know how you can also use with a custom `version.json`
+The easiest way to install Baritone is to install it as Forge/Neoforge/Fabric mod, but if you know how you can also use it with a custom `version.json`
 (Examples: [1.14.4](https://www.dropbox.com/s/rkml3hjokd3qv0m/1.14.4-Baritone.zip?dl=1), [1.15.2](https://www.dropbox.com/s/8rx6f0kts9hvd4f/1.15.2-Baritone.zip?dl=1), [1.16.5](https://www.dropbox.com/s/i6f292o2i7o9acp/1.16.5-Baritone.zip?dl=1)).
 
 Once Baritone is installed, look [here](USAGE.md) for instructions on how to use it.
@@ -10,10 +10,10 @@ Releases are made rarely and are not always up to date with the latest features 
 
 Link to the releases page: [Releases](https://github.com/cabaletta/baritone/releases)
 
-The mapping between major Minecraft versions and major Baritone versions is as follows
-| Minecraft version | 1.12 | 1.13 | 1.14 | 1.15 | 1.16 | 1.17 | 1.18 | 1.19 | 1.20  | 1.21  |
-|-------------------|------|------|------|------|------|------|------|------|-------|-------|
-| Baritone version  | v1.2 | v1.3 | v1.4 | v1.5 | v1.6 | v1.7 | v1.8 | v1.9 | v1.10 | v1.11 |
+The mapping between Minecraft versions and major Baritone versions is as follows
+| Minecraft version | 1.12 | 1.13 | 1.14 | 1.15 | 1.16 | 1.17 | 1.18 | 1.19 | 1.20  | 1.21  | 1.21.5 |
+|-------------------|------|------|------|------|------|------|------|------|-------|-------|--------|
+| Baritone version  | v1.2 | v1.3 | v1.4 | v1.5 | v1.6 | v1.7 | v1.8 | v1.9 | v1.10 | v1.11 | v1.14  |
 
 Any official release will be GPG signed by leijurv (44A3EA646EADAC6A). Please verify that the hash of the file you download is in `checksums.txt` and that `checksums_signed.asc` is a valid signature by that public keys of `checksums.txt`. 
 
@@ -56,7 +56,7 @@ The recommended Java versions by Minecraft version are
 | 1.12.2 - 1.16.5               | 8             |
 | 1.17.1                        | 16            |
 | 1.18.2 - 1.20.4               | 17            |
-| 1.20.5 - 1.21.4               | 21            |
+| 1.20.5 - 1.21.5               | 21            |
 
 Download java: https://adoptium.net/
 
