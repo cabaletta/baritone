@@ -83,6 +83,10 @@ public class SettingsUtil {
 
                 String settingName = matcher.group("setting").toLowerCase();
                 String settingValue = matcher.group("value");
+                // TODO remove soonish
+                if ("allowjumpat256".equals(settingName)) {
+                    settingName = "allowjumpatbuildlimit";
+                }
                 try {
                     parseAndApply(settings, settingName, settingValue);
                 } catch (Exception ex) {
