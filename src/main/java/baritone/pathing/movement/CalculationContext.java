@@ -169,7 +169,7 @@ public class CalculationContext {
         if (!Baritone.settings().allowPlaceInFluidsFlow.value && !current.getFluidState().isEmpty() && !current.getFluidState().isSource()) {
             return COST_INF;
         }
-        if (y > Baritone.settings().blockPlaceHeightLimit.value) {
+        if (y > blockPlaceHeightLimit) {
             return COST_INF;
         }
         return placeBlockCost;
