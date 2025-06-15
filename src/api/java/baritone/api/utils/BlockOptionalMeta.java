@@ -90,6 +90,22 @@ public final class BlockOptionalMeta {
         this.stackHashes = getStackHashes(blockstates);
     }
 
+    public BlockOptionalMeta(@Nonnull Block block, String properties) {
+        this.block = block;
+
+        if (properties == null || properties.isEmpty()) {
+            this.propertiesDescription = "{}";
+            this.blockstates = getStates(block, Collections.emptyMap());
+        } else {
+            Map<Property<?>, ?> parsedProperties = parseProperties(block, properties);
+            this.propertiesDescription = "{" + properties.replace("=", ":") + "}";
+            this.blockstates = getStates(block, parsedProperties);
+        }
+
+        this.stateHashes = getStateHashes(blockstates);
+        this.stackHashes = getStackHashes(blockstates);
+    }
+
     public BlockOptionalMeta(@Nonnull String selector) {
         Matcher matcher = PATTERN.matcher(selector);
 
@@ -106,6 +122,37 @@ public final class BlockOptionalMeta {
         blockstates = getStates(block, properties);
         stateHashes = getStateHashes(blockstates);
         stackHashes = getStackHashes(blockstates);
+    }
+
+    public static BlockOptionalMeta[] matchAllBySelector(@Nonnull String selector) {
+        if (selector.isEmpty()) {
+            return new BlockOptionalMeta[0];
+        }
+
+        // format:
+        // if we use regex, the format is like /xxx/[others]
+        // if we use the normal format, the format is like xxx[others]
+
+        if (selector.startsWith("/")) {
+            String regex = selector.substring(1, selector.substring(1).indexOf('/') + 1);
+            Block[] blocks = BlockUtils.regexToBlocks(regex);
+
+            if (blocks.length == 0) {
+                return new BlockOptionalMeta[0];
+            }
+
+            BlockOptionalMeta[] metas = new BlockOptionalMeta[blocks.length];
+
+            var props = selector.length() > regex.length() + 2 ? selector.substring(regex.length() + 2, selector.length() - 1) : "";
+
+            for (int i = 0; i < blocks.length; i++) {
+                metas[i] = new BlockOptionalMeta(blocks[i], props);
+            }
+
+            return metas;
+        } else {
+            return new BlockOptionalMeta[]{new BlockOptionalMeta(selector)};
+        }
     }
 
     private static <C extends Comparable<C>, P extends Property<C>> P castToIProperty(Object value) {
@@ -233,9 +280,9 @@ public final class BlockOptionalMeta {
                     ServerLevel lv2 = ServerLevelStub.fastCreate();
 
                     LootParams.Builder lv5 = new LootParams.Builder(lv2)
-                        .withParameter(LootContextParams.ORIGIN, Vec3.ZERO)
-                        .withParameter(LootContextParams.BLOCK_STATE, b.defaultBlockState())
-                        .withParameter(LootContextParams.TOOL, new ItemStack(Items.NETHERITE_PICKAXE, 1));
+                            .withParameter(LootContextParams.ORIGIN, Vec3.ZERO)
+                            .withParameter(LootContextParams.BLOCK_STATE, b.defaultBlockState())
+                            .withParameter(LootContextParams.TOOL, new ItemStack(Items.NETHERITE_PICKAXE, 1));
                     getDrops(block, lv5).stream().map(ItemStack::getItem).forEach(items::add);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -253,7 +300,7 @@ public final class BlockOptionalMeta {
             LootParams lv2 = params.withParameter(LootContextParams.BLOCK_STATE, state.defaultBlockState()).create(LootContextParamSets.BLOCK);
             ServerLevelStub lv3 = (ServerLevelStub) lv2.getLevel();
             LootTable lv4 = lv3.holder().getLootTable(lv.get());
-            return((ILootTable) lv4).invokeGetRandomItems(new LootContext.Builder(lv2).withOptionalRandomSeed(1).create(null));
+            return ((ILootTable) lv4).invokeGetRandomItems(new LootContext.Builder(lv2).withOptionalRandomSeed(1).create(null));
         }
     }
 
@@ -302,30 +349,30 @@ public final class BlockOptionalMeta {
         public static CompletableFuture<RegistryAccess> load() {
             // Simplified from {@link net.minecraft.server.WorldLoader#load()}
             CloseableResourceManager closeableResourceManager = new MultiPackResourceManager(
-                PackType.SERVER_DATA,
-                List.of(ServerPacksSource.createVanillaPackSource())
+                    PackType.SERVER_DATA,
+                    List.of(ServerPacksSource.createVanillaPackSource())
             );
             LayeredRegistryAccess<RegistryLayer> baseLayeredRegistry = RegistryLayer.createRegistryAccess();
             List<Registry.PendingTags<?>> pendingTags = TagLoader.loadTagsForExistingRegistries(
-                closeableResourceManager, baseLayeredRegistry.getLayer(RegistryLayer.STATIC)
+                    closeableResourceManager, baseLayeredRegistry.getLayer(RegistryLayer.STATIC)
             );
             List<HolderLookup.RegistryLookup<?>> worldGenRegistryLookupList = TagLoader.buildUpdatedLookups(
-                baseLayeredRegistry.getAccessForLoading(RegistryLayer.WORLDGEN),
-                pendingTags
+                    baseLayeredRegistry.getAccessForLoading(RegistryLayer.WORLDGEN),
+                    pendingTags
             );
             LayeredRegistryAccess<RegistryLayer> layeredRegistryAccess = baseLayeredRegistry.replaceFrom(
-                RegistryLayer.WORLDGEN,
-                RegistryDataLoader.load(
-                    closeableResourceManager,
-                    worldGenRegistryLookupList,
-                    RegistryDataLoader.WORLDGEN_REGISTRIES
-                )
+                    RegistryLayer.WORLDGEN,
+                    RegistryDataLoader.load(
+                            closeableResourceManager,
+                            worldGenRegistryLookupList,
+                            RegistryDataLoader.WORLDGEN_REGISTRIES
+                    )
             );
             return ReloadableServerRegistries.reload(
-                layeredRegistryAccess,
-                pendingTags,
-                closeableResourceManager,
-                Minecraft.getInstance()
+                    layeredRegistryAccess,
+                    pendingTags,
+                    closeableResourceManager,
+                    Minecraft.getInstance()
             ).thenApply(r -> r.layers().compositeAccess());
         }
     }

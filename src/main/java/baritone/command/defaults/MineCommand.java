@@ -22,7 +22,11 @@ import baritone.api.IBaritone;
 import baritone.api.command.Command;
 import baritone.api.command.argument.IArgConsumer;
 import baritone.api.command.datatypes.ForBlockOptionalMeta;
+import baritone.api.command.datatypes.ForBlockOptionalMetaMulti;
 import baritone.api.command.exception.CommandException;
+import baritone.api.command.exception.CommandInvalidArgumentException;
+import baritone.api.command.exception.CommandInvalidStateException;
+import baritone.api.command.exception.CommandInvalidTypeException;
 import baritone.api.utils.BlockOptionalMeta;
 
 import java.util.ArrayList;
@@ -42,8 +46,17 @@ public class MineCommand extends Command {
         args.requireMin(1);
         List<BlockOptionalMeta> boms = new ArrayList<>();
         while (args.hasAny()) {
-            boms.add(args.getDatatypeFor(ForBlockOptionalMeta.INSTANCE));
+            var meta = args.getDatatypeForOrNull(ForBlockOptionalMetaMulti.INSTANCE);
+            if (meta != null)
+                for (BlockOptionalMeta bom : meta) {
+                    boms.add(bom);
+                }
         }
+
+        if (boms.isEmpty()) {
+            throw new CommandInvalidStateException("You must specify at least one block to mine.");
+        }
+
         BaritoneAPI.getProvider().getWorldScanner().repack(ctx);
         logDirect(String.format("Mining %s", boms.toString()));
         baritone.getMineProcess().mine(quantity, boms.toArray(new BlockOptionalMeta[0]));

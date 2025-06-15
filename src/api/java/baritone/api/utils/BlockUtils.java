@@ -64,5 +64,11 @@ public class BlockUtils {
         return block;
     }
 
+    public static Block[] regexToBlocks(String regex) {
+        return BuiltInRegistries.BLOCK.stream()
+                .filter(block -> blockToString(block).matches(regex))
+                .toArray(Block[]::new);
+    }
+
     private BlockUtils() {}
 }
