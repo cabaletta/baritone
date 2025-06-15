@@ -38,6 +38,7 @@ import net.minecraft.server.packs.VanillaPackResources;
 import net.minecraft.server.packs.repository.ServerPacksSource;
 import net.minecraft.server.packs.resources.CloseableResourceManager;
 import net.minecraft.server.packs.resources.MultiPackResourceManager;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagLoader;
 import net.minecraft.world.RandomSequences;
 import net.minecraft.world.flag.FeatureFlagSet;
@@ -131,6 +132,7 @@ public final class BlockOptionalMeta {
 
         // format:
         // if we use regex, the format is like /xxx/[others]
+
         // if we use the normal format, the format is like xxx[others]
 
         if (selector.startsWith("/")) {
@@ -143,10 +145,24 @@ public final class BlockOptionalMeta {
 
             BlockOptionalMeta[] metas = new BlockOptionalMeta[blocks.length];
 
-            var props = selector.length() > regex.length() + 2 ? selector.substring(regex.length() + 2, selector.length() - 1) : "";
+            var props = selector.length() > regex.length() + 3 ? selector.substring(regex.length() + 3, selector.length() - 1) : "";
 
             for (int i = 0; i < blocks.length; i++) {
                 metas[i] = new BlockOptionalMeta(blocks[i], props);
+            }
+
+            return metas;
+        } else if (selector.startsWith("#")) {
+            // select by tags
+            String tag = selector.substring(1);
+            Block[] blocks = BlockUtils.tagToBlocks(tag);
+            if (blocks.length == 0) {
+                return new BlockOptionalMeta[0];
+            }
+
+            BlockOptionalMeta[] metas = new BlockOptionalMeta[blocks.length];
+            for (int i = 0; i < blocks.length; i++) {
+                metas[i] = new BlockOptionalMeta(blocks[i]);
             }
 
             return metas;

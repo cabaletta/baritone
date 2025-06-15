@@ -17,11 +17,17 @@
 
 package baritone.api.utils;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+
+import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.block.Block;
 
 public class BlockUtils {
@@ -68,6 +74,17 @@ public class BlockUtils {
         return BuiltInRegistries.BLOCK.stream()
                 .filter(block -> blockToString(block).matches(regex))
                 .toArray(Block[]::new);
+    }
+
+    public static Block[] tagToBlocks(String tagName) {
+        net.minecraft.tags.TagKey<Block> blockTagKey = TagKey.create(Registries.BLOCK, ResourceLocation.withDefaultNamespace(tagName));
+
+        ArrayList<Block> blocksInTag = new ArrayList<>();
+        for (Holder<Block> blockHolder : BuiltInRegistries.BLOCK.getTagOrEmpty(blockTagKey)) {
+            blocksInTag.add(blockHolder.value());
+        }
+
+        return blocksInTag.toArray(new Block[0]);
     }
 
     private BlockUtils() {}
