@@ -548,7 +548,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             if (ctx.isLookingAt(pos) || ctx.playerRotations().isReallyCloseTo(rot)) {
                 baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_LEFT, true);
             }
-            return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
+            return new PathingCommand(null, PathingCommandType.REVALIDATE_GOAL_AND_PATH);
         }
         List<BlockState> desirableOnHotbar = new ArrayList<>();
         Optional<Placement> toPlace = searchForPlacables(bcc, desirableOnHotbar);
