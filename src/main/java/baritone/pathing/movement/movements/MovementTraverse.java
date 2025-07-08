@@ -271,6 +271,12 @@ public class MovementTraverse extends Movement {
             BlockState intoAbove = BlockStateInterface.get(ctx, into.above());
             if (wasTheBridgeBlockAlwaysThere && (!MovementHelper.isLiquid(ctx, feet) || Baritone.settings().sprintInWater.value) && (!MovementHelper.avoidWalkingInto(intoBelow) || MovementHelper.isWater(intoBelow)) && !MovementHelper.avoidWalkingInto(intoAbove)) {
                 state.setInput(Input.SPRINT, true);
+                // sprint jumping down a 1x2 corridor for extra speed
+                if (Baritone.settings().allowSprint.value
+                        && MovementHelper.canWalkThrough(ctx, dest.above())
+                        && !MovementHelper.canWalkThrough(ctx, dest.above(2))) {
+                    state.setInput(Input.JUMP, true);
+                }
             }
 
             BlockState destDown = BlockStateInterface.get(ctx, dest.below());

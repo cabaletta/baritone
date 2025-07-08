@@ -69,6 +69,7 @@ All the settings and documentation are <a href="https://github.com/cabaletta/bar
 There are about a hundred settings, but here are some fun / interesting / important ones that you might want to look at changing in normal usage of Baritone. The documentation for each can be found at the above links.
 - `allowBreak`
 - `allowSprint`
+- Baritone will sprint jump down a 1x2 tunnel when this is enabled
 - `allowPlace`
 - `allowParkour`
 - `allowParkourPlace`
