@@ -139,7 +139,8 @@ public final class CachedWorld implements ICachedWorld, Helper {
                     int regionZ = zoff + centerRegionZ;
                     CachedRegion region = getOrCreateRegion(regionX, regionZ);
                     if (region != null) {
-                        // TODO: 100% verify if this or addAll is faster.
+                        // addAll proved faster than manually iterating
+                        // during microbenchmarks with large region sets
                         res.addAll(region.getLocationsOf(block));
                     }
                 }
