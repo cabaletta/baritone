@@ -11,6 +11,7 @@
 - **Avoiding dangerous blocks** Obviously, it knows not to walk through fire or on magma, not to corner over lava (that deals some damage), not to break any blocks touching a liquid (it might drown), etc.
 - **Parkour** Sprint jumping over 1, 2, or 3 block gaps
 - **Parkour place** Sprint jumping over a 3 block gap and placing the block to land on while executing the jump. It's really cool.
+- **1x2 tunnel sprint** Sprint jumping down a narrow tunnel for faster travel
 - **Pigs** It can sort of control pigs. I wouldn't rely on it though.
 
 # Pathing method
@@ -41,7 +42,9 @@ And finally `GoalComposite`. `GoalComposite` is a list of other goals, any one o
 
 # Future features
 Things it doesn't have yet
-- Sprint jumping in a 1x2 corridor
+
+- Trapdoors
+
 
 See <a href="https://github.com/cabaletta/baritone/issues">issues</a> for more.
 
