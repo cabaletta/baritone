@@ -5,12 +5,13 @@
 - **Block placing** Baritone considers placing blocks as part of its path. This includes sneak-back-placing, pillaring, etc. It has a configurable penalty of placing a block (set to 1 second by default), to conserve its resources. The list of acceptable throwaway blocks is also configurable, and is cobble, dirt, or netherrack by default. <a href="https://www.youtube.com/watch?v=F6FbI1L9UmU">Example</a>
 - **Falling** Baritone will fall up to 3 blocks onto solid ground (configurable, if you have Feather Falling and/or don't mind taking a little damage). If you have a water bucket on your hotbar, it will fall up to 23 blocks and place the bucket beneath it. It will fall an unlimited distance into existing still water.
 - **Vines and ladders** Baritone understands how to climb and descend vines and ladders. There is experimental support for more advanced maneuvers, like strafing to a different ladder / vine column in midair (off by default, setting named `allowVines`). Baritone can break its fall by grabbing ladders / vines midair, and understands when that is and isn't possible.
-- **Opening fence gates and doors**
+- **Opening fence gates, doors, and trapdoors**
 - **Slabs and stairs**
 - **Falling blocks** Baritone understands the costs of breaking blocks with falling blocks on top, and includes all of their break costs. Additionally, since it avoids breaking any blocks touching a liquid, it won't break the bottom of a gravel stack below a lava lake (anymore).
 - **Avoiding dangerous blocks** Obviously, it knows not to walk through fire or on magma, not to corner over lava (that deals some damage), not to break any blocks touching a liquid (it might drown), etc.
 - **Parkour** Sprint jumping over 1, 2, or 3 block gaps
 - **Parkour place** Sprint jumping over a 3 block gap and placing the block to land on while executing the jump. It's really cool.
+- **1x2 tunnel sprint** Sprint jumping down a narrow tunnel for faster travel
 - **Pigs** It can sort of control pigs. I wouldn't rely on it though.
 
 # Pathing method
@@ -41,8 +42,9 @@ And finally `GoalComposite`. `GoalComposite` is a list of other goals, any one o
 
 # Future features
 Things it doesn't have yet
+
 - Trapdoors
-- Sprint jumping in a 1x2 corridor
+
 
 See <a href="https://github.com/cabaletta/baritone/issues">issues</a> for more.
 

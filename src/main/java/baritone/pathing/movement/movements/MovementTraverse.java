@@ -40,6 +40,7 @@ import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.FenceGateBlock;
 import net.minecraft.world.level.block.LadderBlock;
 import net.minecraft.world.level.block.SlabBlock;
+import net.minecraft.world.level.block.TrapDoorBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.SlabType;
 import net.minecraft.world.phys.Vec3;
@@ -241,6 +242,18 @@ public class MovementTraverse extends Movement {
             }
         }
 
+        if (pb0.getBlock() instanceof TrapDoorBlock || pb1.getBlock() instanceof TrapDoorBlock) {
+            BlockPos blocked = !MovementHelper.isTrapdoorPassable(ctx, positionsToBreak[0]) ? positionsToBreak[0]
+                    : !MovementHelper.isTrapdoorPassable(ctx, positionsToBreak[1]) ? positionsToBreak[1]
+                    : null;
+            if (blocked != null) {
+                Optional<Rotation> rotation = RotationUtils.reachable(ctx, blocked);
+                if (rotation.isPresent()) {
+                    return state.setTarget(new MovementState.MovementTarget(rotation.get(), true)).setInput(Input.CLICK_RIGHT, true);
+                }
+            }
+        }
+
         boolean isTheBridgeBlockThere = MovementHelper.canWalkOn(ctx, positionToPlace) || ladder || MovementHelper.canUseFrostWalker(ctx, positionToPlace);
         BlockPos feet = ctx.playerFeet();
         if (feet.getY() != dest.getY() && !ladder) {
@@ -271,6 +284,12 @@ public class MovementTraverse extends Movement {
             BlockState intoAbove = BlockStateInterface.get(ctx, into.above());
             if (wasTheBridgeBlockAlwaysThere && (!MovementHelper.isLiquid(ctx, feet) || Baritone.settings().sprintInWater.value) && (!MovementHelper.avoidWalkingInto(intoBelow) || MovementHelper.isWater(intoBelow)) && !MovementHelper.avoidWalkingInto(intoAbove)) {
                 state.setInput(Input.SPRINT, true);
+                // sprint jumping down a 1x2 corridor for extra speed
+                if (Baritone.settings().allowSprint.value
+                        && MovementHelper.canWalkThrough(ctx, dest.above())
+                        && !MovementHelper.canWalkThrough(ctx, dest.above(2))) {
+                    state.setInput(Input.JUMP, true);
+                }
             }
 
             BlockState destDown = BlockStateInterface.get(ctx, dest.below());

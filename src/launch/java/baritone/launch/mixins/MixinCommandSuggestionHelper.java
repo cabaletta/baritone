@@ -92,8 +92,21 @@ public class MixinCommandSuggestionHelper {
 
             this.input.setSuggestion(null); // clear old suggestions
             this.suggestions = null;
-            // TODO: Support populating the command usage
+            // Populate commandUsage so that the suggestion window shows some
+            // contextual hint text. Minecraft normally fills this list with
+            // usage information derived from the parse results. When we
+            // short-circuit the command suggestions pipeline we lose that
+            // information, so instead show a simple explanation of the
+            // available completions.
             this.commandUsage.clear();
+            if (event.completions.length == 0) {
+                this.commandUsage.add("No completions available");
+            } else {
+                this.commandUsage.add("Possible completions:");
+                for (String comp : event.completions) {
+                    this.commandUsage.add("  " + comp);
+                }
+            }
 
             if (event.completions.length == 0) {
                 this.pendingSuggestions = Suggestions.empty();
