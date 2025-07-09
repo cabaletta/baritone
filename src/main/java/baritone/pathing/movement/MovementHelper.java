@@ -361,6 +361,14 @@ public interface MovementHelper extends ActionCosts, Helper {
         return state.getValue(FenceGateBlock.OPEN);
     }
 
+    static boolean isTrapdoorPassable(IPlayerContext ctx, BlockPos trapPos) {
+        BlockState state = BlockStateInterface.get(ctx, trapPos);
+        if (!(state.getBlock() instanceof TrapDoorBlock)) {
+            return true;
+        }
+        return state.getValue(TrapDoorBlock.OPEN);
+    }
+
     static boolean isHorizontalBlockPassable(BlockPos blockPos, BlockState blockState, BlockPos playerPos, BooleanProperty propertyOpen) {
         if (playerPos.equals(blockPos)) {
             return false;
