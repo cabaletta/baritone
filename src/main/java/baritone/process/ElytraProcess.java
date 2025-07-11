@@ -197,11 +197,11 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
             behavior.landingMode = this.state == State.LANDING;
             this.goal = null;
             baritone.getInputOverrideHandler().clearAllKeys();
-            behavior.context.readLock.lock();
+            behavior.context.RLock();
             try {
                 behavior.tick();
             } finally {
-                behavior.context.readLock.unlock();
+                behavior.context.RUnlock();
             }
             return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
         } else if (this.state == State.LANDING) {
