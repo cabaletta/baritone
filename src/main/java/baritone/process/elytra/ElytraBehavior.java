@@ -77,7 +77,7 @@ public final class ElytraBehavior implements Helper {
     private List<BetterBlockPos> visiblePath;
 
     // :sunglasses:
-    public final IElytraPathfinderContext context;
+    public IElytraPathfinderContext context;
     public final PathManager pathManager;
     private final ElytraProcess process;
 
@@ -118,7 +118,7 @@ public final class ElytraBehavior implements Helper {
     private int invTickCountdown = 0;
     private final Queue<Runnable> invTransactionQueue = new LinkedList<>();
 
-    public ElytraBehavior(Baritone baritone, ElytraProcess process, BlockPos destination, boolean appendDestination) {
+    public ElytraBehavior(Baritone baritone, ElytraProcess process, IElytraPathfinderContext context, BlockPos destination, boolean appendDestination) {
         this.baritone = baritone;
         this.ctx = baritone.getPlayerContext();
         this.clearLines = new CopyOnWriteArrayList<>();
@@ -129,12 +129,7 @@ public final class ElytraBehavior implements Helper {
         this.appendDestination = appendDestination;
         this.solverExecutor = Executors.newSingleThreadExecutor();
         this.nextTickBoostCounter = new int[2];
-
-        this.context = new NetherPathfinderContext(
-                Baritone.settings().elytraNetherSeed.value,
-                Baritone.settings().elytraUseCache.value ? baritone.getWorldProvider().getCurrentWorld().directory.resolve("cache") : null,
-                ctx.world()
-        );
+        this.context = context;
     }
 
     public final class PathManager {

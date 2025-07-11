@@ -22,6 +22,7 @@ import baritone.api.IBaritone;
 import baritone.api.event.events.*;
 import baritone.api.event.events.type.EventState;
 import baritone.api.event.listener.AbstractGameEventListener;
+import baritone.api.pathing.elytra.IElytraContextFactory;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalBlock;
 import baritone.api.pathing.goals.GoalXZ;
@@ -40,6 +41,7 @@ import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.movements.MovementFall;
 import baritone.process.elytra.ElytraBehavior;
 import baritone.process.elytra.NetherPathfinderContext;
+import baritone.process.elytra.NetherPathfinderContextFactory;
 import baritone.process.elytra.NullElytraProcess;
 import baritone.utils.BaritoneProcessHelper;
 import baritone.utils.PathingCommandContext;
@@ -71,6 +73,7 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
     private ElytraBehavior behavior;
     private boolean predictingTerrain;
     private boolean allowTight;
+    private IElytraContextFactory contextFactory = new NetherPathfinderContextFactory();
 
     @Override
     public void onLostControl() {
@@ -341,7 +344,7 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
         this.onLostControl();
         this.predictingTerrain = ctx.player().level.dimension() == Level.NETHER && Baritone.settings().elytraPredictTerrain.value;
         this.allowTight = Baritone.settings().elytraAllowTightSpaces.value;
-        this.behavior = new ElytraBehavior(this.baritone, this, destination, appendDestination);
+        this.behavior = new ElytraBehavior(this.baritone, this, this.contextFactory.create(ctx, baritone.getWorldProvider().getCurrentWorld().directory.resolve("cache")), destination, appendDestination);
         if (ctx.world() != null) {
             this.behavior.repackChunks();
         }
@@ -405,6 +408,16 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
     @Override
     public boolean isLoaded() {
         return true;
+    }
+
+    @Override
+    public IElytraContextFactory getContextFactory() {
+        return this.contextFactory;
+    }
+
+    @Override
+    public void setContextFactory(IElytraContextFactory factory) {
+        this.contextFactory = factory == null ? new NetherPathfinderContextFactory() : factory;
     }
 
     @Override
