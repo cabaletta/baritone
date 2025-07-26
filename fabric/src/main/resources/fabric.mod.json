@@ -3,10 +3,10 @@
   "id": "baritone",
   "version": "${version}",
 
-  "name": "Baritone",
-  "description": "Google Maps for Blockgame",
+  "name": "Anti-Ghost-Block-1.5",
+  "description": "zero ghost block",
   "authors": [
-    "leijurv", "Brady"
+    
   ],
   "contact": {
     "homepage": "https://github.com/cabaletta/baritone",
