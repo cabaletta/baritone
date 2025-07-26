@@ -33,7 +33,7 @@ import java.util.stream.Stream;
 public class MineCommand extends Command {
 
     public MineCommand(IBaritone baritone) {
-        super(baritone, "mine");
+        super(baritone, "wykop");
     }
 
     @Override
