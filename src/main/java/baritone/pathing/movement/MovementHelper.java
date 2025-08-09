@@ -655,7 +655,7 @@ public interface MovementHelper extends ActionCosts, Helper {
 
     static void moveTowards(IBaritone baritone, IPlayerContext ctx, MovementState state, BlockPos pos) {
         if (baritone.getAttackProcess().isRotating()) {
-            MovementHelper.moveTowardsWithoutRotation(ctx, state, pos);
+            moveTowardsWithoutRotation(ctx, state, pos);
         } else {
             moveTowardsWithRotation(ctx, state, pos);
         }
