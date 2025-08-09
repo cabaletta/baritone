@@ -221,7 +221,7 @@ public class MovementPillar extends Movement {
             }
              */
 
-            MovementHelper.moveTowards(ctx, state, against);
+            MovementHelper.moveTowards(baritone, ctx, state, against);
             return state;
         } else {
             // Get ready to place a throwaway block

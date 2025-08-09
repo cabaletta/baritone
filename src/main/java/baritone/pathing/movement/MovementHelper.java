@@ -32,8 +32,6 @@ import baritone.utils.ToolSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.piston.MovingPistonBlock;
@@ -655,41 +653,9 @@ public interface MovementHelper extends ActionCosts, Helper {
         }
     }
 
-    static void moveTowards(IPlayerContext ctx, MovementState state, BlockPos pos) {
-        if (Baritone.settings().entityAttackRadius.value != 0d) {
-            double closestDistance = Double.MAX_VALUE;
-            Vec3 closestPosition = null;
-            for (Entity entity : ctx.entities()) {
-                if (!entity.is(ctx.player()) && entity instanceof LivingEntity && entity.isAlive() && entity.isAttackable()) {
-                    Vec3 attackPoint = new Vec3(
-                            entity.getBoundingBox().getCenter().x(),//Mth.clamp(ctx.playerHead().x(), entity.getBoundingBox().minX, entity.getBoundingBox().maxX),
-                            Mth.clamp(ctx.playerHead().y(), entity.getBoundingBox().minY, entity.getBoundingBox().maxY),
-                            entity.getBoundingBox().getCenter().z()//Mth.clamp(ctx.playerHead().z(), entity.getBoundingBox().minZ, entity.getBoundingBox().maxZ)
-                    );
-                    double distance = ctx.player().getEyePosition().distanceToSqr(attackPoint);
-                    if (distance < closestDistance) {
-                        closestDistance = distance;
-                        closestPosition = attackPoint;
-                    }
-                }
-            }
-            if (closestPosition != null && Math.sqrt(closestDistance) <= Baritone.settings().entityAttackRadius.value) {
-                if (!Baritone.settings().assumeExternalAutoAim.value) {
-                    state.setTarget(new MovementState.MovementTarget(
-                            RotationUtils.calcRotationFromVec3d(ctx.playerHead(), closestPosition, ctx.playerRotations()),
-                            true
-                    ));
-                }
-                MovementHelper.moveTowardsWithoutRotation(ctx, state, pos);
-                if (!Baritone.settings().assumeExternalKillAura.value) {
-                    HitResult hitResult = ctx.minecraft().hitResult;
-                    if (hitResult != null && hitResult.getType().equals(HitResult.Type.ENTITY)) {
-                        state.setInput(Input.CLICK_LEFT, true);
-                    }
-                }
-            } else {
-                moveTowardsWithRotation(ctx, state, pos);
-            }
+    static void moveTowards(IBaritone baritone, IPlayerContext ctx, MovementState state, BlockPos pos) {
+        if (baritone.getAttackProcess().isRotating()) {
+            MovementHelper.moveTowardsWithoutRotation(ctx, state, pos);
         } else {
             moveTowardsWithRotation(ctx, state, pos);
         }

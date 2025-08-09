@@ -88,12 +88,16 @@ public final class InputOverrideHandler extends Behavior implements IInputOverri
             return;
         }
 
+        if (baritone.getAttackProcess().isAttacking()) {
+            setInputForceState(Input.CLICK_LEFT, true);
+        }
+        if (isInputForcedDown(Input.CLICK_LEFT)) {
+            setInputForceState(Input.CLICK_RIGHT, false);
+        }
+        leftClickHelper.tick(isInputForcedDown(Input.CLICK_LEFT));
+        blockPlaceHelper.tick(isInputForcedDown(Input.CLICK_RIGHT));
+
         if (inControl()) {
-            if (isInputForcedDown(Input.CLICK_LEFT)) {
-                setInputForceState(Input.CLICK_RIGHT, false);
-            }
-            leftClickHelper.tick(isInputForcedDown(Input.CLICK_LEFT));
-            blockPlaceHelper.tick(isInputForcedDown(Input.CLICK_RIGHT));
             if (ctx.player().input.getClass() != PlayerMovementInput.class) {
                 ctx.player().input = new PlayerMovementInput(this);
             }

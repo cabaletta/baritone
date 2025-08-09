@@ -90,7 +90,7 @@ public class MovementDownward extends Movement {
         if (numTicks++ < 10 && ab < 0.2) {
             return state;
         }
-        MovementHelper.moveTowards(ctx, state, positionsToBreak[0]);
+        MovementHelper.moveTowards(baritone, ctx, state, positionsToBreak[0]);
         return state;
     }
 }
