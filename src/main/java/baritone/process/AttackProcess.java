@@ -40,7 +40,12 @@ public class AttackProcess extends BaritoneProcessHelper implements IAttackProce
 
     @Override
     public boolean isActive() {
-        return ctx.player() != null && ctx.world() != null && Baritone.settings().entityAttackRadius.value != 0D;
+        this.rotating = false;
+        this.attacking = false;
+        return ctx.player() != null &&
+                ctx.world() != null &&
+                Baritone.settings().entityAttackRadius.value != 0D &&
+                (this.baritone.getFollowProcess().isActive() || this.baritone.getPathingBehavior().isPathing());
     }
 
     @Override
@@ -62,8 +67,6 @@ public class AttackProcess extends BaritoneProcessHelper implements IAttackProce
                 }
             }
         }
-        this.rotating = false;
-        this.attacking = false;
         if (closestPosition != null && Math.sqrt(closestDistance) <= Baritone.settings().entityAttackRadius.value) {
             if (!Baritone.settings().assumeExternalAutoAim.value) {
                 this.rotating = true;
