@@ -809,6 +809,11 @@ public final class Settings {
     public final Setting<Boolean> sprintInWater = new Setting<>(true);
 
     /**
+     * Jump while sprinting on flat traverses for extra speed
+     */
+    public final Setting<Boolean> jumpsprint = new Setting<>(false);
+
+    /**
      * When GetToBlockProcess or MineProcess fails to calculate a path, instead of just giving up, mark the closest instance
      * of that block as "unreachable" and go towards the next closest. GetToBlock expands this search to the whole "vein"; MineProcess does not.
      * This is because MineProcess finds individual impossible blocks (like one block in a vein that has gravel on top then lava, so it can't break)

@@ -75,6 +75,7 @@ public class PathExecutor implements IPathExecutor, Helper {
     private final IPlayerContext ctx;
 
     private boolean sprintNextTick;
+    private final JumpSprintController jumpSprintController = new JumpSprintController();
 
     public PathExecutor(PathingBehavior behavior, IPath path) {
         this.behavior = behavior;
@@ -236,8 +237,10 @@ public class PathExecutor implements IPathExecutor, Helper {
         } else {
             sprintNextTick = shouldSprintNextTick();
             if (!sprintNextTick) {
-                ctx.player().setSprinting(false); // letting go of control doesn't make you stop sprinting actually
+                ctx.player().setSprinting(false); // letting go of control doesn't make you stop sprinting actually, who thought
             }
+            // Centralized jump-sprint control
+            jumpSprintController.apply(behavior, ctx, movement, path, pathPosition);
             ticksOnCurrent++;
             if (ticksOnCurrent > currentMovementOriginalCostEstimate + Baritone.settings().movementTimeoutTicks.value) {
                 // only cancel if the total time has exceeded the initial estimate
@@ -342,6 +345,12 @@ public class PathExecutor implements IPathExecutor, Helper {
     }
 
     private boolean shouldSprintNextTick() {
+        // For MovementAscend, trust the movement's own sprint/jump timing and avoid clearing sprint here
+        IMovement currentMovement = path.movements().get(pathPosition);
+        if (currentMovement instanceof MovementAscend) {
+            return true; // let MovementAscend and MovementState drive sprint; don't clear it below
+        }
+
         boolean requested = behavior.baritone.getInputOverrideHandler().isInputForcedDown(Input.SPRINT);
 
         // we'll take it from here, no need for minecraft to see we're holding down control and sprint for us
@@ -351,7 +360,19 @@ public class PathExecutor implements IPathExecutor, Helper {
         if (!new CalculationContext(behavior.baritone, false).canSprint) {
             return false;
         }
-        IMovement current = path.movements().get(pathPosition);
+        IMovement current = currentMovement;
+
+        // Ensure sprint stays engaged during straight segments when jumpsprint is enabled,
+        // but don't force sprint if an ascend/parkour is imminent (let those control cadence)
+        if (Baritone.settings().jumpsprint.value && (current instanceof MovementTraverse || current instanceof MovementDiagonal)) {
+            IMovement next = pathPosition < path.length() - 1 ? path.movements().get(pathPosition + 1) : null;
+            if (!(next instanceof MovementAscend) && !(next instanceof MovementParkour)) {
+                behavior.baritone.getInputOverrideHandler().setInputForceState(Input.SPRINT, true);
+                return true;
+            }
+        }
+
+        // (Ascend handled above)
 
         // traverse requests sprinting, so we need to do this check first
         if (current instanceof MovementTraverse && pathPosition < path.length() - 3) {

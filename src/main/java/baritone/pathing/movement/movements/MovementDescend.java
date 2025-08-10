@@ -228,6 +228,10 @@ public class MovementDescend extends Movement {
         if (state.getStatus() != MovementStatus.RUNNING) {
             return state;
         }
+        // Keep sprint through descends when not in liquid; prevents de-sprinting during downhill chains
+        if (!MovementHelper.isLiquid(ctx, ctx.playerFeet())) {
+            state.setInput(Input.SPRINT, true);
+        }
 
         BlockPos playerFeet = ctx.playerFeet();
         BlockPos fakeDest = new BlockPos(dest.getX() * 2 - src.getX(), dest.getY(), dest.getZ() * 2 - src.getZ());

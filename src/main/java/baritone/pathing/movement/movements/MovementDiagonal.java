@@ -269,6 +269,10 @@ public class MovementDiagonal extends Movement {
         }
         if (sprint()) {
             state.setInput(Input.SPRINT, true);
+            // keep sprint while airborne to avoid unintended de-sprint on diagonal hops
+            if (!ctx.player().onGround()) {
+                state.setInput(Input.SPRINT, true);
+            }
         }
         MovementHelper.moveTowards(ctx, state, dest);
         return state;

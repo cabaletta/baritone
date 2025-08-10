@@ -245,9 +245,11 @@ public class MovementTraverse extends Movement {
         BlockPos feet = ctx.playerFeet();
         if (feet.getY() != dest.getY() && !ladder) {
             logDebug("Wrong Y coordinate");
+            // Always keep sprint held while airborne during a traverse; PathExecutor manages jump timing
+            state.setInput(Input.SPRINT, true);
             if (feet.getY() < dest.getY()) {
                 System.out.println("In movement traverse");
-                return state.setInput(Input.JUMP, true);
+                return state; // jump already held if applicable; keep sprint
             }
             return state;
         }
@@ -271,6 +273,7 @@ public class MovementTraverse extends Movement {
             BlockState intoAbove = BlockStateInterface.get(ctx, into.above());
             if (wasTheBridgeBlockAlwaysThere && (!MovementHelper.isLiquid(ctx, feet) || Baritone.settings().sprintInWater.value) && (!MovementHelper.avoidWalkingInto(intoBelow) || MovementHelper.isWater(intoBelow)) && !MovementHelper.avoidWalkingInto(intoAbove)) {
                 state.setInput(Input.SPRINT, true);
+                // Let PathExecutor decide final jump timing; we only hint here to avoid conflicting inputs near edges
             }
 
             BlockState destDown = BlockStateInterface.get(ctx, dest.below());

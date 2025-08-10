@@ -37,6 +37,8 @@ import net.minecraft.world.level.block.state.BlockState;
 public class MovementAscend extends Movement {
 
     private int ticksWithoutPlacement = 0;
+    // Latch to guarantee a jump within a short window once we commit to takeoff
+    private int takeoffLatchTicks = 0;
 
     public MovementAscend(IBaritone baritone, BetterBlockPos src, BetterBlockPos dest) {
         super(baritone, src, dest, new BetterBlockPos[]{dest, src.above(2), dest.above()}, dest.below());
@@ -46,6 +48,7 @@ public class MovementAscend extends Movement {
     public void reset() {
         super.reset();
         ticksWithoutPlacement = 0;
+        takeoffLatchTicks = 0;
     }
 
     @Override
@@ -161,11 +164,8 @@ public class MovementAscend extends Movement {
             return state.setStatus(MovementStatus.UNREACHABLE);
         }
         super.updateState(state);
-        // TODO incorporate some behavior from ActionClimb (specifically how it waited until it was at most 1.2 blocks away before starting to jump
-        // for efficiency in ascending minimal height staircases, which is just repeated MovementAscend, so that it doesn't bonk its head on the ceiling repeatedly)
-        if (state.getStatus() != MovementStatus.RUNNING) {
-            return state;
-        }
+        // Allow approach timing even if state isn't yet RUNNING, as long as the landing block is walkable.
+        boolean isRunning = state.getStatus() == MovementStatus.RUNNING;
 
         if (ctx.playerFeet().equals(dest) || ctx.playerFeet().equals(dest.offset(getDirection().below()))) {
             return state.setStatus(MovementStatus.SUCCESS);
@@ -188,6 +188,61 @@ public class MovementAscend extends Movement {
             return state;
         }
         MovementHelper.moveTowards(ctx, state, dest);
+        // Maintain forward; adjust sprint and jump timing based on edge distance for clean cadence
+        state.setInput(Input.MOVE_FORWARD, true);
+        if (Baritone.settings().sprintAscends.value) {
+            int dx = Integer.signum(dest.x - src.x);
+            int dz = Integer.signum(dest.z - src.z);
+            boolean alongX = Math.abs(dx) == 1;
+
+            double px = ctx.player().position().x;
+            double pz = ctx.player().position().z;
+            // Distance to the leading edge of the current block in the direction of travel
+            double edgeDist;
+            if (alongX) {
+                double edgeX = dx > 0 ? (src.x + 1.0D) : (double) src.x;
+                edgeDist = Math.max(0.0, dx > 0 ? (edgeX - px) : (px - edgeX));
+            } else {
+                double edgeZ = dz > 0 ? (src.z + 1.0D) : (double) src.z;
+                edgeDist = Math.max(0.0, dz > 0 ? (edgeZ - pz) : (pz - edgeZ));
+            }
+
+            // Small lateral tolerance: avoid jumping if we're too far off the center line
+            double lateralOffset = alongX ? Math.abs((src.z + 0.5D) - pz) : Math.abs((src.x + 0.5D) - px);
+            boolean centered = lateralOffset <= 0.28D;
+
+            boolean onGround = ctx.player().onGround();
+            // Secondary proximity using dest center to avoid missing the window if edge calc drifts
+            double flatDistToDestCenter = Math.max(Math.abs((dest.x + 0.5D) - px), Math.abs((dest.z + 0.5D) - pz));
+            boolean withinTaper = onGround && centered && edgeDist < 0.60D && edgeDist > 0.32D;
+            boolean shouldJump = onGround && (
+                    (centered && edgeDist <= 0.32D) ||
+                    flatDistToDestCenter <= 0.85D ||
+                    ctx.player().horizontalCollision
+            );
+
+            // Takeoff latch: once we enter taper or are very close, guarantee jump in the next 2 ticks
+            if (withinTaper || (onGround && edgeDist <= 0.40D)) {
+                takeoffLatchTicks = Math.max(takeoffLatchTicks, 2);
+            }
+            if (takeoffLatchTicks > 0) {
+                takeoffLatchTicks--;
+                // While latched, bias toward jumping sooner rather than later
+                if (onGround) {
+                    shouldJump = true;
+                }
+            }
+
+            // Apply inputs without early returns to avoid missing the jump window due to ordering elsewhere
+            state.setInput(Input.SPRINT, !withinTaper);
+            if (shouldJump) {
+                state.setInput(Input.SPRINT, true);
+                state.setInput(Input.JUMP, true);
+            }
+            if (!onGround) {
+                state.setInput(Input.SPRINT, true);
+            }
+        }
         if (MovementHelper.isBottomSlab(jumpingOnto) && !MovementHelper.isBottomSlab(BlockStateInterface.get(ctx, src.below()))) {
             return state; // don't jump while walking from a non double slab into a bottom slab
         }
@@ -197,10 +252,10 @@ public class MovementAscend extends Movement {
             return state;
         }
 
-        int xAxis = Math.abs(src.getX() - dest.getX()); // either 0 or 1
-        int zAxis = Math.abs(src.getZ() - dest.getZ()); // either 0 or 1
-        double flatDistToNext = xAxis * Math.abs((dest.getX() + 0.5D) - ctx.player().position().x) + zAxis * Math.abs((dest.getZ() + 0.5D) - ctx.player().position().z);
-        double sideDist = zAxis * Math.abs((dest.getX() + 0.5D) - ctx.player().position().x) + xAxis * Math.abs((dest.getZ() + 0.5D) - ctx.player().position().z);
+        int xAxis = Math.abs(dest.x - src.x); // either 0 or 1
+        int zAxis = Math.abs(dest.z - src.z); // either 0 or 1
+        double flatDistToNext = xAxis * Math.abs((dest.x + 0.5D) - ctx.player().position().x) + zAxis * Math.abs((dest.z + 0.5D) - ctx.player().position().z);
+        double sideDist = zAxis * Math.abs((dest.x + 0.5D) - ctx.player().position().x) + xAxis * Math.abs((dest.z + 0.5D) - ctx.player().position().z);
 
         double lateralMotion = xAxis * ctx.player().getDeltaMovement().z + zAxis * ctx.player().getDeltaMovement().x;
         if (Math.abs(lateralMotion) > 0.1) {
@@ -218,7 +273,8 @@ public class MovementAscend extends Movement {
         // Once we are pointing the right way and moving, start jumping
         // This is slightly more efficient because otherwise we might start jumping before moving, and fall down without moving onto the block we want to jump onto
         // Also wait until we are close enough, because we might jump and hit our head on an adjacent block
-        return state.setInput(Input.JUMP, true);
+        // Re-engage sprint at jump to preserve momentum up the block
+        return state.setInput(Input.SPRINT, true).setInput(Input.JUMP, true);
     }
 
     public boolean headBonkClear() {
