@@ -197,6 +197,11 @@ public class MovementAscend extends Movement {
 
             double px = ctx.player().position().x;
             double pz = ctx.player().position().z;
+            double vx = ctx.player().getDeltaMovement().x;
+            double vz = ctx.player().getDeltaMovement().z;
+            double speedXZ = Math.hypot(vx, vz);
+            // Speed factor in [0,1]: 0 near slow walk, 1 at fast sprint/boosts
+            double speedFactor = Math.max(0.0, Math.min(1.0, (speedXZ - 0.19D) / 0.08D));
             // Distance to the leading edge of the current block in the direction of travel
             double edgeDist;
             if (alongX) {
@@ -214,16 +219,19 @@ public class MovementAscend extends Movement {
             boolean onGround = ctx.player().onGround();
             // Secondary proximity using dest center to avoid missing the window if edge calc drifts
             double flatDistToDestCenter = Math.max(Math.abs((dest.x + 0.5D) - px), Math.abs((dest.z + 0.5D) - pz));
-            boolean withinTaper = onGround && centered && edgeDist < 0.60D && edgeDist > 0.32D;
+            // Dynamic thresholds based on approach speed: earlier taper / earlier jump when too fast
+            double taperStart = 0.60D + 0.25D * speedFactor; // up to 0.85 at high speed
+            double jumpDist  = 0.32D + 0.10D * speedFactor; // up to 0.42 at high speed
+            boolean withinTaper = onGround && centered && edgeDist < taperStart && edgeDist > jumpDist;
             boolean shouldJump = onGround && (
-                    (centered && edgeDist <= 0.32D) ||
+                    (centered && edgeDist <= jumpDist) ||
                     flatDistToDestCenter <= 0.85D ||
                     ctx.player().horizontalCollision
             );
 
             // Takeoff latch: once we enter taper or are very close, guarantee jump in the next 2 ticks
-            if (withinTaper || (onGround && edgeDist <= 0.40D)) {
-                takeoffLatchTicks = Math.max(takeoffLatchTicks, 2);
+            if (withinTaper || (onGround && edgeDist <= (jumpDist + 0.08D))) {
+                takeoffLatchTicks = Math.max(takeoffLatchTicks, 2 + (int) Math.round(2 * speedFactor));
             }
             if (takeoffLatchTicks > 0) {
                 takeoffLatchTicks--;

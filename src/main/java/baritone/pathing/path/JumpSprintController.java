@@ -111,7 +111,7 @@ public final class JumpSprintController implements Helper {
             }
 
             // Require at least one more movement straight ahead in the same flat direction,
-            // and avoid an immediate ascend/parkour in the same direction (they control their timing).
+            // and avoid an upcoming ascend/parkour/turn within a short horizon (they control their timing).
             IMovement next = (pathPosition < path.length() - 1) ? path.movements().get(pathPosition + 1) : null;
             if (next == null) {
                 return;
@@ -127,6 +127,16 @@ public final class JumpSprintController implements Helper {
             if (next instanceof MovementAscend || next instanceof MovementParkour) {
                 lastPathIndex = pathPosition;
                 return; // let ascend/parkour manage their own jump timing
+            }
+
+            // Horizon suppression: if an ascend/parkour or flat turn exists within 4 moves, don't jump-sprint; just regular sprint
+            if (shouldSuppressForHorizon(path, pathPosition, dx, dz)) {
+                // keep sprint and forward, but no jump this tick
+                behavior.baritone.getInputOverrideHandler().setInputForceState(Input.JUMP, false);
+                behavior.baritone.getInputOverrideHandler().setInputForceState(Input.SPRINT, true);
+                behavior.baritone.getInputOverrideHandler().setInputForceState(Input.MOVE_FORWARD, true);
+                lastPathIndex = pathPosition;
+                return;
             }
 
             // Two-step lookahead to avoid jumping into an imminent corner or ascend/parkour
@@ -198,6 +208,26 @@ public final class JumpSprintController implements Helper {
         double vz = pz - cz;
         double lateral = Math.abs(vx * perpX + vz * perpZ);
         return lateral;
+    }
+
+    private static boolean shouldSuppressForHorizon(IPath path, int pathPosition, int dx, int dz) {
+        // Look up to 4 moves ahead for:
+        // - Ascend/parkour in same flat direction (we want to sprint into it, not jump-sprint before)
+        // - Any flat direction change (turn), to avoid engaging too close to corners
+        int maxAhead = 4;
+        for (int ahead = 1; ahead <= maxAhead && pathPosition + ahead < path.length(); ahead++) {
+            IMovement m = path.movements().get(pathPosition + ahead);
+            int adx = Integer.signum(((Movement) m).getDest().x - ((Movement) m).getSrc().x);
+            int adz = Integer.signum(((Movement) m).getDest().z - ((Movement) m).getSrc().z);
+            boolean sameFlat = dx == adx && dz == adz;
+            if (!sameFlat) {
+                return true; // turn coming up; skip jump-sprint
+            }
+            if (m instanceof MovementAscend || m instanceof MovementParkour) {
+                return true; // step-up/jump coming soon; prefer regular sprint approach
+            }
+        }
+        return false;
     }
 }
 
