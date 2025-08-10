@@ -208,6 +208,15 @@ public final class JumpSprintController implements Helper {
                 return;
             }
 
+            // Headroom check: avoid head-bonking into low ceilings (trees/leaves/etc.) in the next few tiles
+            if (!headroomClear(ctx, path, pathPosition, 3)) {
+                behavior.baritone.getInputOverrideHandler().setInputForceState(Input.JUMP, false);
+                behavior.baritone.getInputOverrideHandler().setInputForceState(Input.SPRINT, true);
+                behavior.baritone.getInputOverrideHandler().setInputForceState(Input.MOVE_FORWARD, true);
+                lastPathIndex = pathPosition;
+                return;
+            }
+
             // For diagonals, preserve midair momentum by not toggling jump while airborne; only ensure sprint
             if (movement instanceof MovementDiagonal) {
                 if (!onGround) {
@@ -264,6 +273,20 @@ public final class JumpSprintController implements Helper {
             }
         }
         return false;
+    }
+
+    private boolean headroomClear(IPlayerContext ctx, IPath path, int pathPosition, int tilesAhead) {
+        int maxIdx = Math.min(path.positions().size() - 1, pathPosition + tilesAhead);
+        for (int i = pathPosition + 1; i <= maxIdx; i++) {
+            BetterBlockPos p = path.positions().get(i);
+            if (MovementHelper.avoidWalkingInto(BlockStateInterface.get(ctx, p.above()))) {
+                return false;
+            }
+            if (MovementHelper.avoidWalkingInto(BlockStateInterface.get(ctx, p.above(2)))) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private static final class ElevationEval {
