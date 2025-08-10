@@ -239,8 +239,14 @@ public class PathExecutor implements IPathExecutor, Helper {
             if (!sprintNextTick) {
                 ctx.player().setSprinting(false); // letting go of control doesn't make you stop sprinting actually, who thought
             }
-            // Centralized jump-sprint control
-            jumpSprintController.apply(behavior, ctx, movement, path, pathPosition);
+            // Centralized jump-sprint control (don't allow this to crash execution near goal edges)
+            try {
+                if (pathPosition < path.length() - 1) {
+                    jumpSprintController.apply(behavior, ctx, movement, path, pathPosition);
+                }
+            } catch (Throwable t) {
+                logDebug("JumpSprintController apply error: " + t);
+            }
             ticksOnCurrent++;
             if (ticksOnCurrent > currentMovementOriginalCostEstimate + Baritone.settings().movementTimeoutTicks.value) {
                 // only cancel if the total time has exceeded the initial estimate

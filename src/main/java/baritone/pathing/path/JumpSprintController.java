@@ -32,6 +32,7 @@ import baritone.pathing.movement.movements.MovementAscend;
 import baritone.pathing.movement.movements.MovementTraverse;
 import baritone.pathing.movement.movements.MovementDiagonal;
 import baritone.pathing.movement.movements.MovementParkour;
+import baritone.pathing.movement.movements.MovementDescend;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import baritone.utils.BlockStateInterface;
@@ -39,11 +40,6 @@ import baritone.utils.BlockStateInterface;
 
 /**
  * Minimal, conservative jump-sprint assist for flat straight segments.
- *
- * Design goals:
- * - Never fight movement classes for sprint control
- * - Never touch rotations (no yaw/pitch steering)
- * - Only emit short JUMP pulses when clearly safe and beneficial
  */
 public final class JumpSprintController implements Helper {
 
@@ -58,6 +54,8 @@ public final class JumpSprintController implements Helper {
     private int straightDz = 0;
     private int warmupTilesRemaining = 0;
     private int lastPathIndex = -1;
+    private static final int STABILIZE_TICKS_AFTER_TURN = 4;
+    private int stabilizationTicksRemaining = 0;
 
     /**
      * Apply jump timing for the current tick. Sprint is handled elsewhere.
@@ -72,8 +70,8 @@ public final class JumpSprintController implements Helper {
             return;
         }
 
-        // Only consider flat straight traverses to avoid corner skew. Skip diagonals and others.
-        if (!(movement instanceof MovementTraverse)) {
+        // Consider flat straight traverses and long flat diagonals. Skip other movement types.
+        if (!(movement instanceof MovementTraverse || movement instanceof MovementDiagonal)) {
             return;
         }
 
@@ -106,8 +104,12 @@ public final class JumpSprintController implements Helper {
                 straightDx = dx;
                 straightDz = dz;
                 warmupTilesRemaining = WARMUP_TILES;
+                stabilizationTicksRemaining = STABILIZE_TICKS_AFTER_TURN; // buffer after turn/diagonal change
             } else if (pathAdvanced && warmupTilesRemaining > 0) {
                 warmupTilesRemaining--;
+            }
+            if (pathAdvanced && stabilizationTicksRemaining > 0) {
+                stabilizationTicksRemaining--;
             }
 
             // Require at least one more movement straight ahead in the same flat direction,
@@ -138,6 +140,26 @@ public final class JumpSprintController implements Helper {
                 lastPathIndex = pathPosition;
                 return;
             }
+
+            // Elevation safety: analyze upcoming elevation to decide whether jump-sprint is beneficial
+            ElevationEval eval = evaluateElevationHorizon(ctx, path, pathPosition, dx, dz);
+            // If we are approaching a long climb (lots of ascends), jump-sprint provides little benefit and may destabilize
+            if (eval.ascendHeavy) {
+                behavior.baritone.getInputOverrideHandler().setInputForceState(Input.JUMP, false);
+                behavior.baritone.getInputOverrideHandler().setInputForceState(Input.SPRINT, true);
+                behavior.baritone.getInputOverrideHandler().setInputForceState(Input.MOVE_FORWARD, true);
+                lastPathIndex = pathPosition;
+                return;
+            }
+            // If a dangerous drop is imminent (risk of fall damage), suppress jump-sprint to avoid overshooting the ledge
+            if (eval.dangerousDropSoon) {
+                behavior.baritone.getInputOverrideHandler().setInputForceState(Input.JUMP, false);
+                behavior.baritone.getInputOverrideHandler().setInputForceState(Input.SPRINT, true);
+                behavior.baritone.getInputOverrideHandler().setInputForceState(Input.MOVE_FORWARD, true);
+                lastPathIndex = pathPosition;
+                return;
+            }
+            // If a small safe descend is next, allow downhill jump-sprint; ensure sprint held midair is already handled below
 
             // Two-step lookahead to avoid jumping into an imminent corner or ascend/parkour
             if (pathPosition + 2 < path.length()) {
@@ -173,8 +195,12 @@ public final class JumpSprintController implements Helper {
                 return;
             }
 
-            // Warmup: don't jump yet to stabilize heading
-            if (warmupTilesRemaining > 0) {
+            // Warmup & stabilization: don't jump yet to stabilize heading and lateral velocity
+            double vx = ctx.player().getDeltaMovement().x;
+            double vz = ctx.player().getDeltaMovement().z;
+            double perpVel = Math.abs(vx * (-dz) + vz * dx); // velocity perpendicular to our travel axis
+            boolean lateralVelocityHigh = perpVel > 0.035; // small threshold to avoid oscillation
+            if (warmupTilesRemaining > 0 || stabilizationTicksRemaining > 0 || lateralVelocityHigh) {
                 behavior.baritone.getInputOverrideHandler().setInputForceState(Input.JUMP, false);
                 behavior.baritone.getInputOverrideHandler().setInputForceState(Input.MOVE_FORWARD, true);
                 wasOnGround = onGround;
@@ -182,7 +208,17 @@ public final class JumpSprintController implements Helper {
                 return;
             }
 
-            // Engage: hold jump continuously during straight traverse
+            // For diagonals, preserve midair momentum by not toggling jump while airborne; only ensure sprint
+            if (movement instanceof MovementDiagonal) {
+                if (!onGround) {
+                    behavior.baritone.getInputOverrideHandler().setInputForceState(Input.SPRINT, true);
+                    behavior.baritone.getInputOverrideHandler().setInputForceState(Input.MOVE_FORWARD, true);
+                    lastPathIndex = pathPosition;
+                    return;
+                }
+            }
+
+            // Engage: hold jump continuously during traverse/diagonal on ground
             behavior.baritone.getInputOverrideHandler().setInputForceState(Input.JUMP, true);
             behavior.baritone.getInputOverrideHandler().setInputForceState(Input.MOVE_FORWARD, true);
             ctx.player().setSprinting(true);
@@ -228,6 +264,55 @@ public final class JumpSprintController implements Helper {
             }
         }
         return false;
+    }
+
+    private static final class ElevationEval {
+        final boolean ascendHeavy;
+        final boolean dangerousDropSoon;
+        ElevationEval(boolean ascendHeavy, boolean dangerousDropSoon) {
+            this.ascendHeavy = ascendHeavy;
+            this.dangerousDropSoon = dangerousDropSoon;
+        }
+    }
+
+    private ElevationEval evaluateElevationHorizon(IPlayerContext ctx, IPath path, int pathPosition, int dx, int dz) {
+        // Look ahead up to N positions to measure cumulative ascents and first significant drop
+        final int horizon = Math.min(8, path.length() - pathPosition - 1);
+        if (horizon <= 0) {
+            return new ElevationEval(false, false);
+        }
+        int ascends = 0;
+        int cumulativeClimb = 0;
+        int firstDropMagnitude = 0;
+        BetterBlockPos prev = path.positions().get(pathPosition);
+        for (int i = 1; i <= horizon; i++) {
+            BetterBlockPos cur = path.positions().get(pathPosition + i);
+            int dy = cur.y - prev.y;
+            if (dy > 0) {
+                cumulativeClimb += dy;
+                ascends++;
+            } else if (dy < 0 && firstDropMagnitude == 0) {
+                firstDropMagnitude = -dy; // positive magnitude
+            }
+            prev = cur;
+        }
+
+        // Ascend-heavy if we climb at least 3 blocks within horizon or more than half of upcoming moves are ascends
+        boolean ascendHeavy = cumulativeClimb >= 3 || ascends >= Math.max(2, horizon / 2);
+
+        // Dangerous drop if drop magnitude exceeds allowed no-water fall height
+        boolean dangerousDropSoon = false;
+        if (firstDropMagnitude > 0) {
+            int safeNoWater = Baritone.settings().maxFallHeightNoWater.value + 1; // +1 because landing block reduces effective fall
+            if (firstDropMagnitude > safeNoWater) {
+                // Check if landing in water would mitigate
+                BetterBlockPos landing = path.positions().get(Math.min(pathPosition + 1 + firstDropMagnitude, path.positions().size() - 1));
+                if (!MovementHelper.isWater(BlockStateInterface.get(ctx, landing))) {
+                    dangerousDropSoon = true;
+                }
+            }
+        }
+        return new ElevationEval(ascendHeavy, dangerousDropSoon);
     }
 }
 
