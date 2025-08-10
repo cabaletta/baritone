@@ -244,13 +244,9 @@ public class MovementTraverse extends Movement {
         boolean isTheBridgeBlockThere = MovementHelper.canWalkOn(ctx, positionToPlace) || ladder || MovementHelper.canUseFrostWalker(ctx, positionToPlace);
         BlockPos feet = ctx.playerFeet();
         if (feet.getY() != dest.getY() && !ladder) {
-            logDebug("Wrong Y coordinate");
-            // Always keep sprint held while airborne during a traverse; PathExecutor manages jump timing
+            // When jump-sprinting across flat traverses, being airborne is expected; do not warn.
+            // Keep sprint held while airborne to maintain cadence; PathExecutor manages jump timing.
             state.setInput(Input.SPRINT, true);
-            if (feet.getY() < dest.getY()) {
-                System.out.println("In movement traverse");
-                return state; // jump already held if applicable; keep sprint
-            }
             return state;
         }
 

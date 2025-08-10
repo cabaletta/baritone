@@ -222,7 +222,14 @@ public class PathExecutor implements IPathExecutor, Helper {
             clearKeys();
             return true;
         }
-        MovementStatus movementStatus = movement.update();
+        MovementStatus movementStatus;
+        try {
+            movementStatus = movement.update();
+        } catch (Throwable t) {
+            logDebug("Movement update error: " + t);
+            cancel();
+            return true;
+        }
         if (movementStatus == UNREACHABLE || movementStatus == FAILED) {
             logDebug("Movement returns status " + movementStatus);
             cancel();
@@ -370,8 +377,9 @@ public class PathExecutor implements IPathExecutor, Helper {
 
         // Ensure sprint stays engaged during straight segments when jumpsprint is enabled,
         // but don't force sprint if an ascend/parkour is imminent (let those control cadence)
-        if (Baritone.settings().jumpsprint.value && (current instanceof MovementTraverse || current instanceof MovementDiagonal)) {
-            IMovement next = pathPosition < path.length() - 1 ? path.movements().get(pathPosition + 1) : null;
+        if (Baritone.settings().allowJumpSprint.value && (current instanceof MovementTraverse || current instanceof MovementDiagonal)) {
+            int movementsSize = path.movements().size();
+            IMovement next = pathPosition < movementsSize - 1 ? path.movements().get(pathPosition + 1) : null;
             if (!(next instanceof MovementAscend) && !(next instanceof MovementParkour)) {
                 behavior.baritone.getInputOverrideHandler().setInputForceState(Input.SPRINT, true);
                 return true;
@@ -381,9 +389,11 @@ public class PathExecutor implements IPathExecutor, Helper {
         // (Ascend handled above)
 
         // traverse requests sprinting, so we need to do this check first
-        if (current instanceof MovementTraverse && pathPosition < path.length() - 3) {
-            IMovement next = path.movements().get(pathPosition + 1);
-            if (next instanceof MovementAscend && sprintableAscend(ctx, (MovementTraverse) current, (MovementAscend) next, path.movements().get(pathPosition + 2))) {
+        if (current instanceof MovementTraverse) {
+            int movementsSize = path.movements().size();
+            if (pathPosition < movementsSize - 3) {
+                IMovement next = path.movements().get(pathPosition + 1);
+                if (next instanceof MovementAscend && sprintableAscend(ctx, (MovementTraverse) current, (MovementAscend) next, path.movements().get(pathPosition + 2))) {
                 if (skipNow(ctx, current)) {
                     logDebug("Skipping traverse to straight ascend");
                     pathPosition++;
@@ -393,6 +403,7 @@ public class PathExecutor implements IPathExecutor, Helper {
                     return true;
                 } else {
                     logDebug("Too far to the side to safely sprint ascend");
+                }
                 }
             }
         }
@@ -405,7 +416,8 @@ public class PathExecutor implements IPathExecutor, Helper {
         // however, descend and ascend don't request sprinting, because they don't know the context of what movement comes after it
         if (current instanceof MovementDescend) {
 
-            if (pathPosition < path.length() - 2) {
+            int movementsSize = path.movements().size();
+            if (pathPosition < movementsSize - 2) {
                 // keep this out of onTick, even if that means a tick of delay before it has an effect
                 IMovement next = path.movements().get(pathPosition + 1);
                 if (MovementHelper.canUseFrostWalker(ctx, next.getDest().below())) {
@@ -430,7 +442,7 @@ public class PathExecutor implements IPathExecutor, Helper {
                 return false;
             }
 
-            if (pathPosition < path.length() - 2) {
+            if (pathPosition < movementsSize - 2) {
                 IMovement next = path.movements().get(pathPosition + 1);
                 if (next instanceof MovementAscend && current.getDirection().above().equals(next.getDirection().below())) {
                     // a descend then an ascend in the same direction
@@ -443,7 +455,7 @@ public class PathExecutor implements IPathExecutor, Helper {
                 }
                 if (canSprintFromDescendInto(ctx, current, next)) {
 
-                    if (next instanceof MovementDescend && pathPosition < path.length() - 3) {
+                    if (next instanceof MovementDescend && pathPosition < movementsSize - 3) {
                         IMovement next_next = path.movements().get(pathPosition + 2);
                         if (next_next instanceof MovementDescend && !canSprintFromDescendInto(ctx, next, next_next)) {
                             return false;
@@ -473,7 +485,8 @@ public class PathExecutor implements IPathExecutor, Helper {
                     return true;
                 }
             }
-            if (pathPosition < path.length() - 2 && prev instanceof MovementTraverse && sprintableAscend(ctx, (MovementTraverse) prev, (MovementAscend) current, path.movements().get(pathPosition + 1))) {
+            int movementsSize = path.movements().size();
+            if (pathPosition < movementsSize - 2 && prev instanceof MovementTraverse && sprintableAscend(ctx, (MovementTraverse) prev, (MovementAscend) current, path.movements().get(pathPosition + 1))) {
                 return true;
             }
         }

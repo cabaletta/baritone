@@ -811,7 +811,17 @@ public final class Settings {
     /**
      * Jump while sprinting on flat traverses for extra speed
      */
-    public final Setting<Boolean> jumpsprint = new Setting<>(false);
+    public final Setting<Boolean> allowJumpSprint = new Setting<>(false);
+
+    /**
+     * Allow jump-sprinting on long flat diagonals
+     */
+    public final Setting<Boolean> allowJumpSprintDiagonal = new Setting<>(true);
+
+    /**
+     * Allow head-hit jump pulses under low ceilings to maintain speed
+     */
+    public final Setting<Boolean> allowHeadHits = new Setting<>(true);
 
     /**
      * When GetToBlockProcess or MineProcess fails to calculate a path, instead of just giving up, mark the closest instance

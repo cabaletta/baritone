@@ -56,6 +56,9 @@ public final class JumpSprintController implements Helper {
     private int lastPathIndex = -1;
     private static final int STABILIZE_TICKS_AFTER_TURN = 4;
     private int stabilizationTicksRemaining = 0;
+    private String lastDebugNote = null;
+    private static final int DEBUG_MIN_INTERVAL_TICKS = 20; // limit logs to ~once per second
+    private int lastDebugTick = -100000;
 
     /**
      * Apply jump timing for the current tick. Sprint is handled elsewhere.
@@ -66,12 +69,13 @@ public final class JumpSprintController implements Helper {
                       IPath path,
                       int pathPosition) {
         ticks++;
-        if (!Baritone.settings().jumpsprint.value) {
+        if (!Baritone.settings().allowJumpSprint.value) {
             return;
         }
 
         // Consider flat straight traverses and long flat diagonals. Skip other movement types.
-        if (!(movement instanceof MovementTraverse || movement instanceof MovementDiagonal)) {
+        boolean diagonalAllowed = Baritone.settings().allowJumpSprintDiagonal.value;
+        if (!(movement instanceof MovementTraverse || (diagonalAllowed && movement instanceof MovementDiagonal))) {
             return;
         }
 
@@ -83,6 +87,23 @@ public final class JumpSprintController implements Helper {
             BlockStateInterface bsi = new BlockStateInterface(ctx);
             if (!((Movement) movement).toBreak(bsi).isEmpty() || !((Movement) movement).toPlace(bsi).isEmpty()) {
                 return;
+            }
+
+            // Aggressive low-ceiling boost: if headroom is blocked right now, spam jump while keeping sprint+forward
+            if (Baritone.settings().allowHeadHits.value) {
+                try {
+                    BetterBlockPos headNow = ctx.playerFeet().above();
+                    boolean lowCeilingNow = MovementHelper.avoidWalkingInto(BlockStateInterface.get(ctx, headNow))
+                            || MovementHelper.avoidWalkingInto(BlockStateInterface.get(ctx, headNow.above()));
+                    if (lowCeilingNow) {
+                        behavior.baritone.getInputOverrideHandler().setInputForceState(Input.JUMP, true);
+                        behavior.baritone.getInputOverrideHandler().setInputForceState(Input.SPRINT, true);
+                        behavior.baritone.getInputOverrideHandler().setInputForceState(Input.MOVE_FORWARD, true);
+                        debugOnce("jumpsprint: ceiling mash");
+                        lastPathIndex = pathPosition;
+                        return;
+                    }
+                } catch (Throwable ignored) {}
             }
 
             int dx = Integer.signum(movement.getDest().x - movement.getSrc().x);
@@ -105,6 +126,7 @@ public final class JumpSprintController implements Helper {
                 straightDz = dz;
                 warmupTilesRemaining = WARMUP_TILES;
                 stabilizationTicksRemaining = STABILIZE_TICKS_AFTER_TURN; // buffer after turn/diagonal change
+                debugOnce("jumpsprint: direction changed, warmup+stabilize");
             } else if (pathAdvanced && warmupTilesRemaining > 0) {
                 warmupTilesRemaining--;
             }
@@ -123,10 +145,12 @@ public final class JumpSprintController implements Helper {
             boolean sameFlat = dx == ndx && dz == ndz;
             if (!sameFlat) {
                 // turning soon; let movement logic handle inputs this tick
+                debugOnce("jumpsprint: suppressed (turn next)");
                 lastPathIndex = pathPosition;
                 return;
             }
             if (next instanceof MovementAscend || next instanceof MovementParkour) {
+                debugOnce("jumpsprint: suppressed (ascend/parkour next)");
                 lastPathIndex = pathPosition;
                 return; // let ascend/parkour manage their own jump timing
             }
@@ -137,6 +161,7 @@ public final class JumpSprintController implements Helper {
                 behavior.baritone.getInputOverrideHandler().setInputForceState(Input.JUMP, false);
                 behavior.baritone.getInputOverrideHandler().setInputForceState(Input.SPRINT, true);
                 behavior.baritone.getInputOverrideHandler().setInputForceState(Input.MOVE_FORWARD, true);
+                debugOnce("jumpsprint: suppressed (horizon)");
                 lastPathIndex = pathPosition;
                 return;
             }
@@ -148,16 +173,18 @@ public final class JumpSprintController implements Helper {
                 behavior.baritone.getInputOverrideHandler().setInputForceState(Input.JUMP, false);
                 behavior.baritone.getInputOverrideHandler().setInputForceState(Input.SPRINT, true);
                 behavior.baritone.getInputOverrideHandler().setInputForceState(Input.MOVE_FORWARD, true);
+                debugOnce("jumpsprint: suppressed (ascend-heavy)");
                 lastPathIndex = pathPosition;
                 return;
             }
             // If a dangerous drop is imminent (risk of fall damage), suppress jump-sprint to avoid overshooting the ledge
             if (eval.dangerousDropSoon) {
                 behavior.baritone.getInputOverrideHandler().setInputForceState(Input.JUMP, false);
-                behavior.baritone.getInputOverrideHandler().setInputForceState(Input.SPRINT, true);
-                behavior.baritone.getInputOverrideHandler().setInputForceState(Input.MOVE_FORWARD, true);
+                    behavior.baritone.getInputOverrideHandler().setInputForceState(Input.SPRINT, true);
+                    behavior.baritone.getInputOverrideHandler().setInputForceState(Input.MOVE_FORWARD, true);
+                debugOnce("jumpsprint: suppressed (dangerous drop)");
                 lastPathIndex = pathPosition;
-                return;
+                    return;
             }
             // If a small safe descend is next, allow downhill jump-sprint; ensure sprint held midair is already handled below
 
@@ -169,6 +196,7 @@ public final class JumpSprintController implements Helper {
                 boolean sameFlat2 = dx == ndx2 && dz == ndz2;
                 if (!sameFlat2 || next2 instanceof MovementAscend || next2 instanceof MovementParkour) {
                     // approaching a turn or ascend/parkour; leave inputs untouched for movement/PathExecutor to manage
+                    debugOnce("jumpsprint: suppressed (2-ahead)");
                     lastPathIndex = pathPosition;
                     return;
                 }
@@ -181,6 +209,7 @@ public final class JumpSprintController implements Helper {
                 behavior.baritone.getInputOverrideHandler().setInputForceState(Input.JUMP, false);
                 behavior.baritone.getInputOverrideHandler().setInputForceState(Input.MOVE_FORWARD, true);
                 wasOnGround = ctx.player().onGround();
+                debugOnce("jumpsprint: suppressed (off-center)");
                 return;
             }
 
@@ -191,6 +220,7 @@ public final class JumpSprintController implements Helper {
                 behavior.baritone.getInputOverrideHandler().setInputForceState(Input.JUMP, false);
                 behavior.baritone.getInputOverrideHandler().setInputForceState(Input.MOVE_FORWARD, true);
                 wasOnGround = onGround;
+                debugOnce("jumpsprint: suppressed (near end)");
                 lastPathIndex = pathPosition;
                 return;
             }
@@ -204,6 +234,9 @@ public final class JumpSprintController implements Helper {
                 behavior.baritone.getInputOverrideHandler().setInputForceState(Input.JUMP, false);
                 behavior.baritone.getInputOverrideHandler().setInputForceState(Input.MOVE_FORWARD, true);
                 wasOnGround = onGround;
+                if (warmupTilesRemaining > 0) debugOnce("jumpsprint: warmup");
+                else if (stabilizationTicksRemaining > 0) debugOnce("jumpsprint: stabilize after turn");
+                else debugOnce("jumpsprint: waiting (lateral vel)");
                 lastPathIndex = pathPosition;
                 return;
             }
@@ -213,6 +246,7 @@ public final class JumpSprintController implements Helper {
                 behavior.baritone.getInputOverrideHandler().setInputForceState(Input.JUMP, false);
                 behavior.baritone.getInputOverrideHandler().setInputForceState(Input.SPRINT, true);
                 behavior.baritone.getInputOverrideHandler().setInputForceState(Input.MOVE_FORWARD, true);
+                debugOnce("jumpsprint: suppressed (low headroom ahead)");
                 lastPathIndex = pathPosition;
                 return;
             }
@@ -222,6 +256,7 @@ public final class JumpSprintController implements Helper {
                 if (!onGround) {
                     behavior.baritone.getInputOverrideHandler().setInputForceState(Input.SPRINT, true);
                     behavior.baritone.getInputOverrideHandler().setInputForceState(Input.MOVE_FORWARD, true);
+                    debugOnce("jumpsprint: diagonal air preserve");
                     lastPathIndex = pathPosition;
                     return;
                 }
@@ -231,6 +266,18 @@ public final class JumpSprintController implements Helper {
             behavior.baritone.getInputOverrideHandler().setInputForceState(Input.JUMP, true);
             behavior.baritone.getInputOverrideHandler().setInputForceState(Input.MOVE_FORWARD, true);
             ctx.player().setSprinting(true);
+            debugOnce("jumpsprint: ENGAGE");
+
+            // Ceiling-boost: if there is a low ceiling directly above while sprinting, pulse jump to gain micro speed bursts
+            try {
+                BetterBlockPos head = ctx.playerFeet().above();
+                boolean lowCeiling = MovementHelper.avoidWalkingInto(BlockStateInterface.get(ctx, head))
+                        || MovementHelper.avoidWalkingInto(BlockStateInterface.get(ctx, head.above()));
+                if (lowCeiling) {
+                    behavior.baritone.getInputOverrideHandler().setInputForceState(Input.JUMP, true);
+                }
+            } catch (Throwable ignored) {
+            }
 
             wasOnGround = onGround;
             lastPathIndex = pathPosition;
@@ -238,6 +285,20 @@ public final class JumpSprintController implements Helper {
             logDebug("JumpSprintController suppressed an exception: " + t);
             behavior.baritone.getInputOverrideHandler().setInputForceState(Input.JUMP, false);
         }
+    }
+
+    private void debugOnce(String note) {
+        if (note == null) {
+            return;
+        }
+        // Rate limit: only log if enough ticks passed since last log
+        if ((ticks - lastDebugTick) < DEBUG_MIN_INTERVAL_TICKS) {
+            return;
+        }
+        // Log even if same note (but still rate-limited)
+        logDebug(note);
+        lastDebugNote = note;
+        lastDebugTick = ticks;
     }
 
     private static double lateralOffsetFromCenterXZ(IPlayerContext ctx, BetterBlockPos anchor, int dx, int dz) {
