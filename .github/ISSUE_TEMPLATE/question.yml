@@ -1,0 +1,27 @@
+name: Question
+description: Ask a question RELATED TO BARITONE DEVELOPMENT
+title: "[Question]: "
+labels: ["question"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **README: Before You Submit Your Issue**
+        - Issues are not a place to go ask support questions or start discussions. Please ask support questions or start discussions on the [Discord](http://discord.gg/s6fRBAUpmr).
+  - type: textarea
+    attributes:
+      label: Question
+      description: What do you need help with?
+    validations:
+        required: true
+  - type: checkboxes
+    attributes:
+      label: Guidelines
+      description: Please ensure you've completed all of the following.
+      options:
+        - label: I know how to properly use check boxes.
+          required: true
+        - label: This question is related to Baritone DEVELOPMENT. It is not a support question.
+          required: true
+        - label: I have not used any "OwO"s or "UwU"s in this issue.
+          required: true
