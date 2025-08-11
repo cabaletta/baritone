@@ -263,8 +263,10 @@ public class MovementParkour extends Movement {
             state.setInput(Input.SNEAK, true);
         }
 
-        MovementHelper.moveTowards(src.getCenter().add(0d, 0.5d + ctx.player().getEyeY(), 0d), ctx.playerRotations(), state, dest.getCenter());
-//        MovementHelper.moveTowards(ctx, state, dest);
+        if (Math.abs(ctx.playerFeetAsVec().x() - dest.getCenter().x()) > ctx.playerMotion().x() &&
+                Math.abs(ctx.playerFeetAsVec().z() - dest.getCenter().z()) > ctx.playerMotion().z()) {
+            MovementHelper.moveTowards(ctx, state, dest);
+        }
         if (ctx.playerFeet().equals(dest)) {
             state.setStatus(MovementStatus.SUCCESS);
         } else if (!ctx.playerFeet().equals(src)) {
@@ -289,15 +291,14 @@ public class MovementParkour extends Movement {
                 }
 
                 state.setInput(Input.JUMP, true);
+            } else if (!ctx.playerFeet().equals(dest.relative(direction, -1))) {
+                state.setInput(Input.SPRINT, false);
+                if (ctx.playerFeet().equals(src.relative(direction, -1))) {
+                    MovementHelper.moveTowards(ctx, state, src);
+                } else {
+                    MovementHelper.moveTowards(ctx, state, src.relative(direction, -1));
+                }
             }
-//            else if (!ctx.playerFeet().equals(dest.relative(direction, -1))) {
-//                state.setInput(Input.SPRINT, false);
-//                if (ctx.playerFeet().equals(src.relative(direction, -1))) {
-//                    MovementHelper.moveTowards(ctx, state, src);
-//                } else {
-//                    MovementHelper.moveTowards(ctx, state, src.relative(direction, -1));
-//                }
-//            }
         }
         return state;
     }
