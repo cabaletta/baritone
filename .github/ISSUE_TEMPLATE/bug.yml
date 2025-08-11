@@ -54,7 +54,6 @@ body:
   - type: input
     attributes:
       label: Log File
-      description: Your game's log file
-      placeholder: DO NOT PASTE THE FILE CONTENTS! Copy the file from your file explorer and paste it. If you can't figure out how to do this, use a site like pastebin and include a URL instead.
+      description: Your game's log file. DO NOT PASTE THE FILE CONTENTS! Copy the file from your file explorer and paste it. If you can't figure out how to do this, use a site like pastebin and include a URL instead.
     validations:
       required: true
