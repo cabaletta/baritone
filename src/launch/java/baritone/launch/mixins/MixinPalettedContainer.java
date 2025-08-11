@@ -34,6 +34,7 @@ import java.lang.reflect.Modifier;
 @Mixin(PalettedContainer.class)
 public abstract class MixinPalettedContainer<T> implements IPalettedContainer<T> {
 
+    @Unique
     private static final MethodHandle DATA_GETTER;
 
     // Mixin has no way of referring to the data field and we can't use inheritance

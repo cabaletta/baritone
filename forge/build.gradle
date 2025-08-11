@@ -25,7 +25,7 @@ unimined.minecraft {
         devFallbackNamespace "intermediary"
     }
 
-    forge {
+    minecraftForge {
         loader project.forge_version
         mixinConfig ["mixins.baritone.json"]
     }

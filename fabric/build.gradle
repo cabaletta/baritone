@@ -18,7 +18,7 @@
 import baritone.gradle.task.CreateDistTask
 import baritone.gradle.task.ProguardTask
 
-//archivesBaseName = archivesBaseName + "-fabric"
+archivesBaseName = archivesBaseName + "-fabric"
 
 unimined.minecraft {
     fabric {
