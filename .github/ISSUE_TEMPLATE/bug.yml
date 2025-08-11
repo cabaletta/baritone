@@ -10,7 +10,7 @@ body:
         - Issues are not a place to go ask support questions or start discussions. Please ask support questions or start discussions on the [Discord](http://discord.gg/s6fRBAUpmr).
   - type: textarea
     attributes:
-      label: Describe the bug
+      label: Describe The Bug
       description: A clear and concise description of what the bug is.
     validations:
         required: true
