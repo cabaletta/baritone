@@ -9,18 +9,18 @@ body:
         **README: Before You Submit Your Issue**
         - Issues are not a place to go ask support questions or start discussions. Please ask support questions or start discussions on the [discord](http://discord.gg/s6fRBAUpmr).
   - type: checkboxes
-      attributes:
-        label: Guidelines
-        description: Please ensure you've completed all of the following.
-        options:
-          - label: I know how to properly use check boxes.
-            required: true
-          - label: I have included the version of Minecraft I'm running, baritone's version and forge mods (if used).
-            required: true
-          - label: I have included logs, exceptions, and/or steps to reproduce the issue.
-            required: true
-          - label: I have not used any "OwO"s or "UwU"s in this issue.
-            required: true
+    attributes:
+      label: Guidelines
+      description: Please ensure you've completed all of the following.
+      options:
+        - label: I know how to properly use check boxes.
+          required: true
+        - label: I have included the version of Minecraft I'm running, baritone's version and forge mods (if used).
+          required: true
+        - label: I have included logs, exceptions, and/or steps to reproduce the issue.
+          required: true
+        - label: I have not used any "OwO"s or "UwU"s in this issue.
+          required: true
   - type: textarea
     attributes:
       label: Describe the bug
