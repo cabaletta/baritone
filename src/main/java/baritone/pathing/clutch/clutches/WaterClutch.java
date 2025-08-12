@@ -56,7 +56,6 @@ public final class WaterClutch extends Clutch {
     }
     @Override
     public boolean placeable(CalculationContext context, int x, int y, int z, BlockState block) {
-        System.out.println(block.getCollisionShape(context.world, new BetterBlockPos(x, y, z)));
         VoxelShape shape = block.getShape(context.world, new BetterBlockPos(x, y, z));
         return super.placeable(context, x, y, z, block) &&
                 (!(block.getBlock() instanceof SimpleWaterloggedBlock) ^ (shape.isEmpty() || shape.max(Direction.Axis.Y) < 1d)) &&
