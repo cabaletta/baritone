@@ -1,5 +1,5 @@
 name: Question
-description: Ask a question RELATED TO BARITONE DEVELOPMENT
+description: Ask a question **related to Baritone development**
 title: "[Question]: "
 labels: ["question"]
 body:
@@ -21,7 +21,7 @@ body:
       options:
         - label: I know how to properly use check boxes.
           required: true
-        - label: This question is related to Baritone DEVELOPMENT. It is not a support question.
+        - label: This question is related to **Baritone development**. It is not a support question.
           required: true
         - label: I have not used any "OwO"s or "UwU"s in this issue.
           required: true
