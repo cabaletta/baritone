@@ -37,6 +37,7 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.Optional;
@@ -217,7 +218,7 @@ public class MovementDescend extends Movement {
                     !context.isPossiblyProtected(destX, newY + 1, destZ) &&
                     context.worldBorder.canPlaceAt(destX, destZ) &&
                     MovementHelper.isReplaceable(destX, newY + 1, destZ, aboveBlock, context.bsi) &&
-                    !(aboveBlock.getBlock() instanceof DoublePlantBlock)) {
+                    !aboveBlock.hasProperty(BlockStateProperties.DOUBLE_BLOCK_HALF)) {
                 for (Clutch clutch : ClutchHelper.CLUTCHES) {
                     ItemStack item = clutch.getClutchingItem(context);
                     if (clutch.clutchable(context) &&
