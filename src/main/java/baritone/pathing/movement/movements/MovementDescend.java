@@ -116,9 +116,6 @@ public class MovementDescend extends Movement {
             return;
         }
 
-        if (destDown.getBlock() == Blocks.LADDER || destDown.getBlock() == Blocks.VINE) {
-            return;
-        }
         if (MovementHelper.canUseFrostWalker(context, destDown)) { // no need to check assumeWalkOnWater
             return; // the water will freeze when we try to walk into it
         }
@@ -158,7 +155,6 @@ public class MovementDescend extends Movement {
         int newY;
         for (int fallHeight = context.minFallHeight; (newY = y - fallHeight) >= context.world.getMinBuildHeight(); fallHeight++) {
             BlockState ontoBlock = context.get(destX, newY, destZ);
-            // TODO Why don't we just put this outside the for loop and make it increment by 1 each time?
             if (MovementHelper.canWalkThrough(context, destX, newY, destZ, ontoBlock)) {
                 if (aboveBlockCost.isPresent()) {
                     tentativeCost += aboveBlockCost.get();
@@ -167,6 +163,7 @@ public class MovementDescend extends Movement {
                 }
                 continue;
             }
+            // TODO Why don't we just put this outside the for loop and make it increment by 1 each time?
             int unprotectedFallHeight = fallHeight - (y - effectiveStartHeight); // equal to fallHeight - y + effectiveStartHeight, which is equal to -newY + effectiveStartHeight, which is equal to effectiveStartHeight - newY
             if (context.considerPotionEffects &&
                     context.getBaritone().getPlayerContext().player().hasEffect(MobEffects.SLOW_FALLING)) {
