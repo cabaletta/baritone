@@ -86,6 +86,15 @@ public interface ActionCosts {
         return velocity * multiplier;
     }
 
+    static double velocity(int ticks, double distanceMultiplier, double multiplier, double startingVelocity) {
+        double velocity = startingVelocity;
+        for (int i = 0; i < ticks; i++) {
+            velocity = 0.98 * (velocity + distanceMultiplier);
+        }
+        return velocity * multiplier;
+    }
+
+
     static double distanceToTicks(double distance) {
         if (distance == 0) {
             return 0; // Avoid 0/0 NaN
@@ -102,29 +111,45 @@ public interface ActionCosts {
         }
     }
 
+    static double distanceToTicks(double distance, double distanceMultiplier, double startingVelocity) {
+        if (distance == 0) {
+            return 0d; // Avoid 0/0 NaN
+        }
+        double tmpDistance = distance;
+        int tickCount = 0;
+        while (true) {
+            double velocity = velocity(tickCount, distanceMultiplier, 1d, startingVelocity);
+            if (tmpDistance <= velocity) {
+                return tickCount + tmpDistance / velocity;
+            }
+            tmpDistance -= velocity;
+            tickCount++;
+        }
+    }
+
     static Pair<Double, Double> distanceToTicks(double distance, double endBlockHeight, double endBlockSpeedMultiplier, double startingVelocity) {
         if (distance == 0) {
-            return new Pair<>(0d, 0d);
+            return new Pair<>(0d, startingVelocity);
         }
         double tmpDistance = distance;
         int tickCount = 0;
         boolean firstTick = true;
         while (true) {
-            double fallDistance;
+            double velocity;
             if (tmpDistance < endBlockHeight) {
-                if  (firstTick) {
+                if (firstTick) {
                     firstTick = false;
-                    fallDistance = velocity(tickCount, endBlockSpeedMultiplier, startingVelocity);
+                    velocity = velocity(tickCount, endBlockSpeedMultiplier, startingVelocity);
                 } else {
-                    fallDistance = 0.0784 * endBlockSpeedMultiplier;
+                    velocity = 0.0784 * endBlockSpeedMultiplier;
                 }
             } else {
-                fallDistance = velocity(tickCount, 1d, startingVelocity);
+                velocity = velocity(tickCount, 1d, startingVelocity);
             }
-            if (tmpDistance <= fallDistance) {
-                return new Pair<>(tickCount + tmpDistance / fallDistance, fallDistance);
+            if (tmpDistance <= velocity) {
+                return new Pair<>(tickCount + tmpDistance / velocity, velocity);
             }
-            tmpDistance -= fallDistance;
+            tmpDistance -= velocity;
             tickCount++;
         }
     }
