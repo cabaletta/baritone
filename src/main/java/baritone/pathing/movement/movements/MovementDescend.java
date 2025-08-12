@@ -146,13 +146,17 @@ public class MovementDescend extends Movement {
         if (!MovementHelper.canWalkThrough(context, destX, y - 2, destZ, below)) {
             return;
         }
+        if (context.considerPotionEffects &&
+                context.getBaritone().getPlayerContext().player().hasEffect(MobEffects.LEVITATION)) {
+            return;
+        }
         double tentativeCost = WALK_OFF_BLOCK_COST + frontBreak;
         Optional<Double> aboveBlockCost = Optional.empty();
         boolean aboveBlockPriority = true;
         double velocity = 0;
         int effectiveStartHeight = y;
         int newY;
-        for (int fallHeight = 3; (newY = y - fallHeight) >= context.world.getMinBuildHeight(); fallHeight++) {
+        for (int fallHeight = context.minFallHeight; (newY = y - fallHeight) >= context.world.getMinBuildHeight(); fallHeight++) {
             BlockState ontoBlock = context.get(destX, newY, destZ);
             // TODO Why don't we just put this outside the for loop and make it increment by 1 each time?
             if (MovementHelper.canWalkThrough(context, destX, newY, destZ, ontoBlock)) {
@@ -164,7 +168,6 @@ public class MovementDescend extends Movement {
                 continue;
             }
             int unprotectedFallHeight = fallHeight - (y - effectiveStartHeight); // equal to fallHeight - y + effectiveStartHeight, which is equal to -newY + effectiveStartHeight, which is equal to effectiveStartHeight - newY
-
             if (context.considerPotionEffects &&
                     context.getBaritone().getPlayerContext().player().hasEffect(MobEffects.SLOW_FALLING)) {
                 res.cost = tentativeCost + ActionCosts.distanceToTicks(unprotectedFallHeight, 0.01d, velocity);
@@ -174,79 +177,75 @@ public class MovementDescend extends Movement {
                 res.z = destZ;
                 break;
             }
-
-            boolean reachedMinimum = fallHeight >= context.minFallHeight;
             BlockState aboveBlock = context.get(destX, newY + 1, destZ);
             Optional<Clutch> nonSolidClutchBlock = Optional.empty();
-            if (reachedMinimum) {
-                if (unprotectedFallHeight <= context.maxFallHeightNoClutch &&
-                        MovementHelper.canWalkOn(context, destX, newY, destZ, ontoBlock) &&
-                        !MovementHelper.isBottomSlab(ontoBlock)) {
-                    // fallHeight = 4 means onto.up() is 3 blocks down, which is the max
-                    double newCost = tentativeCost + ActionCosts.distanceToTicks(unprotectedFallHeight, 0.08d, velocity);
-                    if (newCost < res.cost) {
-                        res.cost = newCost;
-                        res.x = destX;
-                        res.y = newY + 1;
-                        res.z = destZ;
-                    }
-                    break;
+            if (unprotectedFallHeight <= context.maxFallHeightNoClutch &&
+                    MovementHelper.canWalkOn(context, destX, newY, destZ, ontoBlock) &&
+                    !MovementHelper.isBottomSlab(ontoBlock)) {
+                // fallHeight = 4 means onto.up() is 3 blocks down, which is the max
+                double newCost = tentativeCost + ActionCosts.distanceToTicks(unprotectedFallHeight, 0.08d, velocity);
+                if (newCost < res.cost) {
+                    res.cost = newCost;
+                    res.x = destX;
+                    res.y = newY + 1;
+                    res.z = destZ;
                 }
-                if (unprotectedFallHeight > context.maxFallHeightNoClutch + 1) {
-                    for (Clutch clutch : ClutchHelper.CLUTCHES) {
-                        if (clutch.compare(ontoBlock) &&
-                                clutch.clutchable(context) &&
-                                clutch.getFallDamage(unprotectedFallHeight) <= context.maxFallHeightNoClutch + 1) {
-                            if (clutch.isSolid(context)) {
-                                double newCost = tentativeCost + clutch.getCost(unprotectedFallHeight, 1d, velocity).first() + clutch.getAdditionalCost();
-                                if (newCost < res.cost) {
-                                    res.cost = newCost;
-                                    res.x = destX;
-                                    res.y = newY + 1;// this is the block we're falling onto, so dest is +1
-                                    res.z = destZ;
-                                    if (clutchRes != null) {
-                                        clutchRes.clutch = clutch;
-                                    }
-                                }
-                            } else {
-                                nonSolidClutchBlock = Optional.of(clutch);
-                            }
-                            break;
-                        }
-                    }
-                }
-                if (unprotectedFallHeight <= context.maxFallHeightClutch + 1 &&
-                        context.allowPlace &&
-                        !context.isPossiblyProtected(destX, newY + 1, destZ) &&
-                        context.worldBorder.canPlaceAt(destX, destZ) &&
-                        MovementHelper.isReplaceable(destX, newY + 1, destZ, aboveBlock, context.bsi) &&
-                        !(aboveBlock.getBlock() instanceof DoublePlantBlock)) {
-                    for (Clutch clutch : ClutchHelper.CLUTCHES) {
-                        ItemStack item = clutch.getClutchingItem(context);
-                        if (clutch.clutchable(context) &&
-                                clutch.getFallDamage(unprotectedFallHeight) <= context.maxFallHeightNoClutch + 1 &&
-                                clutch.placeable(context, destX, newY, destZ, ontoBlock) &&
-                                item != null) {
-                            double newCost = tentativeCost + context.placeBlockCost;
-                            if (clutch.isSolid(context)) {
-                                newCost += ActionCosts.distanceToTicks(unprotectedFallHeight, 0.08d, velocity) + clutch.getAdditionalCost();
-                            } else if (MovementHelper.canWalkOn(context, destX, newY, destZ, ontoBlock)) {
-                                newCost += clutch.getCost(unprotectedFallHeight, 1d, velocity).first();
-                            } else {
-                                continue;
-                            }
+                break;
+            }
+            if (unprotectedFallHeight > context.maxFallHeightNoClutch + 1) {
+                for (Clutch clutch : ClutchHelper.CLUTCHES) {
+                    if (clutch.compare(ontoBlock) &&
+                            clutch.clutchable(context) &&
+                            clutch.getFallDamage(unprotectedFallHeight) <= context.maxFallHeightNoClutch + 1) {
+                        if (clutch.isSolid(context)) {
+                            double newCost = tentativeCost + clutch.getCost(unprotectedFallHeight, 1d, velocity).first() + clutch.getAdditionalCost();
                             if (newCost < res.cost) {
                                 res.cost = newCost;
                                 res.x = destX;
-                                res.y = newY + 1; // TODO Should be +2 but +1 seems to work better since I didn't account for the extra block
+                                res.y = newY + 1;// this is the block we're falling onto, so dest is +1
                                 res.z = destZ;
                                 if (clutchRes != null) {
                                     clutchRes.clutch = clutch;
-                                    clutchRes.item = item;
                                 }
                             }
-                            break;
+                        } else {
+                            nonSolidClutchBlock = Optional.of(clutch);
                         }
+                        break;
+                    }
+                }
+            }
+            if (unprotectedFallHeight <= context.maxFallHeightClutch + 1 &&
+                    context.allowPlace &&
+                    !context.isPossiblyProtected(destX, newY + 1, destZ) &&
+                    context.worldBorder.canPlaceAt(destX, destZ) &&
+                    MovementHelper.isReplaceable(destX, newY + 1, destZ, aboveBlock, context.bsi) &&
+                    !(aboveBlock.getBlock() instanceof DoublePlantBlock)) {
+                for (Clutch clutch : ClutchHelper.CLUTCHES) {
+                    ItemStack item = clutch.getClutchingItem(context);
+                    if (clutch.clutchable(context) &&
+                            clutch.getFallDamage(unprotectedFallHeight) <= context.maxFallHeightNoClutch + 1 &&
+                            clutch.placeable(context, destX, newY, destZ, ontoBlock) &&
+                            item != null) {
+                        double newCost = tentativeCost + context.placeBlockCost;
+                        if (clutch.isSolid(context)) {
+                            newCost += ActionCosts.distanceToTicks(unprotectedFallHeight, 0.08d, velocity) + clutch.getAdditionalCost();
+                        } else if (MovementHelper.canWalkOn(context, destX, newY, destZ, ontoBlock)) {
+                            newCost += clutch.getCost(unprotectedFallHeight, 1d, velocity).first();
+                        } else {
+                            continue;
+                        }
+                        if (newCost < res.cost) {
+                            res.cost = newCost;
+                            res.x = destX;
+                            res.y = newY + 1; // TODO Should be +2 but +1 seems to work better since I didn't account for the extra block
+                            res.z = destZ;
+                            if (clutchRes != null) {
+                                clutchRes.clutch = clutch;
+                                clutchRes.item = item;
+                            }
+                        }
+                        break;
                     }
                 }
             }
