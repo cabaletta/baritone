@@ -78,20 +78,20 @@ public interface ActionCosts {
         return (Math.pow(0.98, ticks) - 1) * -3.92;
     }
 
-    static double velocity(int ticks, double multiplier, double startingVelocity) {
+    static double velocity(int ticks, double startingVelocity) {
         double velocity = startingVelocity;
         for (int i = 0; i < ticks; i++) {
             velocity = 0.98 * (velocity + 0.08);
         }
-        return velocity * multiplier;
+        return velocity;
     }
 
-    static double velocity(int ticks, double distanceMultiplier, double multiplier, double startingVelocity) {
+    static double velocity(int ticks, double distanceMultiplier, double startingVelocity) {
         double velocity = startingVelocity;
         for (int i = 0; i < ticks; i++) {
             velocity = 0.98 * (velocity + distanceMultiplier);
         }
-        return velocity * multiplier;
+        return velocity;
     }
 
 
@@ -118,7 +118,7 @@ public interface ActionCosts {
         double tmpDistance = distance;
         int tickCount = 0;
         while (true) {
-            double velocity = velocity(tickCount, distanceMultiplier, 1d, startingVelocity);
+            double velocity = velocity(tickCount, distanceMultiplier, startingVelocity);
             if (tmpDistance <= velocity) {
                 return tickCount + tmpDistance / velocity;
             }
@@ -139,12 +139,12 @@ public interface ActionCosts {
             if (tmpDistance < endBlockHeight) {
                 if (firstTick) {
                     firstTick = false;
-                    velocity = velocity(tickCount, endBlockSpeedMultiplier, startingVelocity);
+                    velocity = velocity(tickCount, startingVelocity) * endBlockSpeedMultiplier;
                 } else {
                     velocity = 0.0784 * endBlockSpeedMultiplier;
                 }
             } else {
-                velocity = velocity(tickCount, 1d, startingVelocity);
+                velocity = velocity(tickCount, startingVelocity);
             }
             if (tmpDistance <= velocity) {
                 return new Pair<>(tickCount + tmpDistance / velocity, velocity);
