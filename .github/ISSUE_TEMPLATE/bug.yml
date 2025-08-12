@@ -20,6 +20,12 @@ body:
       description: A clear and concise description of what you expected to happen.
     validations:
       required: true
+  - type: textarea
+    attributes:
+      label: Log File
+      description: Your game's log file.
+    validations:
+      required: true
   - type: input
     attributes:
       label: Minecraft Version
@@ -36,12 +42,6 @@ body:
     attributes:
       label: Operating System
       description: Your current operating system.
-    validations:
-      required: true
-  - type: input
-    attributes:
-      label: Log File
-      description: Your game's log file. DO NOT PASTE THE FILE CONTENTS! Copy the file from your file explorer and paste it. If you can't figure out how to do this, use a site like pastebin and include a URL.
     validations:
       required: true
   - type: checkboxes
