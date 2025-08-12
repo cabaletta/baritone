@@ -1,5 +1,5 @@
 name: Question
-description: Ask a question **related to Baritone development**
+description: Ask a question <b>related to Baritone development</b>
 title: "[Question]: "
 labels: ["question"]
 body:
