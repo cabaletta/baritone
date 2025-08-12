@@ -78,14 +78,6 @@ public interface ActionCosts {
         return (Math.pow(0.98, ticks) - 1) * -3.92;
     }
 
-    static double velocity(int ticks, double startingVelocity) {
-        double velocity = startingVelocity;
-        for (int i = 0; i < ticks; i++) {
-            velocity = 0.98 * (velocity + 0.08);
-        }
-        return velocity;
-    }
-
     static double velocity(int ticks, double distanceMultiplier, double startingVelocity) {
         double velocity = startingVelocity;
         for (int i = 0; i < ticks; i++) {
@@ -139,12 +131,12 @@ public interface ActionCosts {
             if (tmpDistance < endBlockHeight) {
                 if (firstTick) {
                     firstTick = false;
-                    velocity = velocity(tickCount, startingVelocity) * endBlockSpeedMultiplier;
+                    velocity = velocity(tickCount, 0.08d, startingVelocity) * endBlockSpeedMultiplier;
                 } else {
-                    velocity = 0.0784 * endBlockSpeedMultiplier;
+                    velocity = 0.0784d * endBlockSpeedMultiplier;
                 }
             } else {
-                velocity = velocity(tickCount, startingVelocity);
+                velocity = velocity(tickCount, 0.08d, startingVelocity);
             }
             if (tmpDistance <= velocity) {
                 return new Pair<>(tickCount + tmpDistance / velocity, velocity);
