@@ -17,6 +17,7 @@
 
 package baritone.pathing.clutch.clutches;
 
+import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.IPlayerContext;
 import baritone.pathing.clutch.ClutchHelper;
 import baritone.pathing.movement.CalculationContext;
@@ -24,12 +25,15 @@ import baritone.pathing.clutch.Clutch;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.utils.pathing.MutableClutchResult;
+import net.minecraft.core.Direction;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SimpleWaterloggedBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.WaterFluid;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 public final class WaterClutch extends Clutch {
     public static final WaterClutch INSTANCE = new WaterClutch();
@@ -52,8 +56,10 @@ public final class WaterClutch extends Clutch {
     }
     @Override
     public boolean placeable(CalculationContext context, int x, int y, int z, BlockState block) {
+        System.out.println(block.getCollisionShape(context.world, new BetterBlockPos(x, y, z)));
+        VoxelShape shape = block.getShape(context.world, new BetterBlockPos(x, y, z));
         return super.placeable(context, x, y, z, block) &&
-                (!(block.getBlock() instanceof SimpleWaterloggedBlock) || MovementHelper.isBottomSlab(block)) &&
+                (!(block.getBlock() instanceof SimpleWaterloggedBlock) ^ (shape.isEmpty() || shape.max(Direction.Axis.Y) < 1d)) &&
                 context.world.dimension() != Level.NETHER;
     }
 
