@@ -23,6 +23,7 @@ import baritone.api.event.events.TickEvent;
 import baritone.api.utils.IInputOverrideHandler;
 import baritone.api.utils.input.Input;
 import baritone.behavior.Behavior;
+import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.player.KeyboardInput;
 
 import java.util.HashMap;
@@ -87,7 +88,7 @@ public final class InputOverrideHandler extends Behavior implements IInputOverri
         if (event.getType() == TickEvent.Type.OUT) {
             return;
         }
-        if (Baritone.settings().stopWhenInventoryOpen.value && ctx.minecraft().screen != null) {
+        if (Baritone.settings().stopWhenInventoryOpen.value && ctx.minecraft().screen instanceof InventoryScreen) {
             ctx.player().input = new KeyboardInput(ctx.minecraft().options);
             return;
         }
