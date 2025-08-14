@@ -46,11 +46,6 @@ public class ScaffoldingClutch extends Clutch {
     }
 
     @Override
-    public boolean hasClutched(IPlayerContext ctx, BetterBlockPos dest) {
-        return super.hasClutched(ctx, dest.above());
-    }
-
-    @Override
     public boolean isFinished(IPlayerContext ctx, MovementState state, MutableClutchResult result) {
         state.setInput(Input.SNEAK, true);
         return ctx.world().getBlockState(ctx.playerFeet()).is(Blocks.SCAFFOLDING);

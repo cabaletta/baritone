@@ -50,11 +50,6 @@ public class SlimeClutch extends Clutch {
     }
 
     @Override
-    public boolean hasClutched(IPlayerContext ctx, BetterBlockPos dest) {
-        return super.hasClutched(ctx, dest.above());
-    }
-
-    @Override
     public boolean isFinished(IPlayerContext ctx, MovementState state, MutableClutchResult result) {
         if (result.phase == 0) {
             state.setInput(Input.JUMP, true);
