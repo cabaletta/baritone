@@ -186,6 +186,7 @@ public final class RotationUtils {
              *
              * or if you're a normal person literally all this does it ensure that we don't nudge the pitch to a normal level
              */
+            // TODO This is a very hacky solution.
             Rotation hypothetical = ctx.playerRotations().add(new Rotation(0, 0.0001F));
             if (wouldSneak) {
                 // the concern here is: what if we're looking at it now, but as soon as we start sneaking we no longer are

@@ -26,7 +26,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
-public final class HayBaleClutch extends Clutch {
+public class HayBaleClutch extends Clutch {
     public static final HayBaleClutch INSTANCE = new HayBaleClutch();
 
     private HayBaleClutch() {}
@@ -44,11 +44,6 @@ public final class HayBaleClutch extends Clutch {
     @Override
     public boolean isSolid(CalculationContext context) {
         return true;
-    }
-
-    @Override
-    public boolean clutched(IPlayerContext ctx, BetterBlockPos dest) {
-        return super.clutched(ctx, dest.above());
     }
 
     @Override

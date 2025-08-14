@@ -18,12 +18,12 @@
 package baritone.pathing.clutch;
 
 import baritone.api.IBaritone;
-import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.input.Input;
 import baritone.pathing.clutch.clutches.*;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.utils.pathing.MutableClutchResult;
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -45,9 +45,12 @@ public interface ClutchHelper {
     };
     ItemStack STACK_EMPTY_BUCKET = new ItemStack(Items.BUCKET);
 
-    static void blockClutch(IBaritone baritone, MovementState state, BetterBlockPos dest, MutableClutchResult result, boolean allowDown) {
+    static boolean blockClutch(IBaritone baritone, MovementState state, BlockPos dest, MutableClutchResult result, boolean allowDown) {
         if (MovementHelper.attemptToPlaceABlock(state, baritone, dest, allowDown, true, false, result.item.getItem()) == MovementHelper.PlaceResult.READY_TO_PLACE) {
             state.setInput(Input.CLICK_RIGHT, true);
+            return true;
+        } else {
+            return false;
         }
     }
 

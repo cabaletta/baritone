@@ -29,7 +29,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
-public final class SlimeClutch extends Clutch {
+public class SlimeClutch extends Clutch {
     public static final SlimeClutch INSTANCE = new SlimeClutch();
 
     private SlimeClutch() {}

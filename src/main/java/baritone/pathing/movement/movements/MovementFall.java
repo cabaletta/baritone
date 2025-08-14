@@ -45,7 +45,7 @@ public class MovementFall extends Movement {
     private final MutableClutchResult clutchResult = new MutableClutchResult();
 
     public MovementFall(IBaritone baritone, BetterBlockPos src, BetterBlockPos dest) {
-        super(baritone, src, dest, MovementFall.buildPositionsToBreak(src, dest));
+        super(baritone, src, dest, MovementFall.buildPositionsToBreak(src, dest)); // TODO add `toPlace` smh
     }
 
     @Override
@@ -82,7 +82,8 @@ public class MovementFall extends Movement {
 
         BlockPos playerFeet = ctx.playerFeet();
         Rotation toDest = RotationUtils.calcRotationFromVec3d(ctx.playerHead(), VecUtils.getBlockPosCenter(dest), ctx.playerRotations());
-        BlockState destState = ctx.world().getBlockState(dest);
+        BetterBlockPos trueDest = clutchResult.placeBelow ? dest.below() : dest;
+        BlockState destState = ctx.world().getBlockState(trueDest);
         if (ctx.world().getBlockState(dest.below()).is(Blocks.MAGMA_BLOCK) && MovementHelper.steppingOnBlocks(ctx).stream().allMatch(block -> MovementHelper.canWalkThrough(ctx, block))) {
             state.setInput(Input.SNEAK, true);
         }
@@ -91,15 +92,13 @@ public class MovementFall extends Movement {
             return state.setStatus(MovementStatus.UNREACHABLE);
         }
         if (clutchResult.clutch != null) {
-            if (clutchResult.clutch.clutched(ctx, dest)) {
+            if ((clutchResult.clutch.compare(destState) || clutchResult.item == null || clutchResult.clutch.clutch(baritone, state, trueDest, clutchResult)) && clutchResult.clutch.clutched(ctx, dest)) {
                 if (clutchResult.clutch.finished(ctx, state, clutchResult)) {
                     clutchResult.reset();
                     return state.setStatus(MovementStatus.SUCCESS);
                 } else {
                     return state;
                 }
-            } else if (!clutchResult.clutch.compare(destState) && clutchResult.item != null) {
-                clutchResult.clutch.clutch(baritone, state, dest, clutchResult);
             }
         } else if (playerFeet.equals(dest)) {
             return state.setStatus(MovementStatus.SUCCESS);

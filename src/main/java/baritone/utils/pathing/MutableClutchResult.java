@@ -17,6 +17,7 @@
 
 package baritone.utils.pathing;
 
+import baritone.api.utils.BetterBlockPos;
 import baritone.pathing.clutch.Clutch;
 import net.minecraft.world.item.ItemStack;
 
@@ -24,6 +25,7 @@ public final class MutableClutchResult {
     public Clutch clutch;
     public ItemStack item;
     public int phase;
+    public boolean placeBelow;
 
     public MutableClutchResult() {
         reset();
@@ -33,5 +35,6 @@ public final class MutableClutchResult {
         clutch = null;
         item = null;
         phase = 0;
+        placeBelow = true;
     }
 }

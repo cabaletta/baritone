@@ -763,13 +763,14 @@ public interface MovementHelper extends ActionCosts, Helper {
                 Rotation place = RotationUtils.calcRotationFromVec3d(wouldSneak ? RayTraceUtils.inferSneakingEyePosition(ctx.player()) : ctx.playerHead(), new Vec3(faceX, faceY, faceZ), ctx.playerRotations());
                 Rotation actual = baritone.getLookBehavior().getAimProcessor().peekRotation(place);
                 HitResult res = RayTraceUtils.rayTraceTowards(ctx.player(), actual, ctx.playerController().getBlockReachDistance(), wouldSneak);
-                if (res != null && res.getType() == HitResult.Type.BLOCK && ((BlockHitResult) res).getBlockPos().equals(against1) && ((BlockHitResult) res).getBlockPos().relative(((BlockHitResult) res).getDirection()).equals(placeAt)) {
+                if (res.getType() == HitResult.Type.BLOCK &&
+                        ((BlockHitResult) res).getBlockPos().equals(against1) &&
+                        ((BlockHitResult) res).getBlockPos().relative(((BlockHitResult) res).getDirection()).equals(placeAt)) {
                     state.setTarget(new MovementTarget(place, true));
                     found = true;
 
                     if (!allowDown || !preferDown) {
-                        // if preferDown is true, we want the last option
-                        // if preferDown is false, we want the first
+                        // if preferDown is true, we want the last option. Otherwise, we want the first.
                         break;
                     }
                 }

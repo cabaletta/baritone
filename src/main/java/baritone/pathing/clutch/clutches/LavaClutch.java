@@ -29,7 +29,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.LavaFluid;
 
-public final class LavaClutch extends Clutch {
+public class LavaClutch extends Clutch {
     public static final LavaClutch INSTANCE = new LavaClutch();
 
     private LavaClutch() {}

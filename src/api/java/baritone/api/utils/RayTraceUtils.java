@@ -50,7 +50,7 @@ public final class RayTraceUtils {
         if (wouldSneak) {
             start = inferSneakingEyePosition(entity);
         } else {
-            start = entity.getEyePosition(1.0F); // do whatever is correct
+            start = entity.getEyePosition();
         }
         
         Vec3 direction = RotationUtils.calcLookDirectionFromRotation(rotation);

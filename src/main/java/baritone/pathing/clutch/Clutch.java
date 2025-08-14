@@ -27,6 +27,7 @@ import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.utils.pathing.MutableClutchResult;
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
@@ -69,11 +70,12 @@ public abstract class Clutch {
         return true;
     }
 
-    public void clutch(IBaritone baritone, MovementState state, BetterBlockPos dest, MutableClutchResult result) {
-        ClutchHelper.blockClutch(baritone, state, dest, result, true);
+    public boolean clutch(IBaritone baritone, MovementState state, BlockPos dest, MutableClutchResult result) {
+        return ClutchHelper.blockClutch(baritone, state, dest, result, true);
     }
 
     public boolean clutched(IPlayerContext ctx, BetterBlockPos dest) {
+        // TODO fix this so it consumes less processing power. See #4834 for more info. Actually, what about hitboxes that aren't perfect?
         return ctx.player().getBoundingBox().intersects(Vec3.atLowerCornerOf(dest), Vec3.atLowerCornerWithOffset(dest, 1, 1, 1));
     }
 

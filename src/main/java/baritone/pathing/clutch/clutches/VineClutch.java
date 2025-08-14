@@ -33,7 +33,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.VineBlock;
 import net.minecraft.world.level.block.state.BlockState;
 
-public final class VineClutch extends Clutch {
+public class VineClutch extends Clutch {
     public static final VineClutch INSTANCE = new VineClutch();
 
     private VineClutch() {
@@ -77,7 +77,7 @@ public final class VineClutch extends Clutch {
     }
 
     @Override
-    public void clutch(IBaritone baritone, MovementState state, BetterBlockPos dest, MutableClutchResult result) {
-        ClutchHelper.blockClutch(baritone, state, dest, result, false);
+    public boolean clutch(IBaritone baritone, MovementState state, BlockPos dest, MutableClutchResult result) {
+        return ClutchHelper.blockClutch(baritone, state, dest, result, false);
     }
 }

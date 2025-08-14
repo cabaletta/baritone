@@ -35,7 +35,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.WaterFluid;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-public final class WaterClutch extends Clutch {
+public class WaterClutch extends Clutch {
+    private static final double WATER_HEIGHT = 0.875d;
     public static final WaterClutch INSTANCE = new WaterClutch();
 
     private WaterClutch() {}
@@ -58,7 +59,7 @@ public final class WaterClutch extends Clutch {
     public boolean placeable(CalculationContext context, int x, int y, int z, BlockState block) {
         VoxelShape shape = block.getShape(context.world, new BetterBlockPos(x, y, z));
         return super.placeable(context, x, y, z, block) &&
-                (!(block.getBlock() instanceof SimpleWaterloggedBlock) ^ (shape.isEmpty() || shape.max(Direction.Axis.Y) < 1d)) &&
+                (!(block.getBlock() instanceof SimpleWaterloggedBlock) ^ (shape.isEmpty() || shape.max(Direction.Axis.Y) < WATER_HEIGHT)) &&
                 context.world.dimension() != Level.NETHER;
     }
 

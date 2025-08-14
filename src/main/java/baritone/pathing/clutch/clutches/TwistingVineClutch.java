@@ -23,7 +23,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
-public final class TwistingVineClutch extends Clutch {
+public class TwistingVineClutch extends Clutch {
     public static final TwistingVineClutch INSTANCE = new TwistingVineClutch();
 
     private TwistingVineClutch() {

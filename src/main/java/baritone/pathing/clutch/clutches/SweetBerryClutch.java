@@ -25,7 +25,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
-public final class SweetBerryClutch extends Clutch {
+public class SweetBerryClutch extends Clutch {
     public static final SweetBerryClutch INSTANCE = new SweetBerryClutch();
 
     private SweetBerryClutch() {

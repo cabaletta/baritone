@@ -25,13 +25,14 @@ import baritone.pathing.clutch.Clutch;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.utils.pathing.MutableClutchResult;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
-public final class LadderClutch extends Clutch {
+public class LadderClutch extends Clutch {
     public static final LadderClutch INSTANCE = new LadderClutch();
 
     private LadderClutch() {
@@ -58,7 +59,7 @@ public final class LadderClutch extends Clutch {
     }
 
     @Override
-    public void clutch(IBaritone baritone, MovementState state, BetterBlockPos dest, MutableClutchResult result) {
-        ClutchHelper.blockClutch(baritone, state, dest, result, false);
+    public boolean clutch(IBaritone baritone, MovementState state, BlockPos dest, MutableClutchResult result) {
+        return ClutchHelper.blockClutch(baritone, state, dest, result, false);
     }
 }

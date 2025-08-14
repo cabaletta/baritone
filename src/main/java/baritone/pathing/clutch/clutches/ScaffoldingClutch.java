@@ -28,7 +28,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
-public final class ScaffoldingClutch extends Clutch {
+public class ScaffoldingClutch extends Clutch {
     public static final ScaffoldingClutch INSTANCE = new ScaffoldingClutch();
 
     private ScaffoldingClutch() {

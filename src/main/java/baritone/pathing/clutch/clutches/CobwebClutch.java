@@ -25,7 +25,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
-public final class CobwebClutch extends Clutch {
+public class CobwebClutch extends Clutch {
     public static final CobwebClutch INSTANCE = new CobwebClutch();
 
     private CobwebClutch() {
@@ -40,10 +40,5 @@ public final class CobwebClutch extends Clutch {
     @Override
     public boolean acceptedItem(Item item) {
         return item.equals(Items.COBWEB);
-    }
-
-    @Override
-    public boolean clutched(IPlayerContext ctx, BetterBlockPos dest) {
-        return super.clutched(ctx, dest.above());
     }
 }

@@ -28,7 +28,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
-public final class PowderedSnowClutch extends Clutch {
+public class PowderedSnowClutch extends Clutch {
     public static final PowderedSnowClutch INSTANCE = new PowderedSnowClutch();
 
     private PowderedSnowClutch() {

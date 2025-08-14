@@ -164,12 +164,10 @@ public class MovementDescend extends Movement {
                 }
                 continue;
             }
-            // TODO Why don't we just put this outside the for loop and make it increment by 1 each time?
-            int unprotectedFallHeight = fallHeight - (y - effectiveStartHeight); // equal to fallHeight - y + effectiveStartHeight, which is equal to -newY + effectiveStartHeight, which is equal to effectiveStartHeight - newY
+            int unprotectedFallHeight = effectiveStartHeight - newY;
             if (context.considerPotionEffects &&
                     context.getBaritone().getPlayerContext().player().hasEffect(MobEffects.SLOW_FALLING)) {
                 res.cost = tentativeCost + ActionCosts.distanceToTicks(unprotectedFallHeight, 0.01d, velocity);
-                System.out.println(res.cost);
                 res.x = destX;
                 res.y = newY + 1;
                 res.z = destZ;
@@ -236,11 +234,12 @@ public class MovementDescend extends Movement {
                         if (newCost < res.cost) {
                             res.cost = newCost;
                             res.x = destX;
-                            res.y = newY + 1; // TODO Should be +2 but +1 seems to work better since I didn't account for the extra block
+                            res.y = newY + 2;
                             res.z = destZ;
                             if (clutchRes != null) {
                                 clutchRes.clutch = clutch;
                                 clutchRes.item = item;
+                                clutchRes.placeBelow = true;
                             }
                         }
                         break;
