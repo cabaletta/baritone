@@ -191,7 +191,7 @@ public class MovementDescend extends Movement {
             if (unprotectedFallHeight > context.maxFallHeightNoClutch + 1) {
                 for (Clutch clutch : ClutchHelper.CLUTCHES) {
                     if (clutch.compare(ontoBlock) &&
-                            clutch.clutchable(context) &&
+                            clutch.isClutchable(context) &&
                             clutch.getFallDamage(unprotectedFallHeight) <= context.maxFallHeightNoClutch + 1) {
                         if (clutch.isSolid(context)) {
                             double newCost = tentativeCost + clutch.getCost(unprotectedFallHeight, 1d, velocity).first() + clutch.getAdditionalCost();
@@ -219,9 +219,9 @@ public class MovementDescend extends Movement {
                     !aboveBlock.hasProperty(BlockStateProperties.DOUBLE_BLOCK_HALF)) {
                 for (Clutch clutch : ClutchHelper.CLUTCHES) {
                     ItemStack item = clutch.getClutchingItem(context);
-                    if (clutch.clutchable(context) &&
+                    if (clutch.isClutchable(context) &&
                             clutch.getFallDamage(unprotectedFallHeight) <= context.maxFallHeightNoClutch + 1 &&
-                            clutch.placeable(context, destX, newY, destZ, ontoBlock) &&
+                            clutch.isPlaceable(context, destX, newY, destZ, ontoBlock) &&
                             item != null) {
                         double newCost = tentativeCost + context.placeBlockCost;
                         if (clutch.isSolid(context)) {

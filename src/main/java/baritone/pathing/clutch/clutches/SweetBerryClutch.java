@@ -33,7 +33,7 @@ public class SweetBerryClutch extends Clutch {
     }
 
     @Override
-    public boolean acceptedItem(Item item) {
+    public boolean isAcceptedItem(Item item) {
         return item.equals(Items.SWEET_BERRIES);
     }
 
@@ -43,7 +43,7 @@ public class SweetBerryClutch extends Clutch {
     }
 
     @Override
-    public boolean placeable(CalculationContext context, int x, int y, int z, BlockState block) {
+    public boolean isPlaceable(CalculationContext context, int x, int y, int z, BlockState block) {
         return block.is(BlockTags.DIRT) || block.is(Blocks.FARMLAND);
     }
 }

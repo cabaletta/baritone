@@ -35,7 +35,7 @@ public class SlimeClutch extends Clutch {
     private SlimeClutch() {}
 
     @Override
-    public boolean acceptedItem(Item item) {
+    public boolean isAcceptedItem(Item item) {
         return item.equals(Items.SLIME_BLOCK);
     }
 
@@ -50,12 +50,12 @@ public class SlimeClutch extends Clutch {
     }
 
     @Override
-    public boolean clutched(IPlayerContext ctx, BetterBlockPos dest) {
-        return super.clutched(ctx, dest.above());
+    public boolean hasClutched(IPlayerContext ctx, BetterBlockPos dest) {
+        return super.hasClutched(ctx, dest.above());
     }
 
     @Override
-    public boolean finished(IPlayerContext ctx, MovementState state, MutableClutchResult result) {
+    public boolean isFinished(IPlayerContext ctx, MovementState state, MutableClutchResult result) {
         if (result.phase == 0) {
             state.setInput(Input.JUMP, true);
             if (ctx.player().isOnGround()) {

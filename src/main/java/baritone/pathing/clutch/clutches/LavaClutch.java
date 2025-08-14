@@ -35,7 +35,7 @@ public class LavaClutch extends Clutch {
     private LavaClutch() {}
 
     @Override
-    public boolean acceptedItem(Item item) {
+    public boolean isAcceptedItem(Item item) {
         return item.equals(Items.LAVA_BUCKET);
     }
 
@@ -45,12 +45,12 @@ public class LavaClutch extends Clutch {
     }
 
     @Override
-    public boolean clutchable(CalculationContext context) {
+    public boolean isClutchable(CalculationContext context) {
         return !context.considerPotionEffects || context.getBaritone().getPlayerContext().player().hasEffect(MobEffects.FIRE_RESISTANCE);
     }
 
     @Override
-    public boolean finished(IPlayerContext ctx, MovementState state, MutableClutchResult result) {
+    public boolean isFinished(IPlayerContext ctx, MovementState state, MutableClutchResult result) {
         return ClutchHelper.bucketPickup(state, ctx.player().getInventory());
     }
 

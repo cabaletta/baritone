@@ -32,7 +32,7 @@ public class HayBaleClutch extends Clutch {
     private HayBaleClutch() {}
 
     @Override
-    public boolean acceptedItem(Item item) {
+    public boolean isAcceptedItem(Item item) {
         return item.equals(Items.HAY_BLOCK);
     }
 

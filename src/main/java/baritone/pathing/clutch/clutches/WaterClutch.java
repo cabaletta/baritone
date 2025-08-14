@@ -22,14 +22,12 @@ import baritone.api.utils.IPlayerContext;
 import baritone.pathing.clutch.ClutchHelper;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.clutch.Clutch;
-import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.utils.pathing.MutableClutchResult;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SimpleWaterloggedBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.WaterFluid;
@@ -42,7 +40,7 @@ public class WaterClutch extends Clutch {
     private WaterClutch() {}
 
     @Override
-    public boolean acceptedItem(Item item) {
+    public boolean isAcceptedItem(Item item) {
         return item.equals(Items.WATER_BUCKET) ||
                 item.equals(Items.AXOLOTL_BUCKET) ||
                 item.equals(Items.COD_BUCKET) ||
@@ -56,15 +54,15 @@ public class WaterClutch extends Clutch {
         return state.getFluidState().getType() instanceof WaterFluid;
     }
     @Override
-    public boolean placeable(CalculationContext context, int x, int y, int z, BlockState block) {
+    public boolean isPlaceable(CalculationContext context, int x, int y, int z, BlockState block) {
         VoxelShape shape = block.getShape(context.world, new BetterBlockPos(x, y, z));
-        return super.placeable(context, x, y, z, block) &&
+        return super.isPlaceable(context, x, y, z, block) &&
                 (!(block.getBlock() instanceof SimpleWaterloggedBlock) ^ (shape.isEmpty() || shape.max(Direction.Axis.Y) < WATER_HEIGHT)) &&
                 context.world.dimension() != Level.NETHER;
     }
 
     @Override
-    public boolean finished(IPlayerContext ctx, MovementState state, MutableClutchResult result) {
+    public boolean isFinished(IPlayerContext ctx, MovementState state, MutableClutchResult result) {
         return ClutchHelper.bucketPickup(state, ctx.player().getInventory());
     }
 

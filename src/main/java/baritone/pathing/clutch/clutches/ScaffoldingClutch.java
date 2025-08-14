@@ -36,7 +36,7 @@ public class ScaffoldingClutch extends Clutch {
 
     }
     @Override
-    public boolean acceptedItem(Item item) {
+    public boolean isAcceptedItem(Item item) {
         return  item.equals(Items.SCAFFOLDING);
     }
 
@@ -46,12 +46,12 @@ public class ScaffoldingClutch extends Clutch {
     }
 
     @Override
-    public boolean clutched(IPlayerContext ctx, BetterBlockPos dest) {
-        return super.clutched(ctx, dest.above());
+    public boolean hasClutched(IPlayerContext ctx, BetterBlockPos dest) {
+        return super.hasClutched(ctx, dest.above());
     }
 
     @Override
-    public boolean finished(IPlayerContext ctx, MovementState state, MutableClutchResult result) {
+    public boolean isFinished(IPlayerContext ctx, MovementState state, MutableClutchResult result) {
         state.setInput(Input.SNEAK, true);
         return ctx.world().getBlockState(ctx.playerFeet()).is(Blocks.SCAFFOLDING);
     }

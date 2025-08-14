@@ -36,7 +36,7 @@ public class PowderedSnowClutch extends Clutch {
     }
 
     @Override
-    public boolean acceptedItem(Item item) {
+    public boolean isAcceptedItem(Item item) {
         return item.equals(Items.POWDER_SNOW_BUCKET);
     }
 
@@ -51,7 +51,7 @@ public class PowderedSnowClutch extends Clutch {
     }
 
     @Override
-    public boolean finished(IPlayerContext ctx, MovementState state, MutableClutchResult result) {
+    public boolean isFinished(IPlayerContext ctx, MovementState state, MutableClutchResult result) {
         return ClutchHelper.bucketPickup(state, ctx.player().getInventory());
     }
 

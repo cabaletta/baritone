@@ -40,7 +40,7 @@ public class LadderClutch extends Clutch {
     }
 
     @Override
-    public boolean acceptedItem(Item item) {
+    public boolean isAcceptedItem(Item item) {
         return item.equals(Items.LADDER);
     }
 
@@ -50,7 +50,7 @@ public class LadderClutch extends Clutch {
     }
 
     @Override
-    public boolean placeable(CalculationContext context, int x, int y, int z, BlockState block) {
+    public boolean isPlaceable(CalculationContext context, int x, int y, int z, BlockState block) {
         return MovementHelper.canPlaceAgainst(context.bsi, x, y, z, block) &&
                 (context.get(x - 1, y + 1, z).isFaceSturdy(context.bsi.access, new BetterBlockPos(x - 1, y + 1, z), Direction.EAST) ||
                         context.get(x + 1, y + 1, z).isFaceSturdy(context.bsi.access, new BetterBlockPos(x + 1, y + 1, z), Direction.WEST) ||

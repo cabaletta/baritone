@@ -41,7 +41,7 @@ public class VineClutch extends Clutch {
     }
 
     @Override
-    public boolean acceptedItem(Item item) {
+    public boolean isAcceptedItem(Item item) {
         return item.equals(Items.VINE);
     }
 
@@ -68,8 +68,8 @@ public class VineClutch extends Clutch {
     }
 
     @Override
-    public boolean placeable(CalculationContext context, int x, int y, int z, BlockState block) {
-        return super.placeable(context, x, y, z, block) &&
+    public boolean isPlaceable(CalculationContext context, int x, int y, int z, BlockState block) {
+        return super.isPlaceable(context, x, y, z, block) &&
                 (canSupportAtFace(context.bsi.access, new BetterBlockPos(x - 1, y + 1, z), Direction.WEST) ||
                         canSupportAtFace(context.bsi.access, new BetterBlockPos(x + 1, y + 1, z), Direction.EAST) ||
                         canSupportAtFace(context.bsi.access, new BetterBlockPos(x, y + 1, z - 1), Direction.NORTH) ||

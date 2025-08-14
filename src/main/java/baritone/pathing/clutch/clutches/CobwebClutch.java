@@ -38,7 +38,7 @@ public class CobwebClutch extends Clutch {
     }
 
     @Override
-    public boolean acceptedItem(Item item) {
+    public boolean isAcceptedItem(Item item) {
         return item.equals(Items.COBWEB);
     }
 }

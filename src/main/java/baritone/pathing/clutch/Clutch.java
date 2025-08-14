@@ -47,14 +47,14 @@ public abstract class Clutch {
     public final ItemStack getClutchingItem(CalculationContext context) { // We could return the slot instead of the item
         for (int slot = 0; slot < (Baritone.settings().allowInventory.value ? 36 : 9); slot++) {
             ItemStack item = context.getBaritone().getPlayerContext().player().getInventory().items.get(slot);
-            if (acceptedItem(item.getItem())) {
+            if (isAcceptedItem(item.getItem())) {
                 return item;
             }
         }
         return null;
     }
 
-    public abstract boolean acceptedItem(Item stack);
+    public abstract boolean isAcceptedItem(Item stack);
 
     public abstract boolean compare(BlockState state);
 
@@ -62,11 +62,11 @@ public abstract class Clutch {
         return false;
     }
 
-    public boolean placeable(CalculationContext context, int x, int y, int z, BlockState block) {
+    public boolean isPlaceable(CalculationContext context, int x, int y, int z, BlockState block) {
         return MovementHelper.canPlaceAgainst(context.bsi, x, y, z, block);
     }
 
-    public boolean clutchable(CalculationContext context) {
+    public boolean isClutchable(CalculationContext context) {
         return true;
     }
 
@@ -74,12 +74,11 @@ public abstract class Clutch {
         return ClutchHelper.blockClutch(baritone, state, dest, result, true);
     }
 
-    public boolean clutched(IPlayerContext ctx, BetterBlockPos dest) {
-        // TODO fix this so it consumes less processing power. See #4834 for more info. Actually, what about hitboxes that aren't perfect?
+    public boolean hasClutched(IPlayerContext ctx, BetterBlockPos dest) {
         return ctx.player().getBoundingBox().intersects(Vec3.atLowerCornerOf(dest), Vec3.atLowerCornerWithOffset(dest, 1, 1, 1));
     }
 
-    public boolean finished(IPlayerContext ctx, MovementState state, MutableClutchResult result) {
+    public boolean isFinished(IPlayerContext ctx, MovementState state, MutableClutchResult result) {
         return true;
     }
 
