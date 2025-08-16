@@ -42,11 +42,12 @@ public interface ClutchHelper {
             SlimeClutch.INSTANCE,
             HayBaleClutch.INSTANCE,
             CobwebClutch.INSTANCE,
+            BlockClutch.INSTANCE,
     };
     ItemStack STACK_EMPTY_BUCKET = new ItemStack(Items.BUCKET);
 
     static boolean blockClutch(IBaritone baritone, MovementState state, BlockPos dest, MutableClutchResult result, boolean allowDown) {
-        if (MovementHelper.attemptToPlaceABlock(state, baritone, dest, allowDown, true, false, result.item.getItem()) == MovementHelper.PlaceResult.READY_TO_PLACE) {
+        if (MovementHelper.attemptToPlaceABlock(state, baritone, dest, allowDown, true, true, result.item.getItem()) == MovementHelper.PlaceResult.READY_TO_PLACE) {
             state.setInput(Input.CLICK_RIGHT, true);
             return true;
         } else {

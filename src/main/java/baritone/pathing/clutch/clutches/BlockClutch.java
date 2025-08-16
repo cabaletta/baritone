@@ -17,28 +17,29 @@
 
 package baritone.pathing.clutch.clutches;
 
-import baritone.api.utils.BetterBlockPos;
-import baritone.api.utils.IPlayerContext;
 import baritone.pathing.clutch.Clutch;
 import baritone.pathing.movement.CalculationContext;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
-public class HayBaleClutch extends Clutch {
-    public static final HayBaleClutch INSTANCE = new HayBaleClutch();
+public class BlockClutch extends Clutch {
+    public static final BlockClutch INSTANCE = new BlockClutch();
 
-    private HayBaleClutch() {}
+    private BlockClutch() {}
 
     @Override
     public boolean isAcceptedItem(Item item) {
-        return item.equals(Items.HAY_BLOCK);
+        if (item instanceof BlockItem blockItem) {
+            return !blockItem.getBlock().defaultBlockState().getCollisionShape(null, null).isEmpty();
+        } else {
+            return false;
+        }
     }
 
     @Override
     public boolean compare(BlockState state) {
-        return state.is(Blocks.HAY_BLOCK);
+        return !state.getCollisionShape(null, null).isEmpty();
     }
 
     @Override
@@ -48,6 +49,6 @@ public class HayBaleClutch extends Clutch {
 
     @Override
     public float getFallDamage(int fallDamage) {
-        return fallDamage * 0.2f;
+        return fallDamage;
     }
 }

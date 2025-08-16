@@ -54,7 +54,7 @@ public abstract class Clutch {
         return null;
     }
 
-    public abstract boolean isAcceptedItem(Item stack);
+    public abstract boolean isAcceptedItem(Item item);
 
     public abstract boolean compare(BlockState state);
 
@@ -64,10 +64,6 @@ public abstract class Clutch {
 
     public boolean isPlaceable(CalculationContext context, int x, int y, int z, BlockState block) {
         return MovementHelper.canPlaceAgainst(context.bsi, x, y, z, block);
-    }
-
-    public boolean isClutchable(CalculationContext context) {
-        return true;
     }
 
     public boolean clutch(IBaritone baritone, MovementState state, BlockPos dest, MutableClutchResult result) {
@@ -82,7 +78,7 @@ public abstract class Clutch {
         return true;
     }
 
-    public float getFallDamage(int fallHeight) {
+    public float getFallDamage(int fallDamage) {
         return 0f;
     }
 

@@ -45,8 +45,9 @@ public class LavaClutch extends Clutch {
     }
 
     @Override
-    public boolean isClutchable(CalculationContext context) {
-        return !context.considerPotionEffects || context.getBaritone().getPlayerContext().player().hasEffect(MobEffects.FIRE_RESISTANCE);
+    public boolean isPlaceable(CalculationContext context, int x, int y, int z, BlockState block) {
+        return (!context.considerPotionEffects || context.getBaritone().getPlayerContext().player().hasEffect(MobEffects.FIRE_RESISTANCE)) &&
+                super.isPlaceable(context, x, y, z, block);
     }
 
     @Override
