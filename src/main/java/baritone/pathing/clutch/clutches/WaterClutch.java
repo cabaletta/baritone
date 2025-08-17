@@ -19,7 +19,7 @@ package baritone.pathing.clutch.clutches;
 
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.IPlayerContext;
-import baritone.pathing.clutch.ClutchHelper;
+import baritone.pathing.clutch.ClutchUtils;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.clutch.Clutch;
 import baritone.pathing.movement.MovementState;
@@ -34,7 +34,7 @@ import net.minecraft.world.level.material.WaterFluid;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class WaterClutch extends Clutch {
-    private static final double WATER_HEIGHT = 0.875d;
+    private static final double WATER_HEIGHT = 0.875d; // TODO confirm if this value is accurate
     public static final WaterClutch INSTANCE = new WaterClutch();
 
     private WaterClutch() {}
@@ -63,7 +63,7 @@ public class WaterClutch extends Clutch {
 
     @Override
     public boolean isFinished(IPlayerContext ctx, MovementState state, MutableClutchResult result) {
-        return ClutchHelper.bucketPickup(state, ctx.player().getInventory());
+        return ClutchUtils.bucketPickup(state, ctx.player().getInventory());
     }
 
     @Override

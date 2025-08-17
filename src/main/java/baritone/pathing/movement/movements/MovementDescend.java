@@ -26,7 +26,7 @@ import baritone.api.utils.Pair;
 import baritone.api.utils.RotationUtils;
 import baritone.api.utils.input.Input;
 import baritone.pathing.clutch.Clutch;
-import baritone.pathing.clutch.ClutchHelper;
+import baritone.pathing.clutch.ClutchUtils;
 import baritone.pathing.movement.*;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.pathing.MutableClutchResult;
@@ -168,7 +168,6 @@ public class MovementDescend extends Movement {
                 continue;
             }
             int unprotectedFallHeight = effectiveStartHeight - 1 - newY;
-            System.out.println("unprotectedFallHeight: " + unprotectedFallHeight);
             if (context.considerPotionEffects && player.hasEffect(MobEffects.SLOW_FALLING)) {
                 res.cost = tentativeCost + ActionCosts.distanceToTicks(unprotectedFallHeight, 0.01d, velocity);
                 res.x = destX;
@@ -192,7 +191,7 @@ public class MovementDescend extends Movement {
             BlockState aboveBlock = context.get(destX, newY + 1, destZ);
             Optional<Clutch> nonSolidClutchBlock = Optional.empty();
             if (unprotectedFallHeight > context.maxFallHeightNoClutch) {
-                for (Clutch clutch : ClutchHelper.CLUTCHES) {
+                for (Clutch clutch : ClutchUtils.CLUTCHES) {
                     if (clutch.compare(ontoBlock) &&
                             clutch.getFallDamage(unprotectedFallHeight) <= context.maxFallHeightNoClutch) {
                         if (clutch.isSolid(context)) {
@@ -219,7 +218,7 @@ public class MovementDescend extends Movement {
                     context.worldBorder.canPlaceAt(destX, destZ) &&
                     MovementHelper.isReplaceable(destX, newY + 1, destZ, aboveBlock, context.bsi) &&
                     !aboveBlock.hasProperty(BlockStateProperties.DOUBLE_BLOCK_HALF)) {
-                for (Clutch clutch : ClutchHelper.CLUTCHES) {
+                for (Clutch clutch : ClutchUtils.CLUTCHES) {
                     ItemStack item = clutch.getClutchingItem(context);
                     if (clutch.getFallDamage(unprotectedFallHeight - 1) <= context.maxFallHeightNoClutch &&
                             clutch.isPlaceable(context, destX, newY, destZ, ontoBlock) &&

@@ -19,7 +19,7 @@ package baritone.pathing.clutch.clutches;
 
 import baritone.api.utils.IPlayerContext;
 import baritone.pathing.clutch.Clutch;
-import baritone.pathing.clutch.ClutchHelper;
+import baritone.pathing.clutch.ClutchUtils;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.MovementState;
 import baritone.utils.pathing.MutableClutchResult;
@@ -52,7 +52,7 @@ public class LavaClutch extends Clutch {
 
     @Override
     public boolean isFinished(IPlayerContext ctx, MovementState state, MutableClutchResult result) {
-        return ClutchHelper.bucketPickup(state, ctx.player().getInventory());
+        return ClutchUtils.bucketPickup(state, ctx.player().getInventory());
     }
 
     @Override

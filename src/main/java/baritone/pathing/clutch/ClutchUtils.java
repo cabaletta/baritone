@@ -28,7 +28,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
-public interface ClutchHelper {
+public interface ClutchUtils {
     // This list holds the order to try the clutches in. More convenient clutches should go further up.
     Clutch[] CLUTCHES = new Clutch[]{
             WaterClutch.INSTANCE,

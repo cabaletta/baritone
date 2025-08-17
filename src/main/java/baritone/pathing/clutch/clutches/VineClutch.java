@@ -19,7 +19,7 @@ package baritone.pathing.clutch.clutches;
 
 import baritone.api.IBaritone;
 import baritone.api.utils.BetterBlockPos;
-import baritone.pathing.clutch.ClutchHelper;
+import baritone.pathing.clutch.ClutchUtils;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.clutch.Clutch;
 import baritone.pathing.movement.MovementState;
@@ -78,6 +78,6 @@ public class VineClutch extends Clutch {
 
     @Override
     public boolean clutch(IBaritone baritone, MovementState state, BlockPos dest, MutableClutchResult result) {
-        return ClutchHelper.blockClutch(baritone, state, dest, result, false);
+        return ClutchUtils.blockClutch(baritone, state, dest, result, false);
     }
 }
