@@ -23,7 +23,7 @@ body:
   - type: textarea
     attributes:
       label: Log File
-      description: Your game's log file.
+      description: Your game's log file. Drag and drop the file into the text box. Do NOT paste the contents of the log file.
     validations:
       required: true
   - type: input
