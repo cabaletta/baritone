@@ -84,7 +84,8 @@ public class MovementFall extends Movement {
         Rotation toDest = RotationUtils.calcRotationFromVec3d(ctx.playerHead(), VecUtils.getBlockPosCenter(dest), ctx.playerRotations());
         BetterBlockPos trueDest = clutchResult.placeBelow ? dest.below() : dest;
         BlockState destState = ctx.world().getBlockState(trueDest);
-        if (ctx.world().getBlockState(dest.below()).is(Blocks.MAGMA_BLOCK) && MovementHelper.steppingOnBlocks(ctx).stream().allMatch(block -> MovementHelper.canWalkThrough(ctx, block))) {
+        if (ctx.world().getBlockState(dest.below()).is(Blocks.MAGMA_BLOCK) &&
+                MovementHelper.steppingOnBlocks(ctx).stream().allMatch(block -> MovementHelper.canWalkThrough(ctx, block))) {
             state.setInput(Input.SNEAK, true);
         }
         updateClutch();
@@ -92,7 +93,10 @@ public class MovementFall extends Movement {
             return state.setStatus(MovementStatus.UNREACHABLE);
         }
         if (clutchResult.clutch != null) {
-            if ((clutchResult.clutch.compare(destState) || clutchResult.item == null || clutchResult.clutch.clutch(baritone, state, trueDest, clutchResult)) && clutchResult.clutch.hasClutched(ctx, dest)) {
+            if ((clutchResult.clutch.compare(destState) ||
+                    clutchResult.item == null ||
+                    clutchResult.clutch.clutch(baritone, state, trueDest, clutchResult)
+            ) && clutchResult.clutch.hasClutched(ctx, dest)) {
                 if (clutchResult.clutch.isFinished(ctx, state, clutchResult)) {
                     clutchResult.reset();
                     return state.setStatus(MovementStatus.SUCCESS);

@@ -741,17 +741,6 @@ public interface MovementHelper extends ActionCosts, Helper {
         return false;
     }
 
-    static Direction[] canPlace(BlockStateInterface bsi, BlockPos pos) {
-        List<Direction> availableDirections = new ArrayList<>();
-        for (Direction direction : HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP) {
-            BlockPos against = pos.relative(direction);
-            if (canPlaceAgainst(bsi, against)) {
-                availableDirections.add(direction);
-            }
-        }
-        return availableDirections.toArray(Direction[]::new);
-    }
-
     static PlaceResult attemptToPlaceABlock(MovementState state, IBaritone baritone, BlockPos placeAt, boolean allowDown, boolean preferDown, boolean wouldSneak, Item customItem) {
         IPlayerContext ctx = baritone.getPlayerContext();
         Optional<Rotation> direct = RotationUtils.reachable(ctx, placeAt, wouldSneak); // we assume that if there is a block there, it must be replaceable

@@ -164,7 +164,6 @@ public class MovementDescend extends Movement {
                     aboveBlockCost = Optional.empty();
                     aboveBlockPriority = true;
                 }
-                Direction[] availableDirections = MovementHelper.canPlace(context.bsi, new BetterBlockPos(destX, newY, destZ));
                 continue;
             }
             int unprotectedFallHeight = effectiveStartHeight - 1 - newY;

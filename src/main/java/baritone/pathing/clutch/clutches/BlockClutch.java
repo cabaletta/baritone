@@ -30,11 +30,8 @@ public class BlockClutch extends Clutch {
 
     @Override
     public boolean isAcceptedItem(Item item) {
-        if (item instanceof BlockItem blockItem) {
-            return !blockItem.getBlock().defaultBlockState().getCollisionShape(null, null).isEmpty();
-        } else {
-            return false;
-        }
+        return item instanceof BlockItem blockItem &&
+                !blockItem.getBlock().defaultBlockState().getCollisionShape(null, null).isEmpty();
     }
 
     @Override
