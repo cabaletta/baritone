@@ -58,6 +58,7 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.*;
+import java.util.concurrent.Semaphore;
 
 import static baritone.api.pathing.movement.ActionCosts.COST_INF;
 
@@ -73,6 +74,7 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
     private boolean allowAboveBuildLimit;
     private boolean allowAboveRoof;
     private IElytraContextFactory contextFactory;
+    private final Semaphore behaviorSema = new Semaphore(1);
 
     @Override
     public void onLostControl() {
@@ -315,7 +317,10 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
         ElytraBehavior behavior = this.behavior;
         if (behavior != null) {
             this.behavior = null;
-            Baritone.getExecutor().execute(behavior::destroy);
+            Baritone.getExecutor().execute(() -> {
+                behavior.destroy();
+                behaviorSema.release();
+            });
         }
     }
 
@@ -355,7 +360,10 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
         this.allowTight = Baritone.settings().elytraAllowTightSpaces.value;
         this.allowAboveBuildLimit = Baritone.settings().elytraAllowAboveBuildLimit.value;
         this.allowAboveRoof = Baritone.settings().elytraAllowAboveRoof.value;
+
+        this.behaviorSema.acquireUninterruptibly();
         this.behavior = new ElytraBehavior(this.baritone, this, getContextFactory().create(ctx, baritone.getWorldProvider().getCurrentWorld().directory.resolve("cache")), destination, appendDestination);
+
         if (ctx.world() != null) {
             this.behavior.repackChunks();
         }
