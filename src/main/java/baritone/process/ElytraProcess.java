@@ -71,6 +71,7 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
     private boolean predictingTerrain;
     private boolean allowTight;
     private boolean allowAboveBuildLimit;
+    private boolean allowAboveRoof;
     private IElytraContextFactory contextFactory;
 
     @Override
@@ -131,6 +132,11 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
         if (allowAboveBuildLimit != Baritone.settings().elytraAllowAboveBuildLimit.value) {
             logDirect("elytraAllowAboveBuildLimit setting changed, recalculating path from scratch");
             allowAboveBuildLimit = Baritone.settings().elytraAllowAboveBuildLimit.value;
+            this.resetState();
+        }
+        if (allowAboveRoof != Baritone.settings().elytraAllowAboveRoof.value && ctx.player().level.dimension() == Level.NETHER) {
+            logDirect("elytraAllowAboveRoof setting changed, recalculating path from scratch");
+            allowAboveRoof = Baritone.settings().elytraAllowAboveRoof.value;
             this.resetState();
         }
 
@@ -348,6 +354,7 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
         this.predictingTerrain = ctx.player().level.dimension() == Level.NETHER && Baritone.settings().elytraPredictTerrain.value;
         this.allowTight = Baritone.settings().elytraAllowTightSpaces.value;
         this.allowAboveBuildLimit = Baritone.settings().elytraAllowAboveBuildLimit.value;
+        this.allowAboveRoof = Baritone.settings().elytraAllowAboveRoof.value;
         this.behavior = new ElytraBehavior(this.baritone, this, getContextFactory().create(ctx, baritone.getWorldProvider().getCurrentWorld().directory.resolve("cache")), destination, appendDestination);
         if (ctx.world() != null) {
             this.behavior.repackChunks();
@@ -427,6 +434,11 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
     @Override
     public IElytraContextFactory getContextFactory() {
         if(this.contextFactory == null) {
+            if(ctx.world().dimension() == Level.NETHER) {
+                return Baritone.settings().elytraAllowAboveRoof.value && Baritone.settings().elytraAllowAboveBuildLimit.value
+                        ? new SkyPathfinderContextFactory()
+                        : new NetherPathfinderContextFactory();
+            }
             return Baritone.settings().elytraAllowAboveBuildLimit.value ? new SkyPathfinderContextFactory() : new NetherPathfinderContextFactory();
         }
         return this.contextFactory;
