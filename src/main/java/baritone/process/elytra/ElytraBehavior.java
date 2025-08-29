@@ -159,9 +159,7 @@ public final class ElytraBehavior implements Helper {
                 this.ticksNearUnchanged = 0;
             }
 
-            int minY = ctx.world().dimensionType().minY();
-            int y = ctx.playerFeet().y;
-            if (y >= minY && y < minY + context.getMaxHeight()) {
+            if(ctx.playerFeet().y >= ctx.world().dimensionType().minY()) {
                 // Obstacles are more important than an incomplete path, handle those first.
                 this.pathfindAroundObstacles();
                 this.attemptNextSegment();
@@ -374,7 +372,9 @@ public final class ElytraBehavior implements Helper {
             }
 
             final int last = this.path.size() - 1;
-            if (!this.completePath && ctx.world().isLoaded(this.path.get(last))) {
+            final BetterBlockPos lastPos = this.path.get(this.path.size() - 1);
+            // `ctx.world().isLoaded` cannot be used here as it returns false is the y-value is beyond the build limits.
+            if (!this.completePath && ctx.world().getChunkSource().hasChunk(lastPos.x >> 4,lastPos.z >> 4)) {
                 this.pathNextSegment(last);
             }
         }

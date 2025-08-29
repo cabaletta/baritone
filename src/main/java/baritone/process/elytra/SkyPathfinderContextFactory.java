@@ -17,26 +17,21 @@
 
 package baritone.process.elytra;
 
-import baritone.Baritone;
 import baritone.api.pathing.elytra.IElytraContextFactory;
 import baritone.api.utils.IPlayerContext;
 
 import java.nio.file.Path;
 
-public class NetherPathfinderContextFactory implements IElytraContextFactory {
+public class SkyPathfinderContextFactory implements IElytraContextFactory {
 
     @Override
-    public NetherPathfinderContext create(IPlayerContext ctx, Path cacheDir) {
-        return new NetherPathfinderContext(
-                Baritone.settings().elytraNetherSeed.value,
-                Baritone.settings().elytraUseCache.value ? cacheDir : null,
-                ctx.world()
-        );
+    public SkyPathfinderContext create(IPlayerContext ctx, Path cacheDir) {
+        return new SkyPathfinderContext(ctx, cacheDir);
     }
 
     @Override
     public String toString() {
-        return "NetherPathfinderContextFactory{}";
+        return "CustomPathfinderContextFactory{}";
     }
 
 }

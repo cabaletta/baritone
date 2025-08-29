@@ -35,13 +35,10 @@ public interface IElytraPathfinderContext {
                             final double endX, final double endY, final double endZ);
     public boolean raytrace(final Vec3 start, final Vec3 end);
     public boolean raytrace(final int count, final double[] src, final double[] dst, final int visibility);
-    public void raytrace(final int count, final double[] src, final double[] dst, final boolean[] hitsOut, final double[] hitPosOut);
     public void cancel();
     public void destroy();
     public long getSeed();
 
-
-    // zi: It appears only the read lock is used outside of the context
     public void RLock();
     public void RUnlock();
 

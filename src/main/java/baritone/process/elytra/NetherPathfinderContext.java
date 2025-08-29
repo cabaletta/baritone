@@ -35,7 +35,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.level.chunk.PalettedContainer;
-import net.minecraft.world.level.material.Material;
 import net.minecraft.world.phys.Vec3;
 import sun.misc.Unsafe;
 
@@ -72,7 +71,7 @@ public final class NetherPathfinderContext implements IElytraPathfinderContext {
     public final ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
     public final ReentrantReadWriteLock.ReadLock readLock = rwl.readLock();
     public final ReentrantReadWriteLock.WriteLock writeLock = rwl.writeLock();
-    public final int maxHeight;
+    private final int maxHeight;
 
     // Visible for access in BlockStateOctreeInterface
     final long context;
@@ -173,7 +172,7 @@ public final class NetherPathfinderContext implements IElytraPathfinderContext {
                         false, // refine
                         10000, // timeoutMs
                         !generate, // useAirIfChunkNotLoaded
-                        // TODO: Determine appropiate cost value
+                        // TODO: Determine appropriate cost value
                         8.0 // fakeChunkCost
                 );
                 if (segment == null) {
