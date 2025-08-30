@@ -530,7 +530,7 @@ public final class ElytraBehavior implements Helper {
         this.pendingSolution = null;
         if (this.solver != null) {
             try {
-                this.pendingSolution = this.solver.get();
+                this.pendingSolution = this.solver.get(50 * 5, TimeUnit.MILLISECONDS);
             } catch (Exception ignored) {
                 // it doesn't matter if get() fails since the solution can just be recalculated synchronously
             } finally {
