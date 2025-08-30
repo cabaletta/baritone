@@ -41,12 +41,8 @@ allprojects {
         println "Detected version " + version
     }
     group = rootProject.maven_group
-    
-    java {
-        toolchain {
-            languageVersion.set(JavaLanguageVersion.of(sourceCompatibility.majorVersion.toInteger()))
-        }
-    }
+
+    java.toolchain.languageVersion = JavaLanguageVersion.of(sourceCompatibility.majorVersion.toInteger())
 
     repositories {
         maven {
@@ -112,7 +108,7 @@ unimined.minecraft {
     defaultRemapJar = false
 }
 
-//archivesBaseName = archivesBaseName + "-common"
+archivesBaseName = archivesBaseName + "-common"
 
 sourceSets {
     api {

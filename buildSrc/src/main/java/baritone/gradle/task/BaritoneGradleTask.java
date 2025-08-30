@@ -108,7 +108,7 @@ class BaritoneGradleTask extends DefaultTask {
     }
 
     protected Path getRelativeFile(String file) {
-        return Paths.get(new File(getProject().getBuildDir(), file).getAbsolutePath());
+        return getProject().getLayout().getBuildDirectory().file(file).get().getAsFile().toPath();
     }
 
     protected Path getRootRelativeFile(String file) {
