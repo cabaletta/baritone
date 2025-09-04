@@ -19,6 +19,8 @@ package baritone.process.elytra;
 
 import baritone.Baritone;
 import baritone.api.event.events.BlockChangeEvent;
+import baritone.api.pathing.elytra.IElytraPathfinderContext;
+import baritone.api.pathing.elytra.UnpackedSegment;
 import baritone.utils.accessor.IPalettedContainer;
 import dev.babbaj.pathfinder.NetherPathfinder;
 import dev.babbaj.pathfinder.Octree;
@@ -33,7 +35,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.level.chunk.PalettedContainer;
-import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.phys.Vec3;
 import sun.misc.Unsafe;
 
@@ -52,7 +53,7 @@ import static net.minecraft.world.level.chunk.LevelChunkSection.SECTION_SIZE;
 /**
  * @author Brady
  */
-public final class NetherPathfinderContext {
+public final class NetherPathfinderContext implements IElytraPathfinderContext {
 
     private static final Unsafe UNSAFE;
     static {
@@ -70,7 +71,7 @@ public final class NetherPathfinderContext {
     public final ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
     public final ReentrantReadWriteLock.ReadLock readLock = rwl.readLock();
     public final ReentrantReadWriteLock.WriteLock writeLock = rwl.writeLock();
-    public final int maxHeight;
+    private final int maxHeight;
 
     // Visible for access in BlockStateOctreeInterface
     final long context;
@@ -81,6 +82,7 @@ public final class NetherPathfinderContext {
     private final ExecutorService readExecutor = Executors.newSingleThreadExecutor();
     private final ResourceKey<Level> dimension;
     final int minY;
+    private final BlockStateOctreeInterface boi;
 
     public NetherPathfinderContext(long seed, Path cache, Level world) {
         this.dimension = world.dimension();
@@ -94,17 +96,18 @@ public final class NetherPathfinderContext {
         this.maxHeight = height;
         this.context = NetherPathfinder.newContext(seed, cache != null ? cache.toString() : null, dim, height, Baritone.settings().elytraCustomAllocator.value);
         this.seed = seed;
+        this.boi = new BlockStateOctreeInterface(this);
     }
 
     public boolean hasChunk(ChunkPos pos) {
         return NetherPathfinder.hasChunkFromJava(this.context, pos.x, pos.z);
     }
 
-    public void queueCacheCulling(int chunkX, int chunkZ, int maxDistanceBlocks, BlockStateOctreeInterface boi) {
+    public void queueCacheCulling(int chunkX, int chunkZ, int maxDistanceBlocks) {
         this.writeExecutor.execute(() -> {
             writeLock.lock();
             try {
-                boi.chunkPtr = 0L;
+                this.boi.chunkPtr = 0L;
                 NetherPathfinder.cullFarChunks(this.context, chunkX, chunkZ, maxDistanceBlocks);
             } finally {
                 writeLock.unlock();
@@ -112,7 +115,7 @@ public final class NetherPathfinderContext {
         });
     }
 
-    public void queueForPacking(final LevelChunk chunkIn, BlockStateOctreeInterface boi) {
+    public void queueForPacking(final LevelChunk chunkIn) {
         final SoftReference<LevelChunk> ref = new SoftReference<>(chunkIn);
         this.writeExecutor.execute(() -> {
             // TODO: Prioritize packing recent chunks and/or ones that the path goes through,
@@ -122,7 +125,7 @@ public final class NetherPathfinderContext {
                 writeLock.lock();
                 try {
                     // we might free this chunk
-                    boi.chunkPtr = 0L;
+                    this.boi.chunkPtr = 0L;
                     long ptr = NetherPathfinder.allocateAndInsertChunk(this.context, chunk.getPos().x, chunk.getPos().z);
                     writeChunkData(chunk, ptr);
                 } finally {
@@ -169,7 +172,7 @@ public final class NetherPathfinderContext {
                         false, // refine
                         10000, // timeoutMs
                         !generate, // useAirIfChunkNotLoaded
-                        // TODO: Determine appropiate cost value
+                        // TODO: Determine appropriate cost value
                         8.0 // fakeChunkCost
                 );
                 if (segment == null) {
@@ -251,6 +254,10 @@ public final class NetherPathfinderContext {
         NetherPathfinder.raytrace(this.context, NetherPathfinder.CACHE_MISS_SOLID, count, src, dst, hitsOut, hitPosOut);
     }
 
+    public boolean passable(int x, int y, int z) {
+        return !this.boi.get0(x, y, z);
+    }
+
     public void cancel() {
         NetherPathfinder.cancel(this.context);
     }
@@ -273,6 +280,18 @@ public final class NetherPathfinderContext {
 
     public long getSeed() {
         return this.seed;
+    }
+
+    public void RLock() {
+        this.readLock.lock();
+    }
+
+    public void RUnlock() {
+        this.readLock.unlock();
+    }
+
+    public int getMaxHeight() {
+        return this.maxHeight;
     }
 
     private static void writeChunkData(LevelChunk chunk, long chunkPtr) {
@@ -332,15 +351,6 @@ public final class NetherPathfinderContext {
             e.printStackTrace();
             throw new RuntimeException(e);
         }
-    }
-
-    public static final class Visibility {
-
-        public static final int ALL = 0;
-        public static final int NONE = 1;
-        public static final int ANY = 2;
-
-        private Visibility() {}
     }
 
     public static boolean isSupported() {

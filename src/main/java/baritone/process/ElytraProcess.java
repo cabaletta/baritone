@@ -22,6 +22,7 @@ import baritone.api.IBaritone;
 import baritone.api.event.events.*;
 import baritone.api.event.events.type.EventState;
 import baritone.api.event.listener.AbstractGameEventListener;
+import baritone.api.pathing.elytra.IElytraContextFactory;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalBlock;
 import baritone.api.pathing.goals.GoalXZ;
@@ -38,9 +39,7 @@ import baritone.api.utils.RotationUtils;
 import baritone.api.utils.input.Input;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.movements.MovementFall;
-import baritone.process.elytra.ElytraBehavior;
-import baritone.process.elytra.NetherPathfinderContext;
-import baritone.process.elytra.NullElytraProcess;
+import baritone.process.elytra.*;
 import baritone.utils.BaritoneProcessHelper;
 import baritone.utils.PathingCommandContext;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
@@ -60,6 +59,7 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.*;
+import java.util.concurrent.Semaphore;
 
 import static baritone.api.pathing.movement.ActionCosts.COST_INF;
 
@@ -72,6 +72,10 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
     private ElytraBehavior behavior;
     private boolean predictingTerrain;
     private boolean allowTight;
+    private boolean allowAboveBuildLimit;
+    private boolean allowAboveRoof;
+    private IElytraContextFactory contextFactory;
+    private final Semaphore behaviorSema = new Semaphore(1);
 
     @Override
     public void onLostControl() {
@@ -127,6 +131,16 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
             if (allowTight != Baritone.settings().elytraAllowTightSpaces.value) {
                 logDirect("elytraAllowTightSpaces setting changed, recalculating path from scratch");
                 allowTight = Baritone.settings().elytraAllowTightSpaces.value;
+                this.resetState();
+            }
+            if (allowAboveBuildLimit != Baritone.settings().elytraAllowAboveBuildLimit.value) {
+                logDirect("elytraAllowAboveBuildLimit setting changed, recalculating path from scratch");
+                allowAboveBuildLimit = Baritone.settings().elytraAllowAboveBuildLimit.value;
+                this.resetState();
+            }
+            if (allowAboveRoof != Baritone.settings().elytraAllowAboveRoof.value && ctx.player().level.dimension() == Level.NETHER) {
+                logDirect("elytraAllowAboveRoof setting changed, recalculating path from scratch");
+                allowAboveRoof = Baritone.settings().elytraAllowAboveRoof.value;
                 this.resetState();
             }
         } catch (IllegalArgumentException e) {
@@ -203,11 +217,11 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
             behavior.landingMode = this.state == State.LANDING;
             this.goal = null;
             baritone.getInputOverrideHandler().clearAllKeys();
-            behavior.context.readLock.lock();
+            behavior.context.RLock();
             try {
                 behavior.tick();
             } finally {
-                behavior.context.readLock.unlock();
+                behavior.context.RUnlock();
             }
             return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
         } else if (this.state == State.LANDING) {
@@ -309,7 +323,10 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
         ElytraBehavior behavior = this.behavior;
         if (behavior != null) {
             this.behavior = null;
-            Baritone.getExecutor().execute(behavior::destroy);
+            Baritone.getExecutor().execute(() -> {
+                behavior.destroy();
+                behaviorSema.release();
+            });
         }
     }
 
@@ -358,7 +375,12 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
         this.onLostControl();
         this.predictingTerrain = ctx.player().level.dimension() == Level.NETHER && Baritone.settings().elytraPredictTerrain.value;
         this.allowTight = Baritone.settings().elytraAllowTightSpaces.value;
-        this.behavior = new ElytraBehavior(this.baritone, this, destination, appendDestination);
+        this.allowAboveBuildLimit = Baritone.settings().elytraAllowAboveBuildLimit.value;
+        this.allowAboveRoof = Baritone.settings().elytraAllowAboveRoof.value;
+
+        this.behaviorSema.acquireUninterruptibly();
+        this.behavior = new ElytraBehavior(this.baritone, this, getContextFactory().create(ctx, baritone.getWorldProvider().getCurrentWorld().directory.resolve("cache")), destination, appendDestination);
+
         if (ctx.world() != null) {
             this.behavior.repackChunks();
         }
@@ -383,6 +405,27 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
             z = goal.z;
         } else {
             throw new IllegalArgumentException("The goal must be a GoalXZ or GoalBlock");
+        }
+
+        int minY = ctx.world().getMinBuildHeight();
+        int maxPathfinderY = minY + 384; // maximum supported world size by the nether-pathfinder library
+
+        final boolean inNether = ctx.player().level.dimension() == Level.NETHER;
+        final boolean allowRoof = Baritone.settings().elytraAllowAboveRoof.value;
+        final boolean allowBuildLimit = Baritone.settings().elytraAllowAboveBuildLimit.value;
+
+        if(y < minY) {
+            throw new IllegalArgumentException("The goal must have a y value greater than " + (minY - 1));
+        }
+
+        if(inNether) {
+            if(!allowRoof && y > 127) {
+                throw new IllegalArgumentException("The goal must have a y value less than 128 in the nether when #elytraAllowAboveRoof is false");
+            }
+        }
+
+        if(!allowBuildLimit && y > maxPathfinderY) {
+            throw new IllegalArgumentException("The goal must have a y value less than " + maxPathfinderY + " when #elytraAllowAboveBuildLimit is false");
         }
 
         this.pathTo(new BlockPos(x, y, z));
@@ -411,6 +454,24 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
     @Override
     public boolean isLoaded() {
         return true;
+    }
+
+    @Override
+    public IElytraContextFactory getContextFactory() {
+        if(this.contextFactory == null) {
+            if(ctx.world().dimension() == Level.NETHER) {
+                return Baritone.settings().elytraAllowAboveRoof.value && Baritone.settings().elytraAllowAboveBuildLimit.value
+                        ? new SkyPathfinderContextFactory()
+                        : new NetherPathfinderContextFactory();
+            }
+            return Baritone.settings().elytraAllowAboveBuildLimit.value ? new SkyPathfinderContextFactory() : new NetherPathfinderContextFactory();
+        }
+        return this.contextFactory;
+    }
+
+    @Override
+    public void setContextFactory(IElytraContextFactory factory) {
+        this.contextFactory = factory == null ? new NetherPathfinderContextFactory() : factory;
     }
 
     @Override

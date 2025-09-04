@@ -1564,6 +1564,16 @@ public final class Settings {
     public final Setting<Boolean> elytraUseCache = new Setting<>(true);
 
     /**
+     * Allow the pathfinder to fly above the build limit in the overworld and end.
+     */
+    public final Setting<Boolean> elytraAllowAboveBuildLimit = new Setting<>(true);
+
+    /**
+     * Minimum distance in blocks of an elytra trip before the pathfinder will try to fly above build limit. (Minimum: 32). Requires {@link #elytraAllowAboveBuildLimit} to be enabled.
+     */
+    public final Setting<Integer> elytraLongDistanceThreshold = new Setting<>(500);
+
+    /**
      * A map of lowercase setting field names to their respective setting
      */
     public final Map<String, Setting<?>> byLowerName;

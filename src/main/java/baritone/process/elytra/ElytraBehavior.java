@@ -22,6 +22,8 @@ import baritone.api.Settings;
 import baritone.api.behavior.look.IAimProcessor;
 import baritone.api.behavior.look.ITickableAimProcessor;
 import baritone.api.event.events.*;
+import baritone.api.pathing.elytra.IElytraPathfinderContext;
+import baritone.api.pathing.elytra.UnpackedSegment;
 import baritone.api.pathing.goals.GoalBlock;
 import baritone.api.utils.*;
 import baritone.api.utils.input.Input;
@@ -75,7 +77,7 @@ public final class ElytraBehavior implements Helper {
     private List<BetterBlockPos> visiblePath;
 
     // :sunglasses:
-    public final NetherPathfinderContext context;
+    public IElytraPathfinderContext context;
     public final PathManager pathManager;
     private final ElytraProcess process;
 
@@ -102,7 +104,6 @@ public final class ElytraBehavior implements Helper {
     private final int[] nextTickBoostCounter;
 
     private BlockStateInterface bsi;
-    private final BlockStateOctreeInterface boi;
     public final BetterBlockPos destination;
     private final boolean appendDestination;
 
@@ -117,7 +118,7 @@ public final class ElytraBehavior implements Helper {
     private int invTickCountdown = 0;
     private final Queue<Runnable> invTransactionQueue = new LinkedList<>();
 
-    public ElytraBehavior(Baritone baritone, ElytraProcess process, BlockPos destination, boolean appendDestination) {
+    public ElytraBehavior(Baritone baritone, ElytraProcess process, IElytraPathfinderContext context, BlockPos destination, boolean appendDestination) {
         this.baritone = baritone;
         this.ctx = baritone.getPlayerContext();
         this.clearLines = new CopyOnWriteArrayList<>();
@@ -128,13 +129,7 @@ public final class ElytraBehavior implements Helper {
         this.appendDestination = appendDestination;
         this.solverExecutor = Executors.newSingleThreadExecutor();
         this.nextTickBoostCounter = new int[2];
-
-        this.context = new NetherPathfinderContext(
-                Baritone.settings().elytraNetherSeed.value,
-                Baritone.settings().elytraUseCache.value ? baritone.getWorldProvider().getCurrentWorld().directory.resolve("cache") : null,
-                ctx.world()
-        );
-        this.boi = new BlockStateOctreeInterface(context);
+        this.context = context;
     }
 
     public final class PathManager {
@@ -166,13 +161,13 @@ public final class ElytraBehavior implements Helper {
 
             int minY = ctx.world().dimensionType().minY();
             int y = ctx.playerFeet().y;
-            if (y >= minY && y < minY + context.maxHeight) {
-                context.readLock.lock();
+            if (y >= minY && y < minY + context.getMaxHeight()) {
+                context.RLock();
                 try {
                     // Obstacles are more important than an incomplete path, handle those first.
                     this.pathfindAroundObstacles();
                 } finally {
-                    context.readLock.unlock();
+                    context.RUnlock();
                 }
                 this.attemptNextSegment();
             }
@@ -385,7 +380,9 @@ public final class ElytraBehavior implements Helper {
             }
 
             final int last = this.path.size() - 1;
-            if (!this.completePath && ctx.world().isLoaded(this.path.get(last))) {
+            final BetterBlockPos lastPos = this.path.get(this.path.size() - 1);
+            // `ctx.world().isLoaded` cannot be used here as it returns false is the y-value is beyond the build limits.
+            if (!this.completePath && ctx.world().getChunkSource().hasChunk(lastPos.x >> 4,lastPos.z >> 4)) {
                 this.pathNextSegment(last);
             }
         }
@@ -463,7 +460,7 @@ public final class ElytraBehavior implements Helper {
     public void onChunkEvent(ChunkEvent event) {
         if (event.isPostPopulate() && this.context != null) {
             final LevelChunk chunk = ctx.world().getChunk(event.getX(), event.getZ());
-            this.context.queueForPacking(chunk, boi);
+            this.context.queueForPacking(chunk);
         }
     }
 
@@ -516,17 +513,22 @@ public final class ElytraBehavior implements Helper {
                 LevelChunk chunk = chunkProvider.getChunk(x, z, false);
 
                 if (chunk != null && !chunk.isEmpty()) {
-                    this.context.queueForPacking(chunk, boi);
+                    this.context.queueForPacking(chunk);
                 }
             }
         }
     }
 
     public void onTick() {
-        this.onTick0();
+        this.context.RLock();
+        try {
+            this.onTick0();
+        } finally {
+            this.context.RUnlock();
+        }
         final long now = System.currentTimeMillis();
         if ((now - this.timeLastCacheCull) / 1000 > Baritone.settings().elytraTimeBetweenCacheCullSecs.value) {
-            this.context.queueCacheCulling(ctx.player().chunkPosition().x, ctx.player().chunkPosition().z, Baritone.settings().elytraCacheCullDistance.value, this.boi);
+            this.context.queueCacheCulling(ctx.player().chunkPosition().x, ctx.player().chunkPosition().z, Baritone.settings().elytraCacheCullDistance.value);
             this.timeLastCacheCull = now;
         }
     }
@@ -536,7 +538,7 @@ public final class ElytraBehavior implements Helper {
         this.pendingSolution = null;
         if (this.solver != null) {
             try {
-                this.pendingSolution = this.solver.get();
+                this.pendingSolution = this.solver.get(50 * 5, TimeUnit.MILLISECONDS);
             } catch (Exception ignored) {
                 // it doesn't matter if get() fails since the solution can just be recalculated synchronously
             } finally {
@@ -650,11 +652,11 @@ public final class ElytraBehavior implements Helper {
 
             final SolverContext context = this.new SolverContext(true);
             this.solver = this.solverExecutor.submit(() -> {
-                this.context.readLock.lock();
+                this.context.RLock();
                 try {
                     return this.solveAngles(context);
                 } finally {
-                   this.context.readLock.unlock();
+                   this.context.RUnlock();
                 }
             });
             this.solveNextTick = false;
@@ -1019,7 +1021,7 @@ public final class ElytraBehavior implements Helper {
             return clear;
         }
 
-        return this.context.raytrace(8, src, dst, NetherPathfinderContext.Visibility.ALL);
+        return this.context.raytrace(8, src, dst, IElytraPathfinderContext.Visibility.ALL);
     }
 
     public boolean clearView(Vec3 start, Vec3 dest, boolean ignoreLava) {
@@ -1288,7 +1290,7 @@ public final class ElytraBehavior implements Helper {
             final Material mat = this.bsi.get0(x, y, z).getMaterial();
             return mat == Material.AIR || mat == Material.LAVA;
         } else {
-            return !this.boi.get0(x, y, z);
+            return this.context.passable(x, y, z);
         }
     }
 
