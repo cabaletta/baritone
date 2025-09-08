@@ -18,7 +18,6 @@
 package baritone.process.elytra;
 
 import baritone.Baritone;
-import baritone.api.pathing.elytra.IElytraContextFactory;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.process.IElytraProcess;
 import baritone.api.process.PathingCommand;
@@ -82,16 +81,6 @@ public final class NullElytraProcess extends BaritoneProcessHelper implements IE
     @Override
     public boolean isLoaded() {
         return false;
-    }
-
-    @Override
-    public IElytraContextFactory getContextFactory() {
-        return null;
-    }
-
-    @Override
-    public void setContextFactory(IElytraContextFactory factory) {
-
     }
 
     @Override

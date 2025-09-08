@@ -22,8 +22,6 @@ import baritone.api.Settings;
 import baritone.api.behavior.look.IAimProcessor;
 import baritone.api.behavior.look.ITickableAimProcessor;
 import baritone.api.event.events.*;
-import baritone.api.pathing.elytra.IElytraPathfinderContext;
-import baritone.api.pathing.elytra.UnpackedSegment;
 import baritone.api.pathing.goals.GoalBlock;
 import baritone.api.utils.*;
 import baritone.api.utils.input.Input;
@@ -77,7 +75,9 @@ public final class ElytraBehavior implements Helper {
     private List<BetterBlockPos> visiblePath;
 
     // :sunglasses:
-    public IElytraPathfinderContext context;
+    public NetherPathfinderContext npfContext;
+    public IElytraPathFinder pathFinder;
+
     public final PathManager pathManager;
     private final ElytraProcess process;
 
@@ -118,7 +118,7 @@ public final class ElytraBehavior implements Helper {
     private int invTickCountdown = 0;
     private final Queue<Runnable> invTransactionQueue = new LinkedList<>();
 
-    public ElytraBehavior(Baritone baritone, ElytraProcess process, IElytraPathfinderContext context, BlockPos destination, boolean appendDestination) {
+    public ElytraBehavior(Baritone baritone, ElytraProcess process, BlockPos destination, boolean appendDestination) {
         this.baritone = baritone;
         this.ctx = baritone.getPlayerContext();
         this.clearLines = new CopyOnWriteArrayList<>();
@@ -129,7 +129,20 @@ public final class ElytraBehavior implements Helper {
         this.appendDestination = appendDestination;
         this.solverExecutor = Executors.newSingleThreadExecutor();
         this.nextTickBoostCounter = new int[2];
-        this.context = context;
+
+        this.npfContext = new NetherPathfinderContext(
+                Baritone.settings().elytraNetherSeed.value,
+                Baritone.settings().elytraUseCache.value ? baritone.getWorldProvider().getCurrentWorld().directory.resolve("cache") : null,
+                ctx.world()
+        );
+
+        if(ctx.world().dimension() == Level.NETHER) {
+            this.pathFinder = Baritone.settings().elytraAllowAboveRoof.value && Baritone.settings().elytraAllowAboveBuildLimit.value
+                    ? new BuildLimitPathFinder(ctx, npfContext)
+                    : npfContext;
+        } else {
+            this.pathFinder = Baritone.settings().elytraAllowAboveBuildLimit.value ? new BuildLimitPathFinder(ctx, npfContext) : npfContext;
+        }
     }
 
     public final class PathManager {
@@ -161,16 +174,16 @@ public final class ElytraBehavior implements Helper {
 
             int minY = ctx.world().dimensionType().minY();
             int y = ctx.playerFeet().y;
-            if (y >= minY && y < minY + context.getMaxHeight()) {
-                context.RLock();
-                try {
-                    // Obstacles are more important than an incomplete path, handle those first.
-                    this.pathfindAroundObstacles();
-                } finally {
-                    context.RUnlock();
-                }
-                this.attemptNextSegment();
+
+            npfContext.RLock();
+            try {
+                // Obstacles are more important than an incomplete path, handle those first.
+                this.pathfindAroundObstacles();
+            } finally {
+                npfContext.RUnlock();
             }
+            this.attemptNextSegment();
+
         }
 
         public CompletableFuture<Void> pathToDestination() {
@@ -300,7 +313,7 @@ public final class ElytraBehavior implements Helper {
 
         // mickey resigned
         private CompletableFuture<Void> path0(BlockPos src, BlockPos dst, UnaryOperator<UnpackedSegment> operator) {
-            return ElytraBehavior.this.context.pathFindAsync(src, dst)
+            return ElytraBehavior.this.pathFinder.pathFindAsync(src, dst)
                     .thenApply(operator)
                     .thenAcceptAsync(this::setPath, ctx.minecraft()::execute);
         }
@@ -313,7 +326,7 @@ public final class ElytraBehavior implements Helper {
 
             int rangeStartIncl = playerNear;
             int rangeEndExcl = playerNear;
-            while (rangeEndExcl < path.size() && context.hasChunk(new ChunkPos(path.get(rangeEndExcl)))) {
+            while (rangeEndExcl < path.size() && npfContext.hasChunk(new ChunkPos(path.get(rangeEndExcl)))) {
                 rangeEndExcl++;
             }
             // rangeEndExcl now represents an index either not in the path, or just outside render distance
@@ -458,14 +471,14 @@ public final class ElytraBehavior implements Helper {
     }
 
     public void onChunkEvent(ChunkEvent event) {
-        if (event.isPostPopulate() && this.context != null) {
+        if (event.isPostPopulate() && this.npfContext != null) {
             final LevelChunk chunk = ctx.world().getChunk(event.getX(), event.getZ());
-            this.context.queueForPacking(chunk);
+            npfContext.queueForPacking(chunk);
         }
     }
 
     public void onBlockChange(BlockChangeEvent event) {
-        this.context.queueBlockUpdate(event);
+        npfContext.queueBlockUpdate(event);
     }
 
     public void onReceivePacket(PacketEvent event) {
@@ -492,7 +505,7 @@ public final class ElytraBehavior implements Helper {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        this.context.destroy();
+        this.npfContext.destroy();
     }
 
     public void repackChunks() {
@@ -513,22 +526,22 @@ public final class ElytraBehavior implements Helper {
                 LevelChunk chunk = chunkProvider.getChunk(x, z, false);
 
                 if (chunk != null && !chunk.isEmpty()) {
-                    this.context.queueForPacking(chunk);
+                    npfContext.queueForPacking(chunk);
                 }
             }
         }
     }
 
     public void onTick() {
-        this.context.RLock();
+        npfContext.RLock();
         try {
             this.onTick0();
         } finally {
-            this.context.RUnlock();
+            npfContext.RUnlock();
         }
         final long now = System.currentTimeMillis();
         if ((now - this.timeLastCacheCull) / 1000 > Baritone.settings().elytraTimeBetweenCacheCullSecs.value) {
-            this.context.queueCacheCulling(ctx.player().chunkPosition().x, ctx.player().chunkPosition().z, Baritone.settings().elytraCacheCullDistance.value);
+            npfContext.queueCacheCulling(ctx.player().chunkPosition().x, ctx.player().chunkPosition().z, Baritone.settings().elytraCacheCullDistance.value);
             this.timeLastCacheCull = now;
         }
     }
@@ -652,11 +665,11 @@ public final class ElytraBehavior implements Helper {
 
             final SolverContext context = this.new SolverContext(true);
             this.solver = this.solverExecutor.submit(() -> {
-                this.context.RLock();
+                npfContext.RLock();
                 try {
                     return this.solveAngles(context);
                 } finally {
-                   this.context.RUnlock();
+                    npfContext.RUnlock();
                 }
             });
             this.solveNextTick = false;
@@ -1021,14 +1034,15 @@ public final class ElytraBehavior implements Helper {
             return clear;
         }
 
-        return this.context.raytrace(8, src, dst, IElytraPathfinderContext.Visibility.ALL);
+
+        return raytrace(8, src, dst, NetherPathfinderContext.Visibility.ALL);
     }
 
     public boolean clearView(Vec3 start, Vec3 dest, boolean ignoreLava) {
         final boolean clear;
         if (!ignoreLava) {
             // if start == dest then the cpp raytracer dies
-            clear = start.equals(dest) || this.context.raytrace(start, dest);
+            clear = start.equals(dest) || raytrace(start, dest);
         } else {
             clear = ctx.world().clip(new ClipContext(start, dest, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, ctx.player())).getType() == HitResult.Type.MISS;
         }
@@ -1290,7 +1304,7 @@ public final class ElytraBehavior implements Helper {
             final Material mat = this.bsi.get0(x, y, z).getMaterial();
             return mat == Material.AIR || mat == Material.LAVA;
         } else {
-            return this.context.passable(x, y, z);
+            return passable(x, y, z);
         }
     }
 
@@ -1362,5 +1376,64 @@ public final class ElytraBehavior implements Helper {
 
     private BetterBlockPos destinationFixed() {
         return fixDestination(this.destination);
+    }
+
+    public boolean raytrace(double startX, double startY, double startZ, double endX, double endY, double endZ) {
+        final int maxHeight = npfContext.getMaxHeight() + ctx.world().getMinBuildHeight();
+        final int minHeight = ctx.world().getMinBuildHeight();
+        final boolean isOOB = startY >= maxHeight || endY >= maxHeight || startY < minHeight || endY < minHeight;
+        if (isOOB) {
+            Vec3 start = new Vec3(startX, startY, startZ);
+            Vec3 end = new Vec3(endX, endY, endZ);
+            return ctx.world().clip(new ClipContext(start, end, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, ctx.player())).getType() == HitResult.Type.MISS;
+        }
+
+        return npfContext.raytrace(startX, startY, startZ, endX, endY, endZ);
+    }
+
+    public boolean raytrace(Vec3 start, Vec3 end) {
+        final int maxHeight = npfContext.getMaxHeight() + ctx.world().getMinBuildHeight();
+        final int minHeight = ctx.world().getMinBuildHeight();
+        final boolean isOOB = start.y >= maxHeight || end.y >= maxHeight || start.y < minHeight || end.y < minHeight;
+        if (isOOB) {
+            return ctx.world().clip(new ClipContext(start, end, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, ctx.player())).getType() == HitResult.Type.MISS;
+        }
+        return npfContext.raytrace(start.x, start.y, start.z, end.x, end.y, end.z);
+    }
+
+    public boolean raytrace(int count, double[] src, double[] dst, int visibility) {
+        if (src.length != count * 3 || src.length != dst.length) {
+            throw new IllegalArgumentException("Expected source and dst to have length of " + (count * 3));
+        }
+        final int maxHeight = npfContext.getMaxHeight() + ctx.world().getMinBuildHeight();
+
+        boolean isOOB = false;
+        for(int i = 1; i < src.length; i += 3) {
+            if (src[i] >= maxHeight || src[i] < ctx.world().getMinBuildHeight() ||
+                    dst[i] >= maxHeight || dst[i] < ctx.world().getMinBuildHeight()) {
+                isOOB = true;
+                break;
+            }
+        }
+
+        if(isOOB) {
+            for (int i = 0; i < count; i++) {
+                Vec3 start = new Vec3(src[i * 3], src[i * 3 + 1], src[i * 3 + 2]);
+                Vec3 end = new Vec3(dst[i * 3], dst[i * 3 + 1], dst[i * 3 + 2]);
+                if (ctx.world().clip(new ClipContext(start, end, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, ctx.player())).getType() != HitResult.Type.MISS) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        return npfContext.raytrace(count, src, dst, visibility);
+    }
+
+    public boolean passable(int x, int y, int z) {
+        if(y >= ctx.world().getMaxBuildHeight() || y < ctx.world().getMinBuildHeight()) {
+            return true;
+        }
+        return npfContext.passable(x, y, z);
     }
 }

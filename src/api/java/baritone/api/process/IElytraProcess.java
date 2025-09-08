@@ -17,7 +17,6 @@
 
 package baritone.api.process;
 
-import baritone.api.pathing.elytra.IElytraContextFactory;
 import baritone.api.pathing.goals.Goal;
 import net.minecraft.core.BlockPos;
 
@@ -43,11 +42,6 @@ public interface IElytraProcess extends IBaritoneProcess {
      * @return {@code true} if the native library loaded and elytra is actually usable
      */
     boolean isLoaded();
-
-
-    IElytraContextFactory getContextFactory();
-    void setContextFactory(IElytraContextFactory factory);
-
 
     /*
      * FOR INTERNAL USE ONLY. MAY BE REMOVED AT ANY TIME.

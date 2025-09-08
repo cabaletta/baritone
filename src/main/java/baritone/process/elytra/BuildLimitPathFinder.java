@@ -18,66 +18,41 @@
 package baritone.process.elytra;
 
 import baritone.Baritone;
-import baritone.api.event.events.BlockChangeEvent;
-import baritone.api.pathing.elytra.IElytraPathfinderContext;
-import baritone.api.pathing.elytra.UnpackedSegment;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.IPlayerContext;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.ClipContext;
-import net.minecraft.world.level.chunk.LevelChunk;
-import net.minecraft.world.phys.HitResult;
-import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.level.levelgen.Heightmap;
 
-import java.nio.file.Path;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
-public class SkyPathfinderContext implements IElytraPathfinderContext {
-    NetherPathfinderContext netherCtx;
-    IPlayerContext playerCtx;
+public class BuildLimitPathFinder implements IElytraPathFinder {
     final int flightLevel;
+    final IPlayerContext playerCtx;
+    final NetherPathfinderContext netherCtx;
 
-    public SkyPathfinderContext(IPlayerContext ctx, Path cacheDir) {
+    public BuildLimitPathFinder(IPlayerContext ctx, NetherPathfinderContext netherCtx) {
         if (ctx == null) {
             throw new IllegalArgumentException("IPlayerContext cannot be null");
         }
-
-        this.netherCtx = new NetherPathfinderContextFactory().create(ctx, cacheDir);
         this.playerCtx = ctx;
-        this.flightLevel = playerCtx.world().getMaxBuildHeight() + 16;
 
-        if(netherCtx.getMaxHeight() + playerCtx.world().getMinBuildHeight() < playerCtx.world().getMaxBuildHeight()) {
+        if (netherCtx == null) {
+            throw new IllegalArgumentException("NetherPathfinderContext cannot be null");
+        }
+
+        this.flightLevel = ctx.world().getMaxBuildHeight() + 16;
+        this.netherCtx = netherCtx;
+
+        if(netherCtx.getMaxHeight() + ctx.world().getMinBuildHeight() < ctx.world().getMaxBuildHeight()) {
             throw new IllegalStateException("Nether pathfinder max height is below world build limit, cannot proceed");
         }
     }
-
-    @Override
-    public boolean hasChunk(ChunkPos pos) {
-        return netherCtx.hasChunk(pos);
-    }
-
-    @Override
-    public void queueCacheCulling(int chunkX, int chunkZ, int maxDistanceBlocks) {
-        netherCtx.queueCacheCulling(chunkX, chunkZ, maxDistanceBlocks);
-    }
-
-    @Override
-    public void queueForPacking(LevelChunk chunkIn) {
-        netherCtx.queueForPacking(chunkIn);
-    }
-
-    @Override
-    public void queueBlockUpdate(BlockChangeEvent event) {
-        netherCtx.queueBlockUpdate(event);
-    }
-
 
     /**
      * Generates a direct path from the start to the destination at a fixed y-level above build limit
@@ -87,7 +62,7 @@ public class SkyPathfinderContext implements IElytraPathfinderContext {
      * @param maxPathSize Maximum number of nodes in the returned path
      * @return A tuple containing the path as a list of BetterBlockPos and a boolean indicating if the path is complete
      */
-    public Tuple<List<BetterBlockPos>, Boolean> GenerateDirectPath(BetterBlockPos start, BetterBlockPos destination, int bufferDistance, int maxPathSize) {
+    public Tuple<List<BetterBlockPos>, Boolean> generateDirectPath(BetterBlockPos start, BetterBlockPos destination, int bufferDistance, int maxPathSize) {
         final LinkedList<BetterBlockPos> path = new LinkedList<>();
         final int stepDistance = 32;
 
@@ -128,7 +103,7 @@ public class SkyPathfinderContext implements IElytraPathfinderContext {
      * @param destination
      * @return A tuple containing the path that transitions above build limit and a boolean indicating if a transition was found
      */
-    public Tuple<List<BetterBlockPos>,Boolean> GenerateTransitionUp(BetterBlockPos start, BetterBlockPos destination) {
+    public Tuple<List<BetterBlockPos>,Boolean> generateTransitionUp(BetterBlockPos start, BetterBlockPos destination) {
         final double deltaX = destination.getX() - start.getX();
         final double deltaZ = destination.getZ() - start.getZ();
         final double distance = Math.sqrt(deltaX * deltaX + deltaZ * deltaZ);
@@ -167,7 +142,7 @@ public class SkyPathfinderContext implements IElytraPathfinderContext {
      * @param start
      * @return A tuple containing the path (single point) and a boolean indicating if a transition point was found
      */
-    public Tuple<List<BetterBlockPos>,Boolean> GenerateTransitionDown(BetterBlockPos start) {
+    public Tuple<List<BetterBlockPos>,Boolean> generateTransitionDown(BetterBlockPos start) {
         final int netherMaxHeight = netherCtx.getMaxHeight() + playerCtx.world().getMinBuildHeight() - 1;
         final ChunkPos startChunk = new ChunkPos(start.x >> 4, start.z >> 4);
 
@@ -199,7 +174,6 @@ public class SkyPathfinderContext implements IElytraPathfinderContext {
     }
 
 
-    @Override
     public CompletableFuture<UnpackedSegment> pathFindAsync(BlockPos src, BlockPos dst) {
         final int netherMaxHeight = netherCtx.getMaxHeight() + playerCtx.world().getMinBuildHeight() - 1;
         final int maxDirectPathSize = 500;
@@ -213,13 +187,13 @@ public class SkyPathfinderContext implements IElytraPathfinderContext {
         final boolean dstAboveSupportedHeight = dst.getY() >= netherMaxHeight;
 
         if(srcAboveSupportedHeight && dstAboveSupportedHeight) {
-            var path = GenerateDirectPath(new BetterBlockPos(src), new BetterBlockPos(dst), 0, maxDirectPathSize);
+            var path = generateDirectPath(new BetterBlockPos(src), new BetterBlockPos(dst), 0, maxDirectPathSize);
             return CompletableFuture.completedFuture(new UnpackedSegment(path.getA().stream(), path.getB()));
         }
 
         if(isLongDistance) {
             if(srcAboveSupportedHeight) {
-                var directPath = GenerateDirectPath(new BetterBlockPos(src), new BetterBlockPos(dst), (int)maxDistance, maxDirectPathSize);
+                var directPath = generateDirectPath(new BetterBlockPos(src), new BetterBlockPos(dst), (int)maxDistance, maxDirectPathSize);
                 return CompletableFuture.completedFuture(
                         new UnpackedSegment(
                                 directPath.getA().stream(),
@@ -227,12 +201,12 @@ public class SkyPathfinderContext implements IElytraPathfinderContext {
                         )
                 );
             } else {
-                var transition = GenerateTransitionUp(new BetterBlockPos(src), new BetterBlockPos(dst));
+                var transition = generateTransitionUp(new BetterBlockPos(src), new BetterBlockPos(dst));
                 var path = transition.getA();
                 var success = transition.getB();
 
                 if(success) {
-                    var directPath = GenerateDirectPath(path.get(path.size()-1), new BetterBlockPos(dst), (int)maxDistance, maxDirectPathSize);
+                    var directPath = generateDirectPath(path.get(path.size()-1), new BetterBlockPos(dst), (int)maxDistance, maxDirectPathSize);
                     path.addAll(directPath.getA());
 
                     return CompletableFuture.completedFuture(
@@ -255,13 +229,13 @@ public class SkyPathfinderContext implements IElytraPathfinderContext {
             return incompletePathfind(src, midDst);
         } else {
             if(srcAboveSupportedHeight) {
-                var transition = GenerateTransitionDown(new BetterBlockPos(src));
+                var transition = generateTransitionDown(new BetterBlockPos(src));
                 List<BetterBlockPos> path = transition.getA();
                 boolean success = transition.getB();
 
                 if(!success) {
                     BetterBlockPos newDest = distanceXZ > 32 ? new BetterBlockPos(dst) : new BetterBlockPos(dst.getX(), playerCtx.world().getMaxBuildHeight(), dst.getZ());
-                    var directPath = GenerateDirectPath(new BetterBlockPos(src), newDest, 0, 2);
+                    var directPath = generateDirectPath(new BetterBlockPos(src), newDest, 0, 2);
                     return CompletableFuture.completedFuture(new UnpackedSegment(directPath.getA().stream(), directPath.getB()));
                 }
 
@@ -278,12 +252,12 @@ public class SkyPathfinderContext implements IElytraPathfinderContext {
 
 
             if(dstAboveSupportedHeight) {
-                var transition = GenerateTransitionUp(new BetterBlockPos(src), new BetterBlockPos(dst));
+                var transition = generateTransitionUp(new BetterBlockPos(src), new BetterBlockPos(dst));
                 var path = transition.getA();
                 var success = transition.getB();
 
                 if(success) {
-                    var directPath = GenerateDirectPath(path.get(path.size() - 1), new BetterBlockPos(dst), 0, maxDirectPathSize);
+                    var directPath = generateDirectPath(path.get(path.size() - 1), new BetterBlockPos(dst), 0, maxDirectPathSize);
                     path.addAll(directPath.getA());
                     return CompletableFuture.completedFuture(new UnpackedSegment(path.stream(), directPath.getB()));
                 }
@@ -316,97 +290,4 @@ public class SkyPathfinderContext implements IElytraPathfinderContext {
         });
     }
 
-    @Override
-    public boolean raytrace(double startX, double startY, double startZ, double endX, double endY, double endZ) {
-        final int maxHeight = netherCtx.getMaxHeight() + playerCtx.world().getMinBuildHeight();
-        final int minHeight = playerCtx.world().getMinBuildHeight();
-        final boolean isOOB = startY >= maxHeight || endY >= maxHeight || startY < minHeight || endY < minHeight;
-        if (isOOB) {
-            Vec3 start = new Vec3(startX, startY, startZ);
-            Vec3 end = new Vec3(endX, endY, endZ);
-            return playerCtx.world().clip(new ClipContext(start, end, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, playerCtx.player())).getType() == HitResult.Type.MISS;
-        }
-
-        return netherCtx.raytrace(startX, startY, startZ, endX, endY, endZ);
-    }
-
-    @Override
-    public boolean raytrace(Vec3 start, Vec3 end) {
-        final int maxHeight = netherCtx.getMaxHeight() + playerCtx.world().getMinBuildHeight();
-        final int minHeight = playerCtx.world().getMinBuildHeight();
-        final boolean isOOB = start.y >= maxHeight || end.y >= maxHeight || start.y < minHeight || end.y < minHeight;
-        if (isOOB) {
-            return playerCtx.world().clip(new ClipContext(start, end, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, playerCtx.player())).getType() == HitResult.Type.MISS;
-        }
-        return netherCtx.raytrace(start.x, start.y, start.z, end.x, end.y, end.z);
-    }
-
-
-    @Override
-    public boolean raytrace(int count, double[] src, double[] dst, int visibility) {
-        if (src.length != count * 3 || src.length != dst.length) {
-            throw new IllegalArgumentException("Expected source and dst to have length of " + (count * 3));
-        }
-        final int maxHeight = netherCtx.getMaxHeight() + playerCtx.world().getMinBuildHeight();
-
-        boolean isOOB = false;
-        for(int i = 1; i < src.length; i += 3) {
-            if (src[i] >= maxHeight || src[i] < playerCtx.world().getMinBuildHeight() ||
-                    dst[i] >= maxHeight || dst[i] < playerCtx.world().getMinBuildHeight()) {
-                isOOB = true;
-                break;
-            }
-        }
-
-        if(isOOB) {
-            for (int i = 0; i < count; i++) {
-                Vec3 start = new Vec3(src[i * 3], src[i * 3 + 1], src[i * 3 + 2]);
-                Vec3 end = new Vec3(dst[i * 3], dst[i * 3 + 1], dst[i * 3 + 2]);
-                if (playerCtx.world().clip(new ClipContext(start, end, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, playerCtx.player())).getType() != HitResult.Type.MISS) {
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        return netherCtx.raytrace(count, src, dst, visibility);
-    }
-
-    @Override
-    public void cancel() {
-        netherCtx.cancel();
-    }
-
-    @Override
-    public void destroy() {
-        netherCtx.destroy();
-    }
-
-    @Override
-    public long getSeed() {
-        return netherCtx.getSeed();
-    }
-
-    @Override
-    public void RLock() {
-        netherCtx.RLock();
-    }
-
-    @Override
-    public void RUnlock() {
-        netherCtx.RUnlock();
-    }
-
-    @Override
-    public int getMaxHeight() {
-        return netherCtx.getMaxHeight();
-    }
-
-    @Override
-    public boolean passable(int x, int y, int z) {
-        if(y >= playerCtx.world().getMaxBuildHeight() || y < playerCtx.world().getMinBuildHeight()) {
-            return true;
-        }
-        return netherCtx.passable(x, y, z);
-    }
 }

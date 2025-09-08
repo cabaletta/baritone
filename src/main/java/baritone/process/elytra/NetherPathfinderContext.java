@@ -19,8 +19,6 @@ package baritone.process.elytra;
 
 import baritone.Baritone;
 import baritone.api.event.events.BlockChangeEvent;
-import baritone.api.pathing.elytra.IElytraPathfinderContext;
-import baritone.api.pathing.elytra.UnpackedSegment;
 import baritone.utils.accessor.IPalettedContainer;
 import dev.babbaj.pathfinder.NetherPathfinder;
 import dev.babbaj.pathfinder.Octree;
@@ -53,7 +51,7 @@ import static net.minecraft.world.level.chunk.LevelChunkSection.SECTION_SIZE;
 /**
  * @author Brady
  */
-public final class NetherPathfinderContext implements IElytraPathfinderContext {
+public final class NetherPathfinderContext implements IElytraPathFinder {
 
     private static final Unsafe UNSAFE;
     static {
@@ -355,5 +353,12 @@ public final class NetherPathfinderContext implements IElytraPathfinderContext {
 
     public static boolean isSupported() {
         return NetherPathfinder.isThisSystemSupported();
+    }
+
+    public static final class Visibility {
+        public static final int ALL = 0;
+        public static final int NONE = 1;
+        public static final int ANY = 2;
+        private Visibility() {}
     }
 }

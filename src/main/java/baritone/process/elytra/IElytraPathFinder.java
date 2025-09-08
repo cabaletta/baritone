@@ -15,12 +15,12 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.api.pathing.elytra;
+package baritone.process.elytra;
 
-import baritone.api.utils.IPlayerContext;
+import net.minecraft.core.BlockPos;
 
-import java.nio.file.Path;
+import java.util.concurrent.CompletableFuture;
 
-public interface IElytraContextFactory {
-    IElytraPathfinderContext create(IPlayerContext ctx, Path cacheDir);
+public interface IElytraPathFinder {
+    CompletableFuture<UnpackedSegment> pathFindAsync(final BlockPos src, final BlockPos dst);
 }
