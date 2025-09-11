@@ -71,7 +71,7 @@ public abstract class Clutch {
     }
 
     public boolean hasClutched(IPlayerContext ctx, BetterBlockPos dest) {
-        return ctx.player().getBoundingBox().intersects(Vec3.atLowerCornerOf(dest), Vec3.atLowerCornerWithOffset(dest, 1, 1, 1));
+        return ctx.playerFeet().equals(dest);
     }
 
     public boolean isFinished(IPlayerContext ctx, MovementState state, MutableClutchResult result) {

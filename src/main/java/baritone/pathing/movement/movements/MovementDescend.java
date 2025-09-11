@@ -41,6 +41,7 @@ import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 import java.util.Optional;
 import java.util.Set;
@@ -174,9 +175,9 @@ public class MovementDescend extends Movement {
                 res.z = destZ;
                 break;
             }
-            if (unprotectedFallHeight <= context.maxFallHeightNoClutch &&
-                    MovementHelper.canWalkOn(context, destX, newY, destZ, ontoBlock) &&
-                    !MovementHelper.isBottomSlab(ontoBlock)) {
+            VoxelShape shape = ontoBlock.getCollisionShape(context.bsi.access, new BetterBlockPos(destX, newY, destZ));
+            if (unprotectedFallHeight + (!shape.isEmpty() && shape.bounds().maxY < 1 ? 1 : 0) <= context.maxFallHeightNoClutch && // Minecraft will round fall damage up
+                    MovementHelper.canWalkOn(context, destX, newY, destZ, ontoBlock)) {
                 // fallHeight = 4 means onto.up() is 3 blocks down, which is the max
                 double newCost = tentativeCost + ActionCosts.distanceToTicks(unprotectedFallHeight, 0.08d, velocity);
                 if (newCost < res.cost) {
