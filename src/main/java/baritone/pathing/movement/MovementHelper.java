@@ -32,6 +32,7 @@ import baritone.utils.ToolSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.Item;
+import net.minecraft.util.Mth;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.piston.MovingPistonBlock;
@@ -51,10 +52,9 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
+import static baritone.api.utils.RotationUtils.DEG_TO_RAD_F;
 import static baritone.pathing.movement.Movement.HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP;
 import static baritone.pathing.precompute.Ternary.*;
 
@@ -657,6 +657,43 @@ public interface MovementHelper extends ActionCosts, Helper {
                         ctx.playerRotations()).withPitch(ctx.playerRotations().getPitch()),
                 false
         )).setInput(Input.MOVE_FORWARD, true);
+    }
+
+    static void moveTowardsWithoutRotation(IPlayerContext ctx, MovementState state, float idealYaw) {
+        MovementOption.getOptions(
+                Mth.sin(ctx.playerRotations().getYaw() * DEG_TO_RAD_F),
+                Mth.cos(ctx.playerRotations().getYaw() * DEG_TO_RAD_F),
+                Baritone.settings().allowSprint.value
+        ).min(Comparator.comparing(option -> option.distanceToSq(
+                Mth.sin(idealYaw * DEG_TO_RAD_F),
+                Mth.cos(idealYaw * DEG_TO_RAD_F)
+        ))).ifPresent(selection -> selection.setInputs(state));
+    }
+
+    static void moveTowardsWithoutRotation(IPlayerContext ctx, MovementState state, BlockPos dest) {
+        float idealYaw = RotationUtils.calcRotationFromVec3d(
+                ctx.playerHead(),
+                VecUtils.getBlockPosCenter(dest),
+                ctx.playerRotations()
+        ).getYaw();
+        moveTowardsWithoutRotation(ctx, state, idealYaw);
+    }
+
+    static void moveTowardsWithSlightRotation(IPlayerContext ctx, MovementState state, BlockPos dest) {
+        float idealYaw = RotationUtils.calcRotationFromVec3d(
+                ctx.playerHead(),
+                VecUtils.getBlockPosCenter(dest),
+                ctx.playerRotations()
+        ).getYaw();
+        float distance = Rotation.yawDistanceFromOffset(ctx.playerRotations().getYaw(), idealYaw) % 45f;
+        float newYaw = distance > 0f ?
+                distance > 22.5f ? distance - 45f : distance :
+                distance < -22.5f ? distance + 45f : distance;
+        state.setTarget(new MovementTarget(new Rotation(
+                ctx.playerRotations().getYaw() - newYaw,
+                ctx.playerRotations().getPitch()
+        ), true));
+        moveTowardsWithoutRotation(ctx, state, idealYaw);
     }
 
     /**

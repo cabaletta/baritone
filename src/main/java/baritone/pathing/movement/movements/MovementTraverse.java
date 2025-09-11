@@ -356,9 +356,8 @@ public class MovementTraverse extends Movement {
                 }
                 return state;
             }
-            MovementHelper.moveTowards(ctx, state, positionsToBreak[0]);
+            MovementHelper.moveTowardsWithSlightRotation(ctx, state, dest);
             return state;
-            // TODO MovementManager.moveTowardsBlock(to); // move towards not look at because if we are bridging for a couple blocks in a row, it is faster if we dont spin around and walk forwards then spin around and place backwards for every block
         }
     }
 
