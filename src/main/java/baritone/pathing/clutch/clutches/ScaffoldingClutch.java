@@ -17,6 +17,7 @@
 
 package baritone.pathing.clutch.clutches;
 
+import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.input.Input;
 import baritone.pathing.clutch.Clutch;
@@ -32,12 +33,17 @@ public class ScaffoldingClutch extends Clutch {
 
     @Override
     public boolean isAcceptedItem(Item item) {
-        return  item.equals(Items.SCAFFOLDING);
+        return item.equals(Items.SCAFFOLDING);
     }
 
     @Override
     public boolean compare(BlockState state) {
         return state.is(Blocks.SCAFFOLDING);
+    }
+
+    @Override
+    public boolean hasClutched(IPlayerContext ctx, BetterBlockPos dest, BlockState destState) {
+        return ctx.player().getBoundingBox().intersects(dest.x, dest.y, dest.z, dest.x + 1, dest.y + 2, dest.z + 1);
     }
 
     @Override
