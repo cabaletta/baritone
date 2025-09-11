@@ -77,7 +77,9 @@ public abstract class Clutch {
         if (shape.isEmpty()) {
             return ctx.player().getBoundingBox().intersects(dest.x, dest.y, dest.z, dest.x + 1, dest.y + 1, dest.z + 1);
         } else {
-            return ctx.player().getBoundingBox().intersects(shape.bounds());
+            return ctx.player().getBoundingBox().intersects(
+                    dest.x + shape.bounds().minX, dest.y + shape.bounds().minY, dest.z + shape.bounds().minZ,
+                    dest.x + shape.bounds().maxX, dest.y + shape.bounds().maxY, dest.z + shape.bounds().maxZ);
         }
     }
 

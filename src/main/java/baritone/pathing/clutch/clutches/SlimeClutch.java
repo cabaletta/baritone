@@ -17,6 +17,7 @@
 
 package baritone.pathing.clutch.clutches;
 
+import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.input.Input;
 import baritone.pathing.clutch.Clutch;
@@ -27,6 +28,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class SlimeClutch extends Clutch {
     public static final SlimeClutch INSTANCE = new SlimeClutch();
@@ -51,6 +53,7 @@ public class SlimeClutch extends Clutch {
     @Override
     public boolean isFinished(IPlayerContext ctx, MovementState state, MutableClutchResult result) {
         if (result.phase == 0) {
+            state.setInput(Input.SNEAK, false);
             state.setInput(Input.JUMP, true);
             if (ctx.player().isOnGround()) {
                 result.phase = 1;
