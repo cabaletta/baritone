@@ -17,8 +17,6 @@
 
 package baritone.pathing.clutch.clutches;
 
-import baritone.api.utils.BetterBlockPos;
-import baritone.api.utils.IPlayerContext;
 import baritone.pathing.clutch.Clutch;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;

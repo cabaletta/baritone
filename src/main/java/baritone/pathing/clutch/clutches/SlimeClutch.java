@@ -17,7 +17,6 @@
 
 package baritone.pathing.clutch.clutches;
 
-import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.input.Input;
 import baritone.pathing.clutch.Clutch;

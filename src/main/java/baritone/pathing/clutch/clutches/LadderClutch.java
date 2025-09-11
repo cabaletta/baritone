@@ -32,14 +32,9 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class LadderClutch extends Clutch {
     public static final LadderClutch INSTANCE = new LadderClutch();
-
-    private LadderClutch() {
-        super(1.5d);
-    }
 
     @Override
     public boolean isAcceptedItem(Item item) {

@@ -17,7 +17,6 @@
 
 package baritone.pathing.clutch.clutches;
 
-import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.input.Input;
 import baritone.pathing.clutch.Clutch;
@@ -31,10 +30,6 @@ import net.minecraft.world.level.block.state.BlockState;
 public class ScaffoldingClutch extends Clutch {
     public static final ScaffoldingClutch INSTANCE = new ScaffoldingClutch();
 
-    private ScaffoldingClutch() {
-        super(1.5d);
-
-    }
     @Override
     public boolean isAcceptedItem(Item item) {
         return  item.equals(Items.SCAFFOLDING);

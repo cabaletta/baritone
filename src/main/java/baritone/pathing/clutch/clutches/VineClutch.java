@@ -37,10 +37,6 @@ import net.minecraft.world.level.block.state.BlockState;
 public class VineClutch extends Clutch {
     public static final VineClutch INSTANCE = new VineClutch();
 
-    private VineClutch() {
-        super(1.5d);
-    }
-
     @Override
     public boolean isAcceptedItem(Item item) {
         return item.equals(Items.VINE);
