@@ -34,7 +34,6 @@ import baritone.utils.pathing.MutableMoveResult;
 import com.google.common.collect.ImmutableSet;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.*;
@@ -43,7 +42,6 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-import java.util.Optional;
 import java.util.Set;
 
 public class MovementDescend extends Movement {
@@ -152,7 +150,7 @@ public class MovementDescend extends Movement {
             return;
         }
         double tentativeCost = WALK_OFF_BLOCK_COST + frontBreak;
-        Optional<Double> aboveBlockCost = Optional.empty();
+        double aboveBlockCost = -1d;
         boolean aboveBlockPriority = true;
         double velocity = 0;
         int effectiveStartHeight = y;
@@ -160,9 +158,9 @@ public class MovementDescend extends Movement {
         for (int fallHeight = context.minFallHeight; (newY = y - fallHeight) >= context.world.getMinBuildHeight(); fallHeight++) {
             BlockState ontoBlock = context.get(destX, newY, destZ);
             if (MovementHelper.canWalkThrough(context, destX, newY, destZ, ontoBlock)) {
-                if (aboveBlockCost.isPresent()) {
-                    tentativeCost += aboveBlockCost.get();
-                    aboveBlockCost = Optional.empty();
+                if (aboveBlockCost != -1d) {
+                    tentativeCost += aboveBlockCost;
+                    aboveBlockCost = -1d;
                     aboveBlockPriority = true;
                 }
                 continue;
@@ -189,7 +187,7 @@ public class MovementDescend extends Movement {
                 break;
             }
             BlockState aboveBlock = context.get(destX, newY + 1, destZ);
-            Optional<Clutch> nonSolidClutchBlock = Optional.empty();
+            Clutch nonSolidClutchBlock = null;
             if (unprotectedFallHeight > context.maxFallHeightNoClutch) {
                 for (Clutch clutch : ClutchUtils.CLUTCHES) {
                     if (clutch.compare(ontoBlock) &&
@@ -206,7 +204,7 @@ public class MovementDescend extends Movement {
                                 }
                             }
                         } else {
-                            nonSolidClutchBlock = Optional.of(clutch);
+                            nonSolidClutchBlock = clutch;
                         }
                         break;
                     }
@@ -246,16 +244,16 @@ public class MovementDescend extends Movement {
                     }
                 }
             }
-            if (nonSolidClutchBlock.isPresent()) {
-                Pair<Double, Double> fallCostAndVelocity = nonSolidClutchBlock.get().getCost(unprotectedFallHeight, 1d, velocity);
-                if (aboveBlockCost.isPresent() && aboveBlockPriority) {
-                    tentativeCost += aboveBlockCost.get();
-                    aboveBlockCost = Optional.of(fallCostAndVelocity.first());
+            if (nonSolidClutchBlock != null) {
+                Pair<Double, Double> fallCostAndVelocity = nonSolidClutchBlock.getCost(unprotectedFallHeight, 1d, velocity);
+                if (aboveBlockCost != -1d && aboveBlockPriority) {
+                    tentativeCost += aboveBlockCost;
+                    aboveBlockCost = fallCostAndVelocity.first();
                 } else {
                     tentativeCost += fallCostAndVelocity.first();
-                    aboveBlockCost = nonSolidClutchBlock.get().slowsOnTopBlock() ? Optional.of(fallCostAndVelocity.first()) : Optional.empty();
+                    aboveBlockCost = nonSolidClutchBlock.slowsOnTopBlock() ? fallCostAndVelocity.first() : -1d;
                 }
-                aboveBlockPriority = nonSolidClutchBlock.get().topBlockPriority();
+                aboveBlockPriority = nonSolidClutchBlock.topBlockPriority();
                 if (res.cost > tentativeCost) {
                     velocity = fallCostAndVelocity.second();
                     effectiveStartHeight = newY;
