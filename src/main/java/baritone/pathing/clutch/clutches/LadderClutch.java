@@ -19,6 +19,7 @@ package baritone.pathing.clutch.clutches;
 
 import baritone.api.IBaritone;
 import baritone.api.utils.BetterBlockPos;
+import baritone.api.utils.IPlayerContext;
 import baritone.pathing.clutch.ClutchUtils;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.clutch.Clutch;
@@ -31,6 +32,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class LadderClutch extends Clutch {
     public static final LadderClutch INSTANCE = new LadderClutch();
@@ -61,5 +63,10 @@ public class LadderClutch extends Clutch {
     @Override
     public boolean clutch(IBaritone baritone, MovementState state, BlockPos dest, MutableClutchResult result) {
         return ClutchUtils.blockClutch(baritone, state, dest, result, false);
+    }
+
+    @Override
+    public boolean hasClutched(IPlayerContext ctx, BetterBlockPos dest, BlockState destState) {
+        return ctx.player().getBoundingBox().intersects(dest.x, dest.y, dest.z, dest.x + 1, dest.y + 1, dest.z + 1);
     }
 }
