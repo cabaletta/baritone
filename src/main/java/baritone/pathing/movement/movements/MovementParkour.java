@@ -73,6 +73,10 @@ public class MovementParkour extends Movement {
             // most common case at the top -- the adjacent block isn't air
             return;
         }
+        BlockState current = context.get(x, y, z);
+        if (current.is(Blocks.SWEET_BERRY_BUSH) || current.is(Blocks.COBWEB) || current.is(Blocks.HONEY_BLOCK)) {
+            return;
+        }
         BlockState adj = context.get(x + xDiff, y - 1, z + zDiff);
         if (MovementHelper.canWalkOn(context, x + xDiff, y - 1, z + zDiff, adj)) { // don't parkour if we could just traverse (for now)
             // second most common case -- we could just traverse not parkour
