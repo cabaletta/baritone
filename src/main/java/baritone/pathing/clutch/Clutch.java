@@ -32,6 +32,8 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 public abstract class Clutch {
     private final double costMultiplier;
@@ -70,8 +72,13 @@ public abstract class Clutch {
         return ClutchUtils.blockClutch(baritone, state, dest, result, true);
     }
 
-    public boolean hasClutched(IPlayerContext ctx, BetterBlockPos dest) {
-        return ctx.playerFeet().equals(dest);
+    public boolean hasClutched(IPlayerContext ctx, BetterBlockPos dest, BlockState destState) {
+        VoxelShape shape = destState.getCollisionShape(ctx.world(), dest);
+        if (shape.isEmpty()) {
+            return ctx.player().getBoundingBox().intersects(dest.x, dest.y, dest.z, dest.x + 1, dest.y + 1, dest.z + 1);
+        } else {
+            return ctx.player().getBoundingBox().intersects(shape.bounds());
+        }
     }
 
     public boolean isFinished(IPlayerContext ctx, MovementState state, MutableClutchResult result) {

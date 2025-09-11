@@ -152,7 +152,7 @@ public class MovementDescend extends Movement {
         double tentativeCost = WALK_OFF_BLOCK_COST + frontBreak;
         double aboveBlockCost = -1d;
         boolean aboveBlockPriority = true;
-        double velocity = 0;
+        double velocity = 0d;
         int effectiveStartHeight = y;
         int newY;
         for (int fallHeight = context.minFallHeight; (newY = y - fallHeight) >= context.world.getMinBuildHeight(); fallHeight++) {
