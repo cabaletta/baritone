@@ -27,6 +27,8 @@ import baritone.utils.ToolSet;
 import baritone.utils.pathing.BetterWorldBorder;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
@@ -35,6 +37,7 @@ import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static baritone.api.pathing.movement.ActionCosts.COST_INF;
 
@@ -76,6 +79,7 @@ public class CalculationContext {
     public final boolean allowWalkOnMagmaBlocks;
     public final BetterWorldBorder worldBorder;
     public final boolean considerPotionEffects;
+    public final Map<MobEffect, MobEffectInstance> activeEffects;
 
     public final PrecomputedData precomputedData;
 
@@ -127,6 +131,7 @@ public class CalculationContext {
         // then you get a wildly inconsistent path that isn't optimal for either scenario.
         this.worldBorder = new BetterWorldBorder(world.getWorldBorder());
         this.considerPotionEffects = Baritone.settings().considerPotionEffects.value;
+        this.activeEffects = player.getActiveEffectsMap();
     }
 
     public final IBaritone getBaritone() {

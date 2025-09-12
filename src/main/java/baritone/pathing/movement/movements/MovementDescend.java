@@ -146,7 +146,7 @@ public class MovementDescend extends Movement {
             return;
         }
         LocalPlayer player = context.getBaritone().getPlayerContext().player();
-        if (context.considerPotionEffects && player.hasEffect(MobEffects.LEVITATION)) {
+        if (context.considerPotionEffects && context.activeEffects.containsKey(MobEffects.LEVITATION)) {
             return;
         }
         double tentativeCost = WALK_OFF_BLOCK_COST + frontBreak;
@@ -166,7 +166,7 @@ public class MovementDescend extends Movement {
                 continue;
             }
             int unprotectedFallHeight = effectiveStartHeight - 1 - newY;
-            if (context.considerPotionEffects && player.hasEffect(MobEffects.SLOW_FALLING)) {
+            if (context.considerPotionEffects && context.activeEffects.containsKey(MobEffects.SLOW_FALLING)) {
                 res.cost = tentativeCost + ActionCosts.distanceToTicks(unprotectedFallHeight, 0.01d, velocity);
                 res.x = destX;
                 res.y = newY + 1;
