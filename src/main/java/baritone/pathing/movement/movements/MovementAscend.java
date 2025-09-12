@@ -189,7 +189,7 @@ public class MovementAscend extends Movement {
 
             return state;
         }
-        MovementHelper.moveTowards(ctx, state, dest, isAttacking);
+        MovementHelper.moveTowards(ctx, state, dest, baritone.getAttackProcess().isRotating());
 
         state.setInput(Input.SNEAK, Baritone.settings().allowWalkOnMagmaBlocks.value && jumpingOnto.is(Blocks.MAGMA_BLOCK));
 

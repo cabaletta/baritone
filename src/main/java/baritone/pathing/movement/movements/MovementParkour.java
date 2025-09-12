@@ -266,7 +266,7 @@ public class MovementParkour extends Movement {
             state.setInput(Input.SNEAK, true);
         }
 
-        MovementHelper.moveTowards(ctx, state, dest, isAttacking);
+        MovementHelper.moveTowards(ctx, state, dest, baritone.getAttackProcess().isRotating());
         if (ctx.playerFeet().equals(dest)) {
             Block d = BlockStateInterface.getBlock(ctx, dest);
             if (d == Blocks.VINE || d == Blocks.LADDER) {
@@ -302,9 +302,9 @@ public class MovementParkour extends Movement {
             } else if (!ctx.playerFeet().equals(dest.relative(direction, -1))) {
                 state.setInput(Input.SPRINT, false);
                 if (ctx.playerFeet().equals(src.relative(direction, -1))) {
-                    MovementHelper.moveTowards(ctx, state, src, isAttacking);
+                    MovementHelper.moveTowards(ctx, state, src, baritone.getAttackProcess().isRotating());
                 } else {
-                    MovementHelper.moveTowards(ctx, state, src.relative(direction, -1), isAttacking);
+                    MovementHelper.moveTowards(ctx, state, src.relative(direction, -1), baritone.getAttackProcess().isRotating());
                 }
             }
         }
