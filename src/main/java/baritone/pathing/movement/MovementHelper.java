@@ -650,13 +650,21 @@ public interface MovementHelper extends ActionCosts, Helper {
         }
     }
 
+    static void moveTowards(IPlayerContext ctx, MovementState state, BlockPos dest, boolean changeRotation) {
+        if (!changeRotation) {
+            state.setTarget(new MovementTarget(
+                    RotationUtils.calcRotationFromVec3d(ctx.playerHead(),
+                            VecUtils.getBlockPosCenter(dest),
+                            ctx.playerRotations()).withPitch(ctx.playerRotations().getPitch()),
+                    false
+            )).setInput(Input.MOVE_FORWARD, true);
+        } else {
+            moveTowardsWithoutRotation(ctx, state, dest);
+        }
+    }
+
     static void moveTowards(IPlayerContext ctx, MovementState state, BlockPos pos) {
-        state.setTarget(new MovementTarget(
-                RotationUtils.calcRotationFromVec3d(ctx.playerHead(),
-                        VecUtils.getBlockPosCenter(pos),
-                        ctx.playerRotations()).withPitch(ctx.playerRotations().getPitch()),
-                false
-        )).setInput(Input.MOVE_FORWARD, true);
+        moveTowards(ctx, state, pos, false);
     }
 
     static void moveTowardsWithoutRotation(IPlayerContext ctx, MovementState state, float idealYaw) {
