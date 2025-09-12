@@ -356,7 +356,7 @@ public class MovementTraverse extends Movement {
                 }
                 return state;
             }
-            MovementHelper.moveTowardsWithoutRotation(ctx, state, dest);
+            MovementHelper.moveTowardsWithSlightRotation(ctx, state, dest);
             return state;
         }
     }

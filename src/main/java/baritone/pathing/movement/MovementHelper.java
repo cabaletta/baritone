@@ -49,12 +49,9 @@ import net.minecraft.world.level.material.WaterFluid;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
-import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static baritone.api.utils.RotationUtils.DEG_TO_RAD_F;
 import static baritone.pathing.movement.Movement.HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP;
@@ -653,15 +650,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         }
     }
 
-    static void moveTowards(IBaritone baritone, IPlayerContext ctx, MovementState state, BlockPos pos) {
-        if (baritone.getAttackProcess().isRotating()) {
-            moveTowardsWithoutRotation(ctx, state, pos);
-        } else {
-            moveTowardsWithRotation(ctx, state, pos);
-        }
-    }
-
-    static void moveTowardsWithRotation(IPlayerContext ctx, MovementState state, BlockPos pos) {
+    static void moveTowards(IPlayerContext ctx, MovementState state, BlockPos pos) {
         state.setTarget(new MovementTarget(
                 RotationUtils.calcRotationFromVec3d(ctx.playerHead(),
                         VecUtils.getBlockPosCenter(pos),
@@ -670,55 +659,41 @@ public interface MovementHelper extends ActionCosts, Helper {
         )).setInput(Input.MOVE_FORWARD, true);
     }
 
+    static void moveTowardsWithoutRotation(IPlayerContext ctx, MovementState state, float idealYaw) {
+        MovementOption.getOptions(
+                Mth.sin(ctx.playerRotations().getYaw() * DEG_TO_RAD_F),
+                Mth.cos(ctx.playerRotations().getYaw() * DEG_TO_RAD_F),
+                Baritone.settings().allowSprint.value
+        ).min(Comparator.comparing(option -> option.distanceToSq(
+                Mth.sin(idealYaw * DEG_TO_RAD_F),
+                Mth.cos(idealYaw * DEG_TO_RAD_F)
+        ))).ifPresent(selection -> selection.setInputs(state));
+    }
+
     static void moveTowardsWithoutRotation(IPlayerContext ctx, MovementState state, BlockPos dest) {
-        float ax = Mth.sin(ctx.playerRotations().getYaw() * DEG_TO_RAD_F);
-        float az = Mth.cos(ctx.playerRotations().getYaw() * DEG_TO_RAD_F);
-        Rotation blockRotation = RotationUtils.calcRotationFromVec3d(ctx.playerHead(),
+        float idealYaw = RotationUtils.calcRotationFromVec3d(
+                ctx.playerHead(),
                 VecUtils.getBlockPosCenter(dest),
-                ctx.playerRotations());
-        int selection = getDirectionSelection(blockRotation, ax, az);
-        switch (selection) {
-            case 0 -> state.setInput(Input.MOVE_FORWARD, true);
-            case 1 -> state.setInput(Input.MOVE_BACK, true);
-            case 2 -> state.setInput(Input.MOVE_LEFT, true);
-            case 3 -> state.setInput(Input.MOVE_RIGHT, true);
-            case 4 -> state.setInput(Input.MOVE_FORWARD, true).setInput(Input.MOVE_LEFT, true);
-            case 5 -> state.setInput(Input.MOVE_FORWARD, true).setInput(Input.MOVE_RIGHT, true);
-            case 6 -> state.setInput(Input.MOVE_BACK, true).setInput(Input.MOVE_LEFT, true);
-            case 7 -> state.setInput(Input.MOVE_BACK, true).setInput(Input.MOVE_RIGHT, true);
-            default -> {}
-        }
+                ctx.playerRotations()
+        ).getYaw();
+        moveTowardsWithoutRotation(ctx, state, idealYaw);
     }
 
-    private static int getDirectionSelection(Rotation blockRotation, float ax, float az) {
-        float targetAx = Mth.sin(blockRotation.getYaw() * DEG_TO_RAD_F);
-        float targetAz = Mth.cos(blockRotation.getYaw() * DEG_TO_RAD_F);
-        Vec2[] options = getDirectionOptions(ax, az);
-        int selection = -1;
-        float closestX = 100000;
-        float closestZ = 100000;
-        for (int i = 0; i < options.length; i++) {
-            if (Mth.abs(targetAx - options[i].x) + Mth.abs(targetAz - options[i].y) < closestX + closestZ) {
-                closestX = Mth.abs(targetAx - options[i].x);
-                closestZ = Mth.abs(targetAz - options[i].y);
-                selection = i;
-            }
-        }
-        return selection;
-    }
-
-    private static Vec2[] getDirectionOptions(float ax, float az) {
-        boolean canSprint = Baritone.settings().allowSprint.value;
-        return new Vec2[]{
-                new Vec2(canSprint ? ax * 1.3f : ax, canSprint ? az * 1.3f : az), // W
-                new Vec2(-ax, -az), // S
-                new Vec2(-az, ax), // A
-                new Vec2(az, -ax), // D
-                new Vec2((canSprint ? ax * 1.3f : ax) - az, (canSprint ? az * 1.3f : az) + ax), // W+A
-                new Vec2((canSprint ? ax * 1.3f : ax) + az, (canSprint ? az * 1.3f : az) - ax), // W+D
-                new Vec2(-ax - az, -az + ax), // S+A
-                new Vec2(-ax + az, -az - ax) // S+D
-        };
+    static void moveTowardsWithSlightRotation(IPlayerContext ctx, MovementState state, BlockPos dest) {
+        float idealYaw = RotationUtils.calcRotationFromVec3d(
+                ctx.playerHead(),
+                VecUtils.getBlockPosCenter(dest),
+                ctx.playerRotations()
+        ).getYaw();
+        float distance = Rotation.yawDistanceFromOffset(ctx.playerRotations().getYaw(), idealYaw) % 45f;
+        float newYaw = distance > 0f ?
+                distance > 22.5f ? distance - 45f : distance :
+                distance < -22.5f ? distance + 45f : distance;
+        state.setTarget(new MovementTarget(new Rotation(
+                ctx.playerRotations().getYaw() - newYaw,
+                ctx.playerRotations().getPitch()
+        ), true));
+        moveTowardsWithoutRotation(ctx, state, idealYaw);
     }
 
     /**
