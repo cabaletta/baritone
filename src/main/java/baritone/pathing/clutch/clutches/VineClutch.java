@@ -77,9 +77,4 @@ public class VineClutch extends Clutch {
     public boolean clutch(IBaritone baritone, MovementState state, BlockPos dest, MutableClutchResult result) {
         return ClutchUtils.blockClutch(baritone, state, dest, result, false);
     }
-
-    @Override
-    public boolean hasClutched(IPlayerContext ctx, BetterBlockPos dest, BlockState destState) {
-        return ctx.player().getBoundingBox().intersects(dest.x, dest.y, dest.z, dest.x + 1, dest.y + 1, dest.z + 1);
-    }
 }

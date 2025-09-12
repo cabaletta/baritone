@@ -93,10 +93,9 @@ public class MovementFall extends Movement {
             return state.setStatus(MovementStatus.UNREACHABLE);
         }
         if (clutchResult.clutch != null) {
-            if ((clutchResult.clutch.compare(destState) ||
+            if (clutchResult.clutch.compare(destState) ||
                     clutchResult.item == null ||
-                    clutchResult.clutch.clutch(baritone, state, trueDest, clutchResult)
-            ) && clutchResult.clutch.hasClutched(ctx, dest, destState)) {
+                    clutchResult.clutch.clutch(baritone, state, trueDest, clutchResult)) {
                 if (clutchResult.clutch.isFinished(ctx, state, clutchResult) && ctx.player().isOnGround()) {
                     clutchResult.reset();
                     return state.setStatus(MovementStatus.SUCCESS);

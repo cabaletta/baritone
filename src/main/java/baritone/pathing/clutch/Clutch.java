@@ -72,17 +72,6 @@ public abstract class Clutch {
         return ClutchUtils.blockClutch(baritone, state, dest, result, true);
     }
 
-    public boolean hasClutched(IPlayerContext ctx, BetterBlockPos dest, BlockState destState) {
-        VoxelShape shape = destState.getCollisionShape(ctx.world(), dest);
-        if (shape.isEmpty()) {
-            return ctx.player().getBoundingBox().intersects(dest.x, dest.y, dest.z, dest.x + 1, dest.y + 1, dest.z + 1);
-        } else {
-            return ctx.player().getBoundingBox().intersects(
-                    dest.x + shape.bounds().minX, dest.y + shape.bounds().minY, dest.z + shape.bounds().minZ,
-                    dest.x + shape.bounds().maxX, dest.y + shape.bounds().maxY, dest.z + shape.bounds().maxZ);
-        }
-    }
-
     public boolean isFinished(IPlayerContext ctx, MovementState state, MutableClutchResult result) {
         return true;
     }

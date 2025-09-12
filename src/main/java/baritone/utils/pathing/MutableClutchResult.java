@@ -17,7 +17,6 @@
 
 package baritone.utils.pathing;
 
-import baritone.api.utils.BetterBlockPos;
 import baritone.pathing.clutch.Clutch;
 import net.minecraft.world.item.ItemStack;
 
