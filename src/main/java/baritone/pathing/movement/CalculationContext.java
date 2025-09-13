@@ -131,7 +131,7 @@ public class CalculationContext {
         // then you get a wildly inconsistent path that isn't optimal for either scenario.
         this.worldBorder = new BetterWorldBorder(world.getWorldBorder());
         this.considerPotionEffects = Baritone.settings().considerPotionEffects.value;
-        this.activeEffects = player.getActiveEffectsMap();
+        this.activeEffects = Map.copyOf(player.getActiveEffectsMap());
     }
 
     public final IBaritone getBaritone() {
