@@ -52,7 +52,6 @@ public class SlimeClutch extends Clutch {
 
     @Override
     public boolean isFinished(IPlayerContext ctx, MovementState state, MutableClutchResult result) {
-        System.out.println(2);
         if (result.phase == 0) {
             state.setInput(Input.SNEAK, false);
             state.setInput(Input.JUMP, true);
