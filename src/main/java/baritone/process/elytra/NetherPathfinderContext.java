@@ -280,11 +280,11 @@ public final class NetherPathfinderContext implements IElytraPathFinder {
         return this.seed;
     }
 
-    public void RLock() {
+    public void acquireReadLock() {
         this.readLock.lock();
     }
 
-    public void RUnlock() {
+    public void releaseReadLock() {
         this.readLock.unlock();
     }
 

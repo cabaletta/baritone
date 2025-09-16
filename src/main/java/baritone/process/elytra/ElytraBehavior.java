@@ -175,12 +175,12 @@ public final class ElytraBehavior implements Helper {
             int minY = ctx.world().dimensionType().minY();
             int y = ctx.playerFeet().y;
 
-            npfContext.RLock();
+            npfContext.acquireReadLock();
             try {
                 // Obstacles are more important than an incomplete path, handle those first.
                 this.pathfindAroundObstacles();
             } finally {
-                npfContext.RUnlock();
+                npfContext.releaseReadLock();
             }
             this.attemptNextSegment();
 
@@ -533,11 +533,11 @@ public final class ElytraBehavior implements Helper {
     }
 
     public void onTick() {
-        npfContext.RLock();
+        npfContext.acquireReadLock();
         try {
             this.onTick0();
         } finally {
-            npfContext.RUnlock();
+            npfContext.releaseReadLock();
         }
         final long now = System.currentTimeMillis();
         if ((now - this.timeLastCacheCull) / 1000 > Baritone.settings().elytraTimeBetweenCacheCullSecs.value) {
@@ -665,11 +665,11 @@ public final class ElytraBehavior implements Helper {
 
             final SolverContext context = this.new SolverContext(true);
             this.solver = this.solverExecutor.submit(() -> {
-                npfContext.RLock();
+                npfContext.acquireReadLock();
                 try {
                     return this.solveAngles(context);
                 } finally {
-                    npfContext.RUnlock();
+                    npfContext.releaseReadLock();
                 }
             });
             this.solveNextTick = false;

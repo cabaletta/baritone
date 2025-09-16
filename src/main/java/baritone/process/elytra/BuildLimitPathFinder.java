@@ -66,15 +66,15 @@ public class BuildLimitPathFinder implements IElytraPathFinder {
         final LinkedList<BetterBlockPos> path = new LinkedList<>();
         final int stepDistance = 32;
 
-        start = start.y == flightLevel ? start : new BetterBlockPos(start.getX(), flightLevel, start.getZ());
-        destination = destination.y == flightLevel ? destination : new BetterBlockPos(destination.getX(), flightLevel, destination.getZ());
+        final BetterBlockPos startFixed = start.y == flightLevel ? start : new BetterBlockPos(start.getX(), flightLevel, start.getZ());
+        final BetterBlockPos destinationFixed = destination.y == flightLevel ? destination : new BetterBlockPos(destination.getX(), flightLevel, destination.getZ());
 
-        BetterBlockPos cur = start;
+        BetterBlockPos cur = startFixed;
         path.add(cur);
 
         while (path.size() < maxPathSize) {
-            double deltaX = destination.getX() - cur.getX();
-            double deltaZ = destination.getZ() - cur.getZ();
+            double deltaX = destinationFixed.getX() - cur.getX();
+            double deltaZ = destinationFixed.getZ() - cur.getZ();
             double remainingDistance = Math.sqrt(deltaX * deltaX + deltaZ * deltaZ);
             double remainingDistanceSq = deltaX * deltaX + deltaZ * deltaZ;
 
@@ -82,7 +82,7 @@ public class BuildLimitPathFinder implements IElytraPathFinder {
                 // We are within the buffer distance, so we can stop here
                 return new Tuple<>(path, true);
             } else if (remainingDistance <= stepDistance) {
-                path.add(destination);
+                path.add(destinationFixed);
                 return new Tuple<>(path, true);
             }
 

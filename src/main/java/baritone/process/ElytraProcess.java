@@ -75,6 +75,11 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
     private boolean allowAboveRoof;
     private final Semaphore behaviorSema = new Semaphore(1);
 
+    private static final int SHORT_LANDING_COLUMN_HEIGHT = 15;
+    private static final int LONG_LANDING_COLUMN_HEIGHT = 39;
+    private int landingColumnHeight = SHORT_LANDING_COLUMN_HEIGHT;
+    private Set<BetterBlockPos> badLandingSpots = new HashSet<>();
+
     @Override
     public void onLostControl() {
         this.state = State.START_FLYING; // TODO: null state?
@@ -215,11 +220,11 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
             behavior.landingMode = this.state == State.LANDING;
             this.goal = null;
             baritone.getInputOverrideHandler().clearAllKeys();
-            this.behavior.npfContext.RLock();
+            this.behavior.npfContext.acquireReadLock();
             try {
                 behavior.tick();
             } finally {
-                this.behavior.npfContext.RUnlock();
+                this.behavior.npfContext.releaseReadLock();
             }
             return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
         } else if (this.state == State.LANDING) {
@@ -612,20 +617,15 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
         return null; // void
     }
 
-    private static final int SHORT_LANDING_COLUMN_HEIGHT = 15;
-    private static final int LONG_LANDING_COLUMN_HEIGHT = 39;
-    private int landingColumnHeight = SHORT_LANDING_COLUMN_HEIGHT;
-    private Set<BetterBlockPos> badLandingSpots = new HashSet<>();
-
     private BetterBlockPos findSafeLandingSpot(BetterBlockPos start) {
         if(ctx.player().getY() > ctx.world().getHeight(Heightmap.Types.MOTION_BLOCKING, start.getX(), start.getZ())) {
-            return findSafeLandingSpot_heightmap(start);
+            return heightmapLandingSpot(start);
         } else {
-            return findSafeLandingSpot_underground(start);
+            return undergroundLandingSpot(start);
         }
     }
 
-    private BetterBlockPos findSafeLandingSpot_underground(BetterBlockPos start) {
+    private BetterBlockPos undergroundLandingSpot(BetterBlockPos start) {
         Queue<BetterBlockPos> queue = new PriorityQueue<>(Comparator.<BetterBlockPos>comparingInt(pos -> (pos.x - start.x) * (pos.x - start.x) + (pos.z - start.z) * (pos.z - start.z)).thenComparingInt(pos -> -pos.y));
         Set<BetterBlockPos> visited = new HashSet<>();
         LongOpenHashSet checkedPositions = new LongOpenHashSet();
@@ -652,7 +652,7 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
         return null;
     }
 
-    private BetterBlockPos findSafeLandingSpot_heightmap(BetterBlockPos start) {
+    private BetterBlockPos heightmapLandingSpot(BetterBlockPos start) {
         Queue<BetterBlockPos> queue = new PriorityQueue<>(Comparator.<BetterBlockPos>comparingInt(pos -> (pos.x - start.x) * (pos.x - start.x) + (pos.z - start.z) * (pos.z - start.z)).thenComparingInt(pos -> -pos.y));
         Set<BetterBlockPos> visited = new HashSet<>();
         LongOpenHashSet checkedPositions = new LongOpenHashSet();
