@@ -194,7 +194,7 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
                 reachedGoal = true;
 
                 // we are goingToLandingSpot and we are in the last node of the path
-                if (this.goingToLandingSpot) {
+                if (this.goingToLandingSpot && landingSpot != null) {
                     this.state = State.LANDING;
                     logDirect("Above the landing spot, landing...");
                 }
