@@ -20,15 +20,9 @@ package baritone.pathing.movement.movements;
 import baritone.Baritone;
 import baritone.api.IBaritone;
 import baritone.api.pathing.movement.MovementStatus;
-import baritone.api.utils.BetterBlockPos;
-import baritone.api.utils.Rotation;
-import baritone.api.utils.RotationUtils;
-import baritone.api.utils.VecUtils;
+import baritone.api.utils.*;
 import baritone.api.utils.input.Input;
-import baritone.pathing.movement.CalculationContext;
-import baritone.pathing.movement.Movement;
-import baritone.pathing.movement.MovementHelper;
-import baritone.pathing.movement.MovementState;
+import baritone.pathing.movement.*;
 import baritone.utils.BlockStateInterface;
 import com.google.common.collect.ImmutableSet;
 import net.minecraft.core.BlockPos;
@@ -44,10 +38,18 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.SlabType;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
 public class MovementTraverse extends Movement {
+    private static final Offset[] offsets = {
+            new Offset(-1, 0, 0),
+            new Offset(+1, 0, 0),
+            new Offset(0, 0, -1),
+            new Offset(0, 0, +1),
+    };
 
     /**
      * Did we have to place a bridge block or was it always there
@@ -66,7 +68,7 @@ public class MovementTraverse extends Movement {
 
     @Override
     public double calculateCost(CalculationContext context) {
-        return cost(context, src.x, src.y, src.z, dest.x, dest.z);
+        return cost(context, src.x, src.y, src.z, dest.x, dest.y, dest.z);
     }
 
     @Override
@@ -74,7 +76,18 @@ public class MovementTraverse extends Movement {
         return ImmutableSet.of(src, dest); // src.above means that we don't get caught in an infinite loop in water
     }
 
-    public static double cost(CalculationContext context, int x, int y, int z, int destX, int destZ) {
+    public static List<Pair<Offset, Double>> cost(CalculationContext context, int x, int y, int z) {
+        List<Pair<Offset, Double>> costs = new ArrayList<>();
+        for (Offset offset : offsets) {
+            double cost = cost(context, x, y, z, offset.x(), offset.y(), offset.z());
+            if (cost < COST_INF) {
+                costs.add(new Pair<>(offset, cost));
+            }
+        }
+        return costs;
+    }
+
+    public static double cost(CalculationContext context, int x, int y, int z, int destX, int destY, int destZ) {
         BlockState pb0 = context.get(destX, y + 1, destZ);
         BlockState pb1 = context.get(destX, y, destZ);
         BlockState destOn = context.get(destX, y - 1, destZ);
@@ -122,6 +135,7 @@ public class MovementTraverse extends Movement {
                 hardness1 *= 5;
                 hardness2 *= 5;
             }
+
             return WC + hardness1 + hardness2;
         } else {//this is a bridge, so we need to place a block
             if (srcDownBlock == Blocks.LADDER || srcDownBlock == Blocks.VINE) {

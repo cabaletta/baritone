@@ -22,13 +22,14 @@ import baritone.api.pathing.calc.IPath;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.movement.ActionCosts;
 import baritone.api.utils.BetterBlockPos;
+import baritone.api.utils.Pair;
 import baritone.api.utils.SettingsUtil;
 import baritone.pathing.calc.openset.BinaryHeapOpenSet;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Moves;
+import baritone.pathing.movement.Offset;
 import baritone.utils.pathing.BetterWorldBorder;
 import baritone.utils.pathing.Favoring;
-import baritone.utils.pathing.MutableMoveResult;
 
 import java.util.Optional;
 
@@ -62,7 +63,6 @@ public final class AStarPathFinder extends AbstractNodeCostSearch {
             bestHeuristicSoFar[i] = startNode.estimatedCostToGoal;
             bestSoFar[i] = startNode;
         }
-        MutableMoveResult res = new MutableMoveResult();
         BetterWorldBorder worldBorder = new BetterWorldBorder(calcContext.world.getWorldBorder());
         long startTime = System.currentTimeMillis();
         boolean slowPath = Baritone.settings().slowPath.value;
@@ -100,86 +100,82 @@ public final class AStarPathFinder extends AbstractNodeCostSearch {
                 return Optional.of(new Path(realStart, startNode, currentNode, numNodes, goal, calcContext));
             }
             for (Moves moves : allMoves) {
-                int newX = currentNode.x + moves.xOffset;
-                int newZ = currentNode.z + moves.zOffset;
-                if ((newX >> 4 != currentNode.x >> 4 || newZ >> 4 != currentNode.z >> 4) && !calcContext.isLoaded(newX, newZ)) {
-                    // only need to check if the destination is a loaded chunk if it's in a different chunk than the start of the movement
-                    if (!moves.dynamicXZ) { // only increment the counter if the movement would have gone out of bounds guaranteed
+                for (Pair<Offset, Double> offsetAndCost : moves.cost(calcContext, currentNode.x, currentNode.y, currentNode.z)) {
+                    int newX = currentNode.x + offsetAndCost.first().x();
+                    int newY = currentNode.y + offsetAndCost.first().y();
+                    int newZ = currentNode.z + offsetAndCost.first().z();
+                    if ((newX >> 4 != currentNode.x >> 4 || newZ >> 4 != currentNode.z >> 4) && !calcContext.isLoaded(newX, newZ)) {
+                        // only need to check if the destination is a loaded chunk if it's in a different chunk than the start of the movement
                         numEmptyChunk++;
+                        continue;
                     }
-                    continue;
-                }
-                if (!moves.dynamicXZ && !worldBorder.entirelyContains(newX, newZ)) {
-                    continue;
-                }
-                if (currentNode.y + moves.yOffset > height || currentNode.y + moves.yOffset < minY) {
-                    continue;
-                }
-                res.reset();
-                moves.apply(calcContext, currentNode.x, currentNode.y, currentNode.z, res);
-                numMovementsConsidered++;
-                double actionCost = res.cost;
-                if (actionCost >= ActionCosts.COST_INF) {
-                    continue;
-                }
-                if (actionCost <= 0 || Double.isNaN(actionCost)) {
-                    throw new IllegalStateException(String.format(
-                            "%s from %s %s %s calculated implausible cost %s",
-                            moves,
-                            SettingsUtil.maybeCensor(currentNode.x),
-                            SettingsUtil.maybeCensor(currentNode.y),
-                            SettingsUtil.maybeCensor(currentNode.z),
-                            actionCost));
-                }
-                // check destination after verifying it's not COST_INF -- some movements return COST_INF without adjusting the destination
-                if (moves.dynamicXZ && !worldBorder.entirelyContains(res.x, res.z)) { // see issue #218
-                    continue;
-                }
-                if (!moves.dynamicXZ && (res.x != newX || res.z != newZ)) {
-                    throw new IllegalStateException(String.format(
-                            "%s from %s %s %s ended at x z %s %s instead of %s %s",
-                            moves,
-                            SettingsUtil.maybeCensor(currentNode.x),
-                            SettingsUtil.maybeCensor(currentNode.y),
-                            SettingsUtil.maybeCensor(currentNode.z),
-                            SettingsUtil.maybeCensor(res.x),
-                            SettingsUtil.maybeCensor(res.z),
-                            SettingsUtil.maybeCensor(newX),
-                            SettingsUtil.maybeCensor(newZ)));
-                }
-                if (!moves.dynamicY && res.y != currentNode.y + moves.yOffset) {
-                    throw new IllegalStateException(String.format(
-                            "%s from %s %s %s ended at y %s instead of %s",
-                            moves,
-                            SettingsUtil.maybeCensor(currentNode.x),
-                            SettingsUtil.maybeCensor(currentNode.y),
-                            SettingsUtil.maybeCensor(currentNode.z),
-                            SettingsUtil.maybeCensor(res.y),
-                            SettingsUtil.maybeCensor(currentNode.y + moves.yOffset)));
-                }
-                long hashCode = BetterBlockPos.longHash(res.x, res.y, res.z);
-                if (isFavoring) {
-                    // see issue #18
-                    actionCost *= favoring.calculate(hashCode);
-                }
-                PathNode neighbor = getNodeAtPosition(res.x, res.y, res.z, hashCode);
-                double tentativeCost = currentNode.cost + actionCost;
-                if (neighbor.cost - tentativeCost > minimumImprovement) {
-                    neighbor.previous = currentNode;
-                    neighbor.cost = tentativeCost;
-                    neighbor.combinedCost = tentativeCost + neighbor.estimatedCostToGoal;
-                    if (neighbor.isOpen()) {
-                        openSet.update(neighbor);
-                    } else {
-                        openSet.insert(neighbor);//dont double count, dont insert into open set if it's already there
+                    if (!worldBorder.entirelyContains(newX, newZ)) {
+                        continue;
                     }
-                    for (int i = 0; i < COEFFICIENTS.length; i++) {
-                        double heuristic = neighbor.estimatedCostToGoal + neighbor.cost / COEFFICIENTS[i];
-                        if (bestHeuristicSoFar[i] - heuristic > minimumImprovement) {
-                            bestHeuristicSoFar[i] = heuristic;
-                            bestSoFar[i] = neighbor;
-                            if (failing && getDistFromStartSq(neighbor) > MIN_DIST_PATH * MIN_DIST_PATH) {
-                                failing = false;
+                    if (newY > height || newY < minY) {
+                        continue;
+                    }
+                    numMovementsConsidered++;
+                    double actionCost = offsetAndCost.second();
+                    if (actionCost >= ActionCosts.COST_INF) {
+                        continue;
+                    }
+                    if (actionCost <= 0 || Double.isNaN(actionCost)) {
+                        throw new IllegalStateException(String.format(
+                                "%s from %s %s %s calculated implausible cost %s",
+                                moves,
+                                SettingsUtil.maybeCensor(currentNode.x),
+                                SettingsUtil.maybeCensor(currentNode.y),
+                                SettingsUtil.maybeCensor(currentNode.z),
+                                actionCost));
+                    }
+                    // check destination after verifying it's not COST_INF -- some movements return COST_INF without adjusting the destination
+//                    if (res.x != newX || res.z != newZ) {
+//                        throw new IllegalStateException(String.format(
+//                                "%s from %s %s %s ended at x z %s %s instead of %s %s",
+//                                moves,
+//                                SettingsUtil.maybeCensor(currentNode.x),
+//                                SettingsUtil.maybeCensor(currentNode.y),
+//                                SettingsUtil.maybeCensor(currentNode.z),
+//                                SettingsUtil.maybeCensor(res.x),
+//                                SettingsUtil.maybeCensor(res.z),
+//                                SettingsUtil.maybeCensor(newX),
+//                                SettingsUtil.maybeCensor(newZ)));
+//                    }
+//                    if (res.y != currentNode.y + offsetAndCost.first().y()) {
+//                        throw new IllegalStateException(String.format(
+//                                "%s from %s %s %s ended at y %s instead of %s",
+//                                moves,
+//                                SettingsUtil.maybeCensor(currentNode.x),
+//                                SettingsUtil.maybeCensor(currentNode.y),
+//                                SettingsUtil.maybeCensor(currentNode.z),
+//                                SettingsUtil.maybeCensor(res.y),
+//                                SettingsUtil.maybeCensor(currentNode.y + offsetAndCost.first().y())));
+//                    }
+                    long hashCode = BetterBlockPos.longHash(newX, newY, newZ);
+                    if (isFavoring) {
+                        // see issue #18
+                        actionCost *= favoring.calculate(hashCode);
+                    }
+                    PathNode neighbor = getNodeAtPosition(newX, newY, newZ, hashCode);
+                    double tentativeCost = currentNode.cost + actionCost;
+                    if (neighbor.cost - tentativeCost > minimumImprovement) {
+                        neighbor.previous = currentNode;
+                        neighbor.cost = tentativeCost;
+                        neighbor.combinedCost = tentativeCost + neighbor.estimatedCostToGoal;
+                        if (neighbor.isOpen()) {
+                            openSet.update(neighbor);
+                        } else {
+                            openSet.insert(neighbor);//dont double count, dont insert into open set if it's already there
+                        }
+                        for (int i = 0; i < COEFFICIENTS.length; i++) {
+                            double heuristic = neighbor.estimatedCostToGoal + neighbor.cost / COEFFICIENTS[i];
+                            if (bestHeuristicSoFar[i] - heuristic > minimumImprovement) {
+                                bestHeuristicSoFar[i] = heuristic;
+                                bestSoFar[i] = neighbor;
+                                if (failing && getDistFromStartSq(neighbor) > MIN_DIST_PATH * MIN_DIST_PATH) {
+                                    failing = false;
+                                }
                             }
                         }
                     }
