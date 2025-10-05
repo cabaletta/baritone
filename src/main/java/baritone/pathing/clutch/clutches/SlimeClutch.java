@@ -57,6 +57,7 @@ public class SlimeClutch extends Clutch {
         state.setInput(Input.SNEAK, false);
         state.setInput(Input.JUMP, true);
         if (onGround) {
+            onGround = false;
             return true;
         }
         onGround = ctx.player().isOnGround();
