@@ -82,8 +82,9 @@ public class MovementFall extends Movement {
 
         BlockPos playerFeet = ctx.playerFeet();
         Rotation toDest = RotationUtils.calcRotationFromVec3d(ctx.playerHead(), VecUtils.getBlockPosCenter(dest), ctx.playerRotations());
-        BetterBlockPos trueDest = clutchResult.placeBelow ? dest.below() : dest;
-        BlockState destState = ctx.world().getBlockState(trueDest);
+        BlockState destState = ctx.world().getBlockState(dest);
+        BetterBlockPos blockDest = dest.below();
+        BlockState blockDestState = ctx.world().getBlockState(blockDest);
         if (ctx.world().getBlockState(dest.below()).is(Blocks.MAGMA_BLOCK) &&
                 MovementHelper.steppingOnBlocks(ctx).stream().allMatch(block -> MovementHelper.canWalkThrough(ctx, block))) {
             state.setInput(Input.SNEAK, true);
@@ -93,15 +94,12 @@ public class MovementFall extends Movement {
             return state.setStatus(MovementStatus.UNREACHABLE);
         }
         if (clutchResult.clutch != null) {
-            if (clutchResult.clutch.compare(destState) ||
-                    clutchResult.item == null ||
-                    clutchResult.clutch.clutch(baritone, state, trueDest, clutchResult)) {
-                if (clutchResult.clutch.isFinished(ctx, state, clutchResult) && ctx.player().isOnGround()) {
-                    clutchResult.reset();
-                    return state.setStatus(MovementStatus.SUCCESS);
-                } else {
-                    return state;
-                }
+            if (clutchResult.item != null && !clutchResult.clutch.compare(blockDestState)) {
+                clutchResult.clutch.clutch(baritone, state, blockDest, clutchResult);
+            }
+            if (clutchResult.clutch.hasClutched(ctx, dest, destState) && clutchResult.clutch.isFinished(ctx, state, clutchResult)) {
+                clutchResult.reset();
+                return state.setStatus(MovementStatus.SUCCESS);
             }
         } else if (playerFeet.equals(dest)) {
             return state.setStatus(MovementStatus.SUCCESS);

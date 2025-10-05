@@ -47,4 +47,9 @@ public class ScaffoldingClutch extends Clutch {
         state.setInput(Input.SNEAK, true);
         return ctx.world().getBlockState(ctx.playerFeet()).is(Blocks.SCAFFOLDING);
     }
+
+    @Override
+    public boolean hasClutched(IPlayerContext ctx, BetterBlockPos dest, BlockState destState) {
+        return ctx.player().getBoundingBox().intersects(dest.x, dest.y, dest.z, dest.x + 1, dest.y + 2, dest.z + 1);
+    }
 }

@@ -33,6 +33,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 public class SlimeClutch extends Clutch {
     public static final SlimeClutch INSTANCE = new SlimeClutch();
 
+    private boolean onGround = false;
+
     private SlimeClutch() {}
 
     @Override
@@ -52,21 +54,22 @@ public class SlimeClutch extends Clutch {
 
     @Override
     public boolean isFinished(IPlayerContext ctx, MovementState state, MutableClutchResult result) {
-        if (result.phase == 0) {
-            state.setInput(Input.SNEAK, false);
-            state.setInput(Input.JUMP, true);
-            if (ctx.player().isOnGround()) {
-                result.phase = 1;
-            }
-            return false;
-        } else {
-            state.setInput(Input.SNEAK, true);
+        state.setInput(Input.SNEAK, false);
+        state.setInput(Input.JUMP, true);
+        if (onGround) {
             return true;
         }
+        onGround = ctx.player().isOnGround();
+        return false;
     }
 
     @Override
     public double getAdditionalCost() {
         return 13.0182684d;
+    }
+
+    @Override
+    public boolean hasClutched(IPlayerContext ctx, BetterBlockPos dest, BlockState destState) {
+        return ctx.player().getBoundingBox().intersects(dest.x, dest.y, dest.z, dest.x + 1, dest.y + 2, dest.z + 1);
     }
 }
