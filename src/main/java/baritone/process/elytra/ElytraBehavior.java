@@ -118,7 +118,7 @@ public final class ElytraBehavior implements Helper {
     private int invTickCountdown = 0;
     private final Queue<Runnable> invTransactionQueue = new LinkedList<>();
 
-    public ElytraBehavior(Baritone baritone, ElytraProcess process, BlockPos destination, boolean appendDestination) {
+    public ElytraBehavior(Baritone baritone, ElytraProcess process, NetherPathfinderContext npf, BlockPos destination, boolean appendDestination) {
         this.baritone = baritone;
         this.ctx = baritone.getPlayerContext();
         this.clearLines = new CopyOnWriteArrayList<>();
@@ -130,11 +130,7 @@ public final class ElytraBehavior implements Helper {
         this.solverExecutor = Executors.newSingleThreadExecutor();
         this.nextTickBoostCounter = new int[2];
 
-        this.npfContext = new NetherPathfinderContext(
-                Baritone.settings().elytraNetherSeed.value,
-                Baritone.settings().elytraUseCache.value ? baritone.getWorldProvider().getCurrentWorld().directory.resolve("cache") : null,
-                ctx.world()
-        );
+        this.npfContext = npf;
 
         if(ctx.world().dimension() == Level.NETHER) {
             this.pathFinder = Baritone.settings().elytraAllowAboveRoof.value && Baritone.settings().elytraAllowAboveBuildLimit.value
@@ -504,31 +500,6 @@ public final class ElytraBehavior implements Helper {
             while (!this.solverExecutor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS)) {}
         } catch (InterruptedException e) {
             e.printStackTrace();
-        }
-        this.npfContext.destroy();
-    }
-
-    public void repackChunks() {
-        ChunkSource chunkProvider = ctx.world().getChunkSource();
-
-        BetterBlockPos playerPos = ctx.playerFeet();
-
-        int playerChunkX = playerPos.getX() >> 4;
-        int playerChunkZ = playerPos.getZ() >> 4;
-
-        int minX = playerChunkX - 40;
-        int minZ = playerChunkZ - 40;
-        int maxX = playerChunkX + 40;
-        int maxZ = playerChunkZ + 40;
-
-        for (int x = minX; x <= maxX; x++) {
-            for (int z = minZ; z <= maxZ; z++) {
-                LevelChunk chunk = chunkProvider.getChunk(x, z, false);
-
-                if (chunk != null && !chunk.isEmpty()) {
-                    npfContext.queueForPacking(chunk);
-                }
-            }
         }
     }
 

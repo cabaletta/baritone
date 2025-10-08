@@ -53,6 +53,8 @@ import net.minecraft.world.level.block.AirBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.chunk.ChunkSource;
+import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
@@ -69,11 +71,12 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
     private boolean reachedGoal; // this basically just prevents potential notification spam
     private Goal goal;
     private ElytraBehavior behavior;
+    private NetherPathfinderContext npfContext;
     private boolean predictingTerrain;
     private boolean allowTight;
     private boolean allowAboveBuildLimit;
     private boolean allowAboveRoof;
-    private final Semaphore behaviorSema = new Semaphore(1);
+    private final Semaphore npfSema = new Semaphore(1);
 
     private static final int SHORT_LANDING_COLUMN_HEIGHT = 15;
     private static final int LONG_LANDING_COLUMN_HEIGHT = 39;
@@ -82,12 +85,19 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
 
     @Override
     public void onLostControl() {
+        onLostControl(true);
+    }
+
+    public void onLostControl(boolean destroyNpf) {
         this.state = State.START_FLYING; // TODO: null state?
         this.goingToLandingSpot = false;
         this.landingSpot = null;
         this.reachedGoal = false;
         this.goal = null;
         destroyBehaviorAsync();
+        if (destroyNpf) {
+            destroyNpfContextAsync();
+        }
     }
 
     private ElytraProcess(Baritone baritone) {
@@ -328,7 +338,6 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
             this.behavior = null;
             Baritone.getExecutor().execute(() -> {
                 behavior.destroy();
-                behaviorSema.release();
             });
         }
     }
@@ -345,8 +354,27 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
 
     @Override
     public void repackChunks() {
-        if (this.behavior != null) {
-            this.behavior.repackChunks();
+        if (this.npfContext == null) return;
+
+        ChunkSource chunkProvider = ctx.world().getChunkSource();
+        BetterBlockPos playerPos = ctx.playerFeet();
+
+        int playerChunkX = playerPos.getX() >> 4;
+        int playerChunkZ = playerPos.getZ() >> 4;
+
+        int minX = playerChunkX - 40;
+        int minZ = playerChunkZ - 40;
+        int maxX = playerChunkX + 40;
+        int maxZ = playerChunkZ + 40;
+
+        for (int x = minX; x <= maxX; x++) {
+            for (int z = minZ; z <= maxZ; z++) {
+                LevelChunk chunk = chunkProvider.getChunk(x, z, false);
+
+                if (chunk != null && !chunk.isEmpty()) {
+                    npfContext.queueForPacking(chunk);
+                }
+            }
         }
     }
 
@@ -372,17 +400,15 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
         if (ctx.player() == null) {
             return;
         }
-        this.onLostControl();
+        this.onLostControl(false);
         this.predictingTerrain = ctx.player().level.dimension() == Level.NETHER && Baritone.settings().elytraPredictTerrain.value;
         this.allowTight = Baritone.settings().elytraAllowTightSpaces.value;
         this.allowAboveBuildLimit = Baritone.settings().elytraAllowAboveBuildLimit.value;
         this.allowAboveRoof = Baritone.settings().elytraAllowAboveRoof.value;
-
-        this.behaviorSema.acquireUninterruptibly();
-        this.behavior = new ElytraBehavior(this.baritone, this, destination, appendDestination);
+        this.behavior = new ElytraBehavior(this.baritone, this, getNpfContext(), destination, appendDestination);
 
         if (ctx.world() != null) {
-            this.behavior.repackChunks();
+            this.repackChunks();
         }
         this.behavior.pathTo();
     }
@@ -680,5 +706,28 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
             }
         }
         return null;
+    }
+
+    private NetherPathfinderContext getNpfContext() {
+        if(this.npfContext == null) {
+            npfSema.acquireUninterruptibly();
+            this.npfContext = new NetherPathfinderContext(
+                    Baritone.settings().elytraNetherSeed.value,
+                    Baritone.settings().elytraUseCache.value ? baritone.getWorldProvider().getCurrentWorld().directory.resolve("cache") : null,
+                    ctx.world()
+            );
+        }
+        return this.npfContext;
+    }
+
+    private void destroyNpfContextAsync() {
+        NetherPathfinderContext npf = this.npfContext;
+        if (npf != null) {
+            this.npfContext = null;
+            Baritone.getExecutor().execute(() -> {
+                npf.destroy();
+                npfSema.release();
+            });
+        }
     }
 }
