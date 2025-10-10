@@ -240,13 +240,9 @@ public class BuildLimitPathFinder implements IElytraPathFinder {
                 }
 
                 return CompletableFuture.supplyAsync(() -> {
-                    try {
-                        var np = netherCtx.pathFindAsync(path.get(path.size() - 1), dst).get();
-                        path.addAll(np.collect());
-                        return new UnpackedSegment(path.stream(), np.isFinished());
-                    } catch (InterruptedException | ExecutionException e) {
-                        throw new RuntimeException(e);
-                    }
+                    var np = blockingPathFind(path.get(path.size() - 1), dst);
+                    path.addAll(np.collect());
+                    return new UnpackedSegment(path.stream(), np.isFinished());
                 });
             }
 
@@ -277,17 +273,27 @@ public class BuildLimitPathFinder implements IElytraPathFinder {
      */
     private CompletableFuture<UnpackedSegment> incompletePathfind(BlockPos src, BlockPos dst) {
         return CompletableFuture.supplyAsync(() -> {
-            UnpackedSegment packed;
-            try {
-                packed = netherCtx.pathFindAsync(src, dst).get();
-            } catch (InterruptedException | ExecutionException e) {
-                throw new RuntimeException(e);
-            }
+            UnpackedSegment packed = blockingPathFind(src, dst);
             return new UnpackedSegment(
                     packed.collect().stream(),
                     false
             );
         });
+    }
+
+    private UnpackedSegment blockingPathFind(BlockPos src, BlockPos dst) {
+        try {
+            return netherCtx.pathFindAsync(src, dst).get();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException(e);
+        } catch (ExecutionException e) {
+            final Throwable cause = e.getCause();
+            if (cause instanceof PathCalculationException) {
+                throw (PathCalculationException) cause;
+            }
+            throw new RuntimeException(e);
+        }
     }
 
 }
