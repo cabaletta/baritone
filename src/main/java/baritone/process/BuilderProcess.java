@@ -1077,6 +1077,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
     private final class ShulkerRestockHandler {
 
         private final Set<Block> requiredBlocks;
+        private final RegistryOps<Tag> registryOps;
         private Stage stage;
         private Placement placement;
         private int shulkerInventorySlot = -1;
@@ -1088,6 +1089,9 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             this.requiredBlocks = missingStates.stream()
                     .map(BlockState::getBlock)
                     .collect(Collectors.toCollection(LinkedHashSet::new));
+            this.registryOps = ctx.world() == null
+                    ? null
+                    : RegistryOps.create(NbtOps.INSTANCE, ctx.world().registryAccess());
             this.stage = Stage.SEARCH;
             locateUsefulShulker();
         }
@@ -1363,29 +1367,29 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             if (!(((BlockItem) stack.getItem()).getBlock() instanceof ShulkerBoxBlock)) {
                 return false;
             }
-            for (ItemStack content : extractShulkerContents(stack)) {
-                if (matchesRequired(content)) {
+            return shulkerContainsRequiredItem(stack);
+        }
+
+        private boolean shulkerContainsRequiredItem(ItemStack stack) {
+            if (registryOps == null) {
+                return false;
+            }
+            CustomData blockEntityData = stack.get(DataComponents.BLOCK_ENTITY_DATA);
+            if (blockEntityData == null || !blockEntityData.contains("Items")) {
+                return false;
+            }
+            ListTag items = blockEntityData.copyTag().getListOrEmpty("Items");
+            for (int i = 0; i < items.size(); i++) {
+                CompoundTag entry = items.getCompoundOrEmpty(i);
+                boolean found = ItemStack.CODEC.parse(registryOps, entry)
+                        .result()
+                        .filter(parsed -> !parsed.isEmpty() && matchesRequired(parsed))
+                        .isPresent();
+                if (found) {
                     return true;
                 }
             }
             return false;
-        }
-
-        private List<ItemStack> extractShulkerContents(ItemStack stack) {
-            List<ItemStack> result = new ArrayList<>();
-            CustomData blockEntityData = stack.get(DataComponents.BLOCK_ENTITY_DATA);
-            if (blockEntityData == null || !blockEntityData.contains("Items")) {
-                return result;
-            }
-            ListTag items = blockEntityData.copyTag().getListOrEmpty("Items");
-            RegistryOps<Tag> ops = RegistryOps.create(NbtOps.INSTANCE, ctx.world().registryAccess());
-            for (int i = 0; i < items.size(); i++) {
-                CompoundTag entry = items.getCompoundOrEmpty(i);
-                ItemStack.CODEC.parse(ops, entry).result()
-                        .filter(parsed -> !parsed.isEmpty())
-                        .ifPresent(result::add);
-            }
-            return result;
         }
 
         private PathingCommand requestPause() {
