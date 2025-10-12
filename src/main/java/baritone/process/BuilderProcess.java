@@ -50,18 +50,22 @@ import net.minecraft.util.Tuple;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.ShulkerBoxMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -1369,17 +1373,17 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
 
         private List<ItemStack> extractShulkerContents(ItemStack stack) {
             List<ItemStack> result = new ArrayList<>();
-            CompoundTag tag = stack.getTagElement("BlockEntityTag");
-            if (tag == null || !tag.contains("Items", Tag.TAG_LIST)) {
+            CustomData blockEntityData = stack.get(DataComponents.BLOCK_ENTITY_DATA);
+            if (blockEntityData == null || !blockEntityData.contains("Items")) {
                 return result;
             }
-            ListTag items = tag.getList("Items", Tag.TAG_COMPOUND);
+            ListTag items = blockEntityData.copyTag().getListOrEmpty("Items");
+            RegistryOps<Tag> ops = RegistryOps.create(NbtOps.INSTANCE, ctx.world().registryAccess());
             for (int i = 0; i < items.size(); i++) {
-                CompoundTag entry = items.getCompound(i);
-                ItemStack parsed = ItemStack.parseOptional(ctx.world().registryAccess(), entry);
-                if (!parsed.isEmpty()) {
-                    result.add(parsed);
-                }
+                CompoundTag entry = items.getCompoundOrEmpty(i);
+                ItemStack.CODEC.parse(ops, entry).result()
+                        .filter(parsed -> !parsed.isEmpty())
+                        .ifPresent(result::add);
             }
             return result;
         }
