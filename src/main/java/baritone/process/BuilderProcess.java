@@ -1379,6 +1379,9 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                 return false;
             }
             ListTag items = blockEntityData.copyTag().getListOrEmpty("Items");
+            if (items.isEmpty()) {
+                return false;
+            }
             for (int i = 0; i < items.size(); i++) {
                 CompoundTag entry = items.getCompoundOrEmpty(i);
                 boolean found = ItemStack.CODEC.parse(registryOps, entry)

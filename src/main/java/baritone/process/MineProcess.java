@@ -427,8 +427,9 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
                 movedAny = true;
             }
             if (!movedAny) {
-                fail("No target stacks available to deposit");
-                return null;
+                logDebug("Shulker deposit had no matching stacks to move");
+                stage = Stage.CLOSE;
+                return requestPause();
             }
             stage = Stage.CLOSE;
             return requestPause();
@@ -479,8 +480,12 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
                 return false;
             }
             ListTag items = blockEntityData.copyTag().getListOrEmpty("Items");
-            int occupied = 0;
-            boolean hasPartialMatch = false;
+            if (items.isEmpty()) {
+                return true;
+            }
+            if (items.size() < 27) {
+                return true;
+            }
             for (int i = 0; i < items.size(); i++) {
                 CompoundTag entry = items.getCompoundOrEmpty(i);
                 ItemStack contained = ItemStack.CODEC.parse(registryOps, entry)
@@ -489,15 +494,11 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
                 if (contained.isEmpty()) {
                     continue;
                 }
-                occupied++;
                 if (activeFilter.has(contained) && contained.getCount() < contained.getMaxStackSize()) {
-                    hasPartialMatch = true;
+                    return true;
                 }
             }
-            if (occupied < 27) {
-                return true;
-            }
-            return hasPartialMatch;
+            return false;
         }
 
         private int locateHotbarShulker() {
