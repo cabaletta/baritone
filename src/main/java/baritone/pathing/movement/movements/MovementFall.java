@@ -45,17 +45,13 @@ public class MovementFall extends Movement {
     private final MutableClutchResult clutchResult = new MutableClutchResult();
 
     public MovementFall(IBaritone baritone, BetterBlockPos src, BetterBlockPos dest) {
-        super(baritone, src, dest, MovementFall.buildPositionsToBreak(src, dest)); // TODO add `toPlace` smh
+        super(baritone, src, dest, MovementFall.buildPositionsToBreak(src, dest)); // TODO add `toPlace`
     }
 
     @Override
     public double calculateCost(CalculationContext context) {
-        MutableMoveResult result = new MutableMoveResult();
-        MovementDescend.cost(context, src.x, src.y, src.z, dest.x, dest.z, result);
-        if (result.y != dest.y) {
-            return COST_INF; // doesn't apply to us, this position is a descend not a fall
-        }
-        return result.cost;
+        MovementDescend.cost(context, src.x, src.y, src.z, dest.x, dest.z, moveResult, clutchResult);
+        return moveResult.cost;
     }
 
     @Override
@@ -66,11 +62,6 @@ public class MovementFall extends Movement {
             set.add(dest.above(y));
         }
         return set;
-    }
-
-    private void updateClutch() {
-        CalculationContext context = new CalculationContext(baritone);
-        MovementDescend.dynamicFallCost(context, src.x, src.y, src.z, dest.x, dest.z, 0, context.get(dest.x, src.y - 2, dest.z), moveResult, clutchResult);
     }
 
     @Override
@@ -89,7 +80,6 @@ public class MovementFall extends Movement {
                 MovementHelper.steppingOnBlocks(ctx).stream().allMatch(block -> MovementHelper.canWalkThrough(ctx, block))) {
             state.setInput(Input.SNEAK, true);
         }
-        updateClutch();
         if (moveResult.cost >= COST_INF) {
             return state.setStatus(MovementStatus.UNREACHABLE);
         }

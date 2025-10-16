@@ -82,6 +82,10 @@ public class MovementDescend extends Movement {
     }
 
     public static void cost(CalculationContext context, int x, int y, int z, int destX, int destZ, MutableMoveResult res) {
+        cost(context, x, y, z, destX, destZ, res, null);
+    }
+
+    public static void cost(CalculationContext context, int x, int y, int z, int destX, int destZ, MutableMoveResult res, MutableClutchResult clutchResult) {
         double totalCost = 0;
         BlockState destDown = context.get(destX, y - 1, destZ);
         totalCost += MovementHelper.getMiningDurationTicks(context, destX, y - 1, destZ, destDown, false);
@@ -114,7 +118,7 @@ public class MovementDescend extends Movement {
 
         BlockState below = context.get(destX, y - 2, destZ);
         if (!MovementHelper.canWalkOn(context, destX, y - 2, destZ, below)) {
-            dynamicFallCost(context, x, y, z, destX, destZ, totalCost, below, res, null);
+            dynamicFallCost(context, x, y, z, destX, destZ, totalCost, below, res, clutchResult);
             return;
         }
 
@@ -150,24 +154,25 @@ public class MovementDescend extends Movement {
             return;
         }
         double tentativeCost = WALK_OFF_BLOCK_COST + frontBreak;
-        double aboveBlockCost = -1d;
+        double aboveBlockCost = -1.0;
         boolean aboveBlockPriority = true;
-        double velocity = 0d;
+        double velocity = 0.0;
         int effectiveStartHeight = y;
         int newY;
         for (int fallHeight = context.minFallHeight; (newY = y - fallHeight) >= context.world.getMinBuildHeight(); fallHeight++) {
             BlockState ontoBlock = context.get(destX, newY, destZ);
-            if (MovementHelper.canWalkThrough(context, destX, newY, destZ, ontoBlock)) {
-                if (aboveBlockCost != -1d) {
+//            if (MovementHelper.canWalkThrough(context, destX, newY, destZ, ontoBlock)) {
+            if (ontoBlock.getBlock() instanceof AirBlock) {
+                if (aboveBlockCost != -1.0) {
                     tentativeCost += aboveBlockCost;
-                    aboveBlockCost = -1d;
+                    aboveBlockCost = -1.0;
                     aboveBlockPriority = true;
                 }
                 continue;
             }
             int unprotectedFallHeight = effectiveStartHeight - 1 - newY;
             if (context.considerPotionEffects && context.activeEffects.containsKey(MobEffects.SLOW_FALLING)) {
-                res.cost = tentativeCost + ActionCosts.distanceToTicks(unprotectedFallHeight, 0.01d, velocity);
+                res.cost = tentativeCost + ActionCosts.distanceToTicks(unprotectedFallHeight, 0.01, velocity);
                 res.x = destX;
                 res.y = newY + 1;
                 res.z = destZ;
@@ -177,7 +182,7 @@ public class MovementDescend extends Movement {
             if (unprotectedFallHeight + (!shape.isEmpty() && shape.bounds().maxY < 1 ? 1 : 0) <= context.maxFallHeightNoClutch && // Minecraft will round fall damage up
                     MovementHelper.canWalkOn(context, destX, newY, destZ, ontoBlock)) {
                 // fallHeight = 4 means onto.up() is 3 blocks down, which is the max
-                double newCost = tentativeCost + ActionCosts.distanceToTicks(unprotectedFallHeight, 0.08d, velocity);
+                double newCost = tentativeCost + ActionCosts.distanceToTicks(unprotectedFallHeight, 0.08, velocity);
                 if (newCost < res.cost) {
                     res.cost = newCost;
                     res.x = destX;
@@ -193,7 +198,7 @@ public class MovementDescend extends Movement {
                     if (clutch.compare(ontoBlock) &&
                             clutch.getFallDamage(unprotectedFallHeight) <= context.maxFallHeightNoClutch) {
                         if (clutch.isSolid(context)) {
-                            double newCost = tentativeCost + clutch.getCost(unprotectedFallHeight, 1d, velocity).first() + clutch.getAdditionalCost();
+                            double newCost = tentativeCost + clutch.getCost(unprotectedFallHeight, 1.0, velocity).first() + clutch.getAdditionalCost();
                             if (newCost < res.cost) {
                                 res.cost = newCost;
                                 res.x = destX;
@@ -223,9 +228,9 @@ public class MovementDescend extends Movement {
                             item != null) {
                         double newCost = tentativeCost + context.placeBlockCost;
                         if (clutch.isSolid(context)) {
-                            newCost += ActionCosts.distanceToTicks(unprotectedFallHeight, 0.08d, velocity) + clutch.getAdditionalCost();
+                            newCost += ActionCosts.distanceToTicks(unprotectedFallHeight, 0.08, velocity) + clutch.getAdditionalCost();
                         } else if (MovementHelper.canWalkOn(context, destX, newY, destZ, ontoBlock)) {
-                            newCost += clutch.getCost(unprotectedFallHeight, 1d, velocity).first();
+                            newCost += clutch.getCost(unprotectedFallHeight, 1.0, velocity).first();
                         } else {
                             continue;
                         }
@@ -244,13 +249,13 @@ public class MovementDescend extends Movement {
                 }
             }
             if (nonSolidClutchBlock != null) {
-                Pair<Double, Double> fallCostAndVelocity = nonSolidClutchBlock.getCost(unprotectedFallHeight, 1d, velocity);
-                if (aboveBlockCost != -1d && aboveBlockPriority) {
+                Pair<Double, Double> fallCostAndVelocity = nonSolidClutchBlock.getCost(unprotectedFallHeight, 1.0, velocity);
+                if (aboveBlockCost != -1.0 && aboveBlockPriority) {
                     tentativeCost += aboveBlockCost;
                     aboveBlockCost = fallCostAndVelocity.first();
                 } else {
                     tentativeCost += fallCostAndVelocity.first();
-                    aboveBlockCost = nonSolidClutchBlock.slowsOnTopBlock() ? fallCostAndVelocity.first() : -1d;
+                    aboveBlockCost = nonSolidClutchBlock.slowsOnTopBlock() ? fallCostAndVelocity.first() : -1.0; // A cost of -1 means that we use the bottom block cost instead
                 }
                 aboveBlockPriority = nonSolidClutchBlock.topBlockPriority();
                 if (res.cost > tentativeCost) {
