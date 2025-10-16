@@ -27,6 +27,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.state.BlockState;
 
 public interface ClutchUtils {
     // This list holds the order to try the clutches in. More convenient clutches should go further up.
@@ -45,6 +46,15 @@ public interface ClutchUtils {
             BlockClutch.INSTANCE,
     };
     ItemStack STACK_EMPTY_BUCKET = new ItemStack(Items.BUCKET);
+
+    static boolean isClutchBlock(BlockState state) {
+        for (Clutch clutch : CLUTCHES) {
+            if (clutch.compare(state)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     static boolean blockClutch(IBaritone baritone, MovementState state, BlockPos dest, MutableClutchResult result, boolean allowDown) {
         if (MovementHelper.attemptToPlaceABlock(state, baritone, dest, allowDown, true, true, result.item.getItem()) == MovementHelper.PlaceResult.READY_TO_PLACE) {
