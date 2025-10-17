@@ -651,6 +651,10 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
         }
     }
 
+    private boolean isChunkLoaded(BetterBlockPos pos) {
+        return ctx.world().getChunkSource().hasChunk(pos.x >> 4, pos.z >> 4);
+    }
+
     private BetterBlockPos undergroundLandingSpot(BetterBlockPos start) {
         Queue<BetterBlockPos> queue = new PriorityQueue<>(Comparator.<BetterBlockPos>comparingInt(pos -> (pos.x - start.x) * (pos.x - start.x) + (pos.z - start.z) * (pos.z - start.z)).thenComparingInt(pos -> -pos.y));
         Set<BetterBlockPos> visited = new HashSet<>();
@@ -659,7 +663,7 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
 
         while (!queue.isEmpty()) {
             BetterBlockPos pos = queue.poll();
-            if (ctx.world().isLoaded(pos) && isInBounds(ctx.world(), pos) && ctx.world().getBlockState(pos).getBlock() == Blocks.AIR) {
+            if (isChunkLoaded(pos) && isInBounds(ctx.world(), pos) && ctx.world().getBlockState(pos).getBlock() == Blocks.AIR) {
                 BetterBlockPos actualLandingSpot = checkLandingSpot(pos, checkedPositions);
                 if(actualLandingSpot != null) {
                     landingColumnHeight = SHORT_LANDING_COLUMN_HEIGHT;
@@ -686,7 +690,8 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
 
         while (!queue.isEmpty()) {
             BetterBlockPos qPos = queue.poll();
-            if (!ctx.world().isLoaded(qPos)) continue;
+
+            if (!isChunkLoaded(qPos)) continue;
 
             var height = ctx.world().getHeight(Heightmap.Types.MOTION_BLOCKING, qPos.getX(), qPos.getZ());
             var pos = new BetterBlockPos(qPos.getX(), height+1, qPos.getZ());
