@@ -1105,6 +1105,21 @@ public final class Settings {
     public final Setting<Integer> pauseOnPlayerNearbyRadius = new Setting<>(64);
 
     /**
+     * Default radius for block scanning when no radius is specified
+     */
+    public final Setting<Integer> blockScanDefaultRadius = new Setting<>(64);
+
+    /**
+     * Maximum radius allowed for block scanning to prevent performance issues
+     */
+    public final Setting<Integer> blockScanMaxRadius = new Setting<>(500);
+
+    /**
+     * Whether to log each block found during scanning (can be spammy for large scans)
+     */
+    public final Setting<Boolean> blockScanLogEachFind = new Setting<>(true);
+
+    /**
      * Disallow MineBehavior from using X-Ray to see where the ores are. Turn this option on to force it to mine "legit"
      * where it will only mine an ore once it can actually see it, so it won't do or know anything that a normal player
      * couldn't. If you don't want it to look like you're X-Raying, turn this on
