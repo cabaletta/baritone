@@ -1090,6 +1090,21 @@ public final class Settings {
     public final Setting<Boolean> disconnectOnArrival = new Setting<>(false);
 
     /**
+     * Pause Baritone whenever any player on the server enters spectator mode
+     */
+    public final Setting<Boolean> pauseOnSpectator = new Setting<>(false);
+
+    /**
+     * Pause Baritone whenever any player comes within visual range (render distance)
+     */
+    public final Setting<Boolean> pauseOnPlayerNearby = new Setting<>(false);
+
+    /**
+     * The distance in blocks to consider a player "nearby" for pauseOnPlayerNearby
+     */
+    public final Setting<Integer> pauseOnPlayerNearbyRadius = new Setting<>(64);
+
+    /**
      * Disallow MineBehavior from using X-Ray to see where the ores are. Turn this option on to force it to mine "legit"
      * where it will only mine an ore once it can actually see it, so it won't do or know anything that a normal player
      * couldn't. If you don't want it to look like you're X-Raying, turn this on
