@@ -57,6 +57,7 @@ public interface ClutchUtils {
     }
 
     static boolean blockClutch(IBaritone baritone, MovementState state, BlockPos dest, MutableClutchResult result, boolean allowDown) {
+        state.setTarget(new MovementState.MovementTarget(baritone.getPlayerContext().playerRotations().withPitch(90), true));
         if (MovementHelper.attemptToPlaceABlock(state, baritone, dest, allowDown, true, true, result.item.getItem()) == MovementHelper.PlaceResult.READY_TO_PLACE) {
             state.setInput(Input.CLICK_RIGHT, true);
             return true;

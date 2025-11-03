@@ -190,7 +190,6 @@ public class MovementDescend extends Movement {
                 }
                 break;
             }
-            BlockState aboveBlock = context.get(destX, newY + 1, destZ);
             Clutch nonSolidClutchBlock = null;
             if (unprotectedFallHeight > context.maxFallHeightNoClutch) {
                 for (Clutch clutch : ClutchUtils.CLUTCHES) {
@@ -214,29 +213,32 @@ public class MovementDescend extends Movement {
                     }
                 }
             }
+            BlockState aboveBlock = context.get(destX, newY + 1, destZ);
             if (unprotectedFallHeight - 1 <= context.maxFallHeightClutch &&
                     context.allowPlace &&
                     !context.isPossiblyProtected(destX, newY + 1, destZ) &&
                     context.worldBorder.canPlaceAt(destX, destZ) &&
-                    MovementHelper.isReplaceable(destX, newY + 1, destZ, aboveBlock, context.bsi) &&
-                    !aboveBlock.hasProperty(BlockStateProperties.DOUBLE_BLOCK_HALF)) {
+                    MovementHelper.isReplaceable(destX, newY + 1, destZ, aboveBlock, context.bsi)) {
                 for (Clutch clutch : ClutchUtils.CLUTCHES) {
                     ItemStack item = clutch.getClutchingItem(context);
                     if (clutch.getFallDamage(unprotectedFallHeight - 1) <= context.maxFallHeightNoClutch &&
                             clutch.isPlaceable(context, destX, newY, destZ, ontoBlock) &&
                             item != null) {
                         double newCost = tentativeCost + context.placeBlockCost;
+                        boolean solidPlace;
                         if (clutch.isSolid(context)) {
                             newCost += ActionCosts.distanceToTicks(unprotectedFallHeight, 0.08, velocity) + clutch.getAdditionalCost();
+                            solidPlace = true;
                         } else if (MovementHelper.canWalkOn(context, destX, newY, destZ, ontoBlock)) {
                             newCost += clutch.getCost(unprotectedFallHeight, 1.0, velocity).first();
+                            solidPlace = false;
                         } else {
                             continue;
                         }
                         if (newCost < res.cost) {
                             res.cost = newCost;
                             res.x = destX;
-                            res.y = newY + 2;
+                            res.y = newY + (solidPlace ? 2 : 1);
                             res.z = destZ;
                             if (clutchRes != null) {
                                 clutchRes.clutch = clutch;

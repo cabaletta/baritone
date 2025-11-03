@@ -33,6 +33,6 @@ public class TwistingVineClutch extends Clutch {
 
     @Override
     public boolean compare(BlockState state) {
-        return state.is(Blocks.TWISTING_VINES);
+        return state.is(Blocks.TWISTING_VINES) || state.is(Blocks.TWISTING_VINES_PLANT);
     }
 }

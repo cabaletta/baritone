@@ -45,7 +45,7 @@ public class MovementFall extends Movement {
     private final MutableClutchResult clutchResult = new MutableClutchResult();
 
     public MovementFall(IBaritone baritone, BetterBlockPos src, BetterBlockPos dest) {
-        super(baritone, src, dest, MovementFall.buildPositionsToBreak(src, dest)); // TODO add `toPlace`
+        super(baritone, src, dest, MovementFall.buildPositionsToBreak(src, dest), dest.below());
     }
 
     @Override
@@ -115,6 +115,7 @@ public class MovementFall extends Movement {
         }
         Vec3 destCenterOffset = new Vec3(destCenter.x + 0.125 * avoid.getX(), destCenter.y, destCenter.z + 0.125 * avoid.getZ());
         return state.setTarget(new MovementTarget(RotationUtils.calcRotationFromVec3d(ctx.playerHead(), destCenterOffset, ctx.playerRotations()), true));
+//        return state;
     }
 
     private Direction avoid() {
