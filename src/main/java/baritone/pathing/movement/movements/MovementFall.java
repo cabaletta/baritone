@@ -84,8 +84,10 @@ public class MovementFall extends Movement {
             return state.setStatus(MovementStatus.UNREACHABLE);
         }
         if (clutchResult.clutch != null) {
-            if (clutchResult.item != null && !clutchResult.clutch.compare(ctx.world(), blockDest, blockDestState)) {
-                clutchResult.clutch.clutch(baritone, state, blockDest, clutchResult);
+            if (clutchResult.item != null &&
+                    !clutchResult.clutch.compare(ctx.world(), blockDest, blockDestState) &&
+                    !clutchResult.clutched) {
+                clutchResult.clutched = clutchResult.clutch.clutch(baritone, state, dest, clutchResult);
             }
             if (clutchResult.clutch.hasClutched(ctx, dest, destState) && clutchResult.clutch.isFinished(ctx, state, clutchResult)) {
                 clutchResult.reset();
