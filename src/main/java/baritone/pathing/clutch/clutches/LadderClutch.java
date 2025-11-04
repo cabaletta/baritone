@@ -30,6 +30,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -42,7 +43,7 @@ public class LadderClutch extends Clutch {
     }
 
     @Override
-    public boolean compare(BlockState state) {
+    public boolean compare(Level world, BlockPos pos, BlockState state) {
         return state.is(Blocks.LADDER);
     }
 

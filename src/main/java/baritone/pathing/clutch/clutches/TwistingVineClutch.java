@@ -18,8 +18,10 @@
 package baritone.pathing.clutch.clutches;
 
 import baritone.pathing.clutch.Clutch;
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -32,7 +34,7 @@ public class TwistingVineClutch extends Clutch {
     }
 
     @Override
-    public boolean compare(BlockState state) {
+    public boolean compare(Level world, BlockPos pos, BlockState state) {
         return state.is(Blocks.TWISTING_VINES) || state.is(Blocks.TWISTING_VINES_PLANT);
     }
 }

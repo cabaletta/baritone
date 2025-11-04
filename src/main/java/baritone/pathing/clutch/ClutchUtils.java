@@ -27,6 +27,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
 public interface ClutchUtils {
@@ -47,9 +48,9 @@ public interface ClutchUtils {
     };
     ItemStack STACK_EMPTY_BUCKET = new ItemStack(Items.BUCKET);
 
-    static boolean isClutchBlock(BlockState state) {
+    static boolean isClutchBlock(Level world, BlockPos pos, BlockState state) {
         for (Clutch clutch : CLUTCHES) {
-            if (clutch.compare(state)) {
+            if (clutch.compare(world, pos, state)) {
                 return true;
             }
         }

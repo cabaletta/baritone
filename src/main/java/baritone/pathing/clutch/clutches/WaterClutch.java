@@ -24,7 +24,7 @@ import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.clutch.Clutch;
 import baritone.pathing.movement.MovementState;
 import baritone.utils.pathing.MutableClutchResult;
-import net.minecraft.core.Direction;
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
@@ -50,7 +50,7 @@ public class WaterClutch extends Clutch {
     }
 
     @Override
-    public boolean compare(BlockState state) {
+    public boolean compare(Level world, BlockPos pos, BlockState state) {
         return state.getFluidState().getType() instanceof WaterFluid;
     }
     @Override

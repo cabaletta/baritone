@@ -30,6 +30,7 @@ import baritone.utils.pathing.MutableClutchResult;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
@@ -56,7 +57,7 @@ public abstract class Clutch {
 
     public abstract boolean isAcceptedItem(Item item);
 
-    public abstract boolean compare(BlockState state);
+    public abstract boolean compare(Level world, BlockPos pos, BlockState state);
 
     public boolean isSolid(CalculationContext context) {
         return false;

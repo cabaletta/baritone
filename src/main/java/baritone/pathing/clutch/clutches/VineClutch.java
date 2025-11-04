@@ -30,10 +30,10 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.VineBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class VineClutch extends Clutch {
     public static final VineClutch INSTANCE = new VineClutch();
@@ -44,7 +44,7 @@ public class VineClutch extends Clutch {
     }
 
     @Override
-    public boolean compare(BlockState state) {
+    public boolean compare(Level world, BlockPos pos, BlockState state) {
         return state.is(Blocks.VINE);
     }
 
