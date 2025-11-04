@@ -74,8 +74,6 @@ public class MovementFall extends Movement {
         BlockPos playerFeet = ctx.playerFeet();
         Rotation toDest = RotationUtils.calcRotationFromVec3d(ctx.playerHead(), VecUtils.getBlockPosCenter(dest), ctx.playerRotations());
         BlockState destState = ctx.world().getBlockState(dest);
-        BetterBlockPos blockDest = dest.below();
-        BlockState blockDestState = ctx.world().getBlockState(blockDest);
         if (ctx.world().getBlockState(dest.below()).is(Blocks.MAGMA_BLOCK) &&
                 MovementHelper.steppingOnBlocks(ctx).stream().allMatch(block -> MovementHelper.canWalkThrough(ctx, block))) {
             state.setInput(Input.SNEAK, true);
@@ -85,7 +83,7 @@ public class MovementFall extends Movement {
         }
         if (clutchResult.clutch != null) {
             if (clutchResult.item != null &&
-                    !clutchResult.clutch.compare(ctx.world(), blockDest, blockDestState)) {
+                    !clutchResult.clutch.compare(ctx.world(), dest, destState)) {
                 clutchResult.clutch.clutch(baritone, state, dest, clutchResult);
             }
             if (clutchResult.clutch.hasClutched(ctx, dest, destState) && clutchResult.clutch.isFinished(ctx, state, clutchResult)) {
