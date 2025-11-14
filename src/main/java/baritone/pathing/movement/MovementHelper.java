@@ -785,30 +785,31 @@ public interface MovementHelper extends ActionCosts, Helper {
         if (direct.isPresent()) {
             state.setTarget(new MovementTarget(direct.get(), true));
             found = true;
-        }
-        for (int i = 0; i < (allowDown ? 5 : 4); i++) {
-            BlockPos against1 = placeAt.relative(HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP[i]);
-            if (MovementHelper.canPlaceAgainst(ctx, against1)) {
-                if (!((Baritone) baritone).getInventoryBehavior().selectThrowawayForLocation(false, placeAt.getX(), placeAt.getY(), placeAt.getZ(), customItem)) { // get ready to place a throwaway block
-                    Helper.HELPER.logDebug("bb pls get me some blocks. dirt, netherrack, cobble");
-                    state.setStatus(MovementStatus.UNREACHABLE);
-                    return PlaceResult.NO_OPTION;
-                }
-                double faceX = (placeAt.getX() + against1.getX() + 1.0D) * 0.5D;
-                double faceY = (placeAt.getY() + against1.getY() + 0.5D) * 0.5D;
-                double faceZ = (placeAt.getZ() + against1.getZ() + 1.0D) * 0.5D;
-                Rotation place = RotationUtils.calcRotationFromVec3d(wouldSneak ? RayTraceUtils.inferSneakingEyePosition(ctx.player()) : ctx.playerHead(), new Vec3(faceX, faceY, faceZ), ctx.playerRotations());
-                Rotation actual = baritone.getLookBehavior().getAimProcessor().peekRotation(place);
-                HitResult res = RayTraceUtils.rayTraceTowards(ctx.player(), actual, ctx.playerController().getBlockReachDistance(), wouldSneak);
-                if (res.getType() == HitResult.Type.BLOCK &&
-                        ((BlockHitResult) res).getBlockPos().equals(against1) &&
-                        ((BlockHitResult) res).getBlockPos().relative(((BlockHitResult) res).getDirection()).equals(placeAt)) {
-                    state.setTarget(new MovementTarget(place, true));
-                    found = true;
+        } else {
+            for (int i = 0; i < (allowDown ? 5 : 4); i++) {
+                BlockPos against1 = placeAt.relative(HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP[i]);
+                if (MovementHelper.canPlaceAgainst(ctx, against1)) {
+                    if (!((Baritone) baritone).getInventoryBehavior().selectThrowawayForLocation(false, placeAt.getX(), placeAt.getY(), placeAt.getZ(), customItem)) { // get ready to place a throwaway block
+                        Helper.HELPER.logDebug("bb pls get me some blocks. dirt, netherrack, cobble");
+                        state.setStatus(MovementStatus.UNREACHABLE);
+                        return PlaceResult.NO_OPTION;
+                    }
+                    double faceX = (placeAt.getX() + against1.getX() + 1.0D) * 0.5D;
+                    double faceY = (placeAt.getY() + against1.getY() + 0.5D) * 0.5D;
+                    double faceZ = (placeAt.getZ() + against1.getZ() + 1.0D) * 0.5D;
+                    Rotation place = RotationUtils.calcRotationFromVec3d(wouldSneak ? RayTraceUtils.inferSneakingEyePosition(ctx.player()) : ctx.playerHead(), new Vec3(faceX, faceY, faceZ), ctx.playerRotations());
+                    Rotation actual = baritone.getLookBehavior().getAimProcessor().peekRotation(place);
+                    HitResult res = RayTraceUtils.rayTraceTowards(ctx.player(), actual, ctx.playerController().getBlockReachDistance(), wouldSneak);
+                    if (res.getType() == HitResult.Type.BLOCK &&
+                            ((BlockHitResult) res).getBlockPos().equals(against1) &&
+                            ((BlockHitResult) res).getBlockPos().relative(((BlockHitResult) res).getDirection()).equals(placeAt)) {
+                        state.setTarget(new MovementTarget(place, true));
+                        found = true;
 
-                    if (!allowDown || !preferDown) {
-                        // if preferDown is true, we want the last option. Otherwise, we want the first.
-                        break;
+                        if (!allowDown || !preferDown) {
+                            // if preferDown is true, we want the last option. Otherwise, we want the first.
+                            break;
+                        }
                     }
                 }
             }

@@ -68,7 +68,7 @@ public abstract class Clutch {
     }
 
     public boolean clutch(IBaritone baritone, MovementState state, BlockPos dest, MutableClutchResult result) {
-        return ClutchUtils.blockClutch(baritone, state, dest, result, true);
+        return ClutchUtils.blockClutch(baritone, state, dest, result);
     }
 
     public boolean hasClutched(IPlayerContext ctx, BetterBlockPos dest, BlockState destState) {
