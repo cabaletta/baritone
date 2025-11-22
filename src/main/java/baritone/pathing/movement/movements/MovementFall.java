@@ -91,7 +91,6 @@ public class MovementFall extends Movement {
                     !clutchResult.clutch.compare(ctx.world(), dest, destState)) {
                 clutchResult.clutch.clutch(baritone, state, dest, clutchResult);
             }
-//            HELPER.logDebug("Clutch item: " + clutchResult.item);
             if (clutchResult.clutch.hasClutched(ctx, dest, destState) && clutchResult.clutch.isFinished(ctx, state, clutchResult)) {
                 clutchResult.reset();
                 return state.setStatus(MovementStatus.SUCCESS);
