@@ -35,6 +35,7 @@ import java.util.Set;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LadderBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -82,10 +83,15 @@ public class MovementFall extends Movement {
             return state.setStatus(MovementStatus.UNREACHABLE);
         }
         if (clutchResult.clutch != null) {
+            // TODO There should be a way to calculate this at cost calculation. Right now, it only runs if the block it was going to use ran out. Maybe keep a list of blocks that will be used or something? This is kind of inefficient.
+            if (clutchResult.item.is(Items.AIR)) {
+                return state.setStatus(MovementStatus.UNREACHABLE);
+            }
             if (clutchResult.item != null &&
                     !clutchResult.clutch.compare(ctx.world(), dest, destState)) {
                 clutchResult.clutch.clutch(baritone, state, dest, clutchResult);
             }
+//            HELPER.logDebug("Clutch item: " + clutchResult.item);
             if (clutchResult.clutch.hasClutched(ctx, dest, destState) && clutchResult.clutch.isFinished(ctx, state, clutchResult)) {
                 clutchResult.reset();
                 return state.setStatus(MovementStatus.SUCCESS);

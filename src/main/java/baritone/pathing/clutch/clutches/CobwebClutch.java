@@ -33,12 +33,12 @@ public class CobwebClutch extends Clutch {
     }
 
     @Override
-    public boolean compare(Level world, BlockPos pos, BlockState state) {
-        return state.is(Blocks.COBWEB);
+    public boolean isAcceptedItem(Item item) {
+        return item.equals(Items.COBWEB);
     }
 
     @Override
-    public boolean isAcceptedItem(Item item) {
-        return item.equals(Items.COBWEB);
+    public boolean compare(Level world, BlockPos pos, BlockState state) {
+        return state.is(Blocks.COBWEB);
     }
 }

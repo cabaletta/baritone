@@ -17,7 +17,6 @@
 
 package baritone.pathing.clutch.clutches;
 
-import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.IPlayerContext;
 import baritone.pathing.clutch.ClutchUtils;
 import baritone.pathing.movement.CalculationContext;
@@ -34,7 +33,7 @@ import net.minecraft.world.level.material.WaterFluid;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class WaterClutch extends Clutch {
-    private static final double WATER_HEIGHT = 0.875d; // TODO confirm if this value is accurate
+    private static final double WATER_HEIGHT = 0.887889;
     public static final WaterClutch INSTANCE = new WaterClutch();
 
     private WaterClutch() {}
@@ -55,7 +54,7 @@ public class WaterClutch extends Clutch {
     }
     @Override
     public boolean isPlaceable(CalculationContext context, int x, int y, int z, BlockState block) {
-        VoxelShape shape = block.getCollisionShape(context.world, new BetterBlockPos(x, y, z));
+        VoxelShape shape = block.getCollisionShape(context.world, new BlockPos(x, y, z));
         return super.isPlaceable(context, x, y, z, block) &&
                 (!(block.getBlock() instanceof SimpleWaterloggedBlock) ^ (shape.isEmpty() || shape.bounds().maxY < WATER_HEIGHT)) &&
                 context.world.dimension() != Level.NETHER;

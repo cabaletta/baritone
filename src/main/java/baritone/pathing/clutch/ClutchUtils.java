@@ -19,23 +19,17 @@ package baritone.pathing.clutch;
 
 import baritone.Baritone;
 import baritone.api.IBaritone;
-import baritone.api.utils.Helper;
 import baritone.api.utils.IPlayerContext;
-import baritone.api.utils.RayTraceUtils;
 import baritone.api.utils.input.Input;
 import baritone.pathing.clutch.clutches.*;
-import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.utils.pathing.MutableClutchResult;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.HitResult;
 
 public interface ClutchUtils {
     // This list holds the order to try the clutches in. More convenient clutches should go further up.

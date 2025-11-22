@@ -32,8 +32,12 @@ public class BlockClutch extends Clutch {
 
     @Override
     public boolean isAcceptedItem(Item item) {
-        return item instanceof BlockItem blockItem &&
-                !blockItem.getBlock().defaultBlockState().getCollisionShape(null, null).isEmpty();
+        try {
+            return item instanceof BlockItem blockItem &&
+                    !blockItem.getBlock().defaultBlockState().getCollisionShape(null, null).isEmpty();
+        } catch (NullPointerException e) {
+            return false;
+        }
     }
 
     @Override
@@ -47,7 +51,7 @@ public class BlockClutch extends Clutch {
     }
 
     @Override
-    public float getFallDamage(int fallDamage) {
+    public float getFallDamage(float fallDamage) {
         return fallDamage;
     }
 }

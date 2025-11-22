@@ -45,7 +45,7 @@ public abstract class Clutch {
         this(1d);
     }
 
-    public final ItemStack getClutchingItem(CalculationContext context) { // We could return the slot instead of the item
+    public final ItemStack getClutchingItem(CalculationContext context) { // TODO We could return the slot instead of the item
         for (int slot = 0; slot < (Baritone.settings().allowInventory.value ? 36 : 9); slot++) {
             ItemStack item = context.getBaritone().getPlayerContext().player().getInventory().items.get(slot);
             if (isAcceptedItem(item.getItem())) {
@@ -77,8 +77,8 @@ public abstract class Clutch {
             return ctx.player().getBoundingBox().intersects(dest.x, dest.y, dest.z, dest.x + 1, dest.y + 1, dest.z + 1);
         } else {
             return ctx.player().getBoundingBox().intersects(
-                    dest.x + shape.bounds().minX, dest.x + shape.bounds().minY, dest.x + shape.bounds().minZ,
-                    dest.x + shape.bounds().maxX, dest.x + shape.bounds().maxY, dest.x + shape.bounds().maxZ);
+                    dest.x + shape.bounds().minX, dest.y + shape.bounds().minY, dest.z + shape.bounds().minZ,
+                    dest.x + shape.bounds().maxX, dest.y + shape.bounds().maxY, dest.z + shape.bounds().maxZ);
         }
     }
 
@@ -86,7 +86,7 @@ public abstract class Clutch {
         return true;
     }
 
-    public float getFallDamage(int fallDamage) {
+    public float getFallDamage(float fallDamage) {
         return 0f;
     }
 
@@ -95,7 +95,7 @@ public abstract class Clutch {
     }
 
     public double getAdditionalCost() {
-        return 0d;
+        return 0.0;
     }
 
     public boolean slowsOnTopBlock() {

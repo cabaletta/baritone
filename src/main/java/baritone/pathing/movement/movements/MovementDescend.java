@@ -38,7 +38,6 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
@@ -161,7 +160,7 @@ public class MovementDescend extends Movement {
         int newY;
         for (int fallHeight = context.minFallHeight; (newY = y - fallHeight) >= context.world.getMinBuildHeight(); fallHeight++) {
             BlockState ontoBlock = context.get(destX, newY, destZ);
-            if (MovementHelper.canWalkThrough(context, destX, newY, destZ, ontoBlock) && !ClutchUtils.isClutchBlock(context.world, new BetterBlockPos(destX, newY, destZ), ontoBlock)) {
+            if (MovementHelper.canWalkThrough(context, destX, newY, destZ, ontoBlock) && !ClutchUtils.isClutchBlock(context.world, new BlockPos(destX, newY, destZ), ontoBlock)) {
                 if (aboveBlockCost != -1.0) {
                     tentativeCost += aboveBlockCost;
                     aboveBlockCost = -1.0;
@@ -170,6 +169,7 @@ public class MovementDescend extends Movement {
                 continue;
             }
             int unprotectedFallHeight = effectiveStartHeight - 1 - newY;
+
             if (context.considerPotionEffects && context.activeEffects.containsKey(MobEffects.SLOW_FALLING)) {
                 res.cost = tentativeCost + ActionCosts.distanceToTicks(unprotectedFallHeight, 0.01, velocity);
                 res.x = destX;
@@ -177,8 +177,11 @@ public class MovementDescend extends Movement {
                 res.z = destZ;
                 break;
             }
-            VoxelShape shape = ontoBlock.getCollisionShape(context.bsi.access, new BetterBlockPos(destX, newY, destZ));
-            if (unprotectedFallHeight + (!shape.isEmpty() && shape.bounds().maxY < 1 ? 1 : 0) <= context.maxFallHeightNoClutch && // Minecraft will round fall damage up
+
+            float totalFallHeight = unprotectedFallHeight + player.fallDistance;
+
+            VoxelShape shape = ontoBlock.getCollisionShape(context.bsi.access, new BlockPos(destX, newY, destZ));
+            if (totalFallHeight + (!shape.isEmpty() && shape.bounds().maxY < 1 ? 1 : 0) <= context.maxFallHeightNoClutch && // Minecraft will round fall damage up
                     MovementHelper.canWalkOn(context, destX, newY, destZ, ontoBlock)) {
                 // fallHeight = 4 means onto.up() is 3 blocks down, which is the max
                 double newCost = tentativeCost + ActionCosts.distanceToTicks(unprotectedFallHeight, 0.08, velocity);
@@ -191,10 +194,10 @@ public class MovementDescend extends Movement {
                 break;
             }
             Clutch nonSolidClutchBlock = null;
-            if (unprotectedFallHeight > context.maxFallHeightNoClutch) {
+            if (totalFallHeight <= context.maxFallHeightNoClutch) {
                 for (Clutch clutch : ClutchUtils.CLUTCHES) {
-                    if (clutch.compare(context.world, new BetterBlockPos(destX, newY, destZ), ontoBlock) &&
-                            clutch.getFallDamage(unprotectedFallHeight) <= context.maxFallHeightNoClutch) {
+                    if (clutch.compare(context.world, new BlockPos(destX, newY, destZ), ontoBlock) &&
+                            clutch.getFallDamage(totalFallHeight) <= context.maxFallHeightNoClutch) {
                         if (clutch.isSolid(context)) {
                             double newCost = tentativeCost + clutch.getCost(unprotectedFallHeight, 1.0, velocity).first() + clutch.getAdditionalCost();
                             if (newCost < res.cost) {
@@ -214,14 +217,14 @@ public class MovementDescend extends Movement {
                 }
             }
             BlockState aboveBlock = context.get(destX, newY + 1, destZ);
-            if (unprotectedFallHeight - 1 <= context.maxFallHeightClutch &&
+            if (totalFallHeight - 1 <= context.maxFallHeightClutch &&
                     context.allowPlace &&
                     !context.isPossiblyProtected(destX, newY + 1, destZ) &&
                     context.worldBorder.canPlaceAt(destX, destZ) &&
                     MovementHelper.isReplaceable(destX, newY + 1, destZ, aboveBlock, context.bsi)) {
                 for (Clutch clutch : ClutchUtils.CLUTCHES) {
                     ItemStack item = clutch.getClutchingItem(context);
-                    if (clutch.getFallDamage(unprotectedFallHeight - 1) <= context.maxFallHeightNoClutch &&
+                    if (clutch.getFallDamage(totalFallHeight - 1) <= context.maxFallHeightNoClutch &&
                             clutch.isPlaceable(context, destX, newY, destZ, ontoBlock) &&
                             item != null) {
                         double newCost = tentativeCost + context.placeBlockCost;

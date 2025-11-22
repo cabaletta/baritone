@@ -47,7 +47,7 @@ public class HayBaleClutch extends Clutch {
     }
 
     @Override
-    public float getFallDamage(int fallDamage) {
+    public float getFallDamage(float fallDamage) {
         return fallDamage * 0.2f;
     }
 }
