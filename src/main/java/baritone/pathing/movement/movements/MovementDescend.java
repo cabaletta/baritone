@@ -247,6 +247,7 @@ public class MovementDescend extends Movement {
                             if (clutchRes != null) {
                                 clutchRes.clutch = clutch;
                                 clutchRes.item = item;
+                                clutchRes.solid = solidPlace;
                             }
                         }
                         break;

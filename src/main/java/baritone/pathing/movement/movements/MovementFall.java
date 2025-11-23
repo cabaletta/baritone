@@ -82,14 +82,15 @@ public class MovementFall extends Movement {
         if (moveResult.cost >= COST_INF) {
             return state.setStatus(MovementStatus.UNREACHABLE);
         }
+        BetterBlockPos blockDest = clutchResult.solid ? dest.below() : dest;
+        BlockState blockDestState = ctx.world().getBlockState(blockDest);
         if (clutchResult.clutch != null) {
-            if (clutchResult.item != null) {
-                if (clutchResult.item.isEmpty()) {
-                    return state.setStatus(MovementStatus.UNREACHABLE);
-                }
-                if (!clutchResult.clutch.compare(ctx.world(), dest, destState)) {
-                    clutchResult.clutch.clutch(baritone, state, dest, clutchResult);
-                }
+            if (clutchResult.item != null &&
+                    !clutchResult.clutch.compare(ctx.world(), blockDest, blockDestState) &&
+                    !clutchResult.clutch.clutch(baritone, state, blockDest, clutchResult) &&
+                    clutchResult.item.isEmpty() &&
+                    ctx.player().isOnGround()) {
+                return state.setStatus(MovementStatus.UNREACHABLE);
             }
             if (clutchResult.clutch.hasClutched(ctx, dest, destState) && clutchResult.clutch.isFinished(ctx, state, clutchResult)) {
                 clutchResult.reset();
