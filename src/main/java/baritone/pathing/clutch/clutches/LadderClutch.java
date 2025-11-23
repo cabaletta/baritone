@@ -17,15 +17,11 @@
 
 package baritone.pathing.clutch.clutches;
 
-import baritone.api.IBaritone;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.IPlayerContext;
-import baritone.pathing.clutch.ClutchUtils;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.clutch.Clutch;
 import baritone.pathing.movement.MovementHelper;
-import baritone.pathing.movement.MovementState;
-import baritone.utils.pathing.MutableClutchResult;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.Item;
@@ -37,6 +33,10 @@ import net.minecraft.world.level.block.state.BlockState;
 public class LadderClutch extends Clutch {
     public static final LadderClutch INSTANCE = new LadderClutch();
 
+    private LadderClutch() {
+        super(false);
+    }
+
     @Override
     public boolean isAcceptedItem(Item item) {
         return item.equals(Items.LADDER);
@@ -45,6 +45,11 @@ public class LadderClutch extends Clutch {
     @Override
     public boolean compare(Level world, BlockPos pos, BlockState state) {
         return state.is(Blocks.LADDER);
+    }
+
+    @Override
+    public boolean isSolid(CalculationContext context) {
+        return false;
     }
 
     @Override

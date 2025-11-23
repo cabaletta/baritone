@@ -38,6 +38,10 @@ import net.minecraft.world.level.block.state.BlockState;
 public class VineClutch extends Clutch {
     public static final VineClutch INSTANCE = new VineClutch();
 
+    private VineClutch() {
+        super(false);
+    }
+
     @Override
     public boolean isAcceptedItem(Item item) {
         return item.equals(Items.VINE);
@@ -46,6 +50,11 @@ public class VineClutch extends Clutch {
     @Override
     public boolean compare(Level world, BlockPos pos, BlockState state) {
         return state.is(Blocks.VINE);
+    }
+
+    @Override
+    public boolean isSolid(CalculationContext context) {
+        return false;
     }
 
     // Had to yoink this out of VineBlock since it was private

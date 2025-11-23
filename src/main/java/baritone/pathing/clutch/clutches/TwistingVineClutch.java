@@ -18,6 +18,7 @@
 package baritone.pathing.clutch.clutches;
 
 import baritone.pathing.clutch.Clutch;
+import baritone.pathing.movement.CalculationContext;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
@@ -28,6 +29,10 @@ import net.minecraft.world.level.block.state.BlockState;
 public class TwistingVineClutch extends Clutch {
     public static final TwistingVineClutch INSTANCE = new TwistingVineClutch();
 
+    private TwistingVineClutch() {
+        super(false);
+    }
+
     @Override
     public boolean isAcceptedItem(Item item) {
         return item.equals(Items.TWISTING_VINES);
@@ -36,5 +41,10 @@ public class TwistingVineClutch extends Clutch {
     @Override
     public boolean compare(Level world, BlockPos pos, BlockState state) {
         return state.is(Blocks.TWISTING_VINES) || state.is(Blocks.TWISTING_VINES_PLANT);
+    }
+
+    @Override
+    public boolean isSolid(CalculationContext context) {
+        return false;
     }
 }

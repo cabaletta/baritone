@@ -35,6 +35,7 @@ import com.google.common.collect.ImmutableSet;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockState;
@@ -245,7 +246,10 @@ public class MovementDescend extends Movement {
                             res.z = destZ;
                             if (clutchRes != null) {
                                 clutchRes.clutch = clutch;
-                                clutchRes.item = item;
+                                clutchRes.item = item.getItem();
+                                if (!clutch.replenishable) {
+                                    item.setCount(item.getCount() - 1);
+                                }
                             }
                         }
                         break;

@@ -28,7 +28,9 @@ import net.minecraft.world.level.block.state.BlockState;
 public class BlockClutch extends Clutch {
     public static final BlockClutch INSTANCE = new BlockClutch();
 
-    private BlockClutch() {}
+    private BlockClutch() {
+        super(false);
+    }
 
     @Override
     public boolean isAcceptedItem(Item item) {

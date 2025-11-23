@@ -17,7 +17,6 @@
 
 package baritone.pathing.clutch;
 
-import baritone.Baritone;
 import baritone.api.IBaritone;
 import baritone.api.pathing.movement.ActionCosts;
 import baritone.api.utils.BetterBlockPos;
@@ -35,20 +34,22 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public abstract class Clutch {
-    private final double costMultiplier;
+    private final double speedMultiplier;
+    public final boolean replenishable;
 
-    protected Clutch(double costMultiplier) {
-        this.costMultiplier = costMultiplier;
+    protected Clutch(double speedMultiplier, boolean replenishable) {
+        this.speedMultiplier = speedMultiplier;
+        this.replenishable = replenishable;
     }
 
-    protected Clutch() {
-        this(1d);
+    protected Clutch(boolean replenishable) {
+        this(1.0, replenishable);
     }
 
     public final ItemStack getClutchingItem(CalculationContext context) { // TODO We could return the slot instead of the item
-        for (int slot = 0; slot < (Baritone.settings().allowInventory.value ? 36 : 9); slot++) {
-            ItemStack item = context.getBaritone().getPlayerContext().player().getInventory().items.get(slot);
-            if (isAcceptedItem(item.getItem())) {
+        for (int slot = 0; slot < (context.allowInventory ? 36 : 9); slot++) {
+            ItemStack item = context.items.get(slot);
+            if (!item.isEmpty() && isAcceptedItem(item.getItem())) {
                 return item;
             }
         }
@@ -59,9 +60,7 @@ public abstract class Clutch {
 
     public abstract boolean compare(Level world, BlockPos pos, BlockState state);
 
-    public boolean isSolid(CalculationContext context) {
-        return false;
-    }
+    public abstract boolean isSolid(CalculationContext context);
 
     public boolean isPlaceable(CalculationContext context, int x, int y, int z, BlockState block) {
         return MovementHelper.canPlaceAgainst(context.bsi, x, y, z, block);
@@ -91,7 +90,7 @@ public abstract class Clutch {
     }
 
     public Pair<Double, Double> getCost(double distance, double endBlockHeight, double velocity) {
-        return ActionCosts.distanceToTicks(distance, endBlockHeight, costMultiplier, velocity);
+        return ActionCosts.distanceToTicks(distance, endBlockHeight, speedMultiplier, velocity);
     }
 
     public double getAdditionalCost() {

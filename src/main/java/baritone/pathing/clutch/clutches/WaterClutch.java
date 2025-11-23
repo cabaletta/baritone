@@ -36,7 +36,9 @@ public class WaterClutch extends Clutch {
     private static final double WATER_HEIGHT = 0.887889;
     public static final WaterClutch INSTANCE = new WaterClutch();
 
-    private WaterClutch() {}
+    private WaterClutch() {
+        super(true);
+    }
 
     @Override
     public boolean isAcceptedItem(Item item) {
@@ -52,6 +54,12 @@ public class WaterClutch extends Clutch {
     public boolean compare(Level world, BlockPos pos, BlockState state) {
         return state.getFluidState().getType() instanceof WaterFluid;
     }
+
+    @Override
+    public boolean isSolid(CalculationContext context) {
+        return false;
+    }
+
     @Override
     public boolean isPlaceable(CalculationContext context, int x, int y, int z, BlockState block) {
         VoxelShape shape = block.getCollisionShape(context.world, new BlockPos(x, y, z));

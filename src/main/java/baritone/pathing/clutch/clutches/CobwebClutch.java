@@ -18,6 +18,7 @@
 package baritone.pathing.clutch.clutches;
 
 import baritone.pathing.clutch.Clutch;
+import baritone.pathing.movement.CalculationContext;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
@@ -29,7 +30,7 @@ public class CobwebClutch extends Clutch {
     public static final CobwebClutch INSTANCE = new CobwebClutch();
 
     private CobwebClutch() {
-        super(0.05d);
+        super(0.05, false);
     }
 
     @Override
@@ -40,5 +41,10 @@ public class CobwebClutch extends Clutch {
     @Override
     public boolean compare(Level world, BlockPos pos, BlockState state) {
         return state.is(Blocks.COBWEB);
+    }
+
+    @Override
+    public boolean isSolid(CalculationContext context) {
+        return false;
     }
 }

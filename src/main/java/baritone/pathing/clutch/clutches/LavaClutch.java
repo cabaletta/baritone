@@ -34,7 +34,9 @@ import net.minecraft.world.level.material.LavaFluid;
 public class LavaClutch extends Clutch {
     public static final LavaClutch INSTANCE = new LavaClutch();
 
-    private LavaClutch() {}
+    private LavaClutch() {
+        super(true);
+    }
 
     @Override
     public boolean isAcceptedItem(Item item) {
@@ -44,6 +46,11 @@ public class LavaClutch extends Clutch {
     @Override
     public boolean compare(Level world, BlockPos pos, BlockState state) {
         return state.getFluidState().getType() instanceof LavaFluid;
+    }
+
+    @Override
+    public boolean isSolid(CalculationContext context) {
+        return false;
     }
 
     @Override

@@ -33,6 +33,10 @@ import net.minecraft.world.level.block.state.BlockState;
 public class PowderedSnowClutch extends Clutch {
     public static final PowderedSnowClutch INSTANCE = new PowderedSnowClutch();
 
+    private PowderedSnowClutch() {
+        super(true);
+    }
+
     @Override
     public boolean isAcceptedItem(Item item) {
         return item.equals(Items.POWDER_SNOW_BUCKET);

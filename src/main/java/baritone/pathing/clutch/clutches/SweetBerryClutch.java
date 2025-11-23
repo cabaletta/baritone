@@ -31,7 +31,7 @@ public class SweetBerryClutch extends Clutch {
     public static final SweetBerryClutch INSTANCE = new SweetBerryClutch();
 
     private SweetBerryClutch() {
-        super(0.75d);
+        super(0.75, false);
     }
 
     @Override
@@ -42,6 +42,11 @@ public class SweetBerryClutch extends Clutch {
     @Override
     public boolean compare(Level world, BlockPos pos, BlockState state) {
         return state.is(Blocks.SWEET_BERRY_BUSH);
+    }
+
+    @Override
+    public boolean isSolid(CalculationContext context) {
+        return false;
     }
 
     @Override

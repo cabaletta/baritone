@@ -18,11 +18,11 @@
 package baritone.utils.pathing;
 
 import baritone.pathing.clutch.Clutch;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Item;
 
 public final class MutableClutchResult {
     public Clutch clutch;
-    public ItemStack item;
+    public Item item;
 
     public MutableClutchResult() {
         reset();
