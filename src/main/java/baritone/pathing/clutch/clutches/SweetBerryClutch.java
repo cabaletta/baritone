@@ -31,7 +31,7 @@ public class SweetBerryClutch extends Clutch {
     public static final SweetBerryClutch INSTANCE = new SweetBerryClutch();
 
     private SweetBerryClutch() {
-        super(0.75, false);
+        super(0.75);
     }
 
     @Override

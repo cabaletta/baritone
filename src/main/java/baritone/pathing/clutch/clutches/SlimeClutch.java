@@ -36,9 +36,7 @@ public class SlimeClutch extends Clutch {
 
     private boolean onGround = false;
 
-    private SlimeClutch() {
-        super(false);
-    }
+    private SlimeClutch() {}
 
     @Override
     public boolean isAcceptedItem(Item item) {

@@ -36,9 +36,7 @@ public class WaterClutch extends Clutch {
     private static final double WATER_HEIGHT = 0.887889;
     public static final WaterClutch INSTANCE = new WaterClutch();
 
-    private WaterClutch() {
-        super(true);
-    }
+    private WaterClutch() {}
 
     @Override
     public boolean isAcceptedItem(Item item) {

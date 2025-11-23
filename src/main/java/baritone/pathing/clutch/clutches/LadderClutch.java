@@ -33,9 +33,7 @@ import net.minecraft.world.level.block.state.BlockState;
 public class LadderClutch extends Clutch {
     public static final LadderClutch INSTANCE = new LadderClutch();
 
-    private LadderClutch() {
-        super(false);
-    }
+    private LadderClutch() {}
 
     @Override
     public boolean isAcceptedItem(Item item) {

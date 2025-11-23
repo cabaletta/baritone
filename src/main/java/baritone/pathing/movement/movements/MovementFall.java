@@ -35,6 +35,7 @@ import java.util.Set;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LadderBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -82,9 +83,13 @@ public class MovementFall extends Movement {
             return state.setStatus(MovementStatus.UNREACHABLE);
         }
         if (clutchResult.clutch != null) {
-            if (clutchResult.item != null &&
-                    !clutchResult.clutch.compare(ctx.world(), dest, destState)) {
-                clutchResult.clutch.clutch(baritone, state, dest, clutchResult);
+            if (clutchResult.item != null) {
+                if (clutchResult.item.isEmpty()) {
+                    return state.setStatus(MovementStatus.UNREACHABLE);
+                }
+                if (!clutchResult.clutch.compare(ctx.world(), dest, destState)) {
+                    clutchResult.clutch.clutch(baritone, state, dest, clutchResult);
+                }
             }
             if (clutchResult.clutch.hasClutched(ctx, dest, destState) && clutchResult.clutch.isFinished(ctx, state, clutchResult)) {
                 clutchResult.reset();

@@ -246,10 +246,7 @@ public class MovementDescend extends Movement {
                             res.z = destZ;
                             if (clutchRes != null) {
                                 clutchRes.clutch = clutch;
-                                clutchRes.item = item.getItem();
-                                if (!clutch.replenishable && !context.baritone.getPlayerContext().playerController().getGameType().isCreative()) {
-                                    item.setCount(item.getCount() - 1);
-                                }
+                                clutchRes.item = item;
                             }
                         }
                         break;

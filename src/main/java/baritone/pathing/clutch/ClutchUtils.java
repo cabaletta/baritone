@@ -63,7 +63,7 @@ public interface ClutchUtils {
         state.setTarget(new MovementState.MovementTarget(ctx.playerRotations().withPitch(90), true));
         double dist = ctx.playerHead().y() - (dest.getY() + 1); // Saying that all blocks below have a height of 1, but it doesn't matter
         if (dist > 0 && dist <= ctx.playerController().getBlockReachDistance()) {
-            ((Baritone) baritone).getInventoryBehavior().selectThrowawayForLocation(true, dest.getX(), dest.getY(), dest.getZ(), result.item);
+            ((Baritone) baritone).getInventoryBehavior().selectThrowawayForLocation(true, dest.getX(), dest.getY(), dest.getZ(), result.item.getItem());
             state.setInput(Input.CLICK_RIGHT, true);
             return true;
         }

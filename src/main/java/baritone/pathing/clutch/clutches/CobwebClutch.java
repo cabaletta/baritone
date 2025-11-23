@@ -30,7 +30,7 @@ public class CobwebClutch extends Clutch {
     public static final CobwebClutch INSTANCE = new CobwebClutch();
 
     private CobwebClutch() {
-        super(0.05, false);
+        super(0.05);
     }
 
     @Override

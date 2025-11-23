@@ -82,7 +82,6 @@ public class CalculationContext {
     public final BetterWorldBorder worldBorder;
     public final boolean considerPotionEffects;
     public final boolean allowInventory;
-    public final List<ItemStack> items;
     public final Map<MobEffect, MobEffectInstance> activeEffects;
 
     public final PrecomputedData precomputedData;
@@ -136,11 +135,6 @@ public class CalculationContext {
         this.worldBorder = new BetterWorldBorder(world.getWorldBorder());
         this.considerPotionEffects = Baritone.settings().considerPotionEffects.value;
         this.allowInventory = Baritone.settings().allowInventory.value;
-        NonNullList<ItemStack> playerItems = baritone.getPlayerContext().player().getInventory().items;
-        this.items = new ArrayList<>(playerItems.size());
-        for (ItemStack item : playerItems) {
-            items.add(item.copy());
-        }
         this.activeEffects = Map.copyOf(player.getActiveEffectsMap());
     }
 

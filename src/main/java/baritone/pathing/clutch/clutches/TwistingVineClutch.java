@@ -29,9 +29,7 @@ import net.minecraft.world.level.block.state.BlockState;
 public class TwistingVineClutch extends Clutch {
     public static final TwistingVineClutch INSTANCE = new TwistingVineClutch();
 
-    private TwistingVineClutch() {
-        super(false);
-    }
+    private TwistingVineClutch() {}
 
     @Override
     public boolean isAcceptedItem(Item item) {

@@ -27,6 +27,7 @@ import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.utils.pathing.MutableClutchResult;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.NonNullList;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -35,21 +36,20 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 public abstract class Clutch {
     private final double speedMultiplier;
-    public final boolean replenishable;
 
-    protected Clutch(double speedMultiplier, boolean replenishable) {
+    protected Clutch(double speedMultiplier) {
         this.speedMultiplier = speedMultiplier;
-        this.replenishable = replenishable;
     }
 
-    protected Clutch(boolean replenishable) {
-        this(1.0, replenishable);
+    protected Clutch() {
+        this(1.0);
     }
 
     public final ItemStack getClutchingItem(CalculationContext context) { // TODO We could return the slot instead of the item
+        NonNullList<ItemStack> items = context.baritone.getPlayerContext().player().getInventory().items;
         for (int slot = 0; slot < (context.allowInventory ? 36 : 9); slot++) {
-            ItemStack item = context.items.get(slot);
-            if (!item.isEmpty() && isAcceptedItem(item.getItem())) {
+            ItemStack item = items.get(slot);
+            if (isAcceptedItem(item.getItem())) {
                 return item;
             }
         }

@@ -29,9 +29,7 @@ import net.minecraft.world.level.block.state.BlockState;
 public class HayBaleClutch extends Clutch {
     public static final HayBaleClutch INSTANCE = new HayBaleClutch();
 
-    private HayBaleClutch() {
-        super(false);
-    }
+    private HayBaleClutch() {}
 
     @Override
     public boolean isAcceptedItem(Item item) {
