@@ -83,10 +83,6 @@ public class MovementFall extends Movement {
             return state.setStatus(MovementStatus.UNREACHABLE);
         }
         if (clutchResult.clutch != null) {
-//            // TODO There should be a way to calculate this at cost calculation. Right now, it only runs if the block it was going to use ran out. Maybe keep a list of blocks that will be used or something? This is kind of inefficient.
-//            if (clutchResult.item.is(Items.AIR)) {
-//                return state.setStatus(MovementStatus.UNREACHABLE);
-//            }
             if (clutchResult.item != null &&
                     !clutchResult.clutch.compare(ctx.world(), dest, destState)) {
                 clutchResult.clutch.clutch(baritone, state, dest, clutchResult);
