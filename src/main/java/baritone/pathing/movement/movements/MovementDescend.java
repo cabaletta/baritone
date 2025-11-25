@@ -261,9 +261,9 @@ public class MovementDescend extends Movement {
 
         if (!playerFeet.equals(dest) || ab > 0.25) {
             if (numTicks++ < 20 && fromStart < 1.25) {
-                MovementHelper.moveTowards(ctx, state, fakeDest, baritone.getAttackProcess().isRotating());
+                MovementHelper.moveTowards(ctx, state, fakeDest, baritone);
             } else {
-                MovementHelper.moveTowards(ctx, state, dest, baritone.getAttackProcess().isRotating());
+                MovementHelper.moveTowards(ctx, state, dest, baritone);
             }
         }
         return state;

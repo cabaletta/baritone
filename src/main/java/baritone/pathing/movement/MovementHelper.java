@@ -650,8 +650,8 @@ public interface MovementHelper extends ActionCosts, Helper {
         }
     }
 
-    static void moveTowards(IPlayerContext ctx, MovementState state, BlockPos dest, boolean changeRotation) {
-        if (!changeRotation) {
+    static void moveTowards(IPlayerContext ctx, MovementState state, BlockPos dest, IBaritone baritone) {
+        if (!baritone.getAttackProcess().isRotating()) {
             state.setTarget(new MovementTarget(
                     RotationUtils.calcRotationFromVec3d(ctx.playerHead(),
                             VecUtils.getBlockPosCenter(dest),
@@ -661,10 +661,6 @@ public interface MovementHelper extends ActionCosts, Helper {
         } else {
             moveTowardsWithoutRotation(ctx, state, dest);
         }
-    }
-
-    static void moveTowards(IPlayerContext ctx, MovementState state, BlockPos pos) {
-        moveTowards(ctx, state, pos, false);
     }
 
     static void moveTowardsWithoutRotation(IPlayerContext ctx, MovementState state, float idealYaw) {

@@ -278,7 +278,7 @@ public class MovementDiagonal extends Movement {
             state.setInput(Input.SPRINT, true);
         }
         state.setInput(Input.SNEAK, Baritone.settings().allowWalkOnMagmaBlocks.value && MovementHelper.steppingOnBlocks(ctx).stream().anyMatch(block -> ctx.world().getBlockState(block).is(Blocks.MAGMA_BLOCK)));
-        MovementHelper.moveTowards(ctx, state, dest, baritone.getAttackProcess().isRotating());
+        MovementHelper.moveTowards(ctx, state, dest, baritone);
         return state;
     }
 

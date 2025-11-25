@@ -78,7 +78,7 @@ public class AttackProcess extends BaritoneProcessHelper implements IAttackProce
             }
             if (!Baritone.settings().assumeExternalKillAura.value) {
                 HitResult hitResult = ctx.minecraft().hitResult;
-                if (hitResult != null && hitResult.getType().equals(HitResult.Type.ENTITY)) {
+                if (hitResult != null && hitResult.getType() == HitResult.Type.ENTITY) {
                     this.attacking = true;
                 }
             }

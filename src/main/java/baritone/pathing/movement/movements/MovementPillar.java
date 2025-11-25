@@ -221,7 +221,7 @@ public class MovementPillar extends Movement {
             }
              */
 
-            MovementHelper.moveTowards(ctx, state, against, baritone.getAttackProcess().isRotating());
+            MovementHelper.moveTowards(ctx, state, against, baritone);
             return state;
         } else {
             // Get ready to place a throwaway block
