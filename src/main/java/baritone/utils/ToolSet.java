@@ -20,6 +20,7 @@ package baritone.utils;
 import baritone.Baritone;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.item.TieredItem;
@@ -84,8 +85,7 @@ public class ToolSet {
      * @return values from 0 up
      */
     private int getMaterialCost(ItemStack itemStack) {
-        if (itemStack.getItem() instanceof TieredItem) {
-            TieredItem tool = (TieredItem) itemStack.getItem();
+        if (itemStack.getItem() instanceof TieredItem tool) {
             return tool.getTier().getLevel();
         } else {
             return -1;
@@ -104,11 +104,11 @@ public class ToolSet {
      * @return An int containing the index in the tools array that worked best
      */
 
-    public int getBestSlot(Block b, boolean preferSilkTouch) {
-        return getBestSlot(b, preferSilkTouch, false);
+    public int getBestToolSlot(Block b, boolean preferSilkTouch) {
+        return getBestToolSlot(b, preferSilkTouch, false);
     }
 
-    public int getBestSlot(Block b, boolean preferSilkTouch, boolean pathingCalculation) {
+    public int getBestToolSlot(Block b, boolean preferSilkTouch, boolean pathingCalculation) {
 
         /*
         If we actually want know what efficiency our held item has instead of the best one
@@ -118,7 +118,7 @@ public class ToolSet {
             return player.getInventory().selected;
         }
 
-        int best = 0;
+        int best = player.getInventory().selected;
         double highestSpeed = Double.NEGATIVE_INFINITY;
         int lowestCost = Integer.MIN_VALUE;
         boolean bestSilkTouch = false;
@@ -160,7 +160,7 @@ public class ToolSet {
      * @return A double containing the destruction ticks with the best tool
      */
     private double getBestDestructionTime(Block b) {
-        ItemStack stack = player.getInventory().getItem(getBestSlot(b, false, true));
+        ItemStack stack = player.getInventory().getItem(getBestToolSlot(b, false, true));
         return calculateSpeedVsBlock(stack, b.defaultBlockState()) * avoidanceMultiplier(b);
     }
 

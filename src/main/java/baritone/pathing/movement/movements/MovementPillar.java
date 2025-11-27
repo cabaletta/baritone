@@ -229,7 +229,6 @@ public class MovementPillar extends Movement {
                 return state.setStatus(MovementStatus.UNREACHABLE);
             }
 
-            state.setInput(Input.SNEAK, true);
             // since (lower down) we only right click once player.isSneaking, and that happens the tick after we request to sneak
 
             double diffX = ctx.player().position().x - (dest.getX() + 0.5);
@@ -245,9 +244,12 @@ public class MovementPillar extends Movement {
 
                 // revise our target to both yaw and pitch if we're going to be moving forward
                 state.setTarget(new MovementState.MovementTarget(rotation, true));
-            } else if (flatMotion < 0.05) {
-                // If our Y coordinate is above our goal, stop jumping
-                state.setInput(Input.JUMP, ctx.player().position().y < dest.getY());
+            } else {
+                state.setInput(Input.SNEAK, true);
+                if (flatMotion < 0.05) {
+                    // If our Y coordinate is above our goal, stop jumping
+                    state.setInput(Input.JUMP, ctx.player().position().y < dest.getY());
+                }
             }
 
 
