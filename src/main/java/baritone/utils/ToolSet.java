@@ -194,9 +194,7 @@ public class ToolSet {
             float enchantBonus = EnchantmentHelper.getDamageBonus(stack, target.getMobType());
 
             double totalDamage = totalBaseDamage + enchantBonus;
-            double speedMultiplier = getAttackSpeed(stack);
-            Helper.HELPER.logDebug(speedMultiplier + " for " + stack.getHoverName().getString());
-            double dps = totalDamage * speedMultiplier;
+            double dps = totalDamage * getAttackSpeed(stack);
 
             if (dps > bestDPS) {
                 bestDPS = dps;
