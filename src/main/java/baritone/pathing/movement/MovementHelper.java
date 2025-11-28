@@ -32,6 +32,7 @@ import baritone.utils.ToolSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.piston.MovingPistonBlock;
@@ -647,6 +648,16 @@ public interface MovementHelper extends ActionCosts, Helper {
     static void switchToBestToolFor(IPlayerContext ctx, BlockState b, ToolSet ts, boolean preferSilkTouch) {
         if (Baritone.settings().autoTool.value && !Baritone.settings().assumeExternalAutoTool.value) {
             ctx.player().getInventory().selected = ts.getBestToolSlot(b.getBlock(), preferSilkTouch);
+        }
+    }
+
+    static void switchToBestWeaponFor(IPlayerContext ctx, LivingEntity target) {
+        switchToBestWeaponFor(ctx, target, new ToolSet(ctx.player()));
+    }
+
+    static void switchToBestWeaponFor(IPlayerContext ctx, LivingEntity target, ToolSet ts) {
+        if (Baritone.settings().autoWeapon.value) {
+            ctx.player().getInventory().selected = ts.getBestWeaponSlot(target);
         }
     }
 

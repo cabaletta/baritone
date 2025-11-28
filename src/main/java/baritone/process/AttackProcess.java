@@ -23,6 +23,7 @@ import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
 import baritone.api.utils.RotationUtils;
 import baritone.api.utils.input.Input;
+import baritone.pathing.movement.MovementHelper;
 import baritone.utils.BaritoneProcessHelper;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -53,8 +54,9 @@ public class AttackProcess extends BaritoneProcessHelper implements IAttackProce
         this.baritone.getInputOverrideHandler().clearAllKeys();
         double closestDistance = Double.MAX_VALUE;
         Vec3 closestPosition = null;
+        LivingEntity closestEntity = null;
         for (Entity entity : ctx.entities()) {
-            if (!entity.is(ctx.player()) && entity instanceof LivingEntity && entity.isAlive() && entity.isAttackable()) {
+            if (!entity.is(ctx.player()) && entity instanceof LivingEntity target && entity.isAlive() && entity.isAttackable()) {
                 Vec3 attackPoint = new Vec3(
                         entity.getBoundingBox().getCenter().x(),//Mth.clamp(ctx.playerHead().x(), entity.getBoundingBox().minX, entity.getBoundingBox().maxX),
                         Mth.clamp(ctx.playerHead().y(), entity.getBoundingBox().minY, entity.getBoundingBox().maxY),
@@ -64,11 +66,13 @@ public class AttackProcess extends BaritoneProcessHelper implements IAttackProce
                 if (distance < closestDistance) {
                     closestDistance = distance;
                     closestPosition = attackPoint;
+                    closestEntity = target;
                 }
             }
         }
         double attackRadius = Baritone.settings().entityAttackRadius.value;
         if (closestPosition != null && closestDistance <= attackRadius * attackRadius) {
+            MovementHelper.switchToBestWeaponFor(ctx, closestEntity);
             if (!Baritone.settings().assumeExternalAutoAim.value) {
                 this.rotating = true;
                 this.baritone.getLookBehavior().updateTarget(

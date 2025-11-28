@@ -18,14 +18,30 @@
 package baritone.utils;
 
 import baritone.Baritone;
+import baritone.api.utils.Helper;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.tags.EntityTypeTags;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.MobType;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.item.TieredItem;
+import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -151,6 +167,51 @@ public class ToolSet {
             }
         }
         return best;
+    }
+
+    public int getBestWeaponSlot(LivingEntity target) {
+        int bestSlot = player.getInventory().selected;
+
+        if (!Baritone.settings().autoTool.value) {
+            return bestSlot;
+        }
+
+        double bestDPS = -1.0;
+        for (int i = 0; i < 9; i++) {
+            ItemStack stack = player.getInventory().getItem(i);
+
+            if (stack.isEmpty()) {
+                continue;
+            }
+
+            double attributeDamage = stack.getAttributeModifiers(EquipmentSlot.MAINHAND)
+                .get(Attributes.ATTACK_DAMAGE).stream()
+                .mapToDouble(modifier -> modifier.getAmount())
+                .sum();
+
+            double totalBaseDamage = player.getAttributeBaseValue(Attributes.ATTACK_DAMAGE) + attributeDamage;
+
+            float enchantBonus = EnchantmentHelper.getDamageBonus(stack, target.getMobType());
+
+            double totalDamage = totalBaseDamage + enchantBonus;
+            double speedMultiplier = getAttackSpeed(stack);
+            Helper.HELPER.logDebug(speedMultiplier + " for " + stack.getHoverName().getString());
+            double dps = totalDamage * speedMultiplier;
+
+            if (dps > bestDPS) {
+                bestDPS = dps;
+                bestSlot = i;
+            }
+        }
+
+        return bestSlot;
+    }
+
+    private double getAttackSpeed(ItemStack stack) {
+        return player.getAttributeBaseValue(Attributes.ATTACK_SPEED) + stack.getAttributeModifiers(EquipmentSlot.MAINHAND)
+                .get(Attributes.ATTACK_SPEED).stream()
+                .mapToDouble(modifier -> modifier.getAmount())
+                .sum();
     }
 
     /**
