@@ -18,14 +18,15 @@
 package baritone.utils;
 
 import baritone.Baritone;
+import baritone.api.BaritoneAPI;
 import baritone.api.utils.IPlayerContext;
+import baritone.utils.accessor.IPlayerControllerMP;
 import net.minecraft.client.KeyMapping;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 
-/**
- * @author Brady
- * @since 8/25/2018
- */
 public final class LeftClickHelper {
     // base ticks between block breaks caused by tick logic
     private static final int BASE_BREAK_DELAY = 1;
@@ -40,8 +41,12 @@ public final class LeftClickHelper {
     }
 
     public void stopBreakingBlock() {
-        isBreaking = false;
-        ctx.minecraft().options.keyAttack.setDown(false);
+        // The player controller will never be null, but the player can be
+        if (ctx.player() != null && isBreaking) {
+            ctx.playerController().setHittingBlock(false);
+            ctx.playerController().resetBlockRemoving();
+            isBreaking = false;
+        }
     }
 
     public void tick(boolean isLeftClick) {
@@ -55,30 +60,48 @@ public final class LeftClickHelper {
         if (isLeftClick && trace != null) {
             switch (trace.getType()) {
                 case ENTITY:
-                    stopBreakingBlock();
-                    if (leftClickTimer <= 0 && (!Baritone.settings().timedAttacks.value || ctx.player().getAttackStrengthScale(0f) == 1f)) {
+                    if (leftClickTimer <= 0 &&
+                            (!Baritone.settings().timedAttacks.value || ctx.player().getAttackStrengthScale(0f) == 1f)) {
+                        EntityHitResult entityHitResult = (EntityHitResult) trace;
+                        stopBreakingBlock();
                         leftClickTimer = Baritone.settings().leftClickSpeed.value;
-                        KeyMapping.click(ctx.minecraft().options.keyAttack.getDefaultKey());
+                        ctx.minecraft().gameMode.attack(ctx.player(), entityHitResult.getEntity());
+                        ctx.player().swing(InteractionHand.MAIN_HAND);
                     }
                     break;
                 case BLOCK:
                     if (breakDelayTimer <= 0) {
-                        if (!isBreaking) {
-                            isBreaking = true;
-                            KeyMapping.click(ctx.minecraft().options.keyAttack.getDefaultKey());
-                        }
-                        ctx.minecraft().options.keyAttack.setDown(true);
+                        BlockHitResult blockHitResult = (BlockHitResult) trace;
+                        ctx.playerController().setHittingBlock(isBreaking);
                         if (ctx.playerController().hasBrokenBlock()) {
+                            ctx.playerController().syncHeldItem();
+                            ctx.playerController().clickBlock(blockHitResult.getBlockPos(), blockHitResult.getDirection());
+                            ctx.player().swing(InteractionHand.MAIN_HAND);
+                        } else {
+                            if (ctx.playerController().onPlayerDamageBlock(blockHitResult.getBlockPos(), blockHitResult.getDirection())) {
+                                ctx.player().swing(InteractionHand.MAIN_HAND);
+                            }
+                        }
+                        if (ctx.playerController().hasBrokenBlock()) { // block broken this tick
+                            // break delay timer only applies for multi-tick block breaks like vanilla
                             breakDelayTimer = Baritone.settings().blockBreakSpeed.value - BASE_BREAK_DELAY;
+                            // must reset controller's destroy delay to prevent the client from delaying itself unnecessarily
+                            ((IPlayerControllerMP) ctx.minecraft().gameMode).setDestroyDelay(0);
                         }
                     }
+                    // if true, we're breaking a block. if false, we broke the block this tick
+                    isBreaking = !ctx.playerController().hasBrokenBlock();
+                    // this value will be reset by the MC client handling mouse keys
+                    // since we're not spoofing the click keybind to the client, the client will stop the break if isDestroyingBlock is true
+                    // we store and restore this value on the next tick to determine if we're breaking a block
+                    ctx.playerController().setHittingBlock(false);
                     break;
                 default:
-                    stopBreakingBlock();
+                    isBreaking = false;
                     break;
             }
         } else {
-            stopBreakingBlock();
+            isBreaking = false;
         }
     }
 }
