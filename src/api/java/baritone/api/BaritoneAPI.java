@@ -47,5 +47,6 @@ public final class BaritoneAPI {
 
     public static Settings getSettings() {
         return BaritoneAPI.settings;
+
     }
 }
