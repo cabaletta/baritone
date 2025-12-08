@@ -40,6 +40,7 @@ public final class CachedChunk {
 
     public static final ImmutableSet<Block> BLOCKS_TO_KEEP_TRACK_OF = ImmutableSet.of(
             Blocks.ENDER_CHEST,
+            Blocks.ENCHANTING_TABLE
             Blocks.FURNACE,
             Blocks.CHEST,
             Blocks.TRAPPED_CHEST,
