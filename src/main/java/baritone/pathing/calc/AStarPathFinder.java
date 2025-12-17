@@ -100,7 +100,7 @@ public final class AStarPathFinder extends AbstractNodeCostSearch {
                 return Optional.of(new Path(realStart, startNode, currentNode, numNodes, goal, calcContext));
             }
             for (Moves moves : allMoves) {
-                for (Pair<Offset, Double> offsetAndCost : moves.cost(calcContext, currentNode.x, currentNode.y, currentNode.z)) {
+                for (Pair<Offset, Double> offsetAndCost : moves.offsets(calcContext, currentNode.x, currentNode.y, currentNode.z)) {
                     int newX = currentNode.x + offsetAndCost.first().x();
                     int newY = currentNode.y + offsetAndCost.first().y();
                     int newZ = currentNode.z + offsetAndCost.first().z();

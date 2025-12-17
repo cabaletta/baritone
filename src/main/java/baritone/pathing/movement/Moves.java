@@ -20,7 +20,6 @@ package baritone.pathing.movement;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.Pair;
 import baritone.pathing.movement.movements.*;
-import baritone.utils.pathing.MutableMoveResult;
 
 import java.util.List;
 
@@ -332,23 +331,29 @@ public enum Moves {
             return new MovementTraverse(context.getBaritone(), src, dest);
         }
 
-        public List<Pair<Offset, Double>> cost(CalculationContext context, int x, int y, int z) {
+        public List<Pair<Offset, Double>> offsets(CalculationContext context, int x, int y, int z) {
             return MovementTraverse.cost(context, x, y, z);
         }
-    },
-    PARKOUR {
-        @Override
-        public Movement apply0(CalculationContext context, BetterBlockPos src, BetterBlockPos dest) {
-            return new MovementParkour(context.getBaritone(), src, dest);
-        }
 
-        @Override
-        public List<Pair<Offset, Double>> cost(CalculationContext context, int x, int y, int z) {
-            return MovementParkour.cost(context, x, y, z);
+        public double cost(CalculationContext context, int srcX, int srcY, int srcZ, int destX, int destY, int destZ) {
+            return MovementTraverse.cost(context, srcX, srcY, srcZ, destX, destY, destZ);
         }
     };
+//    PARKOUR {
+//        @Override
+//        public Movement apply0(CalculationContext context, BetterBlockPos src, BetterBlockPos dest) {
+//            return new MovementParkour(context.getBaritone(), src, dest);
+//        }
+//
+//        @Override
+//        public List<Pair<Offset, Double>> cost(CalculationContext context, int x, int y, int z) {
+//            return MovementParkour.cost(context, x, y, z);
+//        }
+//    };
 
     public abstract Movement apply0(CalculationContext context, BetterBlockPos src, BetterBlockPos dest);
 
-    public abstract List<Pair<Offset, Double>> cost(CalculationContext context, int x, int y, int z);
+    public abstract List<Pair<Offset, Double>> offsets(CalculationContext context, int x, int y, int z);
+
+    public abstract double cost(CalculationContext context, int srcX, int srcY, int srcZ, int destX, int destY, int destZ);
 }
