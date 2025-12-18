@@ -28,7 +28,7 @@ import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.Helper;
 import baritone.api.utils.PathCalculationResult;
 import baritone.api.utils.interfaces.IGoalRenderPos;
-import baritone.pathing.calc.AStarPathFinder;
+import baritone.pathing.calc.ThetaStarPathFinder;
 import baritone.pathing.calc.AbstractNodeCostSearch;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.MovementHelper;
@@ -567,7 +567,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         if (feet.getY() == realStart.getY() && Math.abs(sub.getX()) <= 1 && Math.abs(sub.getZ()) <= 1) {
             realStart = feet;
         }
-        return new AStarPathFinder(realStart, start.getX(), start.getY(), start.getZ(), transformed, favoring, context);
+        return new ThetaStarPathFinder(realStart, start.getX(), start.getY(), start.getZ(), transformed, favoring, context);
 
     }
 

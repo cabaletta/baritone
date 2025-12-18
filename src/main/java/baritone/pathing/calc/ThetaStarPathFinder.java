@@ -26,6 +26,7 @@ import baritone.api.utils.Pair;
 import baritone.api.utils.SettingsUtil;
 import baritone.pathing.calc.openset.BinaryHeapOpenSet;
 import baritone.pathing.movement.CalculationContext;
+import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.Moves;
 import baritone.pathing.movement.Offset;
 import baritone.utils.pathing.BetterWorldBorder;
@@ -34,16 +35,17 @@ import baritone.utils.pathing.Favoring;
 import java.util.Optional;
 
 /**
- * The actual A* pathfinding
+ * Theta* pathfinding - an any-angle variant of A* that creates more optimal paths
+ * by using line-of-sight checks to skip intermediate nodes when possible
  *
- * @author leijurv
+ * @author leijurv (original A*), modified to Theta*
  */
-public final class AStarPathFinder extends AbstractNodeCostSearch {
+public final class ThetaStarPathFinder extends AbstractNodeCostSearch {
 
     private final Favoring favoring;
     private final CalculationContext calcContext;
 
-    public AStarPathFinder(BetterBlockPos realStart, int startX, int startY, int startZ, Goal goal, Favoring favoring, CalculationContext context) {
+    public ThetaStarPathFinder(BetterBlockPos realStart, int startX, int startY, int startZ, Goal goal, Favoring favoring, CalculationContext context) {
         super(realStart, startX, startY, startZ, goal, context);
         this.favoring = favoring;
         this.calcContext = context;
@@ -95,17 +97,19 @@ public final class AStarPathFinder extends AbstractNodeCostSearch {
             PathNode currentNode = openSet.removeLowest();
             mostRecentConsidered = currentNode;
             numNodes++;
+
             if (goal.isInGoal(currentNode.x, currentNode.y, currentNode.z)) {
                 logDebug("Took " + (System.currentTimeMillis() - startTime) + "ms, " + numMovementsConsidered + " movements considered");
                 return Optional.of(new Path(realStart, startNode, currentNode, numNodes, goal, calcContext));
             }
-            for (Moves moves : allMoves) {
-                for (Pair<Offset, Double> offsetAndCost : moves.offsets(calcContext, currentNode.x, currentNode.y, currentNode.z)) {
+
+            for (Moves move : allMoves) {
+                for (Pair<Offset, Double> offsetAndCost : move.offsets(calcContext, currentNode.x, currentNode.y, currentNode.z)) {
                     int newX = currentNode.x + offsetAndCost.first().x();
                     int newY = currentNode.y + offsetAndCost.first().y();
                     int newZ = currentNode.z + offsetAndCost.first().z();
+
                     if ((newX >> 4 != currentNode.x >> 4 || newZ >> 4 != currentNode.z >> 4) && !calcContext.isLoaded(newX, newZ)) {
-                        // only need to check if the destination is a loaded chunk if it's in a different chunk than the start of the movement
                         numEmptyChunk++;
                         continue;
                     }
@@ -115,6 +119,7 @@ public final class AStarPathFinder extends AbstractNodeCostSearch {
                     if (newY > height || newY < minY) {
                         continue;
                     }
+
                     numMovementsConsidered++;
                     double actionCost = offsetAndCost.second();
                     if (actionCost >= ActionCosts.COST_INF) {
@@ -123,51 +128,51 @@ public final class AStarPathFinder extends AbstractNodeCostSearch {
                     if (actionCost <= 0 || Double.isNaN(actionCost)) {
                         throw new IllegalStateException(String.format(
                                 "%s from %s %s %s calculated implausible cost %s",
-                                moves,
+                                move,
                                 SettingsUtil.maybeCensor(currentNode.x),
                                 SettingsUtil.maybeCensor(currentNode.y),
                                 SettingsUtil.maybeCensor(currentNode.z),
                                 actionCost));
                     }
-                    // check destination after verifying it's not COST_INF -- some movements return COST_INF without adjusting the destination
-//                    if (res.x != newX || res.z != newZ) {
-//                        throw new IllegalStateException(String.format(
-//                                "%s from %s %s %s ended at x z %s %s instead of %s %s",
-//                                moves,
-//                                SettingsUtil.maybeCensor(currentNode.x),
-//                                SettingsUtil.maybeCensor(currentNode.y),
-//                                SettingsUtil.maybeCensor(currentNode.z),
-//                                SettingsUtil.maybeCensor(res.x),
-//                                SettingsUtil.maybeCensor(res.z),
-//                                SettingsUtil.maybeCensor(newX),
-//                                SettingsUtil.maybeCensor(newZ)));
-//                    }
-//                    if (res.y != currentNode.y + offsetAndCost.first().y()) {
-//                        throw new IllegalStateException(String.format(
-//                                "%s from %s %s %s ended at y %s instead of %s",
-//                                moves,
-//                                SettingsUtil.maybeCensor(currentNode.x),
-//                                SettingsUtil.maybeCensor(currentNode.y),
-//                                SettingsUtil.maybeCensor(currentNode.z),
-//                                SettingsUtil.maybeCensor(res.y),
-//                                SettingsUtil.maybeCensor(currentNode.y + offsetAndCost.first().y())));
-//                    }
+
                     long hashCode = BetterBlockPos.longHash(newX, newY, newZ);
+
+                    PathNode neighbor = getNodeAtPosition(newX, newY, newZ, hashCode);
+
+                    PathNode parentNode = currentNode.previous;
+                    double tentativeCost;
+
+                    double shortcutCost = -1;
+
+                    if (parentNode != null && (shortcutCost = move.cost(calcContext, parentNode.x, parentNode.y, parentNode.z, newX, newY, newZ)) <= currentNode.cost + actionCost) {
+                        // Theta Star
+                        actionCost = shortcutCost;
+                        tentativeCost = parentNode.cost;
+                    } else {
+                        if (parentNode != null) {
+                            HELPER.logDebug("Shortcut: " + shortcutCost);
+                            HELPER.logDebug("Lame: " + parentNode.cost + actionCost);
+                        }
+                        parentNode = currentNode;
+                        tentativeCost = currentNode.cost;
+                    }
+
                     if (isFavoring) {
-                        // see issue #18
                         actionCost *= favoring.calculate(hashCode);
                     }
-                    PathNode neighbor = getNodeAtPosition(newX, newY, newZ, hashCode);
-                    double tentativeCost = currentNode.cost + actionCost;
+                    tentativeCost += actionCost;
+
                     if (neighbor.cost - tentativeCost > minimumImprovement) {
-                        neighbor.previous = currentNode;
+                        neighbor.previous = parentNode;
                         neighbor.cost = tentativeCost;
                         neighbor.combinedCost = tentativeCost + neighbor.estimatedCostToGoal;
+
                         if (neighbor.isOpen()) {
                             openSet.update(neighbor);
                         } else {
-                            openSet.insert(neighbor);//dont double count, dont insert into open set if it's already there
+                            openSet.insert(neighbor); //don't double count, don't insert into the open set if it's already there
                         }
+
                         for (int i = 0; i < COEFFICIENTS.length; i++) {
                             double heuristic = neighbor.estimatedCostToGoal + neighbor.cost / COEFFICIENTS[i];
                             if (bestHeuristicSoFar[i] - heuristic > minimumImprovement) {
@@ -182,13 +187,16 @@ public final class AStarPathFinder extends AbstractNodeCostSearch {
                 }
             }
         }
+
         if (cancelRequested) {
             return Optional.empty();
         }
+
         System.out.println(numMovementsConsidered + " movements considered");
         System.out.println("Open set size: " + openSet.size());
         System.out.println("PathNode map size: " + mapSize());
         System.out.println((int) (numNodes * 1.0 / ((System.currentTimeMillis() - startTime) / 1000F)) + " nodes per second");
+
         Optional<IPath> result = bestSoFar(true, numNodes);
         if (result.isPresent()) {
             logDebug("Took " + (System.currentTimeMillis() - startTime) + "ms, " + numMovementsConsidered + " movements considered");

@@ -204,6 +204,7 @@ public interface MovementHelper extends ActionCosts, Helper {
             if (!bsi.worldContainsLoadedChunk(x, z)) {
                 return true;
             }
+            // TODO We should actually be checking the block's height, not just snow specifically
             // the check in BlockSnow.isPassable is layers < 5
             // while actually, we want < 3 because 3 or greater makes it impassable in a 2 high ceiling
             if (state.getValue(SnowLayerBlock.LAYERS) >= 3) {
@@ -818,5 +819,84 @@ public interface MovementHelper extends ActionCosts, Helper {
             }
         }
         return blocks;
+    }
+
+    static double pathBreakCost(CalculationContext context, int x0, int y0, int z0, int x1, int y1, int z1) {
+        // Direction vector
+        int dx = x1 - x0;
+        int dy = y1 - y0;
+        int dz = z1 - z0;
+
+        // Current voxel
+        int x = x0;
+        int y = y0;
+        int z = z0;
+
+        // Step direction
+        int stepX = Integer.signum(dx);
+        int stepY = Integer.signum(dy);
+        int stepZ = Integer.signum(dz);
+
+        // Calculate tMax and tDelta
+        // tMax = distance to next voxel boundary
+        // tDelta = distance between voxel boundaries
+        double tMaxX, tMaxY, tMaxZ;
+        double tDeltaX, tDeltaY, tDeltaZ;
+
+        if (dx == 0) {
+            tMaxX = Double.POSITIVE_INFINITY;
+            tDeltaX = Double.POSITIVE_INFINITY;
+        } else {
+            tMaxX = stepX > 0 ? 1.0 : 0.0;
+            tDeltaX = Math.abs(1.0 / dx);
+        }
+
+        if (dy == 0) {
+            tMaxY = Double.POSITIVE_INFINITY;
+            tDeltaY = Double.POSITIVE_INFINITY;
+        } else {
+            tMaxY = stepY > 0 ? 1.0 : 0.0;
+            tDeltaY = Math.abs(1.0 / dy);
+        }
+
+        if (dz == 0) {
+            tMaxZ = Double.POSITIVE_INFINITY;
+            tDeltaZ = Double.POSITIVE_INFINITY;
+        } else {
+            tMaxZ = stepZ > 0 ? 1.0 : 0.0;
+            tDeltaZ = Math.abs(1.0 / dz);
+        }
+
+        double cost = 0;
+
+        // Traverse voxels
+        while (true) {
+            // Check current voxel
+            cost += getMiningDurationTicks(context, x, y, z, false) + getMiningDurationTicks(context, x, y + 1, z, true);
+
+            // Reached destination or found unbreakable thing
+            if ((x == x1 && y == y1 && z == z1) || cost >= COST_INF) {
+                return cost;
+            }
+
+            // Step to the next voxel along the shortest path
+            if (tMaxX < tMaxY) {
+                if (tMaxX < tMaxZ) {
+                    x += stepX;
+                    tMaxX += tDeltaX;
+                } else {
+                    z += stepZ;
+                    tMaxZ += tDeltaZ;
+                }
+            } else {
+                if (tMaxY < tMaxZ) {
+                    y += stepY;
+                    tMaxY += tDeltaY;
+                } else {
+                    z += stepZ;
+                    tMaxZ += tDeltaZ;
+                }
+            }
+        }
     }
 }
