@@ -129,7 +129,6 @@ class Path extends PathBase {
     private Movement runBackwards(BetterBlockPos src, BetterBlockPos dest, double cost) {
         for (Moves moves : Moves.values()) {
             double newCost = moves.cost(context, src.x, src.y, src.z, dest.x, dest.y, dest.z);
-            Helper.HELPER.logDebug("Cost: " + newCost);
             if (newCost != ActionCosts.COST_INF) {
                 // have to calculate the cost at calculation time so we can accurately judge whether a cost increase happened between cached calculation and real execution
                 // however, taking into account possible favoring that could skew the node cost, we really want the stricter limit of the two

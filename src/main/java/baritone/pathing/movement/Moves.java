@@ -328,7 +328,7 @@ public enum Moves {
     TRAVERSE {
         @Override
         public Movement apply0(CalculationContext context, BetterBlockPos src, BetterBlockPos dest) {
-            return new MovementTraverse(context.getBaritone(), src, dest);
+            return MovementTraverse.create(context.getBaritone(), src, dest);
         }
 
         public List<Pair<Offset, Double>> offsets(CalculationContext context, int x, int y, int z) {

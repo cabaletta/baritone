@@ -39,7 +39,7 @@ public class MovementAscend extends Movement {
     private int ticksWithoutPlacement = 0;
 
     public MovementAscend(IBaritone baritone, BetterBlockPos src, BetterBlockPos dest) {
-        super(baritone, src, dest, new BetterBlockPos[]{dest, src.above(2), dest.above()}, dest.below());
+        super(baritone, src, dest, new BetterBlockPos[]{dest, src.above(2), dest.above()}, new BetterBlockPos[] {dest.below()});
     }
 
     @Override
@@ -173,8 +173,8 @@ public class MovementAscend extends Movement {
             return state.setStatus(MovementStatus.SUCCESS);
         }
 
-        BlockState jumpingOnto = BlockStateInterface.get(ctx, positionToPlace);
-        if (!MovementHelper.canWalkOn(ctx, positionToPlace, jumpingOnto)) {
+        BlockState jumpingOnto = BlockStateInterface.get(ctx, positionsToPlace[0]); // TODO add in the multiple positions to place functionality
+        if (!MovementHelper.canWalkOn(ctx, positionsToPlace[0], jumpingOnto)) { // TODO add in the multiple positions to place functionality
             ticksWithoutPlacement++;
             if (MovementHelper.attemptToPlaceABlock(state, baritone, dest.below(), false, true) == PlaceResult.READY_TO_PLACE) {
                 state.setInput(Input.SNEAK, true);

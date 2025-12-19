@@ -45,7 +45,7 @@ public class MovementDescend extends Movement {
     public boolean forceSafeMode = false;
 
     public MovementDescend(IBaritone baritone, BetterBlockPos start, BetterBlockPos end) {
-        super(baritone, start, end, new BetterBlockPos[]{end.above(2), end.above(), end}, end.below());
+        super(baritone, start, end, new BetterBlockPos[]{end.above(2), end.above(), end}, new BetterBlockPos[]{end.below()});
     }
 
     @Override

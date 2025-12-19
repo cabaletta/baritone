@@ -142,17 +142,13 @@ public final class ThetaStarPathFinder extends AbstractNodeCostSearch {
                     PathNode parentNode = currentNode.previous;
                     double tentativeCost;
 
-                    double shortcutCost = -1;
+                    double shortcutCost;
 
                     if (parentNode != null && (shortcutCost = move.cost(calcContext, parentNode.x, parentNode.y, parentNode.z, newX, newY, newZ)) <= currentNode.cost + actionCost) {
                         // Theta Star
                         actionCost = shortcutCost;
                         tentativeCost = parentNode.cost;
                     } else {
-                        if (parentNode != null) {
-                            HELPER.logDebug("Shortcut: " + shortcutCost);
-                            HELPER.logDebug("Lame: " + parentNode.cost + actionCost);
-                        }
                         parentNode = currentNode;
                         tentativeCost = currentNode.cost;
                     }

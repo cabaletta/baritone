@@ -42,7 +42,7 @@ public class MovementParkour extends Movement {
     private final BetterBlockPos dest;
 
     public MovementParkour(IBaritone baritone, BetterBlockPos src, BetterBlockPos dest) {
-        super(baritone, src, dest, EMPTY, dest);
+        super(baritone, src, dest, EMPTY, new BetterBlockPos[] {dest});
         this.dest = dest;
     }
 

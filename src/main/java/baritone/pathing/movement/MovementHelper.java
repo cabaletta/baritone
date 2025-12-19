@@ -49,6 +49,7 @@ import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import org.apache.logging.log4j.util.TriConsumer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -821,82 +822,56 @@ public interface MovementHelper extends ActionCosts, Helper {
         return blocks;
     }
 
-    static double pathBreakCost(CalculationContext context, int x0, int y0, int z0, int x1, int y1, int z1) {
+    /**
+     * Amanatides & Woo algorithm to traverse voxels along a ray.
+     */
+    static void pathPositions(int currentX, int currentY, int currentZ, int endX, int endY, int endZ, TriConsumer<Integer, Integer, Integer> voxelCallback) {
         // Direction vector
-        int dx = x1 - x0;
-        int dy = y1 - y0;
-        int dz = z1 - z0;
+        int dx = endX - currentX;
+        int dy = endY - currentY;
+        int dz = endZ - currentZ;
 
-        // Current voxel
-        int x = x0;
-        int y = y0;
-        int z = z0;
-
-        // Step direction
+        // Step direction: -1, 0, or 1
         int stepX = Integer.signum(dx);
         int stepY = Integer.signum(dy);
         int stepZ = Integer.signum(dz);
 
-        // Calculate tMax and tDelta
-        // tMax = distance to next voxel boundary
-        // tDelta = distance between voxel boundaries
-        double tMaxX, tMaxY, tMaxZ;
-        double tDeltaX, tDeltaY, tDeltaZ;
+        // tDelta: how far along the ray we must move for the horizontal/vertical/depth
+        // component to equal the width/height/depth of a voxel
+        double tDeltaX = (stepX != 0) ? 1.0 / Math.abs(dx) : Double.MAX_VALUE;
+        double tDeltaY = (stepY != 0) ? 1.0 / Math.abs(dy) : Double.MAX_VALUE;
+        double tDeltaZ = (stepZ != 0) ? 1.0 / Math.abs(dz) : Double.MAX_VALUE;
 
-        if (dx == 0) {
-            tMaxX = Double.POSITIVE_INFINITY;
-            tDeltaX = Double.POSITIVE_INFINITY;
-        } else {
-            tMaxX = stepX > 0 ? 1.0 : 0.0;
-            tDeltaX = Math.abs(1.0 / dx);
-        }
+        // tMax: the value of t at which the ray crosses the first voxel boundary
+        double tMaxX = (stepX != 0) ? tDeltaX * 0.5 : Double.MAX_VALUE;
+        double tMaxY = (stepY != 0) ? tDeltaY * 0.5 : Double.MAX_VALUE;
+        double tMaxZ = (stepZ != 0) ? tDeltaZ * 0.5 : Double.MAX_VALUE;
 
-        if (dy == 0) {
-            tMaxY = Double.POSITIVE_INFINITY;
-            tDeltaY = Double.POSITIVE_INFINITY;
-        } else {
-            tMaxY = stepY > 0 ? 1.0 : 0.0;
-            tDeltaY = Math.abs(1.0 / dy);
-        }
+        // Add the starting voxel
+        voxelCallback.accept(currentX, currentY, currentZ);
 
-        if (dz == 0) {
-            tMaxZ = Double.POSITIVE_INFINITY;
-            tDeltaZ = Double.POSITIVE_INFINITY;
-        } else {
-            tMaxZ = stepZ > 0 ? 1.0 : 0.0;
-            tDeltaZ = Math.abs(1.0 / dz);
-        }
-
-        double cost = 0;
-
-        // Traverse voxels
-        while (true) {
-            // Check current voxel
-            cost += getMiningDurationTicks(context, x, y, z, false) + getMiningDurationTicks(context, x, y + 1, z, true);
-
-            // Reached destination or found unbreakable thing
-            if ((x == x1 && y == y1 && z == z1) || cost >= COST_INF) {
-                return cost;
-            }
-
-            // Step to the next voxel along the shortest path
+        // Traverse until we reach the end voxel
+        while (currentX != endX || currentY != endY || currentZ != endZ) {
+            // Step to the next voxel by moving along the axis with the smallest tMax
             if (tMaxX < tMaxY) {
                 if (tMaxX < tMaxZ) {
-                    x += stepX;
+                    currentX += stepX;
                     tMaxX += tDeltaX;
                 } else {
-                    z += stepZ;
+                    currentZ += stepZ;
                     tMaxZ += tDeltaZ;
                 }
             } else {
                 if (tMaxY < tMaxZ) {
-                    y += stepY;
+                    currentY += stepY;
                     tMaxY += tDeltaY;
                 } else {
-                    z += stepZ;
+                    currentZ += stepZ;
                     tMaxZ += tDeltaZ;
                 }
             }
+
+            voxelCallback.accept(currentX, currentY, currentZ);
         }
     }
 }
