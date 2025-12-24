@@ -73,7 +73,7 @@ public class ProguardTask extends BaritoneGradleTask {
 
     private File getMcJar() {
         MinecraftConfig mcc = ext.getMinecrafts().get(sourceSets.getByName("main"));
-        return mcc.getMinecraft(mcc.getMcPatcher().getProdNamespace(), mcc.getMcPatcher().getProdNamespace()).toFile();
+        return mcc.getMinecraft(mcc.getMcPatcher().getProdNamespace()).toFile();
     }
 
     private boolean isMcJar(File f) {
