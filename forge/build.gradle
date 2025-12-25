@@ -18,13 +18,9 @@
 import baritone.gradle.task.CreateDistTask
 import baritone.gradle.task.ProguardTask
 
-//base.archivesName = base.archivesName + "-forge"
+archivesBaseName = archivesBaseName + "-forge"
 
 unimined.minecraft {
-    mappings {
-        devFallbackNamespace "intermediary"
-    }
-
     minecraftForge {
         loader project.forge_version
         mixinConfig ["mixins.baritone.json"]
