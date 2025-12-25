@@ -47,5 +47,5 @@ dependencies {
     implementation("xyz.wagyourtail.unimined.mapping:unimined-mapping-library-jvm:1.2.1")
 
     // Shadow plugin
-    implementation("com.gradleup.shadow:shadow-gradle-plugin:8.3.5")
+    implementation("com.gradleup.shadow:shadow-gradle-plugin:9.3.0")
 }
