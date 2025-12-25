@@ -47,7 +47,7 @@ public class Determinizer {
 
         try (
                 JarFile jarFile = new JarFile(new File(inputPath));
-                JarOutputStream jos = new JarOutputStream(new FileOutputStream(new File(outputPath)))
+                JarOutputStream jos = new JarOutputStream(new FileOutputStream(outputPath))
         ) {
 
             List<JarEntry> entries = jarFile.stream()
