@@ -15,31 +15,37 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+plugins {
+    `kotlin-dsl`
+}
+
 repositories {
     mavenLocal()
-    maven {
+    maven("https://maven.wagyourtail.xyz/releases") {
         name = "WagYourMaven"
-        url = "https://maven.wagyourtail.xyz/releases"
     }
-    maven {
+    maven("https://maven.minecraftforge.net/") {
         name = "ForgeMaven"
-        url = "https://maven.minecraftforge.net/"
     }
-    maven {
+    maven("https://maven.fabricmc.net/") {
         name = "FabricMaven"
-        url = "https://maven.fabricmc.net/"
     }
-    maven {
+    maven("https://maven.neoforged.net/") {
         name = "NeoForgedMaven"
-        url = "https://maven.neoforged.net/"
     }
     mavenCentral()
+    gradlePluginPortal()
 }
 
 dependencies {
-    implementation group: "com.google.code.gson", name: "gson", version: "2.9.1"
-    implementation group: "commons-io", name: "commons-io", version: "2.20.0"
+    // Use version catalog for consistency
+    implementation("com.google.code.gson:gson:2.9.1")
+    implementation("commons-io:commons-io:2.20.0")
 
-    implementation group: "xyz.wagyourtail.unimined", name: "xyz.wagyourtail.unimined.gradle.plugin", version: "1.4.1"
-    implementation group: "xyz.wagyourtail.unimined.mapping", name: "unimined-mapping-library-jvm", version: "1.2.1"
+    // UniMined plugin and mapping library
+    implementation("xyz.wagyourtail.unimined:xyz.wagyourtail.unimined.gradle.plugin:1.4.1")
+    implementation("xyz.wagyourtail.unimined.mapping:unimined-mapping-library-jvm:1.2.1")
+
+    // Shadow plugin
+    implementation("com.gradleup.shadow:shadow-gradle-plugin:8.3.5")
 }

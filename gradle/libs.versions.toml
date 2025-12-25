@@ -1,0 +1,62 @@
+[versions]
+# Minecraft and mod loaders
+minecraft = "1.19.4"
+forge = "45.4.3"  # Updated from 45.0.43
+fabric = "0.14.11"
+
+# Build tools
+unimined = "1.4.1"
+shadow = "8.3.5"
+
+# Core dependencies
+mixin = "0.8.7"
+asm = "9.5"
+nether-pathfinder = "1.4.1"
+
+# Other dependencies
+junit = "4.13.2"
+gson = "2.9.1"
+commons-io = "2.20.0"
+jsr305 = "3.0.2"
+launchwrapper = "of-2.3"
+simple-tweaker = "1.2"
+
+# Build properties
+java = "17"
+parchment = "2023.06.26"
+
+[libraries]
+# Core dependencies
+mixin = { module = "org.spongepowered:mixin", version.ref = "mixin" }
+asm = { module = "org.ow2.asm:asm", version.ref = "asm" }
+asm-tree = { module = "org.ow2.asm:asm-tree", version.ref = "asm" }
+asm-commons = { module = "org.ow2.asm:asm-commons", version.ref = "asm" }
+asm-util = { module = "org.ow2.asm:asm-util", version.ref = "asm" }
+asm-analysis = { module = "org.ow2.asm:asm-analysis", version.ref = "asm" }
+
+# Baritone dependencies
+nether-pathfinder = { module = "dev.babbaj:nether-pathfinder", version.ref = "nether-pathfinder" }
+
+# Testing
+junit = { module = "junit:junit", version.ref = "junit" }
+
+# Tweaker dependencies
+simple-tweaker = { module = "com.github.ImpactDevelopment:SimpleTweaker", version.ref = "simple-tweaker" }
+launchwrapper = { module = "net.minecraft:launchwrapper", version.ref = "launchwrapper" }
+
+# BuildSrc dependencies
+gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
+commons-io = { module = "commons-io:commons-io", version.ref = "commons-io" }
+
+# Annotations
+jsr305 = { module = "com.google.code.findbugs:jsr305", version.ref = "jsr305" }
+
+# UniMined mapping library (for buildSrc)
+unimined-mapping = { module = "xyz.wagyourtail.unimined.mapping:unimined-mapping-library-jvm", version = "1.2.1" }
+
+[plugins]
+shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }
+unimined = { id = "xyz.wagyourtail.unimined", version.ref = "unimined" }
+
+[bundles]
+asm = ["asm", "asm-tree", "asm-commons", "asm-util", "asm-analysis"]
