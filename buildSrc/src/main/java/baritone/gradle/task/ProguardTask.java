@@ -23,8 +23,10 @@ import org.gradle.api.tasks.*;
 import org.gradle.jvm.toolchain.JavaLanguageVersion;
 import org.gradle.jvm.toolchain.JavaLauncher;
 import org.gradle.jvm.toolchain.JavaToolchainService;
+import org.gradle.process.ExecOperations;
 import xyz.wagyourtail.unimined.api.UniminedExtension;
 import xyz.wagyourtail.unimined.api.minecraft.MinecraftConfig;
+import javax.inject.Inject;
 
 import java.io.*;
 import java.net.URL;
@@ -43,6 +45,13 @@ import java.util.zip.ZipFile;
  * @since 10/11/2018
  */
 public class ProguardTask extends BaritoneGradleTask {
+
+    private final ExecOperations execOperations;
+
+    @Inject
+    public ProguardTask(ExecOperations execOperations) {
+        this.execOperations = execOperations;
+    }
 
     @Input
     private String proguardVersion;
@@ -207,7 +216,7 @@ public class ProguardTask extends BaritoneGradleTask {
 
         Path workingDirectory = getTemporaryFile("");
 
-        getProject().javaexec(javaExecSpec -> {
+        execOperations.javaexec(javaExecSpec -> {
             javaExecSpec.workingDir(workingDirectory.toFile());
             javaExecSpec.args("@" + workingDirectory.relativize(config));
             javaExecSpec.classpath(getTemporaryFile(String.format(PROGUARD_JAR, proguardVersion)));

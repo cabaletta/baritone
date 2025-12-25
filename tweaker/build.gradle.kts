@@ -32,12 +32,16 @@ unimined.minecraft {
     runs {
         config("client") {
             mainClass = "net.minecraft.launchwrapper.Launch"
-            args?.addAll(listOf("--tweakClass", "baritone.launch.tweaker.BaritoneTweaker"))
+            args("--tweakClass", "baritone.launch.tweaker.BaritoneTweaker")
+            jvmArgs("-Dmixin.debug=true")
         }
     }
 }
 
 dependencies {
+    implementation(project(":"))
+    "shadowCommon"(project(":"))
+
     implementation(libs.mixin)
 
     // ASM dependencies (Mixin doesn't include these for some reason)
