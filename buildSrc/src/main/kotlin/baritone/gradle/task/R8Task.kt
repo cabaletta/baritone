@@ -238,6 +238,8 @@ abstract class R8Task @Inject constructor() : BaritoneGradleTask() {
             .compileClasspath
             .files
             .filter { it.isFile }
+            // Exclude nether-pathfinder since it's already included in the shadow JAR
+            .filter { !it.name.contains("nether-pathfinder") }
     }
 
     // getTemporaryFile and getRootRelativeFile are inherited from BaritoneGradleTask

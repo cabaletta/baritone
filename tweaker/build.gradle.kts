@@ -21,6 +21,9 @@ plugins {
     id("baritone.distribution-conventions")
 }
 
+// Set the archive name for the Tweaker module - align with other modules
+base.archivesName.set("${rootProject.base.archivesName.get()}-tweaker")
+
 unimined.minecraft {
     version(libs.versions.minecraft.get())
 
@@ -40,15 +43,7 @@ unimined.minecraft {
 }
 
 dependencies {
-    implementation(project(":"))
-    "shadowCommon"(project(":"))
-
-    implementation(libs.mixin)
-
-    // ASM dependencies (Mixin doesn't include these for some reason)
-    implementation(libs.bundles.asm)
-
-    // Tweaker-specific dependencies
+    // Tweaker-specific dependencies (loader-conventions handles the common ones)
     implementation(libs.simple.tweaker)
     implementation(libs.launchwrapper) {
         exclude(module = "lwjgl")
@@ -77,7 +72,7 @@ tasks {
 publishing {
     publications {
         named<MavenPublication>("maven") {
-            artifactId = rootProject.base.archivesName.get()
+            artifactId = "${rootProject.base.archivesName.get()}-${project.name}"
         }
     }
 }

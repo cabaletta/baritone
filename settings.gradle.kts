@@ -18,18 +18,38 @@
 rootProject.name = "baritone"
 
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
+// Configuration cache is incompatible with UniMined plugin
+// enableFeaturePreview("STABLE_CONFIGURATION_CACHE")
+
+// Build cache configuration for improved performance
+buildCache {
+    local {
+        isEnabled = true
+        directory = file("${rootDir}/.gradle/build-cache")
+    }
+}
 
 pluginManagement {
     repositories {
         mavenLocal()
         maven("https://maven.wagyourtail.xyz/snapshots") {
             name = "WagYourMaven"
+            content {
+                includeGroupByRegex("xyz\\.wagyourtail.*")
+            }
         }
         maven("https://maven.minecraftforge.net/") {
             name = "ForgeMaven"
+            content {
+                includeGroup("net.minecraftforge")
+            }
         }
         maven("https://maven.fabricmc.net/") {
             name = "FabricMaven"
+            content {
+                includeGroup("net.fabricmc")
+                includeGroup("fabric-loom")
+            }
         }
         mavenCentral()
         gradlePluginPortal {
@@ -53,38 +73,70 @@ dependencyResolutionManagement {
         // Minecraft and mapping repositories
         maven("https://libraries.minecraft.net/") {
             name = "minecraft"
+            content {
+                includeGroup("net.minecraft")
+                includeGroup("com.mojang")
+            }
         }
         maven("https://maven.parchmentmc.net/") {
             name = "parchment"
+            content {
+                includeGroup("org.parchmentmc")
+                includeGroup("net.parchmentmc")
+            }
         }
 
         // Mod loader repositories
         maven("https://maven.fabricmc.net/") {
             name = "fabric-maven"
+            content {
+                includeGroupByRegex("net\\.fabricmc.*")
+            }
         }
         maven("https://maven.minecraftforge.net/") {
             name = "forge-maven"
+            content {
+                includeGroupByRegex("net\\.minecraftforge.*")
+                includeGroup("de.oceanlabs.mcp")
+                includeGroup("cpw.mods")
+            }
         }
         maven("https://maven.neoforged.net/") {
             name = "neoforged-maven"
+            content {
+                includeGroupByRegex("net\\.neoforged.*")
+            }
         }
 
         // Mixin and related
         maven("https://repo.spongepowered.org/repository/maven-public/") {
             name = "spongepowered-repo"
+            content {
+                includeGroupByRegex("org\\.spongepowered.*")
+            }
         }
 
         // Baritone dependencies
         maven("https://babbaj.github.io/maven/") {
             name = "babbaj-repo"
+            content {
+                includeModule("dev.babbaj", "nether-pathfinder")
+            }
         }
         maven("https://impactdevelopment.github.io/maven/") {
             name = "impactdevelopment-repo"
+            content {
+                includeModule("com.github.ImpactDevelopment", "SimpleTweaker")
+                includeModule("io.github.impactdevelopment", "simpletweaker")
+            }
         }
 
         // LaunchWrapper for tweaker
         maven("https://files.multimc.org/maven/") {
             name = "multimc-maven"
+            content {
+                includeModule("net.minecraft", "launchwrapper")
+            }
             metadataSources {
                 artifact()
             }
@@ -93,10 +145,11 @@ dependencyResolutionManagement {
         // Alternative for GitHub-based dependencies
         maven("https://jitpack.io") {
             name = "jitpack"
+            content {
+                includeGroupByRegex("com\\.github.*")
+            }
         }
     }
-
-    // Version catalog is automatically loaded from gradle/libs.versions.toml
 }
 
 // Include subprojects

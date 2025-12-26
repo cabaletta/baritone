@@ -28,48 +28,57 @@ plugins {
     id("baritone.loader-conventions")
 }
 
-// R8 always runs to produce the three variants
-// The unobfuscated variant doesn't use R8, just the Determinizer
-logger.lifecycle("R8 task registered for ${project.name} - will produce API, Standalone, and Unobfuscated variants")
-
 tasks {
-    // Register R8 task
+    // Register R8 task with lazy configuration
     val r8 by registering(R8Task::class) {
         description = "Runs R8 obfuscation to create API and Standalone variants"
         group = "build"
 
-        // Set component type based on project
-        val projectName = project.name
-        when (projectName) {
-            "fabric", "forge", "tweaker", "neoforge" -> compType.set(projectName)
-        }
+        // Lazy property evaluation
+        compType.set(providers.provider { project.name }.map { name ->
+            when (name) {
+                "fabric", "forge", "tweaker", "neoforge" -> name
+                else -> ""
+            }
+        })
 
         // Input is the shadow JAR
         inputJar.set(named<ShadowJar>("shadowJar").flatMap { it.archiveFile })
 
-        // Set output locations
-        val baseArchivesName = project.rootProject.property("archives_base_name").toString()
-        val compTypeValue = when (projectName) {
-            "fabric", "forge", "tweaker", "neoforge" -> projectName
-            else -> null
+        // Lazy output file configuration
+        val baseArchivesName = providers.gradleProperty("archives_base_name")
+        val versionString = providers.provider {
+            val projectName = project.name
+            if (projectName in listOf("fabric", "forge", "tweaker", "neoforge")) {
+                "$projectName-${project.version}"
+            } else {
+                project.version.toString()
+            }
         }
-        val versionString = if (compTypeValue != null) "$compTypeValue-${project.version}" else project.version.toString()
 
-        outputApiJar.set(layout.buildDirectory.file("libs/$baseArchivesName-api-$versionString.jar"))
-        outputStandaloneJar.set(layout.buildDirectory.file("libs/$baseArchivesName-standalone-$versionString.jar"))
-        outputUnoptimizedJar.set(layout.buildDirectory.file("libs/$baseArchivesName-unoptimized-$versionString.jar"))
+        outputApiJar.set(layout.buildDirectory.file(
+            providers.zip(baseArchivesName, versionString) { base, version ->
+                "libs/$base-api-$version.jar"
+            }
+        ))
+        outputStandaloneJar.set(layout.buildDirectory.file(
+            providers.zip(baseArchivesName, versionString) { base, version ->
+                "libs/$base-standalone-$version.jar"
+            }
+        ))
+        outputUnoptimizedJar.set(layout.buildDirectory.file(
+            providers.zip(baseArchivesName, versionString) { base, version ->
+                "libs/$base-unoptimized-$version.jar"
+            }
+        ))
 
         dependsOn("shadowJar")
     }
 
-    // Modify the remapJar task to use R8 output (API variant only)
-    afterEvaluate {
-        tasks.named<RemapJarTask>("remapJar") {
-            dependsOn(r8)
-
-            // Use the API variant as input for remapping
-            inputFile.set(r8.get().outputApiJar)
-        }
+    // Configuration cache compatible - configure remapJar task lazily
+    withType<RemapJarTask>().configureEach {
+        dependsOn(r8)
+        inputFile.set(r8.flatMap { it.outputApiJar })
     }
 
     // Make build depend on R8 to ensure all variants are created

@@ -25,30 +25,30 @@ plugins {
     id("xyz.wagyourtail.unimined")
 }
 
-// Access the version catalog
-val libs: VersionCatalog = extensions.getByType<VersionCatalogsExtension>().named("libs")
+// Access the version catalog using cleaner syntax
+val libs = the<VersionCatalogsExtension>().named("libs")
 
-// UniMined plugin adds its own repositories, so we need these for dependencies
+// Use the shared repository configuration extension
 repositories {
-    maven("https://babbaj.github.io/maven/")
-    maven("https://repo.spongepowered.org/repository/maven-public/")
+    configureBaritoneRepositories()
 }
 
 dependencies {
+    // Core Minecraft modding dependencies
     compileOnly(libs.findLibrary("mixin").get())
-    compileOnly(libs.findLibrary("asm").get())
+    compileOnly(libs.findBundle("asm").get())  // Use bundle for ASM libraries
+
+    // Baritone-specific dependency
     implementation(libs.findLibrary("nether-pathfinder").get())
 }
 
 // Configure Minecraft for the main source set with mappings
-sourceSets.main {
-    unimined.minecraft(this) {
-        version(libs.findVersion("minecraft").get().toString())
+unimined.minecraft {
+    version(libs.findVersion("minecraft").get().toString())
 
-        mappings {
-            intermediary()
-            mojmap()
-            parchment(version = libs.findVersion("parchment").get().toString())
-        }
+    mappings {
+        intermediary()
+        mojmap()
+        parchment(version = libs.findVersion("parchment").get().toString())
     }
 }

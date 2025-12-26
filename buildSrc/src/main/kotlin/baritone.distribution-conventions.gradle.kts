@@ -21,87 +21,117 @@
  */
 
 import org.gradle.kotlin.dsl.*
-import org.gradle.api.artifacts.VersionCatalogsExtension
-
-// R8 always produces all three variants
+import java.security.MessageDigest
 
 tasks {
-    register<Copy>("createDist") {
+    // Modern distribution task using Sync for better performance
+    val createDist by registering(Sync::class) {
         description = "Creates distribution artifacts"
         group = "distribution"
 
         // Include the remapped API variant
         from(tasks.named<Jar>("remapJar"))
 
-        // Include the R8 Standalone and Unoptimized variants directly (they don't need remapping)
+        // Depend on R8 task to ensure all variants are created
         val r8Task = tasks.named("r8")
-        dependsOn(r8Task)
-        dependsOn("remapJar")
+        dependsOn(r8Task, "remapJar")
 
-        // Copy the standalone and unoptimized JARs from R8 output
-        doFirst {
-            // Get the R8 outputs and copy them with proper names
-            val libs = project.extensions.getByType<VersionCatalogsExtension>().named("libs")
-            val baseArchivesName = libs.findVersion("archives-base-name").get().toString()
-            val projectName = project.name
-            val compTypeValue = when (projectName) {
-                "fabric", "forge", "tweaker", "neoforge" -> projectName
-                else -> null
+        // Use providers for lazy evaluation of file locations
+        from(providers.provider {
+            fileTree(layout.buildDirectory.dir("libs")) {
+                include("*-standalone-*.jar")
+                include("*-unoptimized-*.jar")
             }
-            val versionString = if (compTypeValue != null) "$compTypeValue-${project.version}" else project.version.toString()
-
-            // Ensure dist directory exists
-            val distDir = layout.buildDirectory.dir("dist").get().asFile
-            if (!distDir.exists()) {
-                distDir.mkdirs()
-            }
-
-            // Copy standalone JAR with error handling
-            val standaloneSource = layout.buildDirectory.file("libs/$baseArchivesName-standalone-$versionString.jar").get().asFile
-            val standaloneDest = distDir.resolve("$baseArchivesName-standalone-$versionString.jar")
-            if (standaloneSource.exists()) {
-                try {
-                    standaloneSource.copyTo(standaloneDest, overwrite = true)
-                } catch (e: Exception) {
-                    logger.warn("Failed to copy standalone JAR: ${e.message}")
-                }
-            } else {
-                logger.debug("Standalone JAR not found: $standaloneSource")
-            }
-
-            // Copy unoptimized JAR with error handling
-            val unoptimizedSource = layout.buildDirectory.file("libs/$baseArchivesName-unoptimized-$versionString.jar").get().asFile
-            val unoptimizedDest = distDir.resolve("$baseArchivesName-unoptimized-$versionString.jar")
-            if (unoptimizedSource.exists()) {
-                try {
-                    unoptimizedSource.copyTo(unoptimizedDest, overwrite = true)
-                } catch (e: Exception) {
-                    logger.warn("Failed to copy unoptimized JAR: ${e.message}")
-                }
-            } else {
-                logger.debug("Unoptimized JAR not found: $unoptimizedSource")
-            }
-        }
+        })
 
         into(layout.buildDirectory.dir("dist"))
 
         doLast {
             val distDir = layout.buildDirectory.dir("dist").get()
-            println("Distribution created in: $distDir")
+            logger.lifecycle("Distribution created in: $distDir")
 
-            // List the created artifacts with null safety
-            val files = distDir.asFile.listFiles()
-            if (files != null && files.isNotEmpty()) {
-                files.forEach { file ->
-                    println("  - ${file.name}")
+            // List created artifacts with their sizes
+            distDir.asFile.listFiles()?.forEach { file ->
+                val sizeKb = file.length() / 1024
+                logger.lifecycle("  - ${file.name} (${sizeKb}KB)")
+            } ?: logger.warn("No distribution files found in: $distDir")
+        }
+    }
+
+    // Add verification task to ensure all expected artifacts exist
+    val verifyDist by registering {
+        dependsOn(createDist)
+        doLast {
+            val expectedVariants = listOf("api", "standalone", "unoptimized")
+            val distDir = layout.buildDirectory.dir("dist").get().asFile
+
+            expectedVariants.forEach { variant ->
+                val hasVariant = distDir.listFiles()?.any {
+                    it.name.contains(variant)
+                } == true
+
+                if (!hasVariant) {
+                    throw GradleException("Missing $variant artifact in distribution")
                 }
-            } else {
-                logger.warn("No distribution files found in: $distDir")
+            }
+
+            logger.lifecycle("Distribution verification passed - all variants present")
+        }
+    }
+
+    // Generate checksums for distribution artifacts
+    val generateChecksums by registering {
+        dependsOn(createDist)
+        group = "distribution"
+        description = "Generates SHA-256 and MD5 checksums for distribution artifacts"
+
+        doLast {
+            val distDir = layout.buildDirectory.dir("dist").get().asFile
+
+            distDir.listFiles { file -> file.name.endsWith(".jar") }?.forEach { jarFile ->
+                // Generate SHA-256
+                val sha256 = MessageDigest.getInstance("SHA-256")
+                jarFile.inputStream().use { input ->
+                    val buffer = ByteArray(8192)
+                    var read: Int
+                    while (input.read(buffer).also { read = it } != -1) {
+                        sha256.update(buffer, 0, read)
+                    }
+                }
+                val sha256Hex = sha256.digest().joinToString("") { "%02x".format(it) }
+
+                // Generate MD5
+                val md5 = MessageDigest.getInstance("MD5")
+                jarFile.inputStream().use { input ->
+                    val buffer = ByteArray(8192)
+                    var read: Int
+                    while (input.read(buffer).also { read = it } != -1) {
+                        md5.update(buffer, 0, read)
+                    }
+                }
+                val md5Hex = md5.digest().joinToString("") { "%02x".format(it) }
+
+                // Write checksum files
+                File(distDir, "${jarFile.name}.sha256").writeText("$sha256Hex  ${jarFile.name}\n")
+                File(distDir, "${jarFile.name}.md5").writeText("$md5Hex  ${jarFile.name}\n")
+
+                logger.lifecycle("Generated checksums for ${jarFile.name}")
+                logger.lifecycle("  SHA-256: $sha256Hex")
+                logger.lifecycle("  MD5: $md5Hex")
             }
         }
     }
 
     named("build") {
-        finalizedBy("createDist")
+        finalizedBy(createDist)
+        finalizedBy(generateChecksums)
+    }
+
+    // Don't add to check task to avoid circular dependency
+    // Instead, create a separate verification task that can be called explicitly
+    register("verifyDistribution") {
+        dependsOn("build", verifyDist)
+        group = "verification"
+        description = "Builds and verifies distribution artifacts"
     }
 }

@@ -27,49 +27,41 @@ plugins {
     id("com.gradleup.shadow")
 }
 
-// Access the version catalog
-val libs: VersionCatalog = extensions.getByType<VersionCatalogsExtension>().named("libs")
+// Access the version catalog with cleaner syntax
+val libs = the<VersionCatalogsExtension>().named("libs")
 
-// UniMined plugin adds its own repositories, so we need these for dependencies
+// Use the shared repository configuration
 repositories {
-    // Repository for nether-pathfinder dependency
-    maven("https://babbaj.github.io/maven/")
-    // Repository for Mixin
-    maven("https://repo.spongepowered.org/repository/maven-public/")
-    // Repository for SimpleTweaker
-    maven("https://impactdevelopment.github.io/maven/")
-    // Repository for launchwrapper
-    maven("https://files.multimc.org/maven/") {
-        metadataSources {
-            artifact()
-        }
-    }
+    configureBaritoneRepositories()
 }
 
-// Access root project for shared outputs
-val rootSourceSets = rootProject.the<SourceSetContainer>()
+// Configuration cache compatible - use providers for root project access
+val rootSourceSets = providers.provider {
+    rootProject.extensions.getByType<SourceSetContainer>()
+}
 
 configurations {
-    create("common")
-    create("shadowCommon")
+    val common = create("common")
+    val shadowCommon = create("shadowCommon") {
+        isCanBeConsumed = false
+        isCanBeResolved = true
+    }
 
-    compileClasspath.get().extendsFrom(named("common").get())
-    runtimeClasspath.get().extendsFrom(named("common").get())
+    compileClasspath.get().extendsFrom(common)
+    runtimeClasspath.get().extendsFrom(common)
 }
 
 dependencies {
+    // Common dependencies for all loader modules
     compileOnly(libs.findLibrary("mixin").get())
-    compileOnly(libs.findLibrary("asm").get())
-
-    // Include nether-pathfinder as a transitive dependency
+    compileOnly(libs.findBundle("asm").get())
     implementation(libs.findLibrary("nether-pathfinder").get())
     "shadowCommon"(libs.findLibrary("nether-pathfinder").get())
 
     // Add all root project source sets except test and schematica_api
-    rootSourceSets.forEach { sourceSet ->
+    rootSourceSets.get().forEach { sourceSet ->
         if (sourceSet.name != "test" && sourceSet.name != "schematica_api") {
             "common"(sourceSet.output)
-            // Note: Source set outputs are added directly in the shadowJar task, not through configuration
         }
     }
 }
@@ -77,54 +69,39 @@ dependencies {
 // Note: Each module must configure its own minecraft settings with the loader
 
 tasks {
-    named<ShadowJar>("shadowJar") {
+    withType<ShadowJar>().configureEach {
         configurations = listOf(project.configurations["shadowCommon"])
 
-        // Include root project source sets directly in the shadow jar
-        rootSourceSets.forEach { sourceSet ->
-            if (sourceSet.name != "test" && sourceSet.name != "schematica_api") {
-                from(sourceSet.output)
-            }
-        }
+        // Lazy evaluation - include root project source sets in the shadow jar
+        from(providers.provider {
+            rootSourceSets.get().filter {
+                it.name !in setOf("test", "schematica_api")
+            }.map { it.output }
+        })
 
-        // Classifier is set per module if needed
+        // Exclude unnecessary files for smaller JARs
+        exclude("META-INF/maven/**")
+        exclude("META-INF/*.SF")
+        exclude("META-INF/*.DSA")
+        exclude("META-INF/*.RSA")
     }
 
     named<Jar>("jar") {
         archiveClassifier.set("dev")
     }
 
-    // Note: remapJar configuration is handled in each module
-
-    // Build depends on remapJar when it exists
-    // Using afterEvaluate to ensure remapJar task is registered
-    afterEvaluate {
-        tasks.findByName("build")?.apply {
-            tasks.findByName("remapJar")?.let { remapTask ->
-                dependsOn(remapTask)
-            }
-        }
+    // Lazy configuration - build depends on remapJar when it exists
+    named("build") {
+        dependsOn(provider {
+            tasks.findByName("remapJar") ?: tasks.named("shadowJar")
+        })
     }
 }
 
-// Configure publishing to exclude shadow jar variant
-// This is configured immediately as the publication is created during configuration
-publishing {
-    publications {
-        configureEach {
-            if (this is MavenPublication) {
-                // Remove shadowRuntimeElements variant from the publication
-                suppressPomMetadataWarningsFor("shadowRuntimeElements")
-            }
-        }
-    }
-}
-
-// Ensure shadow elements are not included in the java component
-components.configureEach {
-    if (name == "java" && this is AdhocComponentWithVariants) {
-        // Skip shadow runtime elements to avoid duplicate artifacts
-        withVariantsFromConfiguration(configurations["shadowRuntimeElements"]) {
+// Simplified publication configuration - exclude shadow runtime elements
+components.findByName("java")?.let { javaComponent ->
+    if (javaComponent is AdhocComponentWithVariants) {
+        javaComponent.withVariantsFromConfiguration(configurations["shadowRuntimeElements"]) {
             skip()
         }
     }

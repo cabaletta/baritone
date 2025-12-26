@@ -22,32 +22,31 @@ plugins {
 
 base.archivesName.set("${base.archivesName.get()}-common")
 
-// UniMined adds its own repositories, so we need to add the one for nether-pathfinder
+// Use the shared repository configuration
 repositories {
-    maven("https://babbaj.github.io/maven/")
-    maven("https://repo.spongepowered.org/repository/maven-public/")
+    configureBaritoneRepositories()
 }
 
 dependencies {
+    // Add the same dependencies as minecraft-conventions but for the root project
     compileOnly(libs.mixin)
-    compileOnly(libs.asm)
+    compileOnly(libs.bundles.asm)
     implementation(libs.nether.pathfinder)
     testImplementation(libs.junit)
 }
 
-sourceSets.main {
-    unimined.minecraft(this) {
-        version(libs.versions.minecraft.get())
+// Configure Minecraft for root project
+unimined.minecraft {
+    version(libs.versions.minecraft.get())
 
-        mappings {
-            intermediary()
-            mojmap()
-            parchment(version = libs.versions.parchment.get())
-        }
-
-        runs.off = true
-        defaultRemapJar = false
+    mappings {
+        intermediary()
+        mojmap()
+        parchment(version = libs.versions.parchment.get())
     }
+
+    runs.off = true
+    defaultRemapJar = false
 }
 
 sourceSets {
@@ -91,15 +90,19 @@ tasks {
     }
 
     javadoc {
-        options {
-            // Make the build fail on javadoc errors
-            (this as StandardJavadocDocletOptions).apply {
-                addStringOption("Xwerror", "-quiet")
-                isLinkSource = true
-                encoding = "UTF-8" // Allow emoji in comments
-            }
-        }
         source = sourceSets["api"].allJava
-        classpath += sourceSets["api"].compileClasspath
+        classpath = sourceSets["api"].compileClasspath
+
+        (options as StandardJavadocDocletOptions).apply {
+            addStringOption("Xwerror", "-quiet")
+            isLinkSource = true
+            encoding = "UTF-8"
+            addBooleanOption("html5", true)
+        }
     }
+}
+
+// Add aggregate task for CI
+tasks.register("ciBuild") {
+    dependsOn(subprojects.map { it.tasks.named("build") })
 }
