@@ -56,7 +56,9 @@ dependencies {
     compileOnly(libs.findLibrary("mixin").get())
     compileOnly(libs.findBundle("asm").get())
     implementation(libs.findLibrary("nether-pathfinder").get())
-    "shadowCommon"(libs.findLibrary("nether-pathfinder").get())
+    "shadowCommon"(libs.findLibrary("nether-pathfinder").get()) {
+        isTransitive = false
+    }
 
     // Add all root project source sets except test and schematica_api
     rootSourceSets.get().forEach { sourceSet ->

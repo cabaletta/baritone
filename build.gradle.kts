@@ -94,7 +94,6 @@ tasks {
         classpath = sourceSets["api"].compileClasspath
 
         (options as StandardJavadocDocletOptions).apply {
-            addStringOption("Xwerror", "-quiet")
             isLinkSource = true
             encoding = "UTF-8"
             addBooleanOption("html5", true)

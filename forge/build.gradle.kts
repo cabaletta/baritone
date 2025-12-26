@@ -40,6 +40,11 @@ unimined.minecraft {
     }
 }
 
+// Add nether-pathfinder to Minecraft runtime libraries for development
+dependencies {
+    "minecraftLibraries"(libs.nether.pathfinder)
+}
+
 tasks {
     processResources {
         inputs.property("version", version)
