@@ -8,6 +8,7 @@ fabric = "0.14.11"
 unimined = "1.4.1"
 shadow = "9.3.0"  # Updated to match buildSrc
 unimined-mapping = "1.2.1"
+r8 = "8.5.35"
 
 # Core dependencies
 mixin = "0.8.7"
@@ -25,6 +26,10 @@ simple-tweaker = "1.2"
 # Build properties
 java = "17"
 parchment = "2023.06.26"
+
+# Project properties
+archives-base-name = "baritone"
+mod-version = "1.9.5"
 
 [libraries]
 # Core dependencies
@@ -58,6 +63,9 @@ unimined-mapping = { module = "xyz.wagyourtail.unimined.mapping:unimined-mapping
 # BuildSrc plugin dependencies (as libraries)
 unimined-plugin = { module = "xyz.wagyourtail.unimined:xyz.wagyourtail.unimined.gradle.plugin", version.ref = "unimined" }
 shadow-plugin = { module = "com.gradleup.shadow:shadow-gradle-plugin", version.ref = "shadow" }
+
+# R8 dependency for code shrinking and optimization
+r8 = { module = "com.android.tools:r8", version.ref = "r8" }
 
 [plugins]
 shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }

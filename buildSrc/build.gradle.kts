@@ -35,6 +35,8 @@ repositories {
     }
     mavenCentral()
     gradlePluginPortal()
+    // Add Google's repository for R8
+    google()
 }
 
 // Access the version catalog in buildSrc
@@ -51,4 +53,7 @@ dependencies {
 
     // Shadow plugin
     implementation(libs.findLibrary("shadow-plugin").get())
+
+    // R8 for code shrinking and optimization
+    implementation(libs.findLibrary("r8").get())
 }

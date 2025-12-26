@@ -17,6 +17,7 @@
 
 plugins {
     id("baritone.loader-conventions")
+    id("baritone.r8-conventions")
     id("baritone.distribution-conventions")
 }
 
@@ -40,21 +41,15 @@ unimined.minecraft {
 
 tasks {
     processResources {
-        inputs.property("version", project.version)
+        inputs.property("version", version)
 
         filesMatching("fabric.mod.json") {
-            expand("version" to project.version)
+            expand("version" to version)
         }
     }
 
     withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar> {
         archiveClassifier.set("")
-    }
-
-    // Configure remapJar to use shadowJar output (using lazy configuration)
-    named<xyz.wagyourtail.unimined.api.minecraft.task.RemapJarTask>("remapJar") {
-        dependsOn("shadowJar")
-        inputFile.set(named<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar>("shadowJar").get().archiveFile)
     }
 }
 

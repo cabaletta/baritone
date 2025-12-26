@@ -96,15 +96,13 @@ tasks {
 
     // Note: remapJar configuration is handled in each module
 
-    // Build depends on remapJar when it exists (using lazy configuration)
-    // This will be configured by modules that create the remapJar task
-    configureEach {
-        if (name == "build") {
-            // The remapJar task is created by UniMined when a loader is configured
-            // We'll check for it lazily
-            dependsOn(provider {
-                tasks.findByName("remapJar")
-            })
+    // Build depends on remapJar when it exists
+    // Using afterEvaluate to ensure remapJar task is registered
+    afterEvaluate {
+        tasks.findByName("build")?.apply {
+            tasks.findByName("remapJar")?.let { remapTask ->
+                dependsOn(remapTask)
+            }
         }
     }
 }

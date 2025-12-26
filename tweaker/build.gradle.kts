@@ -17,6 +17,7 @@
 
 plugins {
     id("baritone.loader-conventions")
+    id("baritone.r8-conventions")
     id("baritone.distribution-conventions")
 }
 

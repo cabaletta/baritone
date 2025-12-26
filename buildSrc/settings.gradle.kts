@@ -15,7 +15,14 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone;
+// Enable version catalog in buildSrc
+dependencyResolutionManagement {
+    versionCatalogs {
+        create("libs") {
+            from(files("../gradle/libs.versions.toml"))
+        }
+    }
+}
 
-// Annotation for classes and class members that should not be renamed by R8
-public @interface KeepName {}
+// Set explicit project name for better build caching
+rootProject.name = "baritone-build-logic"

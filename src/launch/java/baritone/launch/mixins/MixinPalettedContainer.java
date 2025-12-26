@@ -40,7 +40,7 @@ public abstract class MixinPalettedContainer<T> implements IPalettedContainer<T>
     // Mixin has no way of referring to the data field and we can't use inheritance
     // tricks to determine its name, so we use this ugly workaround instead.
     // Classloading is hell here and causes accessor mixins (@Mixin interfaces with
-    // only @Accessor and @Invoker methods) to break on use and proguard hates method
+    // only @Accessor and @Invoker methods) to break on use and R8 hates method
     // handles and on top of that mojang decided that error messages during world
     // load are not needed so if you want to debug this you'll probably need an extra
     // mixin just to display the error and hard quit the game before follow up errors
@@ -87,7 +87,7 @@ public abstract class MixinPalettedContainer<T> implements IPalettedContainer<T>
     @Unique
     private IData<T> data() {
         try {
-            // cast to Object first so the method handle doesn't hide the interface usage from proguard
+            // cast to Object first so the method handle doesn't hide the interface usage from R8
             return (IData<T>) (Object) DATA_GETTER.invoke((PalettedContainer<T>) (Object) this);
         } catch (Throwable t) {
             throw sneaky(t, RuntimeException.class);

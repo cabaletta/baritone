@@ -38,7 +38,7 @@ Here's what the various qualifiers mean
 - **No loader**: Loadable as a launchwrapper tweaker against vanilla Minecraft using a custom `version.json`.
 - **Forge/Neoforge/Fabric**: Loadable as a standard mod using the respective loader. The fabric build may or may not work on Quilt.
 
-If you build from source you will also find mapping files in the `dist` directory. These contain the renamings done by ProGuard and are useful if you want to read obfuscated stack traces.
+If you build from source you will also find mapping files in the `dist` directory. These contain the renamings done by R8 and are useful if you want to read obfuscated stack traces.
 
 ## Build it yourself
 - Clone or download Baritone

@@ -51,25 +51,24 @@ sourceSets.main {
 }
 
 sourceSets {
-    val mainSourceSet = getByName("main")
+    val main by getting
 
-    // Use .apply {} to configure after creation. This avoids type inference ambiguity.
-    create("api").apply {
-        compileClasspath += mainSourceSet.compileClasspath
-        runtimeClasspath += mainSourceSet.runtimeClasspath
+    create("api") {
+        compileClasspath += main.compileClasspath
+        runtimeClasspath += main.runtimeClasspath
     }
 
-    create("launch").apply {
-        compileClasspath += mainSourceSet.compileClasspath + mainSourceSet.runtimeClasspath + mainSourceSet.output + sourceSets["api"].output
-        runtimeClasspath += mainSourceSet.compileClasspath + mainSourceSet.runtimeClasspath + mainSourceSet.output + sourceSets["api"].output
+    create("launch") {
+        compileClasspath += main.compileClasspath + main.runtimeClasspath + main.output + sourceSets["api"].output
+        runtimeClasspath += main.compileClasspath + main.runtimeClasspath + main.output + sourceSets["api"].output
     }
 
-    create("schematica_api").apply {
-        compileClasspath += mainSourceSet.compileClasspath
-        runtimeClasspath += mainSourceSet.runtimeClasspath
+    create("schematica_api") {
+        compileClasspath += main.compileClasspath
+        runtimeClasspath += main.runtimeClasspath
     }
 
-    getByName("main") {
+    main {
         compileClasspath += sourceSets["api"].output
         runtimeClasspath += sourceSets["api"].output
         compileClasspath += sourceSets["schematica_api"].output
@@ -77,8 +76,8 @@ sourceSets {
     }
 
     getByName("test") {
-        compileClasspath += mainSourceSet.compileClasspath + mainSourceSet.runtimeClasspath + mainSourceSet.output
-        runtimeClasspath += mainSourceSet.compileClasspath + mainSourceSet.runtimeClasspath + mainSourceSet.output
+        compileClasspath += main.compileClasspath + main.runtimeClasspath + main.output
+        runtimeClasspath += main.compileClasspath + main.runtimeClasspath + main.output
     }
 }
 
