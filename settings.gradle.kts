@@ -117,24 +117,6 @@ dependencyResolutionManagement {
                 includeModule("dev.babbaj", "nether-pathfinder")
             }
         }
-        maven("https://impactdevelopment.github.io/maven/") {
-            name = "impactdevelopment-repo"
-            content {
-                includeModule("com.github.ImpactDevelopment", "SimpleTweaker")
-                includeModule("io.github.impactdevelopment", "simpletweaker")
-            }
-        }
-
-        // LaunchWrapper for tweaker
-        maven("https://files.multimc.org/maven/") {
-            name = "multimc-maven"
-            content {
-                includeModule("net.minecraft", "launchwrapper")
-            }
-            metadataSources {
-                artifact()
-            }
-        }
 
         // Alternative for GitHub-based dependencies
         maven("https://jitpack.io") {
@@ -147,6 +129,5 @@ dependencyResolutionManagement {
 }
 
 // Include subprojects
-include("tweaker")
 include("forge")
 include("fabric")

@@ -22,9 +22,24 @@ plugins {
 
 base.archivesName.set("${base.archivesName.get()}-common")
 
-// Use the shared repository configuration
+// Additional repositories needed for UniMined compatibility
+// UniMined requires project-level repositories due to its dynamic repository management
 repositories {
-    configureBaritoneRepositories()
+    // Baritone-specific dependency repository
+    maven("https://babbaj.github.io/maven/") {
+        name = "babbaj-repo"
+        content {
+            includeModule("dev.babbaj", "nether-pathfinder")
+        }
+    }
+
+    // Mixin repository
+    maven("https://repo.spongepowered.org/repository/maven-public/") {
+        name = "spongepowered-repo"
+        content {
+            includeGroupByRegex("org\\.spongepowered.*")
+        }
+    }
 }
 
 dependencies {

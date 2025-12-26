@@ -15,9 +15,18 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-/*
- * Minecraft-specific conventions using UniMined
- * Provides Minecraft mappings and common mod dependencies
+/**
+ * Minecraft-specific conventions plugin using UniMined.
+ *
+ * This convention plugin provides:
+ * - Minecraft 1.19.4 configuration via UniMined
+ * - Mojang mappings with Parchment documentation
+ * - Intermediary mappings for compatibility
+ * - Core modding dependencies (Mixin, ASM)
+ * - Baritone pathfinder dependency
+ *
+ * Applied to: Root project and loader modules needing Minecraft
+ * Dependencies: baritone.base-conventions
  */
 
 plugins {
@@ -28,10 +37,7 @@ plugins {
 // Access the version catalog using cleaner syntax
 val libs = the<VersionCatalogsExtension>().named("libs")
 
-// Use the shared repository configuration extension
-repositories {
-    configureBaritoneRepositories()
-}
+// Repositories are managed centrally in settings.gradle.kts via dependencyResolutionManagement
 
 dependencies {
     // Core Minecraft modding dependencies

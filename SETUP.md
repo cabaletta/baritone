@@ -35,7 +35,6 @@ Here's what the various qualifiers mean
 - **Standalone**: Everything is obfuscated. Other mods cannot use Baritone, but you get a bit of extra performance.
 - **Unoptimized**: Nothing is obfuscated. This shouldn't be used in production, but is really helpful for crash reports.
 
-- **No loader**: Loadable as a launchwrapper tweaker against vanilla Minecraft using a custom `version.json`.
 - **Forge/Neoforge/Fabric**: Loadable as a standard mod using the respective loader. The fabric build may or may not work on Quilt.
 
 If you build from source you will also find mapping files in the `dist` directory. These contain the renamings done by R8 and are useful if you want to read obfuscated stack traces.
@@ -70,9 +69,8 @@ For more details, see [the build ci action](/.github/workflows/gradle_build.yml)
 
 For most branches `gradlew build` should build everything, but there are exceptions and this file might be out of date.
 
-More specifically, on older branches the setup used to be that `gradlew build` builds the tweaker jar
-and `gradlew build -Pbaritone.forge_build` / `gradlew build -Pbaritone.fabric_build` are needed to build
-for Forge/Fabric instead. And you might have to run `setupDecompWorkspace` first.
+More specifically, on older branches you might need to run `gradlew build -Pbaritone.forge_build` / `gradlew build -Pbaritone.fabric_build`
+to build for Forge/Fabric, and you might have to run `setupDecompWorkspace` first.
 
 ## IntelliJ
 - Open the project in IntelliJ as a Gradle project

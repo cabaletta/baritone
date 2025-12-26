@@ -15,9 +15,21 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-/*
- * Distribution conventions for creating final artifacts
- * Supports R8 obfuscation variants when enabled
+/**
+ * Distribution conventions plugin for creating final Baritone artifacts.
+ *
+ * This convention plugin provides:
+ * - Distribution directory management (build/dist)
+ * - Aggregation of all build variants (API, Standalone, Unoptimized)
+ * - Automatic checksum generation (SHA-256, MD5)
+ * - Build verification to ensure all variants are present
+ * - Clean task for removing old distribution files
+ *
+ * Applied to: Forge and Fabric subprojects with R8 enabled
+ * Dependencies: Requires R8 task to be present
+ *
+ * The distribution is automatically created during the build process
+ * and includes all R8-processed variants plus the remapped API JAR.
  */
 
 import org.gradle.kotlin.dsl.*

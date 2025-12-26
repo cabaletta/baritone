@@ -15,9 +15,20 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-/*
- * Common conventions for mod loader modules (Forge, Fabric, Tweaker)
- * Provides shadow jar configuration and common dependencies
+/**
+ * Common conventions plugin for mod loader modules.
+ *
+ * This convention plugin provides:
+ * - Shadow JAR configuration for embedding dependencies
+ * - Common mod loader dependencies (Mixin, ASM, pathfinder)
+ * - Integration with root project source sets
+ * - Dev JAR classifier for non-remapped artifacts
+ * - Simplified publication configuration
+ *
+ * Applied to: Forge and Fabric subprojects
+ * Dependencies: baritone.base-conventions, xyz.wagyourtail.unimined, com.gradleup.shadow
+ *
+ * Note: Each module must configure its own minecraft settings with the specific loader
  */
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
@@ -30,9 +41,24 @@ plugins {
 // Access the version catalog with cleaner syntax
 val libs = the<VersionCatalogsExtension>().named("libs")
 
-// Use the shared repository configuration
+// Additional repositories needed for UniMined compatibility
+// UniMined requires project-level repositories due to its dynamic repository management
 repositories {
-    configureBaritoneRepositories()
+    maven("https://babbaj.github.io/maven/") {
+        name = "babbaj-repo"
+        content {
+            includeModule("dev.babbaj", "nether-pathfinder")
+        }
+    }
+
+    // Mixin repository
+    maven("https://repo.spongepowered.org/repository/maven-public/") {
+        name = "spongepowered-repo"
+        content {
+            includeGroupByRegex("org\\.spongepowered.*")
+        }
+    }
+
 }
 
 // Configuration cache compatible - use providers for root project access

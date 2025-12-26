@@ -10,7 +10,6 @@ baritone/
 ├── src/                 # Common source code and API
 ├── fabric/              # Fabric mod loader support
 ├── forge/               # Forge mod loader support
-├── tweaker/             # LaunchWrapper tweaker support
 ├── buildSrc/            # Convention plugins for shared configuration
 ├── gradle/
 │   └── libs.versions.toml  # Centralized version management
@@ -52,7 +51,6 @@ The build system creates three variants for each module using R8:
 # Build specific module
 ./gradlew :fabric:build
 ./gradlew :forge:build
-./gradlew :tweaker:build
 ```
 
 ### Distribution
@@ -71,7 +69,7 @@ dist/
 ├── baritone-api-fabric-{version}.jar
 ├── baritone-standalone-fabric-{version}.jar
 ├── baritone-unoptimized-fabric-{version}.jar
-└── ... (similar for forge and tweaker)
+└── ... (similar for forge)
 ```
 
 ### Clean Distribution

@@ -20,8 +20,6 @@ junit = "4.13.2"
 gson = "2.9.1"
 commons-io = "2.20.0"
 jsr305 = "3.0.2"
-launchwrapper = "of-2.3"
-simple-tweaker = "1.2"
 
 # Build properties
 java = "17"
@@ -46,10 +44,6 @@ nether-pathfinder = { module = "dev.babbaj:nether-pathfinder", version.ref = "ne
 
 # Testing
 junit = { module = "junit:junit", version.ref = "junit" }
-
-# Tweaker dependencies
-simple-tweaker = { module = "com.github.ImpactDevelopment:SimpleTweaker", version.ref = "simple-tweaker" }
-launchwrapper = { module = "net.minecraft:launchwrapper", version.ref = "launchwrapper" }
 
 # BuildSrc dependencies
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }

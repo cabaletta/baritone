@@ -8,6 +8,7 @@ volderyarn/
 
 # Gradle
 build/
+buildSrc/build/
 .gradle/
 classes/
 *.class

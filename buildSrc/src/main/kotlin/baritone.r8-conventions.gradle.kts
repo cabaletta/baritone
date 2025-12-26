@@ -15,9 +15,23 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-/*
- * R8 conventions for obfuscating Baritone builds
- * Creates three variants: API (partial obfuscation), Standalone (full obfuscation), and Unoptimized
+/**
+ * R8 obfuscation conventions plugin for Baritone builds.
+ *
+ * This convention plugin provides:
+ * - R8 obfuscation task configuration
+ * - Three build variants:
+ *   - API: Partial obfuscation (keeps public API)
+ *   - Standalone: Full obfuscation (maximum size reduction)
+ *   - Unoptimized: No optimization (for debugging)
+ * - Integration with remapJar for API variant processing
+ * - Automatic variant generation during build
+ *
+ * Applied to: Forge and Fabric subprojects
+ * Dependencies: baritone.loader-conventions
+ *
+ * The R8 task uses ProGuard configuration files from the project root
+ * to control the obfuscation process for each variant.
  */
 
 import baritone.gradle.task.R8Task
@@ -27,6 +41,9 @@ import xyz.wagyourtail.unimined.api.minecraft.task.RemapJarTask
 plugins {
     id("baritone.loader-conventions")
 }
+
+// Access the version catalog
+val libs = the<VersionCatalogsExtension>().named("libs")
 
 tasks {
     // Register R8 task with lazy configuration
@@ -41,22 +58,23 @@ tasks {
         inputJar.set(named<ShadowJar>("shadowJar").flatMap { it.archiveFile })
 
         // Lazy output file configuration
-        val baseArchivesName = providers.gradleProperty("archives_base_name")
+        // Use base.archivesName which is already configured from version catalog in base-conventions
+        val baseArchivesName = project.base.archivesName.get()
         val versionString = providers.provider { "${project.name}-${project.version}" }
 
         outputApiJar.set(layout.buildDirectory.file(
-            providers.zip(baseArchivesName, versionString) { base, version ->
-                "libs/$base-api-$version.jar"
+            versionString.map { version ->
+                "libs/$baseArchivesName-api-$version.jar"
             }
         ))
         outputStandaloneJar.set(layout.buildDirectory.file(
-            providers.zip(baseArchivesName, versionString) { base, version ->
-                "libs/$base-standalone-$version.jar"
+            versionString.map { version ->
+                "libs/$baseArchivesName-standalone-$version.jar"
             }
         ))
         outputUnoptimizedJar.set(layout.buildDirectory.file(
-            providers.zip(baseArchivesName, versionString) { base, version ->
-                "libs/$base-unoptimized-$version.jar"
+            versionString.map { version ->
+                "libs/$baseArchivesName-unoptimized-$version.jar"
             }
         ))
 

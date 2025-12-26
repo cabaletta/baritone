@@ -15,9 +15,18 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-/*
- * Base conventions for all Baritone modules
- * Provides common Java configuration, versioning, and basic setup
+/**
+ * Base conventions plugin for all Baritone modules.
+ *
+ * This convention plugin provides:
+ * - Java toolchain configuration (Java 17)
+ * - Common compiler settings and flags
+ * - Test configuration (JUnit 4)
+ * - Version and group configuration from version catalog
+ * - Reproducible build settings
+ * - Publishing conventions (via baritone.publishing-conventions)
+ *
+ * Applied to: All Baritone modules
  */
 
 import org.gradle.api.tasks.compile.JavaCompile
@@ -26,7 +35,7 @@ import org.gradle.api.tasks.bundling.Jar
 
 plugins {
     java
-    `maven-publish`
+    id("baritone.publishing-conventions")
 }
 
 // Access the version catalog
@@ -63,7 +72,7 @@ tasks.withType<JavaCompile>().configureEach {
 
 // Configure test tasks for better performance
 tasks.withType<Test>().configureEach {
-    useJUnitPlatform()
+    useJUnit()  // Using JUnit 4 since that's what the project uses
     maxHeapSize = "2G"
     jvmArgs("-XX:+UseG1GC")
 }
@@ -72,40 +81,4 @@ tasks.withType<Test>().configureEach {
 tasks.withType<Jar>().configureEach {
     isPreserveFileTimestamps = false
     isReproducibleFileOrder = true
-}
-
-// Publishing configuration with lazy evaluation
-publishing {
-    publications {
-        create<MavenPublication>("maven") {
-            from(components["java"])
-            artifactId = base.archivesName.get()
-
-            pom {
-                name.set("Baritone")
-                description.set("Minecraft pathfinding bot")
-                url.set("https://github.com/cabaletta/baritone")
-
-                licenses {
-                    license {
-                        name.set("LGPL-3.0")
-                        url.set("https://www.gnu.org/licenses/lgpl-3.0.html")
-                    }
-                }
-
-                developers {
-                    developer {
-                        id.set("baritone")
-                        name.set("Baritone Team")
-                    }
-                }
-
-                scm {
-                    connection.set("scm:git:git://github.com/cabaletta/baritone.git")
-                    developerConnection.set("scm:git:ssh://github.com/cabaletta/baritone.git")
-                    url.set("https://github.com/cabaletta/baritone")
-                }
-            }
-        }
-    }
 }
