@@ -28,9 +28,9 @@ plugins {
 }
 
 // Access the version catalog
-val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
+val libs: VersionCatalog = extensions.getByType<VersionCatalogsExtension>().named("libs")
 
-// Repositories needed for dependencies (using PREFER_PROJECT mode)
+// UniMined plugin adds its own repositories, so we need these for dependencies
 repositories {
     // Repository for nether-pathfinder dependency
     maven("https://babbaj.github.io/maven/")
@@ -69,7 +69,7 @@ dependencies {
     rootSourceSets.forEach { sourceSet ->
         if (sourceSet.name != "test" && sourceSet.name != "schematica_api") {
             "common"(sourceSet.output)
-            "shadowCommon"(sourceSet.output)
+            // Note: Source set outputs are added directly in the shadowJar task, not through configuration
         }
     }
 }
@@ -79,6 +79,14 @@ dependencies {
 tasks {
     named<ShadowJar>("shadowJar") {
         configurations = listOf(project.configurations["shadowCommon"])
+
+        // Include root project source sets directly in the shadow jar
+        rootSourceSets.forEach { sourceSet ->
+            if (sourceSet.name != "test" && sourceSet.name != "schematica_api") {
+                from(sourceSet.output)
+            }
+        }
+
         // Classifier is set per module if needed
     }
 
@@ -88,19 +96,36 @@ tasks {
 
     // Note: remapJar configuration is handled in each module
 
-    // Build depends on remapJar when it exists
-    afterEvaluate {
-        if (tasks.findByName("remapJar") != null) {
-            build {
-                dependsOn("remapJar")
+    // Build depends on remapJar when it exists (using lazy configuration)
+    // This will be configured by modules that create the remapJar task
+    configureEach {
+        if (name == "build") {
+            // The remapJar task is created by UniMined when a loader is configured
+            // We'll check for it lazily
+            dependsOn(provider {
+                tasks.findByName("remapJar")
+            })
+        }
+    }
+}
+
+// Configure publishing to exclude shadow jar variant
+// This is configured immediately as the publication is created during configuration
+publishing {
+    publications {
+        configureEach {
+            if (this is MavenPublication) {
+                // Remove shadowRuntimeElements variant from the publication
+                suppressPomMetadataWarningsFor("shadowRuntimeElements")
             }
         }
     }
 }
 
-// Disable shadow jar from being included in publications
-afterEvaluate {
-    components.named<AdhocComponentWithVariants>("java") {
+// Ensure shadow elements are not included in the java component
+components.configureEach {
+    if (name == "java" && this is AdhocComponentWithVariants) {
+        // Skip shadow runtime elements to avoid duplicate artifacts
         withVariantsFromConfiguration(configurations["shadowRuntimeElements"]) {
             skip()
         }

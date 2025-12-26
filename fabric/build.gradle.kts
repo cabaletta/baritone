@@ -50,14 +50,11 @@ tasks {
     withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar> {
         archiveClassifier.set("")
     }
-}
 
-// Configure remapJar to use shadowJar output
-afterEvaluate {
-    tasks.named<xyz.wagyourtail.unimined.api.minecraft.task.RemapJarTask>("remapJar") {
+    // Configure remapJar to use shadowJar output (using lazy configuration)
+    named<xyz.wagyourtail.unimined.api.minecraft.task.RemapJarTask>("remapJar") {
         dependsOn("shadowJar")
-        val shadowJar = tasks.named<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar>("shadowJar")
-        inputFile.set(shadowJar.get().archiveFile)
+        inputFile.set(named<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar>("shadowJar").get().archiveFile)
     }
 }
 

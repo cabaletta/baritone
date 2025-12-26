@@ -26,11 +26,10 @@ plugins {
 }
 
 // Access the version catalog
-val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
+val libs: VersionCatalog = extensions.getByType<VersionCatalogsExtension>().named("libs")
 
-// Add required repositories for dependencies
+// UniMined plugin adds its own repositories, so we need these for dependencies
 repositories {
-    // These are needed for the dependencies we're adding
     maven("https://babbaj.github.io/maven/")
     maven("https://repo.spongepowered.org/repository/maven-public/")
 }

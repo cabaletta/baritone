@@ -39,28 +39,8 @@ java {
 group = "baritone"
 base.archivesName.set("baritone")
 
-// Dynamic version detection from Git
-val gitVersion = try {
-    val result = ProcessBuilder("git", "describe", "--always", "--tags", "--first-parent", "--dirty")
-        .directory(project.rootDir)
-        .start()
-        .inputStream
-        .bufferedReader()
-        .readText()
-        .trim()
-
-    if (result.startsWith("v")) {
-        result.substring(1)
-    } else {
-        println("Version detection failed, using default: 1.9.5")
-        "1.9.5"
-    }
-} catch (e: Exception) {
-    println("Version detection failed: ${e.message}")
-    "1.9.5"
-}
-
-version = gitVersion
+// Get version from gradle.properties or use default
+version = project.findProperty("mod_version") ?: "0.0.0"
 
 tasks.withType<JavaCompile> {
     options.encoding = "UTF-8"

@@ -37,15 +37,18 @@ repositories {
     gradlePluginPortal()
 }
 
+// Access the version catalog in buildSrc
+val libs: VersionCatalog = versionCatalogs.named("libs")
+
 dependencies {
     // Use version catalog for consistency
-    implementation("com.google.code.gson:gson:2.9.1")
-    implementation("commons-io:commons-io:2.20.0")
+    implementation(libs.findLibrary("gson").get())
+    implementation(libs.findLibrary("commons-io").get())
 
     // UniMined plugin and mapping library
-    implementation("xyz.wagyourtail.unimined:xyz.wagyourtail.unimined.gradle.plugin:1.4.1")
-    implementation("xyz.wagyourtail.unimined.mapping:unimined-mapping-library-jvm:1.2.1")
+    implementation(libs.findLibrary("unimined-plugin").get())
+    implementation(libs.findLibrary("unimined-mapping").get())
 
     // Shadow plugin
-    implementation("com.gradleup.shadow:shadow-gradle-plugin:9.3.0")
+    implementation(libs.findLibrary("shadow-plugin").get())
 }

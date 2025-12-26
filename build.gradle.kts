@@ -22,28 +22,27 @@ plugins {
 
 base.archivesName.set("${base.archivesName.get()}-common")
 
-val libs: VersionCatalog = extensions.getByType<VersionCatalogsExtension>().named("libs")
-
+// UniMined adds its own repositories, so we need to add the one for nether-pathfinder
 repositories {
     maven("https://babbaj.github.io/maven/")
     maven("https://repo.spongepowered.org/repository/maven-public/")
 }
 
 dependencies {
-    compileOnly(libs.findLibrary("mixin").get())
-    compileOnly(libs.findLibrary("asm").get())
-    implementation(libs.findLibrary("nether-pathfinder").get())
-    testImplementation(libs.findLibrary("junit").get())
+    compileOnly(libs.mixin)
+    compileOnly(libs.asm)
+    implementation(libs.nether.pathfinder)
+    testImplementation(libs.junit)
 }
 
 sourceSets.main {
     unimined.minecraft(this) {
-        version(libs.findVersion("minecraft").get().toString())
+        version(libs.versions.minecraft.get())
 
         mappings {
             intermediary()
             mojmap()
-            parchment(version = libs.findVersion("parchment").get().toString())
+            parchment(version = libs.versions.parchment.get())
         }
 
         runs.off = true

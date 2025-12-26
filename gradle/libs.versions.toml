@@ -6,7 +6,8 @@ fabric = "0.14.11"
 
 # Build tools
 unimined = "1.4.1"
-shadow = "8.3.5"
+shadow = "9.3.0"  # Updated to match buildSrc
+unimined-mapping = "1.2.1"
 
 # Core dependencies
 mixin = "0.8.7"
@@ -52,7 +53,11 @@ commons-io = { module = "commons-io:commons-io", version.ref = "commons-io" }
 jsr305 = { module = "com.google.code.findbugs:jsr305", version.ref = "jsr305" }
 
 # UniMined mapping library (for buildSrc)
-unimined-mapping = { module = "xyz.wagyourtail.unimined.mapping:unimined-mapping-library-jvm", version = "1.2.1" }
+unimined-mapping = { module = "xyz.wagyourtail.unimined.mapping:unimined-mapping-library-jvm", version.ref = "unimined-mapping" }
+
+# BuildSrc plugin dependencies (as libraries)
+unimined-plugin = { module = "xyz.wagyourtail.unimined:xyz.wagyourtail.unimined.gradle.plugin", version.ref = "unimined" }
+shadow-plugin = { module = "com.gradleup.shadow:shadow-gradle-plugin", version.ref = "shadow" }
 
 [plugins]
 shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }
