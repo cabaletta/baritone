@@ -28,9 +28,12 @@ plugins {
 // Access the version catalog
 val versionCatalog = extensions.findByType<VersionCatalogsExtension>()?.named("libs")
 
+// Get Java version from gradle.properties
+val javaVersion = project.findProperty("java_version")?.toString()?.toInt()!!
+
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(17))
+        languageVersion.set(JavaLanguageVersion.of(javaVersion))
     }
     withSourcesJar()
 }
@@ -44,7 +47,7 @@ version = project.findProperty("mod_version") ?: "0.0.0"
 
 tasks.withType<JavaCompile> {
     options.encoding = "UTF-8"
-    options.release.set(17)
+    options.release.set(javaVersion)
 }
 
 // Publishing configuration
