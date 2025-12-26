@@ -29,9 +29,11 @@ plugins {
     `maven-publish`
 }
 
+// Access the version catalog
+val libs = the<VersionCatalogsExtension>().named("libs")
+
 // Lazy evaluation for better performance - using providers API
-val libs: VersionCatalog = the<VersionCatalogsExtension>().named("libs")
-val javaVersion: Int = providers.gradleProperty("java_version").map { it.toInt() }.get()
+val javaVersion: Int = libs.findVersion("java").map { it.toString().toInt() }.orElse(17)
 
 java {
     toolchain {
@@ -40,12 +42,12 @@ java {
     withSourcesJar()
 }
 
-// Configuration cache compatible property access
-group = providers.gradleProperty("maven_group").getOrElse("baritone")
-version = providers.gradleProperty("mod_version").getOrElse("0.0.0")
+// Configuration cache compatible property access using version catalog
+group = libs.findVersion("maven-group").map { it.toString() }.orElse("baritone")
+version = libs.findVersion("mod-version").map { it.toString() }.orElse("0.0.0")
 
 base {
-    archivesName.set(providers.gradleProperty("archives_base_name").getOrElse("baritone"))
+    archivesName.set(libs.findVersion("archives-base-name").map { it.toString() }.orElse("baritone"))
 }
 
 // Configure tasks lazily for better performance

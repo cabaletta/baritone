@@ -101,12 +101,6 @@ dependencyResolutionManagement {
                 includeGroup("cpw.mods")
             }
         }
-        maven("https://maven.neoforged.net/") {
-            name = "neoforged-maven"
-            content {
-                includeGroupByRegex("net\\.neoforged.*")
-            }
-        }
 
         // Mixin and related
         maven("https://repo.spongepowered.org/repository/maven-public/") {

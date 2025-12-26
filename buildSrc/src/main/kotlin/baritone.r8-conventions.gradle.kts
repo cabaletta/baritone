@@ -35,26 +35,14 @@ tasks {
         group = "build"
 
         // Lazy property evaluation
-        compType.set(providers.provider { project.name }.map { name ->
-            when (name) {
-                "fabric", "forge", "tweaker", "neoforge" -> name
-                else -> ""
-            }
-        })
+        compType.set(providers.provider { project.name })
 
         // Input is the shadow JAR
         inputJar.set(named<ShadowJar>("shadowJar").flatMap { it.archiveFile })
 
         // Lazy output file configuration
         val baseArchivesName = providers.gradleProperty("archives_base_name")
-        val versionString = providers.provider {
-            val projectName = project.name
-            if (projectName in listOf("fabric", "forge", "tweaker", "neoforge")) {
-                "$projectName-${project.version}"
-            } else {
-                project.version.toString()
-            }
-        }
+        val versionString = providers.provider { "${project.name}-${project.version}" }
 
         outputApiJar.set(layout.buildDirectory.file(
             providers.zip(baseArchivesName, versionString) { base, version ->

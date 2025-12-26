@@ -30,6 +30,7 @@ parchment = "2023.06.26"
 # Project properties
 archives-base-name = "baritone"
 mod-version = "1.9.5"
+maven-group = "baritone"
 
 [libraries]
 # Core dependencies

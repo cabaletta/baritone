@@ -24,14 +24,11 @@
 -flattenpackagehierarchy
 -repackageclasses 'baritone'
 
-# lwjgl is weird
--dontwarn org.lwjgl.**
-# also lwjgl lol
--dontwarn module-info
-# we dont have forge
--dontwarn baritone.launch.BaritoneForgeModXD
-# R8 doesn't like signature polymorphism
--dontwarn java.lang.invoke.MethodHandle
+# External library warnings (safely ignored)
+-dontwarn org.lwjgl.**         # LWJGL native bindings
+-dontwarn module-info           # Java 9+ module system
+-dontwarn baritone.launch.BaritoneForgeModXD  # Forge module loaded separately
+-dontwarn java.lang.invoke.MethodHandle  # R8 signature polymorphism
 
 # For standalone, we obfuscate everything except what's absolutely necessary
 

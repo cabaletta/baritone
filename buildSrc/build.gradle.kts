@@ -30,9 +30,6 @@ repositories {
     maven("https://maven.fabricmc.net/") {
         name = "FabricMaven"
     }
-    maven("https://maven.neoforged.net/") {
-        name = "NeoForgedMaven"
-    }
     mavenCentral()
     gradlePluginPortal()
     // Add Google's repository for R8

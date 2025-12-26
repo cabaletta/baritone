@@ -24,6 +24,13 @@ import org.gradle.kotlin.dsl.*
 import java.security.MessageDigest
 
 tasks {
+    // Clean task for old distribution artifacts
+    val cleanDist by registering(Delete::class) {
+        description = "Removes old builds from dist directory"
+        group = "distribution"
+        delete(layout.buildDirectory.dir("dist"))
+    }
+
     // Modern distribution task using Sync for better performance
     val createDist by registering(Sync::class) {
         description = "Creates distribution artifacts"
@@ -34,7 +41,7 @@ tasks {
 
         // Depend on R8 task to ensure all variants are created
         val r8Task = tasks.named("r8")
-        dependsOn(r8Task, "remapJar")
+        dependsOn(cleanDist, r8Task, "remapJar")
 
         // Use providers for lazy evaluation of file locations
         from(providers.provider {
