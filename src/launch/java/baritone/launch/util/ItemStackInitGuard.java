@@ -18,10 +18,10 @@
 package baritone.launch.util;
 
 public final class ItemStackInitGuard {
-    private ItemStackInitGuard() {}
-
     private static final ThreadLocal<Boolean> GUARD =
             ThreadLocal.withInitial(() -> Boolean.FALSE);
+    
+    private ItemStackInitGuard() {}
 
     public static boolean isEntered() {
         return Boolean.TRUE.equals(GUARD.get());
