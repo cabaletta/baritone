@@ -53,27 +53,17 @@ public enum ForBlockOptionalMetaLookup implements IDatatypeFor<BlockOptionalMeta
 
     @Override
     public BlockOptionalMetaLookup get(IDatatypeContext ctx) throws CommandException {
-        String raw = ctx.getConsumer().getString();
-        Matcher matcher = FULL_PATTERN.matcher(raw);
+        Matcher matcher = FULL_PATTERN.matcher(ctx.getConsumer().getString());
 
         if (!matcher.find()) {
             throw new IllegalArgumentException("invalid block/tag selector");
         }
 
-        if (!raw.startsWith("#")) { // plain block
-            return new BlockOptionalMetaLookup(new BlockOptionalMeta(raw));
-        }
-
-        ResourceLocation tagName = ResourceLocation.tryParse(matcher.group("id").substring(1));
-        TagKey<Block> tag = TagKey.create(Registries.BLOCK, tagName);
-
         String props = Optional.ofNullable(matcher.group("properties")).orElse("");
         Map<String, String> properties = props.equals("") ? Collections.emptyMap() : parseProperties(props);
 
-        return new BlockOptionalMetaLookup(BuiltInRegistries.BLOCK.getTag(tag)
-                .orElseThrow(() -> new IllegalArgumentException("No tag by that name"))
+        return new BlockOptionalMetaLookup(parseTagOrBlockId(matcher.group("id"))
                 .stream()
-                .map(holder -> holder.value())
                 .filter(block -> properties.keySet().stream()
                         .allMatch(name -> Optional.of(block)
                                 .map(b -> b.getStateDefinition().getProperty(name))
@@ -89,6 +79,10 @@ public enum ForBlockOptionalMetaLookup implements IDatatypeFor<BlockOptionalMeta
 
     @Override
     public Stream<String> tabComplete(IDatatypeContext ctx) throws CommandException {
+        return tabComplete(ctx, true);
+    }
+
+    static Stream<String> tabComplete(IDatatypeContext ctx, boolean allowTags) throws CommandException {
         String arg = ctx.getConsumer().peekString();
 
         if (!PREFIX_PATTERN.matcher(arg).matches()) {
@@ -96,8 +90,8 @@ public enum ForBlockOptionalMetaLookup implements IDatatypeFor<BlockOptionalMeta
             return Stream.empty();
         }
 
-        if (!arg.startsWith("#")) {
-            return ForBlockOptionalMeta.INSTANCE.tabComplete(ctx);
+        if (arg.startsWith("#") && !allowTags) {
+            return Stream.empty();
         }
 
         if (arg.endsWith("]")) {
@@ -106,27 +100,24 @@ public enum ForBlockOptionalMetaLookup implements IDatatypeFor<BlockOptionalMeta
         }
 
         if (!arg.contains("[")) {
-            // no properties so we are completing the block id
-            return new TabCompleteHelper()
-                .append(BuiltInRegistries.BLOCK.getTags()
-                        .map(pair -> pair.getFirst().location().toString()))
-                .filterPrefixNamespaced(arg.substring(1))
-                .sortAlphabetically()
-                .map(name -> "#" + name)
-                .stream();
+            // no properties so we are completing the block or tag id
+            TabCompleteHelper helper = new TabCompleteHelper();
+            if (arg.startsWith("#") || arg.equals("") && allowTags) {
+                helper.append(BuiltInRegistries.BLOCK.getTags()
+                                .map(pair -> pair.getFirst().location().toString()))
+                        .filterPrefixNamespaced(arg.equals("") ? "" : arg.substring(1))
+                        .sortAlphabetically()
+                        .map(name -> "#" + name);
+            }
+            if (!arg.startsWith("#")) {
+                helper.append(ctx.getConsumer().tabCompleteDatatype(BlockById.INSTANCE));
+            }
+            return helper.stream();
         }
 
-        String tagId = splitLast(arg.substring(1), '[')[0];
+        Set<Block> blocks = parseTagOrBlockId(splitLast(arg, '[')[0]);
+
         String properties = splitLast(arg, '[')[1];
-
-        TagKey<Block> tag = TagKey.create(Registries.BLOCK, ResourceLocation.tryParse(tagId));
-        Set<Block> blocks = BuiltInRegistries.BLOCK
-                .getTag(tag)
-                .get()
-                .stream()
-                .map(h -> h.value())
-                .collect(Collectors.toSet());
-
         String previousProps = splitLast(properties, ',')[0];
         String lastProp = splitLast(properties, ',')[1];
 
@@ -171,6 +162,22 @@ public enum ForBlockOptionalMetaLookup implements IDatatypeFor<BlockOptionalMeta
             builder.put(parts[0], parts[1]);
         }
         return builder.build();
+    }
+
+    private static Set<Block> parseTagOrBlockId(String id) {
+        ResourceLocation loc = new ResourceLocation(id.replaceAll("^#", ""));
+        if (id.startsWith("#")) {
+            return BuiltInRegistries.BLOCK
+                .getTag(TagKey.create(Registries.BLOCK, loc))
+                .orElseThrow(() -> new IllegalArgumentException("No tag " + id))
+                .stream()
+                .map(h -> h.value())
+                .collect(Collectors.toSet());
+        } else {
+            return BuiltInRegistries.BLOCK.getOptional(loc)
+                .map(Set::of)
+                .orElseThrow(() -> new IllegalArgumentException("No block " + id));
+        }
     }
 
     /**
