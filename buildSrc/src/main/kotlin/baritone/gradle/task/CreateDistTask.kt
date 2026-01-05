@@ -17,6 +17,7 @@
 
 package baritone.gradle.task
 
+import org.gradle.api.plugins.BasePluginExtension
 import org.gradle.api.tasks.TaskAction
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
@@ -25,7 +26,6 @@ import java.nio.file.StandardCopyOption.REPLACE_EXISTING
 import java.security.MessageDigest
 import javax.inject.Inject
 import kotlin.io.path.*
-import kotlin.streams.toList
 
 /**
  * @author Brady
@@ -75,7 +75,7 @@ abstract class CreateDistTask @Inject constructor() : BaritoneGradleTask() {
     @TaskAction
     fun exec() {
         // Initialize artifacts first
-        artifactName = project.rootProject.property("archives_base_name").toString()
+        artifactName = project.rootProject.extensions.getByType(BasePluginExtension::class.java).archivesName.get()
         initializeArtifacts()
         verifyArtifacts()
 

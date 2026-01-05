@@ -26,7 +26,6 @@ import baritone.api.utils.IPlayerContext;
 import baritone.utils.accessor.IPalettedContainer;
 import io.netty.buffer.Unpooled;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.IdMapper;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.util.BitStorage;
 import net.minecraft.world.level.ChunkPos;
@@ -181,6 +180,7 @@ public enum FasterWorldScanner implements IWorldScanner {
         return blocks;
     }
 
+    @SuppressWarnings("unchecked")
     private void visitSection(BlockOptionalMetaLookup lookup, LevelChunkSection section, List<BlockPos> blocks, long chunkX, long chunkZ) {
         if (section == null || section.hasOnlyAir()) {
             return;

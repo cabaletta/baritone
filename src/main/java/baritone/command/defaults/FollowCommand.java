@@ -30,7 +30,6 @@ import baritone.api.command.helpers.TabCompleteHelper;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
-import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
@@ -45,6 +44,7 @@ public class FollowCommand extends Command {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public void execute(String label, IArgConsumer args) throws CommandException {
         args.requireMin(1);
         FollowGroup group;
@@ -60,7 +60,6 @@ public class FollowCommand extends Command {
             while (args.hasAny()) {
                 Object gotten = args.getDatatypeFor(list.datatype);
                 if (gotten instanceof EntityType) {
-                    //noinspection unchecked
                     classes.add((EntityType) gotten);
                 } else if (gotten != null) {
                     entities.add((Entity) gotten);
@@ -94,6 +93,7 @@ public class FollowCommand extends Command {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public Stream<String> tabComplete(String label, IArgConsumer args) throws CommandException {
         if (args.hasExactlyOne()) {
             return new TabCompleteHelper()

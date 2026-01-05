@@ -63,7 +63,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -110,8 +109,8 @@ public final class BlockOptionalMeta {
         stackHashes = getStackHashes(blockstates);
     }
 
+    @SuppressWarnings("unchecked")
     private static <C extends Comparable<C>, P extends Property<C>> P castToIProperty(Object value) {
-        //noinspection unchecked
         return (P) value;
     }
 

@@ -195,8 +195,10 @@ public final class NetherPathfinderContext {
                     continue;
                 }
                 final PalettedContainer<BlockState> bsc = extendedblockstorage.getStates();
+                @SuppressWarnings("unchecked")
                 final int airId = ((IPalettedContainer<BlockState>) bsc).getPalette().idFor(AIR_BLOCK_STATE);
                 // pasted from FasterWorldScanner
+                @SuppressWarnings("unchecked")
                 final BitStorage array = ((IPalettedContainer<BlockState>) bsc).getStorage();
                 if (array == null) continue;
                 final long[] longArray = array.getRaw();

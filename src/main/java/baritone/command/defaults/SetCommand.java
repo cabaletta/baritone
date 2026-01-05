@@ -160,7 +160,7 @@ public class SetCommand extends Command {
                 if (setting.getValueClass() != Boolean.class) {
                     throw new CommandInvalidTypeException(args.consumed(), "a toggleable setting", "some other setting");
                 }
-                //noinspection unchecked
+                @SuppressWarnings("unchecked")
                 Settings.Setting<Boolean> asBoolSetting = (Settings.Setting<Boolean>) setting;
                 asBoolSetting.value ^= true;
                 logDirect(String.format(

@@ -18,7 +18,6 @@
 package baritone.launch.mixins;
 
 import baritone.utils.accessor.IPalettedContainer;
-import baritone.utils.accessor.IPalettedContainer.IData;
 import net.minecraft.util.BitStorage;
 import net.minecraft.world.level.chunk.Palette;
 import net.minecraft.world.level.chunk.PalettedContainer;
@@ -85,6 +84,7 @@ public abstract class MixinPalettedContainer<T> implements IPalettedContainer<T>
     }
 
     @Unique
+    @SuppressWarnings("unchecked")
     private IData<T> data() {
         try {
             // cast to Object first so the method handle doesn't hide the interface usage from R8
@@ -95,6 +95,7 @@ public abstract class MixinPalettedContainer<T> implements IPalettedContainer<T>
     }
 
     @Unique
+    @SuppressWarnings("unchecked")
     private static <T extends Throwable> T sneaky(Throwable t, Class<T> as) throws T {
         throw (T) t;
     }

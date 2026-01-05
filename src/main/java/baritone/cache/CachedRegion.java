@@ -76,7 +76,7 @@ public final class CachedRegion implements ICachedRegion {
     }
 
     @Override
-    public final BlockState getBlock(int x, int y, int z) {
+    public BlockState getBlock(int x, int y, int z) {
         int adjY = y - dimension.minY();
         CachedChunk chunk = chunks[x >> 4][z >> 4];
         if (chunk != null) {
@@ -86,11 +86,11 @@ public final class CachedRegion implements ICachedRegion {
     }
 
     @Override
-    public final boolean isCached(int x, int z) {
+    public boolean isCached(int x, int z) {
         return chunks[x >> 4][z >> 4] != null;
     }
 
-    public final ArrayList<BlockPos> getLocationsOf(String block) {
+    public ArrayList<BlockPos> getLocationsOf(String block) {
         ArrayList<BlockPos> res = new ArrayList<>();
         for (int chunkX = 0; chunkX < 32; chunkX++) {
             for (int chunkZ = 0; chunkZ < 32; chunkZ++) {
@@ -106,13 +106,13 @@ public final class CachedRegion implements ICachedRegion {
         return res;
     }
 
-    public final synchronized void updateCachedChunk(int chunkX, int chunkZ, CachedChunk chunk) {
+    public synchronized void updateCachedChunk(int chunkX, int chunkZ, CachedChunk chunk) {
         this.chunks[chunkX][chunkZ] = chunk;
         hasUnsavedChanges = true;
     }
 
 
-    public synchronized final void save(String directory) {
+    public synchronized void save(String directory) {
         if (!hasUnsavedChanges) {
             return;
         }
@@ -217,6 +217,7 @@ public final class CachedRegion implements ICachedRegion {
                 }
                 boolean[][] present = new boolean[32][32];
                 BitSet[][] bitSets = new BitSet[32][32];
+                @SuppressWarnings("unchecked")
                 Map<String, List<BlockPos>>[][] location = new Map[32][32];
                 BlockState[][][] overview = new BlockState[32][32][];
                 long[][] cacheTimestamp = new long[32][32];

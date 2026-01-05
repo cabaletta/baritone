@@ -20,8 +20,6 @@ package baritone.api.utils;
 import baritone.api.BaritoneAPI;
 import baritone.api.Settings;
 import net.minecraft.client.Minecraft;
-import net.minecraft.core.Direction;
-import net.minecraft.core.Registry;
 import net.minecraft.core.Vec3i;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
@@ -159,13 +157,13 @@ public class SettingsUtil {
         return io.toString(setting.getType(), value);
     }
 
+    @SuppressWarnings("unchecked")
     public static String settingValueToString(Settings.Setting setting) throws IllegalArgumentException {
-        //noinspection unchecked
         return settingValueToString(setting, setting.value);
     }
 
+    @SuppressWarnings("unchecked")
     public static String settingDefaultToString(Settings.Setting setting) throws IllegalArgumentException {
-        //noinspection unchecked
         return settingValueToString(setting, setting.defaultValue);
     }
 
@@ -196,6 +194,7 @@ public class SettingsUtil {
         return setting.isJavaOnly();
     }
 
+    @SuppressWarnings("unchecked")
     public static void parseAndApply(Settings settings, String settingName, String settingValue) throws IllegalStateException, NumberFormatException {
         Settings.Setting setting = settings.byLowerName.get(settingName);
         if (setting == null) {
@@ -322,7 +321,9 @@ public class SettingsUtil {
         <T> Parser(Class<T> cla$$, Function<String, T> parser, Function<T, String> toString) {
             this.cla$$ = cla$$;
             this.parser = parser::apply;
-            this.toString = x -> toString.apply((T) x);
+            @SuppressWarnings("unchecked")
+            Function<Object, String> objToString = x -> toString.apply((T) x);
+            this.toString = objToString;
         }
 
         @Override

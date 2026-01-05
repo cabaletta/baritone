@@ -34,8 +34,8 @@ public enum ArgParserManager implements IArgParserManager {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <T> IArgParser.Stateless<T> getParserStateless(Class<T> type) {
-        //noinspection unchecked
         return this.registry.descendingStream()
                 .filter(IArgParser.Stateless.class::isInstance)
                 .map(IArgParser.Stateless.class::cast)
@@ -45,14 +45,13 @@ public enum ArgParserManager implements IArgParserManager {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <T, S> IArgParser.Stated<T, S> getParserStated(Class<T> type, Class<S> stateKlass) {
-        //noinspection unchecked
         return this.registry.descendingStream()
                 .filter(IArgParser.Stated.class::isInstance)
                 .map(IArgParser.Stated.class::cast)
                 .filter(parser -> parser.getTarget().isAssignableFrom(type))
                 .filter(parser -> parser.getStateType().isAssignableFrom(stateKlass))
-                .map(IArgParser.Stated.class::cast)
                 .findFirst()
                 .orElse(null);
     }

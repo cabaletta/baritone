@@ -1574,7 +1574,6 @@ public final class Settings {
         private String name;
         private boolean javaOnly;
 
-        @SuppressWarnings("unchecked")
         private Setting(T value) {
             if (value == null) {
                 throw new IllegalArgumentException("Cannot determine value type class from null");
@@ -1598,8 +1597,8 @@ public final class Settings {
             return name;
         }
 
+        @SuppressWarnings("unchecked")
         public Class<T> getValueClass() {
-            // noinspection unchecked
             return (Class<T>) TypeUtils.resolveBaseClass(getType());
         }
 

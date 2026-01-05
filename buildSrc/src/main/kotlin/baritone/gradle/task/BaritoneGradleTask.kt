@@ -18,11 +18,11 @@
 package baritone.gradle.task
 
 import org.gradle.api.DefaultTask
+import org.gradle.api.plugins.BasePluginExtension
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.Optional
-import org.gradle.api.tasks.TaskAction
 import java.io.File
 import java.io.IOException
 import java.io.InputStream
@@ -66,7 +66,7 @@ abstract class BaritoneGradleTask @Inject constructor() : DefaultTask() {
     init {
         // Initialize artifactName from project property
         doFirst {
-            artifactName = project.rootProject.property("archives_base_name").toString()
+            artifactName = project.rootProject.extensions.getByType(BasePluginExtension::class.java).archivesName.get()
             initializeArtifacts()
         }
     }

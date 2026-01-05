@@ -72,7 +72,7 @@ object Determinizer {
 
                     when {
                         entry.name.endsWith(".refmap.json") -> {
-                            val json = JsonParser().parse(InputStreamReader(jarFile.getInputStream(entry)))
+                            val json = JsonParser.parseReader(InputStreamReader(jarFile.getInputStream(entry)))
                             jos.write(writeSorted(json).toByteArray())
                         }
                         entry.name == "META-INF/MANIFEST.MF" && doForgeReplacementOfMetaInf -> {
