@@ -15,20 +15,6 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-/**
- * Base conventions plugin for all Baritone modules.
- *
- * This convention plugin provides:
- * - Java toolchain configuration (Java 17)
- * - Common compiler settings and flags
- * - Test configuration (JUnit 4)
- * - Version and group configuration from version catalog
- * - Reproducible build settings
- * - Publishing conventions (via baritone.publishing-conventions)
- *
- * Applied to: All Baritone modules
- */
-
 import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.api.tasks.testing.Test
 import org.gradle.api.tasks.bundling.Jar
