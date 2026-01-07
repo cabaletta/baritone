@@ -75,21 +75,6 @@ object Determinizer {
                             val json = JsonParser.parseReader(InputStreamReader(jarFile.getInputStream(entry)))
                             jos.write(writeSorted(json).toByteArray())
                         }
-                        entry.name == "META-INF/MANIFEST.MF" && doForgeReplacementOfMetaInf -> {
-                            val baos = ByteArrayOutputStream()
-                            jarFile.getInputStream(entry).copyTo(baos)
-                            var manifest = String(baos.toByteArray())
-
-                            if (!manifest.contains("baritone.launch.tweaker.BaritoneTweaker")) {
-                                throw IllegalStateException("unable to replace")
-                            }
-
-                            manifest = manifest.replace(
-                                "baritone.launch.tweaker.BaritoneTweaker",
-                                "org.spongepowered.asm.launch.MixinTweaker"
-                            )
-                            jos.write(manifest.toByteArray())
-                        }
                         else -> {
                             jarFile.getInputStream(entry).copyTo(jos)
                         }

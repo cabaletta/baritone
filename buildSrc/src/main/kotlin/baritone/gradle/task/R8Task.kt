@@ -22,6 +22,7 @@ import com.android.tools.r8.CompilationMode
 import com.android.tools.r8.R8
 import com.android.tools.r8.R8Command
 import com.android.tools.r8.OutputMode
+import com.android.tools.r8.JdkClassFileProvider
 import org.gradle.api.artifacts.VersionCatalogsExtension
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.plugins.JavaPluginExtension
@@ -33,6 +34,7 @@ import xyz.wagyourtail.unimined.api.UniminedExtension
 import java.io.*
 import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.Paths
 import java.nio.file.StandardCopyOption
 import javax.inject.Inject
 import kotlin.io.path.*
@@ -200,6 +202,18 @@ abstract class R8Task @Inject constructor() : BaritoneGradleTask() {
             }
         }
 
+        // Add JDK libraries
+        try {
+            val javaHome = System.getProperty("java.home")
+            commandBuilder.addLibraryResourceProvider(JdkClassFileProvider.fromJdkHome(Paths.get(javaHome)))
+        } catch (e: Exception) {
+            logger.warn("Failed to add JDK libraries from java.home: ${e.message}. Trying simple classpath...")
+            // Fallback to simple method (unlikely to work for java 9+ if JdkClassFileProvider fails)
+            getJdkLibraries().forEach { lib ->
+                 commandBuilder.addLibraryFiles(lib)
+            }
+        }
+
         // Add R8 configuration
         commandBuilder.addProguardConfigurationFiles(configPath)
 
@@ -213,6 +227,16 @@ abstract class R8Task @Inject constructor() : BaritoneGradleTask() {
             logger.error("R8 failed with error: ${e.message}")
             throw e
         }
+    }
+
+    private fun getJdkLibraries(): List<Path> {
+        val javaHome = System.getProperty("java.home")
+        val jreDir = File(javaHome)
+        val rtJar = jreDir.resolve("lib/rt.jar")
+        if (rtJar.exists()) {
+             return listOf(rtJar.toPath())
+        }
+        return emptyList()
     }
 
     // Helper methods for UniMined integration

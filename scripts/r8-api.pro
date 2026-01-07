@@ -21,7 +21,6 @@
 
 # For API variant: obfuscate everything except API classes
 # Main code gets obfuscated, API stays untouched
--flattenpackagehierarchy
 -repackageclasses 'baritone'
 
 # External library warnings (safely ignored)
@@ -46,9 +45,6 @@
 # Keep any class or member annotated with @KeepName so we dont have to put everything in the script
 -keep,allowobfuscation @interface baritone.KeepName
 -keep @baritone.KeepName class *
--keepclassmembers class * {
-    @baritone.KeepName *;
-}
 
 # setting names are reflected from field names, so keep field names
 -keepclassmembers class baritone.api.Settings {

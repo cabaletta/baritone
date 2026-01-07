@@ -21,7 +21,6 @@
 
 # For standalone: rename to baritone.a, baritone.b, etc to avoid conflicts
 # For API: this will be modified to exclude API packages
--flattenpackagehierarchy
 -repackageclasses 'baritone'
 
 # External library warnings (safely ignored)
@@ -38,9 +37,6 @@
 # Keep any class or member annotated with @KeepName so we dont have to put everything in the script
 -keep,allowobfuscation @interface baritone.KeepName
 -keep @baritone.KeepName class *
--keepclassmembers class * {
-    @baritone.KeepName *;
-}
 
 # setting names are reflected from field names, so keep field names
 -keepclassmembers class baritone.api.Settings {
