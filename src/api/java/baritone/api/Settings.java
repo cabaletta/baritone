@@ -1120,6 +1120,61 @@ public final class Settings {
     public final Setting<Boolean> blockScanLogEachFind = new Setting<>(true);
 
     /**
+     * Enable the agentic builder feature that autonomously gathers materials and builds schematics
+     */
+    public final Setting<Boolean> agenticBuilderEnabled = new Setting<>(true);
+
+    /**
+     * Allow agentic builder to automatically gather materials needed for building
+     */
+    public final Setting<Boolean> agenticGatherMaterials = new Setting<>(true);
+
+    /**
+     * Allow agentic builder to automatically craft materials from gathered resources
+     */
+    public final Setting<Boolean> agenticCraftMaterials = new Setting<>(true);
+
+    /**
+     * Allow agentic builder to automatically smelt materials (e.g., cobblestone to stone)
+     */
+    public final Setting<Boolean> agenticSmeltMaterials = new Setting<>(true);
+
+    /**
+     * Maximum distance to search for materials (mining, chopping trees)
+     */
+    public final Setting<Integer> agenticGatherRadius = new Setting<>(256);
+
+    /**
+     * Minimum quantity to gather before returning (efficiency optimization)
+     */
+    public final Setting<Integer> agenticMinGatherBatch = new Setting<>(64);
+
+    /**
+     * Whether to automatically deposit extra materials in nearby chests
+     */
+    public final Setting<Boolean> agenticDepositExtras = new Setting<>(false);
+
+    /**
+     * Resume building after gathering materials or stop and wait for manual command
+     */
+    public final Setting<Boolean> agenticAutoResumeBuild = new Setting<>(true);
+
+    /**
+     * Log detailed information about material requirements and gathering progress
+     */
+    public final Setting<Boolean> agenticVerboseLogging = new Setting<>(true);
+
+    /**
+     * Maximum time (in ticks) to spend gathering a single material type before moving on
+     */
+    public final Setting<Integer> agenticGatherTimeout = new Setting<>(12000); // 10 minutes
+
+    /**
+     * Whether to use REI (Roughly Enough Items) integration for crafting recipes
+     */
+    public final Setting<Boolean> agenticUseREI = new Setting<>(true);
+
+    /**
      * Disallow MineBehavior from using X-Ray to see where the ores are. Turn this option on to force it to mine "legit"
      * where it will only mine an ore once it can actually see it, so it won't do or know anything that a normal player
      * couldn't. If you don't want it to look like you're X-Raying, turn this on

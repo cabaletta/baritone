@@ -65,6 +65,7 @@ public final class DefaultCommands {
                 new ThisWayCommand(baritone),
                 new WaypointsCommand(baritone),
                 new ScanCommand(baritone),
+                new AgenticBuilderCommand(baritone),
                 new CommandAlias(baritone, "sethome", "Sets your home waypoint", "waypoints save home"),
                 new CommandAlias(baritone, "home", "Path to your home waypoint", "waypoints goto home"),
                 new SelCommand(baritone)
