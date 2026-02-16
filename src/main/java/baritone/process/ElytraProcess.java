@@ -18,16 +18,12 @@
 package baritone.process;
 
 import baritone.Baritone;
-import baritone.api.IBaritone;
 import baritone.api.event.events.*;
 import baritone.api.event.events.type.EventState;
 import baritone.api.event.listener.AbstractGameEventListener;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalBlock;
 import baritone.api.pathing.goals.GoalXZ;
-import baritone.api.pathing.goals.GoalYLevel;
-import baritone.api.pathing.movement.IMovement;
-import baritone.api.pathing.path.IPathExecutor;
 import baritone.api.process.IBaritoneProcess;
 import baritone.api.process.IElytraProcess;
 import baritone.api.process.PathingCommand;
@@ -36,11 +32,9 @@ import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.Rotation;
 import baritone.api.utils.RotationUtils;
 import baritone.api.utils.input.Input;
-import baritone.pathing.movement.CalculationContext;
-import baritone.pathing.movement.movements.MovementFall;
-import baritone.process.elytra.*;
+import baritone.process.elytra.ElytraBehavior;
+import baritone.process.elytra.NetherPathfinderContext;
 import baritone.utils.BaritoneProcessHelper;
-import baritone.utils.PathingCommandContext;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -63,14 +57,11 @@ import java.util.*;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
-import static baritone.api.pathing.movement.ActionCosts.COST_INF;
-
 public class ElytraProcess extends BaritoneProcessHelper implements IBaritoneProcess, IElytraProcess, AbstractGameEventListener {
     public State state;
     private boolean goingToLandingSpot;
     private BetterBlockPos landingSpot;
     private boolean reachedGoal; // this basically just prevents potential notification spam
-    private Goal goal;
     private ElytraBehavior behavior;
     private NetherPathfinderContext npfContext;
     private boolean predictingTerrain;
@@ -86,6 +77,8 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
     private Set<BetterBlockPos> badLandingSpots = new HashSet<>();
     private LandingSearchState landingSearchState;
 
+    private long startedJumpStateTime = 0L;
+
     @Override
     public void onLostControl() {
         onLostControl(true);
@@ -97,7 +90,7 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
         this.landingSpot = null;
         this.landingSearchState = null;
         this.reachedGoal = false;
-        this.goal = null;
+        startedJumpStateTime = 0L;
         destroyBehaviorAsync();
         if (destroyNpf) {
             destroyNpfContextAsync();
@@ -127,8 +120,6 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
             this.repackChunks();
         }
     }
-
-    private static final String AUTO_JUMP_FAILURE_MSG = "Failed to compute a walking path to a spot to jump off from. Consider starting from a higher location, near an overhang. Or, you can disable elytraAutoJump and just manually begin gliding.";
 
     @Override
     public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
@@ -167,7 +158,6 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
 
         if (calcFailed) {
             onLostControl();
-            logDirect(AUTO_JUMP_FAILURE_MSG);
             return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
         }
 
@@ -235,7 +225,6 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
 
         if (ctx.player().isFallFlying()) {
             behavior.landingMode = this.state == State.LANDING;
-            this.goal = null;
             baritone.getInputOverrideHandler().clearAllKeys();
             if (this.behavior.npfContext.tryAcquireReadLock()) {
                 try {
@@ -259,66 +248,56 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
 
         if (this.state == State.FLYING || this.state == State.START_FLYING) {
             this.state = ctx.player().onGround() && Baritone.settings().elytraAutoJump.value
-                    ? State.LOCATE_JUMP
+                    ? State.JUMP
                     : State.START_FLYING;
         }
 
-        if (this.state == State.LOCATE_JUMP) {
+        if (this.state == State.JUMP) {
+            if (startedJumpStateTime == 0L) {
+                startedJumpStateTime = System.currentTimeMillis();
+            }
             if (shouldLandForSafety()) {
                 logDirect("Not taking off, because elytra durability or fireworks are so low that I would immediately emergency land anyway.");
                 onLostControl();
                 return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
             }
-            if (this.goal == null) {
-                this.goal = new GoalYLevel(31);
+            final boolean isJumpBlocked = !ctx.world().getBlockCollisions(ctx.player(), ctx.player().getBoundingBox().move(0, 0.5, 0)).iterator().hasNext();
+            if (ctx.player().onGround() && isJumpBlocked) {
+                ctx.player().jumpFromGround();
+                return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
             }
-            final IPathExecutor executor = baritone.getPathingBehavior().getCurrent();
-            if (executor != null && executor.getPath().getGoal() == this.goal) {
-                final IMovement fall = executor.getPath().movements().stream()
-                        .filter(movement -> movement instanceof MovementFall)
-                        .findFirst().orElse(null);
+            final boolean canStartFlying = !ctx.player().onGround() && !ctx.player().isFallFlying();
 
-                if (fall != null) {
-                    final BetterBlockPos from = new BetterBlockPos(
-                            (fall.getSrc().x + fall.getDest().x) / 2,
-                            (fall.getSrc().y + fall.getDest().y) / 2,
-                            (fall.getSrc().z + fall.getDest().z) / 2
+            if (canStartFlying) {
+                this.state = State.START_FLYING;
+            } else {
+                // todo: not sure if this is the best way to handle this. maybe just let the player decide when/where to walk to
+                if (System.currentTimeMillis() - startedJumpStateTime > 2500) {
+                    logDirect("Unable to perform autoJump takeoff, pathing forward");
+                    final GoalXZ goal = GoalXZ.fromDirection(
+                        ctx.playerFeetAsVec(),
+                        ctx.player().getYHeadRot(),
+                        5
                     );
-                    behavior.pathManager.pathToDestination(from).whenComplete((result, ex) -> {
+                    final BetterBlockPos forwardBlockPos = new BetterBlockPos(goal.getX(), ctx.player().position().y(), goal.getZ());
+                    behavior.pathManager.pathToDestination(forwardBlockPos).whenComplete((result, ex) -> {
                         if (ex == null) {
-                            this.state = State.GET_TO_JUMP;
+                            startedJumpStateTime = 0L;
+                            this.state = State.JUMP;
                             return;
                         }
                         onLostControl();
                     });
                     this.state = State.PAUSE;
-                } else {
-                    onLostControl();
-                    logDirect(AUTO_JUMP_FAILURE_MSG);
-                    return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
+                    return new PathingCommand(goal, PathingCommandType.SET_GOAL_AND_PAUSE);
                 }
+                return new PathingCommand(null, PathingCommandType.SET_GOAL_AND_PATH);
             }
-            return new PathingCommandContext(this.goal, PathingCommandType.SET_GOAL_AND_PAUSE, new WalkOffCalculationContext(baritone));
         }
 
         // yucky
         if (this.state == State.PAUSE) {
             return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
-        }
-
-        if (this.state == State.GET_TO_JUMP) {
-            final IPathExecutor executor = baritone.getPathingBehavior().getCurrent();
-            // TODO 1.21.5: replace `ctx.player().getDeltaMovement().y < -0.377` with `ctx.player().fallDistance > 1.0f`
-            final boolean canStartFlying = ctx.player().getDeltaMovement().y < -0.377
-                    && !isSafeToCancel
-                    && executor != null
-                    && executor.getPath().movements().get(executor.getPosition()) instanceof MovementFall;
-
-            if (canStartFlying) {
-                this.state = State.START_FLYING;
-            } else {
-                return new PathingCommand(null, PathingCommandType.SET_GOAL_AND_PATH);
-            }
         }
 
         if (this.state == State.START_FLYING) {
@@ -327,8 +306,7 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
                 baritone.getPathingBehavior().secretInternalSegmentCancel();
             }
             baritone.getInputOverrideHandler().clearAllKeys();
-            // TODO 1.21.5: replace `ctx.player().getDeltaMovement().y < -0.377` with `ctx.player().fallDistance > 1.0f`
-            if (ctx.player().getDeltaMovement().y < -0.377) {
+            if (!ctx.player().onGround() && !ctx.player().input.keyPresses.jump()) {
                 baritone.getInputOverrideHandler().setInputForceState(Input.JUMP, true);
             }
         }
@@ -500,9 +478,8 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
     }
 
     public enum State {
-        LOCATE_JUMP("Finding spot to jump off"),
+        JUMP("Takeoff"),
         PAUSE("Waiting for elytra path"),
-        GET_TO_JUMP("Walking to takeoff"),
         START_FLYING("Begin flying"),
         FLYING("Flying"),
         LANDING("Landing");
@@ -546,34 +523,6 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
     public void onPostTick(TickEvent event) {
         IBaritoneProcess procThisTick = baritone.getPathingControlManager().mostRecentInControl().orElse(null);
         if (this.behavior != null && procThisTick == this) this.behavior.onPostTick(event);
-    }
-
-    /**
-     * Custom calculation context which makes the player fall into lava
-     */
-    public static final class WalkOffCalculationContext extends CalculationContext {
-
-        public WalkOffCalculationContext(IBaritone baritone) {
-            super(baritone, true);
-            this.allowFallIntoLava = true;
-            this.minFallHeight = 8;
-            this.maxFallHeightNoWater = 10000;
-        }
-
-        @Override
-        public double costOfPlacingAt(int x, int y, int z, BlockState current) {
-            return COST_INF;
-        }
-
-        @Override
-        public double breakCostMultiplierAt(int x, int y, int z, BlockState current) {
-            return COST_INF;
-        }
-
-        @Override
-        public double placeBucketCost() {
-            return COST_INF;
-        }
     }
 
     private static boolean isInBounds(Level dim, BlockPos pos) {
