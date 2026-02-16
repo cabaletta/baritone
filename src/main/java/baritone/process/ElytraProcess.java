@@ -271,7 +271,7 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
             if (canStartFlying) {
                 this.state = State.START_FLYING;
             } else {
-                // todo: not sure if this is the best way to handle this. maybe just let the player decide when/where to walk to
+                // todo: would be better if we searched for a safe pos to takeoff from, and then pathed directly there
                 if (System.currentTimeMillis() - startedJumpStateTime > 2500) {
                     logDirect("Unable to perform autoJump takeoff, pathing forward");
                     final GoalXZ goal = GoalXZ.fromDirection(
@@ -279,17 +279,7 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
                         ctx.player().getYHeadRot(),
                         5
                     );
-                    final BetterBlockPos forwardBlockPos = new BetterBlockPos(goal.getX(), ctx.player().position().y(), goal.getZ());
-                    behavior.pathManager.pathToDestination(forwardBlockPos).whenComplete((result, ex) -> {
-                        if (ex == null) {
-                            startedJumpStateTime = 0L;
-                            this.state = State.JUMP;
-                            return;
-                        }
-                        onLostControl();
-                    });
-                    this.state = State.PAUSE;
-                    return new PathingCommand(goal, PathingCommandType.SET_GOAL_AND_PAUSE);
+                    return new PathingCommand(goal, PathingCommandType.REVALIDATE_GOAL_AND_PATH);
                 }
                 return new PathingCommand(null, PathingCommandType.SET_GOAL_AND_PATH);
             }
