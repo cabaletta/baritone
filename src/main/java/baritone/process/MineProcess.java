@@ -34,7 +34,11 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.CraftingMenu;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.AirBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -61,6 +65,18 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
     private GoalRunAway branchPointRunaway;
     private int desiredQuantity;
     private int tickCount;
+    private BlockPos placedCraftingTable;
+
+    private static final Map<Item, Item> COMPRESSIBLE_ITEMS = Map.ofEntries(
+            Map.entry(Items.COAL, Items.COAL_BLOCK),
+            Map.entry(Items.REDSTONE, Items.REDSTONE_BLOCK),
+            Map.entry(Items.EMERALD, Items.EMERALD_BLOCK),
+            Map.entry(Items.DIAMOND, Items.DIAMOND_BLOCK),
+            Map.entry(Items.IRON_INGOT, Items.IRON_BLOCK),
+            Map.entry(Items.GOLD_INGOT, Items.GOLD_BLOCK),
+            Map.entry(Items.LAPIS_LAZULI, Items.LAPIS_BLOCK),
+            Map.entry(Items.NETHERITE_INGOT, Items.NETHERITE_BLOCK)
+    );
 
     public MineProcess(Baritone baritone) {
         super(baritone);
@@ -83,6 +99,11 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
                 return null;
             }
         }
+
+        if (Baritone.settings().mineAutoCraftBlocks.value && handleAutoCompression(isSafeToCancel)) {
+            return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
+        }
+
         if (calcFailed) {
             if (!knownOreLocations.isEmpty() && Baritone.settings().blacklistClosestOnFailure.value) {
                 logDirect("Unable to find any path to " + filter + ", blacklisting presumably unreachable closest instance...");
@@ -165,6 +186,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
 
     @Override
     public void onLostControl() {
+        placedCraftingTable = null;
         mine(0, (BlockOptionalMetaLookup) null);
     }
 
@@ -221,6 +243,161 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
             };
         }
         return new PathingCommand(branchPointRunaway, PathingCommandType.REVALIDATE_GOAL_AND_PATH);
+    }
+
+    private boolean handleAutoCompression(boolean isSafeToCancel) {
+        if (!isInventoryFull()) {
+            return false;
+        }
+        if (!isSafeToCancel) {
+            return true;
+        }
+        if (ctx.player().containerMenu instanceof CraftingMenu menu) {
+            return craftOneCompressedBlock(menu);
+        }
+        if (placedCraftingTable != null && ctx.world().getBlockState(placedCraftingTable).getBlock() == Blocks.CRAFTING_TABLE) {
+            return tryOpenCraftingTable(placedCraftingTable);
+        }
+        if (Baritone.settings().mineAutoCraftCollectCraftingTable.value && placedCraftingTable != null) {
+            placedCraftingTable = null;
+        }
+        BlockPos placeAt = findCraftingTablePlacement();
+        if (placeAt != null && tryPlaceCraftingTable(placeAt)) {
+            placedCraftingTable = placeAt;
+            return true;
+        }
+        return false;
+    }
+
+    private boolean isInventoryFull() {
+        return ctx.player().getInventory().items.stream().noneMatch(ItemStack::isEmpty);
+    }
+
+    private boolean tryPlaceCraftingTable(BlockPos placeAt) {
+        if (!baritone.getInventoryBehavior().throwaway(true, stack -> stack.getItem() == Items.CRAFTING_TABLE)) {
+            return false;
+        }
+        BlockPos against = placeAt.below();
+        Optional<Rotation> rot = RotationUtils.reachable(ctx, against);
+        if (rot.isEmpty()) {
+            return false;
+        }
+        baritone.getLookBehavior().updateTarget(rot.get(), true);
+        if (ctx.isLookingAt(against) || ctx.playerRotations().isReallyCloseTo(rot.get())) {
+            baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
+        }
+        return true;
+    }
+
+    private boolean tryOpenCraftingTable(BlockPos tablePos) {
+        Optional<Rotation> rot = RotationUtils.reachable(ctx, tablePos);
+        if (rot.isEmpty()) {
+            return false;
+        }
+        baritone.getLookBehavior().updateTarget(rot.get(), true);
+        if (ctx.isLookingAt(tablePos) || ctx.playerRotations().isReallyCloseTo(rot.get())) {
+            baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
+        }
+        return true;
+    }
+
+    private BlockPos findCraftingTablePlacement() {
+        BlockPos feet = ctx.playerFeet();
+        for (BetterBlockPos offset : Arrays.asList(
+                new BetterBlockPos(1, 0, 0),
+                new BetterBlockPos(-1, 0, 0),
+                new BetterBlockPos(0, 0, 1),
+                new BetterBlockPos(0, 0, -1)
+        )) {
+            BlockPos candidate = feet.offset(offset);
+            BlockState current = ctx.world().getBlockState(candidate);
+            if (!current.getMaterial().isReplaceable()) {
+                continue;
+            }
+            BlockState below = ctx.world().getBlockState(candidate.below());
+            if (!below.isFaceSturdy(ctx.world(), candidate.below(), net.minecraft.core.Direction.UP)) {
+                continue;
+            }
+            return candidate;
+        }
+        return null;
+    }
+
+    private boolean craftOneCompressedBlock(CraftingMenu menu) {
+        Item ingredient = findNextCompressibleItem(menu);
+        if (ingredient == null) {
+            if (Baritone.settings().mineAutoCraftCollectCraftingTable.value && placedCraftingTable != null) {
+                ctx.player().closeContainer();
+                tryBreakCraftingTable();
+                return true;
+            }
+            return false;
+        }
+        int ingredientSlot = findInventorySlotWithAtLeast(menu, ingredient, 9);
+        if (ingredientSlot < 0 || !craftOnce(menu, ingredientSlot)) {
+            return false;
+        }
+        return true;
+    }
+
+    private void tryBreakCraftingTable() {
+        if (placedCraftingTable == null || ctx.world().getBlockState(placedCraftingTable).getBlock() != Blocks.CRAFTING_TABLE) {
+            placedCraftingTable = null;
+            return;
+        }
+        Optional<Rotation> rot = RotationUtils.reachable(ctx, placedCraftingTable);
+        if (rot.isEmpty()) {
+            return;
+        }
+        baritone.getLookBehavior().updateTarget(rot.get(), true);
+        if (ctx.isLookingAt(placedCraftingTable) || ctx.playerRotations().isReallyCloseTo(rot.get())) {
+            baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_LEFT, true);
+        }
+    }
+
+    private Item findNextCompressibleItem(CraftingMenu menu) {
+        for (Item item : COMPRESSIBLE_ITEMS.keySet()) {
+            if (Baritone.settings().mineAutoCraftBlocksOnlyMineTargets.value && !filter.has(new ItemStack(item))) {
+                continue;
+            }
+            if (findInventorySlotWithAtLeast(menu, item, 9) >= 0) {
+                return item;
+            }
+        }
+        return null;
+    }
+
+    private int findInventorySlotWithAtLeast(CraftingMenu menu, Item item, int count) {
+        for (int i = 10; i < menu.slots.size(); i++) {
+            ItemStack stack = menu.getSlot(i).getItem();
+            if (stack.getItem() == item && stack.getCount() >= count) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private boolean craftOnce(CraftingMenu menu, int ingredientSlot) {
+        if (!craftingGridEmpty(menu)) {
+            return false;
+        }
+        int containerId = menu.containerId;
+        ctx.playerController().windowClick(containerId, ingredientSlot, 0, ClickType.PICKUP, ctx.player());
+        for (int i = 1; i <= 9; i++) {
+            ctx.playerController().windowClick(containerId, i, 1, ClickType.PICKUP, ctx.player());
+        }
+        ctx.playerController().windowClick(containerId, ingredientSlot, 0, ClickType.PICKUP, ctx.player());
+        ctx.playerController().windowClick(containerId, 0, 0, ClickType.QUICK_MOVE, ctx.player());
+        return true;
+    }
+
+    private boolean craftingGridEmpty(CraftingMenu menu) {
+        for (int i = 1; i <= 9; i++) {
+            if (!menu.getSlot(i).getItem().isEmpty()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private void rescan(List<BlockPos> already, CalculationContext context) {
