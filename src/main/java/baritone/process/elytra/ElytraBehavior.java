@@ -53,9 +53,9 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 import java.awt.*;
+import java.util.*;
 import java.util.List;
 import java.util.Queue;
-import java.util.*;
 import java.util.concurrent.*;
 import java.util.function.UnaryOperator;
 
@@ -359,7 +359,7 @@ public final class ElytraBehavior implements Helper {
                     return;
                 }
             }
-            if (!canSeeAny && rangeStartIncl < rangeEndExcl - 2 && process.state != ElytraProcess.State.GET_TO_JUMP) {
+            if (!canSeeAny && rangeStartIncl < rangeEndExcl - 2) {
                 this.pathRecalcSegment(OptionalInt.of(rangeEndExcl - 1)).thenRun(() -> logVerbose("Recalculated segment since no path points were visible"));
             }
         }
@@ -465,9 +465,7 @@ public final class ElytraBehavior implements Helper {
     }
 
     public void pathTo() {
-        if (!Baritone.settings().elytraAutoJump.value || ctx.player().isFallFlying()) {
-            this.pathManager.pathToDestination();
-        }
+        this.pathManager.pathToDestination();
     }
 
     public void destroy() {

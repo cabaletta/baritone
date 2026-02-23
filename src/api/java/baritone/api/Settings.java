@@ -31,7 +31,6 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,8 +42,8 @@ import java.lang.annotation.Target;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -1489,7 +1488,7 @@ public final class Settings {
     public final Setting<Boolean> elytraRenderSimulation = new Setting<>(true);
 
     /**
-     * Automatically path to and jump off of ledges to initiate elytra flight when grounded.
+     * Automatically jump to initiate elytra flight when grounded.
      */
     public final Setting<Boolean> elytraAutoJump = new Setting<>(false);
 
