@@ -6,9 +6,12 @@ buildscript {
             url = 'https://files.minecraftforge.net/maven'
         }
         jcenter()
-    }
-    dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:1.2-SNAPSHOT'
+        maven {
+            name = 'snapshots'
+            url = 'https://oss.sonatype.org/content/repositories/snapshots/'
+        }
+    }    dependencies {
+        classpath 'net.minecraftforge.gradle:ForgeGradle:1.1'
     }
 }
 apply plugin: 'net.minecraftforge.gradle.forge'
