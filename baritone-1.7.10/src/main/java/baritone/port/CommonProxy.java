@@ -1,0 +1,1 @@
+package baritone.port;\n\nimport cpw.mods.fml.common.event.FMLInitializationEvent;\nimport cpw.mods.fml.common.event.FMLPreInitializationEvent;\n\npublic class CommonProxy {\n    public void preInit(FMLPreInitializationEvent event) {\n        // Common preinit\n    }\n\n    public void init(FMLInitializationEvent event) {\n        // Common init\n    }\n}

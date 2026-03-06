@@ -1,0 +1,43 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        maven {
+            name = 'forge'
+            url = 'http://files.minecraftforge.net/maven'
+        }
+        jcenter()
+    }
+    dependencies {
+        classpath 'net.minecraftforge.gradle:ForgeGradle:1.2-SNAPSHOT'
+    }
+}
+apply plugin: 'net.minecraftforge.gradle.forge'
+
+version = '1.0'
+group= 'baritone.port'
+archivesBaseName = 'baritone-1.7.10'
+
+minecraft {
+    version = '1.7.10-10.13.4.1614'
+    runDir = 'run'
+    
+    replace '@VERSION@', project.version
+    replaceIn 'BaritoneMod.java'
+    replace '@MODID@', 'baritone'
+    replace '@NAME@', 'Baritone 1.7.10 Port'
+    replaceIn 'mcmod.info'
+}
+
+processResources {
+    inputs.property 'version', project.version
+    inputs.property 'mcversion', project.minecraft.version
+
+    from(sourceSets.main.resources.srcDirs) {
+        include 'mcmod.info'
+        expand 'version':project.version, 'mcversion':project.minecraft.version
+    }
+    
+    from(sourceSets.main.resources.srcDirs) {
+        exclude 'mcmod.info'
+    }
+}
