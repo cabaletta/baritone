@@ -1,17 +1,17 @@
 buildscript {
     repositories {
-        mavenCentral()
-        maven {
-            name = 'forge'
-            url = 'https://files.minecraftforge.net/maven'
-        }
-        jcenter()
         maven {
             name = 'snapshots'
             url = 'https://oss.sonatype.org/content/repositories/snapshots/'
         }
-    }    dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:1.1'
+        maven {
+            name = 'forge'
+            url = 'https://files.minecraftforge.net/maven'
+        }
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'net.minecraftforge.gradle:ForgeGradle:1.2-SNAPSHOT'
     }
 }
 apply plugin: 'net.minecraftforge.gradle.forge'

@@ -1,9 +1,14 @@
-FROM openjdk:8-jdk-slim
+FROM docker.io/eclipse-temurin:8-jdk
 
-WORKDIR /app
+RUN apt-get update && apt-get install -y wget unzip && rm -rf /var/lib/apt/lists/*
 
-COPY . .
+RUN wget https://services.gradle.org/distributions/gradle-1.12-bin.zip && \
+    unzip gradle-1.12-bin.zip && \
+    rm gradle-1.12-bin.zip && \
+    mv gradle-1.12 /opt/gradle
 
-RUN ./gradlew setupDecompWorkspace && ./gradlew build
+ENV PATH /opt/gradle/bin:${PATH}
 
-CMD ["./gradlew", "build"]
+WORKDIR /project
+
+CMD ["gradle", "build"]
