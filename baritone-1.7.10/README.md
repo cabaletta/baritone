@@ -14,9 +14,11 @@ The purpose of this setup is to provide reproducible builds for the legacy Minec
 
 ## Setup
 
-1. Clone the repository: `git clone https://github.com/cabaletta/baritone.git && cd baritone/baritone-1.7.10`
+1. Install Podman: `sudo dnf install podman` or `sudo apt install podman`
 
-2. Build the image: `podman build -t baritone-build-env -f Dockerfile .`
+2. Clone the repository: `git clone https://github.com/cabaletta/baritone.git && cd baritone/baritone-1.7.10`
+
+3. Build the image: `podman build -t baritone-build-env -f Dockerfile .`
 
    - This creates an image with Java 8 and Gradle 1.12.
 
