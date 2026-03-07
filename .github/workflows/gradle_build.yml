@@ -1,43 +1,35 @@
-# This workflow will build a Java project with Gradle
-# For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-gradle
-
-name: Java CI with Gradle
+name: Build 1.7.10 (Podman)
 
 on:
   push:
+    branches:
+      - main
   pull_request:
+    branches:
+      - main
+  workflow_dispatch:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        java-version: '17'
-        distribution: 'temurin'
-        cache: gradle
+      - name: Install Podman
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y podman
 
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
-      
-    - name: Build with Gradle
-      run: ./gradlew build -Pmod_version="$(git describe --always --tags --first-parent | cut -c2-)"
+      - name: Build In Podman
+        run: |
+          chmod +x scripts/podman-build-1.7.10.sh
+          ./scripts/podman-build-1.7.10.sh
 
-    - name: Archive Artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: Artifacts
-        path: dist/
-        
-    - name: Archive mapping.txt
-      uses: actions/upload-artifact@v4
-      with:
-        name: Mappings
-        path: mapping/
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: baritone-1.7.10-jar
+          path: baritone-1.7.10/build/libs/*.jar
+          if-no-files-found: error
