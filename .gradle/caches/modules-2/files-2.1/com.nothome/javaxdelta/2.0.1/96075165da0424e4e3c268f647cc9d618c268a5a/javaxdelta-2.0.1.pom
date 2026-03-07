@@ -1,0 +1,142 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.nothome</groupId>
+  <artifactId>javaxdelta</artifactId>
+  <version>2.0.1</version>
+  <name>javaxdelta</name>
+
+  <!-- Project meta-data -->
+  <description>javaxdelta - Patch generator and patch tool using the GDIFF algorithm</description>
+  <licenses>
+    <license>
+      <name>MIT license</name>
+      <url>http://en.wikipedia.org/wiki/MIT_License</url>
+    </license>
+  </licenses>
+  <inceptionYear>2003</inceptionYear>
+  <developers>
+    <developer>
+      <name>Elias Ross</name>
+      <email>genman@noderunner.net</email>
+    </developer>
+    <developer>
+      <name>Torgeir</name>
+      <email>torgeir@pobox.com</email>
+    </developer>
+  </developers>
+  <url>http://sourceforge.net/projects/xdelta</url>
+  <scm>
+    <url>http://javaxdelta.svn.sourceforge.net/viewvc/javaxdelta/tags/javaxdelta-2.0.1</url>
+    <connection>scm:svn:https://javaxdelta.svn.sourceforge.net/svnroot/javaxdelta/tags/javaxdelta-2.0.1</connection>
+    <developerConnection>scm:svn:https://javaxdelta.svn.sourceforge.net/svnroot/javaxdelta/tags/javaxdelta-2.0.1</developerConnection>
+  </scm>
+  <mailingLists>
+    <mailingList>
+      <post>javaxdelta-devel@lists.sourceforge.net</post>
+    </mailingList>
+  </mailingLists>
+  <issueManagement>
+    <system>Sourceforge</system>
+    <url>http://sourceforge.net/tracker/?atid=474943&amp;group_id=54817</url>
+  </issueManagement>
+
+  <build>
+    <extensions>
+      <extension>
+        <groupId>org.apache.maven.wagon</groupId>
+        <artifactId>wagon-ssh-external</artifactId>
+        <version>1.0-beta-2</version>
+      </extension>
+    </extensions>
+    <plugins>
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <version>2.2-beta-2</version>
+        <configuration>
+          <descriptorRefs>
+            <descriptorRef>bin</descriptorRef>
+          </descriptorRefs>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-scm-plugin</artifactId>
+        <version>1.0-rc1</version>
+        <configuration>
+          <descriptorRefs>
+            <descriptorRef>bin</descriptorRef>
+          </descriptorRefs>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>1.5</source>
+          <target>1.5</target>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration />
+      </plugin>
+      <plugin>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>2.2</version>
+        <configuration>
+          <archive>
+            <manifest>
+              <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+              <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+            </manifest>
+          </archive>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>2.3</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <links>
+            <link>http://java.sun.com/j2se/1.5.0/docs/api/</link>
+          </links>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <!--  DEPENDENCIES -->
+
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.5</version>
+      <scope>test</scope>
+    </dependency>
+    <!-- Feel free to use a newer version! -->
+    <dependency>
+      <groupId>trove</groupId>
+      <artifactId>trove</artifactId>
+      <version>1.0.2</version>
+    </dependency>
+  </dependencies>
+
+  <repositories>
+    <repository>
+      <id>javaxdelta.sourceforge.net</id>
+      <url>http://javaxdelta.sourceforge.net/maven2/repository</url>
+    </repository>
+  </repositories>
+  <distributionManagement>
+    <repository>
+      <id>javaxdelta.sourceforge.net</id>
+	  <url>sftp://web.sourceforge.net/home/groups/j/ja/javaxdelta/htdocs/maven2/repository</url>
+    </repository>
+  </distributionManagement>
+
+</project>

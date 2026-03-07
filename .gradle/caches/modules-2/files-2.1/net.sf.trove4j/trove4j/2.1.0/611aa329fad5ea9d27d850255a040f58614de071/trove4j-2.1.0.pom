@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>net.sf.trove4j</groupId>
+    <artifactId>trove4j</artifactId>
+    <version>2.1.0</version>
+    <packaging>bundle</packaging>
+    <name>GNU Trove</name>
+    <description>The Trove library provides high speed regular and
+        primitive collections for Java.
+    </description>
+    <url>http://trove4j.sourceforge.net/</url>
+    <licenses>
+        <license>
+            <name>GNU Lesser General Public License 2.1</name>
+            <url>http://www.gnu.org/licenses/lgpl-2.1.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <scm>
+        <url>https://trove4j.svn.sourceforge.net/svnroot/trove4j</url>
+    </scm>
+
+    <dependencies/>
+
+    <developers>
+        <developer>
+            <name>Rob Eden</name>
+        </developer>
+        <developer>
+            <name>Eric D. Friedman</name>
+        </developer>
+    </developers>
+</project>

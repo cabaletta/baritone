@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.github.abrarsyed.jastyle</groupId>
+  <artifactId>jAstyle</artifactId>
+  <version>1.2</version>
+  <name>jAstyle</name>
+  <description>Java Artistic Style Library</description>
+  <url>https://github.com/AbrarSyed/jastyle</url>
+  <licenses>
+    <license>
+      <name>GNU Lesser General Public License (LGPL), Version 3</name>
+      <url>http://www.fsf.org/licensing/licenses/lgpl.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+  <developers>
+    <developer>
+      <id>stephenc</id>
+      <name>Stephen Connolly</name>
+      <roles>
+        <role>packager</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Hector Suarez Barenca</name>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>AbrarSyed</id>
+      <name>Abrar Syed</name>
+      <roles>
+        <role>packager</role>
+        <role>developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>LexManos</id>
+      <roles>
+        <role>contributor</role>
+      </roles>
+    </developer>
+  </developers>
+  <issueManagement>
+    <system>github</system>
+    <url>http://github.com/AbrarSyed/jastyle/issues</url>
+  </issueManagement>
+  <scm>
+    <connection>scm:git:git://github.com/AbrarSyed/jastyle.git</connection>
+    <developerConnection>scm:git:git@github.com:AbrarSyed/jastyle.git</developerConnection>
+    <url>https://github.com/AbrarSyed/jastyle</url>
+  </scm>
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.5</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+</project>

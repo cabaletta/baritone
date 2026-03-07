@@ -1,0 +1,38 @@
+WARNING: You are using an unsupported version of ForgeGradle.
+Please consider upgrading to ForgeGradle 4 and helping in the efforts to get old versions working on the modern toolchain.
+See https://gist.github.com/TheCurle/fe7ad3ede188cbdd15c235cc75d52d4a for more info on contributing.
+#################################################
+         ForgeGradle 1.2.2-g2ea0336        
+  https://github.com/MinecraftForge/ForgeGradle  
+#################################################
+               Powered by MCP unknown               
+             http://modcoderpack.com             
+         by: Searge, ProfMobius, Fesh0r,         
+         R4wk, ZeuX, IngisKahn, bspkrs           
+#################################################
+All projects evaluated.
+Selected primary task 'build' from project :
+Tasks to be executed: [task ':downloadClient', task ':downloadServer', task ':getVersionJson', task ':extractUserDev', task ':mergeJars', task ':applyBinPatches', task ':downloadMcpTools', task ':extractMcpData', task ':genSrgs', task ':deobfBinJar', task ':compileApiJava', task ':processApiResources', task ':apiClasses', task ':sourceMainJava', task ':compileJava', task ':processResources', task ':classes', task ':jar', task ':compileTestJava', task ':processTestResources', task ':testClasses', task ':test', task ':reobf', task ':assemble', task ':check', task ':build']
+:downloadClient (Thread[Daemon worker,5,main]) started.
+:downloadClient
+Invalidating in-memory cache of /workspace/baritone-1.7.10/.gradle/2.3/taskArtifacts/outputFileStates.bin
+Invalidating in-memory cache of /workspace/baritone-1.7.10/.gradle/2.3/taskArtifacts/fileHashes.bin
+Invalidating in-memory cache of /workspace/baritone-1.7.10/.gradle/2.3/taskArtifacts/fileSnapshots.bin
+Invalidating in-memory cache of /workspace/baritone-1.7.10/.gradle/2.3/taskArtifacts/taskArtifacts.bin
+Executing task ':downloadClient' (up-to-date check took 0.005 secs) due to:
+  No history is available.
+:downloadClient FAILED
+:downloadClient (Thread[Daemon worker,5,main]) completed. Took 0.193 secs.
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':downloadClient'.
+> java.io.FileNotFoundException: http://s3.amazonaws.com/Minecraft.Download/versions/1.7.10/1.7.10.jar
+
+* Try:
+Run with --stacktrace option to get the stack trace. Run with --debug option to get more log output.
+
+BUILD FAILED
+
+Total time: 1.953 secs

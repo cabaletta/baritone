@@ -1,0 +1,57 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.jvnet.localizer</groupId>
+  <artifactId>localizer-parent</artifactId>
+  <packaging>pom</packaging>
+  <version>1.12</version>
+  <name>Localizer parent POM</name>
+  <modules>
+    <module>lib</module>
+    <module>maven-plugin</module>
+    <!--module>test</module-->
+  </modules>
+
+  <scm>
+    <connection>scm:svn:https://www.dev.java.net/svn/localizer/tags/localizer-parent-1.12</connection>
+    <developerConnection>scm:svn:https://www.dev.java.net/svn/localizer/tags/localizer-parent-1.12</developerConnection>
+  </scm>
+
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>1.5</source>
+          <target>1.5</target>
+        </configuration>
+      </plugin>
+    </plugins>
+
+    <extensions>
+      <extension>
+        <groupId>org.jvnet.wagon-svn</groupId>
+        <artifactId>wagon-svn</artifactId>
+        <version>1.9</version>
+      </extension>
+    </extensions>
+  </build>
+
+  <distributionManagement>
+    <site>
+      <id>xyz-www</id>
+      <url>java-net:/localizer/trunk/www/</url>
+    </site>
+    <repository>
+      <uniqueVersion>false</uniqueVersion>
+      <id>java.net-maven2-repository</id>
+      <url>java-net:/maven2-repository/trunk/repository/</url>
+    </repository>
+  </distributionManagement>
+  
+  <repositories>
+    <repository>
+      <id>java.net2</id>
+      <url>http://download.java.net/maven/2/</url>
+    </repository>
+  </repositories>
+</project>
