@@ -1,1 +1,34 @@
-package baritone.port;\n\nimport cpw.mods.fml.common.Mod;\nimport cpw.mods.fml.common.Mod.EventHandler;\nimport cpw.mods.fml.common.Mod.Instance;\nimport cpw.mods.fml.common.SidedProxy;\nimport cpw.mods.fml.common.event.FMLInitializationEvent;\nimport cpw.mods.fml.common.event.FMLPreInitializationEvent;\nimport cpw.mods.fml.common.event.FMLServerStartingEvent;\n\n@Mod(modid = @MODID@, version = @VERSION@, clientSideOnly = true)\npublic class BaritoneMod {\n    @Instance(@MODID@)\n    public static BaritoneMod instance;\n\n    @SidedProxy(clientSide = \"baritone.port.ClientProxy\", serverSide = \"baritone.port.CommonProxy\")\n    public static CommonProxy proxy;\n\n    @EventHandler\n    public void preInit(FMLPreInitializationEvent event) {\n        proxy.preInit(event);\n    }\n\n    @EventHandler\n    public void init(FMLInitializationEvent event) {\n        proxy.init(event);\n    }\n\n    @EventHandler\n    public void serverLoad(FMLServerStartingEvent event) {\n        // Server side initialization if needed\n    }\n}
+package baritone.port;
+
+import cpw.mods.fml.common.Mod;
+import cpw.mods.fml.common.Mod.EventHandler;
+import cpw.mods.fml.common.Mod.Instance;
+import cpw.mods.fml.common.SidedProxy;
+import cpw.mods.fml.common.event.FMLInitializationEvent;
+import cpw.mods.fml.common.event.FMLPreInitializationEvent;
+import cpw.mods.fml.common.event.FMLServerStartingEvent;
+
+@Mod(modid = "@MODID@", name = "@NAME@", version = "@VERSION@")
+public class BaritoneMod {
+
+    @Instance("@MODID@")
+    public static BaritoneMod instance;
+
+    @SidedProxy(clientSide = "baritone.port.ClientProxy", serverSide = "baritone.port.CommonProxy")
+    public static CommonProxy proxy;
+
+    @EventHandler
+    public void preInit(FMLPreInitializationEvent event) {
+        proxy.preInit(event);
+    }
+
+    @EventHandler
+    public void init(FMLInitializationEvent event) {
+        proxy.init(event);
+    }
+
+    @EventHandler
+    public void serverLoad(FMLServerStartingEvent event) {
+        // no-op
+    }
+}

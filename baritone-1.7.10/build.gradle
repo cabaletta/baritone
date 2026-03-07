@@ -14,14 +14,14 @@ buildscript {
         classpath 'net.minecraftforge.gradle:ForgeGradle:1.2-SNAPSHOT'
     }
 }
-apply plugin: 'net.minecraftforge.gradle.forge'
+apply plugin: 'forge'
 
 version = '1.0'
 group= 'baritone.port'
 archivesBaseName = 'baritone-1.7.10'
 
 minecraft {
-    version = '1.7.10-10.13.4.1614'
+    version = '1.7.10-10.13.4.1614-1.7.10'
     runDir = 'run'
     
     replace '@VERSION@', project.version
@@ -42,5 +42,31 @@ processResources {
     
     from(sourceSets.main.resources.srcDirs) {
         exclude 'mcmod.info'
+    }
+}
+
+gradle.projectsEvaluated {
+    repositories.all { repo ->
+        if (repo instanceof org.gradle.api.artifacts.repositories.MavenArtifactRepository) {
+            def u = repo.url?.toString()
+            if (u != null && u.startsWith('http://repo1.maven.org/maven2')) {
+                repo.url = 'https://repo1.maven.org/maven2'
+            }
+        }
+    }
+
+    def clientTask = tasks.findByName('downloadClient')
+    if (clientTask != null) {
+        clientTask.url = new net.minecraftforge.gradle.delayed.DelayedString(project, 'https://launcher.mojang.com/v1/objects/e80d9b3bf5085002218d4be59e668bac718abbc6/client.jar')
+    }
+
+    def serverTask = tasks.findByName('downloadServer')
+    if (serverTask != null) {
+        serverTask.url = new net.minecraftforge.gradle.delayed.DelayedString(project, 'https://launcher.mojang.com/v1/objects/952438ac4e01b4d115c5fc38f891710c4941df29/server.jar')
+    }
+
+    def versionJsonTask = tasks.findByName('getVersionJson')
+    if (versionJsonTask != null) {
+        versionJsonTask.url = new net.minecraftforge.gradle.delayed.DelayedString(project, 'https://piston-meta.mojang.com/v1/packages/ed5d8789ed29872ea2ef1c348302b0c55e3f3468/1.7.10.json')
     }
 }

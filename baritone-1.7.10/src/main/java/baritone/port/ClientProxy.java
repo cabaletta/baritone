@@ -1,1 +1,17 @@
-package baritone.port;\n\nimport cpw.mods.fml.common.event.FMLInitializationEvent;\nimport cpw.mods.fml.common.event.FMLPreInitializationEvent;\n\npublic class ClientProxy extends CommonProxy {\n    @Override\n    public void preInit(FMLPreInitializationEvent event) {\n        super.preInit(event);\n        // Client-specific preinit, e.g., register renderers\n    }\n\n    @Override\n    public void init(FMLInitializationEvent event) {\n        super.init(event);\n        // Client-specific init, e.g., register keybinds, events for Baritone\n    }\n}
+package baritone.port;
+
+import cpw.mods.fml.common.event.FMLInitializationEvent;
+import cpw.mods.fml.common.event.FMLPreInitializationEvent;
+
+public class ClientProxy extends CommonProxy {
+
+    @Override
+    public void preInit(FMLPreInitializationEvent event) {
+        super.preInit(event);
+    }
+
+    @Override
+    public void init(FMLInitializationEvent event) {
+        super.init(event);
+    }
+}
