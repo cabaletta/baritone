@@ -1,16 +1,8 @@
-FROM ubuntu:focal
+FROM docker.io/eclipse-temurin:8-jdk
 
-ENV DEBIAN_FRONTEND noninteractive
+RUN apt-get update     && apt-get install -y --no-install-recommends wget unzip ca-certificates     && rm -rf /var/lib/apt/lists/*
 
-RUN apt update -y
+ARG GRADLE_VERSION=1.12
+RUN wget -q https://services.gradle.org/distributions/gradle--bin.zip -O /tmp/gradle.zip     && unzip -q /tmp/gradle.zip -d /opt     && rm /tmp/gradle.zip     && ln -s /opt/gradle- /opt/gradle
 
-RUN apt install \
-          openjdk-17-jdk \
-	  git \
-          --assume-yes
-
-COPY . /code
-
-WORKDIR /code
-
-RUN ./gradlew build
+ENV PATH=/opt/gradle/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/usr/lib/wsl/lib:/mnt/c/Users/ehara/.codex/tmp/arg0/codex-arg0uIFxup:/mnt/c/Program
