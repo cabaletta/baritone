@@ -1,8 +1,12 @@
 # Baritone 1.7.10 Port (LOTR)
 
-This repository is set up to build the 1.7.10 port in an isolated Podman container.
+This repository is focused on a **Minecraft 1.7.10 Forge port** with a **Podman-first, reproducible build**.
 
-## Build (Podman-first)
+## Current Status
+
+The 1.7.10 module currently builds successfully in Podman and produces a jar, but gameplay/pathing integration is still in early scaffold state.
+
+## Quick Start
 
 From repo root:
 
@@ -10,34 +14,26 @@ From repo root:
 ./scripts/podman-build-1.7.10.sh
 ```
 
-This script:
-- builds the root `Containerfile`
-- runs `gradle build` inside the container
-- targets `/workspace/baritone-1.7.10`
+Build output:
 
-Build outputs are written to:
+`baritone-1.7.10/build/libs/baritone-1.7.10-1.0.jar`
 
-`baritone-1.7.10/build/libs/`
+## Project Layout
 
-## Manual commands
+- `Containerfile`: canonical container definition for builds
+- `scripts/podman-build-1.7.10.sh`: build entrypoint
+- `baritone-1.7.10/`: Forge 1.7.10 module
 
-If you want to run commands manually:
+## CI
 
-```bash
-podman build -f Containerfile -t baritone-1.7.10-build .
-podman run --rm --userns=keep-id -v "$PWD:/workspace" -w /workspace/baritone-1.7.10 baritone-1.7.10-build gradle build
-```
+GitHub Actions validates builds on:
+- pushes to `main`
+- pull requests targeting `main`
 
-## Host dependencies
+Workflows run the build/test path in Podman.
 
-Required on host:
-- Podman
+## Docs
 
-Not required on host:
-- Java
-- Gradle
-
-## Notes
-
-- The legacy ForgeGradle dependency chain for 1.7.10 can still fail if upstream snapshot artifacts are unavailable.
-- This setup isolates tooling to the container, but cannot fix missing external artifacts.
+- Setup: [SETUP.md](SETUP.md)
+- Usage: [USAGE.md](USAGE.md)
+- Current capabilities: [FEATURES.md](FEATURES.md)
