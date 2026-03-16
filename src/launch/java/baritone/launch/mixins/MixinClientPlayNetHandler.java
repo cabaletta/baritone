@@ -33,9 +33,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.game.*;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.state.BlockState;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -74,10 +72,6 @@ public class MixinClientPlayNetHandler {
         }
     }*/
 
-    @Shadow
-    @Final
-    private Minecraft minecraft;
-
     @Inject(
             method = "sendChat(Ljava/lang/String;)V",
             at = @At("HEAD"),
@@ -85,7 +79,11 @@ public class MixinClientPlayNetHandler {
     )
     private void sendChatMessage(String string, CallbackInfo ci) {
         ChatEvent event = new ChatEvent(string);
-        IBaritone baritone = BaritoneAPI.getProvider().getBaritoneForPlayer(this.minecraft.player);
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.player == null) {
+            return;
+        }
+        IBaritone baritone = BaritoneAPI.getProvider().getBaritoneForPlayer(minecraft.player);
         if (baritone == null) {
             return;
         }

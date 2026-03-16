@@ -2,7 +2,7 @@
 -keepattributes *Annotation*
 -keepattributes InnerClasses
 
--optimizationpasses 5
+-dontoptimize
 -verbose
 -ignorewarnings
 

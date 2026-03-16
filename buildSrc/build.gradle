@@ -42,3 +42,7 @@ dependencies {
 
     implementation group: 'xyz.wagyourtail.unimined', name: 'xyz.wagyourtail.unimined.gradle.plugin', version: '1.0.5'
 }
+
+tasks.withType(JavaCompile).configureEach {
+    options.release = 17
+}

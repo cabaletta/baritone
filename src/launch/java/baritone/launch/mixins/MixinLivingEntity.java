@@ -85,7 +85,8 @@ public abstract class MixinLivingEntity extends Entity {
             at = @At(
                     value = "INVOKE",
                     target = "net/minecraft/world/entity/LivingEntity.getLookAngle()Lnet/minecraft/world/phys/Vec3;"
-            )
+            ),
+            require = 0
     )
     private void onPreElytraMove(Vec3 direction, CallbackInfo ci) {
         this.getBaritone().ifPresent(baritone -> {
@@ -102,7 +103,8 @@ public abstract class MixinLivingEntity extends Entity {
                     value = "INVOKE",
                     target = "net/minecraft/world/entity/LivingEntity.move(Lnet/minecraft/world/entity/MoverType;Lnet/minecraft/world/phys/Vec3;)V",
                     shift = At.Shift.AFTER
-            )
+            ),
+            require = 0
     )
     private void onPostElytraMove(Vec3 direction, CallbackInfo ci) {
         if (this.elytraRotationEvent != null) {

@@ -1,11 +1,12 @@
 {
-  "required": true,
+  "required": false,
+  "minVersion": "0.8.7",
   "package": "baritone.launch.mixins",
-  "compatibilityLevel": "JAVA_17",
+  "compatibilityLevel": "JAVA_21",
   "verbose": false,
   "injectors": {
     "maxShiftBy": 2,
-    "defaultRequire": 1
+    "defaultRequire": 0
   },
   "client": [
     "MixinChunkArray",
@@ -24,7 +25,6 @@
     "MixinPalettedContainer",
     "MixinPalettedContainer$Data",
     "MixinPlayerController",
-    "MixinScreen",
     "MixinWorldRenderer"
   ]
 }

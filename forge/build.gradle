@@ -123,6 +123,68 @@ task createDist(type: CreateDistTask, dependsOn: proguard) {
     compType "forge"
 }
 
+tasks.register("validateMixinCompatibility") {
+    group = "verification"
+    description = "Parses dist/log.log and writes a consolidated report of mixin incompatibilities from the latest Forge run."
+
+    def logFile = rootProject.file("dist/log.log")
+    def reportFile = rootProject.file("dist/mixin-incompatibilities.txt")
+
+    inputs.file(logFile)
+    outputs.file(reportFile)
+
+    doLast {
+        if (!logFile.exists()) {
+            logger.lifecycle("No log file found at ${logFile}. Run the game once, then rerun :forge:validateMixinCompatibility.")
+            return
+        }
+
+        List<String> lines = logFile.readLines("UTF-8")
+        int latestRunStart = lines.findLastIndexOf { it.contains("Launching target 'forge_client'") }
+        List<String> runLines = latestRunStart >= 0 ? lines.subList(latestRunStart, lines.size()) : lines
+
+        LinkedHashSet<String> findings = new LinkedHashSet<>()
+        runLines.each { String line ->
+            if (line.contains("Mixin apply failed")) {
+                findings.add(line.trim())
+            }
+            if (line.contains("Invalid descriptor on mixins.baritone.json")) {
+                findings.add(line.trim())
+            }
+            if (line.contains("Critical injection failure:")) {
+                findings.add(line.trim())
+            }
+            if (line.contains("@Shadow field") && line.contains("was not located")) {
+                findings.add(line.trim())
+            }
+        }
+
+        StringBuilder report = new StringBuilder()
+        report.append("Baritone Forge Mixin Compatibility Report\n")
+        report.append("Generated at: ").append(new Date()).append("\n")
+        report.append("Source log: ").append(logFile.absolutePath).append("\n")
+        report.append("Latest run start line: ").append(latestRunStart >= 0 ? latestRunStart + 1 : 1).append("\n\n")
+
+        if (findings.isEmpty()) {
+            report.append("No mixin incompatibility signatures were detected in the latest run section.\n")
+        } else {
+            report.append("Detected issues: ").append(findings.size()).append("\n\n")
+            int i = 1
+            findings.each { String finding ->
+                report.append(i++).append(". ").append(finding).append("\n")
+            }
+        }
+
+        reportFile.parentFile.mkdirs()
+        reportFile.text = report.toString()
+
+        logger.lifecycle("Mixin compatibility report written to ${reportFile}")
+        if (!findings.isEmpty()) {
+            logger.lifecycle("Found ${findings.size()} potential incompatibility entries in latest run.")
+        }
+    }
+}
+
 build.finalizedBy(createDist)
 
 publishing {

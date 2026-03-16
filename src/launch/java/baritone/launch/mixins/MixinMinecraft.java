@@ -168,7 +168,8 @@ public class MixinMinecraft {
                     value = "FIELD",
                     opcode = Opcodes.GETFIELD,
                     target = "Lnet/minecraft/client/gui/screens/Screen;passEvents:Z"
-            )
+            ),
+            require = 0
     )
     private boolean passEvents(Screen screen) {
         // allow user input is only the primary baritone

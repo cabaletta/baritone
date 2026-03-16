@@ -45,7 +45,8 @@ public class MixinClientPlayerEntity {
                     value = "INVOKE",
                     target = "net/minecraft/client/player/AbstractClientPlayer.tick()V",
                     shift = At.Shift.AFTER
-            )
+            ),
+            require = 0
     )
     private void onPreUpdate(CallbackInfo ci) {
         IBaritone baritone = BaritoneAPI.getProvider().getBaritoneForPlayer((LocalPlayer) (Object) this);
@@ -59,7 +60,8 @@ public class MixinClientPlayerEntity {
             at = @At(
                     value = "FIELD",
                     target = "net/minecraft/world/entity/player/Abilities.mayfly:Z"
-            )
+            ),
+            require = 0
     )
     private boolean isAllowFlying(Abilities capabilities) {
         IBaritone baritone = BaritoneAPI.getProvider().getBaritoneForPlayer((LocalPlayer) (Object) this);
@@ -74,7 +76,8 @@ public class MixinClientPlayerEntity {
             at = @At(
                     value = "INVOKE",
                     target = "net/minecraft/client/KeyMapping.isDown()Z"
-            )
+            ),
+            require = 0
     )
     private boolean isKeyDown(KeyMapping keyBinding) {
         IBaritone baritone = BaritoneAPI.getProvider().getBaritoneForPlayer((LocalPlayer) (Object) this);
@@ -97,7 +100,8 @@ public class MixinClientPlayerEntity {
             method = "rideTick",
             at = @At(
                     value = "HEAD"
-            )
+            ),
+            require = 0
     )
     private void updateRidden(CallbackInfo cb) {
         IBaritone baritone = BaritoneAPI.getProvider().getBaritoneForPlayer((LocalPlayer) (Object) this);
@@ -111,7 +115,8 @@ public class MixinClientPlayerEntity {
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/client/player/LocalPlayer;tryToStartFallFlying()Z"
-            )
+            ),
+            require = 0
     )
     private boolean tryToStartFallFlying(final LocalPlayer instance) {
         IBaritone baritone = BaritoneAPI.getProvider().getBaritoneForPlayer(instance);
