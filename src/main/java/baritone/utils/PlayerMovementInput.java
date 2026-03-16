@@ -18,8 +18,9 @@
 package baritone.utils;
 
 import baritone.api.utils.input.Input;
+import net.minecraft.world.phys.Vec2;
 
-public class PlayerMovementInput extends net.minecraft.client.player.Input {
+public class PlayerMovementInput extends net.minecraft.client.player.ClientInput {
 
     private final InputOverrideHandler handler;
 
@@ -28,31 +29,19 @@ public class PlayerMovementInput extends net.minecraft.client.player.Input {
     }
 
     @Override
-    public void tick(boolean p_225607_1_, float f) {
-        this.leftImpulse = 0.0F;
-        this.forwardImpulse = 0.0F;
+    public void tick() {
+        boolean forward = handler.isInputForcedDown(Input.MOVE_FORWARD);
+        boolean backward = handler.isInputForcedDown(Input.MOVE_BACK);
+        boolean left = handler.isInputForcedDown(Input.MOVE_LEFT);
+        boolean right = handler.isInputForcedDown(Input.MOVE_RIGHT);
+        boolean jump = handler.isInputForcedDown(Input.JUMP);
+        boolean sneak = handler.isInputForcedDown(Input.SNEAK);
 
-        this.jumping = handler.isInputForcedDown(Input.JUMP); // oppa gangnam style
+        this.keyPresses = new net.minecraft.world.entity.player.Input(forward, backward, left, right, jump, sneak, false);
 
-        if (this.up = handler.isInputForcedDown(Input.MOVE_FORWARD)) {
-            this.forwardImpulse++;
-        }
+        float forwardImpulse = (forward == backward) ? 0.0F : (forward ? 1.0F : -1.0F);
+        float leftImpulse = (left == right) ? 0.0F : (left ? 1.0F : -1.0F);
 
-        if (this.down = handler.isInputForcedDown(Input.MOVE_BACK)) {
-            this.forwardImpulse--;
-        }
-
-        if (this.left = handler.isInputForcedDown(Input.MOVE_LEFT)) {
-            this.leftImpulse++;
-        }
-
-        if (this.right = handler.isInputForcedDown(Input.MOVE_RIGHT)) {
-            this.leftImpulse--;
-        }
-
-        if (this.shiftKeyDown = handler.isInputForcedDown(Input.SNEAK)) {
-            this.leftImpulse *= 0.3D;
-            this.forwardImpulse *= 0.3D;
-        }
+        this.moveVector = new Vec2(leftImpulse, forwardImpulse).normalized();
     }
 }

@@ -23,6 +23,7 @@ import baritone.utils.accessor.IPalettedContainer;
 import dev.babbaj.pathfinder.NetherPathfinder;
 import dev.babbaj.pathfinder.Octree;
 import dev.babbaj.pathfinder.PathSegment;
+import net.minecraft.world.level.chunk.PaletteResize;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.BitStorage;
 import net.minecraft.world.level.ChunkPos;
@@ -195,7 +196,7 @@ public final class NetherPathfinderContext {
                     continue;
                 }
                 final PalettedContainer<BlockState> bsc = extendedblockstorage.getStates();
-                final int airId = ((IPalettedContainer<BlockState>) bsc).getPalette().idFor(AIR_BLOCK_STATE);
+                final int airId = ((IPalettedContainer<BlockState>) bsc).getPalette().idFor(AIR_BLOCK_STATE, PaletteResize.noResizeExpected());
                 // pasted from FasterWorldScanner
                 final BitStorage array = ((IPalettedContainer<BlockState>) bsc).getStorage();
                 if (array == null) continue;

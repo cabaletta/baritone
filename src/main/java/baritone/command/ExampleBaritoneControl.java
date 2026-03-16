@@ -79,13 +79,9 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             MutableComponent component = Component.literal(String.format("> %s", toDisplay));
             component.setStyle(component.getStyle()
                     .withColor(ChatFormatting.WHITE)
-                    .withHoverEvent(new HoverEvent(
-                            HoverEvent.Action.SHOW_TEXT,
-                            Component.literal("Click to rerun command")
+                    .withHoverEvent(new HoverEvent.ShowText(Component.literal("Click to rerun command")
                     ))
-                    .withClickEvent(new ClickEvent(
-                            ClickEvent.Action.RUN_COMMAND,
-                            FORCE_COMMAND_PREFIX + msg
+                    .withClickEvent(new ClickEvent.RunCommand(FORCE_COMMAND_PREFIX + msg
                     )));
             logDirect(component);
         }
@@ -194,3 +190,4 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
         }
     }
 }
+

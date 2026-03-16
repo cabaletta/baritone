@@ -17,6 +17,7 @@
 
 import baritone.gradle.task.CreateDistTask
 import baritone.gradle.task.ProguardTask
+import org.gradle.api.tasks.Copy
 
 plugins {
     id "com.github.johnrengelman.shadow" version "8.0.0"
@@ -26,7 +27,7 @@ archivesBaseName = archivesBaseName + "-forge"
 
 unimined.minecraft {
     mappings {
-        devFallbackNamespace "intermediary"
+        devFallbackNamespace "mojmap"
     }
 
     forge {
@@ -78,6 +79,21 @@ remapJar {
     archiveClassifier.set null
 }
 
+tasks.named("remapJar") {
+    enabled = false
+}
+
+tasks.register("prepareReleaseJar", Copy) {
+    dependsOn shadowJar
+    from(shadowJar.archiveFile)
+    into(layout.buildDirectory.dir("libs"))
+    rename { String _ -> "${archivesBaseName}-${project.version}.jar" }
+}
+
+tasks.named("assemble") {
+    dependsOn("prepareReleaseJar")
+}
+
 jar {
     archiveClassifier.set "dev"
 
@@ -99,7 +115,7 @@ components.java {
 }
 
 task proguard(type: ProguardTask) {
-    proguardVersion "7.2.1"
+    proguardVersion "7.6.1"
     compType "forge"
 }
 

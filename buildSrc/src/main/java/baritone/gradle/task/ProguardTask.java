@@ -19,6 +19,7 @@ package baritone.gradle.task;
 
 import baritone.gradle.util.Determinizer;
 import org.gradle.api.plugins.JavaPluginConvention;
+import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.api.tasks.TaskAction;
@@ -225,12 +226,18 @@ public class ProguardTask extends BaritoneGradleTask {
             Files.delete(this.proguardOut);
         }
 
+        Configuration log4jRuntime = getProject().getConfigurations().detachedConfiguration(
+                getProject().getDependencies().create("org.apache.logging.log4j:log4j-api:2.23.1"),
+                getProject().getDependencies().create("org.apache.logging.log4j:log4j-core:2.23.1")
+        );
+
         Path workingDirectory = getTemporaryFile("");
 
         getProject().javaexec(spec -> {
             spec.workingDir(workingDirectory.toFile());
             spec.args("@" + workingDirectory.relativize(config));
-            spec.classpath(getTemporaryFile(String.format(PROGUARD_JAR, proguardVersion)));
+            spec.classpath(getProject().files(getTemporaryFile(String.format(PROGUARD_JAR, proguardVersion)), log4jRuntime));
+            spec.getMainClass().set("proguard.ProGuard");
 
             spec.executable(getJavaLauncherForProguard().getExecutablePath().getAsFile());
         }).assertNormalExitValue().rethrowFailure();

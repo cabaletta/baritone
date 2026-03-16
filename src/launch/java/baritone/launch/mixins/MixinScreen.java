@@ -49,7 +49,7 @@ public abstract class MixinScreen implements IGuiScreen {
         if (clickEvent == null) {
             return;
         }
-        String command = clickEvent.getValue();
+        String command = clickEvent instanceof ClickEvent.RunCommand runCommand ? runCommand.command() : null;
         if (command == null || !command.startsWith(FORCE_COMMAND_PREFIX)) {
             return;
         }

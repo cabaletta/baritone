@@ -157,7 +157,7 @@ public final class BetterBlockPos extends BlockPos {
 
     @Override
     public BetterBlockPos relative(Direction dir) {
-        Vec3i vec = dir.getNormal();
+        Vec3i vec = dir.getUnitVec3i();
         return new BetterBlockPos(x + vec.getX(), y + vec.getY(), z + vec.getZ());
     }
 
@@ -166,7 +166,7 @@ public final class BetterBlockPos extends BlockPos {
         if (dist == 0) {
             return this;
         }
-        Vec3i vec = dir.getNormal();
+        Vec3i vec = dir.getUnitVec3i();
         return new BetterBlockPos(x + vec.getX() * dist, y + vec.getY() * dist, z + vec.getZ() * dist);
     }
 

@@ -20,11 +20,10 @@ package baritone.utils;
 import baritone.api.BaritoneAPI;
 import baritone.api.Settings;
 import baritone.utils.accessor.IEntityRenderManager;
-import com.mojang.blaze3d.platform.GlStateManager;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -36,10 +35,11 @@ import java.awt.*;
 public interface IRenderer {
 
     Tesselator tessellator = Tesselator.getInstance();
-    BufferBuilder buffer = tessellator.getBuilder();
     IEntityRenderManager renderManager = (IEntityRenderManager) Minecraft.getInstance().getEntityRenderDispatcher();
     TextureManager textureManager = Minecraft.getInstance().getTextureManager();
+    MultiBufferSource.BufferSource bufferSource = Minecraft.getInstance().renderBuffers().bufferSource();
     Settings settings = BaritoneAPI.getSettings();
+    VertexConsumer[] lineBuffer = new VertexConsumer[1];
 
     float[] color = new float[]{1.0F, 1.0F, 1.0F, 255.0F};
 
@@ -48,28 +48,12 @@ public interface IRenderer {
         IRenderer.color[0] = colorComponents[0];
         IRenderer.color[1] = colorComponents[1];
         IRenderer.color[2] = colorComponents[2];
-        IRenderer.color[3] = alpha;
+        IRenderer.color[3] = alpha * 255.0F;
     }
 
     static void startLines(Color color, float alpha, float lineWidth, boolean ignoreDepth) {
-        RenderSystem.enableBlend();
-        RenderSystem.setShader(GameRenderer::getPositionColorShader);
-        RenderSystem.blendFuncSeparate(
-                GlStateManager.SourceFactor.SRC_ALPHA,
-                GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
-                GlStateManager.SourceFactor.ONE,
-                GlStateManager.DestFactor.ZERO
-        );
         glColor(color, alpha);
-        RenderSystem.lineWidth(lineWidth);
-        RenderSystem.depthMask(false);
-        RenderSystem.disableCull();
-
-        if (ignoreDepth) {
-            RenderSystem.disableDepthTest();
-        }
-        RenderSystem.setShader(GameRenderer::getRendertypeLinesShader);
-        buffer.begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR_NORMAL);
+        lineBuffer[0] = bufferSource.getBuffer(ignoreDepth ? RenderTypes.linesTranslucent() : RenderTypes.lines());
     }
 
     static void startLines(Color color, float lineWidth, boolean ignoreDepth) {
@@ -77,14 +61,8 @@ public interface IRenderer {
     }
 
     static void endLines(boolean ignoredDepth) {
-        tessellator.end();
-        if (ignoredDepth) {
-            RenderSystem.enableDepthTest();
-        }
-
-        RenderSystem.enableCull();
-        RenderSystem.depthMask(true);
-        RenderSystem.disableBlend();
+        bufferSource.endBatch(ignoredDepth ? RenderTypes.linesTranslucent() : RenderTypes.lines());
+        lineBuffer[0] = null;
     }
 
     static void emitLine(PoseStack stack, double x1, double y1, double z1, double x2, double y2, double z2) {
@@ -115,11 +93,20 @@ public interface IRenderer {
                          float x1, float y1, float z1,
                          float x2, float y2, float z2,
                          float nx, float ny, float nz) {
+        if (lineBuffer[0] == null) {
+            return;
+        }
         final Matrix4f matrix4f = stack.last().pose();
-        final Matrix3f normal = stack.last().normal();
-
-        buffer.vertex(matrix4f, x1, y1, z1).color(color[0], color[1], color[2], color[3]).normal(normal, nx, ny, nz).endVertex();
-        buffer.vertex(matrix4f, x2, y2, z2).color(color[0], color[1], color[2], color[3]).normal(normal, nx, ny, nz).endVertex();
+        lineBuffer[0]
+            .addVertex(matrix4f, x1, y1, z1)
+            .setColor((int) (color[0] * 255.0F), (int) (color[1] * 255.0F), (int) (color[2] * 255.0F), (int) color[3])
+            .setNormal(nx, ny, nz)
+            .setLineWidth(1.0F);
+        lineBuffer[0]
+            .addVertex(matrix4f, x2, y2, z2)
+            .setColor((int) (color[0] * 255.0F), (int) (color[1] * 255.0F), (int) (color[2] * 255.0F), (int) color[3])
+            .setNormal(nx, ny, nz)
+            .setLineWidth(1.0F);
     }
 
     static void emitAABB(PoseStack stack, AABB aabb) {

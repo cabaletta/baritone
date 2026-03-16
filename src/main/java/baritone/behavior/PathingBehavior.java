@@ -135,7 +135,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
             synchronized (pathCalcLock) {
                 if (inProgress != null) {
                     // we are calculating
-                    // are we calculating the right thing though? 🤔
+                    // are we calculating the right thing though? ðŸ¤”
                     BetterBlockPos calcFrom = inProgress.getStart();
                     Optional<IPath> currentBest = inProgress.bestPathSoFar();
                     if ((current == null || !current.getPath().getDest().equals(calcFrom)) // if current ends in inProgress's start, then we're ok
@@ -157,9 +157,6 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                     logDebug("All done. At " + goal);
                     queuePathEvent(PathEvent.AT_GOAL);
                     next = null;
-                    if (Baritone.settings().disconnectOnArrival.value) {
-                        ctx.world().disconnect();
-                    }
                     return;
                 }
                 if (next != null && !next.getPath().positions().contains(ctx.playerFeet()) && !next.getPath().positions().contains(expectedSegmentStart)) { // can contain either one
@@ -423,7 +420,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
     public BetterBlockPos pathStart() { // TODO move to a helper or util class
         BetterBlockPos feet = ctx.playerFeet();
         if (!MovementHelper.canWalkOn(ctx, feet.below())) {
-            if (ctx.player().isOnGround()) {
+            if (ctx.player().getDeltaMovement().y == 0) {
                 double playerX = ctx.player().position().x;
                 double playerZ = ctx.player().position().z;
                 ArrayList<BetterBlockPos> closest = new ArrayList<>();

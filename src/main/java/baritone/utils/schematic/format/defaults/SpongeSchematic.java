@@ -28,7 +28,7 @@ import java.util.regex.Pattern;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
@@ -40,15 +40,15 @@ import net.minecraft.world.level.block.state.properties.Property;
 public final class SpongeSchematic extends StaticSchematic {
 
     public SpongeSchematic(CompoundTag nbt) {
-        this.x = nbt.getInt("Width");
-        this.y = nbt.getInt("Height");
-        this.z = nbt.getInt("Length");
+        this.x = nbt.getIntOr("Width", 0);
+        this.y = nbt.getIntOr("Height", 0);
+        this.z = nbt.getIntOr("Length", 0);
         this.states = new BlockState[this.x][this.z][this.y];
 
         Int2ObjectArrayMap<BlockState> palette = new Int2ObjectArrayMap<>();
-        CompoundTag paletteTag = nbt.getCompound("Palette");
-        for (String tag : paletteTag.getAllKeys()) {
-            int index = paletteTag.getInt(tag);
+        CompoundTag paletteTag = nbt.getCompoundOrEmpty("Palette");
+        for (String tag : paletteTag.keySet()) {
+            int index = paletteTag.getIntOr(tag, 0);
 
             SerializedBlockState serializedState = SerializedBlockState.getFromString(tag);
             if (serializedState == null) {
@@ -64,7 +64,7 @@ public final class SpongeSchematic extends StaticSchematic {
         }
 
         // BlockData is stored as an NBT byte[], however, the actual data that is represented is a varint[]
-        byte[] rawBlockData = nbt.getByteArray("BlockData");
+        byte[] rawBlockData = nbt.getByteArray("BlockData").orElse(new byte[0]);
         int[] blockData = new int[this.x * this.y * this.z];
         int offset = 0;
         for (int i = 0; i < blockData.length; i++) {
@@ -96,18 +96,18 @@ public final class SpongeSchematic extends StaticSchematic {
 
         private static final Pattern REGEX = Pattern.compile("(?<location>(\\w+:)?\\w+)(\\[(?<properties>(\\w+=\\w+,?)+)])?");
 
-        private final ResourceLocation resourceLocation;
+        private final Identifier identifier;
         private final Map<String, String> properties;
         private BlockState blockState;
 
-        private SerializedBlockState(ResourceLocation resourceLocation, Map<String, String> properties) {
-            this.resourceLocation = resourceLocation;
+        private SerializedBlockState(Identifier identifier, Map<String, String> properties) {
+            this.identifier = identifier;
             this.properties = properties;
         }
 
         private BlockState deserialize() {
             if (this.blockState == null) {
-                Block block = BuiltInRegistries.BLOCK.get(this.resourceLocation);
+                Block block = BuiltInRegistries.BLOCK.getValue(this.identifier);
                 this.blockState = block.defaultBlockState();
 
                 this.properties.keySet().stream().sorted(String::compareTo).forEachOrdered(key -> {
@@ -130,7 +130,7 @@ public final class SpongeSchematic extends StaticSchematic {
                 String location = m.group("location");
                 String properties = m.group("properties");
 
-                ResourceLocation resourceLocation = new ResourceLocation(location);
+                Identifier id = net.minecraft.resources.Identifier.parse(location);
                 Map<String, String> propertiesMap = new HashMap<>();
                 if (properties != null) {
                     for (String property : properties.split(",")) {
@@ -139,7 +139,7 @@ public final class SpongeSchematic extends StaticSchematic {
                     }
                 }
 
-                return new SerializedBlockState(resourceLocation, propertiesMap);
+                return new SerializedBlockState(id, propertiesMap);
             } catch (Exception e) {
                 e.printStackTrace();
                 return null;
@@ -156,3 +156,4 @@ public final class SpongeSchematic extends StaticSchematic {
         }
     }
 }
+

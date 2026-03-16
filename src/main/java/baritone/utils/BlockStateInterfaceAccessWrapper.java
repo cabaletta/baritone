@@ -60,8 +60,8 @@ public final class BlockStateInterfaceAccessWrapper implements BlockGetter {
     }
 
     @Override
-    public int getMinBuildHeight() {
-        return bsi.world.getMinBuildHeight();
+    public int getMinY() {
+        return bsi.world.getMinY();
     }
 
 }

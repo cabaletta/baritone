@@ -17,47 +17,70 @@
 
 package baritone.api.utils.gui;
 
-import com.mojang.blaze3d.platform.GlStateManager;
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.toasts.Toast;
-import net.minecraft.client.gui.components.toasts.ToastComponent;
+import net.minecraft.client.gui.components.toasts.ToastManager;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 
 public class BaritoneToast implements Toast {
+    private static final Object TOKEN = new Object();
+
     private String title;
     private String subtitle;
     private long firstDrawTime;
     private boolean newDisplay;
     private long totalShowTime;
+    private Visibility wantedVisibility = Visibility.SHOW;
 
     public BaritoneToast(Component titleComponent, Component subtitleComponent, long totalShowTime) {
         this.title = titleComponent.getString();
         this.subtitle = subtitleComponent == null ? null : subtitleComponent.getString();
         this.totalShowTime = totalShowTime;
+        this.newDisplay = true;
     }
 
-    public Visibility render(PoseStack matrixStack, ToastComponent toastGui, long delta) {
+    @Override
+    public int width() {
+        return 160;
+    }
+
+    @Override
+    public int height() {
+        return 32;
+    }
+
+    @Override
+    public Visibility getWantedVisibility() {
+        return wantedVisibility;
+    }
+
+    @Override
+    public void update(ToastManager toastManager, long delta) {
         if (this.newDisplay) {
             this.firstDrawTime = delta;
             this.newDisplay = false;
         }
+        this.wantedVisibility = delta - this.firstDrawTime < totalShowTime ? Visibility.SHOW : Visibility.HIDE;
+    }
 
-
-        //TODO: check
-        toastGui.getMinecraft().getTextureManager().bindForSetup(new ResourceLocation("textures/gui/toasts.png"));
-        //GlStateManager._color4f(1.0F, 1.0F, 1.0F, 255.0F);
-        toastGui.blit(matrixStack, 0, 0, 0, 32, 160, 32);
+    @Override
+    public void render(GuiGraphics guiGraphics, Font font, long delta) {
+        guiGraphics.fill(0, 0, width(), height(), 0xFF2B2B2B);
+        guiGraphics.fill(0, 0, width(), 1, 0xFFAA55FF);
 
         if (this.subtitle == null) {
-            toastGui.getMinecraft().font.draw(matrixStack, this.title, 18, 12, -11534256);
+            guiGraphics.drawString(font, this.title, 8, 12, 0xFFEEEEEE, false);
         } else {
-            toastGui.getMinecraft().font.draw(matrixStack, this.title, 18, 7, -11534256);
-            toastGui.getMinecraft().font.draw(matrixStack, this.subtitle, 18, 18, -16777216);
+            guiGraphics.drawString(font, this.title, 8, 7, 0xFFEEEEEE, false);
+            guiGraphics.drawString(font, this.subtitle, 8, 18, 0xFFCCCCCC, false);
         }
+    }
 
-        return delta - this.firstDrawTime < totalShowTime ? Visibility.SHOW : Visibility.HIDE;
+    @Override
+    public Object getToken() {
+        return TOKEN;
     }
 
     public void setDisplayedText(Component titleComponent, Component subtitleComponent) {
@@ -66,8 +89,8 @@ public class BaritoneToast implements Toast {
         this.newDisplay = true;
     }
 
-    public static void addOrUpdate(ToastComponent toast, Component title, Component subtitle, long totalShowTime) {
-        BaritoneToast baritonetoast = toast.getToast(BaritoneToast.class, new Object());
+    public static void addOrUpdate(ToastManager toast, Component title, Component subtitle, long totalShowTime) {
+        BaritoneToast baritonetoast = toast.getToast(BaritoneToast.class, TOKEN);
 
         if (baritonetoast == null) {
             toast.addToast(new BaritoneToast(title, subtitle, totalShowTime));
@@ -77,6 +100,6 @@ public class BaritoneToast implements Toast {
     }
 
     public static void addOrUpdate(Component title, Component subtitle) {
-        addOrUpdate(Minecraft.getInstance().getToasts(), title, subtitle, baritone.api.BaritoneAPI.getSettings().toastTimer.value);
+        addOrUpdate(Minecraft.getInstance().getToastManager(), title, subtitle, baritone.api.BaritoneAPI.getSettings().toastTimer.value);
     }
 }

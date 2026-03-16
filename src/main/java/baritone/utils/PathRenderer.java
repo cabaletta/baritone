@@ -25,11 +25,8 @@ import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.interfaces.IGoalRenderPos;
 import baritone.behavior.PathingBehavior;
 import baritone.pathing.path.PathExecutor;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.renderer.blockentity.BeaconRenderer;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -49,8 +46,6 @@ import java.util.List;
  * @since 8/9/2018
  */
 public final class PathRenderer implements IRenderer {
-
-    private static final ResourceLocation TEXTURE_BEACON_BEAM = new ResourceLocation("textures/entity/beacon_beam.png");
 
 
     private PathRenderer() {}
@@ -209,7 +204,7 @@ public final class PathRenderer implements IRenderer {
 
         positions.forEach(pos -> {
             BlockState state = bsi.get0(pos);
-            VoxelShape shape = state.getShape(player.level, pos);
+            VoxelShape shape = state.getShape(player.level(), pos);
             AABB toDraw = shape.isEmpty() ? Shapes.block().bounds() : shape.bounds();
             toDraw = toDraw.move(pos);
             IRenderer.emitAABB(stack, toDraw, .002D);
@@ -257,42 +252,11 @@ public final class PathRenderer implements IRenderer {
             drawDankLitGoalBox(stack, color, minX, maxX, minZ, maxZ, minY, maxY, y1, y2, setupRender);
         } else if (goal instanceof GoalXZ) {
             GoalXZ goalPos = (GoalXZ) goal;
-            minY = ctx.world().getMinBuildHeight();
-            maxY = ctx.world().getMaxBuildHeight();
+            minY = ctx.world().getMinY();
+            maxY = ctx.world().getMaxY();
 
             if (settings.renderGoalXZBeacon.value) {
-                //TODO: check
-                textureManager.bindForSetup(TEXTURE_BEACON_BEAM);
-                if (settings.renderGoalIgnoreDepth.value) {
-                    RenderSystem.disableDepthTest();
-                }
-
-                stack.pushPose(); // push
-                stack.translate(goalPos.getX() - renderPosX, -renderPosY, goalPos.getZ() - renderPosZ); // translate
-
-                //TODO: check
-                BeaconRenderer.renderBeaconBeam(
-                        stack,
-                        ctx.minecraft().renderBuffers().bufferSource(),
-                        TEXTURE_BEACON_BEAM,
-                        settings.renderGoalAnimated.value ? partialTicks : 0,
-                        1.0F,
-                        settings.renderGoalAnimated.value ? ctx.world().getGameTime() : 0,
-                        (int) minY,
-                        (int) maxY,
-                        color.getColorComponents(null),
-
-                        // Arguments filled by the private method lol
-                        0.2F,
-                        0.25F
-                );
-
-                stack.popPose(); // pop
-
-                if (settings.renderGoalIgnoreDepth.value) {
-                    RenderSystem.enableDepthTest();
-                }
-                return;
+                // The old direct beacon renderer entrypoint was removed; fall back to line-box goal rendering.
             }
 
             minX = goalPos.getX() + 0.002 - renderPosX;
@@ -364,3 +328,4 @@ public final class PathRenderer implements IRenderer {
         }
     }
 }
+

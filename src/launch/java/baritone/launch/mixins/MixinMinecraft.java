@@ -172,7 +172,7 @@ public class MixinMinecraft {
     )
     private boolean passEvents(Screen screen) {
         // allow user input is only the primary baritone
-        return (BaritoneAPI.getProvider().getPrimaryBaritone().getPathingBehavior().isPathing() && player != null) || screen.passEvents;
+                return (BaritoneAPI.getProvider().getPrimaryBaritone().getPathingBehavior().isPathing() && player != null) || screen.isInGameUi();
     }
 
     // TODO

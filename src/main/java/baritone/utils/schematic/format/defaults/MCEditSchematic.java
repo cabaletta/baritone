@@ -21,7 +21,7 @@ import baritone.utils.schematic.StaticSchematic;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.datafix.fixes.ItemIdFix;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -33,19 +33,19 @@ import net.minecraft.world.level.block.state.BlockState;
 public final class MCEditSchematic extends StaticSchematic {
 
     public MCEditSchematic(CompoundTag schematic) {
-        String type = schematic.getString("Materials");
+        String type = schematic.getStringOr("Materials", "");
         if (!type.equals("Alpha")) {
             throw new IllegalStateException("bad schematic " + type);
         }
-        this.x = schematic.getInt("Width");
-        this.y = schematic.getInt("Height");
-        this.z = schematic.getInt("Length");
-        byte[] blocks = schematic.getByteArray("Blocks");
+        this.x = schematic.getIntOr("Width", 0);
+        this.y = schematic.getIntOr("Height", 0);
+        this.z = schematic.getIntOr("Length", 0);
+        byte[] blocks = schematic.getByteArray("Blocks").orElse(new byte[0]);
 //        byte[] metadata = schematic.getByteArray("Data");
 
         byte[] additional = null;
         if (schematic.contains("AddBlocks")) {
-            byte[] addBlocks = schematic.getByteArray("AddBlocks");
+            byte[] addBlocks = schematic.getByteArray("AddBlocks").orElse(new byte[0]);
             additional = new byte[addBlocks.length * 2];
             for (int i = 0; i < addBlocks.length; i++) {
                 additional[i * 2 + 0] = (byte) ((addBlocks[i] >> 4) & 0xF); // lower nibble
@@ -63,7 +63,7 @@ public final class MCEditSchematic extends StaticSchematic {
                         // additional is 0 through 15 inclusive since it's & 0xF above
                         blockID |= additional[blockInd] << 8;
                     }
-                    Block block = BuiltInRegistries.BLOCK.get(ResourceLocation.tryParse(ItemIdFix.getItem(blockID)));
+                    Block block = BuiltInRegistries.BLOCK.getValue(Identifier.tryParse(ItemIdFix.getItem(blockID)));
 //                    int meta = metadata[blockInd] & 0xFF;
 //                    this.states[x][z][y] = block.getStateFromMeta(meta);
                     this.states[x][z][y] = block.defaultBlockState();
@@ -72,3 +72,4 @@ public final class MCEditSchematic extends StaticSchematic {
         }
     }
 }
+
