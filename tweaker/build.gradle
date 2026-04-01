@@ -24,9 +24,11 @@ plugins {
 }
 
 unimined.minecraft {
-    runs.client = {
-        mainClass = "net.minecraft.launchwrapper.Launch"
-        args.addAll(["--tweakClass", "baritone.launch.tweaker.BaritoneTweaker"])
+    runs {
+        config("client") {
+            mainClass.set("net.minecraft.launchwrapper.Launch")
+            args("--tweakClass", "baritone.launch.tweaker.BaritoneTweaker")
+        }
     }
 }
 
@@ -95,7 +97,7 @@ jar {
 }
 
 task proguard(type: ProguardTask) {
-    proguardVersion "7.4.2"
+    proguardVersion "7.8.2"
 }
 
 task createDist(type: CreateDistTask, dependsOn: proguard)

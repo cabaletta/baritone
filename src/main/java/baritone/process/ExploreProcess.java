@@ -225,13 +225,13 @@ public final class ExploreProcess extends BaritoneProcessHelper implements IExpl
             logDirect("Loaded " + positions.length + " positions");
             inFilter = new LongOpenHashSet();
             for (MyChunkPos mcp : positions) {
-                inFilter.add(ChunkPos.asLong(mcp.x, mcp.z));
+                inFilter.add(ChunkPos.pack(mcp.x, mcp.z));
             }
         }
 
         @Override
         public Status isAlreadyExplored(int chunkX, int chunkZ) {
-            if (inFilter.contains(ChunkPos.asLong(chunkX, chunkZ)) ^ invert) {
+            if (inFilter.contains(ChunkPos.pack(chunkX, chunkZ)) ^ invert) {
                 // either it's on the list of explored chunks, or it's not on the list of unexplored chunks
                 // either way, we have it
                 return Status.EXPLORED;

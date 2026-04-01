@@ -62,7 +62,7 @@ public final class NetherPathfinderContext {
     }
 
     public boolean hasChunk(ChunkPos pos) {
-        return NetherPathfinder.hasChunkFromJava(this.context, pos.x, pos.z);
+        return NetherPathfinder.hasChunkFromJava(this.context, pos.x(), pos.z());
     }
 
     public void queueCacheCulling(int chunkX, int chunkZ, int maxDistanceBlocks, BlockStateOctreeInterface boi) {
@@ -81,7 +81,7 @@ public final class NetherPathfinderContext {
             //       and prune the oldest chunks per chunkPackerQueueMaxSize
             final LevelChunk chunk = ref.get();
             if (chunk != null) {
-                long ptr = NetherPathfinder.getOrCreateChunk(this.context, chunk.getPos().x, chunk.getPos().z);
+                long ptr = NetherPathfinder.getOrCreateChunk(this.context, chunk.getPos().x(), chunk.getPos().z());
                 writeChunkData(chunk, ptr);
             }
         });
@@ -90,7 +90,7 @@ public final class NetherPathfinderContext {
     public void queueBlockUpdate(BlockChangeEvent event) {
         this.executor.execute(() -> {
             ChunkPos chunkPos = event.getChunkPos();
-            long ptr = NetherPathfinder.getChunkPointer(this.context, chunkPos.x, chunkPos.z);
+            long ptr = NetherPathfinder.getChunkPointer(this.context, chunkPos.x(), chunkPos.z());
             if (ptr == 0) return; // this shouldn't ever happen
             event.getBlocks().forEach(pair -> {
                 BlockPos pos = pair.first();

@@ -93,9 +93,7 @@ allprojects {
         version rootProject.minecraft_version
 
         mappings {
-            intermediary()
             mojmap()
-            parchment("1.21.4", "2025.03.23")
 
             devFallbackNamespace "official"
         }

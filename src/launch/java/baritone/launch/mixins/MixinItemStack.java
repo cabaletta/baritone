@@ -20,7 +20,6 @@ package baritone.launch.mixins;
 import baritone.api.utils.accessor.IItemStack;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -32,8 +31,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class MixinItemStack implements IItemStack {
 
     @Shadow
-    @Final
-    private Item item;
+    public abstract Item getItem();
 
     @Unique
     private int baritoneHash;
@@ -42,7 +40,8 @@ public abstract class MixinItemStack implements IItemStack {
     public abstract int getDamageValue();
 
     private void recalculateHash() {
-        baritoneHash = item == null ? -1 : item.hashCode() + getDamageValue();
+        Item it = getItem();
+        baritoneHash = it == null ? -1 : it.hashCode() + getDamageValue();
     }
 
     @Inject(

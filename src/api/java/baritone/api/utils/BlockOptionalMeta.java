@@ -38,7 +38,6 @@ import net.minecraft.server.packs.repository.ServerPacksSource;
 import net.minecraft.server.packs.resources.CloseableResourceManager;
 import net.minecraft.server.packs.resources.MultiPackResourceManager;
 import net.minecraft.tags.TagLoader;
-import net.minecraft.world.RandomSequences;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -262,8 +261,8 @@ public final class BlockOptionalMeta {
         private static Unsafe unsafe = getUnsafe();
         private static CompletableFuture<RegistryAccess> registryAccess = load();
 
-        public ServerLevelStub(MinecraftServer $$0, Executor $$1, LevelStorageSource.LevelStorageAccess $$2, ServerLevelData $$3, ResourceKey<Level> $$4, LevelStem $$5, boolean $$6, long $$7, List<CustomSpawner> $$8, boolean $$9, @Nullable RandomSequences $$10) {
-            super($$0, $$1, $$2, $$3, $$4, $$5, $$6, $$7, $$8, $$9, $$10);
+        public ServerLevelStub(MinecraftServer $$0, Executor $$1, LevelStorageSource.LevelStorageAccess $$2, ServerLevelData $$3, ResourceKey<Level> $$4, LevelStem $$5, boolean $$6, long $$7, List<CustomSpawner> $$8, boolean $$9) {
+            super($$0, $$1, $$2, $$3, $$4, $$5, $$6, $$7, $$8, $$9);
         }
 
         @Override
@@ -313,13 +312,15 @@ public final class BlockOptionalMeta {
                 baseLayeredRegistry.getAccessForLoading(RegistryLayer.WORLDGEN),
                 pendingTags
             );
+            RegistryAccess.Frozen worldgenRegistries = RegistryDataLoader.load(
+                closeableResourceManager,
+                worldGenRegistryLookupList,
+                RegistryDataLoader.WORLDGEN_REGISTRIES,
+                ForkJoinPool.commonPool()
+            ).join();
             LayeredRegistryAccess<RegistryLayer> layeredRegistryAccess = baseLayeredRegistry.replaceFrom(
                 RegistryLayer.WORLDGEN,
-                RegistryDataLoader.load(
-                    closeableResourceManager,
-                    worldGenRegistryLookupList,
-                    RegistryDataLoader.WORLDGEN_REGISTRIES
-                )
+                worldgenRegistries
             );
             return ReloadableServerRegistries.reload(
                 layeredRegistryAccess,

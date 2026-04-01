@@ -24,8 +24,8 @@
       "mixins.baritone.json"
   ],
   "depends": {
-    "fabricloader": ">=0.14.22",
-    "minecraft": ["1.21.11"]
+    "fabricloader": ">=0.18.6",
+    "minecraft": ["26.1"]
   },
   "custom": {
     "modmenu": {
