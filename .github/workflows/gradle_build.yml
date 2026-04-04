@@ -6,38 +6,67 @@ name: Java CI with Gradle
 on:
   push:
   pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
+    outputs:
+      dist_artifact_name: ${{ steps.artifact_names.outputs.dist }}
+      mapping_artifact_name: ${{ steps.artifact_names.outputs.mapping }}
 
     steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-    - name: Set up JDK 25
-      uses: actions/setup-java@v4
-      with:
-        java-version: '25'
-        distribution: 'zulu'
-        cache: gradle
+      - name: Set up JDK 25
+        uses: actions/setup-java@v4
+        with:
+          java-version: '25'
+          distribution: 'zulu'
+          cache: gradle
 
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
-      
-    - name: Build with Gradle
-      run: ./gradlew build -Pmod_version="$(git describe --always --tags --first-parent | cut -c2-)"
+      - name: Resolve build version
+        id: version
+        shell: bash
+        run: |
+          version="$(git describe --always --tags --first-parent --dirty)"
+          version="${version#v}"
+          echo "value=$version" >> "$GITHUB_OUTPUT"
 
-    - name: Archive Artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: Artifacts
-        path: dist/
-        
-    - name: Archive mapping.txt
-      uses: actions/upload-artifact@v4
-      with:
-        name: Mappings
-        path: mapping/
+      - name: Resolve artifact names
+        id: artifact_names
+        shell: bash
+        run: |
+          echo "dist=baritone-dist-${{ steps.version.outputs.value }}" >> "$GITHUB_OUTPUT"
+          echo "mapping=baritone-mapping-${{ steps.version.outputs.value }}" >> "$GITHUB_OUTPUT"
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Clean artifact staging directories
+        run: rm -rf dist mapping
+
+      - name: Build with Gradle
+        run: ./gradlew clean build -Pmod_version="${{ steps.version.outputs.value }}"
+
+      - name: Upload distribution artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.artifact_names.outputs.dist }}
+          path: dist/
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload mapping artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.artifact_names.outputs.mapping }}
+          path: mapping/
+          if-no-files-found: warn
+          retention-days: 14
+
