@@ -15,11 +15,14 @@ Add the following settings to `baritone.api.Settings`:
 Create `baritone.command.defaults.AICommand`:
 - `#ai <prompt>`: Initializes the AI with a natural language goal.
 - `#ai stop`: Halts the AI loop and clears context.
+- `#ai load`: Loads the previous conversation history from the local file.
+- `#ai save`: Manually saves the current conversation history (also auto-saved periodically/on exit).
 
 ### 2.3 AI Process (`baritone.process.AIProcess`)
 Implement `baritone.api.process.IAIProcess` (extends `IBaritoneProcess`).
 - **State Management**: Maintains the current state (`IDLE`, `THINKING`, `EXECUTING`, `WAITING_FOR_USER`).
 - **Context Window**: Stores a `List<ChatMessage>` to maintain conversation history.
+- **History Persistence**: Chat history will be saved to a local file (e.g., `baritone/ai_history.json`). Upon initialization or via a specific command (`#ai load`), previous context can be loaded to resume past conversations.
 - **Event Interception**: Subscribes to `PathEvent` (to detect task completion/failure) and `ChatEvent` (to capture player responses when the AI asks a question).
 
 ### 2.4 API Client
