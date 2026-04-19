@@ -44,8 +44,10 @@ public class AIProcess extends BaritoneProcessHelper implements IAIProcess, Abst
                 "4. Inquiry: {\"action\":\"ask\", \"question\": \"<string>\"} - Ask the user a question.\n" +
                 "5. Get Player Info: {\"action\":\"get_player_info\"} - Retrieve your current position, health, hunger, and other stats.\n" +
                 "6. Get Environment Info: {\"action\":\"get_env_info\"} - Retrieve current time, weather, and world info.\n" +
-                "7. Execute Baritone Command: {\"action\":\"execute_command\", \"command\": \"<string>\"} - Execute any valid Baritone command (e.g., 'explore', 'farm', 'follow').\n" +
-                "8. Stop: {\"action\":\"stop\"} - Terminate the AI session when the goal is achieved or impossible.\n" +
+                "7. Get Inventory Info: {\"action\":\"get_inventory_info\"} - Retrieve items in your inventory, armor, offhand, and opened containers.\n" +
+                "8. Get Commands Help: {\"action\":\"get_commands_help\"} - Get a list of all Baritone commands and their descriptions.\n" +
+                "9. Execute Baritone Command: {\"action\":\"execute_command\", \"command\": \"<string>\"} - Execute any valid Baritone command (e.g., 'explore', 'farm', 'follow').\n" +
+                "10. Stop: {\"action\":\"stop\"} - Terminate the AI session when the goal is achieved or impossible.\n" +
                 "\n" +
                 "Rules:\n" +
                 "- ALWAYS output exactly one JSON object per response. No extra text outside the JSON.\n" +
@@ -194,6 +196,63 @@ public class AIProcess extends BaritoneProcessHelper implements IAIProcess, Abst
                 String info = String.format("Time: %d, Weather: %s", 
                         level.getDayTime() % 24000, level.isRaining() ? "Raining" : "Clear");
                 feedEvent("System", "Environment Info: " + info);
+            } else if ("get_inventory_info".equals(type)) {
+                net.minecraft.client.player.LocalPlayer player = baritone.getPlayerContext().player();
+                StringBuilder invStr = new StringBuilder("Inventory:\nMain: ");
+                
+                net.minecraft.core.NonNullList<net.minecraft.world.item.ItemStack> items = player.getInventory().items;
+                for (int i = 0; i < items.size(); i++) {
+                    net.minecraft.world.item.ItemStack stack = items.get(i);
+                    if (!stack.isEmpty()) {
+                        String name = net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(stack.getItem()).toString();
+                        invStr.append("[").append(i).append(":").append(stack.getCount()).append("x ").append(name).append("] ");
+                    }
+                }
+                
+                invStr.append("\nArmor: ");
+                net.minecraft.core.NonNullList<net.minecraft.world.item.ItemStack> armor = player.getInventory().armor;
+                for (int i = 0; i < armor.size(); i++) {
+                    net.minecraft.world.item.ItemStack stack = armor.get(i);
+                    if (!stack.isEmpty()) {
+                        String name = net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(stack.getItem()).toString();
+                        invStr.append("[").append(i).append(":").append(stack.getCount()).append("x ").append(name).append("] ");
+                    }
+                }
+
+                invStr.append("\nOffhand: ");
+                net.minecraft.core.NonNullList<net.minecraft.world.item.ItemStack> offhand = player.getInventory().offhand;
+                for (int i = 0; i < offhand.size(); i++) {
+                    net.minecraft.world.item.ItemStack stack = offhand.get(i);
+                    if (!stack.isEmpty()) {
+                        String name = net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(stack.getItem()).toString();
+                        invStr.append("[").append(i).append(":").append(stack.getCount()).append("x ").append(name).append("] ");
+                    }
+                }
+                
+                if (player.containerMenu != player.inventoryMenu) {
+                    invStr.append("\nOpened Container:\n");
+                    net.minecraft.core.NonNullList<net.minecraft.world.item.ItemStack> containerItems = player.containerMenu.getItems();
+                    for (int i = 0; i < containerItems.size(); i++) {
+                        net.minecraft.world.item.ItemStack stack = containerItems.get(i);
+                        if (!stack.isEmpty()) {
+                            String name = net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(stack.getItem()).toString();
+                            invStr.append("[").append(i).append(":").append(stack.getCount()).append("x ").append(name).append("] ");
+                        }
+                    }
+                } else {
+                    invStr.append("\nNo external container opened.");
+                }
+                
+                feedEvent("System", invStr.toString());
+            } else if ("get_commands_help".equals(type)) {
+                StringBuilder helpStr = new StringBuilder("Baritone Commands:\n");
+                for (baritone.api.command.ICommand command : baritone.getCommandManager().getRegistry().entries) {
+                    if (!command.hiddenFromHelp()) {
+                        String names = String.join("/", command.getNames());
+                        helpStr.append("- ").append(names).append(": ").append(command.getShortDesc()).append("\n");
+                    }
+                }
+                feedEvent("System", helpStr.toString());
             } else if ("execute_command".equals(type)) {
                 String cmd = action.get("command").getAsString();
                 baritone.getCommandManager().execute(cmd);
