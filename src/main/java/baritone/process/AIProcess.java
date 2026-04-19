@@ -98,13 +98,32 @@ public class AIProcess extends BaritoneProcessHelper implements IAIProcess, Abst
                 if (code == 200) {
                     try (Reader reader = new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8)) {
                         JsonObject res = JsonParser.parseReader(reader).getAsJsonObject();
-                        String reply = res.getAsJsonArray("choices").get(0).getAsJsonObject().getAsJsonObject("message").get("content").getAsString();
+                        JsonObject messageObj = res.getAsJsonArray("choices").get(0).getAsJsonObject().getAsJsonObject("message");
                         
+                        String reasoning = "";
+                        if (messageObj.has("reasoning_content") && !messageObj.get("reasoning_content").isJsonNull()) {
+                            reasoning = messageObj.get("reasoning_content").getAsString();
+                        }
+                        if (reasoning != null && !reasoning.trim().isEmpty()) {
+                            log("Thinking: " + reasoning.trim());
+                        }
+
+                        String reply = "";
+                        if (messageObj.has("content") && !messageObj.get("content").isJsonNull()) {
+                            reply = messageObj.get("content").getAsString();
+                        }
+
+                        if (reply == null || reply.trim().isEmpty()) {
+                            log("Error: AI returned empty content.");
+                            stop();
+                            return;
+                        }
+
                         JsonObject msg = new JsonObject();
                         msg.addProperty("role", "assistant");
                         msg.addProperty("content", reply);
                         history.add(msg);
-                        
+
                         handleAction(reply);
                     }
                 } else {
@@ -122,6 +141,17 @@ public class AIProcess extends BaritoneProcessHelper implements IAIProcess, Abst
 
     private void handleAction(String reply) {
         try {
+            reply = reply.trim();
+            if (reply.startsWith("```json")) {
+                reply = reply.substring(7);
+            } else if (reply.startsWith("```")) {
+                reply = reply.substring(3);
+            }
+            if (reply.endsWith("```")) {
+                reply = reply.substring(0, reply.length() - 3);
+            }
+            reply = reply.trim();
+
             JsonObject action = JsonParser.parseString(reply).getAsJsonObject();
             String type = action.get("action").getAsString();
             
