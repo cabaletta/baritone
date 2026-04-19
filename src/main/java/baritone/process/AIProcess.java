@@ -17,14 +17,15 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
-public class AIProcess extends AbstractGameEventListener implements IAIProcess {
-    private final IBaritone baritone;
+import baritone.utils.BaritoneProcessHelper;
+
+public class AIProcess extends BaritoneProcessHelper implements IAIProcess, AbstractGameEventListener {
     private final JsonArray history = new JsonArray();
     private boolean active = false;
     private boolean thinking = false;
 
-    public AIProcess(IBaritone baritone) {
-        this.baritone = baritone;
+    public AIProcess(baritone.Baritone baritone) {
+        super(baritone);
         baritone.getGameEventHandler().registerEventListener(this);
         initSystemPrompt();
     }
@@ -169,7 +170,7 @@ public class AIProcess extends AbstractGameEventListener implements IAIProcess {
     }
 
     private void log(String msg) {
-        baritone.getPlayerContext().player().displayClientMessage(Component.literal("[Baritone AI] " + msg), false);
+        logDirect("[Baritone AI] " + msg);
     }
 
     @Override

@@ -2,8 +2,8 @@ package baritone.command.defaults;
 
 import baritone.api.IBaritone;
 import baritone.api.command.Command;
-import baritone.api.command.argument.IArgParserManager;
 import baritone.api.command.exception.CommandException;
+import baritone.api.command.exception.CommandNotEnoughArgumentsException;
 
 import java.util.List;
 import java.util.stream.Stream;
@@ -15,9 +15,9 @@ public class AICommand extends Command {
     }
 
     @Override
-    public void execute(String label, IArgParserManager parserManager, baritone.api.command.argument.IArgConsumer args) throws CommandException {
+    public void execute(String label, baritone.api.command.argument.IArgConsumer args) throws CommandException {
         if (!args.hasAny()) {
-            throw new CommandException("Usage: #ai <prompt|stop|load|save>");
+            throw new CommandNotEnoughArgumentsException(1);
         }
         String prompt = args.getString();
         while (args.hasAny()) {
@@ -36,7 +36,7 @@ public class AICommand extends Command {
     }
 
     @Override
-    public Stream<String> tabComplete(String label, IArgParserManager parserManager, baritone.api.command.argument.IArgConsumer args) throws CommandException {
+    public Stream<String> tabComplete(String label, baritone.api.command.argument.IArgConsumer args) throws CommandException {
         return Stream.of("stop", "load", "save");
     }
 

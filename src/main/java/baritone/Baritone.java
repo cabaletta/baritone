@@ -245,6 +245,11 @@ public class Baritone implements IBaritone {
     }
 
     @Override
+    public IAIProcess getAIProcess() {
+        return this.aiProcess;
+    }
+
+    @Override
     public void openClick() {
         new Thread(() -> {
             try {
