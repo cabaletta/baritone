@@ -35,7 +35,23 @@ public class AIProcess extends BaritoneProcessHelper implements IAIProcess, Abst
     private void initSystemPrompt() {
         JsonObject msg = new JsonObject();
         msg.addProperty("role", "system");
-        msg.addProperty("content", "You are an AI playing Minecraft via Baritone. Respond ONLY in JSON. Actions: {\"action\":\"goto\",\"x\":0,\"y\":64,\"z\":0}, {\"action\":\"mine\",\"block\":\"diamond_ore\",\"count\":1}, {\"action\":\"say\",\"message\":\"text\"}, {\"action\":\"ask\",\"question\":\"text\"}, {\"action\":\"stop\"}. Wait for events after action.");
+        msg.addProperty("content", "You are an autonomous AI Agent playing Minecraft via the Baritone API. You perceive the world through events and can interact by outputting strictly JSON formatted actions.\n" +
+                "\n" +
+                "Available actions (tools):\n" +
+                "1. Movement: {\"action\":\"goto\", \"x\": <int>, \"y\": <int>, \"z\": <int>} - Move to specific coordinates.\n" +
+                "2. Mining: {\"action\":\"mine\", \"block\": \"<string>\", \"count\": <int>} - Mine specific blocks.\n" +
+                "3. Communication: {\"action\":\"say\", \"message\": \"<string>\"} - Send a message in chat.\n" +
+                "4. Inquiry: {\"action\":\"ask\", \"question\": \"<string>\"} - Ask the user a question.\n" +
+                "5. Get Player Info: {\"action\":\"get_player_info\"} - Retrieve your current position, health, hunger, and other stats.\n" +
+                "6. Get Environment Info: {\"action\":\"get_env_info\"} - Retrieve current time, weather, and world info.\n" +
+                "7. Execute Baritone Command: {\"action\":\"execute_command\", \"command\": \"<string>\"} - Execute any valid Baritone command (e.g., 'explore', 'farm', 'follow').\n" +
+                "8. Stop: {\"action\":\"stop\"} - Terminate the AI session when the goal is achieved or impossible.\n" +
+                "\n" +
+                "Rules:\n" +
+                "- ALWAYS output exactly one JSON object per response. No extra text outside the JSON.\n" +
+                "- Wait for the system to provide event feedback after every action. Do not assume an action succeeded until confirmed.\n" +
+                "- If you lack information, use the appropriate action to gather it or ask the user.\n" +
+                "- Think step-by-step and use tools to explore the environment, gather information, and achieve the user's goals.");
         history.add(msg);
     }
 
@@ -167,6 +183,21 @@ public class AIProcess extends BaritoneProcessHelper implements IAIProcess, Abst
             } else if ("say".equals(type) || "ask".equals(type)) {
                 String msg = action.has("message") ? action.get("message").getAsString() : action.get("question").getAsString();
                 log("AI: " + msg);
+                baritone.getPlayerContext().player().connection.sendChat(msg);
+            } else if ("get_player_info".equals(type)) {
+                net.minecraft.client.player.LocalPlayer player = baritone.getPlayerContext().player();
+                String info = String.format("Pos: [%.1f, %.1f, %.1f], Health: %.1f, Food: %d", 
+                        player.getX(), player.getY(), player.getZ(), player.getHealth(), player.getFoodData().getFoodLevel());
+                feedEvent("System", "Player Info: " + info);
+            } else if ("get_env_info".equals(type)) {
+                net.minecraft.client.multiplayer.ClientLevel level = baritone.getPlayerContext().level();
+                String info = String.format("Time: %d, Weather: %s", 
+                        level.getDayTime() % 24000, level.isRaining() ? "Raining" : "Clear");
+                feedEvent("System", "Environment Info: " + info);
+            } else if ("execute_command".equals(type)) {
+                String cmd = action.get("command").getAsString();
+                baritone.getCommandManager().execute(cmd);
+                feedEvent("System", "Executed Baritone Command: " + cmd);
             } else if ("stop".equals(type)) {
                 stop();
             }
