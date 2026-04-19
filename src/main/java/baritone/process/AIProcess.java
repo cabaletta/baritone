@@ -19,6 +19,8 @@ import java.nio.charset.StandardCharsets;
 
 import baritone.utils.BaritoneProcessHelper;
 
+import baritone.api.BaritoneAPI;
+
 public class AIProcess extends BaritoneProcessHelper implements IAIProcess, AbstractGameEventListener {
     private final JsonArray history = new JsonArray();
     private boolean active = false;
@@ -70,14 +72,14 @@ public class AIProcess extends BaritoneProcessHelper implements IAIProcess, Abst
         thinking = true;
         new Thread(() -> {
             try {
-                String key = baritone.getSettings().aiApiKey.value;
+                String key = BaritoneAPI.getSettings().aiApiKey.value;
                 if (key == null || key.isEmpty()) {
                     log("Error: AI API Key not set.");
                     stop();
                     return;
                 }
 
-                URL url = new URL(baritone.getSettings().aiBaseUrl.value);
+                URL url = new URL(BaritoneAPI.getSettings().aiBaseUrl.value);
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("POST");
                 conn.setRequestProperty("Authorization", "Bearer " + key);
@@ -85,7 +87,7 @@ public class AIProcess extends BaritoneProcessHelper implements IAIProcess, Abst
                 conn.setDoOutput(true);
 
                 JsonObject req = new JsonObject();
-                req.addProperty("model", baritone.getSettings().aiModel.value);
+                req.addProperty("model", BaritoneAPI.getSettings().aiModel.value);
                 req.add("messages", history);
 
                 try (OutputStream os = conn.getOutputStream()) {

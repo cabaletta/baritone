@@ -1,0 +1,547 @@
+Run ./gradlew build -Pmod_version="$(git describe --always --tags --first-parent | cut -c2-)"
+Downloading https://services.gradle.org/distributions/gradle-8.7-bin.zip
+............10%.............20%.............30%.............40%............50%.............60%.............70%.............80%.............90%............100%
+
+Welcome to Gradle 8.7!
+
+Here are the highlights of this release:
+ - Compiling and testing with Java 22
+ - Cacheable Groovy script compilation
+ - New methods in lazy collection properties
+
+For more details see https://docs.gradle.org/8.7/release-notes.html
+
+Starting a Gradle Daemon (subsequent builds will be faster)
+
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+> Task :buildSrc:compileJava
+
+> Task :buildSrc:compileGroovy NO-SOURCE
+> Task :buildSrc:processResources NO-SOURCE
+> Task :buildSrc:classes
+> Task :buildSrc:jar
+
+> Configure project :
+[Unimined] Plugin Version: 1.2.9
+Detected version 1.15.0-7-g5f23f43c
+[Unimined/MinecraftDownloader] retrieving version metadata
+[Unimined/MinecraftDownloader] retrieving launcher metadata
+[Unimined] Plugin Version: 1.2.9
+Detected version 1.15.0-7-g5f23f43c
+[Unimined/MinecraftDownloader] retrieving version metadata
+[Unimined/MinecraftDownloader] retrieving launcher metadata
+[Unimined] Plugin Version: 1.2.9
+Detected version 1.15.0-7-g5f23f43c
+[Unimined/MinecraftDownloader] retrieving version metadata
+[Unimined/MinecraftDownloader] retrieving launcher metadata
+[Unimined] Plugin Version: 1.2.9
+Detected version 1.15.0-7-g5f23f43c
+[Unimined/MinecraftDownloader] retrieving version metadata
+[Unimined/MinecraftDownloader] retrieving launcher metadata
+[Unimined/Minecraft ::main] Applying minecraft config for source set 'main'
+[Unimined/Minecraft ::main] Applying NoTransformMinecraftTransformer
+[Unimined/Minecraft ::main] Applying run configs
+[Unimined/McRemapper] Remapping minecraft COMBINED to mojmap
+[Unimined/MappingsProvider] Resolving mappings for source set 'main'
+processing client_mappings.txt
+processing parchment.json
+processing mappings/mappings.tiny
+[Unimined/MappingsProvider] Mapping tree initialized, official -> [mojmap, intermediary]
+
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/enumSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/enumSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/enumSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+Invalid access from method instruction in net/minecraft/client/gui/screens/options/VideoSettingsScreen to package-private class net/minecraft/client/OptionInstance$ValueSet after remapping.
+Invalid access from method instruction in net/minecraft/client/gui/screens/options/OnlineOptionsScreen to package-private class net/minecraft/client/OptionInstance$ValueSet after remapping.
+Invalid access from method instruction in net/minecraft/client/gui/screens/options/VideoSettingsScreen to package-private class net/minecraft/client/OptionInstance$ValueSet after remapping.
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/enumSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+
+> Configure project :
+Fixing access for 1 classes and 0 members.
+[Unimined/ModRemapper] Remapping mods from official/official to mojmap/official
+[Unimined/ModRemapper] No mods found for remapping
+
+> Configure project :fabric
+[Unimined/Minecraft :fabric:main] Applying minecraft config for source set 'main'
+[Unimined/Minecraft :fabric:main] Applying AccessWidenerMinecraftTransformer
+[Unimined/MappingsProvider] Resolving mappings for source set 'main'
+[Unimined/MappingsProvider] Mapping tree initialized, official -> [mojmap, intermediary]
+[Unimined/Minecraft :fabric:main] Applying run configs
+[Unimined/McRemapper] Remapping minecraft COMBINED to mojmap
+
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/enumSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/enumSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/enumSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+Invalid access from method instruction in net/minecraft/client/gui/screens/options/OnlineOptionsScreen to package-private class net/minecraft/client/OptionInstance$ValueSet after remapping.
+Invalid access from method instruction in net/minecraft/client/gui/screens/options/VideoSettingsScreen to package-private class net/minecraft/client/OptionInstance$ValueSet after remapping.
+Invalid access from method instruction in net/minecraft/client/gui/screens/options/VideoSettingsScreen to package-private class net/minecraft/client/OptionInstance$ValueSet after remapping.
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/enumSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+
+> Configure project :fabric
+Fixing access for 1 classes and 0 members.
+[Unimined/ModRemapper] Remapping mods from intermediary/intermediary to mojmap/official
+[Unimined/ModRemapper] No mods found for remapping
+[Unimined/Fabric] Generating intermediary classpath.
+[Unimined/McRemapper] Remapping minecraft COMBINED to intermediary
+
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/enumSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/enumSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/enumSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/enumSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+
+> Configure project :fabric
+[Unimined/Runs] Applying runs
+[Unimined/FabricLike] Non-fabric ::api found in fabric classpath groups, merging with current (:fabric:main), this should've been manually specified with `combineWith`
+[Unimined/FabricLike] Non-fabric ::launch found in fabric classpath groups, merging with current (:fabric:main), this should've been manually specified with `combineWith`
+[Unimined/FabricLike] Non-fabric ::main found in fabric classpath groups, merging with current (:fabric:main), this should've been manually specified with `combineWith`
+
+> Configure project :forge
+[Unimined/Minecraft :forge:main] Applying minecraft config for source set 'main'
+[Unimined/ForgeTransformer] Selected FG3
+[Unimined/Forge] Using FG3 transformer
+[Unimined/MappingsProvider] Resolving mappings for source set 'main'
+processing client_mappings.txt
+processing config/joined.tsrg
+[Unimined/MappingsProvider] Mapping tree initialized, official -> [mojmap]
+[Unimined/Minecraft :forge:main] Applying FG3MinecraftTransformer
+[Unimined/MappingsProvider] Resolving mappings for source set 'main'
+processing postProcess-searge-COMBINED-mojmap-1.21.11-searge-1.21.11-20251209.095502.tiny
+processing client_mappings.txt
+processing parchment.json
+processing mappings/mappings.tiny
+[Unimined/MappingsProvider] Mapping tree initialized, official -> [searge, mojmap, intermediary]
+[Unimined/Minecraft :forge:main] Applying run configs
+Merging client and server jars...
+:executing 12 MCP steps
+:step 1/12 - downloadManifest
+:downloadManifest done in 555.4 μs
+:step 2/12 - downloadJson
+:downloadJson done in 1.683 μs
+:step 3/12 - downloadClient
+:downloadClient done in 45.26 μs
+:step 4/12 - downloadServer
+:downloadServer done in 14.61 μs
+:step 5/12 - extractServer
+:extractServer done in 1.649 ms
+:step 6/12 - downloadClientMappings
+:downloadClientMappings done in 4.098 ms
+:step 7/12 - mergeMappings with net.minecraftforge:installertools:1.2.0:fatjar
+:mergeMappings done in 2.332 s
+:step 8/12 - stripClient
+:stripClient done in 1.577 s
+:step 9/12 - stripServer
+:stripServer done in 1.126 s
+:step 10/12 - merge with net.minecraftforge:mergetool:1.2.3:fatjar
+:merge done in 3.507 s
+:step 11/12 - listLibraries
+:listLibraries done in 6.736 s
+:step 12/12 - rename with net.minecraftforge:ForgeAutoRenamingTool:1.1.0:all
+:rename done in 7.640 s
+[Unimined/Forge] transforming minecraft jar for FG3
+[Unimined/McRemapper] Remapping minecraft COMBINED to mojmap
+
+Invalid access from method instruction in net/minecraftforge/fluids/FluidUtil to protected method dpu/<init>(Ldwo;Lddm;Lcdb;Ldlt;Lfti;)V after remapping.
+Invalid access from method instruction in net/minecraftforge/server/ServerLifecycleHooks to private method fng/<init>(Ljava/lang/String;)V after remapping.
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+Invalid access from field instruction in eko to package-private class net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity$2, package-private field net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity$2/$SwitchMap$net$minecraft$core$Direction;;[I after remapping.
+Invalid access from type instruction in dlx to package-private class net/minecraft/world/item/Items$1 after remapping.
+Invalid access from method instruction in dlx to package-private class net/minecraft/world/item/Items$1, package-private method net/minecraft/world/item/Items$1/<init>(Ldzq;Ldlp$a;[Ldzq;)V after remapping.
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/enumSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+Invalid access from type instruction in drd to package-private class net/minecraft/world/item/crafting/RecipeType$2 after remapping.
+Invalid access from method instruction in drd to package-private class net/minecraft/world/item/crafting/RecipeType$2, package-private method net/minecraft/world/item/crafting/RecipeType$2/<init>(Ljava/lang/String;)V after remapping.
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+Invalid access from field instruction in sz to package-private class net/minecraft/gametest/framework/GameTestHelper$4, package-private field net/minecraft/gametest/framework/GameTestHelper$4/$SwitchMap$net$minecraft$world$level$block$Rotation;;[I after remapping.
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+Invalid access from field instruction in elf to package-private class net/minecraft/world/level/block/entity/BrewingStandBlockEntity$2, package-private field net/minecraft/world/level/block/entity/BrewingStandBlockEntity$2/$SwitchMap$net$minecraft$core$Direction;;[I after remapping.
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+Invalid access from method instruction in net/minecraftforge/common/data/ForgeRecipeProvider to package-private method ox/<init>(Ljf$a;Lom;)V after remapping.
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/enumSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+Invalid access from field instruction in uz$2 to package-private class net/minecraft/nbt/CompoundTag$3, package-private field net/minecraft/nbt/CompoundTag$3/$SwitchMap$net$minecraft$nbt$StreamTagVisitor$EntryResult;;[I after remapping.
+Invalid access from field instruction in uz$2 to package-private class net/minecraft/nbt/CompoundTag$3, package-private field net/minecraft/nbt/CompoundTag$3/$SwitchMap$net$minecraft$nbt$StreamTagVisitor$EntryResult;;[I after remapping.
+Invalid access from field instruction in uz$2 to package-private class net/minecraft/nbt/CompoundTag$3, package-private field net/minecraft/nbt/CompoundTag$3/$SwitchMap$net$minecraft$nbt$StreamTagVisitor$ValueResult;;[I after remapping.
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+Invalid access from type instruction in net/minecraftforge/common/data/ExistingFileHelper to package-private class baf$a after remapping.
+Invalid access from method instruction in net/minecraftforge/common/data/ExistingFileHelper to package-private class baf$a, protected method baf$a/<init>(Lftc;)V after remapping.
+Invalid access from method instruction in net/minecraftforge/common/data/ExistingFileHelper to package-private class baf$a after remapping.
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/enumSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/enumSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+Invalid access from type instruction in dqo to package-private class net/minecraft/world/item/crafting/Ingredient$1 after remapping.
+Invalid access from method instruction in dqo to package-private class net/minecraft/world/item/crafting/Ingredient$1, package-private method net/minecraft/world/item/crafting/Ingredient$1/<init>()V after remapping.
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+Invalid access from field instruction in uz to package-private class net/minecraft/nbt/CompoundTag$3, package-private field net/minecraft/nbt/CompoundTag$3/$SwitchMap$net$minecraft$nbt$StreamTagVisitor$EntryResult;;[I after remapping.
+Invalid access from field instruction in uz to package-private class net/minecraft/nbt/CompoundTag$3, package-private field net/minecraft/nbt/CompoundTag$3/$SwitchMap$net$minecraft$nbt$StreamTagVisitor$EntryResult;;[I after remapping.
+Invalid access from field instruction in uz to package-private class net/minecraft/nbt/CompoundTag$3, package-private field net/minecraft/nbt/CompoundTag$3/$SwitchMap$net$minecraft$nbt$StreamTagVisitor$ValueResult;;[I after remapping.
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/enumSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+Invalid access from field instruction in net/minecraft/world/item/crafting/Ingredient$1 to private field dqo/VANILLA_MAP_CODEC;;Lcom/mojang/serialization/MapCodec; after remapping.
+Invalid access from field instruction in net/minecraft/world/item/crafting/Ingredient$1 to private field dqo/VANILLA_CONTENTS_STREAM_CODEC;;Laao; after remapping.
+Invalid access from field instruction in net/minecraft/world/item/crafting/Ingredient$1 to private field dqo/VANILLA_CONTENTS_STREAM_CODEC;;Laao; after remapping.
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+Invalid access from field instruction in hoe to package-private class net/minecraft/client/renderer/ItemBlockRenderTypes$1, package-private field net/minecraft/client/renderer/ItemBlockRenderTypes$1/$SwitchMap$net$minecraft$client$renderer$chunk$ChunkSectionLayer;;[I after remapping.
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+
+> Configure project :forge
+Fixing access for 9 classes and 15 members.
+
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/enumSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/enumSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/enumSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/enumSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+Invalid access from method instruction in net/minecraft/client/gui/screens/options/OnlineOptionsScreen to package-private class net/minecraft/client/OptionInstance$ValueSet after remapping.
+Invalid access from method instruction in net/minecraft/client/gui/screens/options/VideoSettingsScreen to package-private class net/minecraft/client/OptionInstance$ValueSet after remapping.
+Invalid access from method instruction in net/minecraft/client/gui/screens/options/VideoSettingsScreen to package-private class net/minecraft/client/OptionInstance$ValueSet after remapping.
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/enumSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+unknown invokedynamic bsm: java/lang/runtime/SwitchBootstraps/typeSwitch(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite; (tag=6 iif=false)
+
+> Configure project :forge
+Fixing access for 1 classes and 0 members.
+[Unimined/ForgeTransformer] Applying ATs [META-INF/accesstransformer.cfg]
+[Unimined/ModRemapper] Remapping mods from mojmap/mojmap to mojmap/official
+[Unimined/ModRemapper] No mods found for remapping
+[Unimined/Runs] Applying runs
+[Unimined/ForgeLike] Non-forge ::api found in forge classpath groups, merging with current (:forge:main), this should've been manually specified with `combineWith`
+[Unimined/ForgeLike] Non-forge ::launch found in forge classpath groups, merging with current (:forge:main), this should've been manually specified with `combineWith`
+[Unimined/ForgeLike] Non-forge ::main found in forge classpath groups, merging with current (:forge:main), this should've been manually specified with `combineWith`
+
+> Configure project :tweaker
+[Unimined/Minecraft :tweaker:main] Applying minecraft config for source set 'main'
+[Unimined/Minecraft :tweaker:main] Applying NoTransformMinecraftTransformer
+[Unimined/Minecraft :tweaker:main] Applying run configs
+[Unimined/ModRemapper] Remapping mods from official/official to mojmap/official
+[Unimined/ModRemapper] No mods found for remapping
+[Unimined/Runs] Applying runs
+
+Note: /home/runner/work/baritone/baritone/src/api/java/baritone/api/BaritoneAPI.java uses or overrides a deprecated API.
+> Task :compileApiJava
+Note: Recompile with -Xlint:deprecation for details.
+Note: Some input files use unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+
+> Task :processApiResources NO-SOURCE
+> Task :apiClasses
+> Task :compileSchematica_apiJava
+> Task :processSchematica_apiResources NO-SOURCE
+> Task :schematica_apiClasses
+/home/runner/work/baritone/baritone/src/main/java/baritone/process/AIProcess.java:20: error: no interface expected here
+
+public class AIProcess extends AbstractGameEventListener implements IAIProcess {
+> Task :compileJava
+                               ^
+/home/runner/work/baritone/baritone/src/main/java/baritone/command/defaults/AICommand.java:5: error: cannot find symbol
+import baritone.api.command.argument.IArgParserManager;
+                                    ^
+  symbol:   class IArgParserManager
+  location: package baritone.api.command.argument
+/home/runner/work/baritone/baritone/src/main/java/baritone/command/defaults/AICommand.java:18: error: cannot find symbol
+    public void execute(String label, IArgParserManager parserManager, baritone.api.command.argument.IArgConsumer args) throws CommandException {
+                                      ^
+  symbol:   class IArgParserManager
+  location: class AICommand
+/home/runner/work/baritone/baritone/src/main/java/baritone/command/defaults/AICommand.java:39: error: cannot find symbol
+    public Stream<String> tabComplete(String label, IArgParserManager parserManager, baritone.api.command.argument.IArgConsumer args) throws CommandException {
+                                                    ^
+  symbol:   class IArgParserManager
+  location: class AICommand
+/home/runner/work/baritone/baritone/src/main/java/baritone/Baritone.java:58: error: Baritone is not abstract and does not override abstract method getAIProcess() in IBaritone
+public class Baritone implements IBaritone {
+       ^
+/home/runner/work/baritone/baritone/src/main/java/baritone/process/AIProcess.java:20: error: AIProcess is not abstract and does not override abstract method isTemporary() in IBaritoneProcess
+public class AIProcess extends AbstractGameEventListener implements IAIProcess {
+       ^
+/home/runner/work/baritone/baritone/src/main/java/baritone/process/AIProcess.java:28: error: incompatible types: AIProcess cannot be converted to IGameEventListener
+        baritone.getGameEventHandler().registerEventListener(this);
+                                                             ^
+/home/runner/work/baritone/baritone/src/main/java/baritone/process/AIProcess.java:72: error: cannot find symbol
+                String key = baritone.getSettings().aiApiKey.value;
+                                     ^
+  symbol:   method getSettings()
+  location: variable baritone of type IBaritone
+/home/runner/work/baritone/baritone/src/main/java/baritone/process/AIProcess.java:79: error: cannot find symbol
+                URL url = new URL(baritone.getSettings().aiBaseUrl.value);
+                                          ^
+  symbol:   method getSettings()
+  location: variable baritone of type IBaritone
+/home/runner/work/baritone/baritone/src/main/java/baritone/process/AIProcess.java:87: error: cannot find symbol
+                req.addProperty("model", baritone.getSettings().aiModel.value);
+                                                 ^
+  symbol:   method getSettings()
+  location: variable baritone of type IBaritone
+/home/runner/work/baritone/baritone/src/main/java/baritone/process/AIProcess.java:155: error: method does not override or implement a method from a supertype
+    @Override
+    ^
+/home/runner/work/baritone/baritone/src/main/java/baritone/process/AIProcess.java:165: error: method does not override or implement a method from a supertype
+    @Override
+    ^
+/home/runner/work/baritone/baritone/src/main/java/baritone/command/defaults/AICommand.java:11: error: AICommand is not abstract and does not override abstract method tabComplete(String,IArgConsumer) in ICommand
+public class AICommand extends Command {
+       ^
+/home/runner/work/baritone/baritone/src/main/java/baritone/command/defaults/AICommand.java:17: error: method does not override or implement a method from a supertype
+    @Override
+    ^
+/home/runner/work/baritone/baritone/src/main/java/baritone/command/defaults/AICommand.java:20: error: CommandException is abstract; cannot be instantiated
+            throw new CommandException("Usage: #ai <prompt|stop|load|save>");
+                  ^
+/home/runner/work/baritone/baritone/src/main/java/baritone/command/defaults/AICommand.java:38: error: method does not override or implement a method from a supertype
+    @Override
+    ^
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+
+Note: Some input files use unchecked or unsafe operations.
+> Task :compileJava FAILED
+Note: Recompile with -Xlint:unchecked for details.
+
+Note: Some messages have been simplified; recompile with -Xdiags:verbose to get full output
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+16 errors
+
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+FAILURE: Build failed with an exception.
+
+
+For more on this, please refer to https://docs.gradle.org/8.7/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+* What went wrong:
+Execution failed for task ':compileJava'.
+> Compilation failed; see the compiler error output for details.
+
+* Try:
+> Run with --info option to get more log output.
+> Run with --scan to get full insights.
+
+BUILD FAILED in 3m 17s
+5 actionable tasks: 5 executed
+Error: Process completed with exit code 1.
