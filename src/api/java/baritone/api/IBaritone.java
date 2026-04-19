@@ -65,6 +65,11 @@ public interface IBaritone {
     IBuilderProcess getBuilderProcess();
 
     /**
+     * @return The AI process
+     */
+    IAIProcess getAIProcess();
+
+    /**
      * @return The {@link IExploreProcess} instance
      * @see IExploreProcess
      */

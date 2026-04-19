@@ -30,6 +30,8 @@ import baritone.cache.WorldProvider;
 import baritone.command.manager.CommandManager;
 import baritone.event.GameEventHandler;
 import baritone.process.*;
+import baritone.process.AIProcess;
+import baritone.api.process.IAIProcess;
 import baritone.selection.SelectionManager;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.GuiClick;
@@ -75,6 +77,7 @@ public class Baritone implements IBaritone {
     private final MineProcess mineProcess;
     private final GetToBlockProcess getToBlockProcess;
     private final CustomGoalProcess customGoalProcess;
+    private final AIProcess aiProcess;
     private final BuilderProcess builderProcess;
     private final ExploreProcess exploreProcess;
     private final FarmProcess farmProcess;
@@ -118,6 +121,7 @@ public class Baritone implements IBaritone {
             this.mineProcess             = this.registerProcess(MineProcess::new);
             this.customGoalProcess       = this.registerProcess(CustomGoalProcess::new); // very high iq
             this.getToBlockProcess       = this.registerProcess(GetToBlockProcess::new);
+            this.aiProcess               = this.registerProcess(AIProcess::new);
             this.builderProcess          = this.registerProcess(BuilderProcess::new);
             this.exploreProcess          = this.registerProcess(ExploreProcess::new);
             this.farmProcess             = this.registerProcess(FarmProcess::new);

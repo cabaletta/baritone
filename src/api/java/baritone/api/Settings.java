@@ -63,6 +63,21 @@ public final class Settings {
     public final Setting<Boolean> allowBreak = new Setting<>(true);
 
     /**
+     * API Key for the LLM (e.g. OpenAI)
+     */
+    public final Setting<String> aiApiKey = new Setting<>("");
+
+    /**
+     * Base URL for the LLM API
+     */
+    public final Setting<String> aiBaseUrl = new Setting<>("https://api.openai.com/v1/chat/completions");
+
+    /**
+     * Model to use for the LLM
+     */
+    public final Setting<String> aiModel = new Setting<>("gpt-4o-mini");
+
+    /**
      * Blocks that baritone will be allowed to break even with allowBreak set to false
      */
     public final Setting<List<Block>> allowBreakAnyway = new Setting<>(new ArrayList<>());
