@@ -175,6 +175,10 @@ public final class RotationUtils {
     }
 
     public static Optional<Rotation> reachable(IPlayerContext ctx, BlockPos pos, double blockReachDistance, boolean wouldSneak) {
+        // Prevent BetterBlockPos from leaking into Minecraft's block entity map
+        if (pos instanceof BetterBlockPos) {
+            pos = new BlockPos(pos.getX(), pos.getY(), pos.getZ());
+        }
         if (BaritoneAPI.getSettings().remainWithExistingLookDirection.value && ctx.isLookingAt(pos)) {
             /*
              * why add 0.0001?
