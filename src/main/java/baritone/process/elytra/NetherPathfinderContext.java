@@ -284,6 +284,10 @@ public final class NetherPathfinderContext implements IElytraPathFinder {
         this.readLock.lock();
     }
 
+    public boolean tryAcquireReadLock() {
+        return this.readLock.tryLock();
+    }
+
     public void releaseReadLock() {
         this.readLock.unlock();
     }

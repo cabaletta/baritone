@@ -504,11 +504,12 @@ public final class ElytraBehavior implements Helper {
     }
 
     public void onTick() {
-        npfContext.acquireReadLock();
-        try {
-            this.onTick0();
-        } finally {
-            npfContext.releaseReadLock();
+        if (npfContext.tryAcquireReadLock()) {
+            try {
+                this.onTick0();
+            } finally {
+                npfContext.releaseReadLock();
+            }
         }
         final long now = System.currentTimeMillis();
         if ((now - this.timeLastCacheCull) / 1000 > Baritone.settings().elytraTimeBetweenCacheCullSecs.value) {
