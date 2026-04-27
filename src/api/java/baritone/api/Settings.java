@@ -101,6 +101,11 @@ public final class Settings {
      * Come to a halt before doing any inventory moves. Intended for anticheat such as 2b2t
      */
     public final Setting<Boolean> inventoryMoveOnlyIfStationary = new Setting<>(false);
+		
+		/**
+		 * Only manage inventory while Baritone is active.
+		 */
+		public final Setting<Boolean> inventoryManagementOnlyWhilePathing = new Setting<>(true);
 
     /**
      * Disable baritone's auto-tool at runtime, but still assume that another mod will provide auto tool functionality

@@ -60,6 +60,11 @@ public final class InventoryBehavior extends Behavior implements Helper {
         if (event.getType() == TickEvent.Type.OUT) {
             return;
         }
+				if (Baritone.settings().inventoryManagementOnlyWhilePathing.value) {
+						if (!baritone.getPathingBehavior().isPathing() && !baritone.getPathingControlManager().mostRecentInControl().isPresent()) {
+								return;
+						}
+				}
         if (ctx.player().containerMenu != ctx.player().inventoryMenu) {
             // we have a crafting table or a chest or something open
             return;
