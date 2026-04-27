@@ -522,11 +522,17 @@ public final class ElytraBehavior implements Helper {
         // Fetch the previous solution, regardless of if it's going to be used
         this.pendingSolution = null;
         if (this.solver != null) {
-            try {
-                this.pendingSolution = this.solver.get(50 * 5, TimeUnit.MILLISECONDS);
-            } catch (Exception ignored) {
-                // it doesn't matter if get() fails since the solution can just be recalculated synchronously
-            } finally {
+            if (this.solver.isDone()) {
+                try {
+                    this.pendingSolution = this.solver.get();
+                } catch (Exception ignored) {
+                    // it doesn't matter if get() fails since the solution can just be recalculated synchronously
+                } finally {
+                    this.solver = null;
+                }
+            } else {
+                // avoid wasting more cycles on a hard solution, we'll do the work synchronously
+                this.solver.cancel(true);
                 this.solver = null;
             }
         }
@@ -591,10 +597,10 @@ public final class ElytraBehavior implements Helper {
 
         // If there's no previously calculated solution to use, or the context used at the end of last tick doesn't match this tick
         final Solution solution;
-        if (this.pendingSolution == null || !this.pendingSolution.context.equals(solverContext)) {
-            solution = this.solveAngles(solverContext);
-        } else {
+        if (this.pendingSolution != null && this.pendingSolution.context.equals(solverContext)) {
             solution = this.pendingSolution;
+        } else {
+            solution = this.solveAngles(solverContext);
         }
 
         if (this.deployedFireworkLastTick) {
@@ -662,6 +668,7 @@ public final class ElytraBehavior implements Helper {
             int minStep = playerNear;
 
             for (int i = Math.min(playerNear + 20, path.size() - 1); i >= minStep; i--) {
+                if (Thread.interrupted()) return null; // cancelled by the game thread
                 final List<Pair<Vec3, Integer>> candidates = new ArrayList<>();
                 for (int dy : heights) {
                     if (relaxation == 0 || i == minStep) {
