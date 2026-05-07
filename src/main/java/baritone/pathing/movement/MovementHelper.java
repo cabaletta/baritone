@@ -442,10 +442,10 @@ public interface MovementHelper extends ActionCosts, Helper {
         if (block instanceof StairBlock) {
             return YES;
         }
-        if (isWater(state)) {
-            return MAYBE;
-        }
-        if (MovementHelper.isLava(state) && Baritone.settings().assumeWalkOnLava.value) {
+        if (isSwimmableLiquid(state)) {
+            if (isLava(state) && !Baritone.settings().assumeWalkOnLava.value) {
+                return NO;
+            }
             return MAYBE;
         }
         if (block instanceof SlabBlock) {
@@ -720,6 +720,19 @@ public interface MovementHelper extends ActionCosts, Helper {
         return isWater(BlockStateInterface.get(ctx, bp));
     }
 
+    /**
+     * Returns whether or not the specified block is a swimmable liquid
+     * (water or lava).
+     *
+     * @param state The block state
+     * @return Whether or not the block is a swimmable liquid
+     */
+    static boolean isSwimmableLiquid(BlockState state) {
+        Fluid f = state.getFluidState().getType();
+        return f == Fluids.WATER || f == Fluids.FLOWING_WATER
+            || f == Fluids.LAVA || f == Fluids.FLOWING_LAVA;
+    }
+
     static boolean isLava(BlockState state) {
         Fluid f = state.getFluidState().getType();
         return f == Fluids.LAVA || f == Fluids.FLOWING_LAVA;
@@ -772,7 +785,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         }
         try {
             return Block.isShapeFullBlock(state.getCollisionShape(null, null));
-        } catch (Exception ignored) {
+        } catch (UnsupportedOperationException | NullPointerException ignored) {
             // if we can't get the collision shape, assume it's bad and add to blocksToAvoid
         }
         return false;
