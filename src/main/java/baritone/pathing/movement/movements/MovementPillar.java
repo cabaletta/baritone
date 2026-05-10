@@ -197,8 +197,10 @@ public class MovementPillar extends Movement {
         Rotation rotation = RotationUtils.calcRotationFromVec3d(ctx.playerHead(),
                 VecUtils.getBlockPosCenter(positionToPlace),
                 ctx.playerRotations());
+        // Backward bridging: face the block being placed, then move backwards
+        Rotation backwardRotation = new Rotation(rotation.getYaw() + 180.0f, rotation.getPitch());
         if (!ladder) {
-            state.setTarget(new MovementState.MovementTarget(ctx.playerRotations().withPitch(rotation.getPitch()), true));
+            state.setTarget(new MovementState.MovementTarget(backwardRotation, true));
         }
 
         boolean blockIsThere = MovementHelper.canWalkOn(ctx, src) || ladder;
@@ -240,11 +242,11 @@ public class MovementPillar extends Movement {
                 //[explanation added after baritone port lol] also because it needs to be less than 0.2 because of the 0.3 sneak limit
                 //and 0.17 is reasonably less than 0.2
 
-                // If it's been more than forty ticks of trying to jump and we aren't done yet, go forward, maybe we are stuck
-                state.setInput(Input.MOVE_FORWARD, true);
+                // If it's been more than forty ticks of trying to jump and we aren't done yet, go backward (bridging style)
+                state.setInput(Input.MOVE_BACK, true);
 
-                // revise our target to both yaw and pitch if we're going to be moving forward
-                state.setTarget(new MovementState.MovementTarget(rotation, true));
+                // revise our target to both yaw and pitch, facing backward for bridging
+                state.setTarget(new MovementState.MovementTarget(backwardRotation, true));
             } else if (flatMotion < 0.05) {
                 // If our Y coordinate is above our goal, stop jumping
                 state.setInput(Input.JUMP, ctx.player().position().y < dest.getY());

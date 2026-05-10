@@ -30,6 +30,7 @@ import baritone.api.utils.PathCalculationResult;
 import baritone.api.utils.interfaces.IGoalRenderPos;
 import baritone.pathing.calc.AStarPathFinder;
 import baritone.pathing.calc.AbstractNodeCostSearch;
+import baritone.pathing.calc.LazyThetaStarPathFinder;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.path.PathExecutor;
@@ -45,6 +46,13 @@ import java.util.concurrent.LinkedBlockingQueue;
 import net.minecraft.core.BlockPos;
 
 public final class PathingBehavior extends Behavior implements IPathingBehavior, Helper {
+
+    /**
+     * When {@code true}, uses {@link LazyThetaStarPathFinder} (any-angle
+     * pathfinding with line-of-sight shortcuts). When {@code false} (default),
+     * uses the standard {@link AStarPathFinder}.
+     */
+    public static boolean USE_THETA_STAR = false;
 
     private PathExecutor current;
     private PathExecutor next;
@@ -567,6 +575,9 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         var sub = feet.subtract(realStart);
         if (feet.getY() == realStart.getY() && Math.abs(sub.getX()) <= 1 && Math.abs(sub.getZ()) <= 1) {
             realStart = feet;
+        }
+        if (USE_THETA_STAR) {
+            return new LazyThetaStarPathFinder(realStart, start.getX(), start.getY(), start.getZ(), transformed, favoring, context);
         }
         return new AStarPathFinder(realStart, start.getX(), start.getY(), start.getZ(), transformed, favoring, context);
 

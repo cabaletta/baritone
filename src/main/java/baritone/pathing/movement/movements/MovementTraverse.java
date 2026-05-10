@@ -313,11 +313,12 @@ public class MovementTraverse extends Movement {
                 }
                 case ATTEMPTING: {
                     if (dist1 > 0.83) {
-                        // might need to go forward a bit
+                        // might need to go forward a bit — reversed for backward bridging
                         float yaw = RotationUtils.calcRotationFromVec3d(ctx.playerHead(), VecUtils.getBlockPosCenter(dest), ctx.playerRotations()).getYaw();
-                        if (Math.abs(state.getTarget().rotation.getYaw() - yaw) < 0.1) {
-                            // but only if our attempted place is straight ahead
-                            return state.setInput(Input.MOVE_FORWARD, true);
+                        float backwardYaw = yaw + 180.0f;
+                        if (Math.abs(state.getTarget().rotation.getYaw() - backwardYaw) < 0.1) {
+                            // but only if our attempted place yaw aligns with backward-facing movement
+                            return state.setInput(Input.MOVE_BACK, true);
                         }
                     } else if (ctx.playerRotations().isReallyCloseTo(state.getTarget().rotation)) {
                         // well i guess theres something in the way
