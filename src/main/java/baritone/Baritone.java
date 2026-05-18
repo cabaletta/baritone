@@ -25,6 +25,9 @@ import baritone.api.event.listener.IEventBus;
 import baritone.api.process.IBaritoneProcess;
 import baritone.api.process.IElytraProcess;
 import baritone.api.utils.IPlayerContext;
+import baritone.awareness.AwarenessContext;
+import baritone.awareness.behavior.AwarenessBehavior;
+import baritone.awareness.process.CombatProcess;
 import baritone.behavior.*;
 import baritone.cache.WorldProvider;
 import baritone.command.manager.CommandManager;
@@ -67,6 +70,11 @@ public class Baritone implements IBaritone {
 
     private final GameEventHandler gameEventHandler;
 
+    // Field initializer: ready before any constructor body runs, so getAwarenessContext()
+    // is safe to call from within AwarenessBehavior and CombatProcess constructors.
+    private final AwarenessContext awarenessContext = new AwarenessContext();
+
+    private final AwarenessBehavior awarenessBehavior;
     private final PathingBehavior pathingBehavior;
     private final LookBehavior lookBehavior;
     private final InventoryBehavior inventoryBehavior;
@@ -83,6 +91,7 @@ public class Baritone implements IBaritone {
     private final InventoryPauserProcess inventoryPauserProcess;
     private final IElytraProcess elytraProcess;
     private final FollowPlayerProcess followPlayerProcess;
+    private final CombatProcess combatProcess;
 
     private final PathingControlManager pathingControlManager;
     private final SelectionManager selectionManager;
@@ -111,6 +120,9 @@ public class Baritone implements IBaritone {
         this.playerContext = new BaritonePlayerContext(this, mc);
 
         {
+            // AwarenessBehavior must be registered first so sensor data is populated
+            // before PathingControlManager dispatches to any process on the same tick.
+            this.awarenessBehavior    = this.registerBehavior(AwarenessBehavior::new);
             this.lookBehavior         = this.registerBehavior(LookBehavior::new);
             this.pathingBehavior      = this.registerBehavior(PathingBehavior::new);
             this.inventoryBehavior    = this.registerBehavior(InventoryBehavior::new);
@@ -132,6 +144,7 @@ public class Baritone implements IBaritone {
             this.elytraProcess           = this.registerProcess(ElytraProcess::create);
             this.registerProcess(BackfillProcess::new);
             this.followPlayerProcess     = this.registerProcess(FollowPlayerProcess::new);
+            this.combatProcess           = this.registerProcess(CombatProcess::new);
         }
 
         this.worldProvider = new WorldProvider(this);
@@ -256,6 +269,16 @@ public class Baritone implements IBaritone {
     /** Returns the player-follow process that uses {@link baritone.api.pathing.goals.GoalFollow}. */
     public FollowPlayerProcess getFollowPlayerProcess() {
         return this.followPlayerProcess;
+    }
+
+    /** Returns the shared awareness context updated every tick by {@link AwarenessBehavior}. */
+    public AwarenessContext getAwarenessContext() {
+        return this.awarenessContext;
+    }
+
+    /** Returns the combat process that translates awareness decisions into Baritone goals. */
+    public CombatProcess getCombatProcess() {
+        return this.combatProcess;
     }
 
     @Override
