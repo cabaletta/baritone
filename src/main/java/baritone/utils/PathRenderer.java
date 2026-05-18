@@ -331,6 +331,15 @@ public final class PathRenderer implements IRenderer {
             y1 = 1 + y + goalpos.level - renderPosY;
             y2 = 1 - y + goalpos.level - renderPosY;
             drawDankLitGoalBox(stack, color, minX, maxX, minZ, maxZ, minY, maxY, y1, y2, setupRender);
+        } else if (goal instanceof GoalFollow) {
+            // Render GoalFollow as a GoalNear proxy centred on the target entity's
+            // live block position.  The box moves each frame as the entity moves.
+            GoalFollow followGoal = (GoalFollow) goal;
+            if (followGoal.getTarget().isAlive()) {
+                BlockPos targetPos = followGoal.getTarget().blockPosition();
+                GoalNear proxy    = new GoalNear(targetPos, followGoal.getRange());
+                drawGoal(stack, ctx, proxy, partialTicks, color, setupRender);
+            }
         }
     }
 

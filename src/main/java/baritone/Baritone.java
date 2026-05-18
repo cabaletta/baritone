@@ -32,6 +32,7 @@ import baritone.event.GameEventHandler;
 import baritone.process.*;
 import baritone.selection.SelectionManager;
 import baritone.utils.BlockStateInterface;
+import baritone.utils.CustomConfig;
 import baritone.utils.GuiClick;
 import baritone.utils.InputOverrideHandler;
 import baritone.utils.PathingControlManager;
@@ -70,6 +71,7 @@ public class Baritone implements IBaritone {
     private final LookBehavior lookBehavior;
     private final InventoryBehavior inventoryBehavior;
     private final InputOverrideHandler inputOverrideHandler;
+    private final HUDBehavior hudBehavior;
 
     private final FollowProcess followProcess;
     private final MineProcess mineProcess;
@@ -80,6 +82,7 @@ public class Baritone implements IBaritone {
     private final FarmProcess farmProcess;
     private final InventoryPauserProcess inventoryPauserProcess;
     private final IElytraProcess elytraProcess;
+    private final FollowPlayerProcess followPlayerProcess;
 
     private final PathingControlManager pathingControlManager;
     private final SelectionManager selectionManager;
@@ -93,6 +96,9 @@ public class Baritone implements IBaritone {
     Baritone(Minecraft mc) {
         this.mc = mc;
         this.gameEventHandler = new GameEventHandler(this);
+
+        // Load custom config (keybinds, HUD prefs) before anything else uses it.
+        CustomConfig.load();
 
         this.directory = mc.gameDirectory.toPath().resolve("baritone");
         if (!Files.exists(this.directory)) {
@@ -110,6 +116,7 @@ public class Baritone implements IBaritone {
             this.inventoryBehavior    = this.registerBehavior(InventoryBehavior::new);
             this.inputOverrideHandler = this.registerBehavior(InputOverrideHandler::new);
             this.registerBehavior(WaypointBehavior::new);
+            this.hudBehavior          = this.registerBehavior(HUDBehavior::new);
         }
 
         this.pathingControlManager = new PathingControlManager(this);
@@ -124,6 +131,7 @@ public class Baritone implements IBaritone {
             this.inventoryPauserProcess  = this.registerProcess(InventoryPauserProcess::new);
             this.elytraProcess           = this.registerProcess(ElytraProcess::create);
             this.registerProcess(BackfillProcess::new);
+            this.followPlayerProcess     = this.registerProcess(FollowPlayerProcess::new);
         }
 
         this.worldProvider = new WorldProvider(this);
@@ -238,6 +246,16 @@ public class Baritone implements IBaritone {
     @Override
     public IElytraProcess getElytraProcess() {
         return this.elytraProcess;
+    }
+
+    /** Returns the HUD overlay / hotkey behavior added by the fork. */
+    public HUDBehavior getHudBehavior() {
+        return this.hudBehavior;
+    }
+
+    /** Returns the player-follow process that uses {@link baritone.api.pathing.goals.GoalFollow}. */
+    public FollowPlayerProcess getFollowPlayerProcess() {
+        return this.followPlayerProcess;
     }
 
     @Override
