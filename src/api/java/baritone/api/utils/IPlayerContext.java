@@ -99,6 +99,14 @@ public interface IPlayerContext {
         return new Rotation(player().getYRot(), player().getXRot());
     }
 
+    /**
+     * Returns the player's eye height, taking into account whether or not the player is sneaking.
+     *
+     * @param ifSneaking Whether or not the player is sneaking
+     * @return The player's eye height
+     * @deprecated Use entity.getEyeHeight(Pose.CROUCHING) instead
+     */
+    @Deprecated
     static double eyeHeight(boolean ifSneaking) {
         return ifSneaking ? 1.27 : 1.62;
     }

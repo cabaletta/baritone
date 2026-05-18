@@ -1,4 +1,5 @@
 # Pathing features
+
 - **Long distance pathing and splicing** Baritone calculates paths in segments, and precalculates the next segment when the current one is about to end, so that it's moving towards the goal at all times.
 - **Chunk caching** Baritone simplifies chunks to a compacted internal 2-bit representation (AIR, SOLID, WATER, AVOID) and stores them in RAM for better very-long-distance pathing. There is also an option to save these cached chunks to disk. <a href="https://www.youtube.com/watch?v=dyfYKSubhdc">Example</a>
 - **Block breaking** Baritone considers breaking blocks as part of its path. It also takes into account your current tool set and hot bar. For example, if you have a Eff V diamond pick, it may choose to mine through a stone barrier, while if you only had a wood pick it might be faster to climb over it.
@@ -14,7 +15,8 @@
 - **Pigs** It can sort of control pigs. I wouldn't rely on it though.
 
 # Pathing method
-Baritone uses A*, with some modifications: 
+
+Baritone uses A*, with some modifications:
 
 - **Segmented calculation** Traditional A* calculates until the most promising node is in the goal, however in the environment of Minecraft with a limited render distance, we don't know the environment all the way to our goal. Baritone has three possible ways for path calculation to end: finding a path all the way to the goal, running out of time, or getting to the render distance. In the latter two scenarios, the selection of which segment to actually execute falls to the next item (incremental cost backoff). Whenever the path calculation thread finds that the best / most promising node is at the edge of loaded chunks, it increments a counter. If this happens more than 50 times (configurable), path calculation exits early. This happens with very low render distances. Otherwise, calculation continues until the timeout is hit (also configurable) or we find a path all the way to the goal.
 - **Incremental cost backoff** When path calculation exits early without getting all the way to the goal, Baritone it needs to select a segment to execute first (assuming it will calculate the next segment at the end of this one). It uses incremental cost backoff to select the best node by varying metrics, then paths to that node. This is unchanged from MineBot and I made a <a href="https://docs.google.com/document/d/1WVHHXKXFdCR1Oz__KtK8sFqyvSwJN_H4lftkHFgmzlc/edit">write-up</a> that still applies. In essence, it keeps track of the best node by various increasing coefficients, then picks the node with the least coefficient that goes at least 5 blocks from the starting position.
@@ -27,7 +29,9 @@ Baritone uses A*, with some modifications:
 - [Baritone chat control usage](USAGE.md)
 
 # Goals
+
 The pathing goal can be set to any of these options:
+
 - **GoalBlock** one specific block that the player should stand inside at foot level
 - **GoalXZ** an X and a Z coordinate, used for long distance pathing
 - **GoalYLevel** a Y coordinate
@@ -38,15 +42,16 @@ The pathing goal can be set to any of these options:
 
 And finally `GoalComposite`. `GoalComposite` is a list of other goals, any one of which satisfies the goal. For example, `mine diamond_ore` creates a `GoalComposite` of `GoalTwoBlocks`s for every diamond ore location it knows of.
 
-
 # Future features
+
 Things it doesn't have yet
+
 - Trapdoors
 - Sprint jumping in a 1x2 corridor
 
 See <a href="https://github.com/cabaletta/baritone/issues">issues</a> for more.
 
 Things it may not ever have, from most likely to least likely =(
+
 - Boats
 - Horses (2x3 path instead of 1x2)
-- Elytra

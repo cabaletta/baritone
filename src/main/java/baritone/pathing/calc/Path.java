@@ -112,7 +112,7 @@ class Path extends PathBase {
 
     private boolean assembleMovements() {
         if (path.isEmpty() || !movements.isEmpty()) {
-            throw new IllegalStateException();
+            throw new IllegalStateException("Path must not be empty");
         }
         for (int i = 0; i < path.size() - 1; i++) {
             double cost = nodes.get(i + 1).cost - nodes.get(i).cost;
@@ -145,7 +145,7 @@ class Path extends PathBase {
     @Override
     public IPath postProcess() {
         if (verified) {
-            throw new IllegalStateException();
+            throw new IllegalStateException("Path must not be verified twice");
         }
         verified = true;
         boolean failed = assembleMovements();
@@ -154,7 +154,7 @@ class Path extends PathBase {
         if (failed) { // at least one movement became impossible during calculation
             CutoffPath res = new CutoffPath(this, movements().size());
             if (res.movements().size() != movements.size()) {
-                throw new IllegalStateException();
+                throw new IllegalStateException("Path has wrong size after cutoff");
             }
             return res;
         }
@@ -166,7 +166,8 @@ class Path extends PathBase {
     @Override
     public List<IMovement> movements() {
         if (!verified) {
-            throw new IllegalStateException();
+            // edge case note: this is called during verification
+            throw new IllegalStateException("Path not yet verified");
         }
         return Collections.unmodifiableList(movements);
     }

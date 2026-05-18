@@ -185,6 +185,13 @@ public final class Settings {
      * <p>
      * Defaults to false because this fails on constantiam. Please let me know if this is ever disabled. Please.
      */
+    public final Setting<Boolean> allowJumpAtBuildLimit = new Setting<>(false);
+
+    /**
+     * Just here so mods that use the API don't break. Does nothing.
+     */
+    @Deprecated
+    @JavaOnly
     public final Setting<Boolean> allowJumpAt256 = new Setting<>(false);
 
     /**
@@ -230,9 +237,9 @@ public final class Settings {
     /**
      * Blocks that Baritone will attempt to avoid (Used in avoidance)
      */
-    public final Setting<List<Block>> blocksToAvoid = new Setting<>(new ArrayList<>(
-            // Leave Empty by Default
-    ));
+    public final Setting<List<Block>> blocksToAvoid = new Setting<>(new ArrayList<>(List.of(
+            Blocks.TRIPWIRE
+    )));
 
     /**
      * Blocks that Baritone is not allowed to break
@@ -1572,6 +1579,11 @@ public final class Settings {
      * Minimum distance in blocks of an elytra trip before the pathfinder will try to fly above build limit. (Minimum: 32). Requires {@link #elytraAllowAboveBuildLimit} to be enabled.
      */
     public final Setting<Integer> elytraLongDistanceThreshold = new Setting<>(500);
+
+    /**
+     * Sneak when magma blocks are under feet
+     */
+    public final Setting<Boolean> allowWalkOnMagmaBlocks = new Setting<>(false);
 
     /**
      * A map of lowercase setting field names to their respective setting

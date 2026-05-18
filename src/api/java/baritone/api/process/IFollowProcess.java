@@ -17,9 +17,11 @@
 
 package baritone.api.process;
 
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.item.ItemStack;
+
 import java.util.List;
 import java.util.function.Predicate;
-import net.minecraft.world.entity.Entity;
 
 /**
  * @author Brady
@@ -33,6 +35,13 @@ public interface IFollowProcess extends IBaritoneProcess {
      * @param filter the predicate
      */
     void follow(Predicate<Entity> filter);
+
+    /**
+     * Try to pick up any items matching this predicate
+     *
+     * @param filter the predicate
+     */
+    void pickup(Predicate<ItemStack> filter);
 
     /**
      * @return The entities that are currently being followed. null if not currently following, empty if nothing matches the predicate

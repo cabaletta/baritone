@@ -21,34 +21,32 @@ import baritone.api.command.exception.CommandException;
 import baritone.api.command.helpers.TabCompleteHelper;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.block.Block;
+import net.minecraft.world.item.Item;
 
 import java.util.stream.Stream;
 
-public enum BlockById implements IDatatypeFor<Block> {
+public enum ItemById implements IDatatypeFor<Item> {
     INSTANCE;
 
     @Override
-    public Block get(IDatatypeContext ctx) throws CommandException {
+    public Item get(IDatatypeContext ctx) throws CommandException {
         ResourceLocation id = new ResourceLocation(ctx.getConsumer().getString());
-        Block block;
-        if ((block = BuiltInRegistries.BLOCK.getOptional(id).orElse(null)) == null) {
-            throw new IllegalArgumentException("no block found by that id");
+        Item item;
+        if ((item = BuiltInRegistries.ITEM.getOptional(id).orElse(null)) == null) {
+            throw new IllegalArgumentException("No item found by that id");
         }
-        return block;
+        return item;
     }
 
     @Override
     public Stream<String> tabComplete(IDatatypeContext ctx) throws CommandException {
-        String arg = ctx.getConsumer().getString();
-
         return new TabCompleteHelper()
                 .append(
                         BuiltInRegistries.BLOCK.keySet()
                                 .stream()
-                                .map(Object::toString)
+                                .map(ResourceLocation::toString)
                 )
-                .filterPrefixNamespaced(arg)
+                .filterPrefixNamespaced(ctx.getConsumer().getString())
                 .sortAlphabetically()
                 .stream();
     }

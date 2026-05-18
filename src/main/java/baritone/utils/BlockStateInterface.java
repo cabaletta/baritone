@@ -70,7 +70,7 @@ public class BlockStateInterface {
         }
         this.useTheRealWorld = !Baritone.settings().pathThroughCachedOnly.value;
         if (!ctx.minecraft().isSameThread()) {
-            throw new IllegalStateException();
+            throw new IllegalStateException("BlockStateInterface must be constructed on the main thread");
         }
         this.isPassableBlockPos = new BlockPos.MutableBlockPos();
         this.access = new BlockStateInterfaceAccessWrapper(this);

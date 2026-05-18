@@ -68,7 +68,7 @@ public class PathingControlManager implements IPathingControlManager {
         for (IBaritoneProcess proc : processes) {
             proc.onLostControl();
             if (proc.isActive() && !proc.isTemporary()) { // it's okay only for a temporary thing (like combat pause) to maintain control even if you say to cancel
-                throw new IllegalStateException(proc.displayName());
+                throw new IllegalStateException(proc.displayName() + " stayed active after being cancelled");
             }
         }
     }
@@ -121,7 +121,7 @@ public class PathingControlManager implements IPathingControlManager {
                 }
                 break;
             default:
-                throw new IllegalStateException();
+                throw new IllegalStateException("Unexpected command type " + command.commandType);
         }
     }
 

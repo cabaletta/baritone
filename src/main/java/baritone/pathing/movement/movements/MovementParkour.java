@@ -64,10 +64,9 @@ public class MovementParkour extends Movement {
         if (!context.allowParkour) {
             return;
         }
-        if (y == 256 && !context.allowJumpAt256) {
+        if (!context.allowJumpAtBuildLimit && y >= context.world.getMaxBuildHeight()) {
             return;
         }
-
         int xDiff = dir.getStepX();
         int zDiff = dir.getStepZ();
         if (!MovementHelper.fullyPassable(context, x + xDiff, y, z + zDiff)) {
@@ -103,14 +102,14 @@ public class MovementParkour extends Movement {
             return; // can't jump out of water
         }
         int maxJump;
-        if (standingOn.getBlock() == Blocks.SOUL_SAND) {
+        if (context.allowWalkOnMagmaBlocks && standingOn.is(Blocks.MAGMA_BLOCK)) {
+            maxJump = 2;
+        } else if (standingOn.getBlock() == Blocks.SOUL_SAND) {
             maxJump = 2; // 1 block gap
+        } else if (context.canSprint) {
+            maxJump = 4;
         } else {
-            if (context.canSprint) {
-                maxJump = 4;
-            } else {
-                maxJump = 3;
-            }
+            maxJump = 3;
         }
 
         // check parkour jumps from smallest to largest for obstacles/walls and landing positions
@@ -263,6 +262,10 @@ public class MovementParkour extends Movement {
         if (dist >= 4 || ascend) {
             state.setInput(Input.SPRINT, true);
         }
+        if (Baritone.settings().allowWalkOnMagmaBlocks.value && ctx.world().getBlockState(ctx.playerFeet().below()).is(Blocks.MAGMA_BLOCK)) {
+            state.setInput(Input.SNEAK, true);
+        }
+
         MovementHelper.moveTowards(ctx, state, dest);
         if (ctx.playerFeet().equals(dest)) {
             Block d = BlockStateInterface.getBlock(ctx, dest);

@@ -46,14 +46,6 @@ public abstract class MixinItemStack implements IItemStack {
     }
 
     @Inject(
-            method = "<init>*",
-            at = @At("RETURN")
-    )
-    private void onInit(CallbackInfo ci) {
-        recalculateHash();
-    }
-
-    @Inject(
             method = "setDamageValue",
             at = @At("TAIL")
     )
@@ -63,7 +55,8 @@ public abstract class MixinItemStack implements IItemStack {
 
     @Override
     public int getBaritoneHash() {
-        // TODO: figure out why <init> mixin not working, was 0 for some reason
+        // cannot do this in an init mixin because silentlib likes creating new
+        // items in getDamageValue, which we call in recalculateHash
         if (baritoneHash == 0) recalculateHash();
         return baritoneHash;
     }

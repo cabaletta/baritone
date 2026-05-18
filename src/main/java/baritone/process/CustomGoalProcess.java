@@ -119,7 +119,7 @@ public final class CustomGoalProcess extends BaritoneProcessHelper implements IC
                 }
                 return new PathingCommand(this.goal, PathingCommandType.SET_GOAL_AND_PATH);
             default:
-                throw new IllegalStateException();
+                throw new IllegalStateException("Unexpected state " + this.state);
         }
     }
 

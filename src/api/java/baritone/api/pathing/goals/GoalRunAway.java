@@ -44,7 +44,7 @@ public class GoalRunAway implements Goal {
 
     public GoalRunAway(double distance, Integer maintainY, BlockPos... from) {
         if (from.length == 0) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("Positions to run away from must not be empty");
         }
         this.from = from;
         this.distanceSq = (int) (distance * distance);

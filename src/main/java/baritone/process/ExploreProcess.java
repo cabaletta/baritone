@@ -118,7 +118,9 @@ public final class ExploreProcess extends BaritoneProcessHelper implements IExpl
                     int dz = (mult * 2 - 1) * zval; // dz can be either -zval or zval
                     int trueDist = Math.abs(dx) + Math.abs(dz);
                     if (trueDist != dist) {
-                        throw new IllegalStateException();
+                        throw new IllegalStateException(String.format(
+                                "Offset %s %s has distance %s, expected %s",
+                                dx, dz, trueDist, dist));
                     }
                     switch (filter.isAlreadyExplored(chunkX + dx, chunkZ + dz)) {
                         case UNKNOWN:

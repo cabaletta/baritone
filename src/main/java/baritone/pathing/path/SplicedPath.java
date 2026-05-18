@@ -92,7 +92,7 @@ public class SplicedPath extends PathBase {
         }
         int positionInSecond = second.positions().indexOf(first.positions().get(firstPositionInSecond));
         if (!allowOverlapCutoff && positionInSecond != 0) {
-            throw new IllegalStateException();
+            throw new IllegalStateException("Paths to be spliced are overlapping incorrectly");
         }
         List<BetterBlockPos> positions = new ArrayList<>();
         List<IMovement> movements = new ArrayList<>();

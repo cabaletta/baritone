@@ -455,7 +455,9 @@ public class PathExecutor implements IPathExecutor, Helper {
             if (data != null) {
                 BetterBlockPos fallDest = new BetterBlockPos(data.getB());
                 if (!path.positions().contains(fallDest)) {
-                    throw new IllegalStateException();
+                    throw new IllegalStateException(String.format(
+                            "Fall override at %s %s %s returned illegal destination %s %s %s",
+                            current.getSrc(), fallDest));
                 }
                 if (ctx.playerFeet().equals(fallDest)) {
                     pathPosition = path.positions().indexOf(fallDest);
@@ -603,7 +605,9 @@ public class PathExecutor implements IPathExecutor, Helper {
         }
         return SplicedPath.trySplice(path, next.path, false).map(path -> {
             if (!path.getDest().equals(next.getPath().getDest())) {
-                throw new IllegalStateException();
+                throw new IllegalStateException(String.format(
+                        "Path has end %s instead of %s after splicing",
+                        path.getDest(), next.getPath().getDest()));
             }
             PathExecutor ret = new PathExecutor(behavior, path);
             ret.pathPosition = pathPosition;
@@ -619,7 +623,9 @@ public class PathExecutor implements IPathExecutor, Helper {
             int cutoffAmt = Baritone.settings().pathHistoryCutoffAmount.value;
             CutoffPath newPath = new CutoffPath(path, cutoffAmt, path.length() - 1);
             if (!newPath.getDest().equals(path.getDest())) {
-                throw new IllegalStateException();
+                throw new IllegalStateException(String.format(
+                        "Path has end %s instead of %s after trimming its start",
+                        newPath.getDest(), path.getDest()));
             }
             logDebug("Discarding earliest segment movements, length cut from " + path.length() + " to " + newPath.length());
             PathExecutor ret = new PathExecutor(behavior, newPath);

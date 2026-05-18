@@ -92,7 +92,7 @@ public final class BinaryHeapOpenSet implements IOpenSet {
     @Override
     public final PathNode removeLowest() {
         if (size == 0) {
-            throw new IllegalStateException();
+            throw new IllegalStateException("Cannot remove from empty heap");
         }
         PathNode result = array[1];
         PathNode val = array[size];

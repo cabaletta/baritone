@@ -21,8 +21,12 @@ import baritone.Baritone;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.process.IElytraProcess;
 import baritone.api.process.PathingCommand;
+import baritone.api.utils.BetterBlockPos;
 import baritone.utils.BaritoneProcessHelper;
 import net.minecraft.core.BlockPos;
+
+import java.util.Collections;
+import java.util.List;
 
 /**
  * @author Brady
@@ -41,6 +45,11 @@ public final class NullElytraProcess extends BaritoneProcessHelper implements IE
     @Override
     public BlockPos currentDestination() {
         return null;
+    }
+
+    @Override
+    public List<BetterBlockPos> getPath() {
+        return Collections.emptyList();
     }
 
     @Override

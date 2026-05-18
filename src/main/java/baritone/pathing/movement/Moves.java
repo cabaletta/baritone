@@ -347,7 +347,7 @@ public enum Moves {
 
     public void apply(CalculationContext context, int x, int y, int z, MutableMoveResult result) {
         if (dynamicXZ || dynamicY) {
-            throw new UnsupportedOperationException();
+            throw new UnsupportedOperationException("Movements with dynamic offset must override `apply`");
         }
         result.x = x + xOffset;
         result.y = y + yOffset;
@@ -356,6 +356,6 @@ public enum Moves {
     }
 
     public double cost(CalculationContext context, int x, int y, int z) {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("Movements must override `cost` or `apply`");
     }
 }

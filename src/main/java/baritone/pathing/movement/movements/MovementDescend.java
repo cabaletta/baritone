@@ -17,6 +17,7 @@
 
 package baritone.pathing.movement.movements;
 
+import baritone.Baritone;
 import baritone.api.IBaritone;
 import baritone.api.pathing.movement.MovementStatus;
 import baritone.api.utils.BetterBlockPos;
@@ -147,9 +148,9 @@ public class MovementDescend extends Movement {
         int effectiveStartHeight = y;
         for (int fallHeight = 3; true; fallHeight++) {
             int newY = y - fallHeight;
-            if (newY < 0) {
+            if (newY < context.world.getMinBuildHeight()) {
                 // when pathing in the end, where you could plausibly fall into the void
-                // this check prevents it from getting the block at y=-1 and crashing
+                // this check prevents it from getting the block at y=(below whatever the minimum height is) and crashing
                 return false;
             }
             boolean reachedMinimum = fallHeight >= context.minFallHeight;
@@ -255,6 +256,9 @@ public class MovementDescend extends Movement {
         double x = ctx.player().position().x - (src.getX() + 0.5);
         double z = ctx.player().position().z - (src.getZ() + 0.5);
         double fromStart = Math.sqrt(x * x + z * z);
+
+        state.setInput(Input.SNEAK, Baritone.settings().allowWalkOnMagmaBlocks.value && ctx.world().getBlockState(ctx.player().blockPosition().below()).is(Blocks.MAGMA_BLOCK));
+
         if (!playerFeet.equals(dest) || ab > 0.25) {
             if (numTicks++ < 20 && fromStart < 1.25) {
                 MovementHelper.moveTowards(ctx, state, fakeDest);

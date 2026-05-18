@@ -20,6 +20,7 @@ package baritone.pathing.calc;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.movement.ActionCosts;
 import baritone.api.utils.BetterBlockPos;
+import baritone.api.utils.SettingsUtil;
 
 /**
  * A node in the path, containing the cost and steps to get to it.
@@ -68,7 +69,12 @@ public final class PathNode {
         this.cost = ActionCosts.COST_INF;
         this.estimatedCostToGoal = goal.heuristic(x, y, z);
         if (Double.isNaN(estimatedCostToGoal)) {
-            throw new IllegalStateException(goal + " calculated implausible heuristic");
+            throw new IllegalStateException(String.format(
+                    "%s calculated implausible heuristic NaN at %s %s %s",
+                    goal,
+                    SettingsUtil.maybeCensor(x),
+                    SettingsUtil.maybeCensor(y),
+                    SettingsUtil.maybeCensor(z)));
         }
         this.heapPosition = -1;
         this.x = x;
