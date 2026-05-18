@@ -9,10 +9,12 @@ import baritone.awareness.model.SelfState;
 import baritone.awareness.model.ThreatEntry;
 import baritone.utils.InputOverrideHandler;
 
+import java.util.List;
+
 /**
  * Fires immediate input overrides (sub-100ms reflexes) in response to imminent threats.
- * Operates independently of the decision engine — reflexes bypass deliberation.
- * Only CLICK_RIGHT (shield raise) is managed here; movement stays in CombatProcess.
+ * Scans ALL tracked threats, not just the primary, so multiple simultaneous dangers
+ * (e.g. a projectile + a melee attacker) are both considered each tick.
  */
 public final class ReactionSystem {
 
@@ -28,30 +30,33 @@ public final class ReactionSystem {
         InputOverrideHandler input = baritone.getInputOverrideHandler();
         if (input == null) return;
 
-        // Reset any shield raise from the previous tick
+        // Reset any shield raise from the previous tick.
         input.setInputForceState(Input.CLICK_RIGHT, false);
 
-        ThreatEntry primary = awarenessCtx.getPrimaryThreat();
-        if (primary == null) return;
+        List<ThreatEntry> threats = awarenessCtx.getThreats();
+        if (threats.isEmpty()) return;
 
         SelfState self = awarenessCtx.getSelf();
+        if (!self.shieldEquipped) return;
 
-        // Reflex: block incoming projectile with LOS within 12 blocks
-        if (primary.tracked.category == EntityCategory.PROJECTILE
-            && primary.tracked.hasLineOfSight
-            && primary.tracked.distance < 12
-            && self.shieldEquipped) {
-            input.setInputForceState(Input.CLICK_RIGHT, true);
-            return;
+        // Reflex: block any incoming projectile with LOS within 12 blocks.
+        for (ThreatEntry t : threats) {
+            if (t.tracked.category == EntityCategory.PROJECTILE
+                    && t.tracked.hasLineOfSight
+                    && t.tracked.distance < 12) {
+                input.setInputForceState(Input.CLICK_RIGHT, true);
+                return;
+            }
         }
 
-        // Reflex: raise shield against close-range attacker when attack cooldown is low
-        // (don't shield when we're fully charged and about to swing ourselves)
-        if (primary.tracked.distance < 3
-            && primary.tracked.hasLineOfSight
-            && self.shieldEquipped
-            && self.attackCooldown < 0.7f) {
-            input.setInputForceState(Input.CLICK_RIGHT, true);
+        // Reflex: raise shield against any close melee attacker with low attack cooldown.
+        for (ThreatEntry t : threats) {
+            if (t.tracked.distance < 3
+                    && t.tracked.hasLineOfSight
+                    && self.attackCooldown < 0.7f) {
+                input.setInputForceState(Input.CLICK_RIGHT, true);
+                return;
+            }
         }
     }
 }

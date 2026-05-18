@@ -42,32 +42,11 @@ import org.lwjgl.glfw.GLFW;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Registered as a Baritone behavior with two responsibilities:
- *
- * <ol>
- *   <li><b>Hotkey handler (onTick)</b> — polls GLFW on every client tick for
- *       the four rebindable keys defined in {@link CustomConfig}:
- *       cancel pathing, toggle path rendering, force-recompute, toggle HUD.
- *       Uses rising-edge detection so a held key fires only once.</li>
- *   <li><b>HUD overlay (onRenderPass)</b> — temporarily switches the OpenGL
- *       projection to orthographic and draws two panels:
- *       <ul>
- *         <li>Path panel — step index / total, distance to next node.</li>
- *         <li>Awareness panel — danger bar, action mode, self state (HP /
- *             armour / totems / pearls), terrain warnings, and the top-3
- *             scored threats read from {@link AwarenessContext}.</li>
- *       </ul>
- *   </li>
- * </ol>
- *
- * <p>Note on MC version: {@code RenderSystem.setProjectionMatrix} takes just a
- * {@code Matrix4f} in 1.19.4. In 1.20+ you must add a {@code VertexSorting}
- * second argument ({@code ORTHOGRAPHIC_Z} / {@code DISTANCE_TO_ORIGIN}).
- */
 public final class HUDBehavior extends Behavior {
 
-    private final boolean[] prevKey = new boolean[4]; // cancel, render, recompute, hud
+    private static final int MAX_THREATS_SHOWN = 5;
+
+    private final boolean[] prevKey = new boolean[4];
     private final AwarenessContext awarenessContext;
 
     public HUDBehavior(Baritone baritone) {
@@ -75,14 +54,12 @@ public final class HUDBehavior extends Behavior {
         this.awarenessContext = baritone.getAwarenessContext();
     }
 
-    // ── Hotkey handler ───────────────────────────────────────────────────────────────────
-
     @Override
     public void onTick(TickEvent event) {
         if (event.getType() != TickEvent.Type.IN || ctx.player() == null) return;
 
         Minecraft mc = Minecraft.getInstance();
-        if (mc.screen != null) return; // suppress hotkeys while a screen is open
+        if (mc.screen != null) return;
 
         long win = mc.getWindow().getWindow();
         CustomConfig cfg = CustomConfig.get();
@@ -117,8 +94,6 @@ public final class HUDBehavior extends Behavior {
         prevKey[3] = k3;
     }
 
-    // ── 2-D HUD overlay ────────────────────────────────────────────────────────────────────
-
     @Override
     public void onRenderPass(RenderEvent event) {
         CustomConfig cfg = CustomConfig.get();
@@ -126,29 +101,25 @@ public final class HUDBehavior extends Behavior {
 
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null || mc.level == null) return;
-        if (mc.options.renderDebug) return; // hide while F3 screen is open
+        if (mc.options.renderDebug) return;
 
         String[] lines = buildHudLines();
         if (lines.length == 0) return;
 
-        // Save the 3-D projection so we can restore it after drawing.
         Matrix4f savedProj = new Matrix4f(event.getProjectionMatrix());
 
-        // Reset modelview to identity (screen space).
         PoseStack mv = RenderSystem.getModelViewStack();
         mv.pushPose();
         mv.setIdentity();
         RenderSystem.applyModelViewMatrix();
 
-        // Orthographic projection matching Minecraft's GUI coordinate system.
-        // In MC 1.20+ add second arg: VertexSorting.ORTHOGRAPHIC_Z
         int w = mc.getWindow().getGuiScaledWidth();
         int h = mc.getWindow().getGuiScaledHeight();
         Matrix4f ortho = new Matrix4f().ortho(0.0F, (float) w, (float) h, 0.0F, -1000.0F, 1000.0F);
         RenderSystem.setProjectionMatrix(ortho);
 
         PoseStack ps = new PoseStack();
-        ps.translate(0.0, 0.0, 50.0); // z-offset above world geometry
+        ps.translate(0.0, 0.0, 50.0);
 
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
@@ -165,15 +136,10 @@ public final class HUDBehavior extends Behavior {
         }
 
         RenderSystem.disableBlend();
-
-        // Restore 3-D projection.
-        // In MC 1.20+ add second arg: VertexSorting.DISTANCE_TO_ORIGIN
         RenderSystem.setProjectionMatrix(savedProj);
         mv.popPose();
         RenderSystem.applyModelViewMatrix();
     }
-
-    // ── Line builders ────────────────────────────────────────────────────────────────────
 
     private String[] buildHudLines() {
         List<String> lines = new ArrayList<>();
@@ -206,26 +172,27 @@ public final class HUDBehavior extends Behavior {
     }
 
     private void buildAwarenessLines(List<String> lines) {
-        float danger         = awarenessContext.getOverallDangerLevel();
-        SelfState self       = awarenessContext.getSelf();
-        TerrainSnapshot terr = awarenessContext.getTerrain();
-        ActionMode mode      = awarenessContext.getIntent().mode;
+        float danger              = awarenessContext.getOverallDangerLevel();
+        SelfState self            = awarenessContext.getSelf();
+        TerrainSnapshot terr      = awarenessContext.getTerrain();
+        ActionMode mode           = awarenessContext.getIntent().mode;
         List<ThreatEntry> threats = awarenessContext.getThreats();
 
-        if (!lines.isEmpty()) lines.add(""); // blank separator
+        if (!lines.isEmpty()) lines.add("");
 
-        // — Line 1: danger bar + action mode ——————————————————————————————
+        // Danger bar + action mode
         if (danger < 0.05f) {
             lines.add("§a● §7Awareness: §aSafe");
         } else {
-            String dangerColor = danger > 0.6f ? "§c" : danger > 0.3f ? "§e" : "§a";
-            lines.add(dangerColor + "● §7Danger: "
-                + buildBar(danger, 10, dangerColor)
-                + " " + dangerColor + String.format("%.2f", danger)
-                + " §7→ " + modeColor(mode) + mode.name());
+            String dc = danger > 0.6f ? "§c" : danger > 0.3f ? "§e" : "§a";
+            lines.add(dc + "● §7Danger: "
+                + buildBar(danger, 10, dc)
+                + " " + dc + String.format("%.2f", danger)
+                + " §7→ " + modeColor(mode) + mode.name()
+                + (threats.size() > 1 ? " §8(" + threats.size() + " threats)" : ""));
         }
 
-        // — Line 2: self state —————————————————————————————————————————
+        // Self state
         if (self.maxHealth > 0) {
             String hpColor  = self.health < 8f  ? "§c"
                             : self.health < 14f ? "§e" : "§a";
@@ -243,7 +210,7 @@ public final class HUDBehavior extends Behavior {
             lines.add(selfLine.toString());
         }
 
-        // — Line 3 (optional): terrain warnings ——————————————————————————
+        // Terrain warnings
         if (terr.inBlastZone || terr.fallDanger
                 || terr.nearestHazardType != TerrainSnapshot.HazardType.NONE) {
             StringBuilder warn = new StringBuilder("§7Terrain:");
@@ -256,24 +223,24 @@ public final class HUDBehavior extends Behavior {
             lines.add(warn.toString());
         }
 
-        // — Lines 4+: top-3 threat list ———————————————————————————————
-        int shown = Math.min(threats.size(), 3);
-        for (int i = 0; i < shown; i++) {
-            ThreatEntry t   = threats.get(i);
-            String prefix   = i == 0 ? "§c▸ " : "§7▸ ";
-            String catColor = categoryColor(t.tracked.category);
-            String name     = t.tracked.entity.getName().getString();
-            String losTag   = t.tracked.hasLineOfSight ? " §a[LOS]" : "";
-            lines.add(prefix + catColor + name
-                + " §7" + String.format("%.1f", t.tracked.distance) + "m"
-                + losTag
-                + " §8[" + String.format("%.2f", t.score) + "]");
+        // Threat list (up to MAX_THREATS_SHOWN)
+        if (!threats.isEmpty()) {
+            lines.add("§7Threats §8(" + threats.size() + " total):");
+            int shown = Math.min(threats.size(), MAX_THREATS_SHOWN);
+            for (int i = 0; i < shown; i++) {
+                ThreatEntry t   = threats.get(i);
+                String prefix   = i == 0 ? "§c▸ " : "§7▸ ";
+                String catColor = categoryColor(t.tracked.category);
+                String name     = t.tracked.entity.getName().getString();
+                String losTag   = t.tracked.hasLineOfSight ? " §a[LOS]" : "";
+                lines.add(prefix + catColor + name
+                    + " §7" + String.format("%.1f", t.tracked.distance) + "m"
+                    + losTag
+                    + " §8[" + String.format("%.2f", t.score) + "]");
+            }
         }
     }
 
-    // ── Helpers ─────────────────────────────────────────────────────────────────────────
-
-    /** Sends a grey-prefixed message to the local player's chat. */
     private void log(String msg) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player != null) {
