@@ -108,8 +108,8 @@ public final class CombatEngine {
         int desiredSlot = weaponSelector.select(player, awarenessCtx);
         player.getInventory().selected = desiredSlot;
 
-        spacingController.tick(input, target, awarenessCtx);
         attackValidator.tick(input, target);
+        spacingController.tick(input, target, awarenessCtx);
 
         return pause();
     }

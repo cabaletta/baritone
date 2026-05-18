@@ -10,7 +10,6 @@ import baritone.awareness.model.ThreatEntry;
 import baritone.utils.InputOverrideHandler;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.Vec3;
 
 /**
@@ -47,14 +46,14 @@ public final class HealthGate {
         SelfState self = awarenessCtx.getSelf();
         Player player  = ctx.player();
 
-        // Raise shield
-        if (self.shieldEquipped) {
-            input.setInputForceState(Input.CLICK_RIGHT, true);
-        }
-
-        // Use healing item
+        // Select heal item once per cooldown cycle
         if (player != null && healCooldown <= 0) {
             if (tryUseHealItem(player, self)) healCooldown = 40;
+        }
+
+        // Hold CLICK_RIGHT to consume the selected item, or raise shield while retreating
+        if (healCooldown > 0 || self.shieldEquipped) {
+            input.setInputForceState(Input.CLICK_RIGHT, true);
         }
         if (healCooldown > 0) healCooldown--;
 
@@ -63,24 +62,19 @@ public final class HealthGate {
             ThreatEntry nearest = awarenessCtx.getThreats().get(0);
             aimAt(nearest.tracked.entity);
             input.setInputForceState(Input.MOVE_BACK, true);
-            input.setInputForceState(Input.SPRINT, true);
         }
 
         return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
     }
 
     private boolean tryUseHealItem(Player player, SelfState self) {
-        if (self.hasPotion && selectSlot(player, Items.POTION))                    return true;
-        if (self.hasGapple && selectSlot(player, Items.ENCHANTED_GOLDEN_APPLE))    return true;
-        return false;
-    }
-
-    private boolean selectSlot(Player player, net.minecraft.world.item.Item type) {
-        for (int slot = 0; slot < 9; slot++) {
-            if (player.getInventory().getItem(slot).getItem() == type) {
-                player.getInventory().selected = slot;
-                return true;
-            }
+        if (self.hasPotion) {
+            int slot = InventoryLayout.findPotionSlot(player);
+            if (slot >= 0) { player.getInventory().selected = slot; return true; }
+        }
+        if (self.hasGapple) {
+            int slot = InventoryLayout.findGappleSlot(player);
+            if (slot >= 0) { player.getInventory().selected = slot; return true; }
         }
         return false;
     }

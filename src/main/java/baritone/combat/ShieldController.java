@@ -47,12 +47,13 @@ public final class ShieldController {
         if (player == null) return;
 
         ItemStack offhand = player.getInventory().offhand.get(0);
+        boolean offhandIsTotem  = offhand.getItem() == Items.TOTEM_OF_UNDYING;
+        boolean offhandIsShield = offhand.getItem() == Items.SHIELD;
 
-        if (self.health < TOTEM_SWAP_HP && self.hasTotem
-                && offhand.getItem() != Items.TOTEM_OF_UNDYING) {
+        if (self.health < TOTEM_SWAP_HP && self.hasTotem && !offhandIsTotem) {
             swapToOffhand(player, Items.TOTEM_OF_UNDYING);
-        } else if (self.health >= SHIELD_RESTORE_HP
-                && offhand.getItem() == Items.TOTEM_OF_UNDYING) {
+        } else if (self.health >= SHIELD_RESTORE_HP && !offhandIsShield) {
+            // Restore shield whether offhand has totem or became empty after totem was consumed
             swapToOffhand(player, Items.SHIELD);
         }
     }
