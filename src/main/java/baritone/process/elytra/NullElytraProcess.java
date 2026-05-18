@@ -96,4 +96,6 @@ public final class NullElytraProcess extends BaritoneProcessHelper implements IE
     public boolean isSafeToCancel() {
         return true;
     }
+
+
 }
