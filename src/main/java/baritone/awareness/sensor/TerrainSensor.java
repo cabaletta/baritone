@@ -12,9 +12,13 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Analyses the terrain around the player on two schedules:
- * - Light scan (every tick): escape directions and fall danger in a 3-block radius.
- * - Heavy scan (every 10 ticks): hazards, safe positions, blast-resistant blocks in 8-block radius.
+ * Analyses terrain on two schedules:
+ *   Light scan (every tick)  — escape directions (3-block radius) and fall danger.
+ *   Heavy scan (every 10 ticks) — hazards, safe positions, blast-resistant blocks (8-block radius).
+ *
+ * A single persistent snapshot is mutated in place so heavy-scan data
+ * (lava distance, blast zone, etc.) stays visible across the 9 light-scan
+ * ticks between heavy scans.
  */
 public final class TerrainSensor {
 
@@ -22,7 +26,7 @@ public final class TerrainSensor {
 
     private final IPlayerContext ctx;
     private int tickCount = 0;
-    private TerrainSnapshot snapshot = new TerrainSnapshot();
+    private final TerrainSnapshot snapshot = new TerrainSnapshot();
 
     public TerrainSensor(IPlayerContext ctx) {
         this.ctx = ctx;
@@ -31,21 +35,22 @@ public final class TerrainSensor {
     public void update() {
         tickCount++;
         BetterBlockPos feet = ctx.playerFeet();
-        snapshot = (tickCount % HEAVY_SCAN_INTERVAL == 0) ? heavyScan(feet) : lightScan(feet);
+
+        // Light scan fields — updated every tick.
+        snapshot.escapeDirections = findEscapeDirections(feet, 3);
+        snapshot.fallDanger = isFallDanger(feet);
+
+        // Heavy scan fields — updated every HEAVY_SCAN_INTERVAL ticks.
+        // They are intentionally NOT reset on light ticks so data persists.
+        if (tickCount % HEAVY_SCAN_INTERVAL == 0) {
+            heavyScan(feet);
+        }
     }
 
-    private TerrainSnapshot lightScan(BetterBlockPos feet) {
-        TerrainSnapshot s = new TerrainSnapshot();
-        s.escapeDirections = findEscapeDirections(feet, 3);
-        s.fallDanger = isFallDanger(feet);
-        return s;
-    }
-
-    private TerrainSnapshot heavyScan(BetterBlockPos feet) {
-        TerrainSnapshot s = new TerrainSnapshot();
-        s.escapeDirections = findEscapeDirections(feet, 8);
-        s.safePositions = findSafePositions(feet, 8);
-        s.fallDanger = isFallDanger(feet);
+    /** Writes hazard, safe-position, and blast-resistant data into the persistent snapshot. */
+    private void heavyScan(BetterBlockPos feet) {
+        snapshot.safePositions = findSafePositions(feet, 8);
+        snapshot.escapeDirections = findEscapeDirections(feet, 8);
 
         float nearestDist = 32f;
         TerrainSnapshot.HazardType nearestType = TerrainSnapshot.HazardType.NONE;
@@ -58,24 +63,24 @@ public final class TerrainSensor {
                     float dist = (float) Math.sqrt(dx * dx + dy * dy + dz * dz);
 
                     if (ctx.world().getBlockState(pos).getFluidState().is(Fluids.LAVA)
-                        || ctx.world().getBlockState(pos).getFluidState().is(Fluids.FLOWING_LAVA)) {
+                            || ctx.world().getBlockState(pos).getFluidState().is(Fluids.FLOWING_LAVA)) {
                         if (dist < nearestDist) {
                             nearestDist = dist;
                             nearestType = TerrainSnapshot.HazardType.LAVA;
                         }
                     }
 
-                    if (dy == 0 && ctx.world().getBlockState(pos).getBlock().getExplosionResistance() > 100f) {
+                    if (dy == 0
+                            && ctx.world().getBlockState(pos).getBlock().getExplosionResistance() > 100f) {
                         blastCount++;
                     }
                 }
             }
         }
 
-        s.nearestHazardDistance = nearestDist;
-        s.nearestHazardType = nearestType;
-        s.nearbyBlastResistantCount = blastCount;
-        return s;
+        snapshot.nearestHazardDistance = nearestDist;
+        snapshot.nearestHazardType = nearestType;
+        snapshot.nearbyBlastResistantCount = blastCount;
     }
 
     private boolean isFallDanger(BetterBlockPos feet) {
@@ -86,7 +91,7 @@ public final class TerrainSensor {
                 int drop = 0;
                 for (int dy = 1; dy <= 4; dy++) {
                     if (ctx.world().getBlockState(
-                        new BlockPos(adj.getX(), feet.y - dy, adj.getZ())).isAir()) {
+                            new BlockPos(adj.getX(), feet.y - dy, adj.getZ())).isAir()) {
                         drop++;
                     } else {
                         break;
@@ -109,8 +114,8 @@ public final class TerrainSensor {
                 BlockPos body1 = new BlockPos(nx, feet.y + dy + 1, nz);
                 BlockPos body2 = new BlockPos(nx, feet.y + dy + 2, nz);
                 if (!ctx.world().getBlockState(ground).isAir()
-                    && ctx.world().getBlockState(body1).isAir()
-                    && ctx.world().getBlockState(body2).isAir()) {
+                        && ctx.world().getBlockState(body1).isAir()
+                        && ctx.world().getBlockState(body2).isAir()) {
                     result.add(new Vec3(d[0], 0, d[1]).normalize());
                     break;
                 }
@@ -130,8 +135,8 @@ public final class TerrainSensor {
                     BlockPos body1 = new BlockPos(nx, feet.y + dy + 1, nz);
                     BlockPos body2 = new BlockPos(nx, feet.y + dy + 2, nz);
                     if (!ctx.world().getBlockState(ground).isAir()
-                        && ctx.world().getBlockState(body1).isAir()
-                        && ctx.world().getBlockState(body2).isAir()) {
+                            && ctx.world().getBlockState(body1).isAir()
+                            && ctx.world().getBlockState(body2).isAir()) {
                         safe.add(body1);
                         break;
                     }
