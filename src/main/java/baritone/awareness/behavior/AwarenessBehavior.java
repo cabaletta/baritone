@@ -43,8 +43,9 @@ public final class AwarenessBehavior extends Behavior {
         this.combatStatSensor = new CombatStatSensor(baritone.getPlayerContext());
         this.threatScorer = new ThreatScorer();
         this.decisionEngine = new DecisionEngine();
-        this.reactionSystem = new ReactionSystem(
-            baritone.getPlayerContext(), baritone.getInputOverrideHandler());
+        // Pass baritone reference so ReactionSystem resolves InputOverrideHandler lazily
+        // (it is registered after AwarenessBehavior, so getInputOverrideHandler() is null here)
+        this.reactionSystem = new ReactionSystem(baritone.getPlayerContext(), baritone);
     }
 
     @Override

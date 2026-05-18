@@ -1,5 +1,6 @@
 package baritone.awareness.decision;
 
+import baritone.Baritone;
 import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.input.Input;
 import baritone.awareness.AwarenessContext;
@@ -16,14 +17,17 @@ import baritone.utils.InputOverrideHandler;
 public final class ReactionSystem {
 
     private final IPlayerContext ctx;
-    private final InputOverrideHandler input;
+    private final Baritone baritone;
 
-    public ReactionSystem(IPlayerContext ctx, InputOverrideHandler input) {
+    public ReactionSystem(IPlayerContext ctx, Baritone baritone) {
         this.ctx = ctx;
-        this.input = input;
+        this.baritone = baritone;
     }
 
     public void evaluate(AwarenessContext awarenessCtx) {
+        InputOverrideHandler input = baritone.getInputOverrideHandler();
+        if (input == null) return;
+
         // Reset any shield raise from the previous tick
         input.setInputForceState(Input.CLICK_RIGHT, false);
 
