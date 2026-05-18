@@ -34,6 +34,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import org.lwjgl.glfw.GLFW;
@@ -93,21 +94,21 @@ public final class HUDBehavior extends Behavior {
 
         if (k0 && !prevKey[0]) {
             baritone.getPathingBehavior().cancelEverything();
-            logDirect("Baritone cancelled (hotkey).");
+            log("Baritone cancelled.");
         }
         if (k1 && !prevKey[1]) {
             boolean on = !BaritoneAPI.getSettings().renderPath.value;
             BaritoneAPI.getSettings().renderPath.value = on;
-            logDirect("Path rendering " + (on ? "on" : "off") + " (hotkey).");
+            log("Path rendering " + (on ? "on" : "off") + ".");
         }
         if (k2 && !prevKey[2]) {
             baritone.getPathingBehavior().cancelEverything();
-            logDirect("Path recompute triggered (hotkey).");
+            log("Path recompute triggered.");
         }
         if (k3 && !prevKey[3]) {
             cfg.hudEnabled = !cfg.hudEnabled;
             CustomConfig.save();
-            logDirect("HUD " + (cfg.hudEnabled ? "on" : "off") + " (hotkey).");
+            log("HUD " + (cfg.hudEnabled ? "on" : "off") + ".");
         }
 
         prevKey[0] = k0;
@@ -189,7 +190,7 @@ public final class HUDBehavior extends Behavior {
         int total     = current.getPath().positions().size();
         int remaining = Math.max(0, total - pos);
 
-        String distStr = "—"; // em-dash when next node unavailable
+        String distStr = "—";
         if (ctx.player() != null && pos + 1 < total) {
             Vec3 playerPos = ctx.player().position();
             BetterBlockPos nextNode = current.getPath().positions().get(pos + 1);
@@ -211,8 +212,7 @@ public final class HUDBehavior extends Behavior {
         ActionMode mode      = awarenessContext.getIntent().mode;
         List<ThreatEntry> threats = awarenessContext.getThreats();
 
-        // Blank separator between path panel and awareness panel.
-        if (!lines.isEmpty()) lines.add("");
+        if (!lines.isEmpty()) lines.add(""); // blank separator
 
         // — Line 1: danger bar + action mode ——————————————————————————————
         if (danger < 0.05f) {
@@ -225,73 +225,68 @@ public final class HUDBehavior extends Behavior {
                 + " §7→ " + modeColor(mode) + mode.name());
         }
 
-        // — Line 2: self state ——————————————————————————————————————————
+        // — Line 2: self state —————————————————————————————————————————
         if (self.maxHealth > 0) {
             String hpColor  = self.health < 8f  ? "§c"
                             : self.health < 14f ? "§e" : "§a";
             String armColor = self.totalArmorDurability < 0.3f ? "§c"
                             : self.totalArmorDurability < 0.6f ? "§e" : "§f";
-            StringBuilder selfLine = new StringBuilder();
-            selfLine.append("§7HP ");
+            StringBuilder selfLine = new StringBuilder("§7HP ");
             selfLine.append(hpColor).append(String.format("%.1f", self.health));
             selfLine.append("§7/§f").append(String.format("%.0f", self.maxHealth));
             selfLine.append("  §7Arm ").append(armColor);
-            if (self.totalArmorDurability > 0) {
-                selfLine.append(String.format("%.0f%%", self.totalArmorDurability * 100));
-            } else {
-                selfLine.append("§8none");
-            }
-            if (self.hasTotem) {
-                selfLine.append("  §7Tot §e").append(self.totemCount);
-            }
-            if (self.hasPearl) {
-                selfLine.append("  §7Pearl §b").append(self.pearlCount);
-            }
+            selfLine.append(self.totalArmorDurability > 0
+                ? String.format("%.0f%%", self.totalArmorDurability * 100)
+                : "§8none");
+            if (self.hasTotem) selfLine.append("  §7Tot §e").append(self.totemCount);
+            if (self.hasPearl) selfLine.append("  §7Pearl §b").append(self.pearlCount);
             lines.add(selfLine.toString());
         }
 
-        // — Line 3 (optional): terrain warnings ———————————————————————————
-        boolean hasTerrain = terr.inBlastZone || terr.fallDanger
-            || terr.nearestHazardType != TerrainSnapshot.HazardType.NONE;
-        if (hasTerrain) {
+        // — Line 3 (optional): terrain warnings ——————————————————————————
+        if (terr.inBlastZone || terr.fallDanger
+                || terr.nearestHazardType != TerrainSnapshot.HazardType.NONE) {
             StringBuilder warn = new StringBuilder("§7Terrain:");
             if (terr.inBlastZone) warn.append(" §c[BLAST]");
             if (terr.fallDanger)  warn.append(" §e[FALL]");
-            if (terr.nearestHazardType == TerrainSnapshot.HazardType.LAVA) {
+            if (terr.nearestHazardType == TerrainSnapshot.HazardType.LAVA)
                 warn.append(String.format(" §6[LAVA %.1fm]", terr.nearestHazardDistance));
-            } else if (terr.nearestHazardType == TerrainSnapshot.HazardType.WATER) {
+            else if (terr.nearestHazardType == TerrainSnapshot.HazardType.WATER)
                 warn.append(" §9[WATER]");
-            }
             lines.add(warn.toString());
         }
 
-        // — Lines 4+: top-3 threat list ————————————————————————————————
+        // — Lines 4+: top-3 threat list ———————————————————————————————
         int shown = Math.min(threats.size(), 3);
         for (int i = 0; i < shown; i++) {
-            ThreatEntry t     = threats.get(i);
-            String prefix     = i == 0 ? "§c▸ " : "§7▸ ";
-            String catColor   = categoryColor(t.tracked.category);
-            String name       = t.tracked.entity.getName().getString();
-            String losTag     = t.tracked.hasLineOfSight ? " §a[LOS]" : "";
-            String scoreTag   = " §8[" + String.format("%.2f", t.score) + "]";
+            ThreatEntry t   = threats.get(i);
+            String prefix   = i == 0 ? "§c▸ " : "§7▸ ";
+            String catColor = categoryColor(t.tracked.category);
+            String name     = t.tracked.entity.getName().getString();
+            String losTag   = t.tracked.hasLineOfSight ? " §a[LOS]" : "";
             lines.add(prefix + catColor + name
                 + " §7" + String.format("%.1f", t.tracked.distance) + "m"
-                + losTag + scoreTag);
+                + losTag
+                + " §8[" + String.format("%.2f", t.score) + "]");
         }
     }
 
     // ── Helpers ─────────────────────────────────────────────────────────────────────────
 
-    /**
-     * Builds a 10-cell block-character progress bar coloured with {@code activeColor}
-     * for filled cells and dark-grey for empty cells.
-     */
+    /** Sends a grey-prefixed message to the local player's chat. */
+    private void log(String msg) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player != null) {
+            mc.player.sendSystemMessage(
+                Component.literal("§8[Baritone] §7" + msg));
+        }
+    }
+
     private static String buildBar(float fraction, int width, String activeColor) {
         int filled = Math.round(fraction * width);
-        StringBuilder sb = new StringBuilder();
-        sb.append(activeColor);
+        StringBuilder sb = new StringBuilder(activeColor);
         for (int i = 0; i < width; i++) {
-            if (i == filled) sb.append("§8"); // switch to grey for empty segment
+            if (i == filled) sb.append("§8");
             sb.append(i < filled ? '▊' : '░');
         }
         return sb.toString();
