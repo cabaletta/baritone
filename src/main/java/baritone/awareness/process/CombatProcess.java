@@ -4,8 +4,11 @@ import baritone.Baritone;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
 import baritone.awareness.AwarenessContext;
+import baritone.awareness.model.ThreatEntry;
 import baritone.combat.CombatEngine;
 import baritone.utils.BaritoneProcessHelper;
+
+import java.util.List;
 
 /**
  * Activates when overall danger exceeds the AwarenessContext threshold (0.3).
@@ -24,7 +27,12 @@ public final class CombatProcess extends BaritoneProcessHelper {
 
     @Override
     public boolean isActive() {
-        return awarenessCtx.isUnderThreat();
+        List<ThreatEntry> threats = awarenessCtx.getThreats();
+        if (threats.isEmpty()) return false;
+        // Activate when any scored threat is within 20 blocks, or accumulated
+        // danger exceeds a low threshold (handles multiple distant threats).
+        ThreatEntry primary = threats.get(0);
+        return primary.tracked.distance < 20 || awarenessCtx.getOverallDangerLevel() > 0.15f;
     }
 
     @Override

@@ -97,8 +97,18 @@ public final class EntitySensor {
     private EntityState deriveState(Entity entity) {
         if (entity instanceof Mob) {
             Mob mob = (Mob) entity;
-            if (mob.getTarget() != null && mob.getTarget().equals(ctx.player())) {
+            // UUID comparison is required — object-identity equals() never matches across
+            // client/server entity instances even when they represent the same player.
+            if (mob.getTarget() != null
+                    && mob.getTarget().getUUID().equals(ctx.player().getUUID())) {
                 return EntityState.CHASING;
+            }
+            // Velocity-based fallback: client doesn't always propagate mob targets.
+            // If the mob is moving toward us, treat it as chasing.
+            Vec3 toPlayer = ctx.player().position().subtract(mob.position());
+            if (toPlayer.lengthSqr() > 0.01) {
+                double dot = mob.getDeltaMovement().dot(toPlayer.normalize());
+                if (dot > 0.04) return EntityState.CHASING;
             }
         }
         return EntityState.IDLE;
