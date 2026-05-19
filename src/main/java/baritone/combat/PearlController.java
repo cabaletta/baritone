@@ -78,7 +78,7 @@ public final class PearlController {
         Vec3 throwDir = elevate(escapeHorizontal, THROW_ELEVATION);
 
         // Simulate trajectory and find landing
-        Vec3 landing = simulate(player.getEyePosition(1f), throwDir, player.level());
+        Vec3 landing = simulate(player.getEyePosition(1f), throwDir, ctx.world());
         if (landing == null) return;
 
         int pearlSlot = InventoryLayout.findPearlSlot(player);

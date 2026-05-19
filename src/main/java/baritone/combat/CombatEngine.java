@@ -93,7 +93,7 @@ public final class CombatEngine {
         ThreatEntry target = targetSelector.select(awarenessCtx);
         if (target == null || !target.tracked.entity.isAlive()) return pause();
 
-        float distance = target.tracked.distance;
+        float distance = (float) target.tracked.distance;
 
         if (distance > ENGAGE_DISTANCE) {
             return new PathingCommand(

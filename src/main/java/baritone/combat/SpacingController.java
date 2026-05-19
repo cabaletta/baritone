@@ -30,7 +30,7 @@ public final class SpacingController {
     boolean wTapThisTick = false;
 
     public void tick(InputOverrideHandler input, ThreatEntry target, AwarenessContext ctx) {
-        float dist = target.tracked.distance;
+        float dist = (float) target.tracked.distance;
 
         strafeTimer++;
         if (strafeTimer >= nextFlip) {

@@ -45,20 +45,20 @@ public final class AttackValidator {
         if (player == null) return;
 
         float cooldown = player.getAttackStrengthScale(0f);
-        float distance = target.tracked.distance;
+        float distance = (float) target.tracked.distance;
 
         if (distance > MAX_RANGE)              return;
         if (!target.tracked.hasLineOfSight)    return;
         if (cooldown < MIN_COOLDOWN)           return;
 
         Vec3 delta   = player.getDeltaMovement();
-        boolean falling = !player.onGround()
+        boolean falling = !player.isOnGround()
             && !player.onClimbable()
             && !player.isInWater()
             && delta.y < 0;
 
         // Initiate crit jump once cooldown is near ready
-        if (!jumpedForCrit && player.onGround() && cooldown >= JUMP_COOLDOWN) {
+        if (!jumpedForCrit && player.isOnGround() && cooldown >= JUMP_COOLDOWN) {
             input.setInputForceState(Input.JUMP, true);
             jumpedForCrit = true;
             jumpTimer     = 0;
