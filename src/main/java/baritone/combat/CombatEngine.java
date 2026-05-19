@@ -11,6 +11,7 @@ import baritone.awareness.model.SelfState;
 import baritone.awareness.model.ThreatEntry;
 import baritone.utils.InputOverrideHandler;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 
@@ -94,6 +95,20 @@ public final class CombatEngine {
         if (target == null || !target.tracked.entity.isAlive()) return pause();
 
         float distance = (float) target.tracked.distance;
+
+        // Creepers: never melee — walk to within 3 blocks to trigger the fuse, then step
+        // back and let CreepeTactics handle the hit window and escape.  Direct combat
+        // would crit-spam them at close range → instant death from own explosion.
+        if (target.tracked.entity instanceof Creeper) {
+            if (distance > 3.5f) {
+                return new PathingCommand(
+                    new GoalNear(target.tracked.entity.blockPosition(), 3),
+                    PathingCommandType.REVALIDATE_GOAL_AND_PATH);
+            }
+            // Within explosion range — CreepeTactics handles fuse window above.
+            // If the creeper isn't fusing yet, stand still and wait.
+            return pause();
+        }
 
         if (distance > ENGAGE_DISTANCE) {
             return new PathingCommand(

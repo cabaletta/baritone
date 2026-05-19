@@ -2,44 +2,63 @@ package baritone.combat;
 
 import baritone.awareness.AwarenessContext;
 import baritone.awareness.model.ThreatEntry;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.monster.AbstractSkeleton;
 import net.minecraft.world.entity.monster.Creeper;
 
 import java.util.List;
 
 /**
- * Picks the highest-priority living target from the current threat list.
+ * Picks the highest-priority living target from the current threat list,
+ * with hard target-locking to prevent mid-fight target switching.
  *
- * Priority order:
- *   1. Any skeleton (ranged damage disrupts all other combat)
- *   2. Highest-scored alive non-creeper (creepers handled by CreepeTactics)
- *   3. Creeper if nothing else is alive
+ * Lock rules:
+ *   - Stick to the current locked target as long as it is alive and within 24 blocks.
+ *   - Only switch when the locked target dies, flees, or de-spawns.
+ *   - On first selection (or after lock breaks), pick best by priority:
+ *       1. Skeleton (ranged — kill first)
+ *       2. Highest-scored alive non-creeper
+ *       3. Creeper (solo only)
  */
 public final class TargetSelector {
 
+    private static final double LOCK_MAX_DISTANCE = 24.0;
+
+    private Entity lockedTarget = null;
+
     public ThreatEntry select(AwarenessContext ctx) {
         List<ThreatEntry> threats = ctx.getThreats();
-        if (threats.isEmpty()) return null;
+        if (threats.isEmpty()) {
+            lockedTarget = null;
+            return null;
+        }
 
-        // 1. Skeleton first
-        for (ThreatEntry t : threats) {
-            if (t.tracked.entity instanceof AbstractSkeleton && t.tracked.entity.isAlive()) {
-                return t;
+        // Maintain lock while target is alive and close
+        if (lockedTarget != null && lockedTarget.isAlive()) {
+            for (ThreatEntry t : threats) {
+                if (t.tracked.entity == lockedTarget
+                        && t.tracked.distance < LOCK_MAX_DISTANCE) {
+                    return t;
+                }
             }
         }
 
-        // 2. Best non-creeper (list is already sorted by threat score)
-        for (ThreatEntry t : threats) {
-            if (!(t.tracked.entity instanceof Creeper) && t.tracked.entity.isAlive()) {
-                return t;
-            }
-        }
+        // Lock expired — pick the best new target
+        ThreatEntry selected = selectBest(threats);
+        lockedTarget = selected != null ? selected.tracked.entity : null;
+        return selected;
+    }
 
-        // 3. Creeper only if it is the sole remaining threat
+    private ThreatEntry selectBest(List<ThreatEntry> threats) {
+        for (ThreatEntry t : threats) {
+            if (t.tracked.entity instanceof AbstractSkeleton && t.tracked.entity.isAlive()) return t;
+        }
+        for (ThreatEntry t : threats) {
+            if (!(t.tracked.entity instanceof Creeper) && t.tracked.entity.isAlive()) return t;
+        }
         for (ThreatEntry t : threats) {
             if (t.tracked.entity.isAlive()) return t;
         }
-
         return null;
     }
 }
