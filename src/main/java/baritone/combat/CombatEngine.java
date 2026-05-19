@@ -129,6 +129,11 @@ public final class CombatEngine {
         return pause();
     }
 
+    /** True if CreepeTactics is still executing a post-explosion escape sprint. */
+    public boolean hasPendingEscape() {
+        return creepeTactics.hasPendingEscape();
+    }
+
     // ── helpers ──────────────────────────────────────────────────────────────────────────
 
     private void aimAt(Entity target) {

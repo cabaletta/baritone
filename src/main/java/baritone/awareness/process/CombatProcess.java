@@ -27,10 +27,10 @@ public final class CombatProcess extends BaritoneProcessHelper {
 
     @Override
     public boolean isActive() {
+        // Stay active during a post-explosion creeper escape even if no threats remain
+        if (combatEngine.hasPendingEscape()) return true;
         List<ThreatEntry> threats = awarenessCtx.getThreats();
         if (threats.isEmpty()) return false;
-        // Activate when any scored threat is within 20 blocks, or accumulated
-        // danger exceeds a low threshold (handles multiple distant threats).
         ThreatEntry primary = threats.get(0);
         return primary.tracked.distance < 20 || awarenessCtx.getOverallDangerLevel() > 0.15f;
     }
@@ -41,7 +41,10 @@ public final class CombatProcess extends BaritoneProcessHelper {
     }
 
     @Override
-    public void onLostControl() {}
+    public void onLostControl() {
+        // Clear all forced inputs so no movement key stays held after combat ends
+        baritone.getInputOverrideHandler().clearAllKeys();
+    }
 
     @Override
     public double priority() {

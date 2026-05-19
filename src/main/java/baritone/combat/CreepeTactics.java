@@ -19,46 +19,62 @@ import net.minecraft.world.phys.Vec3;
 import baritone.api.utils.input.Input;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Handles fusing Creepers independently of the main combat loop.
  *
- * Fuse mechanics (standard, 30 ticks):
- *   Tick  0–17  (swell 0.00–0.600)  — fusing, approach and pre-position
- *   Tick 18–25  (swell 0.600–0.833) — HIT WINDOW: aim and knock into any mob cluster,
- *                                       then sprint directly away from the creeper
- *   Tick 26+    (swell > 0.867)     — DANGER: sprint directly away + place a block
- *                                       between player and explosion
+ * Fuse lifecycle (standard 30 ticks):
+ *   Tick  0–18  (0.000–0.633)  pre-window   — CombatEngine maintains 3-block distance
+ *   Tick 19–25  (0.633–0.867)  HIT WINDOW   — one aimed hit → sprint away
+ *   Tick 26–30  (0.867–1.000)  DANGER       — sprint away + place block between bot/creeper
  *
- * Hit window moved 2 ticks earlier (~100 ms) vs the original to give more time to
- * escape after the knockback sends the creeper away.
- *
- * Escape strategy in danger phase:
- *   Sprint away from the creeper to maximize distance, and place a solid block
- *   (from SLOT_BLOCKS in the hotbar) between the player and the creeper to absorb
- *   some of the blast.
+ * Post-explosion buffer:
+ *   When a danger-phase creeper disappears (exploded), the bot continues sprinting away
+ *   from the last known creeper position for POST_EXPLOSION_TICKS to ensure it clears
+ *   the blast radius before normal combat resumes.
  */
 public final class CreepeTactics {
 
-    private static final float FUSE_TICKS       = 30f;
-    private static final float HIT_WINDOW_START = 18f / FUSE_TICKS; // ~100 ms earlier: 0.600
-    private static final float HIT_WINDOW_END   = 26f / FUSE_TICKS; // 0.867
-    private static final float FAST_FUSE_DELTA  = 2f / FUSE_TICKS;
+    private static final float FUSE_TICKS          = 30f;
+    private static final float HIT_WINDOW_START    = 19f / FUSE_TICKS; // 0.633
+    private static final float HIT_WINDOW_END      = 26f / FUSE_TICKS; // 0.867
+    private static final float FAST_FUSE_DELTA     = 2f / FUSE_TICKS;
+    private static final int   POST_EXPLOSION_TICKS = 15;
 
     private final IPlayerContext ctx;
 
-    private final Map<Integer, Float>   fuseProgress    = new HashMap<>();
-    private final Map<Integer, Boolean> hitFired        = new HashMap<>();
-    private int blockPlaceCooldown = 0;
+    private final Map<Integer, Float>   fuseProgress  = new HashMap<>();
+    private final Map<Integer, Boolean> hitFired      = new HashMap<>();
+    private final Map<Integer, Vec3>    lastKnownPos  = new HashMap<>();
+
+    private Vec3  escapeFromPos   = null;
+    private int   escapeTicksLeft = 0;
+    private int   blockPlaceCooldown = 0;
 
     public CreepeTactics(IPlayerContext ctx) {
         this.ctx = ctx;
     }
 
+    /** True while the post-explosion escape sprint is running. */
+    public boolean hasPendingEscape() {
+        return escapeTicksLeft > 0;
+    }
+
     public PathingCommand tick(InputOverrideHandler input, AwarenessContext awarenessCtx) {
         if (blockPlaceCooldown > 0) blockPlaceCooldown--;
 
+        // ── Post-explosion escape buffer ─────────────────────────────────────────
+        if (escapeTicksLeft > 0) {
+            escapeTicksLeft--;
+            if (escapeFromPos != null) sprintAwayFromPos(input, escapeFromPos);
+            return pause();
+        }
+
+        // ── Build active-fusing set this tick ────────────────────────────────────
+        Set<Integer> activeFusingIds = new HashSet<>();
         Creeper fusing  = null;
         int     fusingId = -1;
         float   maxProg  = 0f;
@@ -69,23 +85,44 @@ public final class CreepeTactics {
             int id = c.getId();
 
             if (c.getSwellDir() > 0) {
+                activeFusingIds.add(id);
+                lastKnownPos.put(id, c.position());
+
                 float prev = fuseProgress.getOrDefault(id, 0f);
                 float next = prev + (1f / FUSE_TICKS);
                 fuseProgress.put(id, next);
+
                 if (next > maxProg) {
                     maxProg  = next;
                     fusing   = c;
                     fusingId = id;
                 }
-            } else {
-                fuseProgress.remove(id);
-                hitFired.remove(id);
             }
         }
 
+        // ── Detect explosions: creeper was in danger phase, now gone ─────────────
+        for (Map.Entry<Integer, Float> entry : new HashMap<>(fuseProgress).entrySet()) {
+            int   id       = entry.getKey();
+            float progress = entry.getValue();
+            if (!activeFusingIds.contains(id) && progress >= HIT_WINDOW_END) {
+                // This creeper was in the danger zone and disappeared — it exploded
+                Vec3 pos = lastKnownPos.get(id);
+                if (pos != null) {
+                    escapeFromPos   = pos;
+                    escapeTicksLeft = POST_EXPLOSION_TICKS;
+                }
+            }
+        }
+
+        // Clean up state for creepers that stopped fusing
+        fuseProgress.keySet().retainAll(activeFusingIds);
+        hitFired.keySet().retainAll(activeFusingIds);
+        lastKnownPos.keySet().retainAll(activeFusingIds);
+
         if (fusing == null) return null;
 
-        float prevProg   = fuseProgress.getOrDefault(fusingId, 0f) - (1f / FUSE_TICKS);
+        // ── Fast-fuse check ───────────────────────────────────────────────────────
+        float   prevProg = maxProg - (1f / FUSE_TICKS);
         boolean fastFuse = (maxProg - prevProg) > FAST_FUSE_DELTA && prevProg > 0.05f;
 
         if (fastFuse || maxProg >= HIT_WINDOW_END) {
@@ -96,7 +133,7 @@ public final class CreepeTactics {
         }
 
         if (maxProg >= HIT_WINDOW_START) {
-            // HIT WINDOW — one aimed hit, then sprint away from the (now-knocked-back) creeper
+            // HIT WINDOW — one aimed hit, then sprint away
             if (!hitFired.getOrDefault(fusingId, false)) {
                 aimAt(fusing);
                 Minecraft mc = ctx.minecraft();
@@ -109,33 +146,35 @@ public final class CreepeTactics {
             return pause();
         }
 
-        // Pre-window: let main combat handle positioning (CombatEngine keeps 3.5-block distance)
+        // Pre-window: let CombatEngine maintain safe distance
         return null;
     }
 
-    // ── helpers ─────────────────────────────────────────────────────────────────────
+    // ── helpers ──────────────────────────────────────────────────────────────────
 
-    /** Sprint directly away from the creeper to maximise distance before detonation. */
+    /** Sprint away from a living creeper using its current position. */
     private void sprintAwayFrom(InputOverrideHandler input, Creeper creeper) {
+        sprintAwayFromPos(input, creeper.position());
+    }
+
+    /** Sprint away from a fixed world position (used for post-explosion escape). */
+    private void sprintAwayFromPos(InputOverrideHandler input, Vec3 dangerPos) {
         Player player = ctx.player();
         if (player == null) return;
-        Vec3 away = player.position().subtract(creeper.position());
+        Vec3 away = player.position().subtract(dangerPos);
         if (away.lengthSqr() < 0.001) away = new Vec3(1, 0, 0);
         away = new Vec3(away.x, 0, away.z).normalize();
         float yaw = (float) Math.toDegrees(Math.atan2(-away.x, away.z));
-        player.setYRot(yaw);
-        player.yRotO = yaw;
-        player.setXRot(10f);  // look slightly down — natural running posture
-        player.xRotO = 10f;
-        input.setInputForceState(Input.SPRINT, true);
-        input.setInputForceState(Input.MOVE_FORWARD, true);
+        player.setYRot(yaw);  player.yRotO = yaw;
+        player.setXRot(10f);  player.xRotO = 10f;
+        input.setInputForceState(Input.SPRINT,        true);
+        input.setInputForceState(Input.MOVE_FORWARD,  true);
     }
 
     /**
-     * Places a solid block between the player and the creeper to absorb blast damage.
-     * Targets the top face of the ground block one step toward the creeper from the
-     * player's feet. processRightClickBlock uses the explicit BlockHitResult so the
-     * player's look direction does not need to match the placement direction.
+     * Places a solid block one step toward the creeper to absorb blast damage.
+     * Uses an explicit BlockHitResult so the player's look direction doesn't need
+     * to match — the placement goes through even while sprinting away.
      */
     private void tryPlaceShieldBlock(Creeper creeper) {
         if (blockPlaceCooldown > 0) return;
@@ -146,7 +185,6 @@ public final class CreepeTactics {
         if (toCreeper.lengthSqr() < 0.001) return;
         Vec3 dir = new Vec3(toCreeper.x, 0, toCreeper.z).normalize();
 
-        // One block toward the creeper at foot level
         BlockPos place = new BlockPos(
             (int) Math.floor(player.getX() + dir.x),
             (int) Math.floor(player.getY()),
@@ -156,7 +194,7 @@ public final class CreepeTactics {
         if (!ctx.world().getBlockState(place).isAir()) return;
 
         BlockPos support = place.below();
-        if (ctx.world().getBlockState(support).isAir()) return; // nothing to place on
+        if (ctx.world().getBlockState(support).isAir()) return;
 
         int blockSlot = findBlockSlot(player);
         if (blockSlot < 0) return;
@@ -173,11 +211,10 @@ public final class CreepeTactics {
         );
 
         player.getInventory().selected = prevSlot;
-        blockPlaceCooldown = 5; // don't spam-place every tick
+        blockPlaceCooldown = 5;
     }
 
     private int findBlockSlot(Player player) {
-        // Check the designated block slot first (slot 6)
         if (isPlaceable(player.getInventory().getItem(InventoryLayout.SLOT_BLOCKS))) {
             return InventoryLayout.SLOT_BLOCKS;
         }
