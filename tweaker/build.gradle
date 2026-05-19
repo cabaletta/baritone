@@ -95,7 +95,7 @@ jar {
 }
 
 task proguard(type: ProguardTask) {
-    proguardVersion "7.2.1"
+    proguardVersion "7.4.2"
 }
 
 task createDist(type: CreateDistTask, dependsOn: proguard)

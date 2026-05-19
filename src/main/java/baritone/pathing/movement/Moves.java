@@ -322,6 +322,54 @@ public enum Moves {
         public void apply(CalculationContext context, int x, int y, int z, MutableMoveResult result) {
             MovementParkour.cost(context, x, y, z, Direction.WEST, result);
         }
+    },
+
+    PARKOUR_NORTHEAST(+2, 0, -2, true, true) {
+        @Override
+        public Movement apply0(CalculationContext context, BetterBlockPos src) {
+            return MovementParkour.cost(context, src, 1, -1);
+        }
+
+        @Override
+        public void apply(CalculationContext context, int x, int y, int z, MutableMoveResult result) {
+            MovementParkour.cost(context, x, y, z, 1, -1, result);
+        }
+    },
+
+    PARKOUR_NORTHWEST(-2, 0, -2, true, true) {
+        @Override
+        public Movement apply0(CalculationContext context, BetterBlockPos src) {
+            return MovementParkour.cost(context, src, -1, -1);
+        }
+
+        @Override
+        public void apply(CalculationContext context, int x, int y, int z, MutableMoveResult result) {
+            MovementParkour.cost(context, x, y, z, -1, -1, result);
+        }
+    },
+
+    PARKOUR_SOUTHEAST(+2, 0, +2, true, true) {
+        @Override
+        public Movement apply0(CalculationContext context, BetterBlockPos src) {
+            return MovementParkour.cost(context, src, 1, 1);
+        }
+
+        @Override
+        public void apply(CalculationContext context, int x, int y, int z, MutableMoveResult result) {
+            MovementParkour.cost(context, x, y, z, 1, 1, result);
+        }
+    },
+
+    PARKOUR_SOUTHWEST(-2, 0, +2, true, true) {
+        @Override
+        public Movement apply0(CalculationContext context, BetterBlockPos src) {
+            return MovementParkour.cost(context, src, -1, 1);
+        }
+
+        @Override
+        public void apply(CalculationContext context, int x, int y, int z, MutableMoveResult result) {
+            MovementParkour.cost(context, x, y, z, -1, 1, result);
+        }
     };
 
     public final boolean dynamicXZ;

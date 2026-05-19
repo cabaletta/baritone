@@ -80,6 +80,7 @@ allprojects {
     dependencies {
         compileOnly "org.spongepowered:mixin:${project.mixin_version}"
         compileOnly "org.ow2.asm:asm:${project.asm_version}"
+        compileOnly 'com.google.code.findbugs:jsr305:3.0.2'
 
         implementation "dev.babbaj:nether-pathfinder:${project.nether_pathfinder_version}"
     }

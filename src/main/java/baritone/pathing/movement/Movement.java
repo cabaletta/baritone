@@ -78,7 +78,7 @@ public abstract class Movement implements IMovement, MovementHelper {
     }
 
     public double getCost() throws NullPointerException {
-        return cost;
+        return cost == null ? 0.0 : cost;
     }
 
     public double getCost(CalculationContext context) {

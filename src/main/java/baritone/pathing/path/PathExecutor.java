@@ -58,6 +58,7 @@ public class PathExecutor implements IPathExecutor, Helper {
      * @see <a href="https://i.imgur.com/5s5GLnI.png">Anime</a>
      */
     private static final double MAX_TICKS_AWAY = 200;
+    private static final int MAX_ADVANCES_PER_TICK = 5;
 
     private final IPath path;
     private int pathPosition;
@@ -76,6 +77,8 @@ public class PathExecutor implements IPathExecutor, Helper {
 
     private boolean sprintNextTick;
 
+    private int remainingAdvances;
+
     public PathExecutor(PathingBehavior behavior, IPath path) {
         this.behavior = behavior;
         this.ctx = behavior.ctx;
@@ -90,6 +93,8 @@ public class PathExecutor implements IPathExecutor, Helper {
      * not sneaking out over lava), false otherwise
      */
     public boolean onTick() {
+        remainingAdvances = MAX_ADVANCES_PER_TICK;
+        while (remainingAdvances > 0) {
         if (pathPosition == path.length() - 1) {
             pathPosition++;
         }
@@ -107,8 +112,8 @@ public class PathExecutor implements IPathExecutor, Helper {
                         path.movements().get(j).reset();
                     }
                     onChangeInPathPosition();
-                    onTick();
-                    return false;
+                    remainingAdvances--;
+                    continue;
                 }
             }
             for (int i = pathPosition + 3; i < path.length() - 1; i++) { //dont check pathPosition+1. the movement tells us when it's done (e.g. sneak placing)
@@ -120,8 +125,8 @@ public class PathExecutor implements IPathExecutor, Helper {
                     //System.out.println("Double skip sundae");
                     pathPosition = i - 1;
                     onChangeInPathPosition();
-                    onTick();
-                    return false;
+                    remainingAdvances--;
+                    continue;
                 }
             }
         }
@@ -144,7 +149,7 @@ public class PathExecutor implements IPathExecutor, Helper {
         }
         //long start = System.nanoTime() / 1000000L;
         BlockStateInterface bsi = new BlockStateInterface(ctx);
-        for (int i = pathPosition - 10; i < pathPosition + 10; i++) {
+        for (int i = pathPosition - 2; i < pathPosition + 2; i++) {
             if (i < 0 || i >= path.movements().size()) {
                 continue;
             }
@@ -231,8 +236,8 @@ public class PathExecutor implements IPathExecutor, Helper {
             //System.out.println("Movement done, next path");
             pathPosition++;
             onChangeInPathPosition();
-            onTick();
-            return true;
+            remainingAdvances--;
+            continue;
         } else {
             sprintNextTick = shouldSprintNextTick();
             if (!sprintNextTick) {
@@ -250,6 +255,8 @@ public class PathExecutor implements IPathExecutor, Helper {
             }
         }
         return canCancel; // movement is in progress, but if it reports cancellable, PathingBehavior is good to cut onto the next path
+        } // end while
+        return true;
     }
 
     private Tuple<Double, BlockPos> closestPathPos(IPath path) {
@@ -361,7 +368,7 @@ public class PathExecutor implements IPathExecutor, Helper {
                     logDebug("Skipping traverse to straight ascend");
                     pathPosition++;
                     onChangeInPathPosition();
-                    onTick();
+                    remainingAdvances--;
                     behavior.baritone.getInputOverrideHandler().setInputForceState(Input.JUMP, true);
                     return true;
                 } else {
@@ -409,7 +416,7 @@ public class PathExecutor implements IPathExecutor, Helper {
                     // a descend then an ascend in the same direction
                     pathPosition++;
                     onChangeInPathPosition();
-                    onTick();
+                    remainingAdvances--;
                     // okay to skip clearKeys and / or onChangeInPathPosition here since this isn't possible to repeat, since it's asymmetric
                     logDebug("Skipping descend to straight ascend");
                     return true;
@@ -426,7 +433,7 @@ public class PathExecutor implements IPathExecutor, Helper {
                     if (ctx.playerFeet().equals(current.getDest())) {
                         pathPosition++;
                         onChangeInPathPosition();
-                        onTick();
+                        remainingAdvances--;
                     }
 
                     return true;
@@ -462,7 +469,7 @@ public class PathExecutor implements IPathExecutor, Helper {
                 if (ctx.playerFeet().equals(fallDest)) {
                     pathPosition = path.positions().indexOf(fallDest);
                     onChangeInPathPosition();
-                    onTick();
+                    remainingAdvances--;
                     return true;
                 }
                 clearKeys();
