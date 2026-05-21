@@ -147,6 +147,9 @@ public class Baritone implements IBaritone {
             this.combatProcess           = this.registerProcess(CombatProcess::new);
         }
 
+        // Arm the CPvP Watchdog — fires via MixinWatchdog at Minecraft.tick() TAIL
+        baritone.combat.watchdog.WatchdogEngine.init();
+
         this.worldProvider = new WorldProvider(this);
         this.selectionManager = new SelectionManager(this);
         this.commandManager = new CommandManager(this);

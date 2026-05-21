@@ -29,6 +29,7 @@
     "MixinRenderPipelines",
     "MixinRenderType",
     "MixinScreen",
+    "MixinWatchdog",
     "MixinWorldRenderer"
   ],
   "mixins": [
