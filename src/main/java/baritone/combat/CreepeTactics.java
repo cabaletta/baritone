@@ -23,24 +23,11 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-/**
- * Handles fusing Creepers independently of the main combat loop.
- *
- * Fuse lifecycle (standard 30 ticks):
- *   Tick  0–18  (0.000–0.633)  pre-window   — CombatEngine maintains 3-block distance
- *   Tick 19–25  (0.633–0.867)  HIT WINDOW   — one aimed hit → sprint away
- *   Tick 26–30  (0.867–1.000)  DANGER       — sprint away + place block between bot/creeper
- *
- * Post-explosion buffer:
- *   When a danger-phase creeper disappears (exploded), the bot continues sprinting away
- *   from the last known creeper position for POST_EXPLOSION_TICKS to ensure it clears
- *   the blast radius before normal combat resumes.
- */
 public final class CreepeTactics {
 
     private static final float FUSE_TICKS          = 30f;
-    private static final float HIT_WINDOW_START    = 19f / FUSE_TICKS; // 0.633
-    private static final float HIT_WINDOW_END      = 26f / FUSE_TICKS; // 0.867
+    private static final float HIT_WINDOW_START    = 19f / FUSE_TICKS;
+    private static final float HIT_WINDOW_END      = 26f / FUSE_TICKS;
     private static final float FAST_FUSE_DELTA     = 2f / FUSE_TICKS;
     private static final int   POST_EXPLOSION_TICKS = 15;
 
@@ -58,7 +45,6 @@ public final class CreepeTactics {
         this.ctx = ctx;
     }
 
-    /** True while the post-explosion escape sprint is running. */
     public boolean hasPendingEscape() {
         return escapeTicksLeft > 0;
     }
@@ -66,14 +52,12 @@ public final class CreepeTactics {
     public PathingCommand tick(InputOverrideHandler input, AwarenessContext awarenessCtx) {
         if (blockPlaceCooldown > 0) blockPlaceCooldown--;
 
-        // ── Post-explosion escape buffer ─────────────────────────────────────────
         if (escapeTicksLeft > 0) {
             escapeTicksLeft--;
             if (escapeFromPos != null) sprintAwayFromPos(input, escapeFromPos);
             return pause();
         }
 
-        // ── Build active-fusing set this tick ────────────────────────────────────
         Set<Integer> activeFusingIds = new HashSet<>();
         Creeper fusing  = null;
         int     fusingId = -1;
@@ -100,12 +84,10 @@ public final class CreepeTactics {
             }
         }
 
-        // ── Detect explosions: creeper was in danger phase, now gone ─────────────
         for (Map.Entry<Integer, Float> entry : new HashMap<>(fuseProgress).entrySet()) {
             int   id       = entry.getKey();
             float progress = entry.getValue();
             if (!activeFusingIds.contains(id) && progress >= HIT_WINDOW_END) {
-                // This creeper was in the danger zone and disappeared — it exploded
                 Vec3 pos = lastKnownPos.get(id);
                 if (pos != null) {
                     escapeFromPos   = pos;
@@ -114,26 +96,22 @@ public final class CreepeTactics {
             }
         }
 
-        // Clean up state for creepers that stopped fusing
         fuseProgress.keySet().retainAll(activeFusingIds);
         hitFired.keySet().retainAll(activeFusingIds);
         lastKnownPos.keySet().retainAll(activeFusingIds);
 
         if (fusing == null) return null;
 
-        // ── Fast-fuse check ───────────────────────────────────────────────────────
         float   prevProg = maxProg - (1f / FUSE_TICKS);
         boolean fastFuse = (maxProg - prevProg) > FAST_FUSE_DELTA && prevProg > 0.05f;
 
         if (fastFuse || maxProg >= HIT_WINDOW_END) {
-            // DANGER — sprint directly away + try to place a block to absorb blast
             sprintAwayFrom(input, fusing);
             tryPlaceShieldBlock(fusing);
             return pause();
         }
 
         if (maxProg >= HIT_WINDOW_START) {
-            // HIT WINDOW — one aimed hit, then sprint away
             if (!hitFired.getOrDefault(fusingId, false)) {
                 aimAt(fusing);
                 Minecraft mc = ctx.minecraft();
@@ -146,18 +124,13 @@ public final class CreepeTactics {
             return pause();
         }
 
-        // Pre-window: let CombatEngine maintain safe distance
         return null;
     }
 
-    // ── helpers ──────────────────────────────────────────────────────────────────
-
-    /** Sprint away from a living creeper using its current position. */
     private void sprintAwayFrom(InputOverrideHandler input, Creeper creeper) {
         sprintAwayFromPos(input, creeper.position());
     }
 
-    /** Sprint away from a fixed world position (used for post-explosion escape). */
     private void sprintAwayFromPos(InputOverrideHandler input, Vec3 dangerPos) {
         Player player = ctx.player();
         if (player == null) return;
@@ -171,11 +144,6 @@ public final class CreepeTactics {
         input.setInputForceState(Input.MOVE_FORWARD,  true);
     }
 
-    /**
-     * Places a solid block one step toward the creeper to absorb blast damage.
-     * Uses an explicit BlockHitResult so the player's look direction doesn't need
-     * to match — the placement goes through even while sprinting away.
-     */
     private void tryPlaceShieldBlock(Creeper creeper) {
         if (blockPlaceCooldown > 0) return;
         Player player = ctx.player();
@@ -199,8 +167,8 @@ public final class CreepeTactics {
         int blockSlot = findBlockSlot(player);
         if (blockSlot < 0) return;
 
-        int prevSlot = player.getInventory().selected;
-        player.getInventory().selected = blockSlot;
+        int prevSlot = InventoryHelper.getSelected(player);
+        InventoryHelper.setSelected(player, blockSlot);
 
         Vec3 hitVec = Vec3.atCenterOf(support).add(0, 0.5, 0);
         ctx.playerController().processRightClickBlock(
@@ -210,7 +178,7 @@ public final class CreepeTactics {
             new BlockHitResult(hitVec, Direction.UP, support, false)
         );
 
-        player.getInventory().selected = prevSlot;
+        InventoryHelper.setSelected(player, prevSlot);
         blockPlaceCooldown = 5;
     }
 

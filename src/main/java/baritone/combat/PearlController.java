@@ -13,32 +13,14 @@ import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
 
-/**
- * Ender pearl escape logic.
- *
- * Decides to throw when:
- *   • Surrounded: 3+ threats within 5 m, OR
- *   • Own shield just broken AND HP < 30%
- *
- * Safety gates before throwing:
- *   • Pearl in hotbar
- *   • HP > 3 hearts (fall damage on landing = 2.5 hearts)
- *   • Valid landing spot (solid ground, 2-block head clearance)
- *   • 20-tick cooldown between throws
- *
- * Physics simulation (matches vanilla ender pearl):
- *   Each tick: pos += vel; vel = vel * 0.99 + (0, -0.03, 0)
- *   Throw speed: 2.5 blocks/tick
- *   Elevation: 15° above horizontal for ~18-20 block escape range
- */
 public final class PearlController {
 
     private static final float PEARL_SPEED       = 2.5f;
     private static final float GRAVITY           = 0.03f;
     private static final float AIR_RESISTANCE    = 0.99f;
-    private static final float THROW_ELEVATION   = 15f;   // degrees above horizontal
-    private static final float FALL_DAMAGE       = 2.5f;  // hearts
-    private static final float MIN_HP_TO_THROW   = FALL_DAMAGE + 0.5f; // 3-heart buffer
+    private static final float THROW_ELEVATION   = 15f;
+    private static final float FALL_DAMAGE       = 2.5f;
+    private static final float MIN_HP_TO_THROW   = FALL_DAMAGE + 0.5f;
     private static final int   SIM_MAX_TICKS     = 80;
     private static final int   THROW_COOLDOWN    = 20;
     private static final int   SURROUND_COUNT    = 3;
@@ -70,22 +52,17 @@ public final class PearlController {
             || (ownShieldBroken && hpFrac < 0.30f);
         if (!shouldThrow) return;
 
-        // Find escape direction (away from threat centroid)
         Vec3 escapeHorizontal = computeEscapeDir(awarenessCtx, player);
         if (escapeHorizontal == null) return;
 
-        // Elevate throw for distance
         Vec3 throwDir = elevate(escapeHorizontal, THROW_ELEVATION);
-
-        // Simulate trajectory and find landing
         Vec3 landing = simulate(player.getEyePosition(1f), throwDir, ctx.world());
         if (landing == null) return;
 
         int pearlSlot = InventoryLayout.findPearlSlot(player);
         if (pearlSlot < 0) return;
 
-        // Select pearl, aim toward landing, throw
-        player.getInventory().selected = pearlSlot;
+        InventoryHelper.setSelected(player, pearlSlot);
         aimAt(player, landing);
         input.setInputForceState(Input.CLICK_RIGHT, true);
 
@@ -93,10 +70,7 @@ public final class PearlController {
         threw    = true;
     }
 
-    /** True on the exact tick a pearl was thrown. */
     public boolean justThrew() { return threw; }
-
-    // ── helpers ─────────────────────────────────────────────────────────────────────
 
     private Vec3 computeEscapeDir(AwarenessContext ctx, Player player) {
         List<ThreatEntry> threats = ctx.getThreats();
@@ -122,19 +96,15 @@ public final class PearlController {
     private Vec3 simulate(Vec3 origin, Vec3 dir, Level world) {
         Vec3 pos = origin;
         Vec3 vel = dir.normalize().scale(PEARL_SPEED);
-
         for (int t = 0; t < SIM_MAX_TICKS; t++) {
             pos = pos.add(vel);
             vel = new Vec3(vel.x * AIR_RESISTANCE,
                            vel.y * AIR_RESISTANCE - GRAVITY,
                            vel.z * AIR_RESISTANCE);
-
             BlockPos bp = new BlockPos((int) Math.floor(pos.x),
                                        (int) Math.floor(pos.y),
                                        (int) Math.floor(pos.z));
-
             if (!world.getBlockState(bp).isAir()) {
-                // Candidate landing: one block above the collision point
                 BlockPos land  = bp.above();
                 BlockPos head1 = land.above();
                 BlockPos head2 = head1.above();
@@ -143,10 +113,10 @@ public final class PearlController {
                         && world.getBlockState(head2).isAir()) {
                     return Vec3.atCenterOf(land);
                 }
-                return null; // blocked, no valid landing
+                return null;
             }
         }
-        return null; // no ground found within range
+        return null;
     }
 
     private void aimAt(Player player, Vec3 target) {

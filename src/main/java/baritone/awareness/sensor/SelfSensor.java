@@ -29,9 +29,8 @@ public final class SelfSensor {
         s.shieldEquipped = player.getOffhandItem().getItem() == Items.SHIELD
                         || player.getMainHandItem().getItem() == Items.SHIELD;
 
-        // Shield cooldown (disabled after axe hit)
-        s.shieldOnCooldown     = player.getCooldowns().isOnCooldown(Items.SHIELD);
-        s.shieldCooldownPercent = player.getCooldowns().getCooldownPercent(Items.SHIELD, 0f);
+        s.shieldOnCooldown     = player.getCooldowns().isOnCooldown(Items.SHIELD.getDefaultInstance());
+        s.shieldCooldownPercent = player.getCooldowns().getCooldownPercent(Items.SHIELD.getDefaultInstance(), 0f);
 
         Inventory inv = player.getInventory();
         int totems = 0, pearls = 0;
@@ -50,7 +49,6 @@ public final class SelfSensor {
             if (item == Items.POTION || item == Items.SPLASH_POTION)    potion = true;
         }
 
-        // Armor slots: indices 36-39 (boots, leggings, chestplate, helmet)
         for (int i = 36; i < 40; i++) {
             ItemStack stack = inv.getItem(i);
             if (!stack.isEmpty() && stack.isDamageableItem()) {

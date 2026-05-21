@@ -3,23 +3,11 @@ package baritone.combat;
 import baritone.awareness.AwarenessContext;
 import baritone.awareness.model.ThreatEntry;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.monster.AbstractSkeleton;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.monster.Creeper;
 
 import java.util.List;
 
-/**
- * Picks the highest-priority living target from the current threat list,
- * with hard target-locking to prevent mid-fight target switching.
- *
- * Lock rules:
- *   - Stick to the current locked target as long as it is alive and within 24 blocks.
- *   - Only switch when the locked target dies, flees, or de-spawns.
- *   - On first selection (or after lock breaks), pick best by priority:
- *       1. Skeleton (ranged — kill first)
- *       2. Highest-scored alive non-creeper
- *       3. Creeper (solo only)
- */
 public final class TargetSelector {
 
     private static final double LOCK_MAX_DISTANCE = 24.0;
@@ -33,7 +21,6 @@ public final class TargetSelector {
             return null;
         }
 
-        // Maintain lock while target is alive and close
         if (lockedTarget != null && lockedTarget.isAlive()) {
             for (ThreatEntry t : threats) {
                 if (t.tracked.entity == lockedTarget
@@ -43,7 +30,6 @@ public final class TargetSelector {
             }
         }
 
-        // Lock expired — pick the best new target
         ThreatEntry selected = selectBest(threats);
         lockedTarget = selected != null ? selected.tracked.entity : null;
         return selected;
@@ -51,7 +37,9 @@ public final class TargetSelector {
 
     private ThreatEntry selectBest(List<ThreatEntry> threats) {
         for (ThreatEntry t : threats) {
-            if (t.tracked.entity instanceof AbstractSkeleton && t.tracked.entity.isAlive()) return t;
+            EntityType<?> et = t.tracked.entity.getType();
+            if ((et == EntityType.SKELETON || et == EntityType.STRAY || et == EntityType.WITHER_SKELETON)
+                    && t.tracked.entity.isAlive()) return t;
         }
         for (ThreatEntry t : threats) {
             if (!(t.tracked.entity instanceof Creeper) && t.tracked.entity.isAlive()) return t;

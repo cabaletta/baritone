@@ -12,8 +12,6 @@ import net.minecraft.world.entity.item.PrimedTnt;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
-import net.minecraft.world.entity.vehicle.AbstractMinecart;
-import net.minecraft.world.entity.vehicle.Boat;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -97,14 +95,10 @@ public final class EntitySensor {
     private EntityState deriveState(Entity entity) {
         if (entity instanceof Mob) {
             Mob mob = (Mob) entity;
-            // UUID comparison is required — object-identity equals() never matches across
-            // client/server entity instances even when they represent the same player.
             if (mob.getTarget() != null
                     && mob.getTarget().getUUID().equals(ctx.player().getUUID())) {
                 return EntityState.CHASING;
             }
-            // Velocity-based fallback: client doesn't always propagate mob targets.
-            // If the mob is moving toward us, treat it as chasing.
             Vec3 toPlayer = ctx.player().position().subtract(mob.position());
             if (toPlayer.lengthSqr() > 0.01) {
                 double dot = mob.getDeltaMovement().dot(toPlayer.normalize());
@@ -137,8 +131,6 @@ public final class EntitySensor {
         if (entity.getType() == EntityType.END_CRYSTAL) return EntityCategory.EXPLOSIVE;
         if (entity instanceof Monster)         return EntityCategory.HOSTILE_MOB;
         if (entity instanceof Animal)          return EntityCategory.PASSIVE_MOB;
-        if (entity instanceof AbstractMinecart
-            || entity instanceof Boat)         return EntityCategory.VEHICLE;
         return EntityCategory.OTHER;
     }
 

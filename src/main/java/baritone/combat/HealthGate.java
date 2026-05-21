@@ -12,14 +12,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 
-/**
- * Disengages and heals when player HP drops below 50%, re-engages above 75%.
- *
- * While healing:
- *   - Raises shield if equipped
- *   - Uses best available healing item (instant health potion > gapple)
- *   - Backs away from threats while looking at the nearest one
- */
 public final class HealthGate {
 
     private static final float DISENGAGE_THRESHOLD = 0.5f;
@@ -46,18 +38,15 @@ public final class HealthGate {
         SelfState self = awarenessCtx.getSelf();
         Player player  = ctx.player();
 
-        // Select heal item once per cooldown cycle
         if (player != null && healCooldown <= 0) {
             if (tryUseHealItem(player, self)) healCooldown = 40;
         }
 
-        // Hold CLICK_RIGHT to consume the selected item, or raise shield while retreating
         if (healCooldown > 0 || self.shieldEquipped) {
             input.setInputForceState(Input.CLICK_RIGHT, true);
         }
         if (healCooldown > 0) healCooldown--;
 
-        // Back away while facing the nearest threat
         if (!awarenessCtx.getThreats().isEmpty()) {
             ThreatEntry nearest = awarenessCtx.getThreats().get(0);
             aimAt(nearest.tracked.entity);
@@ -70,11 +59,11 @@ public final class HealthGate {
     private boolean tryUseHealItem(Player player, SelfState self) {
         if (self.hasPotion) {
             int slot = InventoryLayout.findPotionSlot(player);
-            if (slot >= 0) { player.getInventory().selected = slot; return true; }
+            if (slot >= 0) { InventoryHelper.setSelected(player, slot); return true; }
         }
         if (self.hasGapple) {
             int slot = InventoryLayout.findGappleSlot(player);
-            if (slot >= 0) { player.getInventory().selected = slot; return true; }
+            if (slot >= 0) { InventoryHelper.setSelected(player, slot); return true; }
         }
         return false;
     }

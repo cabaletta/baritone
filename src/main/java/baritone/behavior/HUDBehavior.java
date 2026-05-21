@@ -30,13 +30,11 @@ import baritone.awareness.model.TerrainSnapshot;
 import baritone.awareness.model.ThreatEntry;
 import baritone.pathing.path.PathExecutor;
 import baritone.utils.CustomConfig;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Matrix4f;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
@@ -61,7 +59,7 @@ public final class HUDBehavior extends Behavior {
         Minecraft mc = Minecraft.getInstance();
         if (mc.screen != null) return;
 
-        long win = mc.getWindow().getWindow();
+        long win = mc.getWindow().getWindowHandle();
         CustomConfig cfg = CustomConfig.get();
 
         boolean k0 = isDown(win, cfg.keyCancel);
@@ -106,39 +104,18 @@ public final class HUDBehavior extends Behavior {
         String[] lines = buildHudLines();
         if (lines.length == 0) return;
 
-        Matrix4f savedProj = new Matrix4f(event.getProjectionMatrix());
-
-        PoseStack mv = RenderSystem.getModelViewStack();
-        mv.pushPose();
-        mv.setIdentity();
-        RenderSystem.applyModelViewMatrix();
-
-        int w = mc.getWindow().getGuiScaledWidth();
-        int h = mc.getWindow().getGuiScaledHeight();
-        Matrix4f ortho = new Matrix4f().ortho(0.0F, (float) w, (float) h, 0.0F, -1000.0F, 1000.0F);
-        RenderSystem.setProjectionMatrix(ortho);
-
-        PoseStack ps = new PoseStack();
-        ps.translate(0.0, 0.0, 50.0);
-
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-
+        GuiGraphics gg = new GuiGraphics(mc, mc.renderBuffers().bufferSource());
         Font font = mc.font;
         int x  = cfg.hudX;
         int y  = cfg.hudY;
         int lh = font.lineHeight + 2;
         for (String line : lines) {
             if (!line.isEmpty()) {
-                font.drawShadow(ps, line, (float) x, (float) y, 0xFF000000 | cfg.hudColor);
+                gg.drawString(font, line, x, y, 0xFF000000 | cfg.hudColor, true);
             }
             y += lh;
         }
-
-        RenderSystem.disableBlend();
-        RenderSystem.setProjectionMatrix(savedProj);
-        mv.popPose();
-        RenderSystem.applyModelViewMatrix();
+        mc.renderBuffers().bufferSource().endBatch();
     }
 
     private String[] buildHudLines() {
@@ -180,7 +157,6 @@ public final class HUDBehavior extends Behavior {
 
         if (!lines.isEmpty()) lines.add("");
 
-        // Danger bar + action mode
         if (danger < 0.05f) {
             lines.add("§a● §7Awareness: §aSafe");
         } else {
@@ -192,7 +168,6 @@ public final class HUDBehavior extends Behavior {
                 + (threats.size() > 1 ? " §8(" + threats.size() + " threats)" : ""));
         }
 
-        // Self state
         if (self.maxHealth > 0) {
             String hpColor  = self.health < 8f  ? "§c"
                             : self.health < 14f ? "§e" : "§a";
@@ -210,7 +185,6 @@ public final class HUDBehavior extends Behavior {
             lines.add(selfLine.toString());
         }
 
-        // Terrain warnings
         if (terr.inBlastZone || terr.fallDanger
                 || terr.nearestHazardType != TerrainSnapshot.HazardType.NONE) {
             StringBuilder warn = new StringBuilder("§7Terrain:");
@@ -223,7 +197,6 @@ public final class HUDBehavior extends Behavior {
             lines.add(warn.toString());
         }
 
-        // Threat list (up to MAX_THREATS_SHOWN)
         if (!threats.isEmpty()) {
             lines.add("§7Threats §8(" + threats.size() + " total):");
             int shown = Math.min(threats.size(), MAX_THREATS_SHOWN);

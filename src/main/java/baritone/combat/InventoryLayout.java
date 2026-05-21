@@ -4,26 +4,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.AxeItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.SwordItem;
+import net.minecraft.tags.ItemTags;
 
-/**
- * Canonical hotbar slot assignments for a standard PvP loadout.
- *
- * Preferred layout:
- *   [0] Sword       primary weapon
- *   [1] Axe         shield breaker
- *   [2] Ender Pearl mobility / escape
- *   [3] Gapple      emergency heal
- *   [4] Potion      quick heal
- *   [5] Food        saturation
- *   [6] Blocks      utility
- *   [7] Bow         ranged
- *   [8] Totem       last-resort backup
- *   [40] Off-hand   Shield (or Totem when critically low)
- *
- * All find*() methods check the preferred slot first, then scan the full hotbar.
- * Returns -1 if the item is not found in the hotbar.
- */
 public final class InventoryLayout {
 
     public static final int SLOT_SWORD  = 0;
@@ -76,7 +58,7 @@ public final class InventoryLayout {
         return -1;
     }
 
-    public static boolean isSword(ItemStack s)  { return !s.isEmpty() && s.getItem() instanceof SwordItem; }
+    public static boolean isSword(ItemStack s)  { return !s.isEmpty() && s.is(ItemTags.SWORDS); }
     public static boolean isAxe(ItemStack s)    { return !s.isEmpty() && s.getItem() instanceof AxeItem; }
     public static boolean isPearl(ItemStack s)  { return !s.isEmpty() && s.getItem() == Items.ENDER_PEARL; }
     public static boolean isGapple(ItemStack s) {
