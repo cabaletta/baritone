@@ -19,14 +19,20 @@ public final class CombatProcess extends BaritoneProcessHelper {
     private final AwarenessContext awarenessCtx;
     private final CombatEngine     combatEngine;
 
+    private boolean combatEnabled = true;
+
     public CombatProcess(Baritone baritone) {
         super(baritone);
         this.awarenessCtx = baritone.getAwarenessContext();
         this.combatEngine = new CombatEngine(baritone, awarenessCtx);
     }
 
+    public void setCombatEnabled(boolean enabled) { combatEnabled = enabled; }
+    public boolean isCombatEnabled()              { return combatEnabled; }
+
     @Override
     public boolean isActive() {
+        if (!combatEnabled) return false;
         // Stay active during a post-explosion creeper escape even if no threats remain
         if (combatEngine.hasPendingEscape()) return true;
         List<ThreatEntry> threats = awarenessCtx.getThreats();
@@ -58,6 +64,7 @@ public final class CombatProcess extends BaritoneProcessHelper {
 
     @Override
     public String displayName0() {
+        if (!combatEnabled) return "Combat [DISABLED]";
         return "Combat [" + awarenessCtx.getIntent().mode.name() + "] danger="
             + String.format("%.2f", awarenessCtx.getOverallDangerLevel())
             + " threats=" + awarenessCtx.getThreats().size();
