@@ -73,12 +73,10 @@ public class WaypointBehavior extends Behavior {
         MutableComponent component = Component.literal("Death position saved.");
         component.setStyle(component.getStyle()
                 .withColor(ChatFormatting.WHITE)
-                .withHoverEvent(new HoverEvent(
-                        HoverEvent.Action.SHOW_TEXT,
+                .withHoverEvent(new HoverEvent.ShowText(
                         Component.literal("Click to goto death")
                 ))
-                .withClickEvent(new ClickEvent(
-                        ClickEvent.Action.RUN_COMMAND,
+                .withClickEvent(new ClickEvent.RunCommand(
                         String.format(
                                 "%s%s goto %s @ %d",
                                 FORCE_COMMAND_PREFIX,

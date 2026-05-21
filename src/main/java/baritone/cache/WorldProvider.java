@@ -21,10 +21,9 @@ import baritone.Baritone;
 import baritone.api.cache.IWorldProvider;
 import baritone.api.utils.IPlayerContext;
 import net.minecraft.client.multiplayer.ServerData;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.storage.LevelResource;
 import org.apache.commons.lang3.SystemUtils;
 
@@ -93,7 +92,7 @@ public class WorldProvider implements IWorldProvider {
 
             System.out.println("Baritone world data dir: " + worldDataDir);
             synchronized (worldCache) {
-                this.currentWorld = worldCache.computeIfAbsent(worldDataDir, d -> new WorldData(d, world.dimensionType()));
+                this.currentWorld = worldCache.computeIfAbsent(worldDataDir, d -> new WorldData(d, world.dimensionType(), world.dimension()));
             }
             this.mcWorld = ctx.world();
         });
@@ -110,7 +109,7 @@ public class WorldProvider implements IWorldProvider {
     }
 
     private Path getWorldDataDirectory(Path parent, Level world) {
-        ResourceLocation dimId = world.dimension().location();
+        Identifier dimId = world.dimension().identifier();
         int height = world.dimensionType().logicalHeight();
         return parent.resolve(dimId.getNamespace()).resolve(dimId.getPath() + "_" + height);
     }
@@ -140,7 +139,7 @@ public class WorldProvider implements IWorldProvider {
             String folderName;
             final ServerData serverData = ctx.minecraft().getCurrentServer();
             if (serverData != null) {
-                folderName = ctx.minecraft().isConnectedToRealms() ? "realms" : serverData.ip;
+                folderName = serverData.isRealm() ? "realms" : serverData.ip;
             } else {
                 //replaymod causes null currentServer and false singleplayer.
                 System.out.println("World seems to be a replay. Not loading Baritone cache.");

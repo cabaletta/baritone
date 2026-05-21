@@ -27,16 +27,16 @@ public class MixinEntityRenderManager implements IEntityRenderManager {
 
     @Override
     public double renderPosX() {
-        return ((EntityRenderDispatcher) (Object) this).camera.getPosition().x;
+        return ((EntityRenderDispatcher) (Object) this).camera.position().x;
     }
 
     @Override
     public double renderPosY() {
-        return ((EntityRenderDispatcher) (Object) this).camera.getPosition().y;
+        return ((EntityRenderDispatcher) (Object) this).camera.position().y;
     }
 
     @Override
     public double renderPosZ() {
-        return ((EntityRenderDispatcher) (Object) this).camera.getPosition().z;
+        return ((EntityRenderDispatcher) (Object) this).camera.position().z;
     }
 }

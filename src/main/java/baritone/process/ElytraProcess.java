@@ -44,8 +44,10 @@ import baritone.process.elytra.NullElytraProcess;
 import baritone.utils.BaritoneProcessHelper;
 import baritone.utils.PathingCommandContext;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -157,7 +159,9 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
                 if (Baritone.settings().disconnectOnArrival.value && !reachedGoal) {
                     // don't be active when the user logs back in
                     this.onLostControl();
-                    ctx.world().disconnect();
+                    if (ctx.world() instanceof ClientLevel clientLevel) {
+                        clientLevel.disconnect(Component.literal("[Baritone] Arrived at goal!"));
+                    }
                     return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
                 }
                 reachedGoal = true;
@@ -204,7 +208,7 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
         }
 
         if (this.state == State.FLYING || this.state == State.START_FLYING) {
-            this.state = ctx.player().isOnGround() && Baritone.settings().elytraAutoJump.value
+            this.state = ctx.player().onGround() && Baritone.settings().elytraAutoJump.value
                     ? State.LOCATE_JUMP
                     : State.START_FLYING;
         }
@@ -254,7 +258,8 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
 
         if (this.state == State.GET_TO_JUMP) {
             final IPathExecutor executor = baritone.getPathingBehavior().getCurrent();
-            final boolean canStartFlying = ctx.player().fallDistance > 1.0f
+            // TODO 1.21.5: replace `ctx.player().getDeltaMovement().y < -0.377` with `ctx.player().fallDistance > 1.0f`
+            final boolean canStartFlying = ctx.player().getDeltaMovement().y < -0.377
                     && !isSafeToCancel
                     && executor != null
                     && executor.getPath().movements().get(executor.getPosition()) instanceof MovementFall;
@@ -272,7 +277,8 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
                 baritone.getPathingBehavior().secretInternalSegmentCancel();
             }
             baritone.getInputOverrideHandler().clearAllKeys();
-            if (ctx.player().fallDistance > 1.0f) {
+            // TODO 1.21.5: replace `ctx.player().getDeltaMovement().y < -0.377` with `ctx.player().fallDistance > 1.0f`
+            if (ctx.player().getDeltaMovement().y < -0.377) {
                 baritone.getInputOverrideHandler().setInputForceState(Input.JUMP, true);
             }
         }
@@ -327,7 +333,7 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
     }
 
     private void pathTo0(BlockPos destination, boolean appendDestination) {
-        if (ctx.player() == null || ctx.player().level.dimension() != Level.NETHER) {
+        if (ctx.player() == null || ctx.player().level().dimension() != Level.NETHER) {
             return;
         }
         this.onLostControl();
@@ -365,12 +371,12 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
 
     private boolean shouldLandForSafety() {
         ItemStack chest = ctx.player().getItemBySlot(EquipmentSlot.CHEST);
-        if (chest.getItem() != Items.ELYTRA || chest.getItem().getMaxDamage() - chest.getDamageValue() < Baritone.settings().elytraMinimumDurability.value) {
+        if (chest.getItem() != Items.ELYTRA || chest.getMaxDamage() - chest.getDamageValue() < Baritone.settings().elytraMinimumDurability.value) {
             // elytrabehavior replaces when durability <= minimumDurability, so if durability < minimumDurability then we can reasonably assume that the elytra will soon be broken without replacement
             return true;
         }
 
-        NonNullList<ItemStack> inv = ctx.player().getInventory().items;
+        NonNullList<ItemStack> inv = ctx.player().getInventory().getNonEquipmentItems();
         int qty = 0;
         for (int i = 0; i < 36; i++) {
             if (ElytraBehavior.isFireworks(inv.get(i))) {

@@ -21,6 +21,8 @@ import baritone.Baritone;
 import baritone.api.cache.ICachedWorld;
 import baritone.api.cache.IWaypointCollection;
 import baritone.api.cache.IWorldData;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.dimension.DimensionType;
 
 import java.nio.file.Path;
@@ -38,9 +40,9 @@ public class WorldData implements IWorldData {
     public final Path directory;
     public final DimensionType dimension;
 
-    WorldData(Path directory, DimensionType dimension) {
+    WorldData(Path directory, DimensionType dimension, ResourceKey<Level> dimensionId) {
         this.directory = directory;
-        this.cache = new CachedWorld(directory.resolve("cache"), dimension);
+        this.cache = new CachedWorld(directory.resolve("cache"), dimension, dimensionId);
         this.waypoints = new WaypointCollection(directory.resolve("waypoints"));
         this.dimension = dimension;
     }

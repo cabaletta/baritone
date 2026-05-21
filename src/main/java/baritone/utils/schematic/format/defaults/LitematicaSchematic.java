@@ -20,12 +20,14 @@ package baritone.utils.schematic.format.defaults;
 import baritone.api.schematic.CompositeSchematic;
 import baritone.api.schematic.IStaticSchematic;
 import baritone.utils.schematic.StaticSchematic;
+import net.minecraft.core.Holder;
 import net.minecraft.core.Vec3i;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
 import org.apache.commons.lang3.Validate;
@@ -56,9 +58,13 @@ public final class LitematicaSchematic extends CompositeSchematic implements ISt
      * @return Array of subregion tags.
      */
     private static CompoundTag[] getRegions(CompoundTag nbt) {
-        return nbt.getCompound("Regions").getAllKeys().stream()
-                .map(nbt.getCompound("Regions")::getCompound)
-                .toArray(CompoundTag[]::new);
+        return nbt.getCompound("Regions")
+            .map(CompoundTag::values)
+            .map(r -> r.stream()
+                .filter(v -> v instanceof CompoundTag)
+                .map(CompoundTag.class::cast)
+                .toArray(CompoundTag[]::new)
+            ).orElse(new CompoundTag[0]);
     }
 
     /**
@@ -68,8 +74,8 @@ public final class LitematicaSchematic extends CompositeSchematic implements ISt
      * @return the lower coord of the requested axis.
      */
     private static int getMinOfSubregion(CompoundTag subReg, String s) {
-        int a = subReg.getCompound("Position").getInt(s);
-        int b = subReg.getCompound("Size").getInt(s);
+        int a = subReg.getCompound("Position").flatMap(position -> position.getInt(s)).orElse(0);
+        int b = subReg.getCompound("Size").flatMap(size -> size.getInt(s)).orElse(0);
         return Math.min(a, a + b + 1);
     }
 
@@ -81,8 +87,14 @@ public final class LitematicaSchematic extends CompositeSchematic implements ISt
         BlockState[] blockList = new BlockState[blockStatePalette.size()];
 
         for (int i = 0; i < blockStatePalette.size(); i++) {
-            Block block = BuiltInRegistries.BLOCK.get(new ResourceLocation((((CompoundTag) blockStatePalette.get(i)).getString("Name"))));
-            CompoundTag properties = ((CompoundTag) blockStatePalette.get(i)).getCompound("Properties");
+            CompoundTag tag = (CompoundTag) blockStatePalette.get(i);
+            Identifier blockKey = Identifier.tryParse(tag.getString("Name").orElse(""));
+            Block block = blockKey == null
+                ? Blocks.AIR
+                : BuiltInRegistries.BLOCK.get(blockKey)
+                    .map(Holder.Reference::value)
+                    .orElse(Blocks.AIR);
+            CompoundTag properties = tag.getCompound("Properties").orElse(new CompoundTag());
 
             blockList[i] = getBlockState(block, properties);
         }
@@ -97,9 +109,9 @@ public final class LitematicaSchematic extends CompositeSchematic implements ISt
     private static BlockState getBlockState(Block block, CompoundTag properties) {
         BlockState blockState = block.defaultBlockState();
 
-        for (Object key : properties.getAllKeys()) {
-            Property<?> property = block.getStateDefinition().getProperty((String) key);
-            String propertyValue = properties.getString((String) key);
+        for (String key : properties.keySet()) {
+            Property<?> property = block.getStateDefinition().getProperty(key);
+            String propertyValue = properties.getString(key).orElse(null);
             if (property != null) {
                 blockState = setPropertyValue(blockState, property, propertyValue);
             }
@@ -134,8 +146,8 @@ public final class LitematicaSchematic extends CompositeSchematic implements ISt
      * @return the volume of the subregion.
      */
     private static long getVolume(CompoundTag subReg) {
-        CompoundTag size = subReg.getCompound("Size");
-        return Math.abs(size.getInt("x") * size.getInt("y") * size.getInt("z"));
+        CompoundTag size = subReg.getCompound("Size").orElse(new CompoundTag());
+        return Math.abs(size.getInt("x").orElse(0) * size.getInt("y").orElse(0) * size.getInt("z").orElse(0));
     }
 
     /**
@@ -156,12 +168,12 @@ public final class LitematicaSchematic extends CompositeSchematic implements ISt
     private void fillInSchematic(CompoundTag nbt) {
         Vec3i offsetMinCorner = new Vec3i(getMinOfSchematic(nbt, "x"), getMinOfSchematic(nbt, "y"), getMinOfSchematic(nbt, "z"));
         for (CompoundTag subReg : getRegions(nbt)) {
-            ListTag usedBlockTypes = subReg.getList("BlockStatePalette", 10);
+            ListTag usedBlockTypes = subReg.getListOrEmpty("BlockStatePalette");
             BlockState[] blockList = getBlockList(usedBlockTypes);
 
             int bitsPerBlock = getBitsPerBlock(usedBlockTypes.size());
             long regionVolume = getVolume(subReg);
-            long[] blockStateArray = subReg.getLongArray("BlockStates");
+            long[] blockStateArray = subReg.getLongArray("BlockStates").orElse(new long[0]);
 
             LitematicaBitArray bitArray = new LitematicaBitArray(bitsPerBlock, regionVolume, blockStateArray);
             writeSubregionIntoSchematic(subReg, offsetMinCorner, blockList, bitArray);
@@ -178,10 +190,10 @@ public final class LitematicaSchematic extends CompositeSchematic implements ISt
         int offsetX = getMinOfSubregion(subReg, "x") - offsetMinCorner.getX();
         int offsetY = getMinOfSubregion(subReg, "y") - offsetMinCorner.getY();
         int offsetZ = getMinOfSubregion(subReg, "z") - offsetMinCorner.getZ();
-        CompoundTag size = subReg.getCompound("Size");
-        int sizeX = Math.abs(size.getInt("x"));
-        int sizeY = Math.abs(size.getInt("y"));
-        int sizeZ = Math.abs(size.getInt("z"));
+        CompoundTag size = subReg.getCompound("Size").orElse(new CompoundTag());
+        int sizeX = Math.abs(size.getInt("x").orElse(0));
+        int sizeY = Math.abs(size.getInt("y").orElse(0));
+        int sizeZ = Math.abs(size.getInt("z").orElse(0));
         BlockState[][][] states = new BlockState[sizeX][sizeZ][sizeY];
         int index = 0;
         for (int y = 0; y < sizeY; y++) {

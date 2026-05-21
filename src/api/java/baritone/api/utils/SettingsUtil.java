@@ -20,11 +20,10 @@ package baritone.api.utils;
 import baritone.api.BaritoneAPI;
 import baritone.api.Settings;
 import net.minecraft.client.Minecraft;
-import net.minecraft.core.Direction;
-import net.minecraft.core.Registry;
+import net.minecraft.core.Holder;
 import net.minecraft.core.Vec3i;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Mirror;
@@ -245,8 +244,8 @@ public class SettingsUtil {
                 BlockUtils::blockToString
         ),
         ITEM(
-                Item.class,
-                str -> BuiltInRegistries.ITEM.get(new ResourceLocation(str.trim())), // TODO this now returns AIR on failure instead of null, is that an issue?
+            Item.class,
+                str -> BuiltInRegistries.ITEM.get(Identifier.parse(str.trim())).map(Holder.Reference::value).orElse(null),
                 item -> BuiltInRegistries.ITEM.getKey(item).toString()
         ),
         LIST() {

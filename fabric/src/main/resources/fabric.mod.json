@@ -1,4 +1,3 @@
-
 {
   "schemaVersion": 1,
   "id": "baritone",
@@ -24,10 +23,9 @@
   "mixins": [
       "mixins.baritone.json"
   ],
-
   "depends": {
-    "fabricloader": ">=0.11.0",
-    "minecraft": "1.19.4"
+    "fabricloader": ">=0.14.22",
+    "minecraft": ["1.21.11"]
   },
   "custom": {
     "modmenu": {

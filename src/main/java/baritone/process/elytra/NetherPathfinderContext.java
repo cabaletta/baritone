@@ -30,6 +30,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
+import net.minecraft.world.level.chunk.PaletteResize;
 import net.minecraft.world.level.chunk.PalettedContainer;
 import net.minecraft.world.phys.Vec3;
 
@@ -195,9 +196,13 @@ public final class NetherPathfinderContext {
                     continue;
                 }
                 final PalettedContainer<BlockState> bsc = extendedblockstorage.getStates();
-                final int airId = ((IPalettedContainer<BlockState>) bsc).getPalette().idFor(AIR_BLOCK_STATE);
+                IPalettedContainer<BlockState> iPalettedContainer = (IPalettedContainer<BlockState>) bsc;
+                int airId = -1;
+                if (iPalettedContainer.getPalette().maybeHas(state -> state.equals(AIR_BLOCK_STATE))) {
+                    airId = iPalettedContainer.getPalette().idFor(AIR_BLOCK_STATE, PaletteResize.noResizeExpected());
+                }
                 // pasted from FasterWorldScanner
-                final BitStorage array = ((IPalettedContainer<BlockState>) bsc).getStorage();
+                final BitStorage array = iPalettedContainer.getStorage();
                 if (array == null) continue;
                 final long[] longArray = array.getRaw();
                 final int arraySize = array.getSize();

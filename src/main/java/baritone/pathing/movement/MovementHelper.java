@@ -31,8 +31,12 @@ import baritone.utils.BlockStateInterface;
 import baritone.utils.ToolSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
 import net.minecraft.util.Mth;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.piston.MovingPistonBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -40,18 +44,16 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.Half;
 import net.minecraft.world.level.block.state.properties.SlabType;
 import net.minecraft.world.level.block.state.properties.StairsShape;
-import net.minecraft.world.level.material.FlowingFluid;
-import net.minecraft.world.level.material.Fluid;
-import net.minecraft.world.level.material.Fluids;
-import net.minecraft.world.level.material.FluidState;
-import net.minecraft.world.level.material.Material;
-import net.minecraft.world.level.material.WaterFluid;
+import net.minecraft.world.level.material.*;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
 
 import static baritone.api.utils.RotationUtils.DEG_TO_RAD_F;
 import static baritone.pathing.movement.Movement.HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP;
@@ -179,15 +181,10 @@ public interface MovementHelper extends ActionCosts, Helper {
         if (block instanceof CauldronBlock) {
             return NO;
         }
-        try { // A dodgy catch-all at the end, for most blocks with default behaviour this will work, however where blocks are special this will error out, and we can handle it when we have this information
-            if (state.isPathfindable(null, null, PathComputationType.LAND)) {
-                return YES;
-            } else {
-                return NO;
-            }
-        } catch (Throwable exception) {
-            System.out.println("The block " + state.getBlock().getName().getString() + " requires a special case due to the exception " + exception.getMessage());
-            return MAYBE;
+        if (state.isPathfindable(PathComputationType.LAND)) {
+            return YES;
+        } else {
+            return NO;
         }
     }
 
@@ -230,10 +227,7 @@ public interface MovementHelper extends ActionCosts, Helper {
             return fluidState.getType() instanceof WaterFluid;
         }
 
-        // every block that overrides isPassable with anything more complicated than a "return true;" or "return false;"
-        // has already been accounted for above
-        // therefore it's safe to not construct a blockpos from our x, y, z ints and instead just pass null
-        return state.isPathfindable(bsi.access, BlockPos.ZERO, PathComputationType.LAND); // workaround for future compatibility =P
+        return state.isPathfindable(PathComputationType.LAND);
     }
 
     static Ternary fullyPassableBlockState(BlockState state) {
@@ -261,16 +255,10 @@ public interface MovementHelper extends ActionCosts, Helper {
         }
         // door, fence gate, liquid, trapdoor have been accounted for, nothing else uses the world or pos parameters
         // at least in 1.12.2 vanilla, that is.....
-        try { // A dodgy catch-all at the end, for most blocks with default behaviour this will work, however where blocks are special this will error out, and we can handle it when we have this information
-            if (state.isPathfindable(null, null, PathComputationType.LAND)) {
-                return YES;
-            } else {
-                return NO;
-            }
-        } catch (Throwable exception) {
-            // see PR #1087 for why
-            System.out.println("The block " + state.getBlock().getName().getString() + " requires a special case due to the exception " + exception.getMessage());
-            return MAYBE;
+        if (state.isPathfindable(PathComputationType.LAND)) {
+            return YES;
+        } else {
+            return NO;
         }
     }
 
@@ -295,11 +283,14 @@ public interface MovementHelper extends ActionCosts, Helper {
         if (fullyPassable == NO) {
             return false;
         }
-        return fullyPassablePosition(new BlockStateInterface(ctx), pos.getX(), pos.getY(), pos.getZ(), state); // meh
+        return state.isPathfindable(PathComputationType.LAND);
     }
 
+    /**
+     * params retained for backwards compatibility
+     */
     static boolean fullyPassablePosition(BlockStateInterface bsi, int x, int y, int z, BlockState state) {
-        return state.isPathfindable(bsi.access, bsi.isPassableBlockPos.set(x, y, z), PathComputationType.LAND);
+        return state.isPathfindable(PathComputationType.LAND);
     }
 
     static boolean isReplaceable(int x, int y, int z, BlockState state, BlockStateInterface bsi) {
@@ -328,7 +319,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         if (block == Blocks.LARGE_FERN || block == Blocks.TALL_GRASS) {
             return true;
         }
-        return state.getMaterial().isReplaceable();
+        return state.canBeReplaced();
     }
 
     @Deprecated
@@ -512,15 +503,28 @@ public interface MovementHelper extends ActionCosts, Helper {
 
     static boolean canUseFrostWalker(CalculationContext context, BlockState state) {
         return context.frostWalker != 0
-                && state.getMaterial() == Material.WATER
-                && ((Integer) state.getValue(LiquidBlock.LEVEL)) == 0;
+                && state == FrostedIceBlock.meltsInto()
+                && state.getValue(LiquidBlock.LEVEL) == 0;
     }
 
     static boolean canUseFrostWalker(IPlayerContext ctx, BlockPos pos) {
+        boolean hasFrostWalker = false;
+        OUTER: for (EquipmentSlot slot : EquipmentSlot.values()) {
+            ItemEnchantments itemEnchantments = ctx
+                .player()
+                .getItemBySlot(slot)
+                .getEnchantments();
+            for (Holder<Enchantment> enchant : itemEnchantments.keySet()) {
+                if (enchant.is(Enchantments.FROST_WALKER)) {
+                    hasFrostWalker = true;
+                    break OUTER;
+                }
+            }
+        }
         BlockState state = BlockStateInterface.get(ctx, pos);
-        return EnchantmentHelper.hasFrostWalker(ctx.player())
-                && state.getMaterial() == Material.WATER
-                && ((Integer) state.getValue(LiquidBlock.LEVEL)) == 0;
+        return hasFrostWalker
+                && state == FrostedIceBlock.meltsInto()
+                && state.getValue(LiquidBlock.LEVEL) == 0;
     }
 
     /**
@@ -646,7 +650,7 @@ public interface MovementHelper extends ActionCosts, Helper {
      */
     static void switchToBestToolFor(IPlayerContext ctx, BlockState b, ToolSet ts, boolean preferSilkTouch) {
         if (Baritone.settings().autoTool.value && !Baritone.settings().assumeExternalAutoTool.value) {
-            ctx.player().getInventory().selected = ts.getBestSlot(b.getBlock(), preferSilkTouch);
+            ctx.player().getInventory().setSelectedSlot(ts.getBestSlot(b.getBlock(), preferSilkTouch));
         }
     }
 

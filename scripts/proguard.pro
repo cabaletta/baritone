@@ -41,7 +41,7 @@
 
 # setting names are reflected from field names, so keep field names
 -keepclassmembers class baritone.api.Settings {
-    public <fields>;    
+    public <fields>;
 }
 
 # need to keep mixin names

@@ -21,17 +21,13 @@ import baritone.api.utils.BlockUtils;
 import baritone.pathing.movement.MovementHelper;
 import baritone.utils.pathing.PathingBlockType;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.block.AirBlock;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.DoublePlantBlock;
-import net.minecraft.world.level.block.FlowerBlock;
-import net.minecraft.world.level.block.TallGrassBlock;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.level.chunk.PalettedContainer;
-import net.minecraft.world.level.dimension.BuiltinDimensionTypes;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.phys.Vec3;
 
@@ -78,13 +74,13 @@ public final class ChunkPacker {
                         for (int x = 0; x < 16; x++) {
                             int index = CachedChunk.getPositionIndex(x, y, z);
                             BlockState state = bsc.get(x, y1, z);
-                            boolean[] bits = getPathingBlockType(state, chunk, x, y + chunk.getMinBuildHeight(), z).getBits();
+                            boolean[] bits = getPathingBlockType(state, chunk, x, y + chunk.getMinY(), z).getBits();
                             bitSet.set(index, bits[0]);
                             bitSet.set(index + 1, bits[1]);
                             Block block = state.getBlock();
                             if (CachedChunk.BLOCKS_TO_KEEP_TRACK_OF.contains(block)) {
                                 String name = BlockUtils.blockToString(block);
-                                specialBlocks.computeIfAbsent(name, b -> new ArrayList<>()).add(new BlockPos(x, y+chunk.getMinBuildHeight(), z));
+                                specialBlocks.computeIfAbsent(name, b -> new ArrayList<>()).add(new BlockPos(x, y+chunk.getMinY(), z));
                             }
                         }
                     }
@@ -157,7 +153,7 @@ public final class ChunkPacker {
         return PathingBlockType.SOLID;
     }
 
-    public static BlockState pathingTypeToBlock(PathingBlockType type, DimensionType dimension) {
+    public static BlockState pathingTypeToBlock(PathingBlockType type, DimensionType dimension, ResourceKey<Level> dimensionId) {
         switch (type) {
             case AIR:
                 return Blocks.AIR.defaultBlockState();
@@ -167,14 +163,12 @@ public final class ChunkPacker {
                 return Blocks.LAVA.defaultBlockState();
             case SOLID:
                 // Dimension solid types
-                if (dimension.natural()) {
-                    return Blocks.STONE.defaultBlockState();
-                }
-                if (dimension.ultraWarm()) {
+                if (dimensionId == Level.NETHER) {
                     return Blocks.NETHERRACK.defaultBlockState();
-                }
-                if (dimension.effectsLocation().equals(BuiltinDimensionTypes.END_EFFECTS)) {
+                } else if (dimensionId == Level.END) {
                     return Blocks.END_STONE.defaultBlockState();
+                } else { // overworld, or some custom dimension
+                    return Blocks.STONE.defaultBlockState();
                 }
             default:
                 return null;

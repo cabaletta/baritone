@@ -21,6 +21,8 @@ import baritone.Baritone;
 import baritone.api.cache.ICachedRegion;
 import baritone.api.utils.BlockUtils;
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.dimension.DimensionType;
 
@@ -63,16 +65,19 @@ public final class CachedRegion implements ICachedRegion {
 
     private final DimensionType dimension;
 
+    private final ResourceKey<Level> dimensionId;
+
     /**
      * Has this region been modified since its most recent load or save
      */
     private boolean hasUnsavedChanges;
 
-    CachedRegion(int x, int z, DimensionType dimension) {
+    CachedRegion(int x, int z, DimensionType dimension, ResourceKey<Level> dimensionId) {
         this.x = x;
         this.z = z;
         this.hasUnsavedChanges = false;
         this.dimension = dimension;
+        this.dimensionId = dimensionId;
     }
 
     @Override
@@ -80,7 +85,7 @@ public final class CachedRegion implements ICachedRegion {
         int adjY = y - dimension.minY();
         CachedChunk chunk = chunks[x >> 4][z >> 4];
         if (chunk != null) {
-            return chunk.getBlock(x & 15, adjY, z & 15, dimension);
+            return chunk.getBlock(x & 15, adjY, z & 15, dimension, dimensionId);
         }
         return null;
     }

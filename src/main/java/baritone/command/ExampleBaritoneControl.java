@@ -33,13 +33,14 @@ import baritone.behavior.Behavior;
 import baritone.command.argument.ArgConsumer;
 import baritone.command.argument.CommandArguments;
 import baritone.command.manager.CommandManager;
-import baritone.utils.accessor.IGuiScreen;
 import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.*;
+import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.Tuple;
-import java.net.URI;
-import java.net.URISyntaxException;
+import net.minecraft.util.Util;
+
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Stream;
@@ -79,12 +80,10 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             MutableComponent component = Component.literal(String.format("> %s", toDisplay));
             component.setStyle(component.getStyle()
                     .withColor(ChatFormatting.WHITE)
-                    .withHoverEvent(new HoverEvent(
-                            HoverEvent.Action.SHOW_TEXT,
+                    .withHoverEvent(new HoverEvent.ShowText(
                             Component.literal("Click to rerun command")
                     ))
-                    .withClickEvent(new ClickEvent(
-                            ClickEvent.Action.RUN_COMMAND,
+                    .withClickEvent(new ClickEvent.RunCommand(
                             FORCE_COMMAND_PREFIX + msg
                     )));
             logDirect(component);
@@ -97,8 +96,8 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             return false;
         } else if (msg.trim().equalsIgnoreCase("orderpizza")) {
             try {
-                ((IGuiScreen) ctx.minecraft().screen).openLinkInvoker(new URI("https://www.dominos.com/en/pages/order/"));
-            } catch (NullPointerException | URISyntaxException ignored) {}
+                Util.getPlatform().openUri("https://www.dominos.com/en/pages/order/");
+            } catch (Exception ignored) {}
             return false;
         }
         if (msg.isEmpty()) {

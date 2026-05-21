@@ -23,7 +23,7 @@ import baritone.api.command.argument.IArgConsumer;
 import baritone.api.command.datatypes.ItemById;
 import baritone.api.command.exception.CommandException;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 
 import java.util.Arrays;
@@ -51,7 +51,7 @@ public class PickupCommand extends Command {
         } else {
             baritone.getFollowProcess().pickup(stack -> collecting.contains(stack.getItem()));
             logDirect("Picking up these items:");
-            collecting.stream().map(BuiltInRegistries.ITEM::getKey).map(ResourceLocation::toString).forEach(this::logDirect);
+            collecting.stream().map(BuiltInRegistries.ITEM::getKey).map(Identifier::toString).forEach(this::logDirect);
         }
     }
 

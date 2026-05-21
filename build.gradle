@@ -38,7 +38,7 @@ allprojects {
     group = rootProject.maven_group
 
     sourceCompatibility = targetCompatibility = JavaVersion.toVersion(project.java_version)
-    
+
     java {
         toolchain {
             languageVersion.set(JavaLanguageVersion.of(sourceCompatibility.majorVersion.toInteger()))
@@ -46,6 +46,9 @@ allprojects {
     }
 
     repositories {
+        maven {
+            url = "https://files.minecraftforge.net/maven/"
+        }
         maven {
             name = 'spongepowered-repo'
             url = 'https://repo.spongepowered.org/repository/maven-public/'
@@ -82,6 +85,8 @@ allprojects {
         compileOnly "org.ow2.asm:asm:${project.asm_version}"
 
         implementation "dev.babbaj:nether-pathfinder:${project.nether_pathfinder_version}"
+
+        implementation 'com.google.code.findbugs:jsr305:3.0.2'
     }
 
     unimined.minecraft(sourceSets.main, true) {
@@ -90,7 +95,7 @@ allprojects {
         mappings {
             intermediary()
             mojmap()
-            parchment("2023.06.26")
+            parchment(rootProject.minecraft_version, "2025.12.20")
         }
     }
 

@@ -26,19 +26,12 @@ import baritone.api.utils.IPlayerContext;
 import baritone.utils.accessor.IPalettedContainer;
 import io.netty.buffer.Unpooled;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.IdMapper;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.util.BitStorage;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.chunk.GlobalPalette;
-import net.minecraft.world.level.chunk.ChunkSource;
-import net.minecraft.world.level.chunk.LevelChunk;
-import net.minecraft.world.level.chunk.LevelChunkSection;
-import net.minecraft.world.level.chunk.Palette;
-import net.minecraft.world.level.chunk.PalettedContainer;
-import net.minecraft.world.level.chunk.SingleValuePalette;
+import net.minecraft.world.level.chunk.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -156,32 +149,32 @@ public enum FasterWorldScanner implements IWorldScanner {
         long chunkX = (long) pos.x << 4;
         long chunkZ = (long) pos.z << 4;
 
-        int playerSectionY = (ctx.playerFeet().y - ctx.world().getMinBuildHeight()) >> 4;
+        int playerSectionY = (ctx.playerFeet().y - ctx.world().getMinY()) >> 4;
 
         return collectChunkSections(lookup, chunkProvider.getChunk(pos.x, pos.z, false), chunkX, chunkZ, playerSectionY).stream();
     }
 
 
-
     private List<BlockPos> collectChunkSections(BlockOptionalMetaLookup lookup, LevelChunk chunk, long chunkX, long chunkZ, int playerSection) {
         // iterate over sections relative to player
         List<BlockPos> blocks = new ArrayList<>();
+        int chunkY = chunk.getMinY();
         LevelChunkSection[] sections = chunk.getSections();
         int l = sections.length;
         int i = playerSection - 1;
         int j = playerSection;
         for (; i >= 0 || j < l; ++j, --i) {
             if (j < l) {
-                visitSection(lookup, sections[j], blocks, chunkX, chunkZ);
+                visitSection(lookup, sections[j], blocks, chunkX, chunkY + j * 16, chunkZ);
             }
             if (i >= 0) {
-                visitSection(lookup, sections[i], blocks, chunkX, chunkZ);
+                visitSection(lookup, sections[i], blocks, chunkX, chunkY + i * 16, chunkZ);
             }
         }
         return blocks;
     }
 
-    private void visitSection(BlockOptionalMetaLookup lookup, LevelChunkSection section, List<BlockPos> blocks, long chunkX, long chunkZ) {
+    private void visitSection(BlockOptionalMetaLookup lookup, LevelChunkSection section, List<BlockPos> blocks, long chunkX, int sectionY, long chunkZ) {
         if (section == null || section.hasOnlyAir()) {
             return;
         }
@@ -192,7 +185,6 @@ public enum FasterWorldScanner implements IWorldScanner {
             return;
         }
 
-        int yOffset = section.bottomBlockY();
         Palette<BlockState> palette = ((IPalettedContainer<BlockState>) sectionContainer).getPalette();
 
         if (palette instanceof SingleValuePalette) {
@@ -204,7 +196,7 @@ public enum FasterWorldScanner implements IWorldScanner {
                         for (int z = 0; z < 16; ++z) {
                             blocks.add(new BlockPos(
                                 (int) chunkX + x,
-                                yOffset + y,
+                                sectionY + y,
                                 (int) chunkZ + z
                             ));
                         }
@@ -233,7 +225,7 @@ public enum FasterWorldScanner implements IWorldScanner {
                     //noinspection DuplicateExpressions
                     blocks.add(new BlockPos(
                         (int) chunkX + ((idx & 255) & 15),
-                        yOffset + (idx >> 8),
+                        sectionY + (idx >> 8),
                         (int) chunkZ + ((idx & 255) >> 4)
                     ));
                 }
@@ -290,7 +282,7 @@ public enum FasterWorldScanner implements IWorldScanner {
             return PALETTE_REGISTRY_SENTINEL;
         } else {
             FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
-            palette.write(buf);
+            palette.write(buf, Block.BLOCK_STATE_REGISTRY);
             int size = buf.readVarInt();
             BlockState[] states = new BlockState[size];
             for (int i = 0; i < size; i++) {

@@ -20,7 +20,7 @@ package baritone.api.command.datatypes;
 import baritone.api.command.exception.CommandException;
 import baritone.api.command.helpers.TabCompleteHelper;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Block;
 
 import java.util.stream.Stream;
@@ -30,7 +30,7 @@ public enum BlockById implements IDatatypeFor<Block> {
 
     @Override
     public Block get(IDatatypeContext ctx) throws CommandException {
-        ResourceLocation id = new ResourceLocation(ctx.getConsumer().getString());
+        Identifier id = Identifier.parse(ctx.getConsumer().getString());
         Block block;
         if ((block = BuiltInRegistries.BLOCK.getOptional(id).orElse(null)) == null) {
             throw new IllegalArgumentException("no block found by that id");

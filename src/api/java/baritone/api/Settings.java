@@ -674,13 +674,6 @@ public final class Settings {
     public final Setting<Boolean> logAsToast = new Setting<>(false);
 
     /**
-     * The time of how long the message in the pop-up will display
-     * <p>
-     * If below 1000L (1sec), it's better to disable this
-     */
-    public final Setting<Long> toastTimer = new Setting<>(5000L);
-
-    /**
      * Print all the debug messages to chat
      */
     public final Setting<Boolean> chatDebug = new Setting<>(false);
@@ -728,8 +721,7 @@ public final class Settings {
     public final Setting<Boolean> renderGoalIgnoreDepth = new Setting<>(true);
 
     /**
-     * Renders X/Z type Goals with the vanilla beacon beam effect. Combining this with
-     * {@link #renderGoalIgnoreDepth} will cause strange render clipping.
+     * Renders X/Z type Goals as a no-depth beacon beam instead of the full-height goal box.
      */
     public final Setting<Boolean> renderGoalXZBeacon = new Setting<>(false);
 
@@ -992,6 +984,11 @@ public final class Settings {
      * Replant nether wart while farming. This setting only has an effect when replantCrops is also enabled
      */
     public final Setting<Boolean> replantNetherWart = new Setting<>(false);
+
+    /**
+     * When enabled, farming will be restricted to the current selection.
+     */
+    public final Setting<Boolean> farmUsingSelection = new Setting<>(false);
 
     /**
      * Farming will scan for at most this many blocks.

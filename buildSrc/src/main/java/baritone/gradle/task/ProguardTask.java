@@ -22,17 +22,14 @@ import org.gradle.api.plugins.JavaPluginConvention;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.api.tasks.TaskAction;
-import org.gradle.api.tasks.TaskCollection;
-import org.gradle.api.tasks.compile.ForkOptions;
-import org.gradle.api.tasks.compile.JavaCompile;
-import org.gradle.internal.jvm.Jvm;
 import org.gradle.jvm.toolchain.JavaLanguageVersion;
 import org.gradle.jvm.toolchain.JavaLauncher;
 import org.gradle.jvm.toolchain.JavaToolchainService;
 import xyz.wagyourtail.unimined.api.UniminedExtension;
 import xyz.wagyourtail.unimined.api.minecraft.MinecraftConfig;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -78,7 +75,7 @@ public class ProguardTask extends BaritoneGradleTask {
 
     private File getMcJar() {
         MinecraftConfig mcc = ext.getMinecrafts().get(sourceSets.getByName("main"));
-        return mcc.getMinecraft(mcc.getMcPatcher().getProdNamespace(), mcc.getMcPatcher().getProdNamespace()).toFile();
+        return mcc.getMinecraft(mcc.getMcPatcher().getProdNamespace()).toFile();
     }
 
     private boolean isMcJar(File f) {

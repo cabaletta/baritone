@@ -31,8 +31,8 @@ import baritone.api.command.helpers.TabCompleteHelper;
 import baritone.api.utils.SettingsUtil;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
 
@@ -108,8 +108,8 @@ public class SetCommand extends Command {
                         component.setStyle(component.getStyle().withColor(ChatFormatting.GRAY));
                         component.append(typeComponent);
                         component.setStyle(component.getStyle()
-                                .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverComponent))
-                                .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, commandSuggestion)));
+                                .withHoverEvent(new HoverEvent.ShowText(hoverComponent))
+                                .withClickEvent(new ClickEvent.SuggestCommand(commandSuggestion)));
                         return component;
                     },
                     FORCE_COMMAND_PREFIX + "set " + arg + " " + search
@@ -188,12 +188,10 @@ public class SetCommand extends Command {
             MutableComponent oldValueComponent = Component.literal(String.format("Old value: %s", oldValue));
             oldValueComponent.setStyle(oldValueComponent.getStyle()
                     .withColor(ChatFormatting.GRAY)
-                    .withHoverEvent(new HoverEvent(
-                            HoverEvent.Action.SHOW_TEXT,
+                    .withHoverEvent(new HoverEvent.ShowText(
                             Component.literal("Click to set the setting back to this value")
                     ))
-                    .withClickEvent(new ClickEvent(
-                            ClickEvent.Action.RUN_COMMAND,
+                    .withClickEvent(new ClickEvent.RunCommand(
                             FORCE_COMMAND_PREFIX + String.format("set %s %s", setting.getName(), oldValue)
                     )));
             logDirect(oldValueComponent);

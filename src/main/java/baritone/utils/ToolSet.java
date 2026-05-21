@@ -19,17 +19,24 @@ package baritone.utils;
 
 import baritone.Baritone;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.tags.ItemTags;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.SwordItem;
-import net.minecraft.world.item.TieredItem;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
 import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.item.enchantment.ItemEnchantments;
+import net.minecraft.world.item.enchantment.effects.EnchantmentAttributeEffect;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -52,6 +59,20 @@ public class ToolSet {
     private final Function<Block, Double> backendCalculation;
 
     private final LocalPlayer player;
+
+    /**
+     * Used for evaluating the material cost of a tool.
+     * see {@link #getMaterialCost(ItemStack)}
+     * Prefer tools with lower material cost (lower index in this list).
+     */
+    private static final List<TagKey<Item>> materialTagsPriorityList = List.of(
+        ItemTags.WOODEN_TOOL_MATERIALS,
+        ItemTags.STONE_TOOL_MATERIALS,
+        ItemTags.IRON_TOOL_MATERIALS,
+        ItemTags.GOLD_TOOL_MATERIALS,
+        ItemTags.DIAMOND_TOOL_MATERIALS,
+        ItemTags.NETHERITE_TOOL_MATERIALS
+    );
 
     public ToolSet(LocalPlayer player) {
         breakStrengthCache = new HashMap<>();
@@ -77,24 +98,30 @@ public class ToolSet {
     }
 
     /**
-     * Evaluate the material cost of a possible tool. The priority matches the
-     * harvest level order; there is a chance for multiple at the same with modded tools
-     * but in that case we don't really care.
-     *
+     * Evaluate the material cost of a possible tool.
+     * If all else is equal, we want to prefer the tool with the lowest material cost.
+     * i.e. we want to prefer a wooden pickaxe over a stone pickaxe, if all else is equal.
      * @param itemStack a possibly empty ItemStack
      * @return values from 0 up
      */
     private int getMaterialCost(ItemStack itemStack) {
-        if (itemStack.getItem() instanceof TieredItem) {
-            TieredItem tool = (TieredItem) itemStack.getItem();
-            return tool.getTier().getLevel();
-        } else {
-            return -1;
+        for (int i = 0; i < materialTagsPriorityList.size(); i++) {
+            final TagKey<Item> tag = materialTagsPriorityList.get(i);
+            if (itemStack.is(tag)) return i;
         }
+        return -1;
     }
 
     public boolean hasSilkTouch(ItemStack stack) {
-        return EnchantmentHelper.getItemEnchantmentLevel(Enchantments.SILK_TOUCH, stack) > 0;
+        ItemEnchantments enchantments = stack.getEnchantments();
+        for (Holder<Enchantment> enchant : enchantments.keySet()) {
+            // silk touch enchantment is still special cased as affecting block drops
+            // not possible to add custom attribute via datapack
+            if (enchant.is(Enchantments.SILK_TOUCH) && enchantments.getLevel(enchant) > 0) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -116,7 +143,7 @@ public class ToolSet {
         possible, this lets us make pathing depend on the actual tool to be used (if auto tool is disabled)
         */
         if (!Baritone.settings().autoTool.value && pathingCalculation) {
-            return player.getInventory().selected;
+            return player.getInventory().getSelectedSlot();
         }
 
         int best = 0;
@@ -126,7 +153,7 @@ public class ToolSet {
         BlockState blockState = b.defaultBlockState();
         for (int i = 0; i < 9; i++) {
             ItemStack itemStack = player.getInventory().getItem(i);
-            if (!Baritone.settings().useSwordToMine.value && itemStack.is(ItemTags.SWORDS)) {
+            if (!Baritone.settings().useSwordToMine.value && itemStack.getItem().components().has(DataComponents.WEAPON)) {
                 continue;
             }
 
@@ -191,9 +218,15 @@ public class ToolSet {
 
         float speed = item.getDestroySpeed(state);
         if (speed > 1) {
-            int effLevel = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.BLOCK_EFFICIENCY, item);
-            if (effLevel > 0 && !item.isEmpty()) {
-                speed += effLevel * effLevel + 1;
+            final ItemEnchantments itemEnchantments = item.getEnchantments();
+            OUTER: for (Holder<Enchantment> enchant : itemEnchantments.keySet()) {
+                List<EnchantmentAttributeEffect> effects = enchant.value().getEffects(EnchantmentEffectComponents.ATTRIBUTES);
+                for (EnchantmentAttributeEffect e : effects) {
+                    if (e.attribute().is(Attributes.MINING_EFFICIENCY.unwrapKey().get())) {
+                        speed += e.amount().calculate(itemEnchantments.getLevel(enchant));
+                        break OUTER;
+                    }
+                }
             }
         }
 
@@ -212,11 +245,11 @@ public class ToolSet {
      */
     private double potionAmplifier() {
         double speed = 1;
-        if (player.hasEffect(MobEffects.DIG_SPEED)) {
-            speed *= 1 + (player.getEffect(MobEffects.DIG_SPEED).getAmplifier() + 1) * 0.2;
+        if (player.hasEffect(MobEffects.HASTE)) {
+            speed *= 1 + (player.getEffect(MobEffects.HASTE).getAmplifier() + 1) * 0.2;
         }
-        if (player.hasEffect(MobEffects.DIG_SLOWDOWN)) {
-            switch (player.getEffect(MobEffects.DIG_SLOWDOWN).getAmplifier()) {
+        if (player.hasEffect(MobEffects.MINING_FATIGUE)) {
+            switch (player.getEffect(MobEffects.MINING_FATIGUE).getAmplifier()) {
                 case 0:
                     speed *= 0.3;
                     break;

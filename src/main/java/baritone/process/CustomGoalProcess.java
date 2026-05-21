@@ -23,6 +23,8 @@ import baritone.api.process.ICustomGoalProcess;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
 import baritone.utils.BaritoneProcessHelper;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.network.chat.Component;
 
 /**
  * As set by ExampleBaritoneControl or something idk
@@ -105,7 +107,9 @@ public final class CustomGoalProcess extends BaritoneProcessHelper implements IC
                 if (this.goal == null || (this.goal.isInGoal(ctx.playerFeet()) && this.goal.isInGoal(baritone.getPathingBehavior().pathStart()))) {
                     onLostControl(); // we're there xd
                     if (Baritone.settings().disconnectOnArrival.value) {
-                        ctx.world().disconnect();
+                        if (ctx.world() instanceof ClientLevel clientLevel) {
+                            clientLevel.disconnect(Component.literal("[Baritone] Arrived at goal!"));
+                        }
                     }
                     if (Baritone.settings().notificationOnPathComplete.value) {
                         logNotification("Pathing complete", false);

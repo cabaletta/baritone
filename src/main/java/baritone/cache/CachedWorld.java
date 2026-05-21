@@ -27,7 +27,9 @@ import com.google.common.cache.CacheBuilder;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.dimension.DimensionType;
 
@@ -74,7 +76,9 @@ public final class CachedWorld implements ICachedWorld, Helper {
 
     private final DimensionType dimension;
 
-    CachedWorld(Path directory, DimensionType dimension) {
+    private final ResourceKey<Level> dimensionId;
+
+    CachedWorld(Path directory, DimensionType dimension, ResourceKey<Level> dimensionId) {
         if (!Files.exists(directory)) {
             try {
                 Files.createDirectories(directory);
@@ -83,6 +87,7 @@ public final class CachedWorld implements ICachedWorld, Helper {
         }
         this.directory = directory.toString();
         this.dimension = dimension;
+        this.dimensionId = dimensionId;
         System.out.println("Cached world directory: " + directory);
         Baritone.getExecutor().execute(new PackerThread());
         Baritone.getExecutor().execute(() -> {
@@ -262,7 +267,7 @@ public final class CachedWorld implements ICachedWorld, Helper {
      */
     private synchronized CachedRegion getOrCreateRegion(int regionX, int regionZ) {
         return cachedRegions.computeIfAbsent(getRegionID(regionX, regionZ), id -> {
-            CachedRegion newRegion = new CachedRegion(regionX, regionZ, dimension);
+            CachedRegion newRegion = new CachedRegion(regionX, regionZ, dimension, dimensionId);
             newRegion.load(this.directory);
             return newRegion;
         });

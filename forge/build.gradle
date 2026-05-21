@@ -25,11 +25,7 @@ plugins {
 archivesBaseName = archivesBaseName + "-forge"
 
 unimined.minecraft {
-    mappings {
-        devFallbackNamespace "intermediary"
-    }
-
-    forge {
+    minecraftForge {
         loader project.forge_version
         mixinConfig ["mixins.baritone.json"]
     }
@@ -99,7 +95,7 @@ components.java {
 }
 
 task proguard(type: ProguardTask) {
-    proguardVersion "7.2.1"
+    proguardVersion "7.4.2"
     compType "forge"
 }
 
