@@ -19,7 +19,6 @@ package baritone.behavior;
 
 import baritone.Baritone;
 import baritone.api.BaritoneAPI;
-import baritone.api.event.events.RenderEvent;
 import baritone.api.event.events.TickEvent;
 import baritone.api.utils.BetterBlockPos;
 import baritone.awareness.AwarenessContext;
@@ -44,6 +43,9 @@ public final class HUDBehavior extends Behavior {
 
     private static final int MAX_THREATS_SHOWN = 5;
 
+    /** Updated each tick; read by MixinGui on the render thread (same MC thread). */
+    private static volatile String[] pendingLines = new String[0];
+
     private final boolean[] prevKey = new boolean[4];
     private final AwarenessContext awarenessContext;
 
@@ -59,7 +61,7 @@ public final class HUDBehavior extends Behavior {
         Minecraft mc = Minecraft.getInstance();
         if (mc.screen != null) return;
 
-        long win = mc.getWindow().getWindowHandle();
+        long win = mc.getWindow().handle();
         CustomConfig cfg = CustomConfig.get();
 
         boolean k0 = isDown(win, cfg.keyCancel);
@@ -90,21 +92,24 @@ public final class HUDBehavior extends Behavior {
         prevKey[1] = k1;
         prevKey[2] = k2;
         prevKey[3] = k3;
+
+        pendingLines = buildHudLines();
     }
 
-    @Override
-    public void onRenderPass(RenderEvent event) {
+    /**
+     * Called by MixinGui at the end of Gui.render — draws the HUD overlay using
+     * the GuiGraphics already set up for the current frame's GUI pass.
+     */
+    public static void onGuiRender(GuiGraphics gg) {
         CustomConfig cfg = CustomConfig.get();
         if (!cfg.hudEnabled) return;
-
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null || mc.level == null) return;
-        if (mc.options.renderDebug) return;
+        if (mc.gui.getDebugOverlay().showDebugScreen()) return;
 
-        String[] lines = buildHudLines();
+        String[] lines = pendingLines;
         if (lines.length == 0) return;
 
-        GuiGraphics gg = new GuiGraphics(mc, mc.renderBuffers().bufferSource());
         Font font = mc.font;
         int x  = cfg.hudX;
         int y  = cfg.hudY;
@@ -115,7 +120,6 @@ public final class HUDBehavior extends Behavior {
             }
             y += lh;
         }
-        mc.renderBuffers().bufferSource().endBatch();
     }
 
     private String[] buildHudLines() {
@@ -217,8 +221,8 @@ public final class HUDBehavior extends Behavior {
     private void log(String msg) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player != null) {
-            mc.player.sendSystemMessage(
-                Component.literal("§8[Baritone] §7" + msg));
+            mc.player.displayClientMessage(
+                Component.literal("§8[Baritone] §7" + msg), false);
         }
     }
 

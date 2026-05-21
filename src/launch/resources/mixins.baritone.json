@@ -16,6 +16,7 @@
     "MixinEntity",
     "MixinEntityRenderManager",
     "MixinFireworkRocketEntity",
+    "MixinGui",
     "MixinItemStack",
     "MixinLivingEntity",
     "MixinLootContextBuilder",
