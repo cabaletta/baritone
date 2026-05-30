@@ -1580,7 +1580,7 @@ public final class Settings {
     /**
      * Vertical distance between branch mine layers
      */
-    public final Setting<Integer> branchMineLayerHeight = new Setting<>(2);
+    public final Setting<Integer> branchMineLayerHeight = new Setting<>(3);
 
     /**
      * Branch offset per layer for maximum coverage (staggering)
