@@ -21,15 +21,18 @@ import baritone.Baritone;
 import baritone.api.Settings;
 import baritone.api.behavior.ILookBehavior;
 import baritone.api.behavior.look.IAimProcessor;
-import baritone.api.behavior.look.ITickableAimProcessor;
-import baritone.api.event.events.*;
+import baritone.api.event.events.PacketEvent;
+import baritone.api.event.events.PlayerUpdateEvent;
+import baritone.api.event.events.RotationMoveEvent;
+import baritone.api.event.events.WorldEvent;
 import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.Rotation;
+import baritone.behavior.look.AimProcessor;
 import baritone.behavior.look.ForkableRandom;
+import baritone.behavior.look.HumanizedRotationSmoother;
+import baritone.behavior.look.VisualRotationHelper;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
 import java.util.Optional;
 
 public final class LookBehavior extends Behavior implements ILookBehavior {
@@ -52,20 +55,23 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
     private Rotation prevRotation;
 
     private final AimProcessor processor;
-
-    private final Deque<Float> smoothYawBuffer;
-    private final Deque<Float> smoothPitchBuffer;
+    private final HumanizedRotationSmoother visualSmoother;
+    private final ForkableRandom visualRandom;
+    private Rotation effectiveRotation;
+    private Rotation visualRotation;
+    private double visualJitterYaw;
+    private double visualJitterPitch;
 
     public LookBehavior(Baritone baritone) {
         super(baritone);
         this.processor = new AimProcessor(baritone.getPlayerContext());
-        this.smoothYawBuffer = new ArrayDeque<>();
-        this.smoothPitchBuffer = new ArrayDeque<>();
+        this.visualSmoother = new HumanizedRotationSmoother();
+        this.visualRandom = new ForkableRandom();
     }
 
     @Override
     public void updateTarget(Rotation rotation, boolean blockInteract) {
-        this.target = new Target(rotation, Target.Mode.resolve(ctx, blockInteract));
+        this.target = new Target(rotation, Target.Mode.resolve(ctx, blockInteract), blockInteract);
     }
 
     @Override
@@ -74,58 +80,32 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
     }
 
     @Override
-    public void onTick(TickEvent event) {
-        if (event.getType() == TickEvent.Type.IN) {
-            this.processor.tick();
-        }
-    }
-
-    @Override
     public void onPlayerUpdate(PlayerUpdateEvent event) {
-
-        if (this.target == null) {
-            return;
-        }
 
         switch (event.getState()) {
             case PRE: {
-                if (this.target.mode == Target.Mode.NONE) {
-                    // Just return for PRE, we still want to set target to null on POST
+                if (this.target == null || this.target.mode == Target.Mode.NONE) {
                     return;
                 }
 
-                this.prevRotation = new Rotation(ctx.player().getYRot(), ctx.player().getXRot());
-                final Rotation actual = this.processor.peekRotation(this.target.rotation);
-                ctx.player().setYRot(actual.getYaw());
-                ctx.player().setXRot(actual.getPitch());
+                this.prevRotation = this.currentVisualRotation();
+                this.effectiveRotation = this.nextEffectiveRotation(this.target);
+                ctx.player().setYRot(this.effectiveRotation.getYaw());
+                ctx.player().setXRot(this.effectiveRotation.getPitch());
                 break;
             }
             case POST: {
-                // Reset the player's rotations back to their original values
-                if (this.prevRotation != null) {
-                    this.smoothYawBuffer.addLast(this.target.rotation.getYaw());
-                    while (this.smoothYawBuffer.size() > Baritone.settings().smoothLookTicks.value) {
-                        this.smoothYawBuffer.removeFirst();
-                    }
-                    this.smoothPitchBuffer.addLast(this.target.rotation.getPitch());
-                    while (this.smoothPitchBuffer.size() > Baritone.settings().smoothLookTicks.value) {
-                        this.smoothPitchBuffer.removeFirst();
-                    }
-                    if (this.target.mode == Target.Mode.SERVER) {
-                        ctx.player().setYRot(this.prevRotation.getYaw());
-                        ctx.player().setXRot(this.prevRotation.getPitch());
-                    } else if (ctx.player().isFallFlying() ? Baritone.settings().elytraSmoothLook.value : Baritone.settings().smoothLook.value) {
-                        ctx.player().setYRot((float) this.smoothYawBuffer.stream().mapToDouble(d -> d).average().orElse(this.prevRotation.getYaw()));
-                        if (ctx.player().isFallFlying()) {
-                            ctx.player().setXRot((float) this.smoothPitchBuffer.stream().mapToDouble(d -> d).average().orElse(this.prevRotation.getPitch()));
-                        }
-                    }
-                    //ctx.player().xRotO = prevRotation.getPitch();
-                    //ctx.player().yRotO = prevRotation.getYaw();
-                    this.prevRotation = null;
+                Target tickTarget = this.target;
+                Rotation visibleBase = this.prevRotation != null ? this.prevRotation : this.currentVisualRotation();
+                if (tickTarget != null) {
+                    this.updateVisualRotation(tickTarget, visibleBase);
+                } else if (this.prevRotation != null) {
+                    this.applyVisibleRotation(this.prevRotation, this.prevRotation);
                 }
-                // The target is done being used for this game tick, so it can be invalidated
+
+                this.prevRotation = null;
                 this.target = null;
+                this.effectiveRotation = null;
                 break;
             }
             default:
@@ -149,17 +129,22 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
     public void onWorldEvent(WorldEvent event) {
         this.serverRotation = null;
         this.target = null;
+        this.effectiveRotation = null;
+        this.visualRotation = null;
     }
 
     public void pig() {
         if (this.target != null) {
-            final Rotation actual = this.processor.peekRotation(this.target.rotation);
+            final Rotation actual = this.effectiveRotation == null ? this.peekEffectiveRotation(this.target) : this.effectiveRotation;
             ctx.player().setYRot(actual.getYaw());
         }
     }
 
     public Optional<Rotation> getEffectiveRotation() {
         if (Baritone.settings().freeLook.value) {
+            if (this.effectiveRotation != null) {
+                return Optional.of(this.effectiveRotation);
+            }
             return Optional.ofNullable(this.serverRotation);
         }
         // If freeLook isn't on, just defer to the player's actual rotations
@@ -169,152 +154,117 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
     @Override
     public void onPlayerRotationMove(RotationMoveEvent event) {
         if (this.target != null) {
-            final Rotation actual = this.processor.peekRotation(this.target.rotation);
+            final Rotation actual = this.effectiveRotation == null ? this.peekEffectiveRotation(this.target) : this.effectiveRotation;
             event.setYaw(actual.getYaw());
             event.setPitch(actual.getPitch());
         }
     }
 
-    private static final class AimProcessor extends AbstractAimProcessor {
-
-        public AimProcessor(final IPlayerContext ctx) {
-            super(ctx);
+    private Rotation nextEffectiveRotation(Target tickTarget) {
+        if (tickTarget.blockInteract || ctx.player().isFallFlying()) {
+            return this.processor.nextRotation(tickTarget.rotation);
         }
-
-        @Override
-        protected Rotation getPrevRotation() {
-            // Implementation will use LookBehavior.serverRotation
-            return ctx.playerRotations();
-        }
+        return this.processor.nextRotationWithoutHumanizer(tickTarget.rotation);
     }
 
-    private static abstract class AbstractAimProcessor implements ITickableAimProcessor {
+    private Rotation peekEffectiveRotation(Target tickTarget) {
+        if (tickTarget.blockInteract || ctx.player().isFallFlying()) {
+            return this.processor.peekRotation(tickTarget.rotation);
+        }
+        return this.processor.peekRotationForReachability(tickTarget.rotation);
+    }
 
-        protected final IPlayerContext ctx;
-        private final ForkableRandom rand;
-        private double randomYawOffset;
-        private double randomPitchOffset;
+    private void updateVisualRotation(Target tickTarget, Rotation visibleBase) {
+        Rotation from = this.visualRotation != null ? this.visualRotation : visibleBase;
+        Rotation to = this.visualTarget(tickTarget, visibleBase);
+        Rotation next = this.visualSmoother.next(from, to, this.visualConfig(tickTarget));
+        this.visualRotation = next;
+        this.applyVisibleRotation(from, next);
+    }
 
-        public AbstractAimProcessor(IPlayerContext ctx) {
-            this.ctx = ctx;
-            this.rand = new ForkableRandom();
+    private Rotation visualTarget(Target tickTarget, Rotation visibleBase) {
+        if (tickTarget != null && tickTarget.mode == Target.Mode.CLIENT && tickTarget.blockInteract && this.effectiveRotation != null) {
+            return this.effectiveRotation;
+        }
+        if (tickTarget != null && tickTarget.blockInteract && tickTarget.mode == Target.Mode.SERVER) {
+            return visibleBase;
+        }
+        if (tickTarget != null && !tickTarget.blockInteract && Baritone.settings().humanizeLookMovementPosture.value && !ctx.player().isFallFlying()) {
+            Rotation posture = VisualRotationHelper.movementPosture(tickTarget.rotation, Baritone.settings().humanizeLookMovementPitch.value);
+            return this.addVisualJitter(posture);
+        }
+        if (this.effectiveRotation != null) {
+            return this.effectiveRotation;
+        }
+        return tickTarget == null ? visibleBase : tickTarget.rotation;
+    }
+
+    private Rotation addVisualJitter(Rotation posture) {
+        double jitter = Baritone.settings().humanizeLookJitter.value;
+        if (jitter <= 0.0D) {
+            this.visualJitterYaw = 0.0D;
+            this.visualJitterPitch = 0.0D;
+            return posture;
         }
 
-        private AbstractAimProcessor(final AbstractAimProcessor source) {
-            this.ctx = source.ctx;
-            this.rand = source.rand.fork();
-            this.randomYawOffset = source.randomYawOffset;
-            this.randomPitchOffset = source.randomPitchOffset;
+        double frequency = Math.max(0.0D, Math.min(1.0D, Baritone.settings().humanizeLookVisualJitterFrequency.value));
+        double targetYaw = (this.visualRandom.nextDouble() - 0.5D) * jitter;
+        double targetPitch = (this.visualRandom.nextDouble() - 0.5D) * jitter;
+        this.visualJitterYaw += (targetYaw - this.visualJitterYaw) * frequency;
+        this.visualJitterPitch += (targetPitch - this.visualJitterPitch) * frequency;
+
+        return new Rotation(
+                posture.getYaw() + (float) this.visualJitterYaw,
+                posture.getPitch() + (float) this.visualJitterPitch
+        ).normalizeAndClamp();
+    }
+
+    private HumanizedRotationSmoother.Config visualConfig(Target tickTarget) {
+        boolean blockInteract = tickTarget != null && tickTarget.mode == Target.Mode.CLIENT && tickTarget.blockInteract;
+        double maxSpeed = blockInteract
+                ? Baritone.settings().humanizeLookMaxDegreesPerTick.value
+                : Baritone.settings().humanizeLookMovementMaxDegreesPerTick.value;
+        return new HumanizedRotationSmoother.Config(
+                Baritone.settings().humanizeLook.value,
+                maxSpeed,
+                Baritone.settings().humanizeLookMinDegreesPerTick.value,
+                Baritone.settings().humanizeLookAcceleration.value,
+                0.0D,
+                0.0D,
+                blockInteract ? Baritone.settings().humanizeLookOvershootChance.value : 0.0D,
+                blockInteract ? Baritone.settings().humanizeLookMaxOvershoot.value : 0.0D
+        );
+    }
+
+    private Rotation currentVisualRotation() {
+        return new Rotation(ctx.player().getYRot(), ctx.player().getXRot());
+    }
+
+    private void applyVisibleRotation(Rotation from, Rotation to) {
+        Rotation current = Baritone.settings().humanizeLookVisualInterpolation.value
+                ? VisualRotationHelper.interpolate(from, to, 1.0F)
+                : to;
+        if (Baritone.settings().humanizeLookVisualInterpolation.value) {
+            ctx.player().yRotO = from.getYaw();
+            ctx.player().xRotO = from.getPitch();
+        } else {
+            ctx.player().yRotO = current.getYaw();
+            ctx.player().xRotO = current.getPitch();
         }
-
-        @Override
-        public final Rotation peekRotation(final Rotation rotation) {
-            final Rotation prev = this.getPrevRotation();
-
-            float desiredYaw = rotation.getYaw();
-            float desiredPitch = rotation.getPitch();
-
-            // In other words, the target doesn't care about the pitch, so it used playerRotations().getPitch()
-            // and it's safe to adjust it to a normal level
-            if (desiredPitch == prev.getPitch()) {
-                desiredPitch = nudgeToLevel(desiredPitch);
-            }
-
-            desiredYaw += this.randomYawOffset;
-            desiredPitch += this.randomPitchOffset;
-
-            return new Rotation(
-                    this.calculateMouseMove(prev.getYaw(), desiredYaw),
-                    this.calculateMouseMove(prev.getPitch(), desiredPitch)
-            ).clamp();
-        }
-
-        @Override
-        public final void tick() {
-            // randomLooking
-            this.randomYawOffset = (this.rand.nextDouble() - 0.5) * Baritone.settings().randomLooking.value;
-            this.randomPitchOffset = (this.rand.nextDouble() - 0.5) * Baritone.settings().randomLooking.value;
-
-            // randomLooking113
-            double random = this.rand.nextDouble() - 0.5;
-            if (Math.abs(random) < 0.1) {
-                random *= 4;
-            }
-            this.randomYawOffset += random * Baritone.settings().randomLooking113.value;
-        }
-
-        @Override
-        public final void advance(int ticks) {
-            for (int i = 0; i < ticks; i++) {
-                this.tick();
-            }
-        }
-
-        @Override
-        public Rotation nextRotation(final Rotation rotation) {
-            final Rotation actual = this.peekRotation(rotation);
-            this.tick();
-            return actual;
-        }
-
-        @Override
-        public final ITickableAimProcessor fork() {
-            return new AbstractAimProcessor(this) {
-
-                private Rotation prev = AbstractAimProcessor.this.getPrevRotation();
-
-                @Override
-                public Rotation nextRotation(final Rotation rotation) {
-                    return (this.prev = super.nextRotation(rotation));
-                }
-
-                @Override
-                protected Rotation getPrevRotation() {
-                    return this.prev;
-                }
-            };
-        }
-
-        protected abstract Rotation getPrevRotation();
-
-        /**
-         * Nudges the player's pitch to a regular level. (Between {@code -20} and {@code 10}, increments are by {@code 1})
-         */
-        private float nudgeToLevel(float pitch) {
-            if (pitch < -20) {
-                return pitch + 1;
-            } else if (pitch > 10) {
-                return pitch - 1;
-            }
-            return pitch;
-        }
-
-        private float calculateMouseMove(float current, float target) {
-            final float delta = target - current;
-            final double deltaPx = angleToMouse(delta); // yes, even the mouse movements use double
-            return current + mouseToAngle(deltaPx);
-        }
-
-        private double angleToMouse(float angleDelta) {
-            final float minAngleChange = mouseToAngle(1);
-            return Math.round(angleDelta / minAngleChange);
-        }
-
-        private float mouseToAngle(double mouseDelta) {
-            // casting float literals to double gets us the precise values used by mc
-            final double f = ctx.minecraft().options.sensitivity().get() * (double) 0.6f + (double) 0.2f;
-            return (float) (mouseDelta * f * f * f * 8.0d) * 0.15f; // yes, one double and one float scaling factor
-        }
+        ctx.player().setYRot(current.getYaw());
+        ctx.player().setXRot(current.getPitch());
     }
 
     private static class Target {
 
         public final Rotation rotation;
         public final Mode mode;
+        public final boolean blockInteract;
 
-        public Target(Rotation rotation, Mode mode) {
+        public Target(Rotation rotation, Mode mode, boolean blockInteract) {
             this.rotation = rotation;
             this.mode = mode;
+            this.blockInteract = blockInteract;
         }
 
         enum Mode {

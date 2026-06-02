@@ -36,6 +36,18 @@ public interface IAimProcessor {
     Rotation peekRotation(Rotation desired);
 
     /**
+     * Returns the rotation to use for eventual reachability checks. Unlike {@link #peekRotation(Rotation)}, this may
+     * project past temporary smoothing so callers can answer "can this be aimed at once the look has settled?" without
+     * mutating the processor state.
+     *
+     * @param desired The desired rotation to set
+     * @return The eventual reachable rotation
+     */
+    default Rotation peekRotationForReachability(Rotation desired) {
+        return this.peekRotation(desired);
+    }
+
+    /**
      * Returns a copy of this {@link IAimProcessor} which has its own internal state and is manually tickable.
      *
      * @return The forked processor

@@ -782,6 +782,71 @@ public final class Settings {
     public final Setting<Integer> smoothLookTicks = new Setting<>(5);
 
     /**
+     * Smooth Baritone-controlled rotations over multiple ticks instead of snapping to the target instantly.
+     */
+    public final Setting<Boolean> humanizeLook = new Setting<>(true);
+
+    /**
+     * Maximum yaw/pitch angular speed in degrees per tick while humanized look is active.
+     */
+    public final Setting<Double> humanizeLookMaxDegreesPerTick = new Setting<>(18.0d);
+
+    /**
+     * Minimum yaw/pitch angular speed in degrees per tick while still meaningfully away from the target.
+     */
+    public final Setting<Double> humanizeLookMinDegreesPerTick = new Setting<>(1.0d);
+
+    /**
+     * Maximum per-tick change in humanized look angular speed.
+     */
+    public final Setting<Double> humanizeLookAcceleration = new Setting<>(6.0d);
+
+    /**
+     * Small extra yaw/pitch jitter, in degrees, applied to humanized look targets.
+     */
+    public final Setting<Double> humanizeLookJitter = new Setting<>(0.08d);
+
+    /**
+     * Chance that a long humanized turn will aim slightly past its target before settling.
+     */
+    public final Setting<Double> humanizeLookOvershootChance = new Setting<>(0.15d);
+
+    /**
+     * Maximum degrees of target overshoot for long humanized turns.
+     */
+    public final Setting<Double> humanizeLookMaxOvershoot = new Setting<>(1.0d);
+
+    /**
+     * Maximum yaw/pitch angular speed in degrees per tick while elytra flying.
+     */
+    public final Setting<Double> humanizeLookElytraMaxDegreesPerTick = new Setting<>(35.0d);
+
+    /**
+     * Smooth visible Baritone camera movement between game ticks.
+     */
+    public final Setting<Boolean> humanizeLookVisualInterpolation = new Setting<>(true);
+
+    /**
+     * Return the visible camera to a forward-looking posture while Baritone is moving but not interacting with blocks.
+     */
+    public final Setting<Boolean> humanizeLookMovementPosture = new Setting<>(true);
+
+    /**
+     * Visible camera pitch used while Baritone is moving but not interacting with blocks.
+     */
+    public final Setting<Double> humanizeLookMovementPitch = new Setting<>(10.0d);
+
+    /**
+     * Maximum visible camera angular speed in degrees per tick when returning to movement posture.
+     */
+    public final Setting<Double> humanizeLookMovementMaxDegreesPerTick = new Setting<>(8.0d);
+
+    /**
+     * Low-pass factor for visible camera jitter. Lower values change more slowly.
+     */
+    public final Setting<Double> humanizeLookVisualJitterFrequency = new Setting<>(0.05d);
+
+    /**
      * When true, the player will remain with its existing look direction as often as possible.
      * Although, in some cases this can get it stuck, hence this setting to disable that behavior.
      */
