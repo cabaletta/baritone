@@ -1204,7 +1204,7 @@ public final class ElytraBehavior implements Helper {
             delta = delta.subtract(motion);
 
             // Collision box while the player is in motion, with additional padding for safety
-            final AABB inMotion = hitbox.inflate(motion.x, motion.y, motion.z).inflate(0.01);
+            final AABB inMotion = hitbox.move(motion.x, motion.y, motion.z).inflate(0.01);
 
             int xmin = fastFloor(inMotion.minX);
             int xmax = fastCeil(inMotion.maxX);
