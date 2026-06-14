@@ -274,15 +274,10 @@ public class MovementTraverse extends Movement {
             }
 
             BlockState destDown = BlockStateInterface.get(ctx, dest.below());
-            BlockPos against = positionsToBreak[0];
-            if (feet.getY() != dest.getY() && ladder && (destDown.getBlock() == Blocks.VINE || destDown.getBlock() == Blocks.LADDER)) {
-                against = destDown.getBlock() == Blocks.VINE ? MovementPillar.getAgainst(new CalculationContext(baritone), dest.below()) : dest.relative(destDown.getValue(LadderBlock.FACING).getOpposite());
-                if (against == null) {
-                    logDirect("Unable to climb vines. Consider disabling allowVines.");
-                    return state.setStatus(MovementStatus.UNREACHABLE);
-                }
+            if (feet.getY() != dest.getY() && ladder && MovementHelper.isClimbable(destDown.getBlock())) {
+                state.setInput(Input.JUMP, true);
             }
-            MovementHelper.moveTowards(ctx, state, against);
+            MovementHelper.moveTowards(ctx, state, positionsToBreak[0]);
             return state;
         } else {
             wasTheBridgeBlockAlwaysThere = false;

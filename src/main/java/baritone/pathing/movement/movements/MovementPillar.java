@@ -142,22 +142,6 @@ public class MovementPillar extends Movement {
         }
     }
 
-    public static BlockPos getAgainst(CalculationContext context, BetterBlockPos vine) {
-        if (MovementHelper.isBlockNormalCube(context.get(vine.north()))) {
-            return vine.north();
-        }
-        if (MovementHelper.isBlockNormalCube(context.get(vine.south()))) {
-            return vine.south();
-        }
-        if (MovementHelper.isBlockNormalCube(context.get(vine.east()))) {
-            return vine.east();
-        }
-        if (MovementHelper.isBlockNormalCube(context.get(vine.west()))) {
-            return vine.west();
-        }
-        return null;
-    }
-
     @Override
     public MovementState updateState(MovementState state) {
         super.updateState(state);
