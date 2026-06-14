@@ -581,6 +581,18 @@ public interface MovementHelper extends ActionCosts, Helper {
         return isBlockNormalCube(state) || state.getBlock() == Blocks.GLASS || state.getBlock() instanceof StainedGlassBlock;
     }
 
+    /**
+     * Can we climb up this block by pressing space while inside it?
+     */
+    static boolean isClimbable(Block block) {
+        return block == Blocks.LADDER
+            || block == Blocks.VINE
+            || block == Blocks.WEEPING_VINES
+            || block == Blocks.WEEPING_VINES_PLANT
+            || block == Blocks.TWISTING_VINES
+            || block == Blocks.TWISTING_VINES_PLANT;
+    }
+
     static double getMiningDurationTicks(CalculationContext context, int x, int y, int z, boolean includeFalling) {
         return getMiningDurationTicks(context, x, y, z, context.get(x, y, z), includeFalling);
     }

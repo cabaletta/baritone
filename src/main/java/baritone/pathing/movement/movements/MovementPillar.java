@@ -65,10 +65,10 @@ public class MovementPillar extends Movement {
     public static double cost(CalculationContext context, int x, int y, int z) {
         BlockState fromState = context.get(x, y, z);
         Block from = fromState.getBlock();
-        boolean ladder = from == Blocks.LADDER || from == Blocks.VINE || from == Blocks.WEEPING_VINES || from == Blocks.TWISTING_VINES || from == Blocks.WEEPING_VINES_PLANT || from == Blocks.TWISTING_VINES_PLANT;
+        boolean ladder = MovementHelper.isClimbable(from);
         BlockState fromDown = context.get(x, y - 1, z);
         if (!ladder) {
-            if (fromDown.getBlock() == Blocks.LADDER || fromDown.getBlock() == Blocks.VINE) {
+            if (MovementHelper.isClimbable(fromDown.getBlock())) {
                 return COST_INF; // can't pillar from a ladder or vine onto something that isn't also climbable
             }
             if (fromDown.getBlock() instanceof SlabBlock && fromDown.getValue(SlabBlock.TYPE) == SlabType.BOTTOM) {
@@ -113,7 +113,7 @@ public class MovementPillar extends Movement {
             return COST_INF;
         }
         if (hardness != 0) {
-            if (toBreakBlock == Blocks.LADDER || toBreakBlock == Blocks.VINE || toBreakBlock == Blocks.WEEPING_VINES || toBreakBlock == Blocks.TWISTING_VINES) {
+            if (MovementHelper.isClimbable(toBreakBlock)) {
                 hardness = 0; // we won't actually need to break the ladder / vine because we're going to use it
             } else {
                 BlockState check = context.get(x, y + 3, z); // the block on top of the one we're going to break, could it fall on us?
@@ -182,18 +182,17 @@ public class MovementPillar extends Movement {
             }
             return state;
         }
-        boolean ladder = fromDown.getBlock() == Blocks.LADDER || fromDown.getBlock() == Blocks.VINE;
-        boolean nether_vine = fromDown.getBlock() == Blocks.WEEPING_VINES || fromDown.getBlock() == Blocks.TWISTING_VINES || fromDown.getBlock() == Blocks.WEEPING_VINES_PLANT || fromDown.getBlock() == Blocks.TWISTING_VINES_PLANT;
+        boolean ladder = MovementHelper.isClimbable(fromDown.getBlock());
 
         Rotation rotation = RotationUtils.calcRotationFromVec3d(ctx.playerHead(),
                 VecUtils.getBlockPosCenter(positionToPlace),
                 ctx.playerRotations());
-        if (!(ladder || nether_vine)) {
+        if (!ladder) {
             state.setTarget(new MovementState.MovementTarget(ctx.playerRotations().withPitch(rotation.getPitch()), true));
         }
 
         boolean blockIsThere = MovementHelper.canWalkOn(ctx, src) || ladder;
-        if (ladder || nether_vine) {
+        if (ladder) {
             if (ctx.playerFeet().equals(dest)) {
                 return state.setStatus(MovementStatus.SUCCESS);
             }
