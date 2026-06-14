@@ -75,9 +75,6 @@ public class MovementPillar extends Movement {
                 return COST_INF; // can't pillar up from a bottom slab onto a non ladder
             }
         }
-        if (from == Blocks.VINE && !hasAgainst(context, x, y, z)) { // TODO this vine can't be climbed, but we could place a pillar still since vines are replacable, no? perhaps the pillar jump would be impossible because of the slowdown actually.
-            return COST_INF;
-        }
         BlockState toBreak = context.get(x, y + 2, z);
         Block toBreakBlock = toBreak.getBlock();
         if (toBreakBlock instanceof FenceGateBlock) { // see issue #172
@@ -145,13 +142,6 @@ public class MovementPillar extends Movement {
         }
     }
 
-    public static boolean hasAgainst(CalculationContext context, int x, int y, int z) {
-        return MovementHelper.isBlockNormalCube(context.get(x + 1, y, z)) ||
-                MovementHelper.isBlockNormalCube(context.get(x - 1, y, z)) ||
-                MovementHelper.isBlockNormalCube(context.get(x, y, z + 1)) ||
-                MovementHelper.isBlockNormalCube(context.get(x, y, z - 1));
-    }
-
     public static BlockPos getAgainst(CalculationContext context, BetterBlockPos vine) {
         if (MovementHelper.isBlockNormalCube(context.get(vine.north()))) {
             return vine.north();
@@ -193,7 +183,6 @@ public class MovementPillar extends Movement {
             return state;
         }
         boolean ladder = fromDown.getBlock() == Blocks.LADDER || fromDown.getBlock() == Blocks.VINE;
-        boolean vine = fromDown.getBlock() == Blocks.VINE;
         boolean nether_vine = fromDown.getBlock() == Blocks.WEEPING_VINES || fromDown.getBlock() == Blocks.TWISTING_VINES || fromDown.getBlock() == Blocks.WEEPING_VINES_PLANT || fromDown.getBlock() == Blocks.TWISTING_VINES_PLANT;
 
         Rotation rotation = RotationUtils.calcRotationFromVec3d(ctx.playerHead(),
@@ -204,31 +193,11 @@ public class MovementPillar extends Movement {
         }
 
         boolean blockIsThere = MovementHelper.canWalkOn(ctx, src) || ladder;
-        if (ladder) {
-            BlockPos against = vine ? getAgainst(new CalculationContext(baritone), src) : src.relative(fromDown.getValue(LadderBlock.FACING).getOpposite());
-            if (against == null) {
-                logDirect("Unable to climb vines. Consider disabling allowVines.");
-                return state.setStatus(MovementStatus.UNREACHABLE);
-            }
-
-            if (ctx.playerFeet().equals(against.above()) || ctx.playerFeet().equals(dest)) {
-                return state.setStatus(MovementStatus.SUCCESS);
-            }
-            if (MovementHelper.isBottomSlab(BlockStateInterface.get(ctx, src.below()))) {
-                state.setInput(Input.JUMP, true);
-            }
-            /*
-            if (thePlayer.getPosition0().getX() != from.getX() || thePlayer.getPosition0().getZ() != from.getZ()) {
-                Baritone.moveTowardsBlock(from);
-            }
-             */
-
-            MovementHelper.moveTowards(ctx, state, against);
-            return state;
-        } else if (nether_vine) {
+        if (ladder || nether_vine) {
             if (ctx.playerFeet().equals(dest)) {
                 return state.setStatus(MovementStatus.SUCCESS);
             }
+
             MovementHelper.moveTowards(ctx, state, dest);
             state.setInput(Input.JUMP, true);
             return state;
