@@ -330,11 +330,6 @@ public interface MovementHelper extends ActionCosts, Helper {
         return state.getMaterial().isReplaceable();
     }
 
-    @Deprecated
-    static boolean isReplacable(int x, int y, int z, BlockState state, BlockStateInterface bsi) {
-        return isReplaceable(x, y, z, state, bsi);
-    }
-
     static boolean isDoorPassable(IPlayerContext ctx, BlockPos doorPos, BlockPos playerPos) {
         if (playerPos.equals(doorPos)) {
             return false;
