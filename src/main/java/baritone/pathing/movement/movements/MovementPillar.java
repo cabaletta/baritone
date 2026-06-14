@@ -258,7 +258,7 @@ public class MovementPillar extends Movement {
     protected boolean prepared(MovementState state) {
         if (ctx.playerFeet().equals(src) || ctx.playerFeet().equals(src.below())) {
             Block block = BlockStateInterface.getBlock(ctx, src.below());
-            if (block == Blocks.LADDER || block == Blocks.VINE) {
+            if (MovementHelper.isClimbable(block)) {
                 state.setInput(Input.SNEAK, true);
             }
         }

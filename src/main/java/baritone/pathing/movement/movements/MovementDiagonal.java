@@ -148,7 +148,7 @@ public class MovementDiagonal extends Movement {
             multiplier += context.walkOnWaterOnePenalty * SQRT_2;
         }
         Block fromDownBlock = fromDown.getBlock();
-        if (fromDownBlock == Blocks.LADDER || fromDownBlock == Blocks.VINE) {
+        if (MovementHelper.isClimbable(fromDownBlock)) {
             return;
         }
         if (fromDownBlock == Blocks.SOUL_SAND) {
@@ -228,7 +228,7 @@ public class MovementDiagonal extends Movement {
         }
         if (optionA != 0 || optionB != 0) {
             multiplier *= SQRT_2 - 0.001; // TODO tune
-            if (startIn == Blocks.LADDER || startIn == Blocks.VINE) {
+            if (MovementHelper.isClimbable(startIn)) {
                 // edging around doesn't work if doing so would climb a ladder or vine instead of moving sideways
                 return;
             }

@@ -93,7 +93,7 @@ public class MovementDescend extends Movement {
         }
 
         Block fromDown = context.get(x, y - 1, z).getBlock();
-        if (fromDown == Blocks.LADDER || fromDown == Blocks.VINE) {
+        if (MovementHelper.isClimbable(fromDown)) {
             return;
         }
 

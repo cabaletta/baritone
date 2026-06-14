@@ -522,7 +522,7 @@ public interface MovementHelper extends ActionCosts, Helper {
      */
     static boolean mustBeSolidToWalkOn(CalculationContext context, int x, int y, int z, BlockState state) {
         Block block = state.getBlock();
-        if (block == Blocks.LADDER || block == Blocks.VINE) {
+        if (isClimbable(block)) {
             return false;
         }
         if (!state.getFluidState().isEmpty()) {
@@ -583,6 +583,8 @@ public interface MovementHelper extends ActionCosts, Helper {
 
     /**
      * Can we climb up this block by pressing space while inside it?
+     * Also doubles as "If I start a movement on this, can weird things happen?"
+     * because movements can end/start on these blocks despite them not being canWalkOn.
      */
     static boolean isClimbable(Block block) {
         return block == Blocks.LADDER
