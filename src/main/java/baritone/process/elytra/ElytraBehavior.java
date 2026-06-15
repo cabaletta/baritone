@@ -1204,7 +1204,10 @@ public final class ElytraBehavior implements Helper {
             delta = delta.subtract(motion);
 
             // Collision box while the player is in motion, with additional padding for safety
-            final AABB inMotion = hitbox.move(motion.x, motion.y, motion.z).inflate(0.01);
+            // Use expandTowards for directional swept volume (fixes #5049)
+            // expandTowards handles negative vectors correctly (unlike inflate)
+            // and provides full swept volume coverage (unlike move)
+            final AABB inMotion = hitbox.expandTowards(motion.x, motion.y, motion.z).inflate(0.01);
 
             int xmin = fastFloor(inMotion.minX);
             int xmax = fastCeil(inMotion.maxX);
