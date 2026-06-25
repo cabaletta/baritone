@@ -26,8 +26,8 @@ plugins {
 unimined.minecraft {
     runs {
         config("client") {
-            mainClass.set("net.minecraft.launchwrapper.Launch")
-            args("--tweakClass", "baritone.launch.tweaker.BaritoneTweaker")
+            mainClass = "net.minecraft.launchwrapper.Launch"
+            args.addAll(["--tweakClass", "baritone.launch.tweaker.BaritoneTweaker"])
         }
     }
 }

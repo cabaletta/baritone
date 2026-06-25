@@ -988,6 +988,11 @@ public final class Settings {
     public final Setting<Boolean> replantNetherWart = new Setting<>(false);
 
     /**
+     * When enabled, farming will be restricted to the current selection.
+     */
+    public final Setting<Boolean> farmUsingSelection = new Setting<>(false);
+
+    /**
      * Farming will scan for at most this many blocks.
      */
     public final Setting<Integer> farmMaxScanSize = new Setting<>(256);

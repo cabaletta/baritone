@@ -26,6 +26,10 @@ repositories {
         url = 'https://maven.wagyourtail.xyz/releases'
     }
     maven {
+        name = 'WagYourMaven Snapshots'
+        url = 'https://maven.wagyourtail.xyz/snapshots'
+    }
+    maven {
         name = 'ForgeMaven'
         url = 'https://maven.minecraftforge.net/'
     }

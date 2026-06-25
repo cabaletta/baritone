@@ -26,6 +26,7 @@ import baritone.api.pathing.goals.GoalComposite;
 import baritone.api.process.IFarmProcess;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
+import baritone.api.selection.ISelection;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.RayTraceUtils;
 import baritone.api.utils.Rotation;
@@ -219,6 +220,12 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
         }
         if (locations == null) {
             return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
+        }
+        if (Baritone.settings().farmUsingSelection.value) {
+            ISelection selection = baritone.getSelectionManager().getLastSelection();
+            if (selection != null) {
+                locations.removeIf(pos -> !selection.aabb().contains(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5));
+            }
         }
         List<BlockPos> toBreak = new ArrayList<>();
         List<BlockPos> openFarmland = new ArrayList<>();
