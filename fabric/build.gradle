@@ -78,15 +78,19 @@ components.java {
 }
 
 task proguard(type: ProguardTask) {
-    proguardVersion "7.4.2"
+    enabled = project.java_version.toInteger() <= 21
+    proguardVersion "7.9.1"
     compType "fabric"
 }
 
 task createDist(type: CreateDistTask, dependsOn: proguard) {
+    enabled = project.java_version.toInteger() <= 21
     compType "fabric"
 }
 
-build.finalizedBy(createDist)
+if (project.java_version.toInteger() <= 21) {
+    build.finalizedBy(createDist)
+}
 
 publishing {
     publications {

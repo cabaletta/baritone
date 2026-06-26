@@ -20,18 +20,9 @@ package baritone.utils;
 import baritone.api.BaritoneAPI;
 import baritone.api.Settings;
 import baritone.utils.accessor.IEntityRenderManager;
-import baritone.utils.accessor.IRenderPipelines;
-import baritone.utils.accessor.IRenderType;
-import com.mojang.blaze3d.pipeline.BlendFunction;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.platform.DepthTestFunction;
-import com.mojang.blaze3d.platform.DestFactor;
-import com.mojang.blaze3d.platform.SourceFactor;
+import com.mojang.blaze3d.PrimitiveTopology;
 import com.mojang.blaze3d.vertex.*;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.renderer.blockentity.BeaconRenderer;
-import net.minecraft.client.renderer.rendertype.RenderSetup;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -45,70 +36,12 @@ import java.util.function.BiFunction;
 
 public interface IRenderer {
 
-    Tesselator tessellator = Tesselator.getInstance();
     IEntityRenderManager renderManager = (IEntityRenderManager) Minecraft.getInstance().getEntityRenderDispatcher();
     Settings settings = BaritoneAPI.getSettings();
-    RenderPipeline.Snippet BARITONE_LINES_SNIPPET = RenderPipeline.builder(((IRenderPipelines) new RenderPipelines()).getLinesSnippet())
-        .withBlend(new BlendFunction(
-            SourceFactor.SRC_ALPHA,
-            DestFactor.ONE_MINUS_SRC_ALPHA,
-            SourceFactor.ONE,
-            DestFactor.ZERO
-        ))
-        .withDepthWrite(false)
-        .withCull(false)
-        .buildSnippet();
+    RenderType linesWithDepthRenderType = RenderTypes.lines();
+    RenderType linesNoDepthRenderType = RenderTypes.linesTranslucent();
 
-    RenderPipeline.Snippet BARITONE_BEACON_BEAM_SNIPPET = RenderPipeline.builder(((IRenderPipelines) new RenderPipelines()).getMatricesFogSnippet())
-            .withVertexShader("core/rendertype_beacon_beam")
-            .withFragmentShader("core/rendertype_beacon_beam")
-            .withSampler("Sampler0")
-            .withVertexFormat(DefaultVertexFormat.BLOCK, VertexFormat.Mode.QUADS)
-            .buildSnippet();
-
-    RenderPipeline BEACON_BEAM_OPAQUE = ((IRenderPipelines) new RenderPipelines()).baritone$registerPipeline(RenderPipeline.builder(BARITONE_BEACON_BEAM_SNIPPET)
-            .withLocation("pipeline/baritone_beacon_beam_opaque")
-            .withDepthWrite(false)
-            .withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
-            .withCull(true)
-            .build());
-
-    RenderPipeline BEACON_BEAM_TRANSLUCENT = ((IRenderPipelines) new RenderPipelines()).baritone$registerPipeline(RenderPipeline.builder(BARITONE_BEACON_BEAM_SNIPPET)
-            .withLocation("pipeline/baritone_beacon_beam_translucent")
-            .withDepthWrite(false)
-            .withBlend(BlendFunction.TRANSLUCENT)
-            .withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
-            .withCull(true)
-            .build());
-
-    RenderType linesWithDepthRenderType = ((IRenderType) RenderTypes.lines()).createRenderType(
-        "renderType/baritone_lines_with_depth",
-        RenderSetup.builder(RenderPipeline.builder(BARITONE_LINES_SNIPPET)
-            .withLocation("pipelines/baritone_lines_with_depth")
-            .withDepthTestFunction(DepthTestFunction.LEQUAL_DEPTH_TEST)
-            .build())
-            .bufferSize(256)
-            .createRenderSetup()
-    );
-    RenderType linesNoDepthRenderType = ((IRenderType) RenderTypes.lines()).createRenderType(
-        "renderType/baritone_lines_no_depth",
-        RenderSetup.builder(RenderPipeline.builder(BARITONE_LINES_SNIPPET)
-                .withLocation("pipelines/baritone_lines_no_depth")
-                .withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
-                .build())
-            .bufferSize(256)
-            .createRenderSetup()
-    );
-
-
-    BiFunction<Identifier, Boolean, RenderType> BEACON_BEAM = Util.memoize(
-            (identifier, boolean_) -> ((IRenderType) RenderTypes.beaconBeam(BeaconRenderer.BEAM_LOCATION, boolean_)).createRenderType(
-                    boolean_ ? "renderType/baritone_beacon_beam_translucent" : "renderType/baritone_beacon_beam_opaque",
-            RenderSetup.builder(boolean_ ? BEACON_BEAM_TRANSLUCENT : BEACON_BEAM_OPAQUE)
-                    .withTexture("Sampler0", identifier)
-                    .sortOnUpload()
-                    .createRenderSetup())
-    );
+    BiFunction<Identifier, Boolean, RenderType> BEACON_BEAM = Util.memoize(RenderTypes::beaconBeam);
 
     float[] color = new float[]{1.0F, 1.0F, 1.0F, 255.0F};
 
@@ -122,7 +55,7 @@ public interface IRenderer {
 
     static BufferBuilder startLines(Color color, float alpha) {
         glColor(color, alpha);
-        return tessellator.begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR_NORMAL_LINE_WIDTH);
+        return new BufferBuilder(new ByteBufferBuilder(256), PrimitiveTopology.LINES, DefaultVertexFormat.POSITION_COLOR_NORMAL_LINE_WIDTH);
     }
 
     static BufferBuilder startLines(Color color) {
@@ -132,22 +65,18 @@ public interface IRenderer {
     static void endLines(BufferBuilder bufferBuilder, boolean ignoredDepth) {
         MeshData meshData = bufferBuilder.build();
         if (meshData != null) {
-            if (ignoredDepth) {
-                linesNoDepthRenderType.draw(meshData);
-            } else {
-                linesWithDepthRenderType.draw(meshData);
-            }
+            meshData.close();
         }
     }
 
     static BufferBuilder startBlockQuads() {
-        return tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.BLOCK);
+        return new BufferBuilder(new ByteBufferBuilder(256), PrimitiveTopology.QUADS, DefaultVertexFormat.BLOCK);
     }
 
     static void endBuffer(BufferBuilder bufferBuilder, RenderType renderType) {
         MeshData meshData = bufferBuilder.build();
         if (meshData != null) {
-            renderType.draw(meshData);
+            meshData.close();
         }
     }
 

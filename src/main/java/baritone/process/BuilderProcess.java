@@ -520,7 +520,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             }
             // build repeat time
             layer = 0;
-            origin = new BlockPos(origin).offset(repeat);
+            origin = new BlockPos(origin.getX(), origin.getY(), origin.getZ()).offset(repeat);
             if (!Baritone.settings().buildRepeatSneaky.value) {
                 schematic.reset();
             }
@@ -1037,8 +1037,10 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         if (!ignoreDirection && ignoredProps.isEmpty()) {
             return first.equals(second); // early return if no properties are being ignored
         }
-        Map<Property<?>, Comparable<?>> map1 = first.getValues();
-        Map<Property<?>, Comparable<?>> map2 = second.getValues();
+        Map<Property<?>, Comparable<?>> map1 = first.getValues()
+                .collect(Collectors.toMap(value -> value.property(), value -> value.value()));
+        Map<Property<?>, Comparable<?>> map2 = second.getValues()
+                .collect(Collectors.toMap(value -> value.property(), value -> value.value()));
         for (Property<?> prop : map1.keySet()) {
             if (map1.get(prop) != map2.get(prop)
                     && !(ignoreDirection && ORIENTATION_PROPS.contains(prop))

@@ -18,7 +18,9 @@
 package baritone.launch.mixins;
 
 import baritone.utils.accessor.IFireworkRocketEntity;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -43,8 +45,9 @@ public abstract class MixinFireworkRocketEntity extends Entity implements IFirew
     @Shadow
     public abstract boolean isAttachedToEntity();
 
+    @SuppressWarnings("unchecked")
     private MixinFireworkRocketEntity(Level level) {
-        super(EntityType.FIREWORK_ROCKET, level);
+        super((EntityType<? extends Entity>) BuiltInRegistries.ENTITY_TYPE.getValue(Identifier.withDefaultNamespace("firework_rocket")), level);
     }
 
     @Override
