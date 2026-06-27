@@ -54,8 +54,21 @@ allprojects {
             url = 'https://repo.spongepowered.org/repository/maven-public/'
         }
         maven {
+            name = 'fabric-intermediary-artifact'
+            url = 'https://maven.fabricmc.net/'
+            metadataSources {
+                artifact()
+            }
+            content {
+                includeModule("net.fabricmc", "intermediary")
+            }
+        }
+        maven {
             name = 'fabric-maven'
             url = 'https://maven.fabricmc.net/'
+            content {
+                excludeModule("net.fabricmc", "intermediary")
+            }
         }
         maven {
             name = 'impactdevelopment-repo'
@@ -93,9 +106,17 @@ allprojects {
         version rootProject.minecraft_version
 
         mappings {
-            intermediary()
+            if (rootProject.minecraft_version == "26.3-snapshot-1") {
+                mapping("net.fabricmc:intermediary:0.0.0:v2", "intermediary") {
+                    provides("intermediary", false)
+                }
+            } else {
+                intermediary()
+            }
             mojmap()
-            parchment(rootProject.minecraft_version, "2025.12.20")
+            if (rootProject.hasProperty("parchment_version") && rootProject.parchment_version) {
+                parchment(rootProject.minecraft_version, rootProject.parchment_version)
+            }
         }
     }
 

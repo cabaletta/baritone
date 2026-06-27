@@ -22,8 +22,8 @@ import baritone.api.utils.NotificationHelper;
 import baritone.api.utils.SettingsUtil;
 import baritone.api.utils.TypeUtils;
 import baritone.api.utils.gui.BaritoneToast;
-import net.minecraft.client.GuiMessageTag;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.chat.GuiMessageTag;
 import net.minecraft.core.Vec3i;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
@@ -1280,8 +1280,12 @@ public final class Settings {
     @JavaOnly
     public final Setting<Consumer<Component>> logger = new Setting<>((msg) -> {
         try {
-            final GuiMessageTag tag = useMessageTag.value ? Helper.MESSAGE_TAG : null;
-            Minecraft.getInstance().gui.getChat().addMessage(msg, null, tag);
+            if (useMessageTag.value) {
+                final GuiMessageTag tag = Helper.MESSAGE_TAG;
+                Minecraft.getInstance().gui.hud.getChat().addPlayerMessage(msg, null, tag);
+            } else {
+                Minecraft.getInstance().gui.hud.getChat().addClientSystemMessage(msg);
+            }
         } catch (Throwable t) {
             LOGGER.warn("Failed to log message to chat: " + msg.getString(), t);
         }

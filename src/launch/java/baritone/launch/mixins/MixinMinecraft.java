@@ -185,7 +185,7 @@ public class MixinMinecraft {
         if (BaritoneAPI.getProvider().getPrimaryBaritone().getPathingBehavior().isPathing() && player != null) {
             return null;
         }
-        return instance.screen;
+        return instance.gui.screen();
     }
 
     // TODO

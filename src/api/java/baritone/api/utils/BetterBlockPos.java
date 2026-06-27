@@ -22,6 +22,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.util.Mth;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * A better BlockPos that has fewer hash collisions (and slightly more performant offsets)
@@ -222,6 +223,10 @@ public final class BetterBlockPos extends BlockPos {
         double dy = (double) this.y - to.y;
         double dz = (double) this.z - to.z;
         return Math.sqrt(dx * dx + dy * dy + dz * dz);
+    }
+
+    public Vec3 getCenter() {
+        return new Vec3(x + 0.5, y + 0.5, z + 0.5);
     }
 
     @Override
