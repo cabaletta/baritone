@@ -37,6 +37,7 @@ import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.piston.MovingPistonBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.DoorHingeSide;
 import net.minecraft.world.level.block.state.properties.Half;
 import net.minecraft.world.level.block.state.properties.SlabType;
 import net.minecraft.world.level.block.state.properties.StairsShape;
@@ -52,6 +53,7 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.*;
+import java.util.stream.Stream;
 
 import static baritone.api.utils.RotationUtils.DEG_TO_RAD_F;
 import static baritone.pathing.movement.Movement.HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP;
@@ -332,16 +334,24 @@ public interface MovementHelper extends ActionCosts, Helper {
     }
 
     static boolean isDoorPassable(IPlayerContext ctx, BlockPos doorPos, BlockPos playerPos) {
-        if (playerPos.equals(doorPos)) {
-            return false;
-        }
+        Direction dir = Stream.of(Direction.values())
+                .filter(d -> playerPos.relative(d).equals(doorPos))
+                .findFirst()
+                .get();
 
         BlockState state = BlockStateInterface.get(ctx, doorPos);
+
         if (!(state.getBlock() instanceof DoorBlock)) {
             return true;
         }
 
-        return isHorizontalBlockPassable(doorPos, state, playerPos, DoorBlock.OPEN);
+        boolean open = state.getValue(DoorBlock.OPEN);
+        Direction closedFacing = state.getValue(HorizontalDirectionalBlock.FACING);
+        Direction openFacing = state.getValue(DoorBlock.HINGE) == DoorHingeSide.LEFT
+                ? closedFacing.getClockWise()
+                : closedFacing.getCounterClockWise();
+
+        return dir != (open ? openFacing : closedFacing);
     }
 
     static boolean isGatePassable(IPlayerContext ctx, BlockPos gatePos, BlockPos playerPos) {
@@ -355,26 +365,6 @@ public interface MovementHelper extends ActionCosts, Helper {
         }
 
         return state.getValue(FenceGateBlock.OPEN);
-    }
-
-    static boolean isHorizontalBlockPassable(BlockPos blockPos, BlockState blockState, BlockPos playerPos, BooleanProperty propertyOpen) {
-        if (playerPos.equals(blockPos)) {
-            return false;
-        }
-
-        Direction.Axis facing = blockState.getValue(HorizontalDirectionalBlock.FACING).getAxis();
-        boolean open = blockState.getValue(propertyOpen);
-
-        Direction.Axis playerFacing;
-        if (playerPos.north().equals(blockPos) || playerPos.south().equals(blockPos)) {
-            playerFacing = Direction.Axis.Z;
-        } else if (playerPos.east().equals(blockPos) || playerPos.west().equals(blockPos)) {
-            playerFacing = Direction.Axis.X;
-        } else {
-            return true;
-        }
-
-        return (facing == playerFacing) == open;
     }
 
     static boolean avoidWalkingInto(BlockState state) {
