@@ -115,6 +115,11 @@ public class MovementFall extends Movement {
                 }
             }
         }
+
+        if (!MovementHelper.openDoors(ctx, state, src, new BetterBlockPos(dest.x, src.y, dest.z))) {
+            return state;
+        }
+
         if (targetRotation != null) {
             state.setTarget(new MovementTarget(targetRotation, true));
         } else {
