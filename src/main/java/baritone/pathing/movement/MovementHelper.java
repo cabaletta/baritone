@@ -777,6 +777,17 @@ public interface MovementHelper extends ActionCosts, Helper {
         return false;
     }
 
+    static boolean openDoors(IPlayerContext ctx, MovementState state, BetterBlockPos from, BetterBlockPos to) {
+        for (BetterBlockPos[] poss : new BetterBlockPos[][]{{from, to}, {to, from}, {from.above(), to.above()}, {to.above(), from.above()}}) {
+            if (!isDoorPassable(ctx, poss[0], poss[1]) && !Blocks.IRON_DOOR.equals(BlockStateInterface.getBlock(ctx, poss[0]))) {
+                state.setTarget(new MovementState.MovementTarget(RotationUtils.calcRotationFromVec3d(ctx.playerHead(), VecUtils.calculateBlockCenter(ctx.world(), poss[0]), ctx.playerRotations()), true))
+                        .setInput(Input.CLICK_RIGHT, true);
+                return false;
+            }
+        }
+        return true;
+    }
+
     static PlaceResult attemptToPlaceABlock(MovementState state, IBaritone baritone, BlockPos placeAt, boolean preferDown, boolean wouldSneak) {
         IPlayerContext ctx = baritone.getPlayerContext();
         Optional<Rotation> direct = RotationUtils.reachable(ctx, placeAt, wouldSneak); // we assume that if there is a block there, it must be replacable
