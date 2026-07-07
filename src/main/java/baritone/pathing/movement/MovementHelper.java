@@ -155,11 +155,10 @@ public interface MovementHelper extends ActionCosts, Helper {
         if (Baritone.settings().blocksToAvoid.value.contains(block)) {
             return NO;
         }
-        if (block instanceof DoorBlock || block instanceof FenceGateBlock) {
-            // TODO this assumes that all doors in all mods are openable
-            if (block == Blocks.IRON_DOOR) {
-                return NO;
-            }
+        if (block instanceof DoorBlock) {
+            return DoorBlock.isWoodenDoor(state) ? YES : NO;
+        }
+        if (block instanceof FenceGateBlock) {
             return YES;
         }
         if (block instanceof CarpetBlock) {
@@ -779,7 +778,7 @@ public interface MovementHelper extends ActionCosts, Helper {
 
     static boolean openDoors(IPlayerContext ctx, MovementState state, BetterBlockPos from, BetterBlockPos to) {
         for (BetterBlockPos[] poss : new BetterBlockPos[][]{{from, to}, {to, from}, {from.above(), to.above()}, {to.above(), from.above()}}) {
-            if (!isDoorPassable(ctx, poss[0], poss[1]) && !Blocks.IRON_DOOR.equals(BlockStateInterface.getBlock(ctx, poss[0]))) {
+            if (!isDoorPassable(ctx, poss[0], poss[1]) && DoorBlock.isWoodenDoor(BlockStateInterface.get(ctx, poss[0]))) {
                 state.setTarget(new MovementState.MovementTarget(RotationUtils.calcRotationFromVec3d(ctx.playerHead(), VecUtils.calculateBlockCenter(ctx.world(), poss[0]), ctx.playerRotations()), true))
                         .setInput(Input.CLICK_RIGHT, true);
                 return false;
