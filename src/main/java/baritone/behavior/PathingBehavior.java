@@ -36,6 +36,7 @@ import baritone.pathing.path.PathExecutor;
 import baritone.process.ElytraProcess;
 import baritone.utils.PathRenderer;
 import baritone.utils.PathingCommandContext;
+import baritone.utils.PlayerControlGuard;
 import baritone.utils.pathing.Favoring;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -100,6 +101,14 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
             return;
         }
 
+        if (!PlayerControlGuard.canControl(ctx)) {
+            pausedThisTick = true;
+            unpausedLastTick = false;
+            baritone.getInputOverrideHandler().clearAllKeys();
+            baritone.getInputOverrideHandler().getBlockBreakHelper().stopBreakingBlock();
+            baritone.getPathingControlManager().preTick();
+            return;
+        }
         expectedSegmentStart = pathStart();
         baritone.getPathingControlManager().preTick();
         tickPath();

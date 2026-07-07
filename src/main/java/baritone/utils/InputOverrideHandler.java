@@ -24,6 +24,7 @@ import baritone.api.utils.IInputOverrideHandler;
 import baritone.api.utils.input.Input;
 import baritone.behavior.Behavior;
 import net.minecraft.client.player.KeyboardInput;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 
@@ -111,6 +112,10 @@ public final class InputOverrideHandler extends Behavior implements IInputOverri
         if (event.getType() == TickEvent.Type.OUT) {
             return;
         }
+        if (!PlayerControlGuard.canControl(ctx)) {
+            stopControllingPlayer();
+            return;
+        }
         if (isInputForcedDown(Input.CLICK_LEFT)) {
             setInputForceState(Input.CLICK_RIGHT, false);
         }
@@ -128,6 +133,24 @@ public final class InputOverrideHandler extends Behavior implements IInputOverri
         }
         // only set it if it was previously incorrect
         // gotta do it this way, or else it constantly thinks you're beginning a double tap W sprint lol
+    }
+
+    @Override
+    public void onPlayerDeath() {
+        stopControllingPlayer();
+    }
+
+    private void stopControllingPlayer() {
+        clearAllKeys();
+        blockBreakHelper.stopBreakingBlock();
+        restorePlayerInput();
+    }
+
+    private void restorePlayerInput() {
+        LocalPlayer player = ctx.player();
+        if (player != null && player.input != null && player.input.getClass() == PlayerMovementInput.class) {
+            player.input = new KeyboardInput(ctx.minecraft().options);
+        }
     }
 
     private boolean inControl() {

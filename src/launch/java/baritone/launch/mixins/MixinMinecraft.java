@@ -23,6 +23,7 @@ import baritone.api.event.events.PlayerUpdateEvent;
 import baritone.api.event.events.TickEvent;
 import baritone.api.event.events.WorldEvent;
 import baritone.api.event.events.type.EventState;
+import baritone.utils.PlayerControlGuard;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -172,7 +173,9 @@ public class MixinMinecraft {
     )
     private boolean passEvents(Screen screen) {
         // allow user input is only the primary baritone
-        return (BaritoneAPI.getProvider().getPrimaryBaritone().getPathingBehavior().isPathing() && player != null) || screen.passEvents;
+        return (BaritoneAPI.getProvider().getPrimaryBaritone().getPathingBehavior().isPathing()
+                && PlayerControlGuard.canControl(player, screen))
+                || screen.passEvents;
     }
 
     // TODO
