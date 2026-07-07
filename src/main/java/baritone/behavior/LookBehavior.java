@@ -66,6 +66,7 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
     private final Deque<Float> smoothYawBuffer;
     private final Deque<Float> smoothPitchBuffer;
     private RotationArc interpolationArc;
+    private Target.Mode interpolationMode;
     private Vec3 interpolationOrigin;
     private RotationArc pendingRenderArc;
     private RotationArc renderArc;
@@ -193,9 +194,9 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
                 }
 
                 this.prevRotation = new Rotation(ctx.player().getYRot(), ctx.player().getXRot());
-                final Rotation start = ctx.playerRotations();
+                final Rotation start = this.startingRotation(this.target.mode);
                 final Rotation actual = this.target.rotation(this.processor);
-                this.updateInterpolation(start, actual, ctx.playerHead(), this.target.restartInterpolation);
+                this.updateInterpolation(start, actual, ctx.playerHead(), this.target.restartInterpolation, this.target.mode);
                 break;
             }
             case POST: {
@@ -221,8 +222,26 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
         }
     }
 
-    private void updateInterpolation(Rotation start, Rotation actual, Vec3 origin, boolean restartArc) {
+    private Rotation startingRotation(Target.Mode mode) {
+        if (mode == Target.Mode.CLIENT) {
+            return this.prevRotation;
+        }
+        return ctx.playerRotations();
+    }
+
+    private void updateInterpolation(
+            Rotation start,
+            Rotation actual,
+            Vec3 origin,
+            boolean restartArc,
+            Target.Mode mode) {
         final int interpolationSpeed = Baritone.settings().interpolatedLookLength.value;
+
+        if (this.interpolationArc != null && this.interpolationMode != mode) {
+            this.interpolationArc = null;
+            this.interpolationOrigin = null;
+            this.pendingRenderArc = null;
+        }
 
         if (this.interpolationArc != null && (restartArc || this.interpolationOriginMoved(origin))) {
             start = this.interpolationArc.getCurrentRotation();
@@ -231,6 +250,7 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
 
         if (this.interpolationArc == null) {
             this.interpolationArc = RotationArc.fromAngularSpeed(start, actual, interpolationSpeed);
+            this.interpolationMode = mode;
             this.interpolationOrigin = origin;
         }
 
@@ -285,6 +305,7 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
 
     private void resetInterpolation() {
         this.interpolationArc = null;
+        this.interpolationMode = null;
         this.interpolationOrigin = null;
         this.pendingRenderArc = null;
         this.renderArc = null;
