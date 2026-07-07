@@ -52,7 +52,7 @@ public final class BlockBreakHelper {
     }
 
     public boolean isBreakingBlock(BlockPos pos) {
-        return wasHitting && pos.equals(breakingBlock);
+        return wasHitting && pos.equals(breakingBlock) && ctx.isLookingAt(pos);
     }
 
     public void tick(boolean isLeftClick) {
