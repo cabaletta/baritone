@@ -774,22 +774,20 @@ public final class Settings {
      */
     public final Setting<Boolean> elytraFreeLook = new Setting<>(true);
 
-    ///**
-    // * Forces the client-sided yaw rotation to an average of the last {@link #smoothLookTicks} of server-sided rotations.
-    // */
-    //public final Setting<Boolean> smoothLook = new Setting<>(false);
-    //
-    ///**
-    // * Same as {@link #smoothLook} but for elytra flying.
-    // */
-    //public final Setting<Boolean> elytraSmoothLook = new Setting<>(false);
-    //
-    ///**
-    // * The number of ticks to average across for {@link #smoothLook};
-    // */
-    //public final Setting<Integer> smoothLookTicks = new Setting<>(5);
+    /**
+     * Forces the client-sided yaw rotation to an average of the last {@link #smoothLookTicks} of server-sided rotations.
+     */
+    public final Setting<Boolean> smoothLook = new Setting<>(false);
 
-    // Old implementation settings...
+    /**
+     * Same as {@link #smoothLook} but for elytra flying.
+     */
+    public final Setting<Boolean> elytraSmoothLook = new Setting<>(false);
+
+    /**
+     * The number of ticks to average across for {@link #smoothLook};
+     */
+    public final Setting<Integer> smoothLookTicks = new Setting<>(5);
 
     /**
      * Forces global player rotation in both axis to follow a "path" from source looking position(rotation) to target, removing jittering when, for instance, mining blocks.

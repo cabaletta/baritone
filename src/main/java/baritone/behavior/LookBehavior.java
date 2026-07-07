@@ -65,8 +65,8 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
     private static Vec3 Destiny;
     private static Vec3 Center;
 
-    //private final Deque<Float> smoothYawBuffer;
-    //private final Deque<Float> smoothPitchBuffer;
+    private final Deque<Float> smoothYawBuffer;
+    private final Deque<Float> smoothPitchBuffer;
 
     public LookBehavior(Baritone baritone) {
         super(baritone);
@@ -99,7 +99,7 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
             return;
         }
 
-        if (Baritone.settings().interpolatedLook.value = false) {
+        if (!Baritone.settings().interpolatedLook.value) {
             switch (event.getState()) {
                 //PRE: onPlayerUpdate was called before rotation data was sent to the server
                 case PRE: {
@@ -118,16 +118,23 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
                 case POST: {
                     // Reset the player's rotations back to their original values
                     if (this.prevRotation != null) {
+                        this.smoothYawBuffer.addLast(this.target.rotation.getYaw());
+                        while (this.smoothYawBuffer.size() > Baritone.settings().smoothLookTicks.value) {
+                            this.smoothYawBuffer.removeFirst();
+                        }
+                        this.smoothPitchBuffer.addLast(this.target.rotation.getPitch());
+                        while (this.smoothPitchBuffer.size() > Baritone.settings().smoothLookTicks.value) {
+                            this.smoothPitchBuffer.removeFirst();
+                        }
                         if (this.target.mode == Target.Mode.SERVER) {
                             ctx.player().setYRot(this.prevRotation.getYaw());
                             ctx.player().setXRot(this.prevRotation.getPitch());
-                        }// else if (ctx.player().isFallFlying() && Baritone.settings().elytraSmoothLook.value) {
-                        //   ctx.player().setYRot((float) this.smoothYawBuffer.stream().mapToDouble(d -> d).average().orElse(this.prevRotation.getYaw()));
-                        //   if (ctx.player().isFallFlying()) {
-                        //       ctx.player().setXRot((float) this.smoothPitchBuffer.stream().mapToDouble(d -> d).average().orElse(this.prevRotation.getPitch()));
-                        //   }
-                        //}
-                        /** TODO: reimplement elytra and falling */
+                        } else if (ctx.player().isFallFlying() ? Baritone.settings().elytraSmoothLook.value : Baritone.settings().smoothLook.value) {
+                            ctx.player().setYRot((float) this.smoothYawBuffer.stream().mapToDouble(d -> d).average().orElse(this.prevRotation.getYaw()));
+                            if (ctx.player().isFallFlying()) {
+                                ctx.player().setXRot((float) this.smoothPitchBuffer.stream().mapToDouble(d -> d).average().orElse(this.prevRotation.getPitch()));
+                            }
+                        }
                         //ctx.player().xRotO = prevRotation.getPitch();
                         //ctx.player().yRotO = prevRotation.getYaw();
                         this.prevRotation = null;
