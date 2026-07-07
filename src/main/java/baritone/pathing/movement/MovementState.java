@@ -20,6 +20,8 @@ package baritone.pathing.movement;
 import baritone.api.pathing.movement.MovementStatus;
 import baritone.api.utils.Rotation;
 import baritone.api.utils.input.Input;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,6 +32,9 @@ public class MovementState {
     private MovementStatus status;
     private MovementTarget target = new MovementTarget();
     private final Map<Input, Boolean> inputState = new HashMap<>();
+    private BlockPos blockBreakTarget;
+    private BlockPos blockPlaceTarget;
+    private Direction blockPlaceSide;
 
     public MovementState setStatus(MovementStatus status) {
         this.status = status;
@@ -56,6 +61,35 @@ public class MovementState {
 
     public Map<Input, Boolean> getInputStates() {
         return this.inputState;
+    }
+
+    public MovementState setBlockBreakTarget(BlockPos pos) {
+        this.blockBreakTarget = pos;
+        return this;
+    }
+
+    public Optional<BlockPos> getBlockBreakTarget() {
+        return Optional.ofNullable(this.blockBreakTarget);
+    }
+
+    public MovementState setBlockPlaceTarget(BlockPos pos, Direction side) {
+        this.blockPlaceTarget = pos;
+        this.blockPlaceSide = side;
+        return this;
+    }
+
+    public Optional<BlockPos> getBlockPlaceTarget() {
+        return Optional.ofNullable(this.blockPlaceTarget);
+    }
+
+    public Optional<Direction> getBlockPlaceSide() {
+        return Optional.ofNullable(this.blockPlaceSide);
+    }
+
+    public void clearBlockInteractionTargets() {
+        this.blockBreakTarget = null;
+        this.blockPlaceTarget = null;
+        this.blockPlaceSide = null;
     }
 
     public static class MovementTarget {

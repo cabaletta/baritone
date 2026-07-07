@@ -25,6 +25,7 @@ import baritone.api.utils.input.Input;
 import baritone.behavior.Behavior;
 import net.minecraft.client.player.KeyboardInput;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -46,6 +47,9 @@ public final class InputOverrideHandler extends Behavior implements IInputOverri
 
     private final BlockBreakHelper blockBreakHelper;
     private final BlockPlaceHelper blockPlaceHelper;
+    private BlockPos blockBreakTarget;
+    private BlockPos blockPlaceTarget;
+    private Direction blockPlaceSide;
 
     public InputOverrideHandler(Baritone baritone) {
         super(baritone);
@@ -81,11 +85,25 @@ public final class InputOverrideHandler extends Behavior implements IInputOverri
     @Override
     public final void clearAllKeys() {
         this.inputForceStateMap.clear();
+        this.blockBreakTarget = null;
+        this.blockPlaceTarget = null;
+        this.blockPlaceSide = null;
     }
 
     @Override
     public boolean isBreakingBlock(BlockPos pos) {
         return this.blockBreakHelper.isBreakingBlock(pos);
+    }
+
+    @Override
+    public void setBlockBreakTarget(BlockPos pos) {
+        this.blockBreakTarget = pos;
+    }
+
+    @Override
+    public void setBlockPlaceTarget(BlockPos pos, Direction side) {
+        this.blockPlaceTarget = pos;
+        this.blockPlaceSide = side;
     }
 
     @Override
@@ -96,8 +114,8 @@ public final class InputOverrideHandler extends Behavior implements IInputOverri
         if (isInputForcedDown(Input.CLICK_LEFT)) {
             setInputForceState(Input.CLICK_RIGHT, false);
         }
-        blockBreakHelper.tick(isInputForcedDown(Input.CLICK_LEFT));
-        blockPlaceHelper.tick(isInputForcedDown(Input.CLICK_RIGHT));
+        blockBreakHelper.tick(isInputForcedDown(Input.CLICK_LEFT), blockBreakTarget);
+        blockPlaceHelper.tick(isInputForcedDown(Input.CLICK_RIGHT), blockPlaceTarget, blockPlaceSide);
 
         if (inControl()) {
             if (ctx.player().input.getClass() != PlayerMovementInput.class) {

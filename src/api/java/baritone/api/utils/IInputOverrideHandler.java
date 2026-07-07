@@ -20,6 +20,7 @@ package baritone.api.utils;
 import baritone.api.behavior.IBehavior;
 import baritone.api.utils.input.Input;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 
 /**
  * @author Brady
@@ -36,4 +37,8 @@ public interface IInputOverrideHandler extends IBehavior {
     default boolean isBreakingBlock(BlockPos pos) {
         return false;
     }
+
+    default void setBlockBreakTarget(BlockPos pos) {}
+
+    default void setBlockPlaceTarget(BlockPos pos, Direction side) {}
 }

@@ -55,13 +55,17 @@ public final class BlockBreakHelper {
         return wasHitting && pos.equals(breakingBlock) && ctx.isLookingAt(pos);
     }
 
-    public void tick(boolean isLeftClick) {
+    public void tick(boolean isLeftClick, BlockPos target) {
         if (breakDelayTimer > 0) {
             breakDelayTimer--;
             return;
         }
         HitResult trace = ctx.objectMouseOver();
         boolean isBlockTrace = trace != null && trace.getType() == HitResult.Type.BLOCK;
+        if (target != null && (!isBlockTrace || !((BlockHitResult) trace).getBlockPos().equals(target))) {
+            clearBreakingBlock();
+            return;
+        }
 
         if (isLeftClick && isBlockTrace) {
             BlockHitResult blockTrace = (BlockHitResult) trace;

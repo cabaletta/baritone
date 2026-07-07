@@ -559,11 +559,13 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             }
             if (baritone.getInputOverrideHandler().isBreakingBlock(pos)) {
                 baritone.getLookBehavior().updateTarget(ctx.playerRotations(), true, true, true);
+                baritone.getInputOverrideHandler().setBlockBreakTarget(pos);
                 baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_LEFT, true);
             } else {
                 baritone.getLookBehavior().updateTarget(rot, true);
             }
             if (ctx.isLookingAt(pos)) {
+                baritone.getInputOverrideHandler().setBlockBreakTarget(pos);
                 baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_LEFT, true);
             }
             return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
@@ -575,7 +577,8 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             baritone.getLookBehavior().updateTarget(rot, true);
             ctx.player().getInventory().selected = toPlace.get().hotbarSelection;
             baritone.getInputOverrideHandler().setInputForceState(Input.SNEAK, true);
-            if ((ctx.isLookingAt(toPlace.get().placeAgainst) && ((BlockHitResult) ctx.objectMouseOver()).getDirection().equals(toPlace.get().side)) || ctx.playerRotations().isReallyCloseTo(rot)) {
+            baritone.getInputOverrideHandler().setBlockPlaceTarget(toPlace.get().placeAgainst, toPlace.get().side);
+            if (ctx.isLookingAt(toPlace.get().placeAgainst, toPlace.get().side)) {
                 baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
             }
             return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);

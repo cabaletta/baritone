@@ -19,6 +19,8 @@ package baritone.utils;
 
 import baritone.Baritone;
 import baritone.api.utils.IPlayerContext;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.phys.BlockHitResult;
@@ -35,7 +37,7 @@ public class BlockPlaceHelper {
         this.ctx = playerContext;
     }
 
-    public void tick(boolean rightClickRequested) {
+    public void tick(boolean rightClickRequested, BlockPos target, Direction side) {
         if (rightClickTimer > 0) {
             rightClickTimer--;
             return;
@@ -44,9 +46,13 @@ public class BlockPlaceHelper {
         if (!rightClickRequested || ctx.player().isHandsBusy() || mouseOver == null || mouseOver.getType() != HitResult.Type.BLOCK) {
             return;
         }
+        BlockHitResult blockHit = (BlockHitResult) mouseOver;
+        if (target != null && (!blockHit.getBlockPos().equals(target) || blockHit.getDirection() != side)) {
+            return;
+        }
         rightClickTimer = Baritone.settings().rightClickSpeed.value - BASE_PLACE_DELAY;
         for (InteractionHand hand : InteractionHand.values()) {
-            if (ctx.playerController().processRightClickBlock(ctx.player(), ctx.world(), hand, (BlockHitResult) mouseOver) == InteractionResult.SUCCESS) {
+            if (ctx.playerController().processRightClickBlock(ctx.player(), ctx.world(), hand, blockHit) == InteractionResult.SUCCESS) {
                 ctx.player().swing(hand);
                 return;
             }

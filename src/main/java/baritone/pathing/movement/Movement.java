@@ -140,10 +140,15 @@ public abstract class Movement implements IMovement, MovementHelper {
                         target.shouldRestartInterpolation(),
                         target.isExactRotation()));
         baritone.getInputOverrideHandler().clearAllKeys();
+        currentState.getBlockBreakTarget().ifPresent(baritone.getInputOverrideHandler()::setBlockBreakTarget);
+        currentState.getBlockPlaceTarget().ifPresent(pos ->
+                currentState.getBlockPlaceSide().ifPresent(side ->
+                        baritone.getInputOverrideHandler().setBlockPlaceTarget(pos, side)));
         currentState.getInputStates().forEach((input, forced) -> {
             baritone.getInputOverrideHandler().setInputForceState(input, forced);
         });
         currentState.getInputStates().clear();
+        currentState.clearBlockInteractionTargets();
 
         // If the current status indicates a completed movement
         if (currentState.getStatus().isComplete()) {
@@ -166,8 +171,9 @@ public abstract class Movement implements IMovement, MovementHelper {
                 somethingInTheWay = true;
                 MovementHelper.switchToBestToolFor(ctx, BlockStateInterface.get(ctx, blockPos));
                 if (baritone.getInputOverrideHandler().isBreakingBlock(blockPos)) {
-                    state.setTarget(new MovementState.MovementTarget(ctx.playerRotations(), true, true, true));
-                    state.setInput(Input.CLICK_LEFT, true);
+                    state.setTarget(new MovementState.MovementTarget(ctx.playerRotations(), true, true, true))
+                            .setBlockBreakTarget(blockPos)
+                            .setInput(Input.CLICK_LEFT, true);
                     return false;
                 }
                 Optional<Rotation> reachable = RotationUtils.reachable(ctx, blockPos, ctx.playerController().getBlockReachDistance());
@@ -175,7 +181,8 @@ public abstract class Movement implements IMovement, MovementHelper {
                     Rotation rotTowardsBlock = reachable.get();
                     state.setTarget(new MovementState.MovementTarget(rotTowardsBlock, true));
                     if (ctx.isLookingAt(blockPos)) {
-                        state.setInput(Input.CLICK_LEFT, true);
+                        state.setBlockBreakTarget(blockPos)
+                                .setInput(Input.CLICK_LEFT, true);
                     }
                     return false;
                 }
