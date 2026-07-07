@@ -52,7 +52,12 @@ public final class RotationUtils {
     public static final float RAD_TO_DEG_F = (float) RAD_TO_DEG;
 
     private static final double ARC_EPSILON = 1.0E-8;
+    private static final double POLE_AVOIDANCE_PITCH = 85.0;
+    private static final double POLE_AVOIDANCE_MARGIN = 1.0;
+    private static final double LATITUDE_DISTANCE_STEP = 5.0;
+    private static final double MINOR_ARC_EPSILON = 1.0E-4;
     private static final double TWO_PI = Math.PI * 2.0;
+    private static final Vec3 UP = new Vec3(0, 1, 0);
 
     /**
      * Offsets from the root block position to the center of each side.
@@ -373,12 +378,14 @@ public final class RotationUtils {
         private final Rotation startRotation;
         private final Rotation targetRotation;
         private final int length;
+        private final boolean latitudeArc;
         private int stage;
 
         public RotationArc(Rotation startRotation, Rotation targetRotation, int length) {
             this.startRotation = startRotation;
             this.targetRotation = targetRotation;
             this.length = Math.max(1, length);
+            this.latitudeArc = shouldUseLatitudeArc(startRotation, targetRotation);
         }
 
         public static RotationArc fromAngularSpeed(
@@ -422,6 +429,9 @@ public final class RotationUtils {
             if (source.distanceToSqr(target) < 1.0E-8) {
                 return this.targetRotation;
             }
+            if (this.latitudeArc) {
+                return latitudeArcAt(this.startRotation, this.targetRotation, t);
+            }
             return calcRotationFromVec3d(
                     Vec3.ZERO,
                     alerp(source, target, Vec3.ZERO, t),
@@ -433,15 +443,98 @@ public final class RotationUtils {
                 return 1;
             }
 
-            Vec3 source = calcLookDirectionFromRotation(startRotation);
-            Vec3 target = calcLookDirectionFromRotation(targetRotation);
-            double dot = clamp(source.dot(target), -1, 1);
-            double angularDistance = Math.toDegrees(Math.acos(dot));
+            double angularDistance = angularDistance(startRotation, targetRotation);
 
             if (angularDistance < ARC_EPSILON) {
                 return 1;
             }
             return Math.max(1, (int) Math.ceil(angularDistance / degreesPerTick));
+        }
+
+        private static double angularDistance(Rotation startRotation, Rotation targetRotation) {
+            if (shouldUseLatitudeArc(startRotation, targetRotation)) {
+                return latitudeAngularDistance(startRotation, targetRotation);
+            }
+
+            Vec3 source = calcLookDirectionFromRotation(startRotation);
+            Vec3 target = calcLookDirectionFromRotation(targetRotation);
+            return Math.toDegrees(angularDistance(source, target));
+        }
+
+        private static double latitudeAngularDistance(Rotation startRotation, Rotation targetRotation) {
+            double yawDelta = Rotation.normalizeYaw(targetRotation.getYaw() - startRotation.getYaw());
+            double pitchDelta = targetRotation.getPitch() - startRotation.getPitch();
+            int segments = Math.max(1, (int) Math.ceil(
+                    Math.max(Math.abs(yawDelta), Math.abs(pitchDelta)) / LATITUDE_DISTANCE_STEP));
+
+            Vec3 previous = calcLookDirectionFromRotation(startRotation);
+            double distance = 0;
+            for (int i = 1; i <= segments; i++) {
+                Vec3 current = calcLookDirectionFromRotation(
+                        latitudeArcAt(startRotation, targetRotation, i / (double) segments));
+                distance += angularDistance(previous, current);
+                previous = current;
+            }
+            return Math.toDegrees(distance);
+        }
+
+        private static Rotation latitudeArcAt(Rotation startRotation, Rotation targetRotation, double t) {
+            double yawDelta = Rotation.normalizeYaw(targetRotation.getYaw() - startRotation.getYaw());
+            double pitchDelta = targetRotation.getPitch() - startRotation.getPitch();
+            return new Rotation(
+                    (float) (startRotation.getYaw() + yawDelta * t),
+                    (float) (startRotation.getPitch() + pitchDelta * t)
+            ).clamp();
+        }
+
+        private static boolean shouldUseLatitudeArc(Rotation startRotation, Rotation targetRotation) {
+            Vec3 source = calcLookDirectionFromRotation(startRotation);
+            Vec3 target = calcLookDirectionFromRotation(targetRotation);
+            if (source.distanceToSqr(target) < ARC_EPSILON) {
+                return false;
+            }
+
+            // With roll locked, yaw becomes unstable when a great-circle arc crosses a view pole.
+            double endpointPitch = Math.max(
+                    Math.abs(startRotation.getPitch()),
+                    Math.abs(targetRotation.getPitch()));
+            double polePitch = maxPolePitchOnGreatCircle(source, target);
+            return polePitch >= POLE_AVOIDANCE_PITCH
+                    && polePitch > endpointPitch + POLE_AVOIDANCE_MARGIN;
+        }
+
+        private static double maxPolePitchOnGreatCircle(Vec3 source, Vec3 target) {
+            double maxY = Math.max(Math.abs(source.y), Math.abs(target.y));
+            Vec3 normal = source.cross(target);
+            if (normal.lengthSqr() < ARC_EPSILON) {
+                return Math.toDegrees(Math.asin(clamp(maxY, -1, 1)));
+            }
+
+            normal = normal.normalize();
+            Vec3 poleProjection = UP.subtract(normal.scale(UP.dot(normal)));
+            if (poleProjection.lengthSqr() < ARC_EPSILON) {
+                return Math.toDegrees(Math.asin(clamp(maxY, -1, 1)));
+            }
+
+            Vec3 poleward = poleProjection.normalize();
+            if (isOnMinorArc(source, target, poleward)) {
+                maxY = Math.max(maxY, Math.abs(poleward.y));
+            }
+            Vec3 oppositePoleward = poleward.scale(-1);
+            if (isOnMinorArc(source, target, oppositePoleward)) {
+                maxY = Math.max(maxY, Math.abs(oppositePoleward.y));
+            }
+            return Math.toDegrees(Math.asin(clamp(maxY, -1, 1)));
+        }
+
+        private static boolean isOnMinorArc(Vec3 source, Vec3 target, Vec3 sample) {
+            double total = angularDistance(source, target);
+            double split = angularDistance(source, sample) + angularDistance(sample, target);
+            return Math.abs(split - total) < MINOR_ARC_EPSILON;
+        }
+
+        private static double angularDistance(Vec3 source, Vec3 target) {
+            return Math.acos(clamp(source.dot(target), -1, 1));
         }
     }
 

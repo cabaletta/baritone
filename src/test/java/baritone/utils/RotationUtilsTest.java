@@ -70,6 +70,14 @@ public class RotationUtilsTest {
                 countTicks(RotationArc.fromAngularSpeed(new Rotation(0, 0), new Rotation(91, 0), 30)));
     }
 
+    @Test
+    public void testRotationArcAvoidsViewPole() {
+        RotationArc arc = new RotationArc(new Rotation(0, 80), new Rotation(180, 80), 10);
+
+        assertEquals(90, arc.arcAt(0.5).getYaw(), 1.0E-4);
+        assertEquals(80, arc.arcAt(0.5).getPitch(), 1.0E-4);
+    }
+
     private static void assertVecEquals(Vec3 expected, Vec3 actual) {
         assertEquals(expected.x, actual.x, EPSILON);
         assertEquals(expected.y, actual.y, EPSILON);
