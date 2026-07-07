@@ -117,9 +117,7 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
 
         if (this.target == null) {
             if (event.getState() == EventState.PRE) {
-                this.renderArc = null;
-                this.cachedVisualPartialTicks = Float.NaN;
-                this.cachedVisualRotation = null;
+                this.resetInterpolation();
             }
             return;
         }
@@ -187,7 +185,7 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
         switch (event.getState()) {
             case PRE: {
                 if (this.target.mode == Target.Mode.NONE) {
-                    this.clearRenderArc();
+                    this.resetInterpolation();
                     return;
                 }
                 if (this.target.mode == Target.Mode.SERVER) {
