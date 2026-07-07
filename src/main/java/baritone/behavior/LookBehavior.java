@@ -30,13 +30,12 @@ import baritone.api.event.events.WorldEvent;
 import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.Rotation;
 import baritone.api.utils.RotationUtils;
+import baritone.api.utils.RotationUtils.RotationArc;
 import baritone.behavior.look.ForkableRandom;
-import baritone.utils.BaritoneMath;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Optional;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
-import net.minecraft.world.phys.Vec3;
 
 public final class LookBehavior extends Behavior implements ILookBehavior {
 
@@ -454,50 +453,4 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
         }
     }
 
-    private static final class RotationArc {
-
-        private final Rotation startRotation;
-        private final Rotation targetRotation;
-        private final int length;
-        private int stage;
-
-        private RotationArc(Rotation startRotation, Rotation targetRotation, int length) {
-            this.startRotation = startRotation;
-            this.targetRotation = targetRotation;
-            this.length = Math.max(1, length);
-        }
-
-        private Rotation getCurrentRotation() {
-            return this.arcAt(BaritoneMath.normalize(this.stage, this.length));
-        }
-
-        private Rotation advance() {
-            if (this.stage < this.length) {
-                this.stage++;
-            }
-            return this.getCurrentRotation();
-        }
-
-        private boolean isComplete() {
-            return this.stage >= this.length;
-        }
-
-        private Rotation arcAt(double t) {
-            if (t <= 0) {
-                return this.startRotation;
-            }
-            if (t >= 1) {
-                return this.targetRotation;
-            }
-            final Vec3 source = RotationUtils.calcLookDirectionFromRotation(this.startRotation);
-            final Vec3 target = RotationUtils.calcLookDirectionFromRotation(this.targetRotation);
-            if (source.distanceToSqr(target) < 1.0E-8) {
-                return this.targetRotation;
-            }
-            return RotationUtils.calcRotationFromVec3d(
-                    Vec3.ZERO,
-                    RotationUtils.alerp(source, target, Vec3.ZERO, t),
-                    new Rotation(0, 0));
-        }
-    }
 }

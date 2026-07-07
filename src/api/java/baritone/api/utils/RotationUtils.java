@@ -310,6 +310,53 @@ public final class RotationUtils {
         return center.add(new Vec3(radius, radius, radius).multiply(arcDirection));
     }
 
+    public static final class RotationArc {
+
+        private final Rotation startRotation;
+        private final Rotation targetRotation;
+        private final int length;
+        private int stage;
+
+        public RotationArc(Rotation startRotation, Rotation targetRotation, int length) {
+            this.startRotation = startRotation;
+            this.targetRotation = targetRotation;
+            this.length = Math.max(1, length);
+        }
+
+        public Rotation getCurrentRotation() {
+            return this.arcAt(this.stage / (double) this.length);
+        }
+
+        public Rotation advance() {
+            if (this.stage < this.length) {
+                this.stage++;
+            }
+            return this.getCurrentRotation();
+        }
+
+        public boolean isComplete() {
+            return this.stage >= this.length;
+        }
+
+        public Rotation arcAt(double t) {
+            if (t <= 0) {
+                return this.startRotation;
+            }
+            if (t >= 1) {
+                return this.targetRotation;
+            }
+            final Vec3 source = calcLookDirectionFromRotation(this.startRotation);
+            final Vec3 target = calcLookDirectionFromRotation(this.targetRotation);
+            if (source.distanceToSqr(target) < 1.0E-8) {
+                return this.targetRotation;
+            }
+            return calcRotationFromVec3d(
+                    Vec3.ZERO,
+                    alerp(source, target, Vec3.ZERO, t),
+                    new Rotation(0, 0));
+        }
+    }
+
     @Deprecated
     public static Optional<Rotation> reachable(LocalPlayer entity, BlockPos pos, double blockReachDistance) {
         return reachable(entity, pos, blockReachDistance, false);
