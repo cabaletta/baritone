@@ -558,7 +558,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                 baritone.getInputOverrideHandler().setInputForceState(Input.SNEAK, true);
             }
             if (baritone.getInputOverrideHandler().isBreakingBlock(pos)) {
-                baritone.getLookBehavior().updateTarget(ctx.playerRotations(), true, true);
+                baritone.getLookBehavior().updateTarget(ctx.playerRotations(), true, true, true);
                 baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_LEFT, true);
             } else {
                 baritone.getLookBehavior().updateTarget(rot, true);

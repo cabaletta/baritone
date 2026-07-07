@@ -88,7 +88,16 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
 
     @Override
     public void updateTarget(Rotation rotation, boolean blockInteract, boolean restartInterpolation) {
-        this.target = new Target(rotation, Target.Mode.resolve(ctx, blockInteract), restartInterpolation);
+        this.updateTarget(rotation, blockInteract, restartInterpolation, false);
+    }
+
+    @Override
+    public void updateTarget(
+            Rotation rotation,
+            boolean blockInteract,
+            boolean restartInterpolation,
+            boolean exactRotation) {
+        this.target = new Target(rotation, Target.Mode.resolve(ctx, blockInteract), restartInterpolation, exactRotation);
     }
 
     @Override
@@ -128,7 +137,7 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
                 }
 
                 this.prevRotation = new Rotation(ctx.player().getYRot(), ctx.player().getXRot());
-                final Rotation actual = this.processor.peekRotation(this.target.rotation);
+                final Rotation actual = this.target.rotation(this.processor);
                 ctx.player().setYRot(actual.getYaw());
                 ctx.player().setXRot(actual.getPitch());
                 break;
@@ -184,7 +193,7 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
 
                 this.prevRotation = new Rotation(ctx.player().getYRot(), ctx.player().getXRot());
                 final Rotation start = ctx.playerRotations();
-                final Rotation actual = this.processor.peekRotation(this.target.rotation);
+                final Rotation actual = this.target.rotation(this.processor);
                 this.updateInterpolation(start, actual, ctx.playerHead(), this.target.restartInterpolation);
                 break;
             }
@@ -294,7 +303,7 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
 
     public void pig() {
         if (this.target != null) {
-            final Rotation actual = this.processor.peekRotation(this.target.rotation);
+            final Rotation actual = this.target.rotation(this.processor);
             ctx.player().setYRot(actual.getYaw());
         }
     }
@@ -310,7 +319,7 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
     @Override
     public void onPlayerRotationMove(RotationMoveEvent event) {
         if (this.target != null) {
-            final Rotation actual = this.processor.peekRotation(this.target.rotation);
+            final Rotation actual = this.target.rotation(this.processor);
             event.setYaw(actual.getYaw());
             event.setPitch(actual.getPitch());
         }
@@ -459,11 +468,17 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
         public final Rotation rotation;
         public final Mode mode;
         public final boolean restartInterpolation;
+        public final boolean exactRotation;
 
-        public Target(Rotation rotation, Mode mode, boolean restartInterpolation) {
+        public Target(Rotation rotation, Mode mode, boolean restartInterpolation, boolean exactRotation) {
             this.rotation = rotation;
             this.mode = mode;
             this.restartInterpolation = restartInterpolation;
+            this.exactRotation = exactRotation;
+        }
+
+        public Rotation rotation(AimProcessor processor) {
+            return this.exactRotation ? this.rotation : processor.peekRotation(this.rotation);
         }
 
         enum Mode {

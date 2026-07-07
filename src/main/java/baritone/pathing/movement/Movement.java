@@ -137,7 +137,8 @@ public abstract class Movement implements IMovement, MovementHelper {
                 baritone.getLookBehavior().updateTarget(
                         rotation,
                         target.hasToForceRotations(),
-                        target.shouldRestartInterpolation()));
+                        target.shouldRestartInterpolation(),
+                        target.isExactRotation()));
         baritone.getInputOverrideHandler().clearAllKeys();
         currentState.getInputStates().forEach((input, forced) -> {
             baritone.getInputOverrideHandler().setInputForceState(input, forced);
@@ -165,7 +166,7 @@ public abstract class Movement implements IMovement, MovementHelper {
                 somethingInTheWay = true;
                 MovementHelper.switchToBestToolFor(ctx, BlockStateInterface.get(ctx, blockPos));
                 if (baritone.getInputOverrideHandler().isBreakingBlock(blockPos)) {
-                    state.setTarget(new MovementState.MovementTarget(ctx.playerRotations(), true, true));
+                    state.setTarget(new MovementState.MovementTarget(ctx.playerRotations(), true, true, true));
                     state.setInput(Input.CLICK_LEFT, true);
                     return false;
                 }
