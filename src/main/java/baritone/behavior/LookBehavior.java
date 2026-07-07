@@ -37,8 +37,11 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Optional;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
+import net.minecraft.world.phys.Vec3;
 
 public final class LookBehavior extends Behavior implements ILookBehavior {
+
+    private static final double ORIGIN_EPSILON = 1.0E-8;
 
     /**
      * The current look target, may be {@code null}.
@@ -63,6 +66,7 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
     private final Deque<Float> smoothYawBuffer;
     private final Deque<Float> smoothPitchBuffer;
     private RotationArc interpolationArc;
+    private Vec3 interpolationOrigin;
     private RotationArc pendingRenderArc;
     private RotationArc renderArc;
     private Rotation previousArcSample;
@@ -176,7 +180,7 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
                 this.prevRotation = new Rotation(ctx.player().getYRot(), ctx.player().getXRot());
                 final Rotation start = ctx.playerRotations();
                 final Rotation actual = this.processor.peekRotation(this.target.rotation);
-                this.updateInterpolation(start, actual);
+                this.updateInterpolation(start, actual, ctx.playerHead());
                 break;
             }
             case POST: {
@@ -197,11 +201,17 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
         }
     }
 
-    private void updateInterpolation(Rotation start, Rotation actual) {
+    private void updateInterpolation(Rotation start, Rotation actual, Vec3 origin) {
         final int interpolationSpeed = Baritone.settings().interpolatedLookLength.value;
+
+        if (this.interpolationArc != null && this.interpolationOriginMoved(origin)) {
+            start = this.interpolationArc.getCurrentRotation();
+            this.interpolationArc = null;
+        }
 
         if (this.interpolationArc == null) {
             this.interpolationArc = RotationArc.fromAngularSpeed(start, actual, interpolationSpeed);
+            this.interpolationOrigin = origin;
         }
 
         this.previousArcSample = this.interpolationArc.getCurrentRotation();
@@ -211,7 +221,13 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
         this.serverRotation = this.currentArcSample;
         if (this.interpolationArc.isComplete()) {
             this.interpolationArc = null;
+            this.interpolationOrigin = null;
         }
+    }
+
+    private boolean interpolationOriginMoved(Vec3 origin) {
+        return this.interpolationOrigin != null
+                && this.interpolationOrigin.distanceToSqr(origin) > ORIGIN_EPSILON;
     }
 
     private void applyRotation(Rotation rotation) {
@@ -242,6 +258,7 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
 
     private void resetInterpolation() {
         this.interpolationArc = null;
+        this.interpolationOrigin = null;
         this.pendingRenderArc = null;
         this.renderArc = null;
         this.previousArcSample = null;
