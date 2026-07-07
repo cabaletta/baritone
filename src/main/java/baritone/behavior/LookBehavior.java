@@ -198,10 +198,10 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
     }
 
     private void updateInterpolation(Rotation start, Rotation actual) {
-        final int interpolationLength = Baritone.settings().interpolatedLookLength.value;
+        final int interpolationSpeed = Baritone.settings().interpolatedLookLength.value;
 
         if (this.interpolationArc == null) {
-            this.interpolationArc = new RotationArc(start, actual, interpolationLength);
+            this.interpolationArc = RotationArc.fromAngularSpeed(start, actual, interpolationSpeed);
         }
 
         this.previousArcSample = this.interpolationArc.getCurrentRotation();

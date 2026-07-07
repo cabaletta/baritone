@@ -381,6 +381,16 @@ public final class RotationUtils {
             this.length = Math.max(1, length);
         }
 
+        public static RotationArc fromAngularSpeed(
+                Rotation startRotation,
+                Rotation targetRotation,
+                double degreesPerTick) {
+            return new RotationArc(
+                    startRotation,
+                    targetRotation,
+                    ticksForAngularSpeed(startRotation, targetRotation, degreesPerTick));
+        }
+
         public Rotation getCurrentRotation() {
             return this.arcAt(this.stage / (double) this.length);
         }
@@ -416,6 +426,22 @@ public final class RotationUtils {
                     Vec3.ZERO,
                     alerp(source, target, Vec3.ZERO, t),
                     this.startRotation);
+        }
+
+        private static int ticksForAngularSpeed(Rotation startRotation, Rotation targetRotation, double degreesPerTick) {
+            if (degreesPerTick <= ARC_EPSILON) {
+                return 1;
+            }
+
+            Vec3 source = calcLookDirectionFromRotation(startRotation);
+            Vec3 target = calcLookDirectionFromRotation(targetRotation);
+            double dot = clamp(source.dot(target), -1, 1);
+            double angularDistance = Math.toDegrees(Math.acos(dot));
+
+            if (angularDistance < ARC_EPSILON) {
+                return 1;
+            }
+            return Math.max(1, (int) Math.ceil(angularDistance / degreesPerTick));
         }
     }
 

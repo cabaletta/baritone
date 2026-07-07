@@ -17,7 +17,9 @@
 
 package baritone.utils;
 
+import baritone.api.utils.Rotation;
 import baritone.api.utils.RotationUtils;
+import baritone.api.utils.RotationUtils.RotationArc;
 import net.minecraft.world.phys.Vec3;
 import org.junit.Test;
 
@@ -55,9 +57,31 @@ public class RotationUtilsTest {
                 RotationUtils.alerp(new Vec3(1, 0, 0), new Vec3(-1, 0, 0), Vec3.ZERO, 0.5));
     }
 
+    @Test
+    public void testRotationArcUsesAngularSpeed() {
+        assertEquals(
+                1,
+                countTicks(RotationArc.fromAngularSpeed(new Rotation(0, 0), new Rotation(10, 0), 30)));
+        assertEquals(
+                3,
+                countTicks(RotationArc.fromAngularSpeed(new Rotation(0, 0), new Rotation(90, 0), 30)));
+        assertEquals(
+                4,
+                countTicks(RotationArc.fromAngularSpeed(new Rotation(0, 0), new Rotation(91, 0), 30)));
+    }
+
     private static void assertVecEquals(Vec3 expected, Vec3 actual) {
         assertEquals(expected.x, actual.x, EPSILON);
         assertEquals(expected.y, actual.y, EPSILON);
         assertEquals(expected.z, actual.z, EPSILON);
+    }
+
+    private static int countTicks(RotationArc arc) {
+        int ticks = 0;
+        while (!arc.isComplete()) {
+            arc.advance();
+            ticks++;
+        }
+        return ticks;
     }
 }

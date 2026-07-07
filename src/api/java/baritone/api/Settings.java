@@ -793,13 +793,14 @@ public final class Settings {
     /**
      * Interpolates player rotation from the current look direction to the target direction.
      * <p>
-     * This uses {@link #interpolatedLookLength} to determine how many ticks one
-     * interpolation cycle takes.
+     * This uses {@link #interpolatedLookLength} as a maximum angular speed, so larger
+     * turns take more ticks than smaller turns.
      */
     public final Setting<Boolean> interpolatedLook = new Setting<>(false);
 
     /**
-     * Time, in ticks, to complete one {@link #interpolatedLook} cycle.
+     * Maximum angular speed, in degrees per tick, for {@link #interpolatedLook}.
+     * The historical name is retained for config compatibility.
      */
     public final Setting<Integer> interpolatedLookLength = new Setting<>(10);
 
