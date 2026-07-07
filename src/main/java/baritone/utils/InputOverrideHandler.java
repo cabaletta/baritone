@@ -120,7 +120,10 @@ public final class InputOverrideHandler extends Behavior implements IInputOverri
             setInputForceState(Input.CLICK_RIGHT, false);
         }
         blockBreakHelper.tick(isInputForcedDown(Input.CLICK_LEFT), blockBreakTarget);
-        blockPlaceHelper.tick(isInputForcedDown(Input.CLICK_RIGHT), blockPlaceTarget, blockPlaceSide);
+        blockPlaceHelper.tick(
+                isInputForcedDown(Input.CLICK_RIGHT),
+                blockPlaceTarget,
+                blockPlaceSide);
 
         if (inControl()) {
             if (ctx.player().input.getClass() != PlayerMovementInput.class) {
@@ -148,7 +151,9 @@ public final class InputOverrideHandler extends Behavior implements IInputOverri
 
     private void restorePlayerInput() {
         LocalPlayer player = ctx.player();
-        if (player != null && player.input != null && player.input.getClass() == PlayerMovementInput.class) {
+        if (player != null
+                && player.input != null
+                && player.input.getClass() == PlayerMovementInput.class) {
             player.input = new KeyboardInput(ctx.minecraft().options);
         }
     }

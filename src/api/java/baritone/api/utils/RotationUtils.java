@@ -317,7 +317,8 @@ public final class RotationUtils {
                 centerToEnd.dot(toCenter),
                 centerToEnd.dot(pathDirection));
         double angle = angleStart + wrapRadians(angleEnd - angleStart) * t;
-        Vec3 arcDirection = pathDirection.scale(Math.cos(angle)).add(toCenter.scale(Math.sin(angle)));
+        Vec3 arcDirection = pathDirection.scale(Math.cos(angle))
+                .add(toCenter.scale(Math.sin(angle)));
 
         return center.add(arcDirection.scale(radius));
     }
@@ -343,7 +344,8 @@ public final class RotationUtils {
         double endRadius = endOffset.length();
         double radius = startRadius + (endRadius - startRadius) * t;
         double angle = Math.PI * t;
-        Vec3 arcDirection = startDirection.scale(Math.cos(angle)).add(perpendicular.scale(Math.sin(angle)));
+        Vec3 arcDirection = startDirection.scale(Math.cos(angle))
+                .add(perpendicular.scale(Math.sin(angle)));
 
         return origin.add(arcDirection.scale(radius));
     }
@@ -438,7 +440,10 @@ public final class RotationUtils {
                     this.startRotation);
         }
 
-        private static int ticksForAngularSpeed(Rotation startRotation, Rotation targetRotation, double degreesPerTick) {
+        private static int ticksForAngularSpeed(
+                Rotation startRotation,
+                Rotation targetRotation,
+                double degreesPerTick) {
             if (degreesPerTick <= ARC_EPSILON) {
                 return 1;
             }
@@ -461,8 +466,11 @@ public final class RotationUtils {
             return Math.toDegrees(angularDistance(source, target));
         }
 
-        private static double latitudeAngularDistance(Rotation startRotation, Rotation targetRotation) {
-            double yawDelta = Rotation.normalizeYaw(targetRotation.getYaw() - startRotation.getYaw());
+        private static double latitudeAngularDistance(
+                Rotation startRotation,
+                Rotation targetRotation) {
+            double yawDelta = Rotation.normalizeYaw(
+                    targetRotation.getYaw() - startRotation.getYaw());
             double pitchDelta = targetRotation.getPitch() - startRotation.getPitch();
             int segments = Math.max(1, (int) Math.ceil(
                     Math.max(Math.abs(yawDelta), Math.abs(pitchDelta)) / LATITUDE_DISTANCE_STEP));
@@ -478,8 +486,12 @@ public final class RotationUtils {
             return Math.toDegrees(distance);
         }
 
-        private static Rotation latitudeArcAt(Rotation startRotation, Rotation targetRotation, double t) {
-            double yawDelta = Rotation.normalizeYaw(targetRotation.getYaw() - startRotation.getYaw());
+        private static Rotation latitudeArcAt(
+                Rotation startRotation,
+                Rotation targetRotation,
+                double t) {
+            double yawDelta = Rotation.normalizeYaw(
+                    targetRotation.getYaw() - startRotation.getYaw());
             double pitchDelta = targetRotation.getPitch() - startRotation.getPitch();
             return new Rotation(
                     (float) (startRotation.getYaw() + yawDelta * t),
@@ -487,7 +499,9 @@ public final class RotationUtils {
             ).clamp();
         }
 
-        private static boolean shouldUseLatitudeArc(Rotation startRotation, Rotation targetRotation) {
+        private static boolean shouldUseLatitudeArc(
+                Rotation startRotation,
+                Rotation targetRotation) {
             Vec3 source = calcLookDirectionFromRotation(startRotation);
             Vec3 target = calcLookDirectionFromRotation(targetRotation);
             if (source.distanceToSqr(target) < ARC_EPSILON) {

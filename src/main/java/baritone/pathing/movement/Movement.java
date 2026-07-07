@@ -140,7 +140,8 @@ public abstract class Movement implements IMovement, MovementHelper {
                         target.shouldRestartInterpolation(),
                         target.isExactRotation()));
         baritone.getInputOverrideHandler().clearAllKeys();
-        currentState.getBlockBreakTarget().ifPresent(baritone.getInputOverrideHandler()::setBlockBreakTarget);
+        currentState.getBlockBreakTarget().ifPresent(
+                baritone.getInputOverrideHandler()::setBlockBreakTarget);
         currentState.getBlockPlaceTarget().ifPresent(pos ->
                 currentState.getBlockPlaceSide().ifPresent(side ->
                         baritone.getInputOverrideHandler().setBlockPlaceTarget(pos, side)));
@@ -171,12 +172,19 @@ public abstract class Movement implements IMovement, MovementHelper {
                 somethingInTheWay = true;
                 MovementHelper.switchToBestToolFor(ctx, BlockStateInterface.get(ctx, blockPos));
                 if (baritone.getInputOverrideHandler().isBreakingBlock(blockPos)) {
-                    state.setTarget(new MovementState.MovementTarget(ctx.playerRotations(), true, true, true))
+                    state.setTarget(new MovementState.MovementTarget(
+                                    ctx.playerRotations(),
+                                    true,
+                                    true,
+                                    true))
                             .setBlockBreakTarget(blockPos)
                             .setInput(Input.CLICK_LEFT, true);
                     return false;
                 }
-                Optional<Rotation> reachable = RotationUtils.reachable(ctx, blockPos, ctx.playerController().getBlockReachDistance());
+                Optional<Rotation> reachable = RotationUtils.reachable(
+                        ctx,
+                        blockPos,
+                        ctx.playerController().getBlockReachDistance());
                 if (reachable.isPresent()) {
                     Rotation rotTowardsBlock = reachable.get();
                     state.setTarget(new MovementState.MovementTarget(rotTowardsBlock, true));

@@ -24,7 +24,8 @@ import net.minecraft.client.player.LocalPlayer;
 
 public final class PlayerControlGuard {
 
-    private PlayerControlGuard() {}
+    private PlayerControlGuard() {
+    }
 
     public static boolean canControl(IPlayerContext ctx) {
         return canControl(ctx.player(), ctx.minecraft().screen)

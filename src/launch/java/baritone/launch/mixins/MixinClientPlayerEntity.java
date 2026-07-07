@@ -150,7 +150,8 @@ public class MixinClientPlayerEntity {
 
     @Unique
     private Rotation getVisualRotation(float partialTicks) {
-        IBaritone baritone = BaritoneAPI.getProvider().getBaritoneForPlayer((LocalPlayer) (Object) this);
+        IBaritone baritone = BaritoneAPI.getProvider()
+                .getBaritoneForPlayer((LocalPlayer) (Object) this);
         if (baritone == null) {
             return null;
         }

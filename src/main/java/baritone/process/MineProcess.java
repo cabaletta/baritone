@@ -126,7 +126,11 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
             if (!MovementHelper.avoidBreaking(baritone.bsi, pos.getX(), pos.getY(), pos.getZ(), state)) {
                 MovementHelper.switchToBestToolFor(ctx, ctx.world().getBlockState(pos));
                 if (isSafeToCancel && baritone.getInputOverrideHandler().isBreakingBlock(pos)) {
-                    baritone.getLookBehavior().updateTarget(ctx.playerRotations(), true, true, true);
+                    baritone.getLookBehavior().updateTarget(
+                            ctx.playerRotations(),
+                            true,
+                            true,
+                            true);
                     baritone.getInputOverrideHandler().setBlockBreakTarget(pos);
                     baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_LEFT, true);
                     return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);

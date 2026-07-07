@@ -62,7 +62,8 @@ public final class BlockBreakHelper {
         }
         HitResult trace = ctx.objectMouseOver();
         boolean isBlockTrace = trace != null && trace.getType() == HitResult.Type.BLOCK;
-        if (target != null && (!isBlockTrace || !((BlockHitResult) trace).getBlockPos().equals(target))) {
+        if (target != null
+                && (!isBlockTrace || !((BlockHitResult) trace).getBlockPos().equals(target))) {
             clearBreakingBlock();
             return;
         }
@@ -72,10 +73,14 @@ public final class BlockBreakHelper {
             ctx.playerController().setHittingBlock(wasHitting);
             if (ctx.playerController().hasBrokenBlock()) {
                 ctx.playerController().syncHeldItem();
-                ctx.playerController().clickBlock(blockTrace.getBlockPos(), blockTrace.getDirection());
+                ctx.playerController().clickBlock(
+                        blockTrace.getBlockPos(),
+                        blockTrace.getDirection());
                 ctx.player().swing(InteractionHand.MAIN_HAND);
             } else {
-                if (ctx.playerController().onPlayerDamageBlock(blockTrace.getBlockPos(), blockTrace.getDirection())) {
+                if (ctx.playerController().onPlayerDamageBlock(
+                        blockTrace.getBlockPos(),
+                        blockTrace.getDirection())) {
                     ctx.player().swing(InteractionHand.MAIN_HAND);
                 }
                 if (ctx.playerController().hasBrokenBlock()) { // block broken this tick

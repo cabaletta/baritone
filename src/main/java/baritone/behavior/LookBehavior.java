@@ -88,7 +88,10 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
     }
 
     @Override
-    public void updateTarget(Rotation rotation, boolean blockInteract, boolean restartInterpolation) {
+    public void updateTarget(
+            Rotation rotation,
+            boolean blockInteract,
+            boolean restartInterpolation) {
         this.updateTarget(rotation, blockInteract, restartInterpolation, false);
     }
 
@@ -98,7 +101,11 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
             boolean blockInteract,
             boolean restartInterpolation,
             boolean exactRotation) {
-        this.target = new Target(rotation, Target.Mode.resolve(ctx, blockInteract), restartInterpolation, exactRotation);
+        this.target = new Target(
+                rotation,
+                Target.Mode.resolve(ctx, blockInteract),
+                restartInterpolation,
+                exactRotation);
     }
 
     @Override
@@ -196,11 +203,18 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
                 this.prevRotation = new Rotation(ctx.player().getYRot(), ctx.player().getXRot());
                 final Rotation start = this.startingRotation(this.target.mode);
                 final Rotation actual = this.target.rotation(this.processor);
-                this.updateInterpolation(start, actual, ctx.playerHead(), this.target.restartInterpolation, this.target.mode);
+                this.updateInterpolation(
+                        start,
+                        actual,
+                        ctx.playerHead(),
+                        this.target.restartInterpolation,
+                        this.target.mode);
                 break;
             }
             case POST: {
-                if (this.prevRotation != null && this.previousArcSample != null && this.currentArcSample != null) {
+                if (this.prevRotation != null
+                        && this.previousArcSample != null
+                        && this.currentArcSample != null) {
                     if (this.target.mode == Target.Mode.SERVER) {
                         this.clearRenderArc();
                         this.applyRotation(this.prevRotation);
@@ -243,7 +257,8 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
             this.pendingRenderArc = null;
         }
 
-        if (this.interpolationArc != null && (restartArc || this.interpolationOriginMoved(origin))) {
+        if (this.interpolationArc != null
+                && (restartArc || this.interpolationOriginMoved(origin))) {
             start = this.interpolationArc.getCurrentRotation();
             this.interpolationArc = null;
         }
@@ -504,7 +519,11 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
         public final boolean restartInterpolation;
         public final boolean exactRotation;
 
-        public Target(Rotation rotation, Mode mode, boolean restartInterpolation, boolean exactRotation) {
+        public Target(
+                Rotation rotation,
+                Mode mode,
+                boolean restartInterpolation,
+                boolean exactRotation) {
             this.rotation = rotation;
             this.mode = mode;
             this.restartInterpolation = restartInterpolation;

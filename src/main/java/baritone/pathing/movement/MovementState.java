@@ -102,7 +102,8 @@ public class MovementState {
         /**
          * Whether or not this target must force rotations.
          * <p>
-         * {@code true} if we're trying to place or break blocks, {@code false} if we're trying to look at the movement location
+         * {@code true} if we're trying to place or break blocks, {@code false}
+         * if we're trying to look at the movement location
          */
         private boolean forceRotations;
 
@@ -117,7 +118,10 @@ public class MovementState {
             this(rotation, forceRotations, false);
         }
 
-        public MovementTarget(Rotation rotation, boolean forceRotations, boolean restartInterpolation) {
+        public MovementTarget(
+                Rotation rotation,
+                boolean forceRotations,
+                boolean restartInterpolation) {
             this(rotation, forceRotations, restartInterpolation, false);
         }
 

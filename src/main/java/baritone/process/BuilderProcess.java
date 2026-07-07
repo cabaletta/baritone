@@ -577,7 +577,9 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             baritone.getLookBehavior().updateTarget(rot, true);
             ctx.player().getInventory().selected = toPlace.get().hotbarSelection;
             baritone.getInputOverrideHandler().setInputForceState(Input.SNEAK, true);
-            baritone.getInputOverrideHandler().setBlockPlaceTarget(toPlace.get().placeAgainst, toPlace.get().side);
+            baritone.getInputOverrideHandler().setBlockPlaceTarget(
+                    toPlace.get().placeAgainst,
+                    toPlace.get().side);
             if (ctx.isLookingAt(toPlace.get().placeAgainst, toPlace.get().side)) {
                 baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
             }

@@ -61,13 +61,22 @@ public class RotationUtilsTest {
     public void testRotationArcUsesAngularSpeed() {
         assertEquals(
                 1,
-                countTicks(RotationArc.fromAngularSpeed(new Rotation(0, 0), new Rotation(10, 0), 30)));
+                countTicks(RotationArc.fromAngularSpeed(
+                        new Rotation(0, 0),
+                        new Rotation(10, 0),
+                        30)));
         assertEquals(
                 3,
-                countTicks(RotationArc.fromAngularSpeed(new Rotation(0, 0), new Rotation(90, 0), 30)));
+                countTicks(RotationArc.fromAngularSpeed(
+                        new Rotation(0, 0),
+                        new Rotation(90, 0),
+                        30)));
         assertEquals(
                 4,
-                countTicks(RotationArc.fromAngularSpeed(new Rotation(0, 0), new Rotation(91, 0), 30)));
+                countTicks(RotationArc.fromAngularSpeed(
+                        new Rotation(0, 0),
+                        new Rotation(91, 0),
+                        30)));
     }
 
     @Test
