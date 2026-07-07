@@ -187,8 +187,11 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
         switch (event.getState()) {
             case PRE: {
                 if (this.target.mode == Target.Mode.NONE) {
-                    this.pendingRenderArc = null;
+                    this.clearRenderArc();
                     return;
+                }
+                if (this.target.mode == Target.Mode.SERVER) {
+                    this.clearRenderArc();
                 }
 
                 this.prevRotation = new Rotation(ctx.player().getYRot(), ctx.player().getXRot());
@@ -199,7 +202,12 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
             }
             case POST: {
                 if (this.prevRotation != null && this.previousArcSample != null && this.currentArcSample != null) {
-                    this.applyVisualArc();
+                    if (this.target.mode == Target.Mode.SERVER) {
+                        this.clearRenderArc();
+                        this.applyRotation(this.prevRotation);
+                    } else {
+                        this.applyVisualArc();
+                    }
                     this.previousArcSample = null;
                     this.currentArcSample = null;
                 } else if (this.prevRotation != null && this.target.mode == Target.Mode.SERVER) {
@@ -257,6 +265,13 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
         ctx.player().yRotO = this.previousArcSample.getYaw();
         ctx.player().xRotO = this.previousArcSample.getPitch();
         this.applyRotation(this.currentArcSample);
+    }
+
+    private void clearRenderArc() {
+        this.renderArc = null;
+        this.pendingRenderArc = null;
+        this.cachedVisualPartialTicks = Float.NaN;
+        this.cachedVisualRotation = null;
     }
 
     public Rotation getVisualRotation(float partialTicks) {
