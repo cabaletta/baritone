@@ -24,6 +24,7 @@ import baritone.api.utils.IInputOverrideHandler;
 import baritone.api.utils.input.Input;
 import baritone.behavior.Behavior;
 import net.minecraft.client.player.KeyboardInput;
+import net.minecraft.core.BlockPos;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -80,6 +81,11 @@ public final class InputOverrideHandler extends Behavior implements IInputOverri
     @Override
     public final void clearAllKeys() {
         this.inputForceStateMap.clear();
+    }
+
+    @Override
+    public boolean isBreakingBlock(BlockPos pos) {
+        return this.blockBreakHelper.isBreakingBlock(pos);
     }
 
     @Override

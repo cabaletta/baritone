@@ -550,7 +550,6 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             // only change look direction if it's safe (don't want to fuck up an in progress parkour for example
             Rotation rot = toBreak.get().getB();
             BetterBlockPos pos = toBreak.get().getA();
-            baritone.getLookBehavior().updateTarget(rot, true);
             MovementHelper.switchToBestToolFor(ctx, bcc.get(pos));
             if (ctx.player().isCrouching()) {
                 // really horrible bug where a block is visible for breaking while sneaking but not otherwise
@@ -558,7 +557,13 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                 // and is unable since it's unsneaked in the intermediary tick
                 baritone.getInputOverrideHandler().setInputForceState(Input.SNEAK, true);
             }
-            if (ctx.isLookingAt(pos) || ctx.playerRotations().isReallyCloseTo(rot)) {
+            if (baritone.getInputOverrideHandler().isBreakingBlock(pos)) {
+                baritone.getLookBehavior().updateTarget(ctx.playerRotations(), true, true);
+                baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_LEFT, true);
+            } else {
+                baritone.getLookBehavior().updateTarget(rot, true);
+            }
+            if (ctx.isLookingAt(pos)) {
                 baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_LEFT, true);
             }
             return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);

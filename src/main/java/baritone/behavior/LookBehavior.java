@@ -83,7 +83,12 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
 
     @Override
     public void updateTarget(Rotation rotation, boolean blockInteract) {
-        this.target = new Target(rotation, Target.Mode.resolve(ctx, blockInteract));
+        this.updateTarget(rotation, blockInteract, false);
+    }
+
+    @Override
+    public void updateTarget(Rotation rotation, boolean blockInteract, boolean restartInterpolation) {
+        this.target = new Target(rotation, Target.Mode.resolve(ctx, blockInteract), restartInterpolation);
     }
 
     @Override
@@ -180,7 +185,7 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
                 this.prevRotation = new Rotation(ctx.player().getYRot(), ctx.player().getXRot());
                 final Rotation start = ctx.playerRotations();
                 final Rotation actual = this.processor.peekRotation(this.target.rotation);
-                this.updateInterpolation(start, actual, ctx.playerHead());
+                this.updateInterpolation(start, actual, ctx.playerHead(), this.target.restartInterpolation);
                 break;
             }
             case POST: {
@@ -201,10 +206,10 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
         }
     }
 
-    private void updateInterpolation(Rotation start, Rotation actual, Vec3 origin) {
+    private void updateInterpolation(Rotation start, Rotation actual, Vec3 origin, boolean restartArc) {
         final int interpolationSpeed = Baritone.settings().interpolatedLookLength.value;
 
-        if (this.interpolationArc != null && this.interpolationOriginMoved(origin)) {
+        if (this.interpolationArc != null && (restartArc || this.interpolationOriginMoved(origin))) {
             start = this.interpolationArc.getCurrentRotation();
             this.interpolationArc = null;
         }
@@ -453,10 +458,12 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
 
         public final Rotation rotation;
         public final Mode mode;
+        public final boolean restartInterpolation;
 
-        public Target(Rotation rotation, Mode mode) {
+        public Target(Rotation rotation, Mode mode, boolean restartInterpolation) {
             this.rotation = rotation;
             this.mode = mode;
+            this.restartInterpolation = restartInterpolation;
         }
 
         enum Mode {

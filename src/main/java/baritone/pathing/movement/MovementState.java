@@ -72,13 +72,20 @@ public class MovementState {
          */
         private boolean forceRotations;
 
+        private boolean restartInterpolation;
+
         public MovementTarget() {
             this(null, false);
         }
 
         public MovementTarget(Rotation rotation, boolean forceRotations) {
+            this(rotation, forceRotations, false);
+        }
+
+        public MovementTarget(Rotation rotation, boolean forceRotations, boolean restartInterpolation) {
             this.rotation = rotation;
             this.forceRotations = forceRotations;
+            this.restartInterpolation = restartInterpolation;
         }
 
         public final Optional<Rotation> getRotation() {
@@ -87,6 +94,10 @@ public class MovementState {
 
         public boolean hasToForceRotations() {
             return this.forceRotations;
+        }
+
+        public boolean shouldRestartInterpolation() {
+            return this.restartInterpolation;
         }
     }
 }

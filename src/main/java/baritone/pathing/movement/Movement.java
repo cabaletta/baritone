@@ -132,10 +132,12 @@ public abstract class Movement implements IMovement, MovementHelper {
         }
 
         // If the movement target has to force the new rotations, or we aren't using silent move, then force the rotations
-        currentState.getTarget().getRotation().ifPresent(rotation ->
+        MovementState.MovementTarget target = currentState.getTarget();
+        target.getRotation().ifPresent(rotation ->
                 baritone.getLookBehavior().updateTarget(
                         rotation,
-                        currentState.getTarget().hasToForceRotations()));
+                        target.hasToForceRotations(),
+                        target.shouldRestartInterpolation()));
         baritone.getInputOverrideHandler().clearAllKeys();
         currentState.getInputStates().forEach((input, forced) -> {
             baritone.getInputOverrideHandler().setInputForceState(input, forced);
@@ -162,11 +164,16 @@ public abstract class Movement implements IMovement, MovementHelper {
             if (!MovementHelper.canWalkThrough(ctx, blockPos)) { // can't break air, so don't try
                 somethingInTheWay = true;
                 MovementHelper.switchToBestToolFor(ctx, BlockStateInterface.get(ctx, blockPos));
+                if (baritone.getInputOverrideHandler().isBreakingBlock(blockPos)) {
+                    state.setTarget(new MovementState.MovementTarget(ctx.playerRotations(), true, true));
+                    state.setInput(Input.CLICK_LEFT, true);
+                    return false;
+                }
                 Optional<Rotation> reachable = RotationUtils.reachable(ctx, blockPos, ctx.playerController().getBlockReachDistance());
                 if (reachable.isPresent()) {
                     Rotation rotTowardsBlock = reachable.get();
                     state.setTarget(new MovementState.MovementTarget(rotTowardsBlock, true));
-                    if (ctx.isLookingAt(blockPos) || ctx.playerRotations().isReallyCloseTo(rotTowardsBlock)) {
+                    if (ctx.isLookingAt(blockPos)) {
                         state.setInput(Input.CLICK_LEFT, true);
                     }
                     return false;

@@ -20,6 +20,7 @@ package baritone.utils;
 import baritone.api.BaritoneAPI;
 import baritone.api.utils.IPlayerContext;
 import baritone.utils.accessor.IPlayerControllerMP;
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -34,6 +35,7 @@ public final class BlockBreakHelper {
 
     private final IPlayerContext ctx;
     private boolean wasHitting;
+    private BlockPos breakingBlock;
     private int breakDelayTimer = 0;
 
     BlockBreakHelper(IPlayerContext ctx) {
@@ -45,8 +47,12 @@ public final class BlockBreakHelper {
         if (ctx.player() != null && wasHitting) {
             ctx.playerController().setHittingBlock(false);
             ctx.playerController().resetBlockRemoving();
-            wasHitting = false;
+            clearBreakingBlock();
         }
+    }
+
+    public boolean isBreakingBlock(BlockPos pos) {
+        return wasHitting && pos.equals(breakingBlock);
     }
 
     public void tick(boolean isLeftClick) {
@@ -58,13 +64,14 @@ public final class BlockBreakHelper {
         boolean isBlockTrace = trace != null && trace.getType() == HitResult.Type.BLOCK;
 
         if (isLeftClick && isBlockTrace) {
+            BlockHitResult blockTrace = (BlockHitResult) trace;
             ctx.playerController().setHittingBlock(wasHitting);
             if (ctx.playerController().hasBrokenBlock()) {
                 ctx.playerController().syncHeldItem();
-                ctx.playerController().clickBlock(((BlockHitResult) trace).getBlockPos(), ((BlockHitResult) trace).getDirection());
+                ctx.playerController().clickBlock(blockTrace.getBlockPos(), blockTrace.getDirection());
                 ctx.player().swing(InteractionHand.MAIN_HAND);
             } else {
-                if (ctx.playerController().onPlayerDamageBlock(((BlockHitResult) trace).getBlockPos(), ((BlockHitResult) trace).getDirection())) {
+                if (ctx.playerController().onPlayerDamageBlock(blockTrace.getBlockPos(), blockTrace.getDirection())) {
                     ctx.player().swing(InteractionHand.MAIN_HAND);
                 }
                 if (ctx.playerController().hasBrokenBlock()) { // block broken this tick
@@ -76,12 +83,22 @@ public final class BlockBreakHelper {
             }
             // if true, we're breaking a block. if false, we broke the block this tick
             wasHitting = !ctx.playerController().hasBrokenBlock();
+            if (wasHitting) {
+                breakingBlock = blockTrace.getBlockPos();
+            } else {
+                clearBreakingBlock();
+            }
             // this value will be reset by the MC client handling mouse keys
             // since we're not spoofing the click keybind to the client, the client will stop the break if isDestroyingBlock is true
             // we store and restore this value on the next tick to determine if we're breaking a block
             ctx.playerController().setHittingBlock(false);
         } else {
-            wasHitting = false;
+            clearBreakingBlock();
         }
+    }
+
+    private void clearBreakingBlock() {
+        wasHitting = false;
+        breakingBlock = null;
     }
 }

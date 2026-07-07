@@ -19,6 +19,7 @@ package baritone.api.utils;
 
 import baritone.api.behavior.IBehavior;
 import baritone.api.utils.input.Input;
+import net.minecraft.core.BlockPos;
 
 /**
  * @author Brady
@@ -31,4 +32,8 @@ public interface IInputOverrideHandler extends IBehavior {
     void setInputForceState(Input input, boolean forced);
 
     void clearAllKeys();
+
+    default boolean isBreakingBlock(BlockPos pos) {
+        return false;
+    }
 }

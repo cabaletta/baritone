@@ -124,11 +124,16 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
             BlockPos pos = shaft.get();
             BlockState state = baritone.bsi.get0(pos);
             if (!MovementHelper.avoidBreaking(baritone.bsi, pos.getX(), pos.getY(), pos.getZ(), state)) {
+                MovementHelper.switchToBestToolFor(ctx, ctx.world().getBlockState(pos));
+                if (isSafeToCancel && baritone.getInputOverrideHandler().isBreakingBlock(pos)) {
+                    baritone.getLookBehavior().updateTarget(ctx.playerRotations(), true, true);
+                    baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_LEFT, true);
+                    return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
+                }
                 Optional<Rotation> rot = RotationUtils.reachable(ctx, pos);
                 if (rot.isPresent() && isSafeToCancel) {
                     baritone.getLookBehavior().updateTarget(rot.get(), true);
-                    MovementHelper.switchToBestToolFor(ctx, ctx.world().getBlockState(pos));
-                    if (ctx.isLookingAt(pos) || ctx.playerRotations().isReallyCloseTo(rot.get())) {
+                    if (ctx.isLookingAt(pos)) {
                         baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_LEFT, true);
                     }
                     return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
