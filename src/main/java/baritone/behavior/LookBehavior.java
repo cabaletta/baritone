@@ -27,6 +27,7 @@ import baritone.api.event.events.PlayerUpdateEvent;
 import baritone.api.event.events.RotationMoveEvent;
 import baritone.api.event.events.TickEvent;
 import baritone.api.event.events.WorldEvent;
+import baritone.api.event.events.type.EventState;
 import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.Rotation;
 import baritone.api.utils.RotationUtils;
@@ -62,8 +63,12 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
     private final Deque<Float> smoothYawBuffer;
     private final Deque<Float> smoothPitchBuffer;
     private RotationArc interpolationArc;
+    private RotationArc pendingRenderArc;
+    private RotationArc renderArc;
     private Rotation previousArcSample;
     private Rotation currentArcSample;
+    private float cachedVisualPartialTicks = Float.NaN;
+    private Rotation cachedVisualRotation;
 
     public LookBehavior(Baritone baritone) {
         super(baritone);
@@ -93,6 +98,11 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
     public void onPlayerUpdate(PlayerUpdateEvent event) {
 
         if (this.target == null) {
+            if (event.getState() == EventState.PRE) {
+                this.renderArc = null;
+                this.cachedVisualPartialTicks = Float.NaN;
+                this.cachedVisualRotation = null;
+            }
             return;
         }
 
@@ -159,6 +169,7 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
         switch (event.getState()) {
             case PRE: {
                 if (this.target.mode == Target.Mode.NONE) {
+                    this.pendingRenderArc = null;
                     return;
                 }
 
@@ -195,6 +206,7 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
 
         this.previousArcSample = this.interpolationArc.getCurrentRotation();
         this.currentArcSample = this.interpolationArc.advance();
+        this.pendingRenderArc = this.interpolationArc;
         this.applyRotation(this.currentArcSample);
         this.serverRotation = this.currentArcSample;
         if (this.interpolationArc.isComplete()) {
@@ -208,15 +220,34 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
     }
 
     private void applyVisualArc() {
+        this.renderArc = this.pendingRenderArc;
+        this.pendingRenderArc = null;
+        this.cachedVisualPartialTicks = Float.NaN;
+        this.cachedVisualRotation = null;
         ctx.player().yRotO = this.previousArcSample.getYaw();
         ctx.player().xRotO = this.previousArcSample.getPitch();
         this.applyRotation(this.currentArcSample);
     }
 
+    public Rotation getVisualRotation(float partialTicks) {
+        if (this.renderArc == null) {
+            return null;
+        }
+        if (this.cachedVisualRotation == null || this.cachedVisualPartialTicks != partialTicks) {
+            this.cachedVisualPartialTicks = partialTicks;
+            this.cachedVisualRotation = this.renderArc.getCurrentRotation(partialTicks);
+        }
+        return this.cachedVisualRotation;
+    }
+
     private void resetInterpolation() {
         this.interpolationArc = null;
+        this.pendingRenderArc = null;
+        this.renderArc = null;
         this.previousArcSample = null;
         this.currentArcSample = null;
+        this.cachedVisualPartialTicks = Float.NaN;
+        this.cachedVisualRotation = null;
     }
 
     @Override

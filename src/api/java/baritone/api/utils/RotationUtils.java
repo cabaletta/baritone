@@ -364,6 +364,10 @@ public final class RotationUtils {
         return wrapped;
     }
 
+    private static double clamp(double value, double min, double max) {
+        return Math.max(min, Math.min(max, value));
+    }
+
     public static final class RotationArc {
 
         private final Rotation startRotation;
@@ -379,6 +383,10 @@ public final class RotationUtils {
 
         public Rotation getCurrentRotation() {
             return this.arcAt(this.stage / (double) this.length);
+        }
+
+        public Rotation getCurrentRotation(float partialTicks) {
+            return this.arcAt((this.stage - 1 + clamp(partialTicks, 0, 1)) / (double) this.length);
         }
 
         public Rotation advance() {
