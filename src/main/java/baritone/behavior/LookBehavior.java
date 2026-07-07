@@ -62,10 +62,9 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
 
     private final Deque<Float> smoothYawBuffer;
     private final Deque<Float> smoothPitchBuffer;
-    private int interpolationStage;
-    private Vec3 interpolationSource;
-    private Vec3 interpolationTarget;
-    private Vec3 interpolationCenter;
+    private RotationArc interpolationArc;
+    private Rotation previousArcSample;
+    private Rotation currentArcSample;
 
     public LookBehavior(Baritone baritone) {
         super(baritone);
@@ -165,8 +164,9 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
                 }
 
                 this.prevRotation = new Rotation(ctx.player().getYRot(), ctx.player().getXRot());
+                final Rotation start = ctx.playerRotations();
                 final Rotation actual = this.processor.peekRotation(this.target.rotation);
-                this.updateInterpolation(actual);
+                this.updateInterpolation(start, actual);
                 break;
             }
             case POST: {
@@ -183,51 +183,31 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
         }
     }
 
-    private void updateInterpolation(Rotation actual) {
+    private void updateInterpolation(Rotation start, Rotation actual) {
         final int interpolationLength = Baritone.settings().interpolatedLookLength.value;
 
-        if (this.interpolationStage == 0) {
-            this.interpolationCenter = ctx.playerHead();
-            this.interpolationSource = RotationUtils.calcLookDirectionFromRotation(this.prevRotation)
-                    .add(this.interpolationCenter);
-            this.interpolationTarget = RotationUtils.calcLookDirectionFromRotation(actual)
-                    .add(this.interpolationCenter);
-            this.interpolationStage++;
-            return;
+        if (this.interpolationArc == null) {
+            this.interpolationArc = new RotationArc(start, actual, interpolationLength);
         }
 
-        if (this.interpolationStage < interpolationLength) {
-            this.applyInterpolatedRotation(interpolationLength);
-            this.interpolationStage++;
-            return;
+        this.previousArcSample = this.interpolationArc.getCurrentRotation();
+        this.currentArcSample = this.interpolationArc.advance();
+        this.applyRotation(this.currentArcSample);
+        this.serverRotation = this.currentArcSample;
+        if (this.interpolationArc.isComplete()) {
+            this.interpolationArc = null;
         }
-
-        if (this.interpolationStage == interpolationLength) {
-            this.applyInterpolatedRotation(interpolationLength);
-        }
-        this.resetInterpolation();
     }
 
-    private void applyInterpolatedRotation(int interpolationLength) {
-        final Vec3 interpolatedLook = RotationUtils.alerp(
-                this.interpolationSource,
-                this.interpolationTarget,
-                this.interpolationCenter,
-                BaritoneMath.normalize(this.interpolationStage, interpolationLength));
-        final Rotation interpolatedRotation = RotationUtils.calcRotationFromVec3d(
-                this.interpolationCenter,
-                interpolatedLook,
-                new Rotation(0, 0));
-
-        ctx.player().setYRot(interpolatedRotation.getYaw());
-        ctx.player().setXRot(interpolatedRotation.getPitch());
+    private void applyRotation(Rotation rotation) {
+        ctx.player().setYRot(rotation.getYaw());
+        ctx.player().setXRot(rotation.getPitch());
     }
 
     private void resetInterpolation() {
-        this.interpolationStage = 0;
-        this.interpolationSource = null;
-        this.interpolationTarget = null;
-        this.interpolationCenter = null;
+        this.interpolationArc = null;
+        this.previousArcSample = null;
+        this.currentArcSample = null;
     }
 
     @Override
@@ -461,6 +441,53 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
                 // all freeLook settings are disabled so set the angles
                 return CLIENT;
             }
+        }
+    }
+
+    private static final class RotationArc {
+
+        private final Rotation startRotation;
+        private final Rotation targetRotation;
+        private final int length;
+        private int stage;
+
+        private RotationArc(Rotation startRotation, Rotation targetRotation, int length) {
+            this.startRotation = startRotation;
+            this.targetRotation = targetRotation;
+            this.length = Math.max(1, length);
+        }
+
+        private Rotation getCurrentRotation() {
+            return this.arcAt(BaritoneMath.normalize(this.stage, this.length));
+        }
+
+        private Rotation advance() {
+            if (this.stage < this.length) {
+                this.stage++;
+            }
+            return this.getCurrentRotation();
+        }
+
+        private boolean isComplete() {
+            return this.stage >= this.length;
+        }
+
+        private Rotation arcAt(double t) {
+            if (t <= 0) {
+                return this.startRotation;
+            }
+            if (t >= 1) {
+                return this.targetRotation;
+            }
+            final Vec3 source = RotationUtils.calcLookDirectionFromRotation(this.startRotation);
+            final Vec3 target = RotationUtils.calcLookDirectionFromRotation(this.targetRotation);
+            if (source.distanceToSqr(target) < 1.0E-8) {
+                return this.targetRotation;
+            }
+            return RotationUtils.calcRotationFromVec3d(
+                    Vec3.ZERO,
+                    RotationUtils.alerp(source, target, Vec3.ZERO, t),
+                    new Rotation(0, 0));
         }
     }
 }
