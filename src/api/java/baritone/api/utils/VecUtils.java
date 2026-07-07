@@ -19,7 +19,6 @@ package baritone.api.utils;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseFireBlock;
@@ -124,9 +123,5 @@ public final class VecUtils {
      */
     public static double entityFlatDistanceToCenter(Entity entity, BlockPos pos) {
         return distanceToCenter(pos, entity.position().x, pos.getY() + 0.5, entity.position().z);
-    }
-
-    public static Vec3 vDivide (Vec3 A, Vec3 B) {
-        return new Vec3(A.x / B.x, A.y / B.y, A.z / B.z);
     }
 }

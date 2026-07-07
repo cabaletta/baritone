@@ -36,7 +36,9 @@ public final class BaritoneMath {
     }
 
     public static double normalize(double value, double maxValue) {
-        if (maxValue == 0) return 0;
-        return value/maxValue;
+        if (maxValue == 0) {
+            return 0;
+        }
+        return value / maxValue;
     }
 }

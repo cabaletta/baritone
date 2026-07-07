@@ -775,7 +775,8 @@ public final class Settings {
     public final Setting<Boolean> elytraFreeLook = new Setting<>(true);
 
     /**
-     * Forces the client-sided yaw rotation to an average of the last {@link #smoothLookTicks} of server-sided rotations.
+     * Forces the client-sided yaw rotation to an average of the last
+     * {@link #smoothLookTicks} server-sided rotations.
      */
     public final Setting<Boolean> smoothLook = new Setting<>(false);
 
@@ -790,19 +791,15 @@ public final class Settings {
     public final Setting<Integer> smoothLookTicks = new Setting<>(5);
 
     /**
-     * Forces global player rotation in both axis to follow a "path" from source looking position(rotation) to target, removing jittering when, for instance, mining blocks.
-     * Uses {@link #interpolatedLookLength} to determine the amount of ticks it takes to complete the path
+     * Interpolates player rotation from the current look direction to the target direction.
      * <p>
-     * TODO: It might be better to use some kind of angular speed instead of a fixed duration for all angles.
-     * <p>
-     * it WILL hinder mining speed, but the main goal here is that neither the client nor the server sees the default jittery-ness of baritone
+     * This uses {@link #interpolatedLookLength} to determine how many ticks one
+     * interpolation cycle takes.
      */
     public final Setting<Boolean> interpolatedLook = new Setting<>(false);
 
     /**
-     * Controls time it takes to complete an {@link #interpolatedLook} "cycle".
-     * <p>
-     * In ticks.
+     * Time, in ticks, to complete one {@link #interpolatedLook} cycle.
      */
     public final Setting<Integer> interpolatedLookLength = new Setting<>(10);
 
