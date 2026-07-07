@@ -51,6 +51,9 @@ public final class RotationUtils {
     public static final double RAD_TO_DEG = 180.0 / Math.PI;
     public static final float RAD_TO_DEG_F = (float) RAD_TO_DEG;
 
+    private static final double ARC_EPSILON = 1.0E-8;
+    private static final double TWO_PI = Math.PI * 2.0;
+
     /**
      * Offsets from the root block position to the center of each side.
      */
@@ -268,46 +271,97 @@ public final class RotationUtils {
      * Interpolates along an arc from {@code start} to {@code end} around {@code origin}.
      */
     public static Vec3 alerp(Vec3 start, Vec3 end, Vec3 origin, double t) {
+        if (t <= 0) {
+            return start;
+        }
+        if (t >= 1) {
+            return end;
+        }
+        if (start.distanceToSqr(end) < ARC_EPSILON) {
+            return start;
+        }
+
+        Vec3 startOffset = start.subtract(origin);
+        Vec3 endOffset = end.subtract(origin);
+        if (startOffset.lengthSqr() < ARC_EPSILON || endOffset.lengthSqr() < ARC_EPSILON) {
+            return lerp(start, end, t);
+        }
+
+        Vec3 normal = startOffset.cross(endOffset);
+        if (normal.lengthSqr() < ARC_EPSILON) {
+            return colinearAlerp(start, end, origin, t, startOffset, endOffset);
+        }
+
         Vec3 midpoint = start.add(end).scale(0.5);
-        Vec3 normal = start.subtract(origin).cross(end.subtract(origin)).normalize();
+        normal = normal.normalize();
         Vec3 pathDirection = end.subtract(start).normalize();
         Vec3 toCenter = pathDirection.cross(normal).normalize();
         Vec3 originToMid = midpoint.subtract(origin);
         double projectionLength = originToMid.dot(toCenter);
-        Vec3 center = midpoint.subtract(
-                new Vec3(projectionLength, projectionLength, projectionLength).multiply(toCenter));
+        Vec3 center = midpoint.subtract(toCenter.scale(projectionLength));
         double radius = start.distanceTo(center);
+        if (radius < ARC_EPSILON) {
+            return lerp(start, end, t);
+        }
         Vec3 centerToStart = start.subtract(center);
         Vec3 centerToEnd = end.subtract(center);
-        double angleStart = Mth.atan2(
+        double angleStart = Math.atan2(
                 centerToStart.dot(toCenter),
                 centerToStart.dot(pathDirection));
-        double angleEnd = Mth.atan2(
+        double angleEnd = Math.atan2(
                 centerToEnd.dot(toCenter),
                 centerToEnd.dot(pathDirection));
+        double angle = angleStart + wrapRadians(angleEnd - angleStart) * t;
+        Vec3 arcDirection = pathDirection.scale(Math.cos(angle)).add(toCenter.scale(Math.sin(angle)));
 
-        // Ensure we're using the shorter arc
-        if (Mth.abs((float) (angleEnd - angleStart)) > Mth.PI) {
-            if (angleStart < angleEnd) {
-                angleStart += 2 * Mth.PI;
-            } else {
-                angleEnd += 2 * Mth.PI;
-            }
+        return center.add(arcDirection.scale(radius));
+    }
+
+    private static Vec3 lerp(Vec3 start, Vec3 end, double t) {
+        return start.add(end.subtract(start).scale(t));
+    }
+
+    private static Vec3 colinearAlerp(
+            Vec3 start,
+            Vec3 end,
+            Vec3 origin,
+            double t,
+            Vec3 startOffset,
+            Vec3 endOffset) {
+        if (startOffset.dot(endOffset) >= 0) {
+            return lerp(start, end, t);
         }
 
-        double angle = (1 - t) * angleStart + t * angleEnd;
-        Vec3 arcDirection = new Vec3(
-                Mth.cos((float) angle),
-                Mth.cos((float) angle),
-                Mth.cos((float) angle))
-                .multiply(pathDirection)
-                .add(new Vec3(
-                        Mth.sin((float) angle),
-                        Mth.sin((float) angle),
-                        Mth.sin((float) angle))
-                        .multiply(toCenter));
+        Vec3 startDirection = startOffset.normalize();
+        Vec3 perpendicular = perpendicular(startDirection);
+        double startRadius = startOffset.length();
+        double endRadius = endOffset.length();
+        double radius = startRadius + (endRadius - startRadius) * t;
+        double angle = Math.PI * t;
+        Vec3 arcDirection = startDirection.scale(Math.cos(angle)).add(perpendicular.scale(Math.sin(angle)));
 
-        return center.add(new Vec3(radius, radius, radius).multiply(arcDirection));
+        return origin.add(arcDirection.scale(radius));
+    }
+
+    private static Vec3 perpendicular(Vec3 vector) {
+        Vec3 axis = Math.abs(vector.x) < Math.abs(vector.y)
+                ? new Vec3(1, 0, 0)
+                : new Vec3(0, 1, 0);
+        Vec3 perpendicular = vector.cross(axis);
+        if (perpendicular.lengthSqr() < ARC_EPSILON) {
+            perpendicular = vector.cross(new Vec3(0, 0, 1));
+        }
+        return perpendicular.normalize();
+    }
+
+    private static double wrapRadians(double angle) {
+        double wrapped = angle % TWO_PI;
+        if (wrapped <= -Math.PI) {
+            wrapped += TWO_PI;
+        } else if (wrapped > Math.PI) {
+            wrapped -= TWO_PI;
+        }
+        return wrapped;
     }
 
     public static final class RotationArc {
@@ -353,7 +407,7 @@ public final class RotationUtils {
             return calcRotationFromVec3d(
                     Vec3.ZERO,
                     alerp(source, target, Vec3.ZERO, t),
-                    new Rotation(0, 0));
+                    this.startRotation);
         }
     }
 
