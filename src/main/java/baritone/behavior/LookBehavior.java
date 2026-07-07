@@ -170,7 +170,11 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
                 break;
             }
             case POST: {
-                if (this.prevRotation != null && this.target.mode == Target.Mode.SERVER) {
+                if (this.prevRotation != null && this.previousArcSample != null && this.currentArcSample != null) {
+                    this.applyVisualArc();
+                    this.previousArcSample = null;
+                    this.currentArcSample = null;
+                } else if (this.prevRotation != null && this.target.mode == Target.Mode.SERVER) {
                     ctx.player().setYRot(this.prevRotation.getYaw());
                     ctx.player().setXRot(this.prevRotation.getPitch());
                 }
@@ -202,6 +206,12 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
     private void applyRotation(Rotation rotation) {
         ctx.player().setYRot(rotation.getYaw());
         ctx.player().setXRot(rotation.getPitch());
+    }
+
+    private void applyVisualArc() {
+        ctx.player().yRotO = this.previousArcSample.getYaw();
+        ctx.player().xRotO = this.previousArcSample.getPitch();
+        this.applyRotation(this.currentArcSample);
     }
 
     private void resetInterpolation() {
