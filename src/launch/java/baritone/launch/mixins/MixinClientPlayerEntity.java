@@ -62,6 +62,7 @@ public class MixinClientPlayerEntity {
             at = @At("HEAD"),
             cancellable = true
     )
+    @SuppressWarnings({"unused", "PMD.UnusedPrivateMethod"})
     private void getViewYRot(float partialTicks, CallbackInfoReturnable<Float> cir) {
         Rotation visualRotation = this.getVisualRotation(partialTicks);
         if (visualRotation != null) {
@@ -74,6 +75,7 @@ public class MixinClientPlayerEntity {
             at = @At("HEAD"),
             cancellable = true
     )
+    @SuppressWarnings({"unused", "PMD.UnusedPrivateMethod"})
     private void getViewXRot(float partialTicks, CallbackInfoReturnable<Float> cir) {
         Rotation visualRotation = this.getVisualRotation(partialTicks);
         if (visualRotation != null) {

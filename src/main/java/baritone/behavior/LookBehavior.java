@@ -250,6 +250,7 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
             boolean restartArc,
             Target.Mode mode) {
         final int interpolationSpeed = Baritone.settings().interpolatedLookLength.value;
+        Rotation arcStart = start;
 
         if (this.interpolationArc != null && this.interpolationMode != mode) {
             this.interpolationArc = null;
@@ -259,12 +260,15 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
 
         if (this.interpolationArc != null
                 && (restartArc || this.interpolationOriginMoved(origin))) {
-            start = this.interpolationArc.getCurrentRotation();
+            arcStart = this.interpolationArc.getCurrentRotation();
             this.interpolationArc = null;
         }
 
         if (this.interpolationArc == null) {
-            this.interpolationArc = RotationArc.fromAngularSpeed(start, actual, interpolationSpeed);
+            this.interpolationArc = RotationArc.fromAngularSpeed(
+                    arcStart,
+                    actual,
+                    interpolationSpeed);
             this.interpolationMode = mode;
             this.interpolationOrigin = origin;
         }

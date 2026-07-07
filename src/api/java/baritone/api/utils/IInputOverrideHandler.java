@@ -39,8 +39,10 @@ public interface IInputOverrideHandler extends IBehavior {
     }
 
     default void setBlockBreakTarget(BlockPos pos) {
+        // Optional hook for handlers that support targeted block breaking.
     }
 
     default void setBlockPlaceTarget(BlockPos pos, Direction side) {
+        // Optional hook for handlers that support targeted block placing.
     }
 }

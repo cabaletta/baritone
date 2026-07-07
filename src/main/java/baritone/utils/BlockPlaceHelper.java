@@ -38,23 +38,55 @@ public class BlockPlaceHelper {
     }
 
     public void tick(boolean rightClickRequested, BlockPos target, Direction side) {
+        if (this.isCoolingDown()) {
+            return;
+        }
+
+        BlockHitResult blockHit = this.targetedBlockHit(rightClickRequested, target, side);
+        if (blockHit == null) {
+            return;
+        }
+
+        rightClickTimer = Baritone.settings().rightClickSpeed.value - BASE_PLACE_DELAY;
+        this.tryRightClick(blockHit);
+    }
+
+    private boolean isCoolingDown() {
         if (rightClickTimer > 0) {
             rightClickTimer--;
-            return;
+            return true;
         }
+        return false;
+    }
+
+    private BlockHitResult targetedBlockHit(
+            boolean rightClickRequested,
+            BlockPos target,
+            Direction side) {
+        if (!rightClickRequested || ctx.player().isHandsBusy()) {
+            return null;
+        }
+
         HitResult mouseOver = ctx.objectMouseOver();
-        if (!rightClickRequested
-                || ctx.player().isHandsBusy()
-                || mouseOver == null
+        if (mouseOver == null
                 || mouseOver.getType() != HitResult.Type.BLOCK) {
-            return;
+            return null;
         }
+
         BlockHitResult blockHit = (BlockHitResult) mouseOver;
-        if (target != null
-                && (!blockHit.getBlockPos().equals(target) || blockHit.getDirection() != side)) {
-            return;
+        if (!this.matchesTarget(blockHit, target, side)) {
+            return null;
         }
-        rightClickTimer = Baritone.settings().rightClickSpeed.value - BASE_PLACE_DELAY;
+
+        return blockHit;
+    }
+
+    private boolean matchesTarget(BlockHitResult blockHit, BlockPos target, Direction side) {
+        return target == null
+                || (blockHit.getBlockPos().equals(target) && blockHit.getDirection() == side);
+    }
+
+    private void tryRightClick(BlockHitResult blockHit) {
         for (InteractionHand hand : InteractionHand.values()) {
             if (ctx.playerController().processRightClickBlock(
                     ctx.player(),
