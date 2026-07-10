@@ -157,7 +157,7 @@ public class BuildLimitPathFinder implements IElytraPathFinder {
     }
 
     public boolean isSkyClear(ChunkPos pos, int y) {
-        if(!playerCtx.world().getChunkSource().hasChunk(pos.x, pos.z)) {
+        if(!playerCtx.world().getChunkSource().hasChunk(pos.x(), pos.z())) {
             return false;
         }
 

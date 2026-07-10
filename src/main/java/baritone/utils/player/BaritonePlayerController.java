@@ -26,7 +26,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.BlockHitResult;
@@ -67,8 +67,8 @@ public final class BaritonePlayerController implements IPlayerController {
     }
 
     @Override
-    public void windowClick(int windowId, int slotId, int mouseButton, ClickType type, Player player) {
-        mc.gameMode.handleInventoryMouseClick(windowId, slotId, mouseButton, type, player);
+    public void windowClick(int windowId, int slotId, int mouseButton, ContainerInput type, Player player) {
+        mc.gameMode.handleContainerInput(windowId, slotId, mouseButton, type, player);
     }
 
     @Override

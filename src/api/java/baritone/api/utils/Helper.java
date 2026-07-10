@@ -20,8 +20,8 @@ package baritone.api.utils;
 import baritone.api.BaritoneAPI;
 import baritone.api.Settings;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.GuiMessageTag;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.chat.GuiMessageTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 

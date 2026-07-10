@@ -96,7 +96,7 @@ public enum WorldScanner implements IWorldScanner {
         }
 
         ClientChunkCache chunkProvider = (ClientChunkCache) ctx.world().getChunkSource();
-        LevelChunk chunk = chunkProvider.getChunk(pos.x, pos.z, null, false);
+        LevelChunk chunk = chunkProvider.getChunk(pos.x(), pos.z(), null, false);
         int playerY = ctx.playerFeet().getY();
 
         if (chunk == null || chunk.isEmpty()) {
@@ -104,7 +104,7 @@ public enum WorldScanner implements IWorldScanner {
         }
 
         ArrayList<BlockPos> res = new ArrayList<>();
-        scanChunkInto(pos.x << 4, pos.z << 4, ctx.world().dimensionType().minY(), chunk, filter, res, max, yLevelThreshold, playerY, IntStream.range(0, ctx.world().dimensionType().height() / 16).toArray());
+        scanChunkInto(pos.x() << 4, pos.z() << 4, ctx.world().dimensionType().minY(), chunk, filter, res, max, yLevelThreshold, playerY, IntStream.range(0, ctx.world().dimensionType().height() / 16).toArray());
         return res;
     }
 

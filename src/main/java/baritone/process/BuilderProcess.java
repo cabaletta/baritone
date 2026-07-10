@@ -1037,10 +1037,8 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         if (!ignoreDirection && ignoredProps.isEmpty()) {
             return first.equals(second); // early return if no properties are being ignored
         }
-        Map<Property<?>, Comparable<?>> map1 = first.getValues();
-        Map<Property<?>, Comparable<?>> map2 = second.getValues();
-        for (Property<?> prop : map1.keySet()) {
-            if (map1.get(prop) != map2.get(prop)
+        for (Property<?> prop : first.getProperties()) {
+            if (first.getValue(prop) != second.getValue(prop)
                     && !(ignoreDirection && ORIENTATION_PROPS.contains(prop))
                     && !ignoredProps.contains(prop.getName())) {
                 return false;
