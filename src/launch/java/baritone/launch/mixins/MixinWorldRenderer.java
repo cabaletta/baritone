@@ -25,7 +25,6 @@ import com.mojang.blaze3d.resource.GraphicsResourceAllocator;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.renderer.LevelRenderer;
-import net.minecraft.client.renderer.chunk.ChunkSectionsToRender;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import org.joml.Matrix4fc;
 import org.joml.Vector4f;
@@ -42,10 +41,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class MixinWorldRenderer {
 
     @Inject(
-            method = "renderLevel",
+            method = "render",
             at = @At("RETURN")
     )
-    private void onStartHand(final GraphicsResourceAllocator allocator, final DeltaTracker deltaTracker, final boolean outline, final CameraRenderState camera, final Matrix4fc modelViewMatrix, final GpuBufferSlice fog, final Vector4f fogColor, final boolean sky, final ChunkSectionsToRender chunkSectionsToRender, final CallbackInfo ci) {
+    private void onStartHand(final GraphicsResourceAllocator allocator, final DeltaTracker deltaTracker, final boolean outline, final CameraRenderState camera, final Matrix4fc modelViewMatrix, final GpuBufferSlice fog, final Vector4f fogColor, final boolean sky, final CallbackInfo ci) {
         for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
             PoseStack poseStack = new PoseStack();
             poseStack.mulPose(modelViewMatrix);

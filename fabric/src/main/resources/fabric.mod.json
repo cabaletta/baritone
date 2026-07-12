@@ -25,7 +25,7 @@
   ],
   "depends": {
     "fabricloader": ">=0.19.3",
-    "minecraft": ["26.1.*"]
+    "minecraft": ["26.2"]
   },
   "custom": {
     "modmenu": {

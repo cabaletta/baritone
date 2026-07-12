@@ -20,9 +20,9 @@ package baritone.process.elytra;
 import baritone.Baritone;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.IPlayerContext;
+import baritone.api.utils.Pair;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.levelgen.Heightmap;
 
@@ -62,7 +62,7 @@ public class BuildLimitPathFinder implements IElytraPathFinder {
      * @param maxPathSize Maximum number of nodes in the returned path
      * @return A tuple containing the path as a list of BetterBlockPos and a boolean indicating if the path is complete
      */
-    public Tuple<List<BetterBlockPos>, Boolean> generateDirectPath(BetterBlockPos start, BetterBlockPos destination, int bufferDistance, int maxPathSize) {
+    public Pair<List<BetterBlockPos>, Boolean> generateDirectPath(BetterBlockPos start, BetterBlockPos destination, int bufferDistance, int maxPathSize) {
         final LinkedList<BetterBlockPos> path = new LinkedList<>();
         final int stepDistance = 32;
 
@@ -80,10 +80,10 @@ public class BuildLimitPathFinder implements IElytraPathFinder {
 
             if(remainingDistanceSq <= bufferDistance * bufferDistance) {
                 // We are within the buffer distance, so we can stop here
-                return new Tuple<>(path, true);
+                return new Pair<>(path, true);
             } else if (remainingDistance <= stepDistance) {
                 path.add(destinationFixed);
-                return new Tuple<>(path, true);
+                return new Pair<>(path, true);
             }
 
             double stepRatio = stepDistance / remainingDistance;
@@ -94,7 +94,7 @@ public class BuildLimitPathFinder implements IElytraPathFinder {
             path.add(cur);
         }
 
-        return new Tuple<>(path, false);
+        return new Pair<>(path, false);
     }
 
     /**
@@ -103,7 +103,7 @@ public class BuildLimitPathFinder implements IElytraPathFinder {
      * @param destination
      * @return A tuple containing the path that transitions above build limit and a boolean indicating if a transition was found
      */
-    public Tuple<List<BetterBlockPos>,Boolean> generateTransitionUp(BetterBlockPos start, BetterBlockPos destination) {
+    public Pair<List<BetterBlockPos>,Boolean> generateTransitionUp(BetterBlockPos start, BetterBlockPos destination) {
         final double deltaX = destination.getX() - start.getX();
         final double deltaZ = destination.getZ() - start.getZ();
         final double distance = Math.sqrt(deltaX * deltaX + deltaZ * deltaZ);
@@ -117,7 +117,7 @@ public class BuildLimitPathFinder implements IElytraPathFinder {
         final ChunkPos startChunk = new ChunkPos(start.x >> 4, start.z >> 4);
 
         if(!isSkyClear(startChunk, start.y)) {
-            return new Tuple<>(new LinkedList<>(), false);
+            return new Pair<>(new LinkedList<>(), false);
         }
 
         LinkedList<BetterBlockPos> path = new LinkedList<>();
@@ -134,7 +134,7 @@ public class BuildLimitPathFinder implements IElytraPathFinder {
             path.add(next);
         }
 
-        return new Tuple<>(path, true);
+        return new Pair<>(path, true);
     }
 
     /**
@@ -142,18 +142,18 @@ public class BuildLimitPathFinder implements IElytraPathFinder {
      * @param start
      * @return A tuple containing the path (single point) and a boolean indicating if a transition point was found
      */
-    public Tuple<List<BetterBlockPos>,Boolean> generateTransitionDown(BetterBlockPos start) {
+    public Pair<List<BetterBlockPos>,Boolean> generateTransitionDown(BetterBlockPos start) {
         final int netherMaxHeight = netherCtx.getMaxHeight() + playerCtx.world().getMinY() - 1;
         final ChunkPos startChunk = new ChunkPos(start.x >> 4, start.z >> 4);
 
         LinkedList<BetterBlockPos> path = new LinkedList<>();
 
         if(!isSkyClear(new ChunkPos(start.x >> 4, start.z >> 4), netherMaxHeight-16)) {
-            return new Tuple<>(new LinkedList<>(), false);
+            return new Pair<>(new LinkedList<>(), false);
         }
 
         path.add(new BetterBlockPos(startChunk.getMiddleBlockPosition(netherMaxHeight-8)));
-        return new Tuple<>(path, true);
+        return new Pair<>(path, true);
     }
 
     public boolean isSkyClear(ChunkPos pos, int y) {
@@ -188,7 +188,7 @@ public class BuildLimitPathFinder implements IElytraPathFinder {
 
         if(srcAboveSupportedHeight && dstAboveSupportedHeight) {
             var path = generateDirectPath(new BetterBlockPos(src), new BetterBlockPos(dst), 0, maxDirectPathSize);
-            return CompletableFuture.completedFuture(new UnpackedSegment(path.getA().stream(), path.getB()));
+            return CompletableFuture.completedFuture(new UnpackedSegment(path.first().stream(), path.second()));
         }
 
         if(isLongDistance) {
@@ -196,23 +196,23 @@ public class BuildLimitPathFinder implements IElytraPathFinder {
                 var directPath = generateDirectPath(new BetterBlockPos(src), new BetterBlockPos(dst), (int)maxDistance, maxDirectPathSize);
                 return CompletableFuture.completedFuture(
                         new UnpackedSegment(
-                                directPath.getA().stream(),
-                                dstAboveSupportedHeight ? directPath.getB() : false
+                                directPath.first().stream(),
+                                dstAboveSupportedHeight ? directPath.second() : false
                         )
                 );
             } else {
                 var transition = generateTransitionUp(new BetterBlockPos(src), new BetterBlockPos(dst));
-                var path = transition.getA();
-                var success = transition.getB();
+                var path = transition.first();
+                var success = transition.second();
 
                 if(success) {
                     var directPath = generateDirectPath(path.get(path.size()-1), new BetterBlockPos(dst), (int)maxDistance, maxDirectPathSize);
-                    path.addAll(directPath.getA());
+                    path.addAll(directPath.first());
 
                     return CompletableFuture.completedFuture(
                         new UnpackedSegment(
                             path.stream(),
-                            dstAboveSupportedHeight? directPath.getB() : false
+                            dstAboveSupportedHeight? directPath.second() : false
                         )
                     );
                 }
@@ -230,13 +230,13 @@ public class BuildLimitPathFinder implements IElytraPathFinder {
         } else {
             if(srcAboveSupportedHeight) {
                 var transition = generateTransitionDown(new BetterBlockPos(src));
-                List<BetterBlockPos> path = transition.getA();
-                boolean success = transition.getB();
+                List<BetterBlockPos> path = transition.first();
+                boolean success = transition.second();
 
                 if(!success) {
                     BetterBlockPos newDest = distanceXZ > 32 ? new BetterBlockPos(dst) : new BetterBlockPos(dst.getX(), playerCtx.world().getMaxY(), dst.getZ());
                     var directPath = generateDirectPath(new BetterBlockPos(src), newDest, 0, 2);
-                    return CompletableFuture.completedFuture(new UnpackedSegment(directPath.getA().stream(), directPath.getB()));
+                    return CompletableFuture.completedFuture(new UnpackedSegment(directPath.first().stream(), directPath.second()));
                 }
 
                 return CompletableFuture.supplyAsync(() -> {
@@ -249,13 +249,13 @@ public class BuildLimitPathFinder implements IElytraPathFinder {
 
             if(dstAboveSupportedHeight) {
                 var transition = generateTransitionUp(new BetterBlockPos(src), new BetterBlockPos(dst));
-                var path = transition.getA();
-                var success = transition.getB();
+                var path = transition.first();
+                var success = transition.second();
 
                 if(success) {
                     var directPath = generateDirectPath(path.get(path.size() - 1), new BetterBlockPos(dst), 0, maxDirectPathSize);
-                    path.addAll(directPath.getA());
-                    return CompletableFuture.completedFuture(new UnpackedSegment(path.stream(), directPath.getB()));
+                    path.addAll(directPath.first());
+                    return CompletableFuture.completedFuture(new UnpackedSegment(path.stream(), directPath.second()));
                 }
 
                 return netherCtx.pathFindAsync(src, new BetterBlockPos(dst.getX(), netherMaxHeight, dst.getZ()));

@@ -47,8 +47,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import static net.minecraft.world.level.chunk.LevelChunkSection.SECTION_SIZE;
-
 /**
  * @author Brady
  */
@@ -65,6 +63,7 @@ public final class NetherPathfinderContext implements IElytraPathFinder {
         }
     }
     private static final BlockState AIR_BLOCK_STATE = Blocks.AIR.defaultBlockState();
+    private static final int SECTION_SIZE = 16;
     // This lock must be held while there are active pointers to chunks in java,
     // but we just hold it for the entire tick so we don't have to think much about it.
     public final ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
