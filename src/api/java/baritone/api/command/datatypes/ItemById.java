@@ -42,7 +42,7 @@ public enum ItemById implements IDatatypeFor<Item> {
     public Stream<String> tabComplete(IDatatypeContext ctx) throws CommandException {
         return new TabCompleteHelper()
                 .append(
-                        BuiltInRegistries.BLOCK.keySet()
+                        BuiltInRegistries.ITEM.keySet()
                                 .stream()
                                 .map(ResourceLocation::toString)
                 )
