@@ -58,18 +58,15 @@ public class MovementPillar extends Movement {
     public static double cost(CalculationContext context, int x, int y, int z) {
         BlockState fromState = context.get(x, y, z);
         Block from = fromState.getBlock();
-        boolean ladder = from == Blocks.LADDER || from == Blocks.VINE;
+        boolean ladder = MovementHelper.isClimbable(from);
         BlockState fromDown = context.get(x, y - 1, z);
         if (!ladder) {
-            if (fromDown.getBlock() == Blocks.LADDER || fromDown.getBlock() == Blocks.VINE) {
+            if (MovementHelper.isClimbable(fromDown.getBlock())) {
                 return COST_INF; // can't pillar from a ladder or vine onto something that isn't also climbable
             }
             if (fromDown.getBlock() instanceof SlabBlock && fromDown.getValue(SlabBlock.TYPE) == SlabType.BOTTOM) {
                 return COST_INF; // can't pillar up from a bottom slab onto a non ladder
             }
-        }
-        if (from == Blocks.VINE && !hasAgainst(context, x, y, z)) { // TODO this vine can't be climbed, but we could place a pillar still since vines are replacable, no? perhaps the pillar jump would be impossible because of the slowdown actually.
-            return COST_INF;
         }
         BlockState toBreak = context.get(x, y + 2, z);
         Block toBreakBlock = toBreak.getBlock();
@@ -109,7 +106,7 @@ public class MovementPillar extends Movement {
             return COST_INF;
         }
         if (hardness != 0) {
-            if (toBreakBlock == Blocks.LADDER || toBreakBlock == Blocks.VINE) {
+            if (MovementHelper.isClimbable(toBreakBlock)) {
                 hardness = 0; // we won't actually need to break the ladder / vine because we're going to use it
             } else {
                 BlockState check = context.get(x, y + 3, z); // the block on top of the one we're going to break, could it fall on us?
@@ -138,29 +135,6 @@ public class MovementPillar extends Movement {
         }
     }
 
-    public static boolean hasAgainst(CalculationContext context, int x, int y, int z) {
-        return MovementHelper.isBlockNormalCube(context.get(x + 1, y, z)) ||
-                MovementHelper.isBlockNormalCube(context.get(x - 1, y, z)) ||
-                MovementHelper.isBlockNormalCube(context.get(x, y, z + 1)) ||
-                MovementHelper.isBlockNormalCube(context.get(x, y, z - 1));
-    }
-
-    public static BlockPos getAgainst(CalculationContext context, BetterBlockPos vine) {
-        if (MovementHelper.isBlockNormalCube(context.get(vine.north()))) {
-            return vine.north();
-        }
-        if (MovementHelper.isBlockNormalCube(context.get(vine.south()))) {
-            return vine.south();
-        }
-        if (MovementHelper.isBlockNormalCube(context.get(vine.east()))) {
-            return vine.east();
-        }
-        if (MovementHelper.isBlockNormalCube(context.get(vine.west()))) {
-            return vine.west();
-        }
-        return null;
-    }
-
     @Override
     public MovementState updateState(MovementState state) {
         super.updateState(state);
@@ -185,8 +159,8 @@ public class MovementPillar extends Movement {
             }
             return state;
         }
-        boolean ladder = fromDown.getBlock() == Blocks.LADDER || fromDown.getBlock() == Blocks.VINE;
-        boolean vine = fromDown.getBlock() == Blocks.VINE;
+        boolean ladder = MovementHelper.isClimbable(fromDown.getBlock());
+
         Rotation rotation = RotationUtils.calcRotationFromVec3d(ctx.playerHead(),
                 VecUtils.getBlockPosCenter(positionToPlace),
                 ctx.playerRotations());
@@ -196,25 +170,12 @@ public class MovementPillar extends Movement {
 
         boolean blockIsThere = MovementHelper.canWalkOn(ctx, src) || ladder;
         if (ladder) {
-            BlockPos against = vine ? getAgainst(new CalculationContext(baritone), src) : src.relative(fromDown.getValue(LadderBlock.FACING).getOpposite());
-            if (against == null) {
-                logDirect("Unable to climb vines. Consider disabling allowVines.");
-                return state.setStatus(MovementStatus.UNREACHABLE);
-            }
-
-            if (ctx.playerFeet().equals(against.above()) || ctx.playerFeet().equals(dest)) {
+            if (ctx.playerFeet().equals(dest)) {
                 return state.setStatus(MovementStatus.SUCCESS);
             }
-            if (MovementHelper.isBottomSlab(BlockStateInterface.get(ctx, src.below()))) {
-                state.setInput(Input.JUMP, true);
-            }
-            /*
-            if (thePlayer.getPosition0().getX() != from.getX() || thePlayer.getPosition0().getZ() != from.getZ()) {
-                Baritone.moveTowardsBlock(from);
-            }
-             */
 
-            MovementHelper.moveTowards(ctx, state, against);
+            MovementHelper.moveTowards(ctx, state, dest);
+            state.setInput(Input.JUMP, true);
             return state;
         } else {
             // Get ready to place a throwaway block
@@ -273,7 +234,7 @@ public class MovementPillar extends Movement {
     protected boolean prepared(MovementState state) {
         if (ctx.playerFeet().equals(src) || ctx.playerFeet().equals(src.below())) {
             Block block = BlockStateInterface.getBlock(ctx, src.below());
-            if (block == Blocks.LADDER || block == Blocks.VINE) {
+            if (MovementHelper.isClimbable(block)) {
                 state.setInput(Input.SNEAK, true);
             }
         }
