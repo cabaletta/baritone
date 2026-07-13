@@ -19,10 +19,12 @@ import baritone.gradle.task.CreateDistTask
 import baritone.gradle.task.ProguardTask
 
 plugins {
-    id "com.github.johnrengelman.shadow" version "8.0.0"
+    id "com.github.johnrengelman.shadow" version "8.1.1"
 }
 
-archivesBaseName = archivesBaseName + "-forge"
+base {
+    archivesName = archivesName.get() + "-forge"
+}
 
 unimined.minecraft {
     mappings {
