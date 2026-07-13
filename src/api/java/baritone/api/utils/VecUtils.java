@@ -43,6 +43,10 @@ public final class VecUtils {
      * @see #getBlockPosCenter(BlockPos)
      */
     public static Vec3 calculateBlockCenter(Level world, BlockPos pos) {
+        // Prevent BetterBlockPos from leaking into Minecraft's block entity map
+        if (pos instanceof BetterBlockPos) {
+            pos = new BlockPos(pos.getX(), pos.getY(), pos.getZ());
+        }
         BlockState b = world.getBlockState(pos);
         VoxelShape shape = b.getCollisionShape(world, pos);
         if (shape.isEmpty()) {
