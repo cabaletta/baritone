@@ -20,6 +20,7 @@ package baritone.utils;
 import baritone.Baritone;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.Holder;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.ItemStack;
@@ -136,7 +137,7 @@ public class ToolSet {
         BlockState blockState = b.defaultBlockState();
         for (int i = 0; i < 9; i++) {
             ItemStack itemStack = player.getInventory().getItem(i);
-            if (!Baritone.settings().useSwordToMine.value && itemStack.getItem() instanceof SwordItem) {
+            if (!Baritone.settings().useSwordToMine.value && itemStack.is(ItemTags.SWORDS)) {
                 continue;
             }
 

@@ -65,7 +65,7 @@ public class Determinizer {
                 clone.setTime(42069);
                 jos.putNextEntry(clone);
                 if (entry.getName().endsWith(".refmap.json")) {
-                    JsonElement json = new JsonParser().parse(new InputStreamReader(jarFile.getInputStream(entry)));
+                    JsonElement json = JsonParser.parseReader(new InputStreamReader(jarFile.getInputStream(entry)));
                     jos.write(writeSorted(json).getBytes());
                 } else if (entry.getName().equals("META-INF/MANIFEST.MF") && doForgeReplacementOfMetaInf) { // only replace for forge jar
                     ByteArrayOutputStream cancer = new ByteArrayOutputStream();
