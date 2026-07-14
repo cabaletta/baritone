@@ -6,19 +6,20 @@ The easiest way to install Baritone is to install it as Forge/Neoforge/Fabric mo
 Once Baritone is installed, look [here](USAGE.md) for instructions on how to use it.
 
 ## Prebuilt official releases
+
 Releases are made rarely and are not always up to date with the latest features and bug fixes.
 
 Link to the releases page: [Releases](https://github.com/cabaletta/baritone/releases)
 
 The mapping between Minecraft versions and major Baritone versions is as follows
+
 | Minecraft version | 1.12 | 1.13 | 1.14 | 1.15 | 1.16 | 1.17 | 1.18 | 1.19 | 1.20  | 1.21  | 1.21.4 | 1.21.5 |  1.21.6 - 1.21.8 |
 |-------------------|------|------|------|------|------|------|------|------|-------|-------|--------|--------|------------------|
 | Baritone version  | v1.2 | v1.3 | v1.4 | v1.5 | v1.6 | v1.7 | v1.8 | v1.9 | v1.10 | v1.11 | v1.13  | v1.14  | v1.15            |
 
-Any official release will be GPG signed by leijurv (44A3EA646EADAC6A). Please verify that the hash of the file you download is in `checksums.txt` and that `checksums_signed.asc` is a valid signature by that public keys of `checksums.txt`. 
+Any official release will be GPG signed by leijurv (44A3EA646EADAC6A). Please verify that the hash of the file you download is in `checksums.txt` and that `checksums_signed.asc` is a valid signature by that public keys of `checksums.txt`.
 
 The build is fully deterministic and reproducible, and you can verify that by running `docker build --no-cache -t cabaletta/baritone .` yourself and comparing the shasum. This works identically on Travis, Mac, and Linux (if you have docker on Windows, I'd be grateful if you could let me know if it works there too).
-
 
 ## Artifacts
 
@@ -31,6 +32,7 @@ If you want to report a bug and spare us some effort, you want `baritone-unoptim
 Otherwise, you want `baritone-standalone-*-VERSION.jar`
 
 Here's what the various qualifiers mean
+
 - **API**: Only the non-api packages are obfuscated. This should be used in environments where other mods would like to use Baritone's features.
 - **Standalone**: Everything is obfuscated. Other mods cannot use Baritone, but you get a bit of extra performance.
 - **Unoptimized**: Nothing is obfuscated. This shouldn't be used in production, but is really helpful for crash reports.
@@ -41,6 +43,7 @@ Here's what the various qualifiers mean
 If you build from source you will also find mapping files in the `dist` directory. These contain the renamings done by ProGuard and are useful if you want to read obfuscated stack traces.
 
 ## Build it yourself
+
 - Clone or download Baritone
 
   ![Image](https://i.imgur.com/kbqBtoN.png)
@@ -48,9 +51,11 @@ If you build from source you will also find mapping files in the `dist` director
 - Follow one of the instruction sets below, based on your preference
 
 ## Command Line
+
 On Mac OSX and Linux, use `./gradlew` instead of `gradlew`.
 
 The recommended Java versions by Minecraft version are
+
 | Minecraft version             | Java version  |
 |-------------------------------|---------------|
 | 1.12.2 - 1.16.5               | 8             |
@@ -58,7 +63,7 @@ The recommended Java versions by Minecraft version are
 | 1.18.2 - 1.20.4               | 17            |
 | 1.20.5 - 1.21.8               | 21            |
 
-Download java: https://adoptium.net/
+Download java: <https://adoptium.net/>
 
 To check which java version you are using do `java -version` in a command prompt or terminal.
 
@@ -75,11 +80,13 @@ and `gradlew build -Pbaritone.forge_build` / `gradlew build -Pbaritone.fabric_bu
 for Forge/Fabric instead. And you might have to run `setupDecompWorkspace` first.
 
 ## IntelliJ
+
 - Open the project in IntelliJ as a Gradle project
 - Refresh the Gradle project (or, to be safe, just restart IntelliJ)
 - Depending on the minecraft version, you may need to run `setupDecompWorkspace` or `genIntellijRuns` in order to get everything working
 
 ## Github Actions
+
 Most branches have a CI workflow at `.github/workflows/gradle_build.yml`. If you fork this repository and enable actions for your fork
 you can push a dummy commit to trigger it and have GitHub build Baritone for you.
 

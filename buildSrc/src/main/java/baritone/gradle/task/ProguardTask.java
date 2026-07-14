@@ -18,7 +18,7 @@
 package baritone.gradle.task;
 
 import baritone.gradle.util.Determinizer;
-import org.gradle.api.plugins.JavaPluginConvention;
+import org.gradle.api.plugins.JavaPluginExtension;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.api.tasks.TaskAction;
@@ -30,7 +30,7 @@ import xyz.wagyourtail.unimined.api.minecraft.MinecraftConfig;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -94,7 +94,8 @@ public class ProguardTask extends BaritoneGradleTask {
     private void downloadProguard() throws Exception {
         Path proguardZip = getTemporaryFile(String.format(PROGUARD_ZIP, proguardVersion));
         if (!Files.exists(proguardZip)) {
-            write(new URL(String.format("https://github.com/Guardsquare/proguard/releases/download/v%s/proguard-%s.zip", proguardVersion, proguardVersion)).openStream(), proguardZip);
+            String downloadAddress = String.format("https://github.com/Guardsquare/proguard/releases/download/v%s/proguard-%s.zip", proguardVersion, proguardVersion);
+            write(new URI(downloadAddress).toURL().openStream(), proguardZip);
         }
     }
 
@@ -172,7 +173,7 @@ public class ProguardTask extends BaritoneGradleTask {
     }
 
     private Stream<File> acquireDependencies() {
-        return getProject().getConvention().getPlugin(JavaPluginConvention.class).getSourceSets().findByName("main").getCompileClasspath().getFiles()
+        return getProject().getExtensions().getByType(JavaPluginExtension.class).getSourceSets().findByName("main").getCompileClasspath().getFiles()
                 .stream()
                 .filter(File::isFile);
     }

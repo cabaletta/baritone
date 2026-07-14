@@ -237,7 +237,7 @@ public final class BlockOptionalMeta {
                         .withParameter(LootContextParams.BLOCK_STATE, b.defaultBlockState())
                         .withParameter(LootContextParams.TOOL, new ItemStack(Items.NETHERITE_PICKAXE, 1));
                     getDrops(block, lv5).stream().map(ItemStack::getItem).forEach(items::add);
-                } catch (Exception e) {
+                } catch (Throwable e) {
                     e.printStackTrace();
                 }
                 return items;
@@ -282,6 +282,9 @@ public final class BlockOptionalMeta {
 
         @Override
         public RegistryAccess registryAccess() {
+            if (client.level != null) {
+                return client.level.registryAccess();
+            }
             return registryAccess.join();
         }
 
