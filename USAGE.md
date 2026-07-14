@@ -16,7 +16,7 @@ Try `#help` I promise it won't just send you back here =)
 
 "wtf where is cleararea" -> look at `#help sel`
 
-"wtf where is goto death, goto waypoint" -> look at `#help wp` 
+"wtf where is goto death, goto waypoint" -> look at `#help wp`
 
 just look at `#help` lmao
 
@@ -33,6 +33,7 @@ Watch this [showcase video](https://youtu.be/CZkLXWo4Fg4)!
 To toggle a boolean setting, just say its name in chat (for example saying `allowBreak` toggles whether Baritone will consider breaking blocks). For a numeric setting, say its name then the new value (like `primaryTimeoutMS 250`). It's case insensitive. To reset a setting to its default value, say `acceptableThrowawayItems reset`. To reset all settings, say `reset`. To see all settings that have been modified from their default values, say `modified`.
 
 Commands in Baritone:
+
 - `thisway 1000` then `path` to go in the direction you're facing for a thousand blocks
 - `goal x y z` or `goal x z` or `goal y`, then `path` to set a goal to a certain coordinate then path to it
 - `goto x y z` or `goto x z` or `goto y` to go to a certain coordinate (in a single step, starts going immediately)
@@ -47,7 +48,7 @@ Commands in Baritone:
 - `build` to build a schematic. `build blah.schematic` will load `schematics/blah.schematic` and build it with the origin being your player feet. `build blah.schematic x y z` to set the origin. Any of those can be relative to your player (`~ 69 ~-420` would build at x=player x, y=69, z=player z-420).
 - `schematica` to build the schematic that is currently open in schematica
 - `tunnel` to dig and make a tunnel, 1x2. It will only deviate from the straight line if necessary such as to avoid lava. For a dumber tunnel that is really just cleararea, you can `tunnel 3 2 100`, to clear an area 3 high, 2 wide, and 100 deep.
-- `farm` to automatically harvest, replant, or bone meal crops. Use `farm <range>` or `farm <range> <waypoint>` to limit the max distance from the starting point or a waypoint. 
+- `farm` to automatically harvest, replant, or bone meal crops. Use `farm <range>` or `farm <range> <waypoint>` to limit the max distance from the starting point or a waypoint.
 - `axis` to go to an axis or diagonal axis at y=120 (`axisHeight` is a configurable setting, defaults to 120).
 - `explore x z` to explore the world from the origin of x,z. Leave out x and z to default to player feet. This will continually path towards the closest chunk to the origin that it's never seen before. `explorefilter filter.json` with optional invert can be used to load in a list of chunks to load.
 - `invert` to invert the current goal and path. This gets as far away from it as possible, instead of as close as possible. For example, do `goal` then `invert` to run as far as possible from where you're standing at the start.
@@ -67,6 +68,7 @@ Commands in Baritone:
 All the settings and documentation are <a href="https://github.com/cabaletta/baritone/blob/master/src/api/java/baritone/api/Settings.java">here</a>. If you find HTML easier to read than Javadoc, you can look <a href="https://baritone.leijurv.com/baritone/api/Settings.html#field.detail">here</a>.
 
 There are about a hundred settings, but here are some fun / interesting / important ones that you might want to look at changing in normal usage of Baritone. The documentation for each can be found at the above links.
+
 - `allowBreak`
 - `allowSprint`
 - `allowPlace`
@@ -86,12 +88,10 @@ There are about a hundred settings, but here are some fun / interesting / import
 - `mineScanDroppedItems`
 - `allowDiagonalAscend`
 
-
-
-
 # Troubleshooting / common issues
 
 ## Why doesn't Baritone respond to any of my chat commands?
+
 This could be one of many things.
 
 First, make sure it's actually installed. An easy way to check is seeing if it created the folder `baritone` in your Minecraft folder.
@@ -101,7 +101,7 @@ Second, make sure that you're using the prefix properly, and that chat control i
 For example, Impact disables direct chat control. (i.e. anything typed in chat without a prefix will be ignored and sent publicly). **This is a saved setting**, so if you run Impact once, `chatControl` will be off from then on, **even in other clients**.
 So you'll need to use the `#` prefix or edit `baritone/settings.txt` in your Minecraft folder to undo that (specifically, remove the line `chatControl false` then restart your client).
 
-
 ## Why can I do `.goto x z` in Impact but nowhere else? Why can I do `-path to x z` in KAMI but nowhere else?
+
 These are custom commands that they added; those aren't from Baritone.
 The equivalent you're looking for is `goto x z`.
