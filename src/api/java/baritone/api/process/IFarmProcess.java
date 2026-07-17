@@ -22,6 +22,12 @@ import net.minecraft.core.BlockPos;
 public interface IFarmProcess extends IBaritoneProcess {
 
     /**
+     * Resume or pause the Farm Continuously
+     */
+    void pause();
+    void resume();
+
+    /**
      * Begin to search for crops to farm with in specified aria
      * from specified location.
      *
