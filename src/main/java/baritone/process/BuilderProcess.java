@@ -103,6 +103,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
     private int layer;
     private int numRepeats;
     private List<BlockState> approxPlaceable;
+    private Placement heldPlacement;
     public int stopAtHeight = 0;
 
     public BuilderProcess(Baritone baritone) {
@@ -169,6 +170,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         this.numRepeats = 0;
         this.observedCompleted = new LongOpenHashSet();
         this.incorrectPositions = null;
+        this.heldPlacement = null;
     }
 
     public void resume() {
@@ -177,6 +179,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
 
     public void pause() {
         paused = true;
+        this.heldPlacement = null;
     }
 
     @Override
@@ -312,12 +315,19 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
     public static class Placement {
 
         private final int hotbarSelection;
+        private final BlockPos target;
         private final BlockPos placeAgainst;
         private final Direction side;
         private final Rotation rot;
 
-        public Placement(int hotbarSelection, BlockPos placeAgainst, Direction side, Rotation rot) {
+        public Placement(
+                int hotbarSelection,
+                BlockPos target,
+                BlockPos placeAgainst,
+                Direction side,
+                Rotation rot) {
             this.hotbarSelection = hotbarSelection;
+            this.target = target;
             this.placeAgainst = placeAgainst;
             this.side = side;
             this.rot = rot;
@@ -353,6 +363,34 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         return Optional.empty();
     }
 
+    private Optional<Placement> revalidateHeldPlacement(BuilderCalculationContext bcc) {
+        if (this.heldPlacement == null) {
+            return Optional.empty();
+        }
+        BlockPos target = this.heldPlacement.target;
+        BlockState current = bcc.bsi.get0(target);
+        BlockState desired = bcc.getSchematic(target.getX(), target.getY(), target.getZ(), current);
+        if (desired == null
+                || !MovementHelper.isReplaceable(
+                        target.getX(),
+                        target.getY(),
+                        target.getZ(),
+                        current,
+                        bcc.bsi)
+                || valid(current, desired, false)) {
+            this.heldPlacement = null;
+            return Optional.empty();
+        }
+        Optional<Placement> placement = possibleToPlace(
+                desired,
+                target.getX(),
+                target.getY(),
+                target.getZ(),
+                bcc.bsi);
+        this.heldPlacement = placement.orElse(null);
+        return placement;
+    }
+
     public boolean placementPlausible(BlockPos pos, BlockState state) {
         VoxelShape voxelshape = state.getCollisionShape(ctx.world(), pos);
         return voxelshape.isEmpty() || ctx.world().isUnobstructed(null, voxelshape.move(pos.getX(), pos.getY(), pos.getZ()));
@@ -386,7 +424,12 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                 if (result != null && result.getType() == HitResult.Type.BLOCK && ((BlockHitResult) result).getBlockPos().equals(placeAgainstPos) && ((BlockHitResult) result).getDirection() == against.getOpposite()) {
                     OptionalInt hotbar = hasAnyItemThatWouldPlace(toPlace, result, actualRot);
                     if (hotbar.isPresent()) {
-                        return Optional.of(new Placement(hotbar.getAsInt(), placeAgainstPos, against.getOpposite(), rot));
+                        return Optional.of(new Placement(
+                                hotbar.getAsInt(),
+                                new BetterBlockPos(x, y, z),
+                                placeAgainstPos,
+                                against.getOpposite(),
+                                rot));
                     }
                 }
             }
@@ -518,6 +561,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             if (Baritone.settings().buildInLayers.value && layer * Baritone.settings().layerHeight.value < stopAtHeight) {
                 logDirect("Starting layer " + layer);
                 layer++;
+                this.heldPlacement = null;
                 return onTick(calcFailed, isSafeToCancel, recursions + 1);
             }
             Vec3i repeat = Baritone.settings().buildRepeat.value;
@@ -534,6 +578,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             // build repeat time
             layer = 0;
             origin = new BlockPos(origin).offset(repeat);
+            this.heldPlacement = null;
             if (!Baritone.settings().buildRepeatSneaky.value) {
                 schematic.reset();
             }
@@ -546,6 +591,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
 
         Optional<Tuple<BetterBlockPos, Rotation>> toBreak = toBreakNearPlayer(bcc);
         if (toBreak.isPresent() && isSafeToCancel && ctx.player().isOnGround()) {
+            this.heldPlacement = null;
             // we'd like to pause to break this block
             // only change look direction if it's safe (don't want to fuck up an in progress parkour for example
             Rotation rot = toBreak.get().getB();
@@ -571,8 +617,12 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
         }
         List<BlockState> desirableOnHotbar = new ArrayList<>();
-        Optional<Placement> toPlace = searchForPlacables(bcc, desirableOnHotbar);
+        Optional<Placement> toPlace = revalidateHeldPlacement(bcc);
+        if (!toPlace.isPresent()) {
+            toPlace = searchForPlacables(bcc, desirableOnHotbar);
+        }
         if (toPlace.isPresent() && isSafeToCancel && ctx.player().isOnGround() && ticks <= 0) {
+            this.heldPlacement = toPlace.get();
             Rotation rot = toPlace.get().rot;
             baritone.getLookBehavior().updateTarget(rot, true);
             ctx.player().getInventory().selected = toPlace.get().hotbarSelection;
@@ -585,6 +635,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             }
             return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
         }
+        this.heldPlacement = null;
 
         if (Baritone.settings().allowInventory.value) {
             ArrayList<Integer> usefulSlots = new ArrayList<>();
@@ -1002,6 +1053,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         numRepeats = 0;
         paused = false;
         observedCompleted = null;
+        heldPlacement = null;
     }
 
     @Override
