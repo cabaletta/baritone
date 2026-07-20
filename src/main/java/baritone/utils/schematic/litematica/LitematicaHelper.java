@@ -25,7 +25,6 @@ import fi.dy.masa.litematica.data.DataManager;
 import fi.dy.masa.litematica.schematic.placement.SchematicPlacement;
 import fi.dy.masa.litematica.schematic.placement.SubRegionPlacement;
 import fi.dy.masa.litematica.world.SchematicWorldHandler;
-import fi.dy.masa.litematica.world.WorldSchematic;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.util.Tuple;
@@ -37,6 +36,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 
 /**
  * Helper class that provides access or processes data related to Litmatica schematics.
@@ -99,7 +99,11 @@ public final class LitematicaHelper {
         int minY = Integer.MAX_VALUE;
         int minZ = Integer.MAX_VALUE;
         HashMap<Vec3i, StaticSchematic> subRegions = new HashMap<>();
-        Level schematicWorld = SchematicWorldHandler.getSchematicWorld();
+
+        // doing this the normal way class loaded WorldSchematic too early
+        Supplier<Level> supplier = SchematicWorldHandler::getSchematicWorld;
+        Level schematicWorld = supplier.get();
+
         for (Map.Entry<String, SubRegionPlacement> entry : placement.getEnabledRelativeSubRegionPlacements().entrySet()) {
             SubRegionPlacement subPlacement = entry.getValue();
             Vec3i pos = transform(subPlacement.getPos(), placement.getMirror(), placement.getRotation());
