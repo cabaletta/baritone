@@ -94,9 +94,7 @@ allprojects {
         version rootProject.minecraft_version
 
         mappings {
-            intermediary()
             mojmap()
-            parchment(rootProject.minecraft_version, "2025.12.20")
         }
     }
 
