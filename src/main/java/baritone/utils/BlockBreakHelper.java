@@ -20,6 +20,8 @@ package baritone.utils;
 import baritone.api.BaritoneAPI;
 import baritone.api.utils.IPlayerContext;
 import baritone.utils.accessor.IPlayerControllerMP;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -35,6 +37,8 @@ public final class BlockBreakHelper {
     private final IPlayerContext ctx;
     private boolean wasHitting;
     private int breakDelayTimer = 0;
+    private BlockPos activeBlock;
+    private Direction activeFace;
 
     BlockBreakHelper(IPlayerContext ctx) {
         this.ctx = ctx;
@@ -47,6 +51,8 @@ public final class BlockBreakHelper {
             ctx.playerController().resetBlockRemoving();
             wasHitting = false;
         }
+        activeBlock = null;
+        activeFace = null;
     }
 
     public void tick(boolean isLeftClick) {
@@ -54,17 +60,38 @@ public final class BlockBreakHelper {
             breakDelayTimer--;
             return;
         }
-        HitResult trace = ctx.objectMouseOver();
-        boolean isBlockTrace = trace != null && trace.getType() == HitResult.Type.BLOCK;
+        if (!isLeftClick) {
+            wasHitting = false;
+            activeBlock = null;
+            activeFace = null;
+            return;
+        }
 
-        if (isLeftClick && isBlockTrace) {
+        if (!canContinueActiveTarget()) {
+            if (wasHitting) {
+                ctx.playerController().resetBlockRemoving();
+            }
+            wasHitting = false;
+            activeBlock = null;
+            activeFace = null;
+
+            HitResult trace = ctx.objectMouseOver();
+            if (trace == null || trace.getType() != HitResult.Type.BLOCK) {
+                return;
+            }
+            BlockHitResult blockTrace = (BlockHitResult) trace;
+            activeBlock = blockTrace.getBlockPos().immutable();
+            activeFace = blockTrace.getDirection();
+        }
+
+        if (activeBlock != null) {
             ctx.playerController().setHittingBlock(wasHitting);
             if (ctx.playerController().hasBrokenBlock()) {
                 ctx.playerController().syncHeldItem();
-                ctx.playerController().clickBlock(((BlockHitResult) trace).getBlockPos(), ((BlockHitResult) trace).getDirection());
+                ctx.playerController().clickBlock(activeBlock, activeFace);
                 ctx.player().swing(InteractionHand.MAIN_HAND);
             } else {
-                if (ctx.playerController().onPlayerDamageBlock(((BlockHitResult) trace).getBlockPos(), ((BlockHitResult) trace).getDirection())) {
+                if (ctx.playerController().onPlayerDamageBlock(activeBlock, activeFace)) {
                     ctx.player().swing(InteractionHand.MAIN_HAND);
                 }
                 if (ctx.playerController().hasBrokenBlock()) { // block broken this tick
@@ -76,12 +103,29 @@ public final class BlockBreakHelper {
             }
             // if true, we're breaking a block. if false, we broke the block this tick
             wasHitting = !ctx.playerController().hasBrokenBlock();
+            if (!wasHitting) {
+                activeBlock = null;
+                activeFace = null;
+            }
             // this value will be reset by the MC client handling mouse keys
             // since we're not spoofing the click keybind to the client, the client will stop the break if isDestroyingBlock is true
             // we store and restore this value on the next tick to determine if we're breaking a block
             ctx.playerController().setHittingBlock(false);
-        } else {
-            wasHitting = false;
         }
+    }
+
+    private boolean canContinueActiveTarget() {
+        if (!wasHitting || activeBlock == null || ctx.world().getBlockState(activeBlock).isAir()) {
+            return false;
+        }
+
+        double eyeX = ctx.player().getX();
+        double eyeY = ctx.player().getY() + ctx.player().getEyeHeight();
+        double eyeZ = ctx.player().getZ();
+        double dx = Math.max(Math.max(activeBlock.getX() - eyeX, 0.0D), eyeX - activeBlock.getX() - 1.0D);
+        double dy = Math.max(Math.max(activeBlock.getY() - eyeY, 0.0D), eyeY - activeBlock.getY() - 1.0D);
+        double dz = Math.max(Math.max(activeBlock.getZ() - eyeZ, 0.0D), eyeZ - activeBlock.getZ() - 1.0D);
+        double reach = ctx.playerController().getBlockReachDistance();
+        return dx * dx + dy * dy + dz * dz <= reach * reach;
     }
 }

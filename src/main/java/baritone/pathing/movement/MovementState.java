@@ -72,13 +72,23 @@ public class MovementState {
          */
         private boolean forceRotations;
 
+        /**
+         * Distance from the player's eyes to an interaction target, or {@link Double#NaN} when not applicable.
+         */
+        private double targetDistance;
+
         public MovementTarget() {
-            this(null, false);
+            this(null, false, Double.NaN);
         }
 
         public MovementTarget(Rotation rotation, boolean forceRotations) {
+            this(rotation, forceRotations, Double.NaN);
+        }
+
+        public MovementTarget(Rotation rotation, boolean forceRotations, double targetDistance) {
             this.rotation = rotation;
             this.forceRotations = forceRotations;
+            this.targetDistance = targetDistance;
         }
 
         public final Optional<Rotation> getRotation() {
@@ -87,6 +97,10 @@ public class MovementState {
 
         public boolean hasToForceRotations() {
             return this.forceRotations;
+        }
+
+        public double getTargetDistance() {
+            return this.targetDistance;
         }
     }
 }

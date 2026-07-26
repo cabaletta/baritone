@@ -25,6 +25,7 @@ import baritone.api.behavior.look.ITickableAimProcessor;
 import baritone.api.event.events.*;
 import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.Rotation;
+import baritone.api.utils.RotationUtils;
 import baritone.behavior.look.ForkableRandom;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 
@@ -65,7 +66,12 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
 
     @Override
     public void updateTarget(Rotation rotation, boolean blockInteract) {
-        this.target = new Target(rotation, Target.Mode.resolve(ctx, blockInteract));
+        this.target = new Target(rotation, Target.Mode.resolve(ctx, blockInteract), Double.NaN);
+    }
+
+    @Override
+    public void updateTarget(Rotation rotation, boolean blockInteract, double targetDistance) {
+        this.target = new Target(rotation, Target.Mode.resolve(ctx, blockInteract), targetDistance);
     }
 
     @Override
@@ -95,7 +101,7 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
                 }
 
                 this.prevRotation = new Rotation(ctx.player().getYRot(), ctx.player().getXRot());
-                final Rotation actual = this.processor.peekRotation(this.target.rotation);
+                final Rotation actual = this.processor.peekRotation(this.target.rotation, this.target.targetDistance);
                 ctx.player().setYRot(actual.getYaw());
                 ctx.player().setXRot(actual.getPitch());
                 break;
@@ -153,7 +159,7 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
 
     public void pig() {
         if (this.target != null) {
-            final Rotation actual = this.processor.peekRotation(this.target.rotation);
+            final Rotation actual = this.processor.peekRotation(this.target.rotation, this.target.targetDistance);
             ctx.player().setYRot(actual.getYaw());
         }
     }
@@ -169,7 +175,7 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
     @Override
     public void onPlayerRotationMove(RotationMoveEvent event) {
         if (this.target != null) {
-            final Rotation actual = this.processor.peekRotation(this.target.rotation);
+            final Rotation actual = this.processor.peekRotation(this.target.rotation, this.target.targetDistance);
             event.setYaw(actual.getYaw());
             event.setPitch(actual.getPitch());
         }
@@ -209,6 +215,11 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
 
         @Override
         public final Rotation peekRotation(final Rotation rotation) {
+            return this.peekRotation(rotation, Double.NaN);
+        }
+
+        @Override
+        public final Rotation peekRotation(final Rotation rotation, final double targetDistance) {
             final Rotation prev = this.getPrevRotation();
 
             float desiredYaw = rotation.getYaw();
@@ -220,8 +231,8 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
                 desiredPitch = nudgeToLevel(desiredPitch);
             }
 
-            desiredYaw += this.randomYawOffset;
-            desiredPitch += this.randomPitchOffset;
+            desiredYaw += distanceScaledAngle(this.randomYawOffset, targetDistance);
+            desiredPitch += distanceScaledAngle(this.randomPitchOffset, targetDistance);
 
             return new Rotation(
                     this.calculateMouseMove(prev.getYaw(), desiredYaw),
@@ -307,14 +318,29 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
         }
     }
 
+    /**
+     * Treats the random angle at one block away as the desired world-space offset, then converts that offset back
+     * into an angle at the actual target distance. Distances below one block are clamped so close targets never
+     * receive more variation than before.
+     */
+    static double distanceScaledAngle(double angle, double targetDistance) {
+        if (!Double.isFinite(targetDistance) || targetDistance <= 1.0D || angle == 0.0D) {
+            return angle;
+        }
+        double worldOffset = Math.tan(angle * RotationUtils.DEG_TO_RAD);
+        return Math.atan(worldOffset / targetDistance) * RotationUtils.RAD_TO_DEG;
+    }
+
     private static class Target {
 
         public final Rotation rotation;
         public final Mode mode;
+        public final double targetDistance;
 
-        public Target(Rotation rotation, Mode mode) {
+        public Target(Rotation rotation, Mode mode, double targetDistance) {
             this.rotation = rotation;
             this.mode = mode;
+            this.targetDistance = targetDistance;
         }
 
         enum Mode {

@@ -36,6 +36,18 @@ public interface IAimProcessor {
     Rotation peekRotation(Rotation desired);
 
     /**
+     * Returns the actual rotation for an interaction target at the supplied distance. Implementations may use the
+     * distance to convert angular aim variation into a roughly constant world-space displacement.
+     *
+     * @param desired        The desired rotation to set
+     * @param targetDistance The distance from the player's eyes to the interaction target
+     * @return The actual rotation
+     */
+    default Rotation peekRotation(Rotation desired, double targetDistance) {
+        return peekRotation(desired);
+    }
+
+    /**
      * Returns a copy of this {@link IAimProcessor} which has its own internal state and is manually tickable.
      *
      * @return The forked processor

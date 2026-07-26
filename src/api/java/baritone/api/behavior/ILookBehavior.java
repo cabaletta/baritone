@@ -40,6 +40,18 @@ public interface ILookBehavior extends IBehavior {
     void updateTarget(Rotation rotation, boolean blockInteract);
 
     /**
+     * Updates the current look target and supplies the distance to the interaction target. Aim processors can use this
+     * to keep randomized looking within a roughly constant world-space displacement instead of a constant angle.
+     *
+     * @param rotation       The target rotations
+     * @param blockInteract  Whether the target rotations are needed for a block interaction
+     * @param targetDistance The distance from the player's eyes to the interaction target
+     */
+    default void updateTarget(Rotation rotation, boolean blockInteract, double targetDistance) {
+        updateTarget(rotation, blockInteract);
+    }
+
+    /**
      * The aim processor instance for this {@link ILookBehavior}, which is responsible for applying additional,
      * deterministic transformations to the target rotation set by {@link #updateTarget}.
      *

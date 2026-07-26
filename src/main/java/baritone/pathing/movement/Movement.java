@@ -135,7 +135,8 @@ public abstract class Movement implements IMovement, MovementHelper {
         currentState.getTarget().getRotation().ifPresent(rotation ->
                 baritone.getLookBehavior().updateTarget(
                         rotation,
-                        currentState.getTarget().hasToForceRotations()));
+                        currentState.getTarget().hasToForceRotations(),
+                        currentState.getTarget().getTargetDistance()));
         baritone.getInputOverrideHandler().clearAllKeys();
         currentState.getInputStates().forEach((input, forced) -> {
             baritone.getInputOverrideHandler().setInputForceState(input, forced);
@@ -165,7 +166,10 @@ public abstract class Movement implements IMovement, MovementHelper {
                 Optional<Rotation> reachable = RotationUtils.reachable(ctx, blockPos, ctx.playerController().getBlockReachDistance());
                 if (reachable.isPresent()) {
                     Rotation rotTowardsBlock = reachable.get();
-                    state.setTarget(new MovementState.MovementTarget(rotTowardsBlock, true));
+                    state.setTarget(new MovementState.MovementTarget(
+                            rotTowardsBlock,
+                            true,
+                            ctx.playerHead().distanceTo(VecUtils.getBlockPosCenter(blockPos))));
                     if (ctx.isLookingAt(blockPos) || ctx.playerRotations().isReallyCloseTo(rotTowardsBlock)) {
                         state.setInput(Input.CLICK_LEFT, true);
                     }
@@ -176,7 +180,8 @@ public abstract class Movement implements IMovement, MovementHelper {
                 //i dont care if theres snow in the way!!!!!!!
                 //you dont own me!!!!
                 state.setTarget(new MovementState.MovementTarget(RotationUtils.calcRotationFromVec3d(ctx.playerHead(),
-                        VecUtils.getBlockPosCenter(blockPos), ctx.playerRotations()), true)
+                        VecUtils.getBlockPosCenter(blockPos), ctx.playerRotations()), true,
+                        ctx.playerHead().distanceTo(VecUtils.getBlockPosCenter(blockPos)))
                 );
                 // don't check selectedblock on this one, this is a fallback when we can't see any face directly, it's intended to be breaking the "incorrect" block
                 state.setInput(Input.CLICK_LEFT, true);
