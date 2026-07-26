@@ -69,13 +69,17 @@ public final class PathRenderer implements IRenderer {
         return renderManager.renderPosZ();
     }
 
+    static {
+        Tesselator.init();
+    }
+
     public static void render(RenderEvent event, PathingBehavior behavior) {
         final IPlayerContext ctx = behavior.ctx;
         if (ctx.world() == null) {
             return;
         }
-        if (ctx.minecraft().screen instanceof GuiClick) {
-            ((GuiClick) ctx.minecraft().screen).onRender(event.getModelViewStack(), event.getProjectionMatrix());
+        if (ctx.minecraft().gui.screen() instanceof GuiClick) {
+            ((GuiClick) ctx.minecraft().gui.screen()).onRender(event.getModelViewStack(), event.getProjectionMatrix());
         }
 
         final float partialTicks = event.getPartialTicks();

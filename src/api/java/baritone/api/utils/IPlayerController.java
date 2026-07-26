@@ -43,7 +43,7 @@ public interface IPlayerController {
 
     void resetBlockRemoving();
 
-    void windowClick(int windowId, int slotId, int mouseButton, ContainerInput type, Player player);
+    void windowClick(int windowId, int slotId, int mouseButton, ContainerInput input, Player player);
 
     GameType getGameType();
 

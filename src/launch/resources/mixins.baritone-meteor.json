@@ -31,5 +31,6 @@
     "MixinWorldRenderer"
   ],
   "mixins": [
-  ]
+  ],
+  "plugin": "baritone.launch.FabricMixinPlugin"
 }

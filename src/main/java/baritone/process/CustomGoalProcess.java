@@ -23,7 +23,6 @@ import baritone.api.process.ICustomGoalProcess;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
 import baritone.utils.BaritoneProcessHelper;
-import net.minecraft.ChatFormatting;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.network.chat.Component;
 
@@ -60,11 +59,7 @@ public final class CustomGoalProcess extends BaritoneProcessHelper implements IC
         this.goal = goal;
         this.mostRecentGoal = goal;
         if (baritone.getElytraProcess().isActive()) {
-            try {
-                baritone.getElytraProcess().pathTo(goal);
-            } catch (IllegalArgumentException e) {
-                logDirect("Failed to update elytra goal because: " + e.getMessage(), ChatFormatting.RED);
-            }
+            baritone.getElytraProcess().pathTo(goal);
         }
         if (this.state == State.NONE) {
             this.state = State.GOAL_SET;

@@ -1,5 +1,4 @@
 # Baritone
-
 <p align="center">
   <a href="https://github.com/cabaletta/baritone/releases/"><img src="https://img.shields.io/github/downloads/cabaletta/baritone/total.svg" alt="GitHub All Releases"/></a>
 </p>
@@ -112,7 +111,7 @@ Here are some links to help to get started:
 # API
 
 The API is heavily documented, you can find the Javadocs for the latest release [here](https://baritone.leijurv.com/).
-Please note that usage of anything located outside of the `baritone.api` package is not supported by the API release
+Please note that usage of anything located outside of the ``baritone.api`` package is not supported by the API release
 jar.
 
 Below is an example of basic usage for changing some settings, and then pathing to an X/Z goal.
@@ -120,6 +119,7 @@ Below is an example of basic usage for changing some settings, and then pathing 
 ```java
 BaritoneAPI.getSettings().allowSprint.value = true;
 BaritoneAPI.getSettings().primaryTimeoutMS.value = 2000L;
+
 BaritoneAPI.getProvider().getPrimaryBaritone().getCustomGoalProcess().setGoalAndPath(new GoalXZ(10000, 20000));
 ```
 

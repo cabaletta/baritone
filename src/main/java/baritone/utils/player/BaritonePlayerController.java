@@ -67,8 +67,8 @@ public final class BaritonePlayerController implements IPlayerController {
     }
 
     @Override
-    public void windowClick(int windowId, int slotId, int mouseButton, ContainerInput type, Player player) {
-        mc.gameMode.handleContainerInput(windowId, slotId, mouseButton, type, player);
+    public void windowClick(int windowId, int slotId, int mouseButton, ContainerInput input, Player player) {
+        mc.gameMode.handleContainerInput(windowId, slotId, mouseButton, input, player);
     }
 
     @Override

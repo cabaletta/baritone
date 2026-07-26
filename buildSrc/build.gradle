@@ -18,12 +18,12 @@
 repositories {
     mavenLocal()
     maven {
-        name = 'WagYourMaven'
-        url = 'https://maven.wagyourtail.xyz/releases'
+        name = 'WagYourMavenSnapshots'
+        url = 'https://maven.wagyourtail.xyz/snapshots'
     }
     maven {
-        name = 'WagYourMaven Snapshots'
-        url = 'https://maven.wagyourtail.xyz/snapshots'
+        name = 'WagYourMaven'
+        url = 'https://maven.wagyourtail.xyz/releases'
     }
     maven {
         name = 'ForgeMaven'
@@ -44,6 +44,7 @@ dependencies {
     implementation group: 'com.google.code.gson', name: 'gson', version: '2.9.0'
     implementation group: 'commons-io', name: 'commons-io', version: '2.7'
 
+    // TODO: pin to a stable Unimined release once published.
     implementation group: 'xyz.wagyourtail.unimined', name: 'xyz.wagyourtail.unimined.gradle.plugin', version: '1.4.2-SNAPSHOT'
     implementation group: 'xyz.wagyourtail.unimined.mapping', name: 'unimined-mapping-library-jvm', version: '1.2.2'
 }

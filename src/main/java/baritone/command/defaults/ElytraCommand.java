@@ -71,6 +71,9 @@ public class ElytraCommand extends Command {
             if (iGoal == null) {
                 throw new CommandInvalidStateException("No goal has been set");
             }
+            if (ctx.world().dimension() != Level.NETHER) {
+                throw new CommandInvalidStateException("Only works in the nether");
+            }
             try {
                 elytra.pathTo(iGoal);
             } catch (IllegalArgumentException ex) {
@@ -82,11 +85,7 @@ public class ElytraCommand extends Command {
         final String action = args.getString();
         switch (action) {
             case "reset": {
-                try {
-                    elytra.resetState();
-                } catch (IllegalArgumentException ex) {
-                    throw new CommandInvalidStateException(ex.getMessage());
-                }
+                elytra.resetState();
                 logDirect("Reset state but still flying to same goal");
                 break;
             }
@@ -129,26 +128,22 @@ public class ElytraCommand extends Command {
     private void gatekeep() {
         MutableComponent gatekeep = Component.literal("");
         gatekeep.append("To disable this message, enable the setting elytraTermsAccepted\n");
-        gatekeep.append("Baritone Elytra is an experimental feature. It is intended for long distance travel in the Nether but will also work in the Overworld, using fireworks for vanilla boost. It will not work with any other mods (\"hacks\") for non-vanilla boost. ");
+        gatekeep.append("Baritone Elytra is an experimental feature. It is only intended for long distance travel in the Nether using fireworks for vanilla boost. It will not work with any other mods (\"hacks\") for non-vanilla boost. ");
         MutableComponent gatekeep2 = Component.literal("If you want Baritone to attempt to take off from the ground for you, you can enable the elytraAutoJump setting (not advisable on laggy servers!). ");
         gatekeep2.setStyle(gatekeep2.getStyle().withHoverEvent(new HoverEvent.ShowText(Component.literal(Baritone.settings().prefix.value + "set elytraAutoJump true"))));
         gatekeep.append(gatekeep2);
         MutableComponent gatekeep3 = Component.literal("If you want Baritone to go slower, enable the elytraConserveFireworks setting and/or decrease the elytraFireworkSpeed setting. ");
         gatekeep3.setStyle(gatekeep3.getStyle().withHoverEvent(new HoverEvent.ShowText(Component.literal(Baritone.settings().prefix.value + "set elytraConserveFireworks true\n" + Baritone.settings().prefix.value + "set elytraFireworkSpeed 0.6\n(the 0.6 number is just an example, tweak to your liking)"))));
         gatekeep.append(gatekeep3);
-        MutableComponent gatekeep4 = Component.literal("Baritone Elytra for use in the ");
-        MutableComponent red1 = Component.literal("Nether");
-        red1.setStyle(red1.getStyle().withColor(ChatFormatting.RED).withUnderlined(true).withBold(true));
-        gatekeep4.append(red1);
-        gatekeep4.append(", ");
-        MutableComponent red2 = Component.literal("wants to know the seed");
-        red2.setStyle(red2.getStyle().withColor(ChatFormatting.RED).withUnderlined(true).withBold(true));
-        gatekeep4.append(red2);
+        MutableComponent gatekeep4 = Component.literal("Baritone Elytra ");
+        MutableComponent red = Component.literal("wants to know the seed");
+        red.setStyle(red.getStyle().withColor(ChatFormatting.RED).withUnderlined(true).withBold(true));
+        gatekeep4.append(red);
         gatekeep4.append(" of the world you are in. If it doesn't have the correct seed, it will frequently backtrack. It uses the seed to generate terrain far beyond what you can see, since terrain obstacles in the Nether can be much larger than your render distance. ");
         gatekeep.append(gatekeep4);
         gatekeep.append("\n");
         if (detectOn2b2t()) {
-            MutableComponent gatekeep5 = Component.literal("It looks like you're on 2b2t. Terrain prediction can be used but new nether terrain can not be predicted on 2b2t. ");
+            MutableComponent gatekeep5 = Component.literal("It looks like you're on 2b2t. ");
             gatekeep5.append(suggest2b2tSeeds());
             if (!Baritone.settings().elytraPredictTerrain.value) {
                 gatekeep5.append(Baritone.settings().prefix.value + "elytraPredictTerrain is currently disabled. ");

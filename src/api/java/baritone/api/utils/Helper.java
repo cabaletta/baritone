@@ -20,8 +20,8 @@ package baritone.api.utils;
 import baritone.api.BaritoneAPI;
 import baritone.api.Settings;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.chat.GuiMessageTag;
+import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 
@@ -53,7 +53,7 @@ public interface Helper {
     /**
      * The tag to assign to chat messages when {@link Settings#useMessageTag} is {@code true}.
      */
-    GuiMessageTag MESSAGE_TAG = new GuiMessageTag(0xFF55FF, null, Component.literal("Baritone message."), "Baritone");
+    GuiMessageTag MESSAGE_TAG = new GuiMessageTag(0xFF55FF, GuiMessageTag.Icon.CHAT_MODIFIED, Component.literal("Baritone message."), "Baritone");
 
     static Component getPrefix() {
         // Inner text component

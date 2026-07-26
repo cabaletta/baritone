@@ -41,6 +41,7 @@ pluginManagement {
 
 rootProject.name = 'baritone'
 
+include("tweaker")
 for (platform in available_loaders.split(",")) {
-       include(platform)
+    include(platform)
 }

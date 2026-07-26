@@ -118,13 +118,13 @@ public class MovementTraverse extends Movement {
                 }
                 return WC;
             }
-            if (MovementHelper.isClimbable(srcDownBlock)) {
+            if (srcDownBlock == Blocks.LADDER || srcDownBlock == Blocks.VINE) {
                 hardness1 *= 5;
                 hardness2 *= 5;
             }
             return WC + hardness1 + hardness2;
         } else {//this is a bridge, so we need to place a block
-            if (MovementHelper.isClimbable(srcDownBlock)) {
+            if (srcDownBlock == Blocks.LADDER || srcDownBlock == Blocks.VINE) {
                 return COST_INF;
             }
             if (MovementHelper.isReplaceable(destX, y - 1, destZ, destOn, context.bsi)) {
@@ -218,7 +218,7 @@ public class MovementTraverse extends Movement {
         }
 
         Block fd = BlockStateInterface.get(ctx, src.below()).getBlock();
-        boolean ladder = MovementHelper.isClimbable(fd);
+        boolean ladder = fd == Blocks.LADDER || fd == Blocks.VINE;
 
         //sneak may have been set to true in the PREPPING state while mining an adjacent block, but we still want it to be true if the player is about to go on magma
         state.setInput(Input.SNEAK, Baritone.settings().allowWalkOnMagmaBlocks.value && MovementHelper.steppingOnBlocks(ctx).stream().anyMatch(block -> ctx.world().getBlockState(block).is(Blocks.MAGMA_BLOCK)));
@@ -265,7 +265,7 @@ public class MovementTraverse extends Movement {
             }
             Block low = BlockStateInterface.get(ctx, src).getBlock();
             Block high = BlockStateInterface.get(ctx, src.above()).getBlock();
-            if (ctx.player().position().y > src.y + 0.1D && !ctx.player().onGround() && (MovementHelper.isClimbable(low) || MovementHelper.isClimbable(high))) {
+            if (ctx.player().position().y > src.y + 0.1D && !ctx.player().onGround() && (low == Blocks.VINE || low == Blocks.LADDER || high == Blocks.VINE || high == Blocks.LADDER)) {
                 // hitting W could cause us to climb the ladder instead of going forward
                 // wait until we're on the ground
                 return state;
@@ -278,10 +278,15 @@ public class MovementTraverse extends Movement {
             }
 
             BlockState destDown = BlockStateInterface.get(ctx, dest.below());
-            if (feet.getY() != dest.getY() && ladder && MovementHelper.isClimbable(destDown.getBlock())) {
-                state.setInput(Input.JUMP, true);
+            BlockPos against = positionsToBreak[0];
+            if (feet.getY() != dest.getY() && ladder && (destDown.getBlock() == Blocks.VINE || destDown.getBlock() == Blocks.LADDER)) {
+                against = destDown.getBlock() == Blocks.VINE ? MovementPillar.getAgainst(new CalculationContext(baritone), dest.below()) : dest.relative(destDown.getValue(LadderBlock.FACING).getOpposite());
+                if (against == null) {
+                    logDirect("Unable to climb vines. Consider disabling allowVines.");
+                    return state.setStatus(MovementStatus.UNREACHABLE);
+                }
             }
-            MovementHelper.moveTowards(ctx, state, positionsToBreak[0]);
+            MovementHelper.moveTowards(ctx, state, against);
             return state;
         } else {
             wasTheBridgeBlockAlwaysThere = false;
@@ -368,7 +373,7 @@ public class MovementTraverse extends Movement {
     protected boolean prepared(MovementState state) {
         if (ctx.playerFeet().equals(src) || ctx.playerFeet().equals(src.below())) {
             Block block = BlockStateInterface.getBlock(ctx, src.below());
-            if (MovementHelper.isClimbable(block)) {
+            if (block == Blocks.LADDER || block == Blocks.VINE) {
                 state.setInput(Input.SNEAK, true);
             }
         }

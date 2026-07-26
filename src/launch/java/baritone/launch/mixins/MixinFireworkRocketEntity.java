@@ -21,6 +21,7 @@ import baritone.utils.accessor.IFireworkRocketEntity;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.projectile.FireworkRocketEntity;
 import net.minecraft.world.level.Level;
@@ -44,7 +45,7 @@ public abstract class MixinFireworkRocketEntity extends Entity implements IFirew
     public abstract boolean isAttachedToEntity();
 
     private MixinFireworkRocketEntity(Level level) {
-        super(EntityType.FIREWORK_ROCKET, level);
+        super(EntityTypes.FIREWORK_ROCKET, level);
     }
 
     @Override

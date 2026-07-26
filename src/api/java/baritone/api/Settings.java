@@ -23,9 +23,11 @@ import baritone.api.utils.SettingsUtil;
 import baritone.api.utils.TypeUtils;
 import baritone.api.utils.gui.BaritoneToast;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.ChatComponent;
 import net.minecraft.client.multiplayer.chat.GuiMessageTag;
 import net.minecraft.core.Vec3i;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MessageSignature;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -682,7 +684,7 @@ public final class Settings {
      * Allow chat based control of Baritone. Most likely should be disabled when Baritone is imported for use in
      * something else
      */
-    public final Setting<Boolean> chatControl = new Setting<>(true);
+    public final Setting<Boolean> chatControl = new Setting<>(false);
 
     /**
      * Some clients like Impact try to force chatControl to off, so here's a second setting to do it anyway
@@ -986,11 +988,6 @@ public final class Settings {
     public final Setting<Boolean> replantNetherWart = new Setting<>(false);
 
     /**
-     * When enabled, farming will be restricted to the current selection.
-     */
-    public final Setting<Boolean> farmUsingSelection = new Setting<>(false);
-
-    /**
      * Farming will scan for at most this many blocks.
      */
     public final Setting<Integer> farmMaxScanSize = new Setting<>(256);
@@ -1281,7 +1278,12 @@ public final class Settings {
     public final Setting<Consumer<Component>> logger = new Setting<>((msg) -> {
         try {
             final GuiMessageTag tag = useMessageTag.value ? Helper.MESSAGE_TAG : null;
-            Minecraft.getInstance().gui.getChat().addPlayerMessage(msg, null, tag);
+            final ChatComponent chat = Minecraft.getInstance().gui.hud.getChat();
+            if (tag != null) {
+                chat.addPlayerMessage(msg, new MessageSignature(new byte[MessageSignature.BYTES]), tag);
+            } else {
+                chat.addClientSystemMessage(msg);
+            }
         } catch (Throwable t) {
             LOGGER.warn("Failed to log message to chat: " + msg.getString(), t);
         }
@@ -1546,36 +1548,6 @@ public final class Settings {
      * Verbose chat logging in elytra mode
      */
     public final Setting<Boolean> elytraChatSpam = new Setting<>(false);
-
-    /**
-     * May reduce memory usage by using a custom allocator for pathfinding
-     */
-    public final Setting<Boolean> elytraCustomAllocator = new Setting<>(true);
-
-    /**
-     * Allow the pathfinder to attempt flight in tighter spaces, useful in caves but can be dangerous.
-     */
-    public final Setting<Boolean> elytraAllowTightSpaces = new Setting<>(false);
-
-    /**
-     * Allow the pathfinder to fly above y 128 in the nether.
-     */
-    public final Setting<Boolean> elytraAllowAboveRoof = new Setting<>(false);
-
-    /**
-     * Allow the pathfinder to access the baritone cache to improve pathing
-     */
-    public final Setting<Boolean> elytraUseCache = new Setting<>(true);
-
-    /**
-     * Allow the pathfinder to fly above the build limit in the overworld and end.
-     */
-    public final Setting<Boolean> elytraAllowAboveBuildLimit = new Setting<>(true);
-
-    /**
-     * Minimum distance in blocks of an elytra trip before the pathfinder will try to fly above build limit. (Minimum: 32). Requires {@link #elytraAllowAboveBuildLimit} to be enabled.
-     */
-    public final Setting<Integer> elytraLongDistanceThreshold = new Setting<>(500);
 
     /**
      * Sneak when magma blocks are under feet

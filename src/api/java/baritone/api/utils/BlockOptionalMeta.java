@@ -236,7 +236,7 @@ public final class BlockOptionalMeta {
                         .withParameter(LootContextParams.BLOCK_STATE, b.defaultBlockState())
                         .withParameter(LootContextParams.TOOL, new ItemStack(Items.NETHERITE_PICKAXE, 1));
                     getDrops(block, lv5).stream().map(ItemStack::getItem).forEach(items::add);
-                } catch (Throwable e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
                 return items;
@@ -281,9 +281,6 @@ public final class BlockOptionalMeta {
 
         @Override
         public RegistryAccess registryAccess() {
-            if (client.level != null) {
-                return client.level.registryAccess();
-            }
             return registryAccess.join();
         }
 
@@ -315,14 +312,15 @@ public final class BlockOptionalMeta {
                 baseLayeredRegistry.getAccessForLoading(RegistryLayer.WORLDGEN),
                 pendingTags
             );
+            RegistryAccess.Frozen worldgenRegistries = RegistryDataLoader.load(
+                closeableResourceManager,
+                worldGenRegistryLookupList,
+                RegistryDataLoader.WORLDGEN_REGISTRIES,
+                ForkJoinPool.commonPool()
+            ).join();
             LayeredRegistryAccess<RegistryLayer> layeredRegistryAccess = baseLayeredRegistry.replaceFrom(
                 RegistryLayer.WORLDGEN,
-                RegistryDataLoader.load(
-                    closeableResourceManager,
-                    worldGenRegistryLookupList,
-                    RegistryDataLoader.WORLDGEN_REGISTRIES,
-                    ForkJoinPool.commonPool()
-                ).join()
+                worldgenRegistries
             );
             return ReloadableServerRegistries.reload(
                 layeredRegistryAccess,

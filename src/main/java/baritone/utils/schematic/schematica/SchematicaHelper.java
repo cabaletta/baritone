@@ -18,10 +18,10 @@
 package baritone.utils.schematic.schematica;
 
 import baritone.api.schematic.IStaticSchematic;
+import baritone.api.utils.Pair;
 import com.github.lunatrius.schematica.Schematica;
 import com.github.lunatrius.schematica.proxy.ClientProxy;
 import net.minecraft.core.BlockPos;
-import net.minecraft.util.Tuple;
 import java.util.Optional;
 
 public enum SchematicaHelper {
@@ -36,9 +36,9 @@ public enum SchematicaHelper {
         }
     }
 
-    public static Optional<Tuple<IStaticSchematic, BlockPos>> getOpenSchematic() {
+    public static Optional<Pair<IStaticSchematic, BlockPos>> getOpenSchematic() {
         return Optional.ofNullable(ClientProxy.schematic)
-                .map(world -> new Tuple<>(new SchematicAdapter(world), world.position));
+                .map(world -> new Pair<>(new SchematicAdapter(world), world.position));
     }
 
 }

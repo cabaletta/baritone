@@ -29,6 +29,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkSource;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
+import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.chunk.PalettedContainer;
 
 import java.util.*;
@@ -96,7 +97,7 @@ public enum WorldScanner implements IWorldScanner {
         }
 
         ClientChunkCache chunkProvider = (ClientChunkCache) ctx.world().getChunkSource();
-        LevelChunk chunk = chunkProvider.getChunk(pos.x(), pos.z(), null, false);
+        LevelChunk chunk = chunkProvider.getChunk(pos.x(), pos.z(), ChunkStatus.FULL, false);
         int playerY = ctx.playerFeet().getY();
 
         if (chunk == null || chunk.isEmpty()) {

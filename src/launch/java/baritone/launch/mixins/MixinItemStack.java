@@ -30,18 +30,18 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(ItemStack.class)
 public abstract class MixinItemStack implements IItemStack {
 
+    @Shadow
+    public abstract Item getItem();
+
     @Unique
     private int baritoneHash;
 
     @Shadow
     public abstract int getDamageValue();
 
-    @Shadow
-    public abstract Item getItem();
-
     private void recalculateHash() {
-        Item item = getItem();
-        baritoneHash = item == null ? -1 : item.hashCode() + getDamageValue();
+        Item it = getItem();
+        baritoneHash = it == null ? -1 : it.hashCode() + getDamageValue();
     }
 
     @Inject(

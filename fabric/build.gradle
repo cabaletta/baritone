@@ -19,12 +19,10 @@ import baritone.gradle.task.CreateDistTask
 import baritone.gradle.task.ProguardTask
 
 plugins {
-    id "com.github.johnrengelman.shadow" version "8.1.1"
+    id "com.github.johnrengelman.shadow" version "8.0.0"
 }
 
-base {
-    archivesName = archivesName.get() + "-fabric"
-}
+archivesBaseName = archivesBaseName + "-fabric"
 
 unimined.minecraft {
     fabric {
@@ -80,7 +78,7 @@ components.java {
 }
 
 task proguard(type: ProguardTask) {
-    proguardVersion "7.9.1"
+    proguardVersion "7.8.2"
     compType "fabric"
 }
 
@@ -88,18 +86,36 @@ task createDist(type: CreateDistTask, dependsOn: proguard) {
     compType "fabric"
 }
 
+task sourcesJar(type: Jar, dependsOn: classes) {
+    from rootProject.sourceSets.main.allJava
+    from rootProject.sourceSets.api.allJava
+    archiveClassifier.set("sources")
+}
+
 build.finalizedBy(createDist)
 
 publishing {
     publications {
-        mavenFabric(MavenPublication) {
-            artifactId = rootProject.archives_base_name + "-" + project.name
-            from components.java
+        maven(MavenPublication) {
+            groupId "meteordevelopment"
+            artifactId "baritone"
+            artifact "../dist/baritone-api-fabric-" + version + ".jar"
+            artifact sourcesJar
         }
     }
 
     // See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
     repositories {
-        // Add repositories to publish to here.
+        maven {
+            name = "meteor-maven"
+            url = "https://maven.meteordev.org/snapshots"
+            credentials {
+                username = System.getenv("MAVEN_METEOR_ALIAS")
+                password = System.getenv("MAVEN_METEOR_TOKEN")
+            }
+            authentication {
+                basic(BasicAuthentication)
+            }
+        }
     }
 }

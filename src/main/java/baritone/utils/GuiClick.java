@@ -64,7 +64,7 @@ public class GuiClick extends Screen implements Helper {
     }
 
     @Override
-    public void extractRenderState(GuiGraphicsExtractor grapics, int mouseX, int mouseY, float partialTicks) {
+    public void extractRenderState(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
         double mx = mc.mouseHandler.xpos();
         double my = mc.mouseHandler.ypos();
 
@@ -82,10 +82,11 @@ public class GuiClick extends Screen implements Helper {
                 currentMouseOver = ((BlockHitResult) result).getBlockPos();
             }
         }
+        super.extractRenderState(guiGraphics, mouseX, mouseY, partialTick);
     }
 
     @Override
-    public void extractBackground(GuiGraphicsExtractor grapics, int mouseX, int mouseY, float partialTicks) {
+    public void extractBackground(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
         // Prevent default background rendering
     }
 

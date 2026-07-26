@@ -27,10 +27,10 @@ import baritone.api.command.exception.ICommandException;
 import baritone.api.command.helpers.TabCompleteHelper;
 import baritone.api.command.manager.ICommandManager;
 import baritone.api.command.registry.Registry;
+import baritone.api.utils.Pair;
 import baritone.command.argument.ArgConsumer;
 import baritone.command.argument.CommandArguments;
 import baritone.command.defaults.DefaultCommands;
-import net.minecraft.util.Tuple;
 
 import java.util.List;
 import java.util.Locale;
@@ -79,7 +79,7 @@ public class CommandManager implements ICommandManager {
     }
 
     @Override
-    public boolean execute(Tuple<String, List<ICommandArgument>> expanded) {
+    public boolean execute(Pair<String, List<ICommandArgument>> expanded) {
         ExecutionWrapper execution = this.from(expanded);
         if (execution != null) {
             execution.execute();
@@ -88,16 +88,16 @@ public class CommandManager implements ICommandManager {
     }
 
     @Override
-    public Stream<String> tabComplete(Tuple<String, List<ICommandArgument>> expanded) {
+    public Stream<String> tabComplete(Pair<String, List<ICommandArgument>> expanded) {
         ExecutionWrapper execution = this.from(expanded);
         return execution == null ? Stream.empty() : execution.tabComplete();
     }
 
     @Override
     public Stream<String> tabComplete(String prefix) {
-        Tuple<String, List<ICommandArgument>> pair = expand(prefix, true);
-        String label = pair.getA();
-        List<ICommandArgument> args = pair.getB();
+        Pair<String, List<ICommandArgument>> pair = expand(prefix, true);
+        String label = pair.first();
+        List<ICommandArgument> args = pair.second();
         if (args.isEmpty()) {
             return new TabCompleteHelper()
                     .addCommands(this.baritone.getCommandManager())
@@ -108,21 +108,21 @@ public class CommandManager implements ICommandManager {
         }
     }
 
-    private ExecutionWrapper from(Tuple<String, List<ICommandArgument>> expanded) {
-        String label = expanded.getA();
-        ArgConsumer args = new ArgConsumer(this, expanded.getB());
+    private ExecutionWrapper from(Pair<String, List<ICommandArgument>> expanded) {
+        String label = expanded.first();
+        ArgConsumer args = new ArgConsumer(this, expanded.second());
 
         ICommand command = this.getCommand(label);
         return command == null ? null : new ExecutionWrapper(command, label, args);
     }
 
-    private static Tuple<String, List<ICommandArgument>> expand(String string, boolean preserveEmptyLast) {
+    private static Pair<String, List<ICommandArgument>> expand(String string, boolean preserveEmptyLast) {
         String label = string.split("\\s", 2)[0];
         List<ICommandArgument> args = CommandArguments.from(string.substring(label.length()), preserveEmptyLast);
-        return new Tuple<>(label, args);
+        return new Pair<>(label, args);
     }
 
-    public static Tuple<String, List<ICommandArgument>> expand(String string) {
+    public static Pair<String, List<ICommandArgument>> expand(String string) {
         return expand(string, false);
     }
 

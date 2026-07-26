@@ -19,12 +19,10 @@ import baritone.gradle.task.CreateDistTask
 import baritone.gradle.task.ProguardTask
 
 plugins {
-    id "com.github.johnrengelman.shadow" version "8.1.1"
+    id "com.github.johnrengelman.shadow" version "8.0.0"
 }
 
-base {
-    archivesName = archivesName.get() + "-forge"
-}
+archivesBaseName = archivesBaseName + "-forge"
 
 unimined.minecraft {
     minecraftForge {
@@ -97,7 +95,7 @@ components.java {
 }
 
 task proguard(type: ProguardTask) {
-    proguardVersion "7.9.1"
+    proguardVersion "7.8.2"
     compType "forge"
 }
 

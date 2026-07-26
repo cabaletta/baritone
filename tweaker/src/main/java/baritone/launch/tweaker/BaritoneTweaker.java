@@ -50,6 +50,6 @@ public class BaritoneTweaker extends SimpleTweaker {
         MixinEnvironment.getDefaultEnvironment().setSide(MixinEnvironment.Side.CLIENT);
         MixinEnvironment.getDefaultEnvironment().setObfuscationContext(obfuscation);
 
-        Mixins.addConfiguration("mixins.baritone.json");
+        Mixins.addConfiguration("mixins.baritone-meteor.json");
     }
 }
