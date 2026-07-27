@@ -32,6 +32,7 @@ import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.Rotation;
 import baritone.api.utils.RotationUtils;
 import baritone.api.utils.RotationUtils.RotationArc;
+import baritone.api.utils.input.Input;
 import baritone.behavior.look.ForkableRandom;
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -72,6 +73,7 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
     private RotationArc renderArc;
     private Rotation previousArcSample;
     private Rotation currentArcSample;
+    private Rotation movementRotation;
     private float cachedVisualPartialTicks = Float.NaN;
     private Rotation cachedVisualRotation;
 
@@ -106,6 +108,7 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
                 Target.Mode.resolve(ctx, blockInteract),
                 restartInterpolation,
                 exactRotation);
+        this.movementRotation = this.target.rotation(this.processor);
     }
 
     @Override
@@ -351,6 +354,7 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
     public void onWorldEvent(WorldEvent event) {
         this.serverRotation = null;
         this.target = null;
+        this.movementRotation = null;
         this.resetInterpolation();
     }
 
@@ -371,11 +375,27 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
 
     @Override
     public void onPlayerRotationMove(RotationMoveEvent event) {
+        Rotation rotation = null;
         if (this.target != null) {
-            final Rotation actual = this.target.rotation(this.processor);
-            event.setYaw(actual.getYaw());
-            event.setPitch(actual.getPitch());
+            rotation = this.target.rotation(this.processor);
+            this.movementRotation = rotation;
+        } else if (this.movementRotation != null && this.hasForcedMovementInput()) {
+            rotation = this.movementRotation;
+        } else {
+            this.movementRotation = null;
         }
+
+        if (rotation != null) {
+            event.setYaw(rotation.getYaw());
+            event.setPitch(rotation.getPitch());
+        }
+    }
+
+    private boolean hasForcedMovementInput() {
+        return baritone.getInputOverrideHandler().isInputForcedDown(Input.MOVE_FORWARD)
+                || baritone.getInputOverrideHandler().isInputForcedDown(Input.MOVE_BACK)
+                || baritone.getInputOverrideHandler().isInputForcedDown(Input.MOVE_LEFT)
+                || baritone.getInputOverrideHandler().isInputForcedDown(Input.MOVE_RIGHT);
     }
 
     private static final class AimProcessor extends AbstractAimProcessor {
