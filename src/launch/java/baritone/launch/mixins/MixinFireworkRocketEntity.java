@@ -44,7 +44,7 @@ public abstract class MixinFireworkRocketEntity extends Entity implements IFirew
     public abstract boolean isAttachedToEntity();
 
     private MixinFireworkRocketEntity(Level level) {
-        super(EntityType.FIREWORK_ROCKET, level);
+        super(null, level);
     }
 
     @Override

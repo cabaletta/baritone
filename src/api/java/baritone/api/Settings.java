@@ -1281,7 +1281,7 @@ public final class Settings {
     public final Setting<Consumer<Component>> logger = new Setting<>((msg) -> {
         try {
             final GuiMessageTag tag = useMessageTag.value ? Helper.MESSAGE_TAG : null;
-            Minecraft.getInstance().gui.getChat().addPlayerMessage(msg, null, tag);
+            Minecraft.getInstance().gui.hud.getChat().addPlayerMessage(msg, null, tag);
         } catch (Throwable t) {
             LOGGER.warn("Failed to log message to chat: " + msg.getString(), t);
         }

@@ -46,7 +46,7 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
-import net.minecraft.util.Tuple;
+import com.mojang.datafixers.util.Pair;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
@@ -203,10 +203,10 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
     @Override
     public void buildOpenSchematic() {
         if (SchematicaHelper.isSchematicaPresent()) {
-            Optional<Tuple<IStaticSchematic, BlockPos>> schematic = SchematicaHelper.getOpenSchematic();
+            Optional<Pair<IStaticSchematic, BlockPos>> schematic = SchematicaHelper.getOpenSchematic();
             if (schematic.isPresent()) {
-                IStaticSchematic raw = schematic.get().getA();
-                BlockPos origin = schematic.get().getB();
+                IStaticSchematic raw = schematic.get().getFirst();
+                BlockPos origin = schematic.get().getSecond();
                 ISchematic schem = applyMapArtAndSelection(origin, raw);
                 this.build(raw.toString(), schem, origin);
             } else {
@@ -222,10 +222,10 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         if (LitematicaHelper.isLitematicaPresent()) {
             //if java.lang.NoSuchMethodError is thrown see comment in SchematicPlacementManager
             if (LitematicaHelper.hasLoadedSchematic(i)) {
-                Tuple<IStaticSchematic, Vec3i> schematic = LitematicaHelper.getSchematic(i);
-                Vec3i correctedOrigin = schematic.getB();
-                ISchematic schematic2 = applyMapArtAndSelection(correctedOrigin, schematic.getA());
-                build(schematic.getA().toString(), schematic2, correctedOrigin);
+                Pair<IStaticSchematic, Vec3i> schematic = LitematicaHelper.getSchematic(i);
+                Vec3i correctedOrigin = schematic.getSecond();
+                ISchematic schematic2 = applyMapArtAndSelection(correctedOrigin, schematic.getFirst());
+                build(schematic.getFirst().toString(), schematic2, correctedOrigin);
             } else {
                 logDirect(String.format("List of placements has no entry %s", i + 1));
             }
@@ -266,7 +266,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         return state;
     }
 
-    private Optional<Tuple<BetterBlockPos, Rotation>> toBreakNearPlayer(BuilderCalculationContext bcc) {
+    private Optional<Pair<BetterBlockPos, Rotation>> toBreakNearPlayer(BuilderCalculationContext bcc) {
         BetterBlockPos center = ctx.playerFeet();
         BetterBlockPos pathStart = baritone.getPathingBehavior().pathStart();
         for (int dx = -5; dx <= 5; dx++) {
@@ -287,7 +287,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                         BetterBlockPos pos = new BetterBlockPos(x, y, z);
                         Optional<Rotation> rot = RotationUtils.reachable(ctx, pos, ctx.playerController().getBlockReachDistance());
                         if (rot.isPresent()) {
-                            return Optional.of(new Tuple<>(pos, rot.get()));
+                            return Optional.of(new Pair<>(pos, rot.get()));
                         }
                     }
                 }
@@ -531,12 +531,12 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             trim();
         }
 
-        Optional<Tuple<BetterBlockPos, Rotation>> toBreak = toBreakNearPlayer(bcc);
+        Optional<Pair<BetterBlockPos, Rotation>> toBreak = toBreakNearPlayer(bcc);
         if (toBreak.isPresent() && isSafeToCancel && ctx.player().onGround()) {
             // we'd like to pause to break this block
             // only change look direction if it's safe (don't want to fuck up an in progress parkour for example
-            Rotation rot = toBreak.get().getB();
-            BetterBlockPos pos = toBreak.get().getA();
+            Rotation rot = toBreak.get().getSecond();
+            BetterBlockPos pos = toBreak.get().getFirst();
             baritone.getLookBehavior().updateTarget(rot, true);
             MovementHelper.switchToBestToolFor(ctx, bcc.get(pos));
             if (ctx.player().isCrouching()) {

@@ -22,7 +22,7 @@ import baritone.api.cache.IWorldProvider;
 import baritone.api.utils.IPlayerContext;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.resources.Identifier;
-import net.minecraft.util.Tuple;
+import com.mojang.datafixers.util.Pair;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.LevelResource;
 import org.apache.commons.lang3.SystemUtils;
@@ -71,8 +71,8 @@ public class WorldProvider implements IWorldProvider {
      */
     public final void initWorld(Level world) {
         this.getSaveDirectories(world).ifPresent(dirs -> {
-            final Path worldDir = dirs.getA();
-            final Path readmeDir = dirs.getB();
+            final Path worldDir = dirs.getFirst();
+            final Path readmeDir = dirs.getSecond();
 
             try {
                 // lol wtf is this baritone folder in my minecraft save?
@@ -119,7 +119,7 @@ public class WorldProvider implements IWorldProvider {
      * @return An {@link Optional} containing the world's baritone dir and readme dir, or {@link Optional#empty()} if
      *         the world isn't valid for caching.
      */
-    private Optional<Tuple<Path, Path>> getSaveDirectories(Level world) {
+    private Optional<Pair<Path, Path>> getSaveDirectories(Level world) {
         Path worldDir;
         Path readmeDir;
 
@@ -156,7 +156,7 @@ public class WorldProvider implements IWorldProvider {
             readmeDir = baritone.getDirectory();
         }
 
-        return Optional.of(new Tuple<>(worldDir, readmeDir));
+        return Optional.of(new Pair<>(worldDir, readmeDir));
     }
 
     /**

@@ -28,7 +28,7 @@ import fi.dy.masa.litematica.world.SchematicWorldHandler;
 import fi.dy.masa.litematica.world.WorldSchematic;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
-import net.minecraft.util.Tuple;
+import com.mojang.datafixers.util.Pair;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
@@ -93,7 +93,7 @@ public final class LitematicaHelper {
      * @param i   index of the Schematic in the schematic placement list.
      * @return    The transformed schematic and the position of its minimum corner
      */
-    public static Tuple<IStaticSchematic, Vec3i> getSchematic(int i) {
+    public static Pair<IStaticSchematic, Vec3i> getSchematic(int i) {
         SchematicPlacement placement = getPlacement(i);
         int minX = Integer.MAX_VALUE;
         int minY = Integer.MAX_VALUE;
@@ -129,7 +129,7 @@ public final class LitematicaHelper {
             Vec3i pos = entry.getKey().offset(-minX, -minY, -minZ);
             composite.put(entry.getValue(), pos.getX(), pos.getY(), pos.getZ());
         }
-        return new Tuple<>(composite, placement.getOrigin().offset(minX, minY, minZ));
+        return new Pair<>(composite, placement.getOrigin().offset(minX, minY, minZ));
     }
 
     private static class LitematicaPlacementSchematic extends CompositeSchematic implements IStaticSchematic {

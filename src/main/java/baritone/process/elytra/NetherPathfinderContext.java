@@ -47,12 +47,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import static net.minecraft.world.level.chunk.LevelChunkSection.SECTION_SIZE;
-
 /**
  * @author Brady
  */
 public final class NetherPathfinderContext implements IElytraPathFinder {
+
+    private static final int SECTION_SIZE = 16 * 16 * 16;
 
     private static final Unsafe UNSAFE;
     static {
