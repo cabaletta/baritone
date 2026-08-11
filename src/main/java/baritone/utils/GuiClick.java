@@ -71,8 +71,8 @@ public class GuiClick extends Screen implements Helper {
         my = mc.getWindow().getScreenHeight() - my;
         my *= mc.getWindow().getHeight() / (double) mc.getWindow().getScreenHeight();
         mx *= mc.getWindow().getWidth() / (double) mc.getWindow().getScreenWidth();
-        Vec3 near = toWorld(mx, my, 0);
-        Vec3 far = toWorld(mx, my, 1); // "Use 0.945 that's what stack overflow says" - leijurv
+        Vec3 near = toWorld(mx, my, 1);
+        Vec3 far = toWorld(mx, my, 0); // "Use 0.945 that's what stack overflow says" - leijurv
 
         if (near != null && far != null) {
             Vec3 viewerPos = new Vec3(PathRenderer.posX(), PathRenderer.posY(), PathRenderer.posZ());
