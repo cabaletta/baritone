@@ -22,6 +22,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.SlabBlock;
@@ -116,15 +117,26 @@ public interface IPlayerContext {
      *
      * @return The position of the highlighted block
      */
-    default Optional<BlockPos> getSelectedBlock() {
+    default Optional<BlockHitResult> getSelectedBlockHitResult() {
         HitResult result = objectMouseOver();
         if (result != null && result.getType() == HitResult.Type.BLOCK) {
-            return Optional.of(((BlockHitResult) result).getBlockPos());
+            return Optional.of((BlockHitResult) result);
         }
         return Optional.empty();
     }
 
+    default Optional<BlockPos> getSelectedBlock() {
+        return getSelectedBlockHitResult().map(BlockHitResult::getBlockPos);
+    }
+
     default boolean isLookingAt(BlockPos pos) {
         return getSelectedBlock().equals(Optional.of(pos));
+    }
+
+    default boolean isLookingAt(BlockPos pos, Direction side) {
+        return getSelectedBlockHitResult()
+                .filter(hit -> hit.getBlockPos().equals(pos))
+                .filter(hit -> hit.getDirection() == side)
+                .isPresent();
     }
 }

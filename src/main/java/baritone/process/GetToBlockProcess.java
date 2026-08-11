@@ -35,6 +35,7 @@ import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
 
 import java.util.*;
 
@@ -214,7 +215,13 @@ public final class GetToBlockProcess extends BaritoneProcessHelper implements IG
             Optional<Rotation> reachable = RotationUtils.reachable(ctx, pos, ctx.playerController().getBlockReachDistance());
             if (reachable.isPresent()) {
                 baritone.getLookBehavior().updateTarget(reachable.get(), true);
-                if (knownLocations.contains(ctx.getSelectedBlock().orElse(null))) {
+                Optional<BlockHitResult> selected = ctx.getSelectedBlockHitResult()
+                        .filter(hit -> knownLocations.contains(hit.getBlockPos()));
+                if (selected.isPresent()) {
+                    BlockHitResult hit = selected.get();
+                    baritone.getInputOverrideHandler().setBlockPlaceTarget(
+                            hit.getBlockPos(),
+                            hit.getDirection());
                     baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true); // TODO find some way to right click even if we're in an ESC menu
                     System.out.println(ctx.player().containerMenu);
                     if (!(ctx.player().containerMenu instanceof InventoryMenu)) {

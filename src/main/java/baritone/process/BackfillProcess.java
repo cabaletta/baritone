@@ -77,6 +77,10 @@ public final class BackfillProcess extends BaritoneProcessHelper {
                 case NO_OPTION:
                     continue;
                 case READY_TO_PLACE:
+                    fake.getBlockPlaceTarget().ifPresent(pos ->
+                            fake.getBlockPlaceSide().ifPresent(side ->
+                                    baritone.getInputOverrideHandler()
+                                            .setBlockPlaceTarget(pos, side)));
                     baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
                     return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
                 case ATTEMPTING:

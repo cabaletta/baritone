@@ -40,6 +40,42 @@ public interface ILookBehavior extends IBehavior {
     void updateTarget(Rotation rotation, boolean blockInteract);
 
     /**
+     * Updates the current {@link ILookBehavior} target and optionally restarts
+     * any active interpolation.
+     *
+     * @param rotation             The target rotations
+     * @param blockInteract        Whether the target rotations are needed for a block interaction
+     * @param restartInterpolation Whether active interpolation should restart
+     *                             from its current sample
+     * @see #updateTarget(Rotation, boolean)
+     */
+    default void updateTarget(
+            Rotation rotation,
+            boolean blockInteract,
+            boolean restartInterpolation) {
+        updateTarget(rotation, blockInteract);
+    }
+
+    /**
+     * Updates the current {@link ILookBehavior} target and optionally uses it
+     * without aim processing.
+     *
+     * @param rotation             The target rotations
+     * @param blockInteract        Whether the target rotations are needed for a block interaction
+     * @param restartInterpolation Whether active interpolation should restart
+     *                             from its current sample
+     * @param exactRotation        Whether the target rotation should skip aim processing
+     * @see #updateTarget(Rotation, boolean, boolean)
+     */
+    default void updateTarget(
+            Rotation rotation,
+            boolean blockInteract,
+            boolean restartInterpolation,
+            boolean exactRotation) {
+        updateTarget(rotation, blockInteract, restartInterpolation);
+    }
+
+    /**
      * The aim processor instance for this {@link ILookBehavior}, which is responsible for applying additional,
      * deterministic transformations to the target rotation set by {@link #updateTarget}.
      *

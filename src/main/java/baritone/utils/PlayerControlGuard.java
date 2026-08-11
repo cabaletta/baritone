@@ -17,28 +17,26 @@
 
 package baritone.utils;
 
-/**
- * @author Brady
- */
-public final class BaritoneMath {
+import baritone.api.utils.IPlayerContext;
+import net.minecraft.client.gui.screens.DeathScreen;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.player.LocalPlayer;
 
-    private static final double FLOOR_DOUBLE_D = 1_073_741_824.0;
-    private static final int FLOOR_DOUBLE_I = 1_073_741_824;
+public final class PlayerControlGuard {
 
-    private BaritoneMath() {}
-
-    public static int fastFloor(final double v) {
-        return (int) (v + FLOOR_DOUBLE_D) - FLOOR_DOUBLE_I;
+    private PlayerControlGuard() {
     }
 
-    public static int fastCeil(final double v) {
-        return FLOOR_DOUBLE_I - (int) (FLOOR_DOUBLE_D - v);
+    public static boolean canControl(IPlayerContext ctx) {
+        return canControl(ctx.player(), ctx.minecraft().screen)
+                && ctx.world() != null
+                && !ctx.minecraft().isPaused();
     }
 
-    public static double normalize(double value, double maxValue) {
-        if (maxValue == 0) {
-            return 0;
+    public static boolean canControl(LocalPlayer player, Screen screen) {
+        if (player == null || !player.isAlive()) {
+            return false;
         }
-        return value / maxValue;
+        return screen == null || (!screen.isPauseScreen() && !(screen instanceof DeathScreen));
     }
 }

@@ -821,14 +821,16 @@ public interface MovementHelper extends ActionCosts, Helper {
                 }
             }
         }
-        if (ctx.getSelectedBlock().isPresent()) {
-            BlockPos selectedBlock = ctx.getSelectedBlock().get();
-            Direction side = ((BlockHitResult) ctx.objectMouseOver()).getDirection();
+        Optional<BlockHitResult> selected = ctx.getSelectedBlockHitResult();
+        if (selected.isPresent()) {
+            BlockPos selectedBlock = selected.get().getBlockPos();
+            Direction side = selected.get().getDirection();
             // only way for selectedBlock.equals(placeAt) to be true is if it's replaceable
             if (selectedBlock.equals(placeAt) || (MovementHelper.canPlaceAgainst(ctx, selectedBlock) && selectedBlock.relative(side).equals(placeAt))) {
                 if (wouldSneak) {
                     state.setInput(Input.SNEAK, true);
                 }
+                state.setBlockPlaceTarget(selectedBlock, side);
                 ((Baritone) baritone).getInventoryBehavior().selectThrowawayForLocation(true, placeAt.getX(), placeAt.getY(), placeAt.getZ());
                 return PlaceResult.READY_TO_PLACE;
             }

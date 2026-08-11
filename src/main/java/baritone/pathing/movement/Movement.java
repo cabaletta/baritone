@@ -30,6 +30,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.item.FallingBlockEntity;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
 
 public abstract class Movement implements IMovement, MovementHelper {
 
@@ -113,6 +114,37 @@ public abstract class Movement implements IMovement, MovementHelper {
         return getValidPositions().contains(ctx.playerFeet()) || getValidPositions().contains(((PathingBehavior) baritone.getPathingBehavior()).pathStart());
     }
 
+    protected boolean leftClickBlock(MovementState state, BlockPos pos) {
+        if (!ctx.isLookingAt(pos)) {
+            return false;
+        }
+        state.setBlockBreakTarget(pos)
+                .setInput(Input.CLICK_LEFT, true);
+        return true;
+    }
+
+    protected boolean leftClickSelectedBlock(MovementState state) {
+        Optional<BlockPos> selected = ctx.getSelectedBlock();
+        if (!selected.isPresent()) {
+            return false;
+        }
+        state.setBlockBreakTarget(selected.get())
+                .setInput(Input.CLICK_LEFT, true);
+        return true;
+    }
+
+    protected boolean rightClickBlock(MovementState state, BlockPos pos) {
+        Optional<BlockHitResult> selected = ctx.getSelectedBlockHitResult()
+                .filter(hit -> hit.getBlockPos().equals(pos));
+        if (!selected.isPresent()) {
+            return false;
+        }
+        BlockHitResult hit = selected.get();
+        state.setBlockPlaceTarget(hit.getBlockPos(), hit.getDirection())
+                .setInput(Input.CLICK_RIGHT, true);
+        return true;
+    }
+
     /**
      * Handles the execution of the latest Movement
      * State, and offers a Status to the calling class.
@@ -127,20 +159,32 @@ public abstract class Movement implements IMovement, MovementHelper {
             currentState.setInput(Input.JUMP, true);
         }
         if (ctx.player().isInWall()) {
-            ctx.getSelectedBlock().ifPresent(pos -> MovementHelper.switchToBestToolFor(ctx, BlockStateInterface.get(ctx, pos)));
+            ctx.getSelectedBlock().ifPresent(pos -> {
+                MovementHelper.switchToBestToolFor(ctx, BlockStateInterface.get(ctx, pos));
+                currentState.setBlockBreakTarget(pos);
+            });
             currentState.setInput(Input.CLICK_LEFT, true);
         }
 
         // If the movement target has to force the new rotations, or we aren't using silent move, then force the rotations
-        currentState.getTarget().getRotation().ifPresent(rotation ->
+        MovementState.MovementTarget target = currentState.getTarget();
+        target.getRotation().ifPresent(rotation ->
                 baritone.getLookBehavior().updateTarget(
                         rotation,
-                        currentState.getTarget().hasToForceRotations()));
+                        target.hasToForceRotations(),
+                        target.shouldRestartInterpolation(),
+                        target.isExactRotation()));
         baritone.getInputOverrideHandler().clearAllKeys();
+        currentState.getBlockBreakTarget().ifPresent(
+                baritone.getInputOverrideHandler()::setBlockBreakTarget);
+        currentState.getBlockPlaceTarget().ifPresent(pos ->
+                currentState.getBlockPlaceSide().ifPresent(side ->
+                        baritone.getInputOverrideHandler().setBlockPlaceTarget(pos, side)));
         currentState.getInputStates().forEach((input, forced) -> {
             baritone.getInputOverrideHandler().setInputForceState(input, forced);
         });
         currentState.getInputStates().clear();
+        currentState.clearBlockInteractionTargets();
 
         // If the current status indicates a completed movement
         if (currentState.getStatus().isComplete()) {
@@ -162,13 +206,24 @@ public abstract class Movement implements IMovement, MovementHelper {
             if (!MovementHelper.canWalkThrough(ctx, blockPos)) { // can't break air, so don't try
                 somethingInTheWay = true;
                 MovementHelper.switchToBestToolFor(ctx, BlockStateInterface.get(ctx, blockPos));
-                Optional<Rotation> reachable = RotationUtils.reachable(ctx, blockPos, ctx.playerController().getBlockReachDistance());
+                if (baritone.getInputOverrideHandler().isBreakingBlock(blockPos)) {
+                    state.setTarget(new MovementState.MovementTarget(
+                                    ctx.playerRotations(),
+                                    true,
+                                    true,
+                                    true))
+                            .setBlockBreakTarget(blockPos)
+                            .setInput(Input.CLICK_LEFT, true);
+                    return false;
+                }
+                Optional<Rotation> reachable = RotationUtils.reachable(
+                        ctx,
+                        blockPos,
+                        ctx.playerController().getBlockReachDistance());
                 if (reachable.isPresent()) {
                     Rotation rotTowardsBlock = reachable.get();
                     state.setTarget(new MovementState.MovementTarget(rotTowardsBlock, true));
-                    if (ctx.isLookingAt(blockPos) || ctx.playerRotations().isReallyCloseTo(rotTowardsBlock)) {
-                        state.setInput(Input.CLICK_LEFT, true);
-                    }
+                    leftClickBlock(state, blockPos);
                     return false;
                 }
                 //get rekt minecraft

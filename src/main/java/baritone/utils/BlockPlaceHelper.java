@@ -19,6 +19,8 @@ package baritone.utils;
 
 import baritone.Baritone;
 import baritone.api.utils.IPlayerContext;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.phys.BlockHitResult;
@@ -35,22 +37,70 @@ public class BlockPlaceHelper {
         this.ctx = playerContext;
     }
 
-    public void tick(boolean rightClickRequested) {
+    public void tick(boolean rightClickRequested, BlockPos target, Direction side) {
+        if (this.isCoolingDown()) {
+            return;
+        }
+
+        BlockHitResult blockHit = this.targetedBlockHit(rightClickRequested, target, side);
+        if (blockHit == null) {
+            return;
+        }
+
+        rightClickTimer = Baritone.settings().rightClickSpeed.value - BASE_PLACE_DELAY;
+        this.tryRightClick(blockHit);
+    }
+
+    private boolean isCoolingDown() {
         if (rightClickTimer > 0) {
             rightClickTimer--;
-            return;
+            return true;
         }
+        return false;
+    }
+
+    private BlockHitResult targetedBlockHit(
+            boolean rightClickRequested,
+            BlockPos target,
+            Direction side) {
+        if (!rightClickRequested || ctx.player().isHandsBusy()) {
+            return null;
+        }
+
         HitResult mouseOver = ctx.objectMouseOver();
-        if (!rightClickRequested || ctx.player().isHandsBusy() || mouseOver == null || mouseOver.getType() != HitResult.Type.BLOCK) {
-            return;
+        if (mouseOver == null
+                || mouseOver.getType() != HitResult.Type.BLOCK) {
+            return null;
         }
-        rightClickTimer = Baritone.settings().rightClickSpeed.value - BASE_PLACE_DELAY;
+
+        BlockHitResult blockHit = (BlockHitResult) mouseOver;
+        if (!this.matchesTarget(blockHit, target, side)) {
+            return null;
+        }
+
+        return blockHit;
+    }
+
+    private boolean matchesTarget(BlockHitResult blockHit, BlockPos target, Direction side) {
+        return target == null
+                || (blockHit.getBlockPos().equals(target) && blockHit.getDirection() == side);
+    }
+
+    private void tryRightClick(BlockHitResult blockHit) {
         for (InteractionHand hand : InteractionHand.values()) {
-            if (ctx.playerController().processRightClickBlock(ctx.player(), ctx.world(), hand, (BlockHitResult) mouseOver) == InteractionResult.SUCCESS) {
+            if (ctx.playerController().processRightClickBlock(
+                    ctx.player(),
+                    ctx.world(),
+                    hand,
+                    blockHit) == InteractionResult.SUCCESS) {
                 ctx.player().swing(hand);
                 return;
             }
-            if (!ctx.player().getItemInHand(hand).isEmpty() && ctx.playerController().processRightClick(ctx.player(), ctx.world(), hand) == InteractionResult.SUCCESS) {
+            if (!ctx.player().getItemInHand(hand).isEmpty()
+                    && ctx.playerController().processRightClick(
+                            ctx.player(),
+                            ctx.world(),
+                            hand) == InteractionResult.SUCCESS) {
                 return;
             }
         }

@@ -86,6 +86,10 @@ public class PathingControlManager implements IPathingControlManager {
     public void preTick() {
         inControlLastTick = inControlThisTick;
         inControlThisTick = null;
+        if (!PlayerControlGuard.canControl(baritone.getPlayerContext())) {
+            command = null;
+            return;
+        }
         PathingBehavior p = baritone.getPathingBehavior();
         command = executeProcesses();
         if (command == null) {
@@ -126,6 +130,10 @@ public class PathingControlManager implements IPathingControlManager {
     }
 
     private void postTick() {
+        if (!PlayerControlGuard.canControl(baritone.getPlayerContext())) {
+            command = null;
+            return;
+        }
         // if we did this in pretick, it would suck
         // we use the time between ticks as calculation time
         // therefore, we only cancel and recalculate after the tick for the current path has executed

@@ -228,8 +228,15 @@ public class MovementTraverse extends Movement {
             boolean canOpen = !(Blocks.IRON_DOOR.equals(pb0.getBlock()) || Blocks.IRON_DOOR.equals(pb1.getBlock()));
 
             if (notPassable && canOpen) {
-                return state.setTarget(new MovementState.MovementTarget(RotationUtils.calcRotationFromVec3d(ctx.playerHead(), VecUtils.calculateBlockCenter(ctx.world(), positionsToBreak[0]), ctx.playerRotations()), true))
-                        .setInput(Input.CLICK_RIGHT, true);
+                BlockPos blocked = pb0.getBlock() instanceof DoorBlock ? positionsToBreak[0] : positionsToBreak[1];
+                state.setTarget(new MovementState.MovementTarget(
+                        RotationUtils.calcRotationFromVec3d(
+                                ctx.playerHead(),
+                                VecUtils.calculateBlockCenter(ctx.world(), blocked),
+                                ctx.playerRotations()),
+                        true));
+                rightClickBlock(state, blocked);
+                return state;
             }
         }
 
@@ -240,7 +247,9 @@ public class MovementTraverse extends Movement {
             if (blocked != null) {
                 Optional<Rotation> rotation = RotationUtils.reachable(ctx, blocked);
                 if (rotation.isPresent()) {
-                    return state.setTarget(new MovementState.MovementTarget(rotation.get(), true)).setInput(Input.CLICK_RIGHT, true);
+                    state.setTarget(new MovementState.MovementTarget(rotation.get(), true));
+                    rightClickBlock(state, blocked);
+                    return state;
                 }
             }
         }
@@ -316,7 +325,7 @@ public class MovementTraverse extends Movement {
                         }
                     } else if (ctx.playerRotations().isReallyCloseTo(state.getTarget().rotation)) {
                         // well i guess theres something in the way
-                        return state.setInput(Input.CLICK_LEFT, true);
+                        leftClickSelectedBlock(state);
                     }
                     return state;
                 }
@@ -342,12 +351,12 @@ public class MovementTraverse extends Movement {
                 } else {
                     state.setTarget(new MovementState.MovementTarget(backToFace, true));
                 }
-                if (ctx.isLookingAt(goalLook)) {
-                    return state.setInput(Input.CLICK_RIGHT, true); // wait to right click until we are able to place
+                if (rightClickBlock(state, goalLook)) {
+                    return state; // wait to right click until we are able to place
                 }
                 // Out.log("Trying to look at " + goalLook + ", actually looking at" + Baritone.whatAreYouLookingAt());
                 if (ctx.playerRotations().isReallyCloseTo(state.getTarget().rotation)) {
-                    state.setInput(Input.CLICK_LEFT, true);
+                    leftClickSelectedBlock(state);
                 }
                 return state;
             }

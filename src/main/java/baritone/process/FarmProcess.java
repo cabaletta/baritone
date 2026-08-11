@@ -104,6 +104,22 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
         super(baritone);
     }
 
+    private void leftClickBlock(BlockPos pos) {
+        baritone.getInputOverrideHandler().setBlockBreakTarget(pos);
+        baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_LEFT, true);
+    }
+
+    private void rightClickBlock(BlockPos pos, Direction side) {
+        baritone.getInputOverrideHandler().setBlockPlaceTarget(pos, side);
+        baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
+    }
+
+    private void rightClickSelectedBlock(BlockPos pos) {
+        ctx.getSelectedBlockHitResult()
+                .filter(hit -> hit.getBlockPos().equals(pos))
+                .ifPresent(hit -> rightClickBlock(hit.getBlockPos(), hit.getDirection()));
+    }
+
     @Override
     public boolean isActive() {
         return active;
@@ -278,7 +294,7 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
                 baritone.getLookBehavior().updateTarget(rot.get(), true);
                 MovementHelper.switchToBestToolFor(ctx, ctx.world().getBlockState(pos));
                 if (ctx.isLookingAt(pos)) {
-                    baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_LEFT, true);
+                    leftClickBlock(pos);
                 }
                 return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
             }
@@ -295,8 +311,8 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
                 HitResult result = RayTraceUtils.rayTraceTowards(ctx.player(), rot.get(), blockReachDistance);
                 if (result instanceof BlockHitResult && ((BlockHitResult) result).getDirection() == Direction.UP) {
                     baritone.getLookBehavior().updateTarget(rot.get(), true);
-                    if (ctx.isLookingAt(pos)) {
-                        baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
+                    if (ctx.isLookingAt(pos, Direction.UP)) {
+                        rightClickBlock(pos, Direction.UP);
                     }
                     return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
                 }
@@ -316,8 +332,8 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
                     HitResult result = RayTraceUtils.rayTraceTowards(ctx.player(), rot.get(), blockReachDistance);
                     if (result instanceof BlockHitResult && ((BlockHitResult) result).getDirection() == dir) {
                         baritone.getLookBehavior().updateTarget(rot.get(), true);
-                        if (ctx.isLookingAt(pos)) {
-                            baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
+                        if (ctx.isLookingAt(pos, dir)) {
+                            rightClickBlock(pos, dir);
                         }
                         return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
                     }
@@ -332,7 +348,7 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
             if (rot.isPresent() && isSafeToCancel && baritone.getInventoryBehavior().throwaway(true, this::isBoneMeal)) {
                 baritone.getLookBehavior().updateTarget(rot.get(), true);
                 if (ctx.isLookingAt(pos)) {
-                    baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
+                    rightClickSelectedBlock(pos);
                 }
                 return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
             }

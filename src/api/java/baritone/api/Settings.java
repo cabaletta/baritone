@@ -775,7 +775,8 @@ public final class Settings {
     public final Setting<Boolean> elytraFreeLook = new Setting<>(true);
 
     /**
-     * Forces the client-sided yaw rotation to an average of the last {@link #smoothLookTicks} of server-sided rotations.
+     * Forces the client-sided yaw rotation to an average of the last
+     * {@link #smoothLookTicks} server-sided rotations.
      */
     public final Setting<Boolean> smoothLook = new Setting<>(false);
 
@@ -788,6 +789,21 @@ public final class Settings {
      * The number of ticks to average across for {@link #smoothLook};
      */
     public final Setting<Integer> smoothLookTicks = new Setting<>(5);
+
+    /**
+     * Interpolates player rotation from the current look direction to the target direction.
+     * <p>
+     * This uses {@link #interpolatedLookLength} as a maximum angular speed, so larger
+     * turns take more ticks than smaller turns.
+     */
+    public final Setting<Boolean> interpolatedLook = new Setting<>(false);
+
+    /**
+     * Maximum angular speed, in degrees per tick, for {@link #interpolatedLook}.
+     * The historical name is retained for config compatibility.
+     */
+    public final Setting<Integer> interpolatedLookLength = new Setting<>(10);
+
 
     /**
      * When true, the player will remain with its existing look direction as often as possible.

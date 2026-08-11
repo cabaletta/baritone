@@ -20,6 +20,8 @@ package baritone.pathing.movement;
 import baritone.api.pathing.movement.MovementStatus;
 import baritone.api.utils.Rotation;
 import baritone.api.utils.input.Input;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,6 +32,9 @@ public class MovementState {
     private MovementStatus status;
     private MovementTarget target = new MovementTarget();
     private final Map<Input, Boolean> inputState = new HashMap<>();
+    private BlockPos blockBreakTarget;
+    private BlockPos blockPlaceTarget;
+    private Direction blockPlaceSide;
 
     public MovementState setStatus(MovementStatus status) {
         this.status = status;
@@ -58,6 +63,35 @@ public class MovementState {
         return this.inputState;
     }
 
+    public MovementState setBlockBreakTarget(BlockPos pos) {
+        this.blockBreakTarget = pos;
+        return this;
+    }
+
+    public Optional<BlockPos> getBlockBreakTarget() {
+        return Optional.ofNullable(this.blockBreakTarget);
+    }
+
+    public MovementState setBlockPlaceTarget(BlockPos pos, Direction side) {
+        this.blockPlaceTarget = pos;
+        this.blockPlaceSide = side;
+        return this;
+    }
+
+    public Optional<BlockPos> getBlockPlaceTarget() {
+        return Optional.ofNullable(this.blockPlaceTarget);
+    }
+
+    public Optional<Direction> getBlockPlaceSide() {
+        return Optional.ofNullable(this.blockPlaceSide);
+    }
+
+    public void clearBlockInteractionTargets() {
+        this.blockBreakTarget = null;
+        this.blockPlaceTarget = null;
+        this.blockPlaceSide = null;
+    }
+
     public static class MovementTarget {
 
         /**
@@ -68,17 +102,38 @@ public class MovementState {
         /**
          * Whether or not this target must force rotations.
          * <p>
-         * {@code true} if we're trying to place or break blocks, {@code false} if we're trying to look at the movement location
+         * {@code true} if we're trying to place or break blocks, {@code false}
+         * if we're trying to look at the movement location
          */
         private boolean forceRotations;
+
+        private boolean restartInterpolation;
+        private boolean exactRotation;
 
         public MovementTarget() {
             this(null, false);
         }
 
         public MovementTarget(Rotation rotation, boolean forceRotations) {
+            this(rotation, forceRotations, false);
+        }
+
+        public MovementTarget(
+                Rotation rotation,
+                boolean forceRotations,
+                boolean restartInterpolation) {
+            this(rotation, forceRotations, restartInterpolation, false);
+        }
+
+        public MovementTarget(
+                Rotation rotation,
+                boolean forceRotations,
+                boolean restartInterpolation,
+                boolean exactRotation) {
             this.rotation = rotation;
             this.forceRotations = forceRotations;
+            this.restartInterpolation = restartInterpolation;
+            this.exactRotation = exactRotation;
         }
 
         public final Optional<Rotation> getRotation() {
@@ -87,6 +142,14 @@ public class MovementState {
 
         public boolean hasToForceRotations() {
             return this.forceRotations;
+        }
+
+        public boolean shouldRestartInterpolation() {
+            return this.restartInterpolation;
+        }
+
+        public boolean isExactRotation() {
+            return this.exactRotation;
         }
     }
 }

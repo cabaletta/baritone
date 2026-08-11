@@ -110,8 +110,8 @@ public class MovementFall extends Movement {
 
                 targetRotation = new Rotation(toDest.getYaw(), 90.0F);
 
-                if (ctx.isLookingAt(dest) || ctx.isLookingAt(dest.below())) {
-                    state.setInput(Input.CLICK_RIGHT, true);
+                if (!rightClickBlock(state, dest)) {
+                    rightClickBlock(state, dest.below());
                 }
             }
         }
