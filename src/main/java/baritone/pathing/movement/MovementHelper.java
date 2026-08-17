@@ -332,25 +332,14 @@ public interface MovementHelper extends ActionCosts, Helper {
         return state.getMaterial().isReplaceable();
     }
 
-    static boolean isDoorPassable(IPlayerContext ctx, BlockPos doorPos, BlockPos playerPos) {
-        Direction dir = Stream.of(Direction.values())
-                .filter(d -> playerPos.relative(d).equals(doorPos))
-                .findFirst()
-                .get();
-
-        BlockState state = BlockStateInterface.get(ctx, doorPos);
-
-        if (!(state.getBlock() instanceof DoorBlock)) {
-            return true;
-        }
-
+    static boolean isDoorPassable(BlockState state, Direction side) {
         boolean open = state.getValue(DoorBlock.OPEN);
         Direction closedFacing = state.getValue(HorizontalDirectionalBlock.FACING);
         Direction openFacing = state.getValue(DoorBlock.HINGE) == DoorHingeSide.LEFT
                 ? closedFacing.getClockWise()
                 : closedFacing.getCounterClockWise();
 
-        return dir != (open ? openFacing : closedFacing);
+        return side != (open ? openFacing : closedFacing);
     }
 
     static boolean isGatePassable(IPlayerContext ctx, BlockPos gatePos, BlockPos playerPos) {
@@ -777,9 +766,16 @@ public interface MovementHelper extends ActionCosts, Helper {
     }
 
     static boolean openDoors(IPlayerContext ctx, MovementState state, BetterBlockPos from, BetterBlockPos to) {
-        for (BetterBlockPos[] poss : new BetterBlockPos[][]{{from, to}, {to, from}, {from.above(), to.above()}, {to.above(), from.above()}}) {
-            if (!isDoorPassable(ctx, poss[0], poss[1]) && DoorBlock.isWoodenDoor(BlockStateInterface.get(ctx, poss[0]))) {
-                state.setTarget(new MovementState.MovementTarget(RotationUtils.calcRotationFromVec3d(ctx.playerHead(), VecUtils.calculateBlockCenter(ctx.world(), poss[0]), ctx.playerRotations()), true))
+        Direction direction = Stream.of(Direction.values())
+                .filter(d -> from.relative(d).equals(to))
+                .findFirst()
+                .get();
+
+        for (BetterBlockPos pos : new BetterBlockPos[]{from, to, from.above(), to.above()}) {
+            Direction side = pos.equals(to) || pos.equals(to.above()) ? direction : direction.getOpposite();
+            BlockState door = BlockStateInterface.get(ctx, pos);
+            if (DoorBlock.isWoodenDoor(door) && !isDoorPassable(door, side)) {
+                state.setTarget(new MovementState.MovementTarget(RotationUtils.calcRotationFromVec3d(ctx.playerHead(), VecUtils.calculateBlockCenter(ctx.world(), pos), ctx.playerRotations()), true))
                         .setInput(Input.CLICK_RIGHT, true);
                 return false;
             }
