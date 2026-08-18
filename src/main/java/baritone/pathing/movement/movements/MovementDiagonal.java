@@ -29,15 +29,20 @@ import baritone.pathing.movement.MovementState;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.pathing.MutableMoveResult;
 import com.google.common.collect.ImmutableSet;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Vec3i;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.DoorBlock;
+import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.DoorHingeSide;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 public class MovementDiagonal extends Movement {
 
@@ -109,7 +114,8 @@ public class MovementDiagonal extends Movement {
     }
 
     public static void cost(CalculationContext context, int x, int y, int z, int destX, int destZ, MutableMoveResult res) {
-        if (!MovementHelper.canWalkThrough(context, destX, y + 1, destZ)) {
+        BlockState destIntoUpper = context.get(destX, y + 1, destZ);
+        if (!MovementHelper.canWalkThrough(context, destX, y + 1, destZ, destIntoUpper)) {
             return;
         }
         BlockState destInto = context.get(destX, y, destZ);
@@ -138,6 +144,10 @@ public class MovementDiagonal extends Movement {
                 }
             }
             frostWalker &= !context.assumeWalkOnWater; // do this after checking for descends because jesus can't prevent the water from freezing, it just prevents us from relying on the water freezing
+        }
+        BlockState startState = context.get(x, y, z);
+        if (isBlockingDoor(startState, x, z, destX, destZ) || isBlockingDoor(ascend ? destIntoUpper : destInto, destX, destZ, x, y)) {
+            return; // Easier to just traverse instead
         }
         double multiplier = WALK_ONE_BLOCK_COST;
         // For either possible soul sand, that affects half of our walking
@@ -170,7 +180,6 @@ public class MovementDiagonal extends Movement {
             return;
         }
         boolean water = false;
-        BlockState startState = context.get(x, y, z);
         Block startIn = startState.getBlock();
         if (MovementHelper.isWater(startState) || MovementHelper.isWater(destInto)) {
             if (ascend) {
@@ -191,6 +200,8 @@ public class MovementDiagonal extends Movement {
             boolean BTop = MovementHelper.canWalkThrough(context, destX, y + 2, z);
             boolean BMid = MovementHelper.canWalkThrough(context, destX, y + 1, z);
             boolean BLow = MovementHelper.canWalkThrough(context, destX, y, z, pb2);
+            ALow &= !isBlockingDoor(pb0, x, destZ, destX, z);
+            BLow &= !isBlockingDoor(pb2, destX, z, x, destZ);
             if ((!(ATop && AMid && ALow) && !(BTop && BMid && BLow)) // no option
                     || MovementHelper.avoidWalkingInto(pb0) // bad
                     || MovementHelper.avoidWalkingInto(pb2) // bad
@@ -208,6 +219,8 @@ public class MovementDiagonal extends Movement {
         }
         double optionA = MovementHelper.getMiningDurationTicks(context, x, y, destZ, pb0, false);
         double optionB = MovementHelper.getMiningDurationTicks(context, destX, y, z, pb2, false);
+        optionA += isBlockingDoor(pb0, x, destZ, destX, z) ? 1 : 0;
+        optionB += isBlockingDoor(pb2, destX, z, x, destZ) ? 1 : 0;
         if (optionA != 0 && optionB != 0) {
             // check these one at a time -- if pb0 and pb2 were nonzero, we already know that (optionA != 0 && optionB != 0)
             // so no need to check pb1 as well, might as well return early here
@@ -271,6 +284,20 @@ public class MovementDiagonal extends Movement {
         } else if (!playerInValidPosition() && !(MovementHelper.isLiquid(ctx, src) && getValidPositions().contains(ctx.playerFeet().above()))) {
             return state.setStatus(MovementStatus.UNREACHABLE);
         }
+
+        if (!isBlockingDoor(BlockStateInterface.get(ctx, new BetterBlockPos(src.x, src.y, dest.z)), src.x, dest.z, dest.x, src.z)
+            && (!MovementHelper.openDoors(ctx, state, src, new BetterBlockPos(src.x, src.y, dest.z))
+                || !MovementHelper.openDoors(ctx, state, new BetterBlockPos(src.x, dest.y, dest.z), dest)
+        )) {
+            return state;
+        }
+        if (!isBlockingDoor(BlockStateInterface.get(ctx, new BetterBlockPos(dest.x, src.y, src.z)), dest.x, src.z, src.x, dest.z)
+            && (!MovementHelper.openDoors(ctx, state, src, new BetterBlockPos(dest.x, src.y, src.z))
+                || !MovementHelper.openDoors(ctx, state, new BetterBlockPos(dest.x, dest.y, src.z), dest)
+        )) {
+            return state;
+        }
+
         if (dest.y > src.y && ctx.player().position().y < src.y + 0.1 && ctx.player().horizontalCollision) {
             state.setInput(Input.JUMP, true);
         }
@@ -327,5 +354,33 @@ public class MovementDiagonal extends Movement {
         }
         toWalkIntoCached = result;
         return toWalkIntoCached;
+    }
+
+    /**
+     * We can always pass wooden doors in src or dest and we can also pass
+     * wooden doors in the A or B columns, unless their hinge points towards
+     * the other column.
+     * This function checks whether {@code other} is the diagonal neighbor of
+     * {@code door} in the direction of the hinge of {@code state}.
+     */
+    private static boolean isBlockingDoor(BlockState state, int doorX, int doorZ, int otherX, int otherZ) {
+        if (!(state.getBlock() instanceof DoorBlock)) {
+            return false;
+        }
+
+        Vec3i offset = state.getValue(HorizontalDirectionalBlock.FACING).getNormal();
+        int ox = offset.getX();
+        int oz = offset.getZ();
+
+        int nbrX, nbrZ;
+        if (state.getValue(DoorBlock.HINGE) == DoorHingeSide.LEFT) {
+            nbrX = doorX - ox + oz;
+            nbrZ = doorZ - oz - ox;
+        } else {
+            nbrX = doorX - ox - oz;
+            nbrZ = doorZ - oz + ox;
+        }
+
+        return nbrX == otherX && nbrZ == otherZ;
     }
 }
