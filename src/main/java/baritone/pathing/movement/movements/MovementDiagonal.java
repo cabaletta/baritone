@@ -176,7 +176,7 @@ public class MovementDiagonal extends Movement {
             return;
         }
         BlockState cuttingOver2 = context.get(destX, y - 1, z);
-        if ((!context.allowWalkOnMagmaBlocks && cuttingOver1.is(Blocks.MAGMA_BLOCK)) || MovementHelper.isLava(cuttingOver2)) {
+        if ((!context.allowWalkOnMagmaBlocks && cuttingOver2.is(Blocks.MAGMA_BLOCK)) || MovementHelper.isLava(cuttingOver2)) {
             return;
         }
         boolean water = false;
