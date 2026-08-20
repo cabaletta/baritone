@@ -999,6 +999,12 @@ public final class Settings {
     public final Setting<Integer> farmMaxScanSize = new Setting<>(256);
 
     /**
+     * Keep the farm process active when crops are present but none are mature
+     * enough to harvest yet. Disabled by default to preserve legacy behavior.
+     */
+    public final Setting<Boolean> farmWaitForGrowth = new Setting<>(false);
+
+    /**
      * When the cache scan gives less blocks than the maximum threshold (but still above zero), scan the main world too.
      * <p>
      * Only if you have a beefy CPU and automatically mine blocks that are in cache
