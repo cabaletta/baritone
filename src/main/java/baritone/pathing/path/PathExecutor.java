@@ -497,43 +497,52 @@ public class PathExecutor implements IPathExecutor, Helper {
      * so a jump forced here lasts exactly one tick.
      */
     private void headHitJump(IMovement current) {
-        if (!(current instanceof MovementTraverse) || current.getDirection().getY() != 0) {
-            return; // head hitting only applies to flat walking movements
-        }
-        if (!ctx.player().isOnGround() || MovementHelper.isLiquid(ctx, ctx.playerFeet())) {
+        if (!canStartHeadHitting(current) || !underHeadBonkCeiling(current.getDirection(), ctx.playerFeet()) || !clearOfLedgesAhead(current, current.getDirection())) {
             return;
         }
+        behavior.baritone.getInputOverrideHandler().setInputForceState(Input.JUMP, true);
+    }
+
+    private boolean canStartHeadHitting(IMovement current) {
+        if (!(current instanceof MovementTraverse) || current.getDirection().getY() != 0) {
+            return false; // head hitting only applies to flat walking movements
+        }
+        if (!ctx.player().isOnGround() || MovementHelper.isLiquid(ctx, ctx.playerFeet())) {
+            return false;
+        }
         if (((Movement) current).toBreakCached == null || !((Movement) current).toBreakCached.isEmpty()) {
-            return; // breaking is like 5x slower when you're jumping
+            return false; // breaking is like 5x slower when you're jumping
         }
-        if (behavior.baritone.getInputOverrideHandler().isInputForcedDown(Input.SNEAK)) {
-            return; // sneaking, e.g. walking on magma, a jump would break the sneak and the edge safety with it
-        }
-        BlockPos dir = current.getDirection();
-        BetterBlockPos feet = ctx.playerFeet();
+        // not while sneaking either, e.g. walking on magma, a jump would break the sneak and the edge safety with it
+        return !behavior.baritone.getInputOverrideHandler().isInputForcedDown(Input.SNEAK);
+    }
+
+    private boolean underHeadBonkCeiling(BlockPos dir, BetterBlockPos feet) {
         if (MovementHelper.fullyPassable(ctx, feet.above(2))) {
-            return; // not under a ceiling yet; jumping now would bonk on the face of the ceiling block ahead and stop us
+            return false; // not under a ceiling yet; jumping now would bonk on the face of the ceiling block ahead and stop us
         }
         // make sure we're fully inside the corridor before we start jumping, same idea as skipNow
         BlockPos behind = feet.subtract(dir).above(2);
         if (MovementHelper.fullyPassable(ctx, behind)) {
             double flatDist = Math.abs(dir.getX() * (behind.getX() + 0.5D - ctx.player().position().x)) + Math.abs(dir.getZ() * (behind.getZ() + 0.5D - ctx.player().position().z));
-            if (flatDist < 0.8) {
-                return; // just entered, wait until we're clear of the entrance face
-            }
+            return flatDist >= 0.8; // just entered, wait until we're clear of the entrance face
         }
+        return true;
+    }
+
+    private boolean clearOfLedgesAhead(IMovement current, BlockPos dir) {
         // momentum from the head bonk can carry us an extra block or two, so don't headhit when there's a ledge or
         // dropoff ahead, e.g. when the goal is right next to one
         if (pathPosition < path.length() - 2 && path.movements().get(pathPosition + 1).getDirection().getY() < 0) {
-            return; // the path goes down right after this movement, don't add any momentum
+            return false; // the path goes down right after this movement, don't add any momentum
         }
         BetterBlockPos dest = current.getDest();
         for (int i = 1; i <= 2; i++) {
             if (!MovementHelper.canWalkOn(ctx, dest.offset(dir.getX() * i, 0, dir.getZ() * i).below())) {
-                return; // no floor where our momentum would take us
+                return false; // no floor where our momentum would take us
             }
         }
-        behavior.baritone.getInputOverrideHandler().setInputForceState(Input.JUMP, true);
+        return true;
     }
 
     private Tuple<Vec3, BlockPos> overrideFall(MovementFall movement) {
