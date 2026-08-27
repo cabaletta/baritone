@@ -140,6 +140,10 @@ public interface MovementHelper extends ActionCosts, Helper {
 
     static Ternary canWalkThroughBlockState(BlockState state) {
         Block block = state.getBlock();
+        if (Baritone.settings().blocksToAvoid.value.contains(block)) {
+            // even air-family blocks (e.g. cave_air), so this must come before the AirBlock early return
+            return NO;
+        }
         if (block instanceof AirBlock) {
             return YES;
         }
@@ -150,9 +154,6 @@ public interface MovementHelper extends ActionCosts, Helper {
             return NO;
         }
         if (block == Blocks.POWDER_SNOW) {
-            return NO;
-        }
-        if (Baritone.settings().blocksToAvoid.value.contains(block)) {
             return NO;
         }
         if (block instanceof DoorBlock) {
@@ -244,7 +245,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         }
         // exceptions - blocks that are isPassable true, but we can't actually jump through
         if (block instanceof BaseFireBlock
-                || block == Blocks.TRIPWIRE
+                || Baritone.settings().blocksToAvoid.value.contains(block)
                 || block == Blocks.COBWEB
                 || block == Blocks.VINE
                 || block == Blocks.LADDER
@@ -591,6 +592,11 @@ public interface MovementHelper extends ActionCosts, Helper {
             if (avoidBreaking(context.bsi, x, y, z, state)) {
                 return COST_INF;
             }
+            boolean avoided = Baritone.settings().blocksToAvoid.value.contains(block);
+            if (avoided && !Baritone.settings().blocksToAvoidBreakPenalty.value) {
+                // strict mode: never break an avoided block, path around it or fail
+                return COST_INF;
+            }
             double strVsBlock = context.toolSet.getStrVsBlock(state);
             if (strVsBlock <= 0) {
                 return COST_INF;
@@ -598,6 +604,10 @@ public interface MovementHelper extends ActionCosts, Helper {
             double result = 1 / strVsBlock;
             result += context.breakBlockAdditionalCost;
             result *= mult;
+            if (avoided) {
+                // penalty mode: strongly prefer paths that don't require breaking this block
+                result *= 10;
+            }
             if (includeFalling) {
                 BlockState above = context.get(x, y + 1, z);
                 if (above.getBlock() instanceof FallingBlock) {
