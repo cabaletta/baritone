@@ -41,6 +41,7 @@ import baritone.pathing.movement.MovementHelper;
 import baritone.utils.BaritoneProcessHelper;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.PathingCommandContext;
+import baritone.utils.reflection.InteractabilityHelper;
 import baritone.utils.schematic.MapArtSchematic;
 import baritone.utils.schematic.SelectionSchematic;
 import baritone.utils.schematic.SchematicSystem;
@@ -315,12 +316,14 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         private final BlockPos placeAgainst;
         private final Direction side;
         private final Rotation rot;
+        private final boolean sneak;
 
-        public Placement(int hotbarSelection, BlockPos placeAgainst, Direction side, Rotation rot) {
+        public Placement(int hotbarSelection, BlockPos placeAgainst, Direction side, Rotation rot, boolean sneak) {
             this.hotbarSelection = hotbarSelection;
             this.placeAgainst = placeAgainst;
             this.side = side;
             this.rot = rot;
+            this.sneak = sneak;
         }
     }
 
@@ -375,18 +378,20 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             if (shape.isEmpty()) {
                 continue;
             }
+            boolean wouldSneak = InteractabilityHelper.hasRightClickAction(placeAgainstState);
+            Vec3 eyePosition = wouldSneak ? RayTraceUtils.inferSneakingEyePosition(ctx.player()) : ctx.playerHead();
             AABB aabb = shape.bounds();
             for (Vec3 placementMultiplier : aabbSideMultipliers(against)) {
                 double placeX = placeAgainstPos.x + aabb.minX * placementMultiplier.x + aabb.maxX * (1 - placementMultiplier.x);
                 double placeY = placeAgainstPos.y + aabb.minY * placementMultiplier.y + aabb.maxY * (1 - placementMultiplier.y);
                 double placeZ = placeAgainstPos.z + aabb.minZ * placementMultiplier.z + aabb.maxZ * (1 - placementMultiplier.z);
-                Rotation rot = RotationUtils.calcRotationFromVec3d(RayTraceUtils.inferSneakingEyePosition(ctx.player()), new Vec3(placeX, placeY, placeZ), ctx.playerRotations());
+                Rotation rot = RotationUtils.calcRotationFromVec3d(eyePosition, new Vec3(placeX, placeY, placeZ), ctx.playerRotations());
                 Rotation actualRot = baritone.getLookBehavior().getAimProcessor().peekRotation(rot);
-                HitResult result = RayTraceUtils.rayTraceTowards(ctx.player(), actualRot, ctx.playerController().getBlockReachDistance(), true);
+                HitResult result = RayTraceUtils.rayTraceTowards(ctx.player(), actualRot, ctx.playerController().getBlockReachDistance(), wouldSneak);
                 if (result != null && result.getType() == HitResult.Type.BLOCK && ((BlockHitResult) result).getBlockPos().equals(placeAgainstPos) && ((BlockHitResult) result).getDirection() == against.getOpposite()) {
                     OptionalInt hotbar = hasAnyItemThatWouldPlace(toPlace, result, actualRot);
                     if (hotbar.isPresent()) {
-                        return Optional.of(new Placement(hotbar.getAsInt(), placeAgainstPos, against.getOpposite(), rot));
+                        return Optional.of(new Placement(hotbar.getAsInt(), placeAgainstPos, against.getOpposite(), rot, wouldSneak));
                     }
                 }
             }
@@ -569,8 +574,8 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             Rotation rot = toPlace.get().rot;
             baritone.getLookBehavior().updateTarget(rot, true);
             ctx.player().getInventory().selected = toPlace.get().hotbarSelection;
-            baritone.getInputOverrideHandler().setInputForceState(Input.SNEAK, true);
-            if ((ctx.isLookingAt(toPlace.get().placeAgainst) && ((BlockHitResult) ctx.objectMouseOver()).getDirection().equals(toPlace.get().side)) || ctx.playerRotations().isReallyCloseTo(rot)) {
+            baritone.getInputOverrideHandler().setInputForceState(Input.SNEAK, toPlace.get().sneak);
+            if (ctx.player().isCrouching() == toPlace.get().sneak && (ctx.isLookingAt(toPlace.get().placeAgainst) && ((BlockHitResult) ctx.objectMouseOver()).getDirection().equals(toPlace.get().side)) || ctx.playerRotations().isReallyCloseTo(rot)) {
                 baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
             }
             return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
