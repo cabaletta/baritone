@@ -186,22 +186,7 @@ public class ResumeBehavior extends Behavior implements Helper {
 
     @Override
     public void onTick(TickEvent event) {
-        Level world = ctx.world();
-        if (world == null) {
-            // The world is gone. If we came from a world, remember whether the server connection actually
-            // dropped while the world was absent; a dimension change keeps the connection but unloads the
-            // world briefly, and those must not count as a disconnect.
-            if (this.lastTickWorld != null) {
-                this.sawConnectionLossWhileWorldNull |= ctx.minecraft().getConnection() == null;
-            }
-        } else if (this.lastTickWorld == null && this.sawConnectionLossWhileWorldNull) {
-            // The world returned after leaving it without the server connection; a real disconnect+rejoin.
-            // Detected by comparing the world object across ticks instead of listening for WorldEvent(s),
-            // because some servers and mods (proxy reconnects, replaymod, etc.) break those events.
-            this.armResumeOnReconnect();
-            this.sawConnectionLossWhileWorldNull = false;
-        }
-        this.lastTickWorld = world;
+        this.detectDisconnect();
         if (event.getType() != TickEvent.Type.IN) {
             return;
         }
@@ -217,25 +202,54 @@ public class ResumeBehavior extends Behavior implements Helper {
             return;
         }
         if (this.resumeTicksRemaining < 0) {
-            // first in-world tick after the disconnect that armed this resume
-            this.resumeTicksRemaining = Math.max(0, Baritone.settings().resumeDelayTicks.value);
-            logDirect(String.format(
-                    "Resuming \"%s\" in %.1f seconds. Use %scancel to stop it.",
-                    this.pendingResumeCommand,
-                    this.resumeTicksRemaining / 20.0,
-                    BaritoneAPI.getSettings().prefix.value
-            ), ChatFormatting.GRAY);
-            return;
-        }
-        if (this.resumeTicksRemaining > 0) {
+            this.startCountdown();
+        } else if (this.resumeTicksRemaining > 0) {
             this.resumeTicksRemaining--;
-            return;
+        } else if (this.readyToFire()) {
+            this.fireResume();
         }
+    }
+
+    /**
+     * Detects the world unloading by comparing the world object across ticks instead of listening for
+     * WorldEvent(s), because some servers and mods (proxy reconnects, replaymod, etc.) break those events.
+     * A dimension change also unloads the world briefly, but keeps the server connection, so only an
+     * unload during which the connection actually dropped counts as a disconnect.
+     */
+    private void detectDisconnect() {
+        Level world = ctx.world();
+        if (world == null) {
+            if (this.lastTickWorld != null) {
+                this.sawConnectionLossWhileWorldNull |= ctx.minecraft().getConnection() == null;
+            }
+        } else if (this.lastTickWorld == null && this.sawConnectionLossWhileWorldNull) {
+            // the world returned after leaving it without the server connection; a real disconnect + rejoin
+            this.armResumeOnReconnect();
+            this.sawConnectionLossWhileWorldNull = false;
+        }
+        this.lastTickWorld = world;
+    }
+
+    private void startCountdown() {
+        // first in-world tick after the disconnect that armed this resume
+        this.resumeTicksRemaining = Math.max(0, Baritone.settings().resumeDelayTicks.value);
+        logDirect(String.format(
+                "Resuming \"%s\" in %.1f seconds. Use %scancel to stop it.",
+                this.pendingResumeCommand,
+                this.resumeTicksRemaining / 20.0,
+                BaritoneAPI.getSettings().prefix.value
+        ), ChatFormatting.GRAY);
+    }
+
+    /**
+     * @return whether the pending resume may fire this tick, logging the reason and disarming it if not
+     */
+    private boolean readyToFire() {
         if (ctx.player() == null || ctx.world() == null) {
-            return; // not actually in a world yet (e.g. sitting in a join queue); keep waiting
+            return false; // not actually in a world yet (e.g. sitting in a join queue); keep waiting
         }
         if (this.playerWasDead) {
-            return; // onPlayerDeath clears the pending resume; don't act while dead regardless
+            return false; // onPlayerDeath clears the pending resume; don't act while dead regardless
         }
         String serverNow = this.currentServerId();
         // proxy servers can briefly report no server while the world is already loaded; only reject on a
@@ -247,7 +261,7 @@ public class ResumeBehavior extends Behavior implements Helper {
                     this.pendingResumeCommand
             ), ChatFormatting.RED);
             this.clearPendingResume();
-            return;
+            return false;
         }
         if (this.anyTaskProcessActive()) {
             logDirect(String.format(
@@ -255,8 +269,12 @@ public class ResumeBehavior extends Behavior implements Helper {
                     this.pendingResumeCommand
             ), ChatFormatting.RED);
             this.clearPendingResume();
-            return;
+            return false;
         }
+        return true;
+    }
+
+    private void fireResume() {
         String command = this.pendingResumeCommand;
         boolean isAutoResume = this.calcFailureResumeAttempts > 0;
         this.clearPendingResume();
