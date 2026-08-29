@@ -80,6 +80,11 @@ public class CommandManager implements ICommandManager {
 
     @Override
     public boolean execute(Tuple<String, List<ICommandArgument>> expanded) {
+        // reconstruct the command as it was typed for the resume recorder; the raw rest of the first
+        // argument is the remainder of the original string, so this is byte-faithful
+        String rawCommand = expanded.getA()
+                + (expanded.getB().isEmpty() ? "" : " " + expanded.getB().get(0).getRawRest());
+        this.baritone.getResumeBehavior().recordCandidate(rawCommand);
         ExecutionWrapper execution = this.from(expanded);
         if (execution != null) {
             execution.execute();

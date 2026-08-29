@@ -47,6 +47,7 @@ public final class DefaultCommands {
                 new ComeCommand(baritone),
                 new AxisCommand(baritone),
                 new ForceCancelCommand(baritone),
+                new ResumeLastCommand(baritone),
                 new GcCommand(baritone),
                 new InvertCommand(baritone),
                 new TunnelCommand(baritone),

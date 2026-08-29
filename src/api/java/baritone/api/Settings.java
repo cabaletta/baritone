@@ -1193,6 +1193,44 @@ public final class Settings {
     public final Setting<Boolean> disconnectOnArrival = new Setting<>(false);
 
     /**
+     * Automatically re-run the most recent task command (tunnel, mine, goto, farm, follow, explore, thisway, etc.)
+     * after being disconnected from a server, for example after a connection reset or being kicked by lag.
+     * <p>
+     * The command is re-executed {@link #resumeDelayTicks} ticks after joining a world, and only if a task was
+     * actually running at the moment of the disconnect. Switching dimensions does not count as a disconnect.
+     * Commands that depend on your surroundings at execution time (for example {@code tunnel} uses the direction
+     * you are facing when it runs, and {@code build} without explicit coordinates builds at your feet) are
+     * re-derived from your position and rotation after reconnecting.
+     * <p>
+     * A pending resume is discarded if you die, use {@code cancel} / {@code forcecancel}, set a new goal,
+     * or start a different task before it fires.
+     */
+    public final Setting<Boolean> resumeOnReconnect = new Setting<>(false);
+
+    /**
+     * How many ticks to wait after (re)joining a world before re-running the task command saved by
+     * {@link #resumeOnReconnect}. This delay gives chunks time to load so the resumed task doesn't
+     * immediately fail on unloaded chunks again. Increase this on servers with a join queue.
+     */
+    public final Setting<Integer> resumeDelayTicks = new Setting<>(60);
+
+    /**
+     * Re-run the most recent task command after Baritone cancelled it on its own (not by you) because path
+     * calculation failed repeatedly, which typically happens when chunks ahead are unloaded due to lag.
+     * <p>
+     * To avoid an infinite failure loop, this is limited to {@link #resumeMaxAttempts} consecutive automatic
+     * resumes, each waiting twice as long as the previous one. Any manual command, or a disconnect, resets
+     * the attempt counter.
+     */
+    public final Setting<Boolean> resumeAfterCalcFailure = new Setting<>(false);
+
+    /**
+     * The maximum number of consecutive automatic resumes performed by {@link #resumeAfterCalcFailure}
+     * before giving up until you run a task again.
+     */
+    public final Setting<Integer> resumeMaxAttempts = new Setting<>(3);
+
+    /**
      * Disallow MineBehavior from using X-Ray to see where the ores are. Turn this option on to force it to mine "legit"
      * where it will only mine an ore once it can actually see it, so it won't do or know anything that a normal player
      * couldn't. If you don't want it to look like you're X-Raying, turn this on

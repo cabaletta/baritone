@@ -62,6 +62,7 @@ Commands in Baritone:
 - `reloadall` to reload Baritone's world cache or `saveall` to save Baritone's world cache.
 - `find` to search through Baritone's cache and attempt to find the location of the block.
 - `surface` or `top` to tell Baritone to head towards the closest surface-like area, this can be the surface or highest available air space.
+- `resumelast` to re-run the most recent task command (tunnel, mine, goto, farm, etc.), useful for manually continuing a task after a reconnect or after Baritone stopped on its own. With `resumeOnReconnect` enabled, this happens automatically: if a task was running when you got disconnected, it is re-run `resumeDelayTicks` ticks after you rejoin the same server. The command is re-derived from your position and rotation at that time (so `tunnel` continues in the direction you're facing). A pending resume is discarded if you die, cancel, or start something else.
 - `version` to get the version of Baritone you're running
 - `damn` daniel
 
@@ -86,6 +87,8 @@ There are about a hundred settings, but here are some fun / interesting / import
 - `acceptableThrowawayItems`
 - `blocksToAvoidBreaking`
 - `mineScanDroppedItems`
+- `resumeOnReconnect` and `resumeDelayTicks` (automatically continue the last task after reconnecting)
+- `resumeAfterCalcFailure` and `resumeMaxAttempts` (retry the last task when Baritone aborts it on its own because of unloaded chunks)
 - `allowDiagonalAscend`
 
 # Troubleshooting / common issues
