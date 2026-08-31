@@ -282,9 +282,10 @@ public final class BlockOptionalMeta {
 
         @Override
         public RegistryAccess registryAccess() {
-            if (client.level != null) {
-                return client.level.registryAccess();
-            }
+            // Loot tables are populated only by the reloaded server registries built
+            // in load(). A client RegistryAccess never receives them, so sourcing the
+            // holder from client.level made every block resolve to zero drops, which
+            // silently broke #mine item pickup (regression from PR #5058).
             return registryAccess.join();
         }
 
