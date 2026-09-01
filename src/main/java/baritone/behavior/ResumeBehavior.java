@@ -151,7 +151,7 @@ public class ResumeBehavior extends Behavior implements Helper {
             return;
         }
         String label = firstWord(trimmed);
-        if (this.handleInterruptingCommand(trimmed, label)) {
+        if (this.handleInterruptingCommand(label)) {
             return;
         }
         if (!this.isRecordableTaskCommand(trimmed, label)) {
@@ -169,7 +169,7 @@ public class ResumeBehavior extends Behavior implements Helper {
      * resume but keeps the saved command for {@code resumelast}; superseding drops both, since the user has
      * re-pointed Baritone at something else entirely.
      */
-    private boolean handleInterruptingCommand(String trimmed, String label) {
+    private boolean handleInterruptingCommand(String label) {
         if (CANCELLING_COMMANDS.contains(label)) {
             this.clearPendingResume();
             this.userCancelledAtTick = this.tickCounter;
