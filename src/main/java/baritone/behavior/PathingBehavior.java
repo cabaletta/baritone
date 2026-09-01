@@ -536,7 +536,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                     } else {
                         //throw new IllegalStateException("I have no idea what to do with this path");
                         // no point in throwing an exception here, and it gets it stuck with inProgress being not null
-                        logDirect("Warning: PathingBehaivor illegal state! Discarding invalid path!");
+                        logDirect("Warning: PathingBehavior illegal state! Discarding invalid path!");
                     }
                 }
                 if (talkAboutIt && current != null && current.getPath() != null) {

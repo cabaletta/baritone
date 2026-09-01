@@ -26,7 +26,8 @@
     "MixinPalettedContainer$Data",
     "MixinPlayerController",
     "MixinScreen",
-    "MixinWorldRenderer"
+    "MixinWorldRenderer",
+    "MixinVec3i"
   ],
   "mixins": [
   ]

@@ -30,6 +30,7 @@ import baritone.pathing.calc.AbstractNodeCostSearch;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
+import baritone.pathing.movement.MovementState;
 import baritone.pathing.movement.movements.*;
 import baritone.utils.BlockStateInterface;
 import net.minecraft.core.BlockPos;
@@ -466,6 +467,18 @@ public class PathExecutor implements IPathExecutor, Helper {
                     return true;
                 }
                 clearKeys();
+                // we are not ticking the movement, so we gotta do this ourselves
+                BetterBlockPos src = current.getSrc();
+                BetterBlockPos dest = current.getDest();
+                MovementState fakeState = new MovementState();
+                if (!MovementHelper.openDoors(ctx, fakeState, src, new BetterBlockPos(dest.x, src.y, dest.z))) {
+                    boolean forceRotations = fakeState.getTarget().hasToForceRotations();
+                    fakeState.getTarget().getRotation().ifPresent(rotation ->
+                            behavior.baritone.getLookBehavior().updateTarget(rotation, forceRotations));
+                    fakeState.getInputStates().forEach(behavior.baritone.getInputOverrideHandler()::setInputForceState);
+                    fakeState.getInputStates().clear();
+                    return true;
+                }
                 behavior.baritone.getLookBehavior().updateTarget(RotationUtils.calcRotationFromVec3d(ctx.playerHead(), data.getA(), ctx.playerRotations()), false);
                 behavior.baritone.getInputOverrideHandler().setInputForceState(Input.MOVE_FORWARD, true);
                 return true;
