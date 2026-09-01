@@ -57,7 +57,7 @@ public class ResumeBehavior extends Behavior implements Helper {
 
     /**
      * Selections live in memory across a reconnect and use absolute coordinates, so sel commands that start
-     * filling a schematic (\@code sel set air}, {@code sel ca}, ...) continue the same area when re-run and
+     * filling a schematic ({@code sel set air}, {@code sel ca}, ...) continue the same area when re-run and
      * are recorded like any other task. Subcommands are always the second word, so the aliases here cannot
      * collide with top-level command aliases like cancel's "c".
      */
@@ -150,24 +150,51 @@ public class ResumeBehavior extends Behavior implements Helper {
         if (trimmed.isEmpty()) {
             return;
         }
-        String label = trimmed.split("\\s+", 2)[0].toLowerCase(Locale.US);
+        String label = firstWord(trimmed);
+        if (this.handleInterruptingCommand(trimmed, label)) {
+            return;
+        }
+        if (!this.isRecordableTaskCommand(trimmed, label)) {
+            return;
+        }
+        this.recordTaskCommand(trimmed);
+    }
+
+    private static String firstWord(String command) {
+        return command.split("\\s+", 2)[0].toLowerCase(Locale.US);
+    }
+
+    /**
+     * @return whether the command interrupts the resume state, handling it if so. Cancelling drops a pending
+     * resume but keeps the saved command for {@code resumelast}; superseding drops both, since the user has
+     * re-pointed Baritone at something else entirely.
+     */
+    private boolean handleInterruptingCommand(String trimmed, String label) {
         if (CANCELLING_COMMANDS.contains(label)) {
             this.clearPendingResume();
             this.userCancelledAtTick = this.tickCounter;
-            return;
+            return true;
         }
         if (SUPERSEDING_COMMANDS.contains(label)) {
             this.clearPendingResume();
             this.lastTaskCommand = null;
             this.lastTaskServerId = null;
-            return;
+            return true;
         }
-        if (!TASK_COMMANDS.contains(label) && !isSelFillCommand(trimmed, label)) {
-            return;
+        return false;
+    }
+
+    /**
+     * @return whether the command starts a task that is safe and useful to re-run later
+     */
+    private boolean isRecordableTaskCommand(String trimmed, String label) {
+        if (TASK_COMMANDS.contains(label)) {
+            return !label.equals("build") || isResumableBuildCommand(trimmed);
         }
-        if (label.equals("build") && !isResumableBuildCommand(trimmed)) {
-            return;
-        }
+        return isSelFillCommand(trimmed, label);
+    }
+
+    private void recordTaskCommand(String trimmed) {
         this.lastTaskCommand = trimmed;
         this.lastTaskServerId = this.currentServerId();
         if (this.executingAutoResume) {
@@ -311,7 +338,7 @@ public class ResumeBehavior extends Behavior implements Helper {
         }
         logDirect(String.format("Resuming: %s", command), ChatFormatting.GRAY);
         baritone.getCommandManager().execute(command);
-        if (GOAL_ONLY_COMMANDS.contains(command.split("\\s+", 2)[0].toLowerCase(Locale.US))) {
+        if (GOAL_ONLY_COMMANDS.contains(firstWord(command))) {
             baritone.getCommandManager().execute("path");
         }
     }
