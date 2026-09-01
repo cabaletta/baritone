@@ -56,6 +56,18 @@ public class ResumeBehavior extends Behavior implements Helper {
     ));
 
     /**
+     * Selections live in memory across a reconnect and use absolute coordinates, so sel commands that start
+     * filling a schematic (\@code sel set air}, {@code sel ca}, ...) continue the same area when re-run and
+     * are recorded like any other task. Subcommands are always the second word, so the aliases here cannot
+     * collide with top-level command aliases like cancel's "c".
+     */
+    private static final Set<String> SEL_FILL_ACTIONS = new HashSet<>(Arrays.asList(
+            "set", "fill", "s", "f", "walls", "w", "shell", "shl", "sphere", "sph",
+            "hsphere", "hsph", "cylinder", "cyl", "hcylinder", "hcyl",
+            "cleararea", "ca", "replace", "r", "paste", "p"
+    ));
+
+    /**
      * Commands that only set a goal without starting to path towards it, so a resumed task has to be
      * followed by {@code path} for movement to actually start.
      */
@@ -150,7 +162,7 @@ public class ResumeBehavior extends Behavior implements Helper {
             this.lastTaskServerId = null;
             return;
         }
-        if (!TASK_COMMANDS.contains(label)) {
+        if (!TASK_COMMANDS.contains(label) && !isSelFillCommand(trimmed, label)) {
             return;
         }
         if (label.equals("build") && !isResumableBuildCommand(trimmed)) {
@@ -164,6 +176,22 @@ public class ResumeBehavior extends Behavior implements Helper {
             this.calcFailureResumeAttempts = 0;
         }
         this.clearPendingResume();
+    }
+
+    /**
+     * @return whether this is a {@code sel} (or alias) invocation whose subcommand starts filling a
+     * schematic, like {@code sel ca} or {@code sel set air}. Non-filling sel subcommands (pos1, pos2,
+     * copy, expand, ...) must not overwrite a recorded task, since running them again would do nothing.
+     */
+    private static boolean isSelFillCommand(String rawCommand, String label) {
+        if (!label.equals("sel") && !label.equals("selection") && !label.equals("s")) {
+            return false;
+        }
+        String[] tokens = rawCommand.split("\\s+");
+        if (tokens.length < 2) {
+            return false;
+        }
+        return SEL_FILL_ACTIONS.contains(tokens[1].toLowerCase(Locale.US));
     }
 
     /**
