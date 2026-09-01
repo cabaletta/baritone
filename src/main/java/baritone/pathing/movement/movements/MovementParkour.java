@@ -259,6 +259,9 @@ public class MovementParkour extends Movement {
             logDebug("sorry");
             return state.setStatus(MovementStatus.UNREACHABLE);
         }
+        if (!MovementHelper.openDoors(ctx, state, src, src.relative(direction))) {
+            return state;
+        }
         if (dist >= 4 || ascend) {
             state.setInput(Input.SPRINT, true);
         }
