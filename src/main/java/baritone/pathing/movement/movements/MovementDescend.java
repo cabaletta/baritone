@@ -239,6 +239,11 @@ public class MovementDescend extends Movement {
                 // System.out.println(player().position().y + " " + playerFeet.getY() + " " + (player().position().y - playerFeet.getY()));
             }*/
         }
+
+        if (!MovementHelper.openDoors(ctx, state, src, dest.above())) {
+            return state;
+        }
+
         if (safeMode()) {
             double destX = (src.getX() + 0.5) * 0.17 + (dest.getX() + 0.5) * 0.83;
             double destZ = (src.getZ() + 0.5) * 0.17 + (dest.getZ() + 0.5) * 0.83;
