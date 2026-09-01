@@ -368,7 +368,7 @@ public class MovementDiagonal extends Movement {
             return false;
         }
 
-        Vec3i offset = state.getValue(HorizontalDirectionalBlock.FACING).getNormal();
+        Vec3i offset = state.getValue(HorizontalDirectionalBlock.FACING).getUnitVec3i();
         int ox = offset.getX();
         int oz = offset.getZ();
 
