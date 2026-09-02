@@ -1583,6 +1583,41 @@ public final class Settings {
     public final Setting<Boolean> allowWalkOnMagmaBlocks = new Setting<>(false);
 
     /**
+     * Distance between branch tunnels in branch mine mode
+     */
+    public final Setting<Integer> branchMineInterval = new Setting<>(3);
+
+    /**
+     * Height of branch mine tunnels (1 = 1x1, 2 = 1x2)
+     */
+    public final Setting<Integer> branchMineTunnelHeight = new Setting<>(2);
+
+    /**
+     * Collect visible ores while branch mining
+     */
+    public final Setting<Boolean> branchMineOreCollection = new Setting<>(true);
+
+    /**
+     * Ticks between ore scans during branch mining
+     */
+    public final Setting<Integer> branchMineScanInterval = new Setting<>(20);
+
+    /**
+     * Build a staircase between layers in branch mine mode
+     */
+    public final Setting<Boolean> branchMineStaircase = new Setting<>(true);
+
+    /**
+     * Vertical distance between branch mine layers
+     */
+    public final Setting<Integer> branchMineLayerHeight = new Setting<>(3);
+
+    /**
+     * Branch offset per layer for maximum coverage (staggering)
+     */
+    public final Setting<Integer> branchMineStaggerOffset = new Setting<>(1);
+
+    /**
      * A map of lowercase setting field names to their respective setting
      */
     public final Map<String, Setting<?>> byLowerName;
