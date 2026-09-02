@@ -264,6 +264,17 @@ public final class Settings {
     public final Setting<Double> avoidBreakingMultiplier = new Setting<>(.1);
 
     /**
+     * How Baritone treats breaking a block in {@link #blocksToAvoid}:
+     * true = pay a large break cost penalty, pathing around the block when possible but breaking it if unavoidable;
+     * false = refuse to break it entirely (infinite cost), like {@link #blocksToDisallowBreaking}.
+     * <p>
+     * Note that a goal which forces Baritone in a straight line (e.g. {@code #tunnel}) may have no path around an
+     * avoided block, in which case even the penalty mode will break it. Strict mode also makes {@code #mine} ignore
+     * targets whose block is in {@link #blocksToAvoid}.
+     */
+    public final Setting<Boolean> blocksToAvoidBreakPenalty = new Setting<>(true);
+
+    /**
      * A list of blocks to be treated as if they're air.
      * <p>
      * If a schematic asks for air at a certain position, and that position currently contains a block on this list, it will be treated as correct.
