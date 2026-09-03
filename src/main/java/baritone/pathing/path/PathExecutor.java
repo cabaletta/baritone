@@ -497,7 +497,7 @@ public class PathExecutor implements IPathExecutor, Helper {
      * so a jump forced here lasts exactly one tick.
      */
     private void headHitJump(IMovement current) {
-        if (!canStartHeadHitting(current) || !underHeadBonkCeiling(current.getDirection(), ctx.playerFeet()) || !clearOfLedgesAhead(current, current.getDirection())) {
+        if (!canStartHeadHitting(current) || !underHeadBonkCeiling(current.getDirection(), ctx.playerFeet()) || !clearOfLedgesAhead(current.getDirection())) {
             return;
         }
         behavior.baritone.getInputOverrideHandler().setInputForceState(Input.JUMP, true);
@@ -518,8 +518,9 @@ public class PathExecutor implements IPathExecutor, Helper {
     }
 
     private boolean underHeadBonkCeiling(BlockPos dir, BetterBlockPos feet) {
-        if (MovementHelper.fullyPassable(ctx, feet.above(2))) {
-            return false; // not under a ceiling yet; jumping now would bonk on the face of the ceiling block ahead and stop us
+        BlockPos ceiling = feet.above(2);
+        if (MovementHelper.fullyPassable(ctx, ceiling) || !MovementHelper.isBlockNormalCube(ctx.world().getBlockState(ceiling))) {
+            return false; // not under a ceiling yet, or the thing overhead is something like a trapdoor that we can't reliably bonk against
         }
         // make sure we're fully inside the corridor before we start jumping, same idea as skipNow
         BlockPos behind = feet.subtract(dir).above(2);
@@ -530,16 +531,12 @@ public class PathExecutor implements IPathExecutor, Helper {
         return true;
     }
 
-    private boolean clearOfLedgesAhead(IMovement current, BlockPos dir) {
-        // momentum from the head bonk can carry us an extra block or two, so don't headhit when there's a ledge or
-        // dropoff ahead, e.g. when the goal is right next to one
-        if (pathPosition < path.length() - 2 && path.movements().get(pathPosition + 1).getDirection().getY() < 0) {
-            return false; // the path goes down right after this movement, don't add any momentum
-        }
-        BetterBlockPos dest = current.getDest();
+    private boolean clearOfLedgesAhead(BlockPos dir) {
+        // momentum from the head bonk can carry us an extra block or two, so don't headhit unless the next two blocks
+        // in this direction are also part of the path, that way momentum can never send us off it
         for (int i = 1; i <= 2; i++) {
-            if (!MovementHelper.canWalkOn(ctx, dest.offset(dir.getX() * i, 0, dir.getZ() * i).below())) {
-                return false; // no floor where our momentum would take us
+            if (pathPosition + i > path.length() - 2 || !path.movements().get(pathPosition + i).getDirection().equals(dir)) {
+                return false; // the path turns or ends within two blocks, don't add any momentum
             }
         }
         return true;
