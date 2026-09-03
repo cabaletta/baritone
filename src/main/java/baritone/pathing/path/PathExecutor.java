@@ -373,6 +373,9 @@ public class PathExecutor implements IPathExecutor, Helper {
 
         // if the movement requested sprinting, then we're done
         if (requested) {
+            if (Baritone.settings().headHitters.value) {
+                headHitJump(current);
+            }
             return true;
         }
 
@@ -485,6 +488,58 @@ public class PathExecutor implements IPathExecutor, Helper {
             }
         }
         return false;
+    }
+
+    /**
+     * Sprint jump into a low ceiling (1x2 corridors, overhangs, etc.) for a bit of extra speed.
+     * The sprint jump boost applies on the first ticks of the jump, before we bonk our head on the ceiling.
+     * This runs after movement.update() has cleared and reasserted the forced inputs,
+     * so a jump forced here lasts exactly one tick.
+     */
+    private void headHitJump(IMovement current) {
+        if (!canStartHeadHitting(current) || !underHeadBonkCeiling(current.getDirection(), ctx.playerFeet()) || !clearOfLedgesAhead(current.getDirection())) {
+            return;
+        }
+        behavior.baritone.getInputOverrideHandler().setInputForceState(Input.JUMP, true);
+    }
+
+    private boolean canStartHeadHitting(IMovement current) {
+        if (!(current instanceof MovementTraverse) || current.getDirection().getY() != 0) {
+            return false; // head hitting only applies to flat walking movements
+        }
+        if (!ctx.player().isOnGround() || MovementHelper.isLiquid(ctx, ctx.playerFeet())) {
+            return false;
+        }
+        if (((Movement) current).toBreakCached == null || !((Movement) current).toBreakCached.isEmpty()) {
+            return false; // breaking is like 5x slower when you're jumping
+        }
+        // not while sneaking either, e.g. walking on magma, a jump would break the sneak and the edge safety with it
+        return !behavior.baritone.getInputOverrideHandler().isInputForcedDown(Input.SNEAK);
+    }
+
+    private boolean underHeadBonkCeiling(BlockPos dir, BetterBlockPos feet) {
+        BlockPos ceiling = feet.above(2);
+        if (MovementHelper.fullyPassable(ctx, ceiling) || !MovementHelper.isBlockNormalCube(ctx.world().getBlockState(ceiling))) {
+            return false; // not under a ceiling yet, or the thing overhead is something like a trapdoor that we can't reliably bonk against
+        }
+        // make sure we're fully inside the corridor before we start jumping, same idea as skipNow
+        BlockPos behind = feet.subtract(dir).above(2);
+        if (MovementHelper.fullyPassable(ctx, behind)) {
+            double flatDist = Math.abs(dir.getX() * (behind.getX() + 0.5D - ctx.player().position().x)) + Math.abs(dir.getZ() * (behind.getZ() + 0.5D - ctx.player().position().z));
+            return flatDist >= 0.8; // just entered, wait until we're clear of the entrance face
+        }
+        return true;
+    }
+
+    private boolean clearOfLedgesAhead(BlockPos dir) {
+        // momentum from the head bonk can carry us an extra block or two, so don't headhit unless the next two blocks
+        // in this direction are also part of the path, that way momentum can never send us off it
+        for (int i = 1; i <= 2; i++) {
+            if (pathPosition + i > path.length() - 2 || !path.movements().get(pathPosition + i).getDirection().equals(dir)) {
+                return false; // the path turns or ends within two blocks, don't add any momentum
+            }
+        }
+        return true;
     }
 
     private Tuple<Vec3, BlockPos> overrideFall(MovementFall movement) {
