@@ -95,6 +95,42 @@ public class MixinClientPlayNetHandler {
         }
     }
 
+    /**
+     * Intercepts commands (messages starting with '/') that match a Baritone prefix
+     * starting with '/'. For example, if prefix is "/#", typing "/#goto" will be
+     * intercepted here as "#goto" (the '/' is stripped by ChatScreen before this method).
+     *
+     * @see <a href="https://github.com/cabaletta/baritone/issues/5045">Issue #5045</a>
+     */
+    @Inject(
+            method = "sendCommand(Ljava/lang/String;)V",
+            at = @At("HEAD"),
+            cancellable = true
+    )
+    private void sendCommandMessage(String command, CallbackInfo ci) {
+        if (!Baritone.settings().prefixControl.value) {
+            return;
+        }
+        String prefix = Baritone.settings().prefix.value;
+        if (!prefix.startsWith("/")) {
+            return;
+        }
+        // command arrives without '/' (ChatScreen strips it), compare against prefix without '/'
+        String prefixWithoutSlash = prefix.substring(1);
+        if (command.startsWith(prefixWithoutSlash)) {
+            // Reconstruct the full message with '/' so ExampleBaritoneControl handles it correctly
+            ChatEvent event = new ChatEvent("/" + command);
+            IBaritone baritone = BaritoneAPI.getProvider().getBaritoneForPlayer(this.minecraft.player);
+            if (baritone == null) {
+                return;
+            }
+            baritone.getGameEventHandler().onSendChatMessage(event);
+            if (event.isCancelled()) {
+                ci.cancel();
+            }
+        }
+    }
+
     @Inject(
             method = "handleLevelChunkWithLight",
             at = @At("RETURN")
