@@ -30,14 +30,14 @@ import java.util.stream.Stream;
 public class ComeCommand extends Command {
 
     public ComeCommand(IBaritone baritone) {
-        super(baritone, "come");
+        super(baritone, "come", "cum");
     }
 
     @Override
     public void execute(String label, IArgConsumer args) throws CommandException {
         args.requireMax(0);
         baritone.getCustomGoalProcess().setGoalAndPath(new GoalBlock(ctx.viewerPos()));
-        logDirect("Coming");
+        logDirect(label.equals("cum") ? "Cumming" : "Coming");
     }
 
     @Override
