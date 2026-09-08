@@ -32,10 +32,15 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.jar.JarEntry;
+import java.util.jar.JarOutputStream;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -130,9 +135,9 @@ public class ProguardTask extends BaritoneGradleTask {
         template.add(0, "-injars '" + this.artifactPath.toString() + "'");
         template.add(1, "-outjars '" + this.getTemporaryFile(PROGUARD_EXPORT_PATH) + "'");
 
-        template.add(2, "-libraryjars  <java.home>/jmods/java.base.jmod(!**.jar;!module-info.class)");
-        template.add(3, "-libraryjars  <java.home>/jmods/java.desktop.jmod(!**.jar;!module-info.class)");
-        template.add(4, "-libraryjars  <java.home>/jmods/jdk.unsupported.jmod(!**.jar;!module-info.class)");
+        for (String module : List.of("java.base", "java.desktop", "jdk.unsupported")) {
+            template.add(2, "-libraryjars '" + javaModuleLibrary(module) + "'(!**.jar;!module-info.class)");
+        }
 
         {
             final Stream<File> libraries;
@@ -170,6 +175,34 @@ public class ProguardTask extends BaritoneGradleTask {
         standalone.removeIf(s -> s.contains("# this is the keep api"));
         standalone.add(2, "-printmapping " + new File(this.getRootRelativeFile(PROGUARD_MAPPING_DIR).toFile(), "mappings-" + addCompTypeFirst("standalone.txt")));
         Files.write(getTemporaryFile(compType + PROGUARD_STANDALONE_CONFIG), standalone);
+    }
+
+    /** Some Java 25 distributions omit jmods; the runtime image still contains their classes. */
+    private Path javaModuleLibrary(String module) throws IOException {
+        Path javaHome = getJavaLauncherForProguard().getMetadata().getInstallationPath().getAsFile().toPath();
+        Path jmod = javaHome.resolve("jmods").resolve(module + ".jmod");
+        if (Files.isRegularFile(jmod)) {
+            return jmod;
+        }
+        Path library = getTemporaryFile(module + "-runtime.jar");
+        try (FileSystem runtime = FileSystems.newFileSystem(URI.create("jrt:/"), Map.of("java.home", javaHome.toString()));
+             JarOutputStream output = new JarOutputStream(Files.newOutputStream(library))) {
+            Path root = runtime.getPath("/modules", module);
+            try (Stream<Path> entries = Files.walk(root)) {
+                for (Path entry : (Iterable<Path>) entries.filter(Files::isRegularFile).sorted()::iterator) {
+                    String name = root.relativize(entry).toString().replace('\\', '/');
+                    if (!name.endsWith(".class") || name.equals("module-info.class")) {
+                        continue;
+                    }
+                    JarEntry jarEntry = new JarEntry(name);
+                    jarEntry.setTime(0);
+                    output.putNextEntry(jarEntry);
+                    Files.copy(entry, output);
+                    output.closeEntry();
+                }
+            }
+        }
+        return library;
     }
 
     private Stream<File> acquireDependencies() {
