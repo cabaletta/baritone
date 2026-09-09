@@ -23,6 +23,7 @@ import baritone.api.command.Command;
 import baritone.api.command.argument.IArgConsumer;
 import baritone.api.command.datatypes.ForAxis;
 import baritone.api.command.datatypes.ForBlockOptionalMeta;
+import baritone.api.command.datatypes.ForBlockOptionalMetaLookup;
 import baritone.api.command.datatypes.ForDirection;
 import baritone.api.command.datatypes.RelativeBlockPos;
 import baritone.api.command.exception.CommandException;
@@ -133,9 +134,12 @@ public class SelCommand extends Command {
                 List<BlockOptionalMeta> replacesList = new ArrayList<>();
                 replacesList.add(type);
                 while (args.has(2)) {
-                    replacesList.add(args.getDatatypeFor(ForBlockOptionalMeta.INSTANCE));
+                    replacesList.addAll(args.getDatatypeFor(ForBlockOptionalMetaLookup.INSTANCE).blocks());
                 }
                 type = args.getDatatypeFor(ForBlockOptionalMeta.INSTANCE);
+                if (replacesList.size() == 0) {
+                    throw new CommandInvalidStateException("No target blocks specified");
+                }
                 replaces = new BlockOptionalMetaLookup(replacesList.toArray(new BlockOptionalMeta[0]));
                 alignment = null;
             } else if (action == Action.CYLINDER || action == Action.HCYLINDER) {

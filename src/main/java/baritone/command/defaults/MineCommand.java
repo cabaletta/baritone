@@ -21,8 +21,9 @@ import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.command.Command;
 import baritone.api.command.argument.IArgConsumer;
-import baritone.api.command.datatypes.ForBlockOptionalMeta;
+import baritone.api.command.datatypes.ForBlockOptionalMetaLookup;
 import baritone.api.command.exception.CommandException;
+import baritone.api.command.exception.CommandInvalidStateException;
 import baritone.api.utils.BlockOptionalMeta;
 
 import java.util.ArrayList;
@@ -42,7 +43,10 @@ public class MineCommand extends Command {
         args.requireMin(1);
         List<BlockOptionalMeta> boms = new ArrayList<>();
         while (args.hasAny()) {
-            boms.add(args.getDatatypeFor(ForBlockOptionalMeta.INSTANCE));
+            boms.addAll(args.getDatatypeFor(ForBlockOptionalMetaLookup.INSTANCE).blocks());
+        }
+        if (boms.size() == 0) {
+            throw new CommandInvalidStateException("No target blocks specified");
         }
         BaritoneAPI.getProvider().getWorldScanner().repack(ctx);
         logDirect(String.format("Mining %s", boms.toString()));
@@ -53,9 +57,9 @@ public class MineCommand extends Command {
     public Stream<String> tabComplete(String label, IArgConsumer args) throws CommandException {
         args.getAsOrDefault(Integer.class, 0);
         while (args.has(2)) {
-            args.getDatatypeFor(ForBlockOptionalMeta.INSTANCE);
+            args.getDatatypeFor(ForBlockOptionalMetaLookup.INSTANCE);
         }
-        return args.tabCompleteDatatype(ForBlockOptionalMeta.INSTANCE);
+        return args.tabCompleteDatatype(ForBlockOptionalMetaLookup.INSTANCE);
     }
 
     @Override
