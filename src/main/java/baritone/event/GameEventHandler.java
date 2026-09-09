@@ -27,6 +27,8 @@ import baritone.api.utils.Pair;
 import baritone.cache.CachedChunk;
 import baritone.cache.WorldProvider;
 import baritone.utils.BlockStateInterface;
+import it.unimi.dsi.fastutil.ints.IntList;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -43,7 +45,9 @@ public final class GameEventHandler implements IEventBus, Helper {
 
     private final Baritone baritone;
 
+    // reading/iterating `listeners` is allowed without synchronization
     private final List<IGameEventListener> listeners = new CopyOnWriteArrayList<>();
+    private final IntList priorities = new IntArrayList();
 
     public GameEventHandler(Baritone baritone) {
         this.baritone = baritone;
@@ -184,6 +188,16 @@ public final class GameEventHandler implements IEventBus, Helper {
 
     @Override
     public final void registerEventListener(IGameEventListener listener) {
-        this.listeners.add(listener);
+        this.registerEventListener(0, listener);
+    }
+
+    @Override
+    public final synchronized void registerEventListener(int priority, IGameEventListener listener) {
+        int i = 0;
+        while (i < this.listeners.size() && priority <= this.priorities.getInt(i)) {
+            ++i;
+        }
+        this.listeners.add(i, listener);
+        this.priorities.add(i, priority);
     }
 }

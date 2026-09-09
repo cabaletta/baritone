@@ -21,6 +21,8 @@ package baritone.api.event.listener;
  * A type of {@link IGameEventListener} that can have additional listeners
  * registered so that they receive the events that are dispatched to this
  * listener.
+ * <p>
+ * Listeners with higher priority will be called first.
  *
  * @author Brady
  * @since 11/14/2018
@@ -29,8 +31,17 @@ public interface IEventBus extends IGameEventListener {
 
     /**
      * Registers the specified {@link IGameEventListener} to this event bus
+     * using a default priority {@code 0}
      *
      * @param listener The listener
      */
     void registerEventListener(IGameEventListener listener);
+
+    /**
+     * Registers the specified {@link IGameEventListener} to this event bus.
+     *
+     * @param priority The listener priority
+     * @param listener The listener
+     */
+    void registerEventListener(int priority, IGameEventListener listener);
 }
