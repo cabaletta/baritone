@@ -62,10 +62,6 @@ allprojects {
             name = 'impactdevelopment-repo'
             url = 'https://impactdevelopment.github.io/maven/'
         }
-        maven {
-            name = "ldtteam"
-            url = "https://maven.parchmentmc.net/"
-        }
         // for the newer version of launchwrapper
         maven {
             name = "multimc-maven"
@@ -146,6 +142,7 @@ sourceSets {
 
 dependencies {
     testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.mockito:mockito-core:5.20.0'
 }
 
 jar {

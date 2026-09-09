@@ -37,6 +37,8 @@ Commands in Baritone:
 - `thisway 1000` then `path` to go in the direction you're facing for a thousand blocks
 - `goal x y z` or `goal x z` or `goal y`, then `path` to set a goal to a certain coordinate then path to it
 - `goto x y z` or `goto x z` or `goto y` to go to a certain coordinate (in a single step, starts going immediately)
+- `locate biome cherry_grove` to find a biome from world generation and automatically travel to it. See [Biome locating](#biome-locating).
+- `locate structure end city` or `locate structure end_city` to predict a structure and travel to its area. See [Structure locating](#structure-locating).
 - `goal` to set the goal to your player's feet
 - `goal clear` to clear the goal
 - `cancel` or `stop` to stop everything, `forcecancel` is also an option
@@ -87,6 +89,62 @@ There are about a hundred settings, but here are some fun / interesting / import
 - `blocksToAvoidBreaking`
 - `mineScanDroppedItems`
 - `allowDiagonalAscend`
+
+# Biome locating
+
+For Minecraft **26.2 Java Edition**, use `#locate biome <biome> [radius]`, for example:
+
+```text
+#locate biome cherry_grove
+#locate biome minecraft:desert 10000
+#locate biome lush_caves
+```
+
+Biome names support tab completion. The search uses generation data beyond loaded chunks, in your current dimension. In singleplayer, the seed and actual world generator are obtained automatically, including custom generation and world presets; cheats are not required.
+
+In multiplayer, first supply the world's numeric seed or original text seed in the dimension you want to search:
+
+```text
+#locate seed -1234567890123456789
+#locate biome badlands
+```
+
+Text seeds also work, for example `#locate seed oogabooga` or `#locate seed North Carolina`. The entire remaining text is used without quotes, preserving case and internal spaces, and converted using Minecraft's own seed parser; the resulting numeric seed is displayed. Use the seed entered during world creation, not the world's display name. `clear` alone is reserved for removing a saved seed; use its numeric equivalent if that was your original seed text.
+
+`#locate seed` displays the saved seed (or the actual singleplayer seed); `#locate seed clear` removes the saved seed. Zero is a valid seed. Seeds are saved in `locate.properties` alongside the current world's dimension cache, so another server or dimension does not silently inherit one. Re-enter the seed after switching dimensions. A server reset requires updating or clearing its saved seed.
+
+For a multiplayer Overworld using a non-default vanilla preset, use `#locate preset large_biomes` or `#locate preset amplified`; `#locate preset default` restores the normal preset. Multiplayer prediction supports the vanilla Overworld, Nether and End. It assumes **26.2 generation** with the supplied seed and preset. Custom server generators, data packs and chunks generated in older versions may differ. This command does not discover unknown server seeds or send `/seed` or `/locate` commands to a server.
+
+The default search radius is 6400 blocks, with an allowed range of 32–12800. The search visits expanding square rings on a 32-block horizontal and vertical grid, checking heights nearest your current Y first. Within the first matching ring, it chooses the sample closest horizontally, then refines the surrounding area at 4-block resolution. This is not a guaranteed nearest biome boundary; small biomes can still fall between the initial samples. A failed search reports that no sample matched within the requested range.
+
+Baritone prints the predicted X/Y/Z coordinates and begins travelling. Once nearby terrain is loaded, it checks positions within 16 blocks horizontally across the world's height. These checks are spread across ticks. It gives the pathfinder up to 16 nearby goals with existing standing space or a breathing position at the water surface, all in the actual target biome. It does not select solid terrain or an unsupported Y coordinate as a final destination. Normal pathfinding settings still govern travel, including whether it can break or place blocks on the route.
+
+Arrival is only reported after your actual biome matches. If no suitable position exists near the prediction, chunks fail to load, or pathfinding fails, it stops with an explanation. It checks destination positions again during the final approach to account for terrain changes. A suitable position is not a guarantee of a reachable route; this is especially relevant to caves and End islands.
+
+`#stop`, `#cancel` and `#locate cancel` cancel searching and travel. `#pause`/`#resume` pause and resume movement (the background search may finish while paused). Changing worlds, losing process control, starting a replacement locate search or changing saved locate settings discards the old search result.
+
+# Structure locating
+
+```text
+#locate structure end city
+#locate structure end_city
+#locate structure village
+#locate structure stronghold 10000
+#locate structure bastion
+#locate structure #minecraft:ruined_portal
+```
+
+Structures use the same current-dimension seed and preset settings as biomes. Singleplayer obtains these from the active generator automatically; multiplayer requires `#locate seed <seed>`. Enter the End before searching for an End City, or the Nether before searching for a fortress or bastion. The locator does not build or use portals to switch dimensions.
+
+Both vanilla registry identifiers and readable names are supported, including `end city`, `ancient city`, `woodland mansion`, `desert temple`, `jungle temple`, `ocean monument`, and `nether fortress`. `village`, `mineshaft`, `shipwreck`, `ruined portal`, and `ocean ruin` search their vanilla structure tags, including variants. An explicit identifier such as `minecraft:shipwreck` restricts the search to that variant. Names and common tags support tab completion.
+
+The optional radius is measured in **blocks**, with the same default 6400 and maximum 12800 as biome searches. Structure searches enumerate Minecraft's random-spread candidates and stronghold rings, apply placement frequency and exclusion rules, and use Minecraft's full structure-start generation. Weighted competition between structures in a shared set is preserved, so a bastion candidate is not incorrectly reported as a fortress. Candidates inside the requested square radius and world border are checked in horizontal-distance order.
+
+No live chunks are generated by this search and no server commands are sent. Multiplayer predictions load the bundled vanilla server data and templates into private generation state. A temporary directory needed by Minecraft's template manager is cleaned up after each search. Singleplayer uses its existing registry and template data with private noise state where supported.
+
+The command prints the predicted coordinates and starts travelling. It checks loaded terrain for standing or swimming positions near the generated structure bounds, allowing a small margin for an entrance or a breathing position above water. It reports reaching the **predicted structure area**, not confirmed structure presence: the client does not receive authoritative structure starts. Existing chunks from older versions, disabled structure generation, custom server generation or changed placement salts can invalidate a prediction. Pathfinding can also fail if no reachable destination exists. Strongholds and End Cities are not guaranteed to have a usable route, and End City prediction does not guarantee a ship.
+
+`#stop`, `#cancel`, `#locate cancel`, pause/resume, replacement searches and world changes behave the same for biome and structure searches.
 
 # Troubleshooting / common issues
 

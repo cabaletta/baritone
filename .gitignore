@@ -9,6 +9,7 @@ volderyarn/
 # Gradle
 build/
 .gradle/
+.gradle-user/
 classes/
 *.class
 
