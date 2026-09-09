@@ -30,6 +30,7 @@ import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.pathing.movement.MovementState.MovementTarget;
 import baritone.utils.pathing.MutableMoveResult;
+import baritone.utils.reflection.InteractabilityHelper;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -110,6 +111,9 @@ public class MovementFall extends Movement {
 
                 targetRotation = new Rotation(toDest.getYaw(), 90.0F);
 
+                boolean clickable = InteractabilityHelper.hasRightClickAction(ctx.world().getBlockState(dest.below()));
+                state.setInput(Input.SNEAK, clickable);
+
                 if (ctx.isLookingAt(dest) || ctx.isLookingAt(dest.below())) {
                     state.setInput(Input.CLICK_RIGHT, true);
                 }
@@ -129,7 +133,12 @@ public class MovementFall extends Movement {
             if (isWater) { // only match water, not flowing water (which we cannot pick up with a bucket)
                 if (Inventory.isHotbarSlot(ctx.player().getInventory().findSlotMatchingItem(STACK_BUCKET_EMPTY))) {
                     ctx.player().getInventory().selected = ctx.player().getInventory().findSlotMatchingItem(STACK_BUCKET_EMPTY);
-                    if (ctx.player().getDeltaMovement().y >= 0) {
+
+                    // Note: this can not happen if there is water below, so no risk of drowning
+                    boolean clickable = InteractabilityHelper.hasRightClickAction(ctx.world().getBlockState(dest.below()));
+                    state.setInput(Input.SNEAK, clickable);
+
+                    if (ctx.player().getDeltaMovement().y >= 0 || ctx.player().isCrouching()) {
                         return state.setInput(Input.CLICK_RIGHT, true);
                     } else {
                         return state;

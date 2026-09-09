@@ -28,6 +28,7 @@ import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.pathing.MutableMoveResult;
+import baritone.utils.reflection.InteractabilityHelper;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -189,7 +190,11 @@ public class MovementParkour extends Movement {
                 if (againstX == destX - xDiff && againstZ == destZ - zDiff) { // we can't turn around that fast
                     continue;
                 }
-                if (MovementHelper.canPlaceAgainst(context.bsi, againstX, againstY, againstZ)) {
+                if (!MovementHelper.canPlaceAgainst(context.bsi, againstX, againstY, againstZ)) {
+                    continue;
+                }
+                // TODO Reflection during movement evaluation! This is BAD!
+                if (!InteractabilityHelper.hasRightClickAction(context.bsi.get0(againstX, againstY, againstZ))) {
                     res.x = destX;
                     res.y = y;
                     res.z = destZ;
