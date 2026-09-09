@@ -25,15 +25,10 @@ import baritone.api.pathing.goals.GoalGetToBlock;
 import baritone.api.process.IBuilderProcess;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
-import baritone.api.schematic.FillSchematic;
-import baritone.api.schematic.ISchematic;
-import baritone.api.schematic.IStaticSchematic;
-import baritone.api.schematic.MaskSchematic;
-import baritone.api.schematic.SubstituteSchematic;
-import baritone.api.schematic.RotatedSchematic;
-import baritone.api.schematic.MirroredSchematic;
+import baritone.api.schematic.*;
 import baritone.api.schematic.format.ISchematicFormat;
 import baritone.api.utils.*;
+import baritone.api.utils.Rotation;
 import baritone.api.utils.input.Input;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
@@ -42,8 +37,8 @@ import baritone.utils.BaritoneProcessHelper;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.PathingCommandContext;
 import baritone.utils.schematic.MapArtSchematic;
-import baritone.utils.schematic.SelectionSchematic;
 import baritone.utils.schematic.SchematicSystem;
+import baritone.utils.schematic.SelectionSchematic;
 import baritone.utils.schematic.litematica.LitematicaHelper;
 import baritone.utils.schematic.schematica.SchematicaHelper;
 import com.google.common.collect.ImmutableMap;
@@ -52,20 +47,14 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
+import net.minecraft.util.Mth;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
-import net.minecraft.world.level.block.AirBlock;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.HorizontalDirectionalBlock;
-import net.minecraft.world.level.block.LiquidBlock;
-import net.minecraft.world.level.block.PipeBlock;
-import net.minecraft.world.level.block.RotatedPillarBlock;
-import net.minecraft.world.level.block.StairBlock;
-import net.minecraft.world.level.block.TrapDoorBlock;
+import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.phys.AABB;
@@ -73,6 +62,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.apache.commons.lang3.stream.Streams;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -279,30 +269,50 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         return state;
     }
 
+    private static Vec3i[] xzOffsets(boolean reversed) {
+        final ArrayList<Vec3i> list = new ArrayList<>();
+        for (int dx = -5; dx <= 5; dx++)
+            for (int dz = -5; dz <= 5; dz++)
+                list.add(new Vec3i(dx, 0, dz));
+        Comparator<Vec3i> comparator = Comparator.comparingDouble(v -> Math.round(Vec3i.ZERO.distSqr(v)));
+        if (reversed) comparator = comparator.reversed();
+        list.sort(comparator.thenComparingDouble(v -> Mth.atan2(-v.getX(), v.getZ())));
+        return list.stream().collect(new Streams.ArrayCollector<>(Vec3i.class));
+    }
+
+    private static final Vec3i[] XZ_OFFSETS_NEAR_TO_FAR = xzOffsets(false);
+    private static final Vec3i[] XZ_OFFSETS_FAR_TO_NEAR = xzOffsets(true);
+
     private Optional<Tuple<BetterBlockPos, Rotation>> toBreakNearPlayer(BuilderCalculationContext bcc) {
         BetterBlockPos center = ctx.playerFeet();
         BetterBlockPos pathStart = baritone.getPathingBehavior().pathStart();
-        for (int dx = -5; dx <= 5; dx++) {
-            for (int dy = Baritone.settings().breakFromAbove.value ? -1 : 0; dy <= 5; dy++) {
-                for (int dz = -5; dz <= 5; dz++) {
-                    int x = center.x + dx;
-                    int y = center.y + dy;
-                    int z = center.z + dz;
-                    if (dy == -1 && x == pathStart.x && z == pathStart.z) {
-                        continue; // dont mine what we're supported by, but not directly standing on
-                    }
-                    BlockState desired = bcc.getSchematic(x, y, z, bcc.bsi.get0(x, y, z));
-                    if (desired == null) {
-                        continue; // irrelevant
-                    }
-                    BlockState curr = bcc.bsi.get0(x, y, z);
-                    if (!(curr.getBlock() instanceof AirBlock) && !(curr.getBlock() == Blocks.WATER || curr.getBlock() == Blocks.LAVA) && !valid(curr, desired, false)) {
-                        BetterBlockPos pos = new BetterBlockPos(x, y, z);
-                        Optional<Rotation> rot = RotationUtils.reachable(ctx, pos, ctx.playerController().getBlockReachDistance());
-                        if (rot.isPresent()) {
-                            return Optional.of(new Tuple<>(pos, rot.get()));
-                        }
-                    }
+        for (int dy = Baritone.settings().breakFromAbove.value ? -1 : 0; dy <= 5; dy++) {
+            for (Vec3i offset : XZ_OFFSETS_NEAR_TO_FAR) {
+                BlockPos pos = center.offset(offset.getX(), dy, offset.getZ());
+                if (dy == -1 && pathStart.equals(pos)) {
+                    continue; // dont mine what we're supported by, but not directly standing on
+                }
+
+                BlockState curr = bcc.bsi.get0(pos);
+                VoxelShape shape = curr.getShape(ctx.world(), pos);
+                if (shape.isEmpty()) {
+                    continue; // block can't be mined (air, water, lava, etc.)
+                }
+                if (MovementHelper.isReplaceable(pos.getX(), pos.getY(), pos.getZ(), curr, bcc.bsi)) {
+                    continue; // block can be placed w/o mining first (air, single layer snow, etc.)
+                }
+
+                BlockState desired = bcc.getSchematic(pos.getX(), pos.getY(), pos.getZ(), curr);
+                if (desired == null) {
+                    continue; // irrelevant
+                }
+                if (valid(curr, desired, false)) {
+                    continue; // block already valid
+                }
+
+                Optional<Rotation> rot = RotationUtils.reachable(ctx, pos, ctx.playerController().getBlockReachDistance());
+                if (rot.isPresent()) {
+                    return Optional.of(new Tuple<>(new BetterBlockPos(pos), rot.get()));
                 }
             }
         }
@@ -326,27 +336,50 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
 
     private Optional<Placement> searchForPlacables(BuilderCalculationContext bcc, List<BlockState> desirableOnHotbar) {
         BetterBlockPos center = ctx.playerFeet();
-        for (int dx = -5; dx <= 5; dx++) {
-            for (int dy = -5; dy <= 1; dy++) {
-                for (int dz = -5; dz <= 5; dz++) {
-                    int x = center.x + dx;
-                    int y = center.y + dy;
-                    int z = center.z + dz;
-                    BlockState desired = bcc.getSchematic(x, y, z, bcc.bsi.get0(x, y, z));
-                    if (desired == null) {
-                        continue; // irrelevant
-                    }
-                    BlockState curr = bcc.bsi.get0(x, y, z);
-                    if (MovementHelper.isReplaceable(x, y, z, curr, bcc.bsi) && !valid(curr, desired, false)) {
-                        if (dy == 1 && bcc.bsi.get0(x, y + 1, z).getBlock() instanceof AirBlock) {
-                            continue;
+        for (int dy = -5; dy <= 1; dy++) {
+            for (Vec3i offset : XZ_OFFSETS_FAR_TO_NEAR) {
+                BlockPos pos = center.offset(offset.getX(), dy, offset.getZ());
+                if (dy == 1 && bcc.bsi.get0(pos.above()).getBlock() instanceof AirBlock)
+                    continue;
+
+                BlockState curr = bcc.bsi.get0(pos);
+                if (!MovementHelper.isReplaceable(pos.getX(), pos.getY(), pos.getZ(), curr, bcc.bsi)) {
+                    continue; // existing block has to be mined first
+                }
+
+                BlockState desired = bcc.getSchematic(pos.getX(), pos.getY(), pos.getZ(), curr);
+                if (desired == null) {
+                    continue; // irrelevant
+                }
+                if (valid(curr, desired, false)) {
+                    continue; // block already valid
+                }
+                if (!desired.canSurvive(ctx.world(), pos)) {
+                    continue; // block would break / wouldn't survive
+                }
+                if (!placementPlausible(pos, desired)) {
+                    continue; // block placement is obstructed
+                }
+
+                desirableOnHotbar.add(desired);
+
+                // try replacing existing block directly
+                if (!curr.getShape(ctx.world(), pos).isEmpty()) {
+                    Optional<Rotation> rotation = RotationUtils.reachable(ctx, pos, true);
+                    if (rotation.isPresent()) {
+                        Rotation actualRot = baritone.getLookBehavior().getAimProcessor().peekRotation(rotation.get());
+                        HitResult result = RayTraceUtils.rayTraceTowards(ctx.player(), actualRot, ctx.playerController().getBlockReachDistance(), true);
+                        OptionalInt hotbar = hasAnyItemThatWouldPlace(desired, result, actualRot);
+                        if (hotbar.isPresent()) {
+                            return Optional.of(new Placement(hotbar.getAsInt(), pos, ((BlockHitResult) result).getDirection(), rotation.get()));
                         }
-                        desirableOnHotbar.add(desired);
-                        Optional<Placement> opt = possibleToPlace(desired, x, y, z, bcc.bsi);
-                        if (opt.isPresent()) {
-                            return opt;
-                        }
                     }
+                }
+
+                // try placing block against neighbouring block face
+                final Optional<Placement> opt = possibleToPlace(desired, new BetterBlockPos(pos), bcc.bsi);
+                if (opt.isPresent()) {
+                    return opt;
                 }
             }
         }
@@ -358,17 +391,11 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         return voxelshape.isEmpty() || ctx.world().isUnobstructed(null, voxelshape.move(pos.getX(), pos.getY(), pos.getZ()));
     }
 
-    private Optional<Placement> possibleToPlace(BlockState toPlace, int x, int y, int z, BlockStateInterface bsi) {
+    private Optional<Placement> possibleToPlace(BlockState toPlace, BetterBlockPos pos, BlockStateInterface bsi) {
         for (Direction against : Direction.values()) {
-            BetterBlockPos placeAgainstPos = new BetterBlockPos(x, y, z).relative(against);
+            BetterBlockPos placeAgainstPos = pos.relative(against);
             BlockState placeAgainstState = bsi.get0(placeAgainstPos);
             if (MovementHelper.isReplaceable(placeAgainstPos.x, placeAgainstPos.y, placeAgainstPos.z, placeAgainstState, bsi)) {
-                continue;
-            }
-            if (!toPlace.canSurvive(ctx.world(), new BetterBlockPos(x, y, z))) {
-                continue;
-            }
-            if (!placementPlausible(new BetterBlockPos(x, y, z), toPlace)) {
                 continue;
             }
             VoxelShape shape = placeAgainstState.getShape(ctx.world(), placeAgainstPos);
