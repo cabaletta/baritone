@@ -29,6 +29,7 @@ import baritone.pathing.movement.MovementHelper;
 import baritone.process.ElytraProcess;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.IRenderer;
+import baritone.utils.MeteorClientCompat;
 import baritone.utils.PathRenderer;
 import baritone.utils.accessor.IFireworkRocketEntity;
 import com.mojang.blaze3d.vertex.BufferBuilder;
@@ -769,6 +770,17 @@ public final class ElytraBehavior implements Helper {
                 && (ctx.player().position().y < goingTo.y - 5 || start.distanceTo(new Vec3(goingTo.x + 0.5, ctx.player().position().y, goingTo.z + 0.5)) > 5) // UGH!!!!!!!
                 && currentSpeed < elytraFireworkSpeed * elytraFireworkSpeed))
         ) {
+            if (Baritone.settings().elytraBoostModule.value) {
+                if (MeteorClientCompat.tryBoost()) {
+                    logVerbose("attempting to use elytra boost module" + (forceUseFirework ? " (forced)" : ""));
+                    this.minimumBoostTicks = 10;
+                    this.remainingFireworkTicks = 10;
+                    this.deployedFireworkLastTick = true;
+                    return;
+                }
+                logDebug("elytraBoostModule enabled, but Meteor Client's Elytra Boost module is not active or not available; falling back to fireworks");
+            }
+
             // Prioritize boosting fireworks over regular ones
             // TODO: Take the minimum boost time into account?
             if (!baritone.getInventoryBehavior().throwaway(true, ElytraBehavior::isBoostingFireworks) &&

@@ -489,10 +489,10 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
                 qty += inv.get(i).getCount();
             }
         }
-        if (qty <= Baritone.settings().elytraMinFireworksBeforeLanding.value) {
-            return true;
-        }
-        return false;
+        // When the elytra boost module is enabled, the firework count is irrelevant
+        boolean enoughFireworks = Baritone.settings().elytraBoostModule.value
+                || qty > Baritone.settings().elytraMinFireworksBeforeLanding.value;
+        return !enoughFireworks;
     }
 
     @Override

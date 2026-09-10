@@ -1548,6 +1548,13 @@ public final class Settings {
     public final Setting<Boolean> elytraChatSpam = new Setting<>(false);
 
     /**
+     * Uses the Elytra Boost module from Meteor Client instead of consuming fireworks from inventory for elytra
+     * boosting. Requires Meteor Client to be installed with the Elytra Boost module enabled. When enabled,
+     * fireworks will not be consumed from inventory.
+     */
+    public final Setting<Boolean> elytraBoostModule = new Setting<>(false);
+
+    /**
      * May reduce memory usage by using a custom allocator for pathfinding
      */
     public final Setting<Boolean> elytraCustomAllocator = new Setting<>(true);
