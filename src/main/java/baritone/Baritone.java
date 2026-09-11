@@ -47,6 +47,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
 /**
@@ -58,7 +59,20 @@ public class Baritone implements IBaritone {
     private static final ThreadPoolExecutor threadPool;
 
     static {
-        threadPool = new ThreadPoolExecutor(4, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<>());
+        AtomicInteger threadCount = new AtomicInteger();
+        threadPool = new ThreadPoolExecutor(4, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<>(), task -> {
+            Thread thread = new Thread(task, "Baritone Worker " + threadCount.incrementAndGet());
+            // Don't keep the game running after it exits
+            thread.setDaemon(true);
+            return thread;
+        });
+        // Let running saves finish and stop endless tasks
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            threadPool.shutdownNow();
+            try {
+                threadPool.awaitTermination(10, TimeUnit.SECONDS);
+            } catch (InterruptedException ignored) {}
+        }, "Baritone Shutdown"));
     }
 
     private final Minecraft mc;

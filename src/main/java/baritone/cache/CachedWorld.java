@@ -100,8 +100,8 @@ public final class CachedWorld implements ICachedWorld, Helper {
                     save();
                     Thread.sleep(600000);
                 }
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+            } catch (InterruptedException ignored) {
+                // Baritone's worker pool is shutting down
             }
         });
     }
@@ -318,7 +318,7 @@ public final class CachedWorld implements ICachedWorld, Helper {
                     CachedWorld.this.updateCachedChunk(cached);
                     //System.out.println("Processed chunk at " + chunk.x + "," + chunk.z);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    // Baritone's worker pool is shutting down
                     break;
                 } catch (Throwable th) {
                     // in the case of an exception, keep consuming from the queue so as not to leak memory
