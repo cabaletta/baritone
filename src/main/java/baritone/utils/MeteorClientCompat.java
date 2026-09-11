@@ -17,6 +17,7 @@
 
 package baritone.utils;
 
+import net.minecraft.client.Minecraft;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,6 +65,15 @@ public final class MeteorClientCompat {
             return false;
         }
         try {
+            // Meteor's ElytraBoost.boost() silently refuses to act while a screen is open or the player isn't
+            // fall flying (mc.player.isFallFlying() && mc.gui.screen() == null). Mirror that guard here; otherwise
+            // we'd report a successful boost to Baritone, which then skips using a real firework and never boosts.
+            Minecraft minecraft = Minecraft.getInstance();
+            if (minecraft.gui.screen() != null
+                    || minecraft.player == null
+                    || !minecraft.player.isFallFlying()) {
+                return false;
+            }
             Method isActive = elytraBoostClass.getMethod("isActive");
             if (!((Boolean) isActive.invoke(elytraBoostModule))) {
                 return false;

@@ -322,7 +322,7 @@ public final class NetherPathfinderContext implements IElytraPathFinder {
                     else if (bs == Blocks.BROWN_MUSHROOM.defaultBlockState()) brownMushroomId = i;
                 }
                 if (airId == -1 & caveAirId == -1) {
-                    final long bytesInSection = SECTION_SIZE / 8;
+                    final long bytesInSection = Octree.SIZEOF_X16;
                     UNSAFE.setMemory(chunkPtr + (y0 * bytesInSection), bytesInSection, (byte) 0xFF);
                     continue;
                 }
