@@ -19,7 +19,6 @@ package baritone.process.elytra.pathfinder;
 
 import baritone.cache.CachedRegion;
 import java.io.DataInputStream;
-import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;

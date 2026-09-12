@@ -22,7 +22,6 @@ import net.minecraft.core.BlockPos;
 
 public class PathSegment {
     public final boolean finished;
-    /** The blocks of the path, in order. */
     public final List<BlockPos> blocks;
 
     public PathSegment(boolean finished, List<BlockPos> blocks) {

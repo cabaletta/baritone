@@ -62,19 +62,23 @@ public class ChunkTest {
         assertTrue(chunk.isEmpty(Size.X1, 8, 70, 3));
         assertTrue(chunk.isEmpty(Size.X16, 0, 80, 0));
 
-        // clearing a block empties its x8 and x16 again only once it was the last one there
+        // an exact clear empties its x8 and x16 again only once it was the last block there
         chunk.setBlock(10, 70, 3, true);
-        chunk.setBlock(9, 70, 3, false);
+        chunk.setBlock(9, 70, 3, false, true);
         assertFalse(chunk.isEmptyX8(9, 70, 3));
         assertFalse(chunk.isEmptyX16(64));
-        chunk.setBlock(10, 70, 3, false);
-        // The blocks are gone, which the exact question sees. The x8 and x16 summaries are
-        // allowed to lag behind a clear, and only ever towards "may hold a block".
-        assertFalse(chunk.isSolid(9, 70, 3));
-        assertFalse(chunk.isSolid(10, 70, 3));
-        assertFalse(chunk.isEmptyX8(9, 70, 3));
-        assertFalse(chunk.isEmptyX16(64));
+        chunk.setBlock(10, 70, 3, false, true);
+        assertTrue(chunk.isEmptyX8(9, 70, 3));
+        assertTrue(chunk.isEmptyX16(64));
         assertNotNull(chunk.section(64)); // the section stays allocated
+        // a plain clear, which is what the bulk fills use, leaves the x8 and x16 summaries as they
+        // are: the block is gone, which the exact question sees, and the summaries err only towards
+        // "may hold a block"
+        chunk.setBlock(9, 70, 3, true);
+        chunk.setBlock(9, 70, 3, false);
+        assertFalse(chunk.isSolid(9, 70, 3));
+        assertFalse(chunk.isEmptyX8(9, 70, 3));
+        assertFalse(chunk.isEmptyX16(64));
     }
 
     @Test
@@ -105,8 +109,8 @@ public class ChunkTest {
         assertTrue(chunk.isEmptyX16(64));
         assertTrue(chunk.isEmptyX8(15, 79, 15));
         chunk.fillSection(4, true);
-        chunk.setBlock(15, 79, 15, false);
-        assertFalse("the section still has the other blocks", chunk.isEmptyX8(15, 79, 15));
+        chunk.setBlock(15, 79, 15, false, true);
+        assertFalse("the x8 still has its other blocks", chunk.isEmptyX8(15, 79, 15));
     }
 
     @Test

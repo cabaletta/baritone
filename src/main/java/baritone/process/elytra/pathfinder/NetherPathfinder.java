@@ -18,7 +18,6 @@
 package baritone.process.elytra.pathfinder;
 
 import net.minecraft.core.BlockPos;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;

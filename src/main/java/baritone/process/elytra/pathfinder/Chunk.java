@@ -47,7 +47,7 @@ public final class Chunk {
     public static final Chunk SOLID = new Chunk(true);
 
     private final long[][] sections = new long[SECTIONS][];
-    /** Bit i of entry s is set once a block is set in x8 cube i of section s, and stays set until fillSection resets it: set means the cube may hold a block, clear that it does not. A section that is null has 0. */
+    /** Bit i of entry s is set once a block is set in x8 cube i of section s. fillSection resets it, an exact setBlock clears it with the cube's last block, and a plain clear leaves it: set means the cube may hold a block, clear that it does not. A section that is null has 0. */
     private final int[] filled = new int[SECTIONS];
     private final boolean shared;
 
@@ -93,6 +93,13 @@ public final class Chunk {
         return (int) (section[off >>> 3] >>> ((off & 7) << 3)) & 0xFF;
     }
 
+    static boolean allZero(long[] section, int from, int longs) {
+        long acc = 0;
+        for (int i = 0; i < longs; i++) {
+            acc |= section[from + i];
+        }
+        return acc == 0;
+    }
 
     /** The section holding y, or null if nothing has been set in it (or y is outside the chunk). */
     long[] section(int y) {
@@ -116,8 +123,23 @@ public final class Chunk {
         return ((s[off >>> 3] >>> (((off & 7) << 3) + bitIndex(x, y, z))) & 1L) != 0;
     }
 
-    /** Coordinates are chunk relative: x and z in 0..15, y in 0..383. */
+    /**
+     * Coordinates are chunk relative: x and z in 0..15, y in 0..383. A clear leaves the x8's bit in
+     * filled as it is, which suits the callers that fill a whole chunk at once: they only ever set
+     * blocks, so the scan that keeping the bit exact costs would be wasted on them. Clearing single
+     * blocks in a chunk that is in use is {@link #setBlock(int, int, int, boolean, boolean)}.
+     */
     public void setBlock(int x, int y, int z, boolean solid) {
+        setBlock(x, y, z, solid, false);
+    }
+
+    /**
+     * As {@link #setBlock(int, int, int, boolean)}; with {@code exact}, a clear that empties its x8
+     * cube also clears the cube's bit in filled, at the cost of a scan of the cube's eight longs. A
+     * block update in a chunk the search is using passes true, so that a broken block does not leave
+     * its cube reading as possibly solid for as long as the chunk lives.
+     */
+    public void setBlock(int x, int y, int z, boolean solid, boolean exact) {
         if (this.shared) {
             throw new UnsupportedOperationException("the shared air and solid chunks are read only");
         }
@@ -136,10 +158,10 @@ public final class Chunk {
             this.filled[y >> 4] |= 1 << x8;
             s[off >>> 3] |= mask;
         } else {
-            // The x8's bit in filled stays. It means the cube may hold a block, so one that
-            // outlives its blocks costs a reader a scan of the cube and never a wrong answer;
-            // fillSection resets it.
             s[off >>> 3] &= ~mask;
+            if (exact && allZero(s, x8 * (X8_BYTES / 8), X8_BYTES / 8)) {
+                this.filled[y >> 4] &= ~(1 << x8);
+            }
         }
     }
 
