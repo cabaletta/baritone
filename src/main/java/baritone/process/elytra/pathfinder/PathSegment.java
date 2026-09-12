@@ -17,13 +17,16 @@
 
 package baritone.process.elytra.pathfinder;
 
+import java.util.List;
+import net.minecraft.core.BlockPos;
+
 public class PathSegment {
     public final boolean finished;
-    public final long[] packed;
+    /** The blocks of the path, in order. */
+    public final List<BlockPos> blocks;
 
-
-    public PathSegment(boolean finished, long[] packed) {
+    public PathSegment(boolean finished, List<BlockPos> blocks) {
         this.finished = finished;
-        this.packed = packed;
+        this.blocks = blocks;
     }
 }

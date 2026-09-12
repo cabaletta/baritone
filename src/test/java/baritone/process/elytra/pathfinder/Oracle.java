@@ -88,7 +88,7 @@ final class Oracle {
 
     /** A context over the generated chunks x, z in 0..side-1, marked as if the game had given them. */
     static NetherPathfinder generatedWorld(int side) {
-        final NetherPathfinder ctx = new NetherPathfinder(SEED, null, NetherPathfinder.DIMENSION_NETHER, 128);
+        final NetherPathfinder ctx = new NetherPathfinder(SEED, null, NetherPathfinder.Dimension.NETHER, 128);
         for (int x = 0; x < side; x++) {
             for (int z = 0; z < side; z++) {
                 ctx.getOrGenChunk(x, z);

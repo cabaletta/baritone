@@ -79,7 +79,7 @@ public class BaritoneRegionTest {
         final Chunk[] found = new Chunk[1];
         final int[] at = new int[2];
         try (java.io.InputStream in = new java.util.zip.GZIPInputStream(new java.io.ByteArrayInputStream(region()))) {
-            BaritoneRegion.parse(in, -1, 2, NetherPathfinder.DIMENSION_NETHER, (x, z, chunk) -> {
+            BaritoneRegion.parse(in, -1, 2, NetherPathfinder.Dimension.NETHER, (x, z, chunk) -> {
                 found[0] = chunk;
                 at[0] = x;
                 at[1] = z;
@@ -105,22 +105,22 @@ public class BaritoneRegionTest {
         Files.createDirectories(regions);
         Files.write(regions.resolve("r.0.0.bcr"), region());
         try {
-            final NetherPathfinder ctx = new NetherPathfinder(1, regions.toString(), NetherPathfinder.DIMENSION_NETHER, 128);
+            final NetherPathfinder ctx = new NetherPathfinder(1, regions.toString(), NetherPathfinder.Dimension.NETHER, 128);
             assertNull(ctx.getChunk(3, 5));
             assertTrue(ctx.tryLoadRegion(20, 20) > 0);
             assertNotNull(ctx.getChunk(3, 5));
-            assertTrue(ctx.hasChunkFromJava(3, 5));
+            assertTrue(ctx.hasChunkFromCaller(3, 5));
             assertTrue(ctx.getChunk(3, 5).isSolid(1, 2, 3));
             // a region is only read once, and one that does not exist costs nothing
             assertEquals(0, ctx.tryLoadRegion(21, 21));
             assertEquals(0, ctx.tryLoadRegion(100, 100));
             // a chunk the game gave before the file is read wins
-            final NetherPathfinder again = new NetherPathfinder(1, regions.toString(), NetherPathfinder.DIMENSION_NETHER, 128);
+            final NetherPathfinder again = new NetherPathfinder(1, regions.toString(), NetherPathfinder.Dimension.NETHER, 128);
             final Chunk mine = again.allocateAndInsertChunk(3, 5);
             again.tryLoadRegion(0, 0);
             assertEquals(mine, again.getChunk(3, 5));
             // and a search reaching the region loads it by itself
-            final NetherPathfinder searched = new NetherPathfinder(1, regions.toString(), NetherPathfinder.DIMENSION_NETHER, 128);
+            final NetherPathfinder searched = new NetherPathfinder(1, regions.toString(), NetherPathfinder.Dimension.NETHER, 128);
             searched.pathFind(0, 60, 0, 200, 60, 200, true, false, 1000, true, 8.0);
             assertNotNull(searched.getChunk(3, 5));
         } finally {
@@ -133,9 +133,9 @@ public class BaritoneRegionTest {
 
     @Test
     public void directoryNamesDecideTheDimension() {
-        assertEquals(NetherPathfinder.DIMENSION_NETHER, BaritoneRegion.dimensionOf("/a/b/the_nether_128/cache"));
-        assertEquals(NetherPathfinder.DIMENSION_OVERWORLD, BaritoneRegion.dimensionOf("/a/b/overworld_384/cache"));
-        assertEquals(NetherPathfinder.DIMENSION_END, BaritoneRegion.dimensionOf("/a/b/the_end_256/cache"));
-        assertEquals(-1, BaritoneRegion.dimensionOf("/a/b/somewhere/cache"));
+        assertEquals(NetherPathfinder.Dimension.NETHER, BaritoneRegion.dimensionOf("/a/b/the_nether_128/cache"));
+        assertEquals(NetherPathfinder.Dimension.OVERWORLD, BaritoneRegion.dimensionOf("/a/b/overworld_384/cache"));
+        assertEquals(NetherPathfinder.Dimension.END, BaritoneRegion.dimensionOf("/a/b/the_end_256/cache"));
+        assertNull(BaritoneRegion.dimensionOf("/a/b/somewhere/cache"));
     }
 }

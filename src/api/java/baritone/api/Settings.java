@@ -1549,12 +1549,6 @@ public final class Settings {
      */
     public final Setting<Boolean> elytraChatSpam = new Setting<>(false);
 
-    /**
-     * Does nothing. The pathfinder is Java now and has no allocator of its own; kept so that a
-     * settings file naming it still loads.
-     */
-    @Deprecated
-    public final Setting<Boolean> elytraCustomAllocator = new Setting<>(true);
 
     /**
      * Allow the pathfinder to attempt flight in tighter spaces, useful in caves but can be dangerous.

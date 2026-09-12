@@ -17,6 +17,7 @@
 
 package baritone.process.elytra.pathfinder;
 
+import net.minecraft.core.BlockPos;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -84,24 +85,24 @@ final class PathFinder {
     }
 
     static boolean isInBounds(int worldHeight, BlockPos pos) {
-        return pos.y >= 0 && pos.y < worldHeight;
+        return pos.getY() >= 0 && pos.getY() < worldHeight;
     }
 
     private static boolean closeToGoal(NodePos node, BlockPos goal) {
-        return node.absolutePosCenter().distanceToSq(goal) <= 16 * 16;
+        return node.absolutePosCenter().distSqr(goal) <= 16 * 16;
     }
 
     private static boolean inGoal(NodePos node, BlockPos goal) {
         if (!closeToGoal(node, goal)) return false;
         final BlockPos c1 = node.absolutePosZero();
-        final BlockPos c2 = c1.plus(node.size.width());
-        return goal.x >= c1.x && goal.x <= c2.x &&
-                goal.y >= c1.y && goal.y <= c2.y &&
-                goal.z >= c1.z && goal.z <= c2.z;
+        final BlockPos c2 = c1.offset(node.size.width(), node.size.width(), node.size.width());
+        return goal.getX() >= c1.getX() && goal.getX() <= c2.getX() &&
+                goal.getY() >= c1.getY() && goal.getY() <= c2.getY() &&
+                goal.getZ() >= c1.getZ() && goal.getZ() <= c2.getZ();
     }
 
     private static Path bestPathSoFar(PathNode end, BlockPos startPos, BlockPos goal) {
-        final double distSq = startPos.distanceToSq(end.pos.absolutePosCenter());
+        final double distSq = startPos.distSqr(end.pos.absolutePosCenter());
         if (distSq > MIN_DIST_PATH * MIN_DIST_PATH) {
             return createPath(end, startPos, goal, Path.Type.SEGMENT);
         }
@@ -127,20 +128,20 @@ final class PathFinder {
                 corner = origin;
                 return new BlockPos[]{corner, corner.east(size), corner.south(size), corner.east(size).south(size)};
             case DOWN:
-                corner = origin.up(size);
+                corner = origin.above(size);
                 return new BlockPos[]{corner, corner.east(size), corner.south(size), corner.east(size).south(size)};
             case NORTH:
                 corner = origin.south(size);
-                return new BlockPos[]{corner, corner.east(size), corner.up(size), corner.east(size).up(size)};
+                return new BlockPos[]{corner, corner.east(size), corner.above(size), corner.east(size).above(size)};
             case SOUTH:
                 corner = origin;
-                return new BlockPos[]{corner, corner.east(size), corner.up(size), corner.east(size).up(size)};
+                return new BlockPos[]{corner, corner.east(size), corner.above(size), corner.east(size).above(size)};
             case EAST:
                 corner = origin;
-                return new BlockPos[]{corner, corner.south(size), corner.up(size), corner.south(size).up(size)};
+                return new BlockPos[]{corner, corner.south(size), corner.above(size), corner.south(size).above(size)};
             default: // WEST
                 corner = origin.east(size);
-                return new BlockPos[]{corner, corner.south(size), corner.up(size), corner.south(size).up(size)};
+                return new BlockPos[]{corner, corner.south(size), corner.above(size), corner.south(size).above(size)};
         }
     }
 
@@ -150,7 +151,7 @@ final class PathFinder {
             return;
         }
         final BlockPos pos = neighborNode.absolutePosZero();
-        if (chunk.isEmpty(size, pos.x & 15, pos.y, pos.z & 15)) {
+        if (chunk.isEmpty(size, pos.getX() & 15, pos.getY(), pos.getZ() & 15)) {
             callback.accept(neighborNode, chunk, state);
             return;
         }
@@ -168,10 +169,10 @@ final class PathFinder {
     private static void growThenIterate(Chunk chunk, int state, NodePos pos, Face face, Size minSize, Callback callback) {
         final Size originalSize = pos.size;
         final BlockPos bpos = pos.absolutePosZero();
-        final int lx = bpos.x & 15;
-        final int lz = bpos.z & 15;
+        final int lx = bpos.getX() & 15;
+        final int lz = bpos.getZ() & 15;
         for (Size s = originalSize; ; s = s.larger()) {
-            if (s == Size.X16 || !chunk.isEmpty(s.larger(), lx, bpos.y, lz)) {
+            if (s == Size.X16 || !chunk.isEmpty(s.larger(), lx, bpos.getY(), lz)) {
                 forEachNeighborInCube(chunk, state, new NodePos(s, bpos), face, s, originalSize != s, minSize, callback);
                 return;
             }
@@ -200,7 +201,7 @@ final class PathFinder {
         @Override
         public void accept(NodePos neighborPos, Chunk chunk, int state) {
             final PathNode neighborNode = getNodeAtPosition(this.map, neighborPos, this.goalCenter);
-            final double cost = state == NetherPathfinder.STATE_FROM_JAVA ? 1 : this.fakeChunkCost;
+            final double cost = state == NetherPathfinder.STATE_FROM_CALLER ? 1 : this.fakeChunkCost;
             final double tentativeCost = this.currentNode.cost + cost;
             if (neighborNode.cost - tentativeCost > MIN_IMPROVEMENT) {
                 neighborNode.previous = this.currentNode;
@@ -217,7 +218,7 @@ final class PathFinder {
                 if (this.bestHeuristicSoFar - heuristic > MIN_IMPROVEMENT) {
                     this.bestHeuristicSoFar = heuristic;
                     this.bestSoFar = neighborNode;
-                    if (this.failing && this.startCenter.distanceToSq(neighborPos.absolutePosCenter()) > MIN_DIST_PATH * MIN_DIST_PATH) {
+                    if (this.failing && this.startCenter.distSqr(neighborPos.absolutePosCenter()) > MIN_DIST_PATH * MIN_DIST_PATH) {
                         this.failing = false;
                     }
                 }
@@ -231,7 +232,7 @@ final class PathFinder {
      * cancelled.
      */
     static Path findPathSegment(NetherPathfinder ctx, NodePos start, NodePos goal, boolean x4Min, int timeoutMs, boolean airIfFake, double fakeChunkCost) {
-        final int fakeChunkMode = airIfFake ? NetherPathfinder.CACHE_MISS_AIR : NetherPathfinder.CACHE_MISS_GENERATE;
+        final NetherPathfinder.CacheMiss fakeChunkMode = airIfFake ? NetherPathfinder.CacheMiss.AIR : NetherPathfinder.CacheMiss.GENERATE;
         final Size minSize = x4Min ? Size.X4 : Size.X2;
         final BlockPos goalCenter = goal.absolutePosCenter();
         final BlockPos startCenter = start.absolutePosCenter();
@@ -241,26 +242,26 @@ final class PathFinder {
 
         final PathNode startNode = getNodeAtPosition(s.map, start, goal.absolutePosZero());
         final BlockPos startZero = start.absolutePosZero();
-        ctx.tryLoadRegion(startZero.chunkX(), startZero.chunkZ());
+        ctx.tryLoadRegion((startZero.getX() >> 4), (startZero.getZ() >> 4));
         startNode.cost = 0;
         startNode.combinedCost = startNode.estimatedCostToGoal;
         s.openSet.insert(startNode);
-        ctx.getRealChunkFromCacheOrFakeChunkMaybeGen(startZero.chunkX(), startZero.chunkZ(), fakeChunkMode);
+        ctx.getRealChunkFromCacheOrFakeChunkMaybeGen((startZero.getX() >> 4), (startZero.getZ() >> 4), fakeChunkMode);
 
         s.bestSoFar = startNode;
         s.bestHeuristicSoFar = startNode.estimatedCostToGoal;
 
-        final long startTime = System.nanoTime();
-        final long primaryTimeoutTime = startTime + 500L * 1_000_000L;
-        final long timeout = (timeoutMs != 0 ? timeoutMs : 30_000L) * 1_000_000L;
+        final long startTime = System.currentTimeMillis();
+        final long primaryTimeoutTime = startTime + 500L;
+        final long timeout = timeoutMs != 0 ? timeoutMs : 30_000L;
         final long failureTimeout = startTime + timeout;
-        long timeDoingIO = 0;
+        long timeDoingIO = 0; // milliseconds spent reading region files, which the timeouts do not count
 
         int numNodes = 0;
         int fakeChunkVisits = 0; // if this gets too high we return
         while (!s.openSet.isEmpty()) {
             if ((numNodes & 63) == 0) { // only look at the clock once every 64 nodes
-                final long now = System.nanoTime() - timeDoingIO;
+                final long now = System.currentTimeMillis() - timeDoingIO;
                 if (now >= failureTimeout || (!s.failing && now >= primaryTimeoutTime)) {
                     break;
                 } else if (ctx.isCancelled()) {
@@ -277,10 +278,10 @@ final class PathFinder {
             final NodePos pos = currentNode.pos;
             final Size size = pos.size;
             final BlockPos bpos = pos.absolutePosZero();
-            final int cx = bpos.chunkX();
-            final int cz = bpos.chunkZ();
+            final int cx = (bpos.getX() >> 4);
+            final int cz = (bpos.getZ() >> 4);
             final NetherPathfinder.Entry currentChunk = ctx.getChunkOrAir(cx, cz);
-            if (currentChunk.state != NetherPathfinder.STATE_FROM_JAVA) {
+            if (currentChunk.state != NetherPathfinder.STATE_FROM_CALLER) {
                 fakeChunkVisits++;
             } else {
                 fakeChunkVisits = 0;
@@ -293,13 +294,13 @@ final class PathFinder {
             }
 
             for (Face face : ALL_FACES) {
-                final NodePos neighborNodePos = new NodePos(size, bpos.offset(face, size.width()));
+                final NodePos neighborNodePos = new NodePos(size, face.offset(bpos, size.width()));
                 final BlockPos origin = neighborNodePos.absolutePosZero();
                 if (face == Face.UP || face == Face.DOWN) {
                     if (!isInBounds(ctx.maxHeight, origin)) continue;
                 }
-                final int neighborCx = origin.chunkX();
-                final int neighborCz = origin.chunkZ();
+                final int neighborCx = (origin.getX() >> 4);
+                final int neighborCz = (origin.getZ() >> 4);
                 timeDoingIO += ctx.tryLoadRegion(neighborCx, neighborCz);
                 final NetherPathfinder.Entry entry = neighborCx == cx && neighborCz == cz ? currentChunk : ctx.getChunkOrAir(neighborCx, neighborCz);
                 growThenIterate(entry.chunk, entry.state, neighborNodePos, face, minSize, s);
@@ -352,7 +353,7 @@ final class PathFinder {
                 break;
             }
             final BlockPos end = path.getEndPos();
-            ctx.cullFarChunks(end.chunkX(), end.chunkZ(), 200);
+            ctx.cullFarChunks((end.getX() >> 4), (end.getZ() >> 4), 200);
             segments.add(path);
             if (path.type == Path.Type.FINISHED) break;
         }
@@ -383,17 +384,17 @@ final class PathFinder {
             final BlockPos blockPos = node.absolutePosZero();
             if (isInBounds(ctx.maxHeight, blockPos)) {
                 final Chunk chunk = airIfFake
-                        ? ctx.getChunkOrAir(blockPos.chunkX(), blockPos.chunkZ()).chunk
-                        : ctx.getOrGenChunk(blockPos.chunkX(), blockPos.chunkZ());
-                if (chunk.isEmpty(size, blockPos.x & 15, blockPos.y, blockPos.z & 15)) {
+                        ? ctx.getChunkOrAir((blockPos.getX() >> 4), (blockPos.getZ() >> 4)).chunk
+                        : ctx.getOrGenChunk((blockPos.getX() >> 4), (blockPos.getZ() >> 4));
+                if (chunk.isEmpty(size, blockPos.getX() & 15, blockPos.getY(), blockPos.getZ() & 15)) {
                     return node;
                 }
                 push(queue, visited, new NodePos(size, blockPos.west(w)));
                 push(queue, visited, new NodePos(size, blockPos.east(w)));
                 push(queue, visited, new NodePos(size, blockPos.north(w)));
                 push(queue, visited, new NodePos(size, blockPos.south(w)));
-                push(queue, visited, new NodePos(size, blockPos.up(w)));
-                push(queue, visited, new NodePos(size, blockPos.down(w)));
+                push(queue, visited, new NodePos(size, blockPos.above(w)));
+                push(queue, visited, new NodePos(size, blockPos.below(w)));
             }
         }
         // shouldn't be possible to exit the while loop

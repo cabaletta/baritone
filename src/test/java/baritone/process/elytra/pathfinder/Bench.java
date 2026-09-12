@@ -17,6 +17,7 @@
 
 package baritone.process.elytra.pathfinder;
 
+import net.minecraft.core.BlockPos;
 import java.util.Arrays;
 
 /**
@@ -61,7 +62,9 @@ public final class Bench {
         final boolean[] hits = new boolean[rays];
         for (int rep = 0; rep < 5; rep++) {
             t0 = System.nanoTime();
-            ctx.raytrace(NetherPathfinder.CACHE_MISS_SOLID, rays, from, to, hits, null);
+            for (int i = 0; i < rays; i++) {
+                hits[i] = Raytracer.raytrace(ctx, from[i * 3], from[i * 3 + 1], from[i * 3 + 2], to[i * 3], to[i * 3 + 1], to[i * 3 + 2], NetherPathfinder.CacheMiss.SOLID) != null;
+            }
             final double ms = (System.nanoTime() - t0) / 1e6;
             int hit = 0;
             for (boolean h : hits) if (h) hit++;
@@ -87,7 +90,7 @@ public final class Bench {
                         final PathSegment p = ctx.pathFind(sx, 60, sz, sx + dist, 60, sz, true, false, 10000, airIfFake, 8.0);
                         us[r] = (System.nanoTime() - t0) / 1000;
                         total += us[r];
-                        if (p != null) { blocks += p.packed.length; if (p.finished) finished++; }
+                        if (p != null) { blocks += p.blocks.size(); if (p.finished) finished++; }
                     }
                     if (pass == 0) continue;
                     Arrays.sort(us);
@@ -97,7 +100,7 @@ public final class Bench {
             }
         }
 
-        final NetherPathfinder fresh = new NetherPathfinder(Oracle.SEED, null, NetherPathfinder.DIMENSION_NETHER, 128);
+        final NetherPathfinder fresh = new NetherPathfinder(Oracle.SEED, null, NetherPathfinder.Dimension.NETHER, 128);
         t0 = System.nanoTime();
         final NodePos start = PathFinder.findAir(fresh, Size.X4, new BlockPos(0, 50, 0), false);
         final NodePos goal = PathFinder.findAir(fresh, Size.X4, new BlockPos(100000, 50, 0), false);

@@ -17,6 +17,7 @@
 
 package baritone.process.elytra.pathfinder;
 
+import net.minecraft.core.BlockPos;
 import org.junit.Test;
 
 import java.util.concurrent.atomic.AtomicReference;
@@ -29,29 +30,7 @@ import static org.junit.Assert.assertTrue;
 
 public class PathFindTest {
 
-    private static final int NETHER = NetherPathfinder.DIMENSION_NETHER;
-
-    static int unpackX(long packed) {
-        return (int) (packed >> 38);
-    }
-
-    static int unpackY(long packed) {
-        return (int) ((packed << 26) >> 52);
-    }
-
-    static int unpackZ(long packed) {
-        return (int) ((packed << 38) >> 38);
-    }
-
-    @Test
-    public void packedPositionsRoundTrip() {
-        for (int[] p : new int[][]{{0, 0, 0}, {1, 2, 3}, {-1, 5, -30000000}, {29999999, 383, 12345}, {-29999999, 0, 29999999}}) {
-            final long packed = NetherPathfinder.packBlockPos(new BlockPos(p[0], p[1], p[2]));
-            assertEquals(p[0], unpackX(packed));
-            assertEquals(p[1], unpackY(packed));
-            assertEquals(p[2], unpackZ(packed));
-        }
-    }
+    private static final NetherPathfinder.Dimension NETHER = NetherPathfinder.Dimension.NETHER;
 
     @Test
     public void straightThroughAirWhenNothingIsKnown() {
@@ -59,14 +38,14 @@ public class PathFindTest {
         final PathSegment segment = ctx.pathFind(0, 60, 0, 500, 60, 0, true, false, 10000, true, 8.0);
         assertNotNull(segment);
         assertTrue(segment.finished);
-        assertTrue(segment.packed.length >= 2);
+        assertTrue(segment.blocks.size() >= 2);
         int lastX = Integer.MIN_VALUE;
-        for (long packed : segment.packed) {
-            final int x = unpackX(packed);
+        for (BlockPos packed : segment.blocks) {
+            final int x = packed.getX();
             assertTrue("x goes forward", x > lastX);
             lastX = x;
-            assertEquals(0, unpackZ(packed), 16);
-            assertEquals(60, unpackY(packed), 16);
+            assertEquals(0, packed.getZ(), 16);
+            assertEquals(60, packed.getY(), 16);
         }
         assertEquals(500, lastX, 16);
     }
@@ -79,7 +58,7 @@ public class PathFindTest {
         final PathSegment segment = ctx.pathFind(0, 60, 0, 500, 60, 0, true, true, 10000, true, 8.0);
         assertNotNull(segment);
         assertTrue(segment.finished);
-        assertTrue("refined to " + segment.packed.length + " points", segment.packed.length <= 3);
+        assertTrue("refined to " + segment.blocks.size() + " points", segment.blocks.size() <= 3);
     }
 
     @Test
@@ -88,7 +67,7 @@ public class PathFindTest {
         final PathSegment segment = ctx.pathFind(0, 60, 0, 20000, 60, 0, true, false, 10000, true, 8.0);
         assertNotNull(segment);
         assertFalse(segment.finished);
-        assertTrue(unpackX(segment.packed[segment.packed.length - 1]) > 100);
+        assertTrue(segment.blocks.get(segment.blocks.size() - 1).getX() > 100);
     }
 
     @Test
@@ -98,8 +77,8 @@ public class PathFindTest {
         assertNotNull(segment);
         assertTrue(segment.finished);
         // every point of the path is in air
-        for (long packed : segment.packed) {
-            final int x = unpackX(packed), y = unpackY(packed), z = unpackZ(packed);
+        for (BlockPos packed : segment.blocks) {
+            final int x = packed.getX(), y = packed.getY(), z = packed.getZ();
             assertFalse("path goes through a block at " + x + "," + y + "," + z, ctx.getChunkOrDefault(x >> 4, z >> 4, true).isSolid(x & 15, y, z & 15));
         }
     }
@@ -111,7 +90,7 @@ public class PathFindTest {
         assertNotNull(segment);
         assertTrue(segment.finished);
         assertTrue("generated chunks along the way", ctx.chunkCount() > 20);
-        assertFalse(ctx.hasChunkFromJava(1, 1));
+        assertFalse(ctx.hasChunkFromCaller(1, 1));
     }
 
     @Test
@@ -131,7 +110,10 @@ public class PathFindTest {
         assertFalse(searcher.isAlive());
         assertNull(result.get());
         assertTrue("returned " + elapsed[0] + " ms after the start", elapsed[0] < 1000);
-        assertTrue(ctx.cancel());
+        // The search that was stopped clears the flag as it returns, so this cancel is the first
+        // one again. It used to be cleared at the start of the next search instead, which dropped a
+        // cancel that arrived while that search was still queued -- see CancelTest.
+        assertFalse("the cancelled search cleared the flag on its way out", ctx.cancel());
     }
 
     @Test
@@ -143,7 +125,7 @@ public class PathFindTest {
         assertNotNull(segment);
         assertFalse(segment.finished);
         assertTrue("took " + ms + " ms", ms >= 500 && ms < 5000);
-        assertTrue(unpackX(segment.packed[segment.packed.length - 1]) > 50);
+        assertTrue(segment.blocks.get(segment.blocks.size() - 1).getX() > 50);
     }
 
     @Test
@@ -162,10 +144,10 @@ public class PathFindTest {
             // good
         }
         try {
-            new NetherPathfinder(1, null, 7, 128);
-            throw new AssertionError("expected IllegalArgumentException");
-        } catch (IllegalArgumentException expected) {
-            // good
+            new NetherPathfinder(1, null, null, 128);
+            throw new AssertionError("expected NullPointerException");
+        } catch (NullPointerException expected) {
+            // good: the dimension is an enum, so the only bad one is a missing one
         }
     }
 }

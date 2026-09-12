@@ -17,6 +17,8 @@
 
 package baritone.process.elytra.pathfinder;
 
+import net.minecraft.core.BlockPos;
+
 /** A cube of the octree: its size and its position in units of that size. */
 final class NodePos {
 
@@ -26,15 +28,18 @@ final class NodePos {
 
     NodePos(Size size, BlockPos approxPosition) {
         this.size = size;
-        this.pos = approxPosition.shiftRight(size.shift());
+        final int shift = size.shift();
+        this.pos = new BlockPos(approxPosition.getX() >> shift, approxPosition.getY() >> shift, approxPosition.getZ() >> shift);
     }
 
     BlockPos absolutePosZero() {
-        return this.pos.shiftLeft(this.size.shift());
+        final int shift = this.size.shift();
+        return new BlockPos(this.pos.getX() << shift, this.pos.getY() << shift, this.pos.getZ() << shift);
     }
 
     BlockPos absolutePosCenter() {
-        return this.absolutePosZero().plus(this.size.width() / 2);
+        final int half = this.size.width() / 2;
+        return this.absolutePosZero().offset(half, half, half);
     }
 
     @Override
@@ -50,9 +55,9 @@ final class NodePos {
     public int hashCode() {
         long hash = 3241;
         hash = 6406146L * hash + this.size.ordinal();
-        hash = 3457689L * hash + this.pos.x;
-        hash = 8734625L * hash + this.pos.y;
-        hash = 2873465L * hash + this.pos.z;
+        hash = 3457689L * hash + this.pos.getX();
+        hash = 8734625L * hash + this.pos.getY();
+        hash = 2873465L * hash + this.pos.getZ();
         return (int) (hash ^ (hash >>> 32));
     }
 }

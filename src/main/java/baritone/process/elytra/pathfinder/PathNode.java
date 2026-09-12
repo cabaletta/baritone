@@ -17,6 +17,8 @@
 
 package baritone.process.elytra.pathfinder;
 
+import net.minecraft.core.BlockPos;
+
 final class PathNode {
 
     static final double COST_INF = 1000000.0;
@@ -38,6 +40,6 @@ final class PathNode {
     }
 
     private static double heuristic(NodePos pos, BlockPos goal) {
-        return pos.absolutePosCenter().distanceTo(goal) - (pos.size.width() * 4);
+        return Math.sqrt(pos.absolutePosCenter().distSqr(goal)) - (pos.size.width() * 4);
     }
 }

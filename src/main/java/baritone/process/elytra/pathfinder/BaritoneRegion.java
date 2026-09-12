@@ -17,6 +17,7 @@
 
 package baritone.process.elytra.pathfinder;
 
+import baritone.cache.CachedRegion;
 import java.io.DataInputStream;
 import java.io.EOFException;
 import java.io.IOException;
@@ -29,8 +30,6 @@ import java.util.zip.GZIPInputStream;
 /** Reads the chunks of one of Baritone's cached region files ({@code r.X.Z.bcr}). */
 final class BaritoneRegion {
 
-    private static final int MAGIC = 456022911;
-
     /** What the reader hands each chunk it finds. */
     interface ChunkSink {
         void accept(int chunkX, int chunkZ, Chunk chunk);
@@ -40,16 +39,16 @@ final class BaritoneRegion {
 
     /**
      * The dimension of a Baritone cache directory such as {@code .../the_nether_128/cache},
-     * or -1 if the directory is not one.
+     * or null if the directory is not one.
      */
-    static int dimensionOf(String dir) {
+    static NetherPathfinder.Dimension dimensionOf(String dir) {
         final Path parent = Paths.get(dir).getParent();
         final String name = parent == null || parent.getFileName() == null ? "" : parent.getFileName().toString();
         switch (name) {
-            case "the_nether_128": return NetherPathfinder.DIMENSION_NETHER;
-            case "overworld_384": return NetherPathfinder.DIMENSION_OVERWORLD;
-            case "the_end_256": return NetherPathfinder.DIMENSION_END;
-            default: return -1;
+            case "the_nether_128": return NetherPathfinder.Dimension.NETHER;
+            case "overworld_384": return NetherPathfinder.Dimension.OVERWORLD;
+            case "the_end_256": return NetherPathfinder.Dimension.END;
+            default: return null;
         }
     }
 
@@ -59,8 +58,8 @@ final class BaritoneRegion {
 
     /** Reads the region file for (regionX, regionZ) under dir, if there is one. Returns whether a file was read. */
     static boolean load(String dir, int regionX, int regionZ, ChunkSink sink) {
-        final int dim = dimensionOf(dir);
-        if (dim == -1) {
+        final NetherPathfinder.Dimension dim = dimensionOf(dir);
+        if (dim == null) {
             return false;
         }
         final Path file = regionFile(dir, regionX, regionZ);
@@ -76,14 +75,14 @@ final class BaritoneRegion {
     }
 
     /** Parses an already decompressed region stream. */
-    static void parse(InputStream raw, int regionX, int regionZ, int dimension, ChunkSink sink) throws IOException {
+    static void parse(InputStream raw, int regionX, int regionZ, NetherPathfinder.Dimension dimension, ChunkSink sink) throws IOException {
         final DataInputStream in = new DataInputStream(raw);
         final int magic = in.readInt();
-        if (magic != MAGIC) {
+        if (magic != CachedRegion.CACHED_REGION_MAGIC) {
             System.err.println("[nether-pathfinder] bad magic for baritone region " + regionX + "," + regionZ);
             return;
         }
-        final int height = dimension == NetherPathfinder.DIMENSION_OVERWORLD ? 384 : 256;
+        final int height = dimension == NetherPathfinder.Dimension.OVERWORLD ? 384 : 256;
         final byte[] data = new byte[(2 * 16 * 16 * height) / 8];
         for (int x = 0; x < 32; x++) {
             for (int z = 0; z < 32; z++) {

@@ -17,10 +17,13 @@
 
 package baritone.process.elytra.pathfinder;
 
+import net.minecraft.world.phys.Vec3;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -30,11 +33,11 @@ import static org.junit.Assert.assertTrue;
  */
 public class DegenerateRaysTest {
 
-    private static final int SOLID = NetherPathfinder.CACHE_MISS_SOLID;
+    private static final NetherPathfinder.CacheMiss SOLID = NetherPathfinder.CacheMiss.SOLID;
 
     /** Chunk (0, 0) from the game: section 3 (y 48 to 63) all solid, and one block at (5, 70, 5). */
     private static NetherPathfinder world() {
-        final NetherPathfinder ctx = new NetherPathfinder(1, null, NetherPathfinder.DIMENSION_NETHER, 128);
+        final NetherPathfinder ctx = new NetherPathfinder(1, null, NetherPathfinder.Dimension.NETHER, 128);
         final Chunk chunk = ctx.allocateAndInsertChunk(0, 0);
         chunk.fillSection(3, true);
         chunk.setBlock(5, 70, 5, true);
@@ -44,25 +47,21 @@ public class DegenerateRaysTest {
     @Test(timeout = 2000)
     public void aPointInTheAirIsVisibleFromItself() {
         final NetherPathfinder ctx = world();
-        assertTrue(ctx.isVisible(SOLID, 3.5, 71.5, 3.5, 3.5, 71.5, 3.5));
-        final boolean[] hits = new boolean[1];
-        ctx.raytrace(SOLID, 1, new double[]{3.5, 71.5, 3.5}, new double[]{3.5, 71.5, 3.5}, hits, null);
-        assertFalse(hits[0]);
+        assertTrue(visible(ctx, SOLID, 3.5, 71.5, 3.5, 3.5, 71.5, 3.5));
+        assertNull(Raytracer.raytrace(ctx, 3.5, 71.5, 3.5, 3.5, 71.5, 3.5, SOLID));
     }
 
     @Test(timeout = 2000)
     public void aPointInsideABlockIsAHitAtItself() {
         final NetherPathfinder ctx = world();
-        assertFalse(ctx.isVisible(SOLID, 5.5, 70.5, 5.5, 5.5, 70.5, 5.5));
-        final boolean[] hits = new boolean[1];
-        final double[] hitPos = new double[3];
-        ctx.raytrace(SOLID, 1, new double[]{5.25, 70.5, 5.75}, new double[]{5.25, 70.5, 5.75}, hits, hitPos);
-        assertTrue(hits[0]);
-        assertEquals(5.25, hitPos[0], 0);
-        assertEquals(70.5, hitPos[1], 0);
-        assertEquals(5.75, hitPos[2], 0);
+        assertFalse(visible(ctx, SOLID, 5.5, 70.5, 5.5, 5.5, 70.5, 5.5));
+        final Vec3 hit = Raytracer.raytrace(ctx, 5.25, 70.5, 5.75, 5.25, 70.5, 5.75, SOLID);
+        assertNotNull(hit);
+        assertEquals(5.25, hit.x, 0);
+        assertEquals(70.5, hit.y, 0);
+        assertEquals(5.75, hit.z, 0);
         // a point outside the world is in the air, as a ray there is
-        assertTrue(ctx.isVisible(SOLID, 5.5, 400.0, 5.5, 5.5, 400.0, 5.5));
+        assertTrue(visible(ctx, SOLID, 5.5, 400.0, 5.5, 5.5, 400.0, 5.5));
     }
 
     @Test(timeout = 2000)
@@ -74,7 +73,7 @@ public class DegenerateRaysTest {
                 final double[] p = {3.5, 71.5, 3.5, 8.5, 71.5, 8.5};
                 p[axis] = v;
                 try {
-                    ctx.isVisible(SOLID, p[0], p[1], p[2], p[3], p[4], p[5]);
+                    visible(ctx, SOLID, p[0], p[1], p[2], p[3], p[4], p[5]);
                     throw new AssertionError("accepted " + v + " at " + axis);
                 } catch (IllegalArgumentException expected) {
                     // good
@@ -83,7 +82,7 @@ public class DegenerateRaysTest {
         }
         // both ends infinite: the length is NaN rather than infinite
         try {
-            ctx.isVisible(SOLID, Double.POSITIVE_INFINITY, 71.5, 3.5, Double.POSITIVE_INFINITY, 71.5, 8.5);
+            visible(ctx, SOLID, Double.POSITIVE_INFINITY, 71.5, 3.5, Double.POSITIVE_INFINITY, 71.5, 8.5);
             throw new AssertionError("accepted two infinities");
         } catch (IllegalArgumentException expected) {
             // good
@@ -99,9 +98,9 @@ public class DegenerateRaysTest {
         for (double ox = 0.3; ox < 16; ox += 1.7) {
             for (double oz = 0.7; oz < 16; oz += 1.9) {
                 for (double oy = 40.2; oy < 100; oy += 4.9) {
-                    final boolean exact = ctx.isVisible(SOLID, ox, oy, oz, 8.0, 68.0, 8.0);
+                    final boolean exact = visible(ctx, SOLID, ox, oy, oz, 8.0, 68.0, 8.0);
                     final double nudge = 1e-6;
-                    final boolean inside = ctx.isVisible(SOLID, ox, oy, oz,
+                    final boolean inside = visible(ctx, SOLID, ox, oy, oz,
                             8.0 + (ox < 8.0 ? -nudge : nudge), 68.0 + (oy < 68.0 ? -nudge : nudge), 8.0 + (oz < 8.0 ? -nudge : nudge));
                     assertEquals("from " + ox + ", " + oy + ", " + oz, inside, exact);
                     checked++;
@@ -121,7 +120,7 @@ public class DegenerateRaysTest {
         for (double ox = 0.3; ox < 16; ox += 1.7) {
             for (double oz = 0.7; oz < 16; oz += 1.9) {
                 for (double oy = 64.2; oy < 100; oy += 4.9) {
-                    if (ctx.isVisible(SOLID, ox, oy, oz, 8.0, 64.0, 8.0)) clear++; else blocked++;
+                    if (visible(ctx, SOLID, ox, oy, oz, 8.0, 64.0, 8.0)) clear++; else blocked++;
                 }
             }
         }
@@ -129,16 +128,15 @@ public class DegenerateRaysTest {
     }
 
     @Test(timeout = 2000)
-    public void aBatchWithAPointInItStillAnswersTheRest() {
+    public void aPointAmongOtherRaysIsAnsweredLikeAnyOther() {
         final NetherPathfinder ctx = world();
-        final double[] from = {3.5, 71.5, 3.5, 2.5, 70.5, 5.5, 2.5, 75.5, 2.5};
-        final double[] to = {3.5, 71.5, 3.5, 8.5, 70.5, 5.5, 8.5, 75.5, 8.5}; // a point, a ray through the block, a clear ray
-        final boolean[] hits = new boolean[3];
-        ctx.raytrace(SOLID, 3, from, to, hits, null);
-        assertFalse(hits[0]);
-        assertTrue(hits[1]);
-        assertFalse(hits[2]);
-        assertEquals(1, ctx.isVisibleMulti(SOLID, 3, from, to, false)); // the first blocked one
-        assertEquals(0, ctx.isVisibleMulti(SOLID, 3, from, to, true)); // the first clear one: the point
+        // a point, a ray through the block, a clear ray
+        assertNull(Raytracer.raytrace(ctx, 3.5, 71.5, 3.5, 3.5, 71.5, 3.5, SOLID));
+        assertNotNull(Raytracer.raytrace(ctx, 2.5, 70.5, 5.5, 8.5, 70.5, 5.5, SOLID));
+        assertNull(Raytracer.raytrace(ctx, 2.5, 75.5, 2.5, 8.5, 75.5, 8.5, SOLID));
+    }
+    /** Whether the ray reaches its end: the pathfinder's old isVisible, one ray at a time now. */
+    private static boolean visible(NetherPathfinder ctx, NetherPathfinder.CacheMiss mode, double x1, double y1, double z1, double x2, double y2, double z2) {
+        return Raytracer.raytrace(ctx, x1, y1, z1, x2, y2, z2, mode) == null;
     }
 }

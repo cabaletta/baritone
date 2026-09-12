@@ -22,6 +22,7 @@ import baritone.api.event.events.BlockChangeEvent;
 import baritone.process.elytra.pathfinder.Chunk;
 import baritone.process.elytra.pathfinder.NetherPathfinder;
 import baritone.process.elytra.pathfinder.PathSegment;
+import baritone.process.elytra.pathfinder.Raytracer;
 import baritone.utils.accessor.IPalettedContainer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
@@ -73,12 +74,12 @@ public final class NetherPathfinderContext implements IElytraPathFinder {
     public NetherPathfinderContext(long seed, Path cache, Level world) {
         this.dimension = world.dimension();
         this.minY = world.dimensionType().minY();
-        final int dim;
-        if (this.dimension == Level.NETHER) dim = NetherPathfinder.DIMENSION_NETHER;
-        else if (this.dimension == Level.END) dim = NetherPathfinder.DIMENSION_END;
-        else dim = NetherPathfinder.DIMENSION_OVERWORLD;
+        final NetherPathfinder.Dimension dim;
+        if (this.dimension == Level.NETHER) dim = NetherPathfinder.Dimension.NETHER;
+        else if (this.dimension == Level.END) dim = NetherPathfinder.Dimension.END;
+        else dim = NetherPathfinder.Dimension.OVERWORLD;
         int height = Math.min(world.dimensionType().height(), 384);
-        if (!Baritone.settings().elytraAllowAboveRoof.value && dim == NetherPathfinder.DIMENSION_NETHER) height = Math.min(height, 128);
+        if (!Baritone.settings().elytraAllowAboveRoof.value && dim == NetherPathfinder.Dimension.NETHER) height = Math.min(height, 128);
         this.maxHeight = height;
         this.context = new NetherPathfinder(seed, cache != null ? cache.toString() : null, dim, height);
         this.seed = seed;
@@ -86,7 +87,7 @@ public final class NetherPathfinderContext implements IElytraPathFinder {
     }
 
     public boolean hasChunk(ChunkPos pos) {
-        return this.context.hasChunkFromJava(pos.x, pos.z);
+        return this.context.hasChunkFromCaller(pos.x, pos.z);
     }
 
     public void queueCacheCulling(int chunkX, int chunkZ, int maxDistanceBlocks) {
@@ -185,9 +186,7 @@ public final class NetherPathfinderContext implements IElytraPathFinder {
      */
     public boolean raytrace(final double startX, final double startY, final double startZ,
                             final double endX, final double endY, final double endZ) {
-        final double adjustedStartY = startY - this.minY;
-        final double adjustedEndY = endY - this.minY;
-        return this.context.isVisible(NetherPathfinder.CACHE_MISS_SOLID, startX, adjustedStartY, startZ, endX, adjustedEndY, endZ);
+        return Raytracer.raytrace(this.context, startX, startY - this.minY, startZ, endX, endY - this.minY, endZ, NetherPathfinder.CacheMiss.SOLID) == null;
     }
 
     /**
@@ -199,9 +198,7 @@ public final class NetherPathfinderContext implements IElytraPathFinder {
      * @return {@code true} if there is visibility between the points
      */
     public boolean raytrace(final Vec3 start, final Vec3 end) {
-        final Vec3 adjustedStart = start.subtract(0, this.minY, 0);
-        final Vec3 adjustedEnd = end.subtract(0, this.minY, 0);
-        return this.context.isVisible(NetherPathfinder.CACHE_MISS_SOLID, adjustedStart.x, adjustedStart.y, adjustedStart.z, adjustedEnd.x, adjustedEnd.y, adjustedEnd.z);
+        return raytrace(start.x, start.y, start.z, end.x, end.y, end.z);
     }
 
     public boolean raytrace(final int count, final double[] src, final double[] dst, final int visibility) {
@@ -216,14 +213,35 @@ public final class NetherPathfinderContext implements IElytraPathFinder {
 
         switch (visibility) {
             case Visibility.ALL:
-                return this.context.isVisibleMulti(NetherPathfinder.CACHE_MISS_SOLID, count, src, dst, false) == -1;
+                for (int i = 0; i < count; i++) {
+                    if (!clear(src, dst, i)) {
+                        return false;
+                    }
+                }
+                return true;
             case Visibility.NONE:
-                return this.context.isVisibleMulti(NetherPathfinder.CACHE_MISS_SOLID, count, src, dst, true) == -1;
+                for (int i = 0; i < count; i++) {
+                    if (clear(src, dst, i)) {
+                        return false;
+                    }
+                }
+                return true;
             case Visibility.ANY:
-                return this.context.isVisibleMulti(NetherPathfinder.CACHE_MISS_SOLID, count, src, dst, true) != -1;
+                for (int i = 0; i < count; i++) {
+                    if (clear(src, dst, i)) {
+                        return true;
+                    }
+                }
+                return false;
             default:
                 throw new IllegalArgumentException("lol");
         }
+    }
+
+    /** Whether ray i of a batch already in the pathfinder's y range reaches its end. */
+    private boolean clear(double[] src, double[] dst, int i) {
+        final int o = i * 3;
+        return Raytracer.raytrace(this.context, src[o], src[o + 1], src[o + 2], dst[o], dst[o + 1], dst[o + 2], NetherPathfinder.CacheMiss.SOLID) == null;
     }
 
     public void raytrace(final int count, final double[] src, final double[] dst, final boolean[] hitsOut, final double[] hitPosOut) {
@@ -236,7 +254,16 @@ public final class NetherPathfinderContext implements IElytraPathFinder {
             dst[i] -= this.minY;
         }
 
-        this.context.raytrace(NetherPathfinder.CACHE_MISS_SOLID, count, src, dst, hitsOut, hitPosOut);
+        for (int i = 0; i < count; i++) {
+            final int o = i * 3;
+            final Vec3 hit = Raytracer.raytrace(this.context, src[o], src[o + 1], src[o + 2], dst[o], dst[o + 1], dst[o + 2], NetherPathfinder.CacheMiss.SOLID);
+            hitsOut[i] = hit != null;
+            if (hit != null && hitPosOut != null) {
+                hitPosOut[o] = hit.x;
+                hitPosOut[o + 1] = hit.y;
+                hitPosOut[o + 2] = hit.z;
+            }
+        }
     }
 
     public boolean passable(int x, int y, int z) {

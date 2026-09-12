@@ -17,6 +17,20 @@
 
 package baritone.process.elytra.pathfinder;
 
+import net.minecraft.core.BlockPos;
+
 enum Face {
-    UP, DOWN, NORTH, SOUTH, EAST, WEST
+    UP, DOWN, NORTH, SOUTH, EAST, WEST;
+
+    /** {@code pos} moved n blocks this way. */
+    BlockPos offset(BlockPos pos, int n) {
+        switch (this) {
+            case UP: return pos.above(n);
+            case DOWN: return pos.below(n);
+            case NORTH: return pos.north(n);
+            case SOUTH: return pos.south(n);
+            case EAST: return pos.east(n);
+            default: return pos.west(n);
+        }
+    }
 }
