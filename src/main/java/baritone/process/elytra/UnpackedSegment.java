@@ -18,7 +18,7 @@
 package baritone.process.elytra;
 
 import baritone.api.utils.BetterBlockPos;
-import dev.babbaj.pathfinder.PathSegment;
+import baritone.process.elytra.pathfinder.PathSegment;
 
 import java.util.Arrays;
 import java.util.HashMap;
