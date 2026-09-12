@@ -24,6 +24,7 @@ import java.io.DataOutputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.BitSet;
 import java.util.zip.GZIPOutputStream;
 
 import static org.junit.Assert.assertEquals;
@@ -34,7 +35,15 @@ import static org.junit.Assert.assertTrue;
 
 public class BaritoneRegionTest {
 
-    /** A nether region with one chunk at (3, 5) that has the block (1, 2, 3) set. */
+    /**
+     * A nether region with one chunk at (3, 5), written the way Baritone's CachedRegion writes
+     * one: the magic, then for each of the 32 by 32 chunks a byte saying whether it is present
+     * and, if it is, the chunk's two bits per block as {@code BitSet.toByteArray()} lays them
+     * out -- bit n in byte n / 8 at position n % 8, the lowest bit first. Block (x, y, z) owns
+     * bits {@code (x << 1) | (z << 5) | (y << 9)} and the one after, CachedChunk.getPositionIndex.
+     * The chunk has block (1, 2, 3) solid (both bits) and block (4, 2, 3) water (one bit), which
+     * the pathfinder also flies around.
+     */
     private static byte[] region() throws Exception {
         final ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         try (GZIPOutputStream gz = new GZIPOutputStream(bytes); DataOutputStream out = new DataOutputStream(gz)) {
@@ -43,9 +52,14 @@ public class BaritoneRegionTest {
                 for (int z = 0; z < 32; z++) {
                     if (x == 3 && z == 5) {
                         out.writeByte(1);
-                        final byte[] data = new byte[(2 * 16 * 16 * 256) / 8];
-                        final int bit = (1 << 1) | (3 << 5) | (2 << 9); // positionIndex(1, 2, 3)
-                        data[bit / 8] |= 1 << (6 - (bit % 8));
+                        final int size = 2 * 16 * 16 * 256;
+                        final BitSet bits = new BitSet(size);
+                        bits.set(positionIndex(1, 2, 3));
+                        bits.set(positionIndex(1, 2, 3) + 1);
+                        bits.set(positionIndex(4, 2, 3));
+                        final byte[] data = new byte[size / 8];
+                        final byte[] written = bits.toByteArray();
+                        System.arraycopy(written, 0, data, 0, written.length); // CachedRegion pads with zeros
                         out.write(data);
                     } else {
                         out.writeByte(0);
@@ -54,6 +68,10 @@ public class BaritoneRegionTest {
             }
         }
         return bytes.toByteArray();
+    }
+
+    private static int positionIndex(int x, int y, int z) {
+        return (x << 1) | (z << 5) | (y << 9);
     }
 
     @Test
@@ -71,6 +89,11 @@ public class BaritoneRegionTest {
         assertEquals(3 - 32, at[0]);
         assertEquals(5 + 64, at[1]);
         assertTrue(found[0].isSolid(1, 2, 3));
+        assertTrue(found[0].isSolid(4, 2, 3));
+        // the other three blocks of each aligned run of four along x are air: a reader that takes
+        // a byte's bits from the top down mirrors every such run, and would put these at 2 and 7
+        assertFalse(found[0].isSolid(2, 2, 3));
+        assertFalse(found[0].isSolid(7, 2, 3));
         assertFalse(found[0].isSolid(3, 2, 1));
         assertTrue(found[0].isEmptyX16(64));
     }
@@ -78,7 +101,7 @@ public class BaritoneRegionTest {
     @Test
     public void aSearchLoadsTheRegionItReaches() throws Exception {
         final Path dir = Files.createTempDirectory("np-region");
-        final Path regions = dir.resolve("the_nether_128").resolve("regions");
+        final Path regions = dir.resolve("the_nether_128").resolve("cache");
         Files.createDirectories(regions);
         Files.write(regions.resolve("r.0.0.bcr"), region());
         try {
@@ -110,9 +133,9 @@ public class BaritoneRegionTest {
 
     @Test
     public void directoryNamesDecideTheDimension() {
-        assertEquals(NetherPathfinder.DIMENSION_NETHER, BaritoneRegion.dimensionOf("/a/b/the_nether_128/regions"));
-        assertEquals(NetherPathfinder.DIMENSION_OVERWORLD, BaritoneRegion.dimensionOf("/a/b/overworld_384/regions"));
-        assertEquals(NetherPathfinder.DIMENSION_END, BaritoneRegion.dimensionOf("/a/b/the_end_256/regions"));
-        assertEquals(-1, BaritoneRegion.dimensionOf("/a/b/somewhere/regions"));
+        assertEquals(NetherPathfinder.DIMENSION_NETHER, BaritoneRegion.dimensionOf("/a/b/the_nether_128/cache"));
+        assertEquals(NetherPathfinder.DIMENSION_OVERWORLD, BaritoneRegion.dimensionOf("/a/b/overworld_384/cache"));
+        assertEquals(NetherPathfinder.DIMENSION_END, BaritoneRegion.dimensionOf("/a/b/the_end_256/cache"));
+        assertEquals(-1, BaritoneRegion.dimensionOf("/a/b/somewhere/cache"));
     }
 }

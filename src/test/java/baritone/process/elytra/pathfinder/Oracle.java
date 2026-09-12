@@ -27,7 +27,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-/** What the native library answered, written by oracle.cpp in the nether-pathfinder repository. */
+/** What the native library answered, written by java/oracle/oracle.cpp. */
 final class Oracle {
 
     static final long SEED = 146008555100680L;

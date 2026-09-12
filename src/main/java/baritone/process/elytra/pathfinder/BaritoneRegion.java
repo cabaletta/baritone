@@ -39,7 +39,7 @@ final class BaritoneRegion {
     private BaritoneRegion() {}
 
     /**
-     * The dimension of a Baritone cache directory such as {@code .../the_nether_128/regions},
+     * The dimension of a Baritone cache directory such as {@code .../the_nether_128/cache},
      * or -1 if the directory is not one.
      */
     static int dimensionOf(String dir) {
@@ -100,8 +100,13 @@ final class BaritoneRegion {
         return (x << 1) | (z << 5) | (y << 9);
     }
 
+    /**
+     * The two bits at bit index i, as {@code BitSet.toByteArray()} lays them out: bit n is in byte
+     * n / 8 at position n % 8, the lowest bit first. The native reader took a byte's bits from the
+     * top down, which mirrored every aligned run of four blocks along x.
+     */
     private static int get2Bits(int i, byte[] data) {
-        return (data[i / 8] >> (6 - (i % 8))) & 0b11;
+        return (data[i / 8] >> (i % 8)) & 0b11;
     }
 
     private static Chunk parseChunk(int height, byte[] data) {
