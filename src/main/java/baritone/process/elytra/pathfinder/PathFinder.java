@@ -18,6 +18,7 @@
 package baritone.process.elytra.pathfinder;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -38,7 +39,9 @@ final class PathFinder {
 
     static final double MIN_DIST_PATH = 5; // might want to increase this
     private static final double MIN_IMPROVEMENT = 0.01;
-    private static final Face[] ALL_FACES = {Face.UP, Face.DOWN, Face.NORTH, Face.SOUTH, Face.EAST, Face.WEST};
+    // The native PathFinder.cpp's order rather than Direction.values(), so the search expands
+    // neighbours as it always has.
+    private static final Direction[] ALL_FACES = {Direction.UP, Direction.DOWN, Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST};
 
     static final class Path {
         enum Type {
@@ -120,7 +123,7 @@ final class PathFinder {
      * Called inside a big neighbour cube; returns the 4 sub cubes that are adjacent to the
      * original cube. The face is relative to the original cube, the size is the sub cubes'.
      */
-    private static BlockPos[] neighborCubes(Face face, Size sz, BlockPos origin) {
+    private static BlockPos[] neighborCubes(Direction face, Size sz, BlockPos origin) {
         final int size = sz.width();
         final BlockPos corner;
         switch (face) {
@@ -145,7 +148,7 @@ final class PathFinder {
         }
     }
 
-    private static void forEachNeighborInCube(Chunk chunk, int state, NodePos neighborNode, Face face, Size size, boolean sizeChange, Size minSize, Callback callback) {
+    private static void forEachNeighborInCube(Chunk chunk, int state, NodePos neighborNode, Direction face, Size size, boolean sizeChange, Size minSize, Callback callback) {
         if (sizeChange) {
             callback.accept(neighborNode, chunk, state);
             return;
@@ -166,7 +169,7 @@ final class PathFinder {
     }
 
     /** Grows the neighbour to the largest empty cube it is in, then iterates what is on the face. */
-    private static void growThenIterate(Chunk chunk, int state, NodePos pos, Face face, Size minSize, Callback callback) {
+    private static void growThenIterate(Chunk chunk, int state, NodePos pos, Direction face, Size minSize, Callback callback) {
         final Size originalSize = pos.size;
         final BlockPos bpos = pos.absolutePosZero();
         final int lx = bpos.getX() & 15;
@@ -293,10 +296,10 @@ final class PathFinder {
                 generateMissingNeighbours(ctx, cx, cz);
             }
 
-            for (Face face : ALL_FACES) {
-                final NodePos neighborNodePos = new NodePos(size, face.offset(bpos, size.width()));
+            for (Direction face : ALL_FACES) {
+                final NodePos neighborNodePos = new NodePos(size, bpos.relative(face, size.width()));
                 final BlockPos origin = neighborNodePos.absolutePosZero();
-                if (face == Face.UP || face == Face.DOWN) {
+                if (face == Direction.UP || face == Direction.DOWN) {
                     if (!isInBounds(ctx.maxHeight, origin)) continue;
                 }
                 final int neighborCx = (origin.getX() >> 4);
