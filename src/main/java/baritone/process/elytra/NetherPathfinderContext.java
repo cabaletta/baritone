@@ -50,7 +50,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  */
 public final class NetherPathfinderContext implements IElytraPathFinder {
 
-    private static final BlockState AIR_BLOCK_STATE = Blocks.AIR.defaultBlockState();
     // The native library needed this lock held while there were pointers to its chunks in Java.
     // The port needs none of that -- a chunk is an object that stays valid for whoever holds it,
     // and the table takes lookups, inserts and culls from any thread at once -- and the lock is
@@ -133,7 +132,7 @@ public final class NetherPathfinderContext implements IElytraPathFinder {
                 event.getBlocks().forEach(pair -> {
                     BlockPos pos = pair.first().below(minY);
                     if (pos.getY() < 0 || pos.getY() >= 384) return;
-                    boolean isSolid = pair.second() != AIR_BLOCK_STATE;
+                    boolean isSolid = !pair.second().isAir();
                     // one block at a time in a chunk that is in use, so keep the x8 summary exact
                     chunk.setBlock(pos.getX() & 15, pos.getY(), pos.getZ() & 15, isSolid, true);
                 });
