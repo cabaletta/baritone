@@ -538,6 +538,14 @@ public class PathExecutor implements IPathExecutor, Helper {
             if (pathPosition + i > path.length() - 2 || !path.movements().get(pathPosition + i).getDirection().equals(dir)) {
                 return false; // the path turns or ends within two blocks, don't add any momentum
             }
+            Movement next = (Movement) path.movements().get(pathPosition + i);
+            if (next.toPlaceCached != null && !next.toPlaceCached.isEmpty()) {
+                return false; // the movement is going to place its own support, and momentum can arrive before those blocks do
+            }
+            BlockPos floor = next.getDest().below();
+            if (MovementHelper.isLiquid(ctx, floor) || !MovementHelper.canWalkOn(ctx, floor)) {
+                return false; // no real support under the destination yet: liquid (frostwalker ice hasn't frozen yet) or passable (ladders/vines have no floor at all), and momentum can't wait for it to appear
+            }
         }
         return true;
     }
