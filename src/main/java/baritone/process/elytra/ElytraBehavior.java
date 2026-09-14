@@ -35,10 +35,12 @@ import baritone.utils.accessor.IFireworkRocketEntity;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import it.unimi.dsi.fastutil.floats.FloatArrayList;
 import it.unimi.dsi.fastutil.floats.FloatIterator;
+import baritone.utils.accessor.IPlayerControllerMP;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.protocol.game.ClientboundPlayerPositionPacket;
+import net.minecraft.network.protocol.game.ServerboundUseItemPacket;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -107,6 +109,8 @@ public final class ElytraBehavior implements Helper {
 
     private boolean deployedFireworkLastTick;
     private final int[] nextTickBoostCounter;
+
+    private int craftUseItemSequence;
 
     private BlockStateInterface bsi;
     public final BetterBlockPos destination;
@@ -789,7 +793,18 @@ public final class ElytraBehavior implements Helper {
                 return;
             }
             logVerbose("attempting to use firework" + (forceUseFirework ? " (forced)" : ""));
-            ctx.playerController().processRightClick(ctx.player(), ctx.world(), InteractionHand.MAIN_HAND);
+            // Sending ServerboundUseItemPacket directly instead of going through useItem():
+            // Meteor's MultiPlayerGameModeMixin intercepts useItem at HEAD and, while its
+            // elytra-boost module is active, swallows the call (returns PASS, packet never sent)
+            // and only spawns a client-side ghost rocket when no screen is open. That is why
+            // real fireworks never fired with a GUI open. Bypassing the mixin lets the server
+            // spawn a real rocket regardless of screen state or Meteor module state.
+            ((IPlayerControllerMP) ctx.minecraft().gameMode).callSyncCurrentPlayItem();
+            ctx.player().connection.send(new ServerboundUseItemPacket(
+                    InteractionHand.MAIN_HAND,
+                    this.craftUseItemSequence++,
+                    ctx.player().getYRot(),
+                    ctx.player().getXRot()));
             this.minimumBoostTicks = 10 * (1 + getFireworkBoost(ctx.player().getItemInHand(InteractionHand.MAIN_HAND)).orElse(0));
             this.remainingFireworkTicks = 10;
             this.deployedFireworkLastTick = true;
