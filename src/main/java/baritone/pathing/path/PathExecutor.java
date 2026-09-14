@@ -507,7 +507,7 @@ public class PathExecutor implements IPathExecutor, Helper {
         if (!(current instanceof MovementTraverse) || current.getDirection().getY() != 0) {
             return false; // head hitting only applies to flat walking movements
         }
-        if (!ctx.player().isOnGround() || MovementHelper.isLiquid(ctx, ctx.playerFeet())) {
+        if (!ctx.player().onGround() || MovementHelper.isLiquid(ctx, ctx.playerFeet())) {
             return false;
         }
         if (((Movement) current).toBreakCached == null || !((Movement) current).toBreakCached.isEmpty()) {
