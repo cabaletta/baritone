@@ -788,7 +788,21 @@ public interface MovementHelper extends ActionCosts, Helper {
         return true;
     }
 
+    /**
+     * Picks the item to place. {@code select} is whether to actually hold it, or just check we have it.
+     */
+    @FunctionalInterface
+    interface ItemSelector {
+
+        boolean select(boolean select);
+    }
+
     static PlaceResult attemptToPlaceABlock(MovementState state, IBaritone baritone, BlockPos placeAt, boolean preferDown, boolean wouldSneak) {
+        return attemptToPlaceABlock(state, baritone, placeAt, preferDown, wouldSneak,
+                select -> ((Baritone) baritone).getInventoryBehavior().selectThrowawayForLocation(select, placeAt.getX(), placeAt.getY(), placeAt.getZ()));
+    }
+
+    static PlaceResult attemptToPlaceABlock(MovementState state, IBaritone baritone, BlockPos placeAt, boolean preferDown, boolean wouldSneak, ItemSelector selectItem) {
         IPlayerContext ctx = baritone.getPlayerContext();
         Optional<Rotation> direct = RotationUtils.reachable(ctx, placeAt, wouldSneak); // we assume that if there is a block there, it must be replacable
         boolean found = false;
@@ -799,7 +813,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         for (int i = 0; i < 5; i++) {
             BlockPos against1 = placeAt.relative(HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP[i]);
             if (MovementHelper.canPlaceAgainst(ctx, against1)) {
-                if (!((Baritone) baritone).getInventoryBehavior().selectThrowawayForLocation(false, placeAt.getX(), placeAt.getY(), placeAt.getZ())) { // get ready to place a throwaway block
+                if (!selectItem.select(false)) { // get ready to place the block
                     Helper.HELPER.logDebug("bb pls get me some blocks. dirt, netherrack, cobble");
                     state.setStatus(MovementStatus.UNREACHABLE);
                     return PlaceResult.NO_OPTION;
@@ -830,7 +844,7 @@ public interface MovementHelper extends ActionCosts, Helper {
                 if (wouldSneak) {
                     state.setInput(Input.SNEAK, true);
                 }
-                ((Baritone) baritone).getInventoryBehavior().selectThrowawayForLocation(true, placeAt.getX(), placeAt.getY(), placeAt.getZ());
+                selectItem.select(true);
                 return PlaceResult.READY_TO_PLACE;
             }
         }
@@ -838,7 +852,7 @@ public interface MovementHelper extends ActionCosts, Helper {
             if (wouldSneak) {
                 state.setInput(Input.SNEAK, true);
             }
-            ((Baritone) baritone).getInventoryBehavior().selectThrowawayForLocation(true, placeAt.getX(), placeAt.getY(), placeAt.getZ());
+            selectItem.select(true);
             return PlaceResult.ATTEMPTING;
         }
         return PlaceResult.NO_OPTION;
