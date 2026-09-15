@@ -46,6 +46,8 @@ And finally `GoalComposite`. `GoalComposite` is a list of other goals, any one o
 
 Things it doesn't have yet
 
+- Trapdoors
+
 See <a href="https://github.com/cabaletta/baritone/issues">issues</a> for more.
 
 Things it may not ever have, from most likely to least likely =(
