@@ -586,10 +586,46 @@ public final class ElytraBehavior implements Helper {
     }
 
     /**
+     * Keeps the elytra on a safe heading while there is no path/solution for the current tick.
+     * Without this, the look target is left null and, with {@code elytraFreeLook} enabled, the
+     * player's own rotation would be sent to the server and steer the flight into whatever the
+     * camera is pointing at mid-calculation.
+     */
+    private void maintainFlightHeading() {
+        if (this.landingMode || !ctx.player().isFallFlying()) {
+            return; // landing is steered by ElytraProcess; don't interfere
+        }
+        final NetherPath path = this.pathManager.getPath();
+        if (!path.isEmpty()) {
+            final int front = Math.max(Math.min(this.pathManager.getNear() + 2, path.size() - 1), 0);
+            final Vec3 motion = ctx.player().getDeltaMovement();
+            if (motion.horizontalDistanceSqr() != 0.0 || Math.abs(motion.y) > 1e-4) {
+                final Vec3 toFront = path.getVec(front).subtract(ctx.player().position());
+                if (motion.x * toFront.x + motion.z * toFront.z >= 0) { // still has a node ahead
+                    baritone.getLookBehavior().updateTarget(
+                            RotationUtils.calcRotationFromVec3d(ctx.player().position(), path.getVec(front), ctx.playerRotations()),
+                            false);
+                    return;
+                }
+            }
+        }
+        // no usable path node ahead, freeze the current trajectory
+        final Vec3 motion = ctx.player().getDeltaMovement();
+        if (motion.horizontalDistanceSqr() == 0.0 && motion.y == 0.0) {
+            return;
+        }
+        baritone.getLookBehavior().updateTarget(
+                RotationUtils.calcRotationFromVec3d(ctx.player().position(), ctx.player().position().add(motion), ctx.playerRotations()),
+                false);
+    }
+
+    /**
      * Called by {@link baritone.process.ElytraProcess#onTick(boolean, boolean)} when the process is in control and the player is flying
      */
     public void tick() {
         if (this.pathManager.getPath().isEmpty()) {
+            logVerbose("holding heading, waiting for path");
+            this.maintainFlightHeading();
             return;
         }
         trySwapElytra();
@@ -624,6 +660,7 @@ public final class ElytraBehavior implements Helper {
 
         if (solution == null) {
             logVerbose("no solution");
+            this.maintainFlightHeading();
             return;
         }
 

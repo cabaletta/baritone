@@ -25,8 +25,10 @@ import baritone.api.behavior.look.ITickableAimProcessor;
 import baritone.api.event.events.*;
 import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.Rotation;
+import baritone.api.utils.RotationUtils;
 import baritone.behavior.look.ForkableRandom;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -43,6 +45,14 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
      * The rotation known to the server. Returned by {@link #getEffectiveRotation()} for use in {@link IPlayerContext}.
      */
     private Rotation serverRotation;
+
+    /**
+     * The look direction that Baritone is currently steering the player toward. This is what the
+     * firework rocket boost should push the player along, rather than the player's own (possibly
+     * free-look) camera angle. Set while a target is being applied; cleared whenever Baritone stops
+     * steering.
+     */
+    private static Vec3 steeringLookDirection;
 
     /**
      * The last player rotation. Used to restore the player's angle when using free look.
@@ -84,6 +94,7 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
     public void onPlayerUpdate(PlayerUpdateEvent event) {
 
         if (this.target == null) {
+            steeringLookDirection = null;
             return;
         }
 
@@ -91,6 +102,7 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
             case PRE: {
                 if (this.target.mode == Target.Mode.NONE) {
                     // Just return for PRE, we still want to set target to null on POST
+                    steeringLookDirection = null;
                     return;
                 }
 
@@ -98,6 +110,7 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
                 final Rotation actual = this.processor.peekRotation(this.target.rotation);
                 ctx.player().setYRot(actual.getYaw());
                 ctx.player().setXRot(actual.getPitch());
+                steeringLookDirection = RotationUtils.calcLookDirectionFromRotation(actual);
                 break;
             }
             case POST: {
@@ -156,6 +169,15 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
             final Rotation actual = this.processor.peekRotation(this.target.rotation);
             ctx.player().setYRot(actual.getYaw());
         }
+    }
+
+    /**
+     * @return The look direction Baritone is currently steering the player toward, or {@code null}
+     *         when not steering. Used by the firework mixin so an applied boost follows Baritone's
+     *         heading instead of the player's (free-look) camera angle.
+     */
+    public static Vec3 getSteeringLookDirection() {
+        return steeringLookDirection;
     }
 
     public Optional<Rotation> getEffectiveRotation() {
