@@ -17,6 +17,8 @@
 
 package baritone.process.elytra.pathfinder;
 
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import java.util.ArrayDeque;
@@ -241,7 +243,7 @@ final class PathFinder {
         final BlockPos startCenter = start.absolutePosCenter();
 
         final Search s = new Search(goalCenter, startCenter, fakeChunkCost);
-        final Set<Long> doneFull = new HashSet<>();
+        final LongSet doneFull = new LongOpenHashSet();
 
         final PathNode startNode = getNodeAtPosition(s.map, start, goal.absolutePosZero());
         final BlockPos startZero = start.absolutePosZero();
