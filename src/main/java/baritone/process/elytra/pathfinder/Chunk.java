@@ -25,7 +25,7 @@ import java.util.Arrays;
  * library's: 24 sections of 16x16x16 blocks (512 bytes each); a section is 8 x8 cubes of 64 bytes; an
  * x8 is 8 x4 cubes of 8 bytes; an x4 is 8 x2 cubes of one byte; the 8 bits of that byte are the
  * blocks. A section in which no block has been set is not allocated. Beside the sections, one byte per
- * section says which of its x8 cubes may hold a block, so that the question a search asks first and a ray
+ * section says which of its x8 cubes hold a block, so that the question a search asks first and a ray
  * asks of every x16 and x8 it enters, whether a cube that big is empty, is a bit test rather than a
  * scan of 64 or 8 longs.
  * <p>
@@ -47,7 +47,7 @@ public final class Chunk {
     public static final Chunk SOLID = new Chunk(true);
 
     private final long[][] sections = new long[SECTIONS][];
-    /** Bit i of entry s is set once a block is set in x8 cube i of section s. fillSection resets it, an exact setBlock clears it with the cube's last block, and a plain clear leaves it: set means the cube may hold a block, clear that it does not. A section that is null has 0. */
+    /** Bit i of entry s says whether x8 cube i of section s holds a block; a section that is null has 0. */
     private final int[] filled = new int[SECTIONS];
     private final boolean shared;
 
@@ -107,7 +107,7 @@ public final class Chunk {
         return i >= 0 && i < SECTIONS ? this.sections[i] : null;
     }
 
-    /** Which x8 cubes of the section holding y may hold a block, one bit each in x8Index order; 0 outside the chunk. */
+    /** Which x8 cubes of the section holding y hold a block, one bit each in x8Index order; 0 outside the chunk. */
     int filled(int y) {
         final int i = y >> 4;
         return i >= 0 && i < SECTIONS ? this.filled[i] : 0;
@@ -124,22 +124,11 @@ public final class Chunk {
     }
 
     /**
-     * Coordinates are chunk relative: x and z in 0..15, y in 0..383. A clear leaves the x8's bit in
-     * filled as it is, which suits the callers that fill a whole chunk at once: they only ever set
-     * blocks, so the scan that keeping the bit exact costs would be wasted on them. Clearing single
-     * blocks in a chunk that is in use is {@link #setBlock(int, int, int, boolean, boolean)}.
+     * Coordinates are chunk relative: x and z in 0..15, y in 0..383. A clear that empties its x8
+     * cube also clears the cube's bit in filled, which costs a scan of the cube's eight longs; the
+     * callers that fill a whole chunk only ever set blocks, so they never pay it.
      */
     public void setBlock(int x, int y, int z, boolean solid) {
-        setBlock(x, y, z, solid, false);
-    }
-
-    /**
-     * As {@link #setBlock(int, int, int, boolean)}; with {@code exact}, a clear that empties its x8
-     * cube also clears the cube's bit in filled, at the cost of a scan of the cube's eight longs. A
-     * block update in a chunk the search is using passes true, so that a broken block does not leave
-     * its cube reading as possibly solid for as long as the chunk lives.
-     */
-    public void setBlock(int x, int y, int z, boolean solid, boolean exact) {
         if (this.shared) {
             throw new UnsupportedOperationException("the shared air and solid chunks are read only");
         }
@@ -159,7 +148,7 @@ public final class Chunk {
             s[off >>> 3] |= mask;
         } else {
             s[off >>> 3] &= ~mask;
-            if (exact && allZero(s, x8 * (X8_BYTES / 8), X8_BYTES / 8)) {
+            if (allZero(s, x8 * (X8_BYTES / 8), X8_BYTES / 8)) {
                 this.filled[y >> 4] &= ~(1 << x8);
             }
         }
