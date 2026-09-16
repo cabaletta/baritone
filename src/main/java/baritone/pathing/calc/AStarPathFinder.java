@@ -166,11 +166,16 @@ public final class AStarPathFinder extends AbstractNodeCostSearch {
                             SettingsUtil.maybeCensor(currentNode.y + moves.yOffset)));
                 }
                 long hashCode = BetterBlockPos.longHash(res.x, res.y, res.z);
+                PathNode neighbor = getNodeAtPosition(res.x, res.y, res.z, hashCode);
                 if (isFavoring) {
                     // see issue #18
-                    actionCost *= favoring.calculate(hashCode);
+                    // the multiplier only depends on the destination, so look it up once per node rather than
+                    // once per edge (22 hash lookups per node otherwise, and favoring is on for every plan-ahead search)
+                    if (neighbor.favor == 0) {
+                        neighbor.favor = favoring.calculate(hashCode);
+                    }
+                    actionCost *= neighbor.favor;
                 }
-                PathNode neighbor = getNodeAtPosition(res.x, res.y, res.z, hashCode);
                 double tentativeCost = currentNode.cost + actionCost;
                 if (neighbor.cost - tentativeCost > minimumImprovement) {
                     neighbor.previous = currentNode;
@@ -182,7 +187,7 @@ public final class AStarPathFinder extends AbstractNodeCostSearch {
                         openSet.insert(neighbor);//dont double count, dont insert into open set if it's already there
                     }
                     for (int i = 0; i < COEFFICIENTS.length; i++) {
-                        double heuristic = neighbor.estimatedCostToGoal + neighbor.cost / COEFFICIENTS[i];
+                        double heuristic = neighbor.estimatedCostToGoal + neighbor.cost * INVERSE_COEFFICIENTS[i];
                         if (bestHeuristicSoFar[i] - heuristic > minimumImprovement) {
                             bestHeuristicSoFar[i] = heuristic;
                             bestSoFar[i] = neighbor;

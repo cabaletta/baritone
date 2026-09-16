@@ -46,9 +46,22 @@ public abstract class AbstractNodeCostSearch implements IPathFinder, Helper {
     private final CalculationContext context;
 
     /**
+     * Nodes live in 16x8x16 cells (an array of 2048 slots indexed by the low coordinate bits) and only the cells
+     * are in a hash map. The old flat position -> node map was the single hottest thing in the search: every
+     * lookup was a cache miss into a multi megabyte key array. Successors of a node are within a few blocks of it
+     * so most of them land in the cell we just used, and the cell map itself is small enough to stay in cache.
+     *
      * @see <a href="https://github.com/cabaletta/baritone/issues/107">Issue #107</a>
      */
-    private final Long2ObjectOpenHashMap<PathNode> map;
+    private final Long2ObjectOpenHashMap<PathNode[]> cells;
+    private PathNode[] prevCell;
+    private long prevCellKey = Long.MIN_VALUE; // impossible key, cells are nowhere near 2^27 chunks out
+    private int numNodesCreated;
+
+    private static final int CELL_BITS_X = 4;
+    private static final int CELL_BITS_Y = 3;
+    private static final int CELL_BITS_Z = 4;
+    private static final int CELL_SIZE = 1 << (CELL_BITS_X + CELL_BITS_Y + CELL_BITS_Z);
 
     protected PathNode startNode;
 
@@ -67,6 +80,18 @@ public abstract class AbstractNodeCostSearch implements IPathFinder, Helper {
      * @see <a href="https://docs.google.com/document/d/1WVHHXKXFdCR1Oz__KtK8sFqyvSwJN_H4lftkHFgmzlc/edit">here</a>
      */
     protected static final double[] COEFFICIENTS = {1.5, 2, 2.5, 3, 4, 5, 10};
+
+    /**
+     * 1 / COEFFICIENTS, because the relaxation loop does this division 7 times per improved node and a multiply is
+     * a lot cheaper than a divide
+     */
+    protected static final double[] INVERSE_COEFFICIENTS = new double[COEFFICIENTS.length];
+
+    static {
+        for (int i = 0; i < COEFFICIENTS.length; i++) {
+            INVERSE_COEFFICIENTS[i] = 1 / COEFFICIENTS[i];
+        }
+    }
 
     /**
      * If a path goes less than 5 blocks and doesn't make it to its goal, it's not worth considering.
@@ -89,7 +114,7 @@ public abstract class AbstractNodeCostSearch implements IPathFinder, Helper {
         this.startZ = startZ;
         this.goal = goal;
         this.context = context;
-        this.map = new Long2ObjectOpenHashMap<>(Baritone.settings().pathingMapDefaultSize.value, Baritone.settings().pathingMapLoadFactor.value);
+        this.cells = new Long2ObjectOpenHashMap<>(Baritone.settings().pathingMapDefaultSize.value, Baritone.settings().pathingMapLoadFactor.value);
     }
 
     public void cancel() {
@@ -169,10 +194,29 @@ public abstract class AbstractNodeCostSearch implements IPathFinder, Helper {
      */
 
     protected PathNode getNodeAtPosition(int x, int y, int z, long hashCode) {
-        PathNode node = map.get(hashCode);
+        long cellKey = ((long) ((x >> CELL_BITS_X) & 0xFFFFFFF) << 36)
+                | ((long) ((z >> CELL_BITS_Z) & 0xFFFFFFF) << 8)
+                | ((y >> CELL_BITS_Y) & 0xFF);
+        PathNode[] cell;
+        if (cellKey == prevCellKey) {
+            cell = prevCell;
+        } else {
+            cell = cells.get(cellKey);
+            if (cell == null) {
+                cell = new PathNode[CELL_SIZE];
+                cells.put(cellKey, cell);
+            }
+            prevCell = cell;
+            prevCellKey = cellKey;
+        }
+        int index = ((y & ((1 << CELL_BITS_Y) - 1)) << (CELL_BITS_X + CELL_BITS_Z))
+                | ((z & ((1 << CELL_BITS_Z) - 1)) << CELL_BITS_X)
+                | (x & ((1 << CELL_BITS_X) - 1));
+        PathNode node = cell[index];
         if (node == null) {
             node = new PathNode(x, y, z, goal);
-            map.put(hashCode, node);
+            cell[index] = node;
+            numNodesCreated++;
         }
         return node;
     }
@@ -238,6 +282,6 @@ public abstract class AbstractNodeCostSearch implements IPathFinder, Helper {
     }
 
     protected int mapSize() {
-        return map.size();
+        return numNodesCreated;
     }
 }
