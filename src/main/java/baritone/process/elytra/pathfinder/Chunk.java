@@ -50,7 +50,7 @@ public final class Chunk {
 
     private final long[][] sections = new long[SECTIONS][];
     /** Bit i of entry s says whether x8 cube i of section s holds a block; a section that is null has 0. */
-    private final int[] filled = new int[SECTIONS];
+    private final byte[] filled = new byte[SECTIONS];
     private final boolean shared;
 
     public Chunk() {
@@ -63,7 +63,7 @@ public final class Chunk {
             for (int i = 0; i < SECTIONS; i++) {
                 this.sections[i] = new long[SECTION_LONGS];
                 Arrays.fill(this.sections[i], -1L);
-                this.filled[i] = 0xFF;
+                this.filled[i] = (byte) 0xFF;
             }
         }
     }
@@ -112,7 +112,7 @@ public final class Chunk {
     /** Which x8 cubes of the section holding y hold a block, one bit each in x8Index order; 0 outside the chunk. */
     int filled(int y) {
         final int i = y >> 4;
-        return i >= 0 && i < SECTIONS ? this.filled[i] : 0;
+        return i >= 0 && i < SECTIONS ? this.filled[i] & 0xFF : 0;
     }
 
     /** Coordinates are chunk relative: x and z in 0..15, y in 0..383. */
@@ -169,7 +169,7 @@ public final class Chunk {
         if (s == null) {
             s = this.sections[section] = new long[SECTION_LONGS];
         }
-        this.filled[section] = 0xFF;
+        this.filled[section] = (byte) 0xFF;
         Arrays.fill(s, -1L);
     }
 
