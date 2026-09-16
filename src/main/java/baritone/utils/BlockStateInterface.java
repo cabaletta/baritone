@@ -53,6 +53,13 @@ public class BlockStateInterface {
 
     private final boolean useTheRealWorld;
 
+    /**
+     * dimension bounds, cached because world.dimensionType() goes through a Holder and this is on the hottest path there is
+     */
+    public final int minY;
+    public final int maxY;
+    private final int height;
+
     private static final BlockState AIR = Blocks.AIR.defaultBlockState();
 
     public BlockStateInterface(IPlayerContext ctx) {
@@ -72,6 +79,27 @@ public class BlockStateInterface {
         if (!ctx.minecraft().isSameThread()) {
             throw new IllegalStateException("BlockStateInterface must be constructed on the main thread");
         }
+        this.minY = world.dimensionType().minY();
+        this.height = world.dimensionType().height();
+        this.maxY = minY + height - 1;
+        this.isPassableBlockPos = new BlockPos.MutableBlockPos();
+        this.access = new BlockStateInterfaceAccessWrapper(this);
+    }
+
+    /**
+     * For subclasses that serve blocks from somewhere other than a client world (e.g. the offline
+     * pathing benchmark). Such a subclass must override {@link #get0(int, int, int)}, {@link #isLoaded(int, int)}
+     * and {@link #worldContainsLoadedChunk(int, int)} because there is no chunk provider here.
+     */
+    protected BlockStateInterface(BetterWorldBorder worldBorder, int minY, int height) {
+        this.world = null;
+        this.worldBorder = worldBorder;
+        this.worldData = null;
+        this.provider = null;
+        this.useTheRealWorld = true;
+        this.minY = minY;
+        this.height = height;
+        this.maxY = minY + height - 1;
         this.isPassableBlockPos = new BlockPos.MutableBlockPos();
         this.access = new BlockStateInterfaceAccessWrapper(this);
     }
@@ -95,9 +123,9 @@ public class BlockStateInterface {
     }
 
     public BlockState get0(int x, int y, int z) { // Mickey resigned
-        y -= world.dimensionType().minY();
+        y -= minY;
         // Invalid vertical position
-        if (y < 0 || y >= world.dimensionType().height()) {
+        if (y < 0 || y >= height) {
             return AIR;
         }
 
@@ -132,7 +160,7 @@ public class BlockStateInterface {
             prevCached = region;
             cached = region;
         }
-        BlockState type = cached.getBlock(x & 511, y + world.dimensionType().minY(), z & 511);
+        BlockState type = cached.getBlock(x & 511, y + minY, z & 511);
         if (type == null) {
             return AIR;
         }

@@ -42,6 +42,12 @@ public final class AStarPathFinder extends AbstractNodeCostSearch {
     private final Favoring favoring;
     private final CalculationContext calcContext;
 
+    /**
+     * stats from the last calculate0, for the benchmark. written once at the end so the hot loop keeps using locals
+     */
+    public int numNodesConsidered;
+    public int numMovementsConsidered;
+
     public AStarPathFinder(BetterBlockPos realStart, int startX, int startY, int startZ, Goal goal, Favoring favoring, CalculationContext context) {
         super(realStart, startX, startY, startZ, goal, context);
         this.favoring = favoring;
@@ -50,8 +56,8 @@ public final class AStarPathFinder extends AbstractNodeCostSearch {
 
     @Override
     protected Optional<IPath> calculate0(long primaryTimeout, long failureTimeout) {
-        int minY = calcContext.world.dimensionType().minY();
-        int height = calcContext.world.dimensionType().height();
+        int minY = calcContext.minY;
+        int maxY = calcContext.maxY;
         startNode = getNodeAtPosition(startX, startY, startZ, BetterBlockPos.longHash(startX, startY, startZ));
         startNode.cost = 0;
         startNode.combinedCost = startNode.estimatedCostToGoal;
@@ -63,7 +69,7 @@ public final class AStarPathFinder extends AbstractNodeCostSearch {
             bestSoFar[i] = startNode;
         }
         MutableMoveResult res = new MutableMoveResult();
-        BetterWorldBorder worldBorder = new BetterWorldBorder(calcContext.world.getWorldBorder());
+        BetterWorldBorder worldBorder = calcContext.worldBorder;
         long startTime = System.currentTimeMillis();
         boolean slowPath = Baritone.settings().slowPath.value;
         if (slowPath) {
@@ -96,6 +102,8 @@ public final class AStarPathFinder extends AbstractNodeCostSearch {
             mostRecentConsidered = currentNode;
             numNodes++;
             if (goal.isInGoal(currentNode.x, currentNode.y, currentNode.z)) {
+                this.numNodesConsidered = numNodes;
+                this.numMovementsConsidered = numMovementsConsidered;
                 logDebug("Took " + (System.currentTimeMillis() - startTime) + "ms, " + numMovementsConsidered + " movements considered");
                 return Optional.of(new Path(realStart, startNode, currentNode, numNodes, goal, calcContext));
             }
@@ -112,7 +120,7 @@ public final class AStarPathFinder extends AbstractNodeCostSearch {
                 if (!moves.dynamicXZ && !worldBorder.entirelyContains(newX, newZ)) {
                     continue;
                 }
-                if (currentNode.y + moves.yOffset > height || currentNode.y + moves.yOffset < minY) {
+                if (currentNode.y + moves.yOffset > maxY || currentNode.y + moves.yOffset < minY) {
                     continue;
                 }
                 res.reset();
@@ -186,6 +194,8 @@ public final class AStarPathFinder extends AbstractNodeCostSearch {
                 }
             }
         }
+        this.numNodesConsidered = numNodes;
+        this.numMovementsConsidered = numMovementsConsidered;
         if (cancelRequested) {
             return Optional.empty();
         }
