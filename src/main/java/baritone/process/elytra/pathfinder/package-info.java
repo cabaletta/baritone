@@ -20,9 +20,10 @@
  * (https://github.com/babbaj/nether-pathfinder), which Baritone loaded as a native library
  * through JNI, in plain Java. Each class is the C++ file of the same name, ported one for one,
  * and the tests hold the terrain generator and the raytracer to the native library's own
- * recorded answers over a few hundred generated chunks and a few thousand rays. Nothing in here
- * refers to Minecraft; the seam is {@link baritone.process.elytra.NetherPathfinderContext},
- * which packs the game's chunks into {@link baritone.process.elytra.pathfinder.Chunk}s and asks
+ * recorded answers over a few hundred generated chunks and a few thousand rays. The only
+ * Minecraft in here is BlockPos, Direction, Vec3 and Mth; the seam is
+ * {@link baritone.process.elytra.NetherPathfinderContext}, which packs the game's chunks into
+ * {@link baritone.process.elytra.pathfinder.Chunk}s and asks
  * {@link baritone.process.elytra.pathfinder.NetherPathfinder} for paths and lines of sight.
  * The port was written for babbaj/nether-pathfinder#31.
  */
