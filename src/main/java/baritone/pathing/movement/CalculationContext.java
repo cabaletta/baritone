@@ -84,22 +84,17 @@ public class CalculationContext {
     public final double walkOnWaterOnePenalty;
     public final boolean allowWalkOnMagmaBlocks;
     public final BetterWorldBorder worldBorder;
-    /**
-     * lowest and highest block y of the dimension, snapshotted so the hot loop never has to go through world.dimensionType()
-     */
+    // world.dimensionType() goes through a Holder and we were calling it twice per block. per block!
     public final int minY;
     public final int maxY;
 
     public final PrecomputedData precomputedData;
 
-    /**
-     * Memo for {@link MovementHelper#getMiningDurationTicks(CalculationContext, int, int, int, BlockState, boolean)}.
-     * The block under a node gets its break cost evaluated by the four descends into it, the downward out of it and
-     * the descends from the four neighbouring nodes, and each evaluation reads its five neighbours for the
-     * avoidBreaking check. Nothing it depends on changes during a search, so cache by position. Only allocated for
-     * the search thread's context (the per-tick ones evaluate a handful of costs and are thrown away).
-     * Two key/value pairs because includeFalling is part of the key.
-     */
+    // memo for getMiningDurationTicks by position
+    // the block under you gets its break cost worked out by four descends, a downward, and then all your neighbours' descends
+    // and every one of those reads five more blocks for avoidBreaking. the answer doesn't change mid search so just remember it
+    // only the pathing thread gets one, the per tick contexts ask like three questions and die
+    // two of everything because includeFalling is part of the question
     public static final int MINING_CACHE_BITS = 16;
     public final long[] miningKeys;
     public final long[] miningKeysFalling;
@@ -126,11 +121,8 @@ public class CalculationContext {
         );
     }
 
-    /**
-     * Everything that comes from the player or the client world is passed in here, so that a context
-     * can also be built without a running client (see the offline pathing benchmark). All the
-     * settings snapshots happen here so both paths get exactly the same values.
-     */
+    // everything that needs a player or a world comes in as a parameter so you can build one of these with no game running
+    // all the settings get snapshotted in here so nobody can accidentally read them differently
     protected CalculationContext(IBaritone baritone, boolean forUseOnAnotherThread, Level world, WorldData worldData, BlockStateInterface bsi, ToolSet toolSet, boolean hasThrowaway, boolean hasWaterBucket, boolean canSprint, int frostWalker, float waterSpeedMultiplier) {
         this.precomputedData = PrecomputedData.forCurrentSettings();
         this.safeForThreadedUse = forUseOnAnotherThread;
@@ -147,7 +139,7 @@ public class CalculationContext {
         if (forUseOnAnotherThread) {
             this.miningKeys = new long[1 << MINING_CACHE_BITS];
             this.miningKeysFalling = new long[1 << MINING_CACHE_BITS];
-            // -1 is never a real key, see MovementHelper.getMiningDurationTicks
+            // -1 is the "nothing here" key, see getMiningDurationTicks for why that's safe
             java.util.Arrays.fill(this.miningKeys, -1L);
             java.util.Arrays.fill(this.miningKeysFalling, -1L);
             this.miningVals = new double[1 << MINING_CACHE_BITS];

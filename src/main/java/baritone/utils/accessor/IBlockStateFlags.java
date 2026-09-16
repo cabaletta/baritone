@@ -17,10 +17,8 @@
 
 package baritone.utils.accessor;
 
-/**
- * A pathing flags word stored directly on every BlockState (via mixin), so the cost functions don't have to go
- * through the block state registry's identity hash map to find their precomputed data. See PrecomputedData.
- */
+// every blockstate carries its own pathing flags (see PrecomputedData) so we don't have to
+// ask the registry's hash map who it is a few times per block read
 public interface IBlockStateFlags {
 
     int baritone$getPathingFlags();

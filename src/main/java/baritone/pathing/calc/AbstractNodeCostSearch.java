@@ -46,16 +46,15 @@ public abstract class AbstractNodeCostSearch implements IPathFinder, Helper {
     private final CalculationContext context;
 
     /**
-     * Nodes live in 16x8x16 cells (an array of 2048 slots indexed by the low coordinate bits) and only the cells
-     * are in a hash map. The old flat position -> node map was the single hottest thing in the search: every
-     * lookup was a cache miss into a multi megabyte key array. Successors of a node are within a few blocks of it
-     * so most of them land in the cell we just used, and the cell map itself is small enough to stay in cache.
+     * nodes live in 16x8x16 cells and only the cells go in the map
+     * one big position to node map meant every single lookup was a cache miss into like 8 megs of keys
+     * the next node is basically always right next to the last one so it's in the cell we just had. computers love that
      *
      * @see <a href="https://github.com/cabaletta/baritone/issues/107">Issue #107</a>
      */
     private final Long2ObjectOpenHashMap<PathNode[]> cells;
     private PathNode[] prevCell;
-    private long prevCellKey = Long.MIN_VALUE; // impossible key, cells are nowhere near 2^27 chunks out
+    private long prevCellKey = Long.MIN_VALUE; // nobody is pathing 2^27 chunks from spawn. nobody
     private int numNodesCreated;
 
     private static final int CELL_BITS_X = 4;
@@ -81,10 +80,7 @@ public abstract class AbstractNodeCostSearch implements IPathFinder, Helper {
      */
     protected static final double[] COEFFICIENTS = {1.5, 2, 2.5, 3, 4, 5, 10};
 
-    /**
-     * 1 / COEFFICIENTS, because the relaxation loop does this division 7 times per improved node and a multiply is
-     * a lot cheaper than a divide
-     */
+    // 1 / COEFFICIENTS. dividing seven times per node is for people who want slow code
     protected static final double[] INVERSE_COEFFICIENTS = new double[COEFFICIENTS.length];
 
     static {

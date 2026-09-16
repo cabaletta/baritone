@@ -42,9 +42,7 @@ public final class AStarPathFinder extends AbstractNodeCostSearch {
     private final Favoring favoring;
     private final CalculationContext calcContext;
 
-    /**
-     * stats from the last calculate0, for the benchmark. written once at the end so the hot loop keeps using locals
-     */
+    // how much the last calculate0 chewed through. written at the end because the loop likes its locals
     public int numNodesConsidered;
     public int numMovementsConsidered;
 
@@ -169,8 +167,8 @@ public final class AStarPathFinder extends AbstractNodeCostSearch {
                 PathNode neighbor = getNodeAtPosition(res.x, res.y, res.z, hashCode);
                 if (isFavoring) {
                     // see issue #18
-                    // the multiplier only depends on the destination, so look it up once per node rather than
-                    // once per edge (22 hash lookups per node otherwise, and favoring is on for every plan-ahead search)
+                    // favoring only cares where you end up, not where you came from
+                    // so look it up once per node instead of 22 times
                     if (neighbor.favor == 0) {
                         neighbor.favor = favoring.calculate(hashCode);
                     }

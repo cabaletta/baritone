@@ -52,23 +52,17 @@ public class PrecomputedData {
     private static final int CAN_PLACE_AGAINST_MASK = 1 << 7;
     private static final int NEVER_BREAK_MASK = 1 << 8;
 
-    /**
-     * how many of the low bits of the word on a BlockState are flags, the rest is the generation stamp
-     */
+    // low FLAG_BITS of the word on a BlockState are the flags, the rest says which table wrote them
     private static final int FLAG_BITS = 10;
     private static final int FLAG_MASK = (1 << FLAG_BITS) - 1;
     private static final AtomicInteger GENERATION = new AtomicInteger();
-    /**
-     * whether MixinBlockStateBase is applied. decided once: a failing instanceof against an interface nobody
-     * implements is a full scan of the class's secondary supers, and this is called a few times per block read
-     */
+    // is the mixin there? ask once. a failing instanceof on an interface that nobody implements
+    // makes the jvm scan the whole supertype list every time and we do this a lot
     private static final boolean STAMPED_STATES = Blocks.AIR.defaultBlockState() instanceof IBlockStateFlags;
-    /**
-     * never 0, so a fresh (zero) word on a state is always a miss
-     */
+    // starts at 1 so a blank state (0) never looks like ours
     private final int generation = GENERATION.incrementAndGet();
 
-    // the settings the table depends on, so a table built under different settings is never reused
+    // if any of these change the table is garbage, so remember what it was built with
     private final boolean allowWalkOnMagmaBlocks;
     private final boolean allowVines;
     private final boolean assumeWalkOnLava;
@@ -87,11 +81,8 @@ public class PrecomputedData {
         this.blocksToDisallowBreaking = new ArrayList<>(Baritone.settings().blocksToDisallowBreaking.value);
     }
 
-    /**
-     * The table is a pure function of (block state, a handful of settings), so there is no reason to start from
-     * an empty one on every path calculation. Every search used to pay for re-classifying every block state it
-     * met, i.e. the instanceof chains and collision shape lookups, plus a 25kB allocation per tick.
-     */
+    // stone is still stone next search. we used to throw the whole table away every tick and
+    // redo all the instanceof chains from scratch, plus allocate 25kb for the privilege
     public static PrecomputedData forCurrentSettings() {
         PrecomputedData s = shared;
         if (s == null || !s.matchesCurrentSettings()) {
@@ -131,8 +122,8 @@ public class PrecomputedData {
             case MAYBE -> blockData |= FULLY_PASSABLE_MAYBE_MASK;
         }
 
-        // isBlockNormalCube goes through Block.isShapeFullBlock which is a guava LoadingCache lookup that
-        // allocates a queue node on every hit. that was ~8% of the whole search, for checking whether air is a cube
+        // isBlockNormalCube goes through a guava cache that allocates on every single hit
+        // 8% of the whole search was spent asking if air is a cube. it is not. get rekt guava
         Block block = state.getBlock();
         if (MovementHelper.isBlockNormalCube(state) || block == Blocks.GLASS || block instanceof StainedGlassBlock) {
             blockData |= CAN_PLACE_AGAINST_MASK;
@@ -150,15 +141,10 @@ public class PrecomputedData {
         return blockData;
     }
 
-    /**
-     * the flags live in three places, fastest first:
-     * <ol>
-     * <li>on the BlockState itself (mixin field, stamped with this table's generation so a table built under
-     * different settings never trusts a stale word)</li>
-     * <li>a tiny per-BlockStateInterface identity cache, for when the mixin isn't there (the offline benchmark)</li>
-     * <li>the registry-id indexed array, which is the canonical one the other two are filled from</li>
-     * </ol>
-     */
+    // three places to find the flags, fastest first
+    // 1. on the blockstate itself (mixin), stamped with our generation so an old table's answer gets ignored
+    // 2. a tiny identity cache on the bsi, for when there's no mixin (unit tests, benchmarks, cursed launchers)
+    // 3. the actual array by registry id, which is what fills the other two
     private int flags(BlockStateInterface bsi, BlockState state) {
         if (STAMPED_STATES) {
             IBlockStateFlags stamped = (IBlockStateFlags) state;
@@ -220,16 +206,12 @@ public class PrecomputedData {
         }
     }
 
-    /**
-     * the state half of {@link MovementHelper#canPlaceAgainst(BlockStateInterface, int, int, int, BlockState)}, the world border is up to the caller
-     */
+    // the block half of MovementHelper.canPlaceAgainst, the world border half is your problem
     public boolean canPlaceAgainst(BlockStateInterface bsi, BlockState state) {
         return (flags(bsi, state) & CAN_PLACE_AGAINST_MASK) != 0;
     }
 
-    /**
-     * the state half of {@link MovementHelper#avoidBreaking(BlockStateInterface, int, int, int, BlockState)}, neighbours are up to the caller
-     */
+    // the block half of MovementHelper.avoidBreaking, go look at the neighbours yourself
     public boolean neverBreak(BlockStateInterface bsi, BlockState state) {
         return (flags(bsi, state) & NEVER_BREAK_MASK) != 0;
     }

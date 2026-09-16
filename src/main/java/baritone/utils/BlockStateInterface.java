@@ -53,26 +53,20 @@ public class BlockStateInterface {
 
     private final boolean useTheRealWorld;
 
-    /**
-     * dimension bounds, cached because world.dimensionType() goes through a Holder and this is on the hottest path there is
-     */
+    // world.dimensionType() goes through a Holder and we were calling it twice per block. per block!
     public final int minY;
     public final int maxY;
     private final int height;
 
-    /**
-     * direct mapped position -> state cache, only for the snapshot copy that the pathing thread uses (a null
-     * key array means disabled). the per-tick main thread instances are thrown away after a handful of lookups
-     * so a cache would just be allocation for nothing there. 64k entries is 768kB with compressed oops; measured ~80% hit rate on the benchmark, 16k only got 73%
-     */
+    // position -> state cache, only for the pathing thread's copy (null keys = no cache)
+    // the per tick ones on the main thread look up like four blocks and get garbage collected, not worth it
+    // 64k entries hits ~80% of the time, 16k only managed 73%, so 64k it is
     private static final int CACHE_BITS = 16;
     private final long[] cacheKeys;
     private final BlockState[] cacheVals;
 
-    /**
-     * state -> precomputed flags identity cache, used by PrecomputedData when the flags mixin isn't available.
-     * lives here rather than on the (shared) PrecomputedData so two threads can't tear a state/flags pair
-     */
+    // state -> flags cache for when the mixin isn't there, see PrecomputedData.flags
+    // it's here and not on the shared PrecomputedData so two threads can't half-write it
     public final BlockState[] flagCacheStates;
     public final int[] flagCacheVals;
 
@@ -115,16 +109,13 @@ public class BlockStateInterface {
 
     private static long[] newCacheKeys() {
         long[] keys = new long[1 << CACHE_BITS];
-        // -1 can never be a real key because it would mean a shifted y of 4095, and no dimension is that tall
+        // -1 would be a block at shifted y=4095. good luck
         java.util.Arrays.fill(keys, -1L);
         return keys;
     }
 
-    /**
-     * For subclasses that serve blocks from somewhere other than a client world (e.g. the offline
-     * pathing benchmark). Such a subclass must override {@link #getUncached(int, int, int)}, {@link #isLoaded(int, int)}
-     * and {@link #worldContainsLoadedChunk(int, int)} because there is no chunk provider here.
-     */
+    // for subclasses that get their blocks from somewhere that isn't a client world (benchmarks, tests)
+    // there's no chunk provider so you have to override getUncached, isLoaded and worldContainsLoadedChunk or it'll npe
     protected BlockStateInterface(BetterWorldBorder worldBorder, int minY, int height) {
         this.world = null;
         this.worldBorder = worldBorder;
@@ -170,9 +161,8 @@ public class BlockStateInterface {
         if (keys == null) {
             return getUncached(x, y, z);
         }
-        // the 22 movements out of one node read the same ~50 blocks about 110 times between them, and neighbouring
-        // nodes read most of them again. a direct mapped cache in front of the chunk/section/palette chain turns
-        // all of those repeats into one multiply and two array loads
+        // the 22 movements out of one node read the same 50 blocks about 110 times between them
+        // and then the next node reads most of them again. so, cache
         long key = ((long) (x & 0x3FFFFFF) << 38) | ((long) (z & 0x3FFFFFF) << 12) | y;
         int slot = (int) ((key * 0x9E3779B97F4A7C15L) >>> (64 - CACHE_BITS));
         if (keys[slot] == key) {
@@ -184,9 +174,7 @@ public class BlockStateInterface {
         return state;
     }
 
-    /**
-     * @param y already shifted so that 0 is the bottom of the world, and known to be in range
-     */
+    // y is already shifted so 0 is bedrock, and already known to be in range
     protected BlockState getUncached(int x, int y, int z) {
         if (useTheRealWorld) {
             LevelChunk cached = prev;

@@ -22,10 +22,7 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
-/**
- * Gives every block state a slot for baritone's precomputed pathing flags. One field load instead of a
- * Reference2IntOpenHashMap lookup, and the cost functions do that lookup several times per block read.
- */
+// one int on every blockstate for PrecomputedData to scribble in. a field load beats a hash map lookup
 @Mixin(BlockBehaviour.BlockStateBase.class)
 public class MixinBlockStateBase implements IBlockStateFlags {
 

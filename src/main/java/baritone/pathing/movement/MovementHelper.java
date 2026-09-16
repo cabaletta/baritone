@@ -70,7 +70,7 @@ import static baritone.pathing.precompute.Ternary.*;
 public interface MovementHelper extends ActionCosts, Helper {
 
     static boolean avoidBreaking(CalculationContext context, int x, int y, int z, BlockState state) {
-        // same as the bsi version but the block-only part comes out of the precomputed table instead of a list scan
+        // same as the one below except the "is this block ever ok to break" bit is precomputed instead of a list scan every time
         return !context.bsi.worldBorder.canPlaceAt(x, z)
                 || context.precomputedData.neverBreak(context.bsi, state)
                 || avoidAdjacentBreaking(context.bsi, x, y + 1, z, true)
@@ -563,7 +563,7 @@ public interface MovementHelper extends ActionCosts, Helper {
     }
 
     static boolean canPlaceAgainst(CalculationContext context, int x, int y, int z, BlockState state) {
-        // precomputed version of the bsi one below, this is called up to 5 times per ascend per node
+        // precomputed version of the one below. ascend asks this five times per direction, mostly about air
         return context.bsi.worldBorder.canPlaceAt(x, z) && context.precomputedData.canPlaceAgainst(context.bsi, state);
     }
 
@@ -608,7 +608,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         if (keys == null) {
             return getMiningDurationTicks0(context, x, y, z, state, includeFalling);
         }
-        // y shifted so it's never negative, so the all-ones sentinel can't be a real key (would need a y of 4095)
+        // y is shifted so it's never negative, which means the all ones key would need y=4095. no
         long key = ((long) (x & 0x3FFFFFF) << 38) | ((long) (z & 0x3FFFFFF) << 12) | ((y - context.minY) & 0xFFF);
         int slot = (int) ((key * 0x9E3779B97F4A7C15L) >>> (64 - CalculationContext.MINING_CACHE_BITS));
         double[] vals = includeFalling ? context.miningValsFalling : context.miningVals;
