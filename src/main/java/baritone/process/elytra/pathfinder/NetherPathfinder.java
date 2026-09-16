@@ -125,34 +125,12 @@ public final class NetherPathfinder implements AutoCloseable {
         return (((long) x << 32) | (z & 0xFFFFFFFFL)) * 0x9E3779B97F4A7C15L;
     }
 
-    static int dimensionHeight(Dimension dimension) {
-        return dimension == Dimension.OVERWORLD ? 384 : 256;
-    }
-
     private static boolean inBounds(int y) {
         return y >= 0 && y < Chunk.HEIGHT;
     }
 
 
     // ---- the chunk table ----
-
-    /**
-     * Inserts a chunk from the game, replacing any chunk at that position. {@code data} has one
-     * boolean per block, indexed {@code y << 8 | z << 4 | x}, 16 * 16 * 256 of them (384 in the overworld).
-     */
-    public void insertChunkData(int chunkX, int chunkZ, boolean[] data) {
-        final int blocksInChunk = 16 * 16 * dimensionHeight(this.dimension);
-        if (data.length != blocksInChunk) {
-            throw new IllegalArgumentException(this.dimension == Dimension.OVERWORLD ? "input is not 16 * 16 * 384 elements" : "input is not 16 * 16 * 256 elements");
-        }
-        final Chunk chunk = new Chunk();
-        for (int i = 0; i < blocksInChunk; i++) {
-            if (data[i]) {
-                chunk.setBlock(i & 0xF, i >> 8, (i >> 4) & 0xF, true);
-            }
-        }
-        this.chunks.put(key(chunkX, chunkZ), new Entry(STATE_FROM_CALLER, chunk, chunkX, chunkZ));
-    }
 
     /** Inserts a new, empty chunk from the game at (x, z), replacing any chunk there, and returns it to be filled. */
     public Chunk allocateAndInsertChunk(int x, int z) {

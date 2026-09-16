@@ -106,25 +106,6 @@ public class ChunkTest {
     }
 
     @Test
-    public void insertChunkDataUsesTheBlockStateContainerIndex() {
-        final NetherPathfinder ctx = new NetherPathfinder(1, null, NetherPathfinder.Dimension.NETHER, 128);
-        final boolean[] data = new boolean[16 * 16 * 256];
-        data[(77 << 8) | (5 << 4) | 12] = true;
-        ctx.insertChunkData(-3, 9, data);
-        final Chunk chunk = ctx.getChunk(-3, 9);
-        assertNotNull(chunk);
-        assertTrue(chunk.isSolid(12, 77, 5));
-        assertFalse(chunk.isSolid(5, 77, 12));
-        assertTrue(ctx.hasChunkFromCaller(-3, 9));
-        try {
-            ctx.insertChunkData(0, 0, new boolean[10]);
-            throw new AssertionError("expected IllegalArgumentException");
-        } catch (IllegalArgumentException expected) {
-            // good
-        }
-    }
-
-    @Test
     public void tableOperations() {
         final NetherPathfinder ctx = new NetherPathfinder(1, null, NetherPathfinder.Dimension.NETHER, 128);
         assertSame(Chunk.AIR, ctx.getChunkOrDefault(1, 1, false));
