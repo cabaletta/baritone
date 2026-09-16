@@ -111,16 +111,12 @@ public class ChunkTest {
         assertSame(Chunk.AIR, ctx.getChunkOrDefault(1, 1, false));
         assertSame(Chunk.SOLID, ctx.getChunkOrDefault(1, 1, true));
         assertNull(ctx.getChunk(1, 1));
-        assertFalse(ctx.setChunkState(1, 1, true));
 
         final Chunk chunk = ctx.allocateAndInsertChunk(1, 1);
         assertSame(chunk, ctx.getChunk(1, 1));
         assertSame(chunk, ctx.getChunkOrDefault(1, 1, true));
         assertTrue(ctx.hasChunkFromCaller(1, 1));
-        assertTrue(ctx.setChunkState(1, 1, false));
-        assertFalse(ctx.hasChunkFromCaller(1, 1));
-        // a fake chunk is a default to the search's real-chunk lookup
-        assertSame(Chunk.SOLID, ctx.getRealChunkOrDefault(1, 1, true));
+        assertSame(chunk, ctx.getRealChunkOrDefault(1, 1, true));
         assertSame(chunk, ctx.getChunkOrAir(1, 1).chunk);
 
         // replacing keeps the new one
@@ -138,14 +134,15 @@ public class ChunkTest {
     }
 
     @Test
-    public void generatedChunksAreFakeUntilMarked() {
+    public void generatedChunksAreFake() {
         final NetherPathfinder ctx = new NetherPathfinder(Oracle.SEED, null, NetherPathfinder.Dimension.NETHER, 128);
         final Chunk chunk = ctx.getOrGenChunk(0, 0);
         assertSame(chunk, ctx.getOrGenChunk(0, 0));
         assertFalse(ctx.hasChunkFromCaller(0, 0));
+        // a fake chunk is a default to the search's real-chunk lookup, and itself to the rest
+        assertSame(Chunk.SOLID, ctx.getRealChunkOrDefault(0, 0, true));
         assertSame(Chunk.AIR, ctx.getRealChunkFromCacheOrFakeChunkMaybeGen(0, 0, NetherPathfinder.CacheMiss.AIR));
         assertSame(chunk, ctx.getRealChunkFromCacheOrFakeChunkMaybeGen(0, 0, NetherPathfinder.CacheMiss.GENERATE));
-        ctx.setChunkState(0, 0, true);
-        assertSame(chunk, ctx.getRealChunkFromCacheOrFakeChunkMaybeGen(0, 0, NetherPathfinder.CacheMiss.AIR));
+        assertSame(chunk, ctx.getChunkOrAir(0, 0).chunk);
     }
 }

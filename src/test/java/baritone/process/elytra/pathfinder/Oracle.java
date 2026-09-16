@@ -86,15 +86,33 @@ final class Oracle {
         return out;
     }
 
-    /** A context over the generated chunks x, z in 0..side-1, marked as if the game had given them. */
+    /** A context over the generated chunks x, z in 0..side-1, inserted as if the game had given them. */
     static NetherPathfinder generatedWorld(int side) {
         final NetherPathfinder ctx = new NetherPathfinder(SEED, null, NetherPathfinder.Dimension.NETHER, 128);
+        final ChunkGeneratorHell generator = ChunkGeneratorHell.fromSeed(SEED);
         for (int x = 0; x < side; x++) {
             for (int z = 0; z < side; z++) {
-                ctx.getOrGenChunk(x, z);
-                ctx.setChunkState(x, z, true);
+                copy(generator.generateChunk(x, z), ctx.allocateAndInsertChunk(x, z));
             }
         }
         return ctx;
+    }
+
+    /** Sets in {@code to} every block that is set in {@code from}. */
+    private static void copy(Chunk from, Chunk to) {
+        for (int section = 0; section < Chunk.SECTIONS; section++) {
+            if (from.section(section << 4) == null) {
+                continue;
+            }
+            for (int y = section << 4; y < (section + 1) << 4; y++) {
+                for (int x = 0; x < 16; x++) {
+                    for (int z = 0; z < 16; z++) {
+                        if (from.isSolid(x, y, z)) {
+                            to.setBlock(x, y, z, true);
+                        }
+                    }
+                }
+            }
+        }
     }
 }

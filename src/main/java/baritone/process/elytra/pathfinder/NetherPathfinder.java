@@ -48,25 +48,23 @@ public final class NetherPathfinder implements AutoCloseable {
         OVERWORLD, NETHER, END
     }
 
-    static final int STATE_FROM_CALLER = 0;
-    static final int STATE_FAKE = 1; // could be generated or just air
-
     /** A chunk in the table, where it is, and whether it came from the game or was made up. */
     static final class Entry {
         final Chunk chunk;
         final int x;
         final int z;
-        volatile int state;
+        /** true for a chunk the game gave; false for one generated from the seed or assumed to be air */
+        final boolean fromCaller;
 
-        Entry(int state, Chunk chunk, int x, int z) {
-            this.state = state;
+        Entry(boolean fromCaller, Chunk chunk, int x, int z) {
+            this.fromCaller = fromCaller;
             this.chunk = chunk;
             this.x = x;
             this.z = z;
         }
     }
 
-    private static final Entry AIR_ENTRY = new Entry(STATE_FAKE, Chunk.AIR, 0, 0);
+    private static final Entry AIR_ENTRY = new Entry(false, Chunk.AIR, 0, 0);
 
     private final ConcurrentHashMap<Long, Entry> chunks = new ConcurrentHashMap<>();
     private final Set<Long> checkedRegions = ConcurrentHashMap.newKeySet();
@@ -135,7 +133,7 @@ public final class NetherPathfinder implements AutoCloseable {
     /** Inserts a new, empty chunk from the game at (x, z), replacing any chunk there, and returns it to be filled. */
     public Chunk allocateAndInsertChunk(int x, int z) {
         final Chunk chunk = new Chunk();
-        this.chunks.put(key(x, z), new Entry(STATE_FROM_CALLER, chunk, x, z));
+        this.chunks.put(key(x, z), new Entry(true, chunk, x, z));
         return chunk;
     }
 
@@ -151,19 +149,9 @@ public final class NetherPathfinder implements AutoCloseable {
         return e != null ? e.chunk : null;
     }
 
-    /** Marks the chunk at (x, z) as from the game or as made up. Returns true if the chunk existed and the change was made. */
-    public boolean setChunkState(int x, int z, boolean fromCaller) {
-        final Entry e = this.chunks.get(key(x, z));
-        if (e == null) {
-            return false;
-        }
-        e.state = fromCaller ? STATE_FROM_CALLER : STATE_FAKE;
-        return true;
-    }
-
     public boolean hasChunkFromCaller(int x, int z) {
         final Entry e = this.chunks.get(key(x, z));
-        return e != null && e.state == STATE_FROM_CALLER;
+        return e != null && e.fromCaller;
     }
 
     /** Whether the table holds chunk (x, z), whichever way it got there. */
@@ -244,7 +232,7 @@ public final class NetherPathfinder implements AutoCloseable {
 
     Chunk getRealChunkOrDefault(int cx, int cz, boolean solid) {
         final Entry e = this.chunks.get(key(cx, cz));
-        if (e == null || e.state != STATE_FROM_CALLER) {
+        if (e == null || !e.fromCaller) {
             return solid ? Chunk.SOLID : Chunk.AIR;
         }
         return e.chunk;
@@ -258,7 +246,7 @@ public final class NetherPathfinder implements AutoCloseable {
             return e.chunk;
         }
         final Chunk chunk = this.generator.generateChunk(cx, cz);
-        final Entry previous = this.chunks.putIfAbsent(key, new Entry(STATE_FAKE, chunk, cx, cz));
+        final Entry previous = this.chunks.putIfAbsent(key, new Entry(false, chunk, cx, cz));
         // someone else generated this chunk while we were generating it
         return previous != null ? previous.chunk : chunk;
     }
@@ -285,7 +273,7 @@ public final class NetherPathfinder implements AutoCloseable {
         }
         final long t1 = System.currentTimeMillis();
         final boolean read = BaritoneRegion.load(this.baritoneCache, regionX, regionZ,
-                (x, z, chunk) -> this.chunks.putIfAbsent(key(x, z), new Entry(STATE_FROM_CALLER, chunk, x, z)));
+                (x, z, chunk) -> this.chunks.putIfAbsent(key(x, z), new Entry(true, chunk, x, z)));
         return read ? System.currentTimeMillis() - t1 : 0;
     }
 }
