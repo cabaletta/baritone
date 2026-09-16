@@ -92,6 +92,20 @@ public class CalculationContext {
 
     public final PrecomputedData precomputedData;
 
+    /**
+     * Memo for {@link MovementHelper#getMiningDurationTicks(CalculationContext, int, int, int, BlockState, boolean)}.
+     * The block under a node gets its break cost evaluated by the four descends into it, the downward out of it and
+     * the descends from the four neighbouring nodes, and each evaluation reads its five neighbours for the
+     * avoidBreaking check. Nothing it depends on changes during a search, so cache by position. Only allocated for
+     * the search thread's context (the per-tick ones evaluate a handful of costs and are thrown away).
+     * Two key/value pairs because includeFalling is part of the key.
+     */
+    public static final int MINING_CACHE_BITS = 16;
+    public final long[] miningKeys;
+    public final long[] miningKeysFalling;
+    public final double[] miningVals;
+    public final double[] miningValsFalling;
+
     public CalculationContext(IBaritone baritone) {
         this(baritone, false);
     }
@@ -118,7 +132,7 @@ public class CalculationContext {
      * settings snapshots happen here so both paths get exactly the same values.
      */
     protected CalculationContext(IBaritone baritone, boolean forUseOnAnotherThread, Level world, WorldData worldData, BlockStateInterface bsi, ToolSet toolSet, boolean hasThrowaway, boolean hasWaterBucket, boolean canSprint, int frostWalker, float waterSpeedMultiplier) {
-        this.precomputedData = new PrecomputedData();
+        this.precomputedData = PrecomputedData.forCurrentSettings();
         this.safeForThreadedUse = forUseOnAnotherThread;
         this.baritone = baritone;
         this.world = world;
@@ -130,6 +144,20 @@ public class CalculationContext {
         this.canSprint = canSprint;
         this.minY = bsi.minY;
         this.maxY = bsi.maxY;
+        if (forUseOnAnotherThread) {
+            this.miningKeys = new long[1 << MINING_CACHE_BITS];
+            this.miningKeysFalling = new long[1 << MINING_CACHE_BITS];
+            // -1 is never a real key, see MovementHelper.getMiningDurationTicks
+            java.util.Arrays.fill(this.miningKeys, -1L);
+            java.util.Arrays.fill(this.miningKeysFalling, -1L);
+            this.miningVals = new double[1 << MINING_CACHE_BITS];
+            this.miningValsFalling = new double[1 << MINING_CACHE_BITS];
+        } else {
+            this.miningKeys = null;
+            this.miningKeysFalling = null;
+            this.miningVals = null;
+            this.miningValsFalling = null;
+        }
         this.placeBlockCost = Baritone.settings().blockPlacementPenalty.value;
         this.allowBreak = Baritone.settings().allowBreak.value;
         this.allowBreakAnyway = new ArrayList<>(Baritone.settings().allowBreakAnyway.value);

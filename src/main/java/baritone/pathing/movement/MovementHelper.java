@@ -69,6 +69,17 @@ import static baritone.pathing.precompute.Ternary.*;
  */
 public interface MovementHelper extends ActionCosts, Helper {
 
+    static boolean avoidBreaking(CalculationContext context, int x, int y, int z, BlockState state) {
+        // same as the bsi version but the block-only part comes out of the precomputed table instead of a list scan
+        return !context.bsi.worldBorder.canPlaceAt(x, z)
+                || context.precomputedData.neverBreak(context.bsi, state)
+                || avoidAdjacentBreaking(context.bsi, x, y + 1, z, true)
+                || avoidAdjacentBreaking(context.bsi, x + 1, y, z, false)
+                || avoidAdjacentBreaking(context.bsi, x - 1, y, z, false)
+                || avoidAdjacentBreaking(context.bsi, x, y, z + 1, false)
+                || avoidAdjacentBreaking(context.bsi, x, y, z - 1, false);
+    }
+
     static boolean avoidBreaking(BlockStateInterface bsi, int x, int y, int z, BlockState state) {
         if (!bsi.worldBorder.canPlaceAt(x, z)) {
             return true;
@@ -547,6 +558,15 @@ public interface MovementHelper extends ActionCosts, Helper {
         return canPlaceAgainst(bsi, x, y, z, bsi.get0(x, y, z));
     }
 
+    static boolean canPlaceAgainst(CalculationContext context, int x, int y, int z) {
+        return canPlaceAgainst(context, x, y, z, context.get(x, y, z));
+    }
+
+    static boolean canPlaceAgainst(CalculationContext context, int x, int y, int z, BlockState state) {
+        // precomputed version of the bsi one below, this is called up to 5 times per ascend per node
+        return context.bsi.worldBorder.canPlaceAt(x, z) && context.precomputedData.canPlaceAgainst(context.bsi, state);
+    }
+
     static boolean canPlaceAgainst(BlockStateInterface bsi, BlockPos pos) {
         return canPlaceAgainst(bsi, pos.getX(), pos.getY(), pos.getZ());
     }
@@ -584,6 +604,24 @@ public interface MovementHelper extends ActionCosts, Helper {
     }
 
     static double getMiningDurationTicks(CalculationContext context, int x, int y, int z, BlockState state, boolean includeFalling) {
+        long[] keys = includeFalling ? context.miningKeysFalling : context.miningKeys;
+        if (keys == null) {
+            return getMiningDurationTicks0(context, x, y, z, state, includeFalling);
+        }
+        // y shifted so it's never negative, so the all-ones sentinel can't be a real key (would need a y of 4095)
+        long key = ((long) (x & 0x3FFFFFF) << 38) | ((long) (z & 0x3FFFFFF) << 12) | ((y - context.minY) & 0xFFF);
+        int slot = (int) ((key * 0x9E3779B97F4A7C15L) >>> (64 - CalculationContext.MINING_CACHE_BITS));
+        double[] vals = includeFalling ? context.miningValsFalling : context.miningVals;
+        if (keys[slot] == key) {
+            return vals[slot];
+        }
+        double result = getMiningDurationTicks0(context, x, y, z, state, includeFalling);
+        keys[slot] = key;
+        vals[slot] = result;
+        return result;
+    }
+
+    static double getMiningDurationTicks0(CalculationContext context, int x, int y, int z, BlockState state, boolean includeFalling) {
         Block block = state.getBlock();
         if (!canWalkThrough(context, x, y, z, state)) {
             if (!state.getFluidState().isEmpty()) {
@@ -593,7 +631,7 @@ public interface MovementHelper extends ActionCosts, Helper {
             if (mult >= COST_INF) {
                 return COST_INF;
             }
-            if (avoidBreaking(context.bsi, x, y, z, state)) {
+            if (avoidBreaking(context, x, y, z, state)) {
                 return COST_INF;
             }
             double strVsBlock = context.toolSet.getStrVsBlock(state);
