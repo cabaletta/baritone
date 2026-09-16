@@ -24,17 +24,21 @@ final class NodePos {
 
     final Size size;
     /** absolute position divided by the width */
-    private final BlockPos pos;
+    private final int x;
+    private final int y;
+    private final int z;
 
     NodePos(Size size, BlockPos approxPosition) {
         this.size = size;
         final int shift = size.shift();
-        this.pos = new BlockPos(approxPosition.getX() >> shift, approxPosition.getY() >> shift, approxPosition.getZ() >> shift);
+        this.x = approxPosition.getX() >> shift;
+        this.y = approxPosition.getY() >> shift;
+        this.z = approxPosition.getZ() >> shift;
     }
 
     BlockPos absolutePosZero() {
         final int shift = this.size.shift();
-        return new BlockPos(this.pos.getX() << shift, this.pos.getY() << shift, this.pos.getZ() << shift);
+        return new BlockPos(this.x << shift, this.y << shift, this.z << shift);
     }
 
     BlockPos absolutePosCenter() {
@@ -48,16 +52,16 @@ final class NodePos {
             return false;
         }
         final NodePos n = (NodePos) o;
-        return n.size == this.size && n.pos.equals(this.pos);
+        return n.size == this.size && n.x == this.x && n.y == this.y && n.z == this.z;
     }
 
     @Override
     public int hashCode() {
         long hash = 3241;
         hash = 6406146L * hash + this.size.ordinal();
-        hash = 3457689L * hash + this.pos.getX();
-        hash = 8734625L * hash + this.pos.getY();
-        hash = 2873465L * hash + this.pos.getZ();
+        hash = 3457689L * hash + this.x;
+        hash = 8734625L * hash + this.y;
+        hash = 2873465L * hash + this.z;
         return (int) (hash ^ (hash >>> 32));
     }
 }
