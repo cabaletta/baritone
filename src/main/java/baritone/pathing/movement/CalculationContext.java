@@ -40,6 +40,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static baritone.api.pathing.movement.ActionCosts.COST_INF;
@@ -140,8 +141,8 @@ public class CalculationContext {
             this.miningKeys = new long[1 << MINING_CACHE_BITS];
             this.miningKeysFalling = new long[1 << MINING_CACHE_BITS];
             // -1 is the "nothing here" key, see getMiningDurationTicks for why that's safe
-            java.util.Arrays.fill(this.miningKeys, -1L);
-            java.util.Arrays.fill(this.miningKeysFalling, -1L);
+            Arrays.fill(this.miningKeys, -1L);
+            Arrays.fill(this.miningKeysFalling, -1L);
             this.miningVals = new double[1 << MINING_CACHE_BITS];
             this.miningValsFalling = new double[1 << MINING_CACHE_BITS];
         } else {

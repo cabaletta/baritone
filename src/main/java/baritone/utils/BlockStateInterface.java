@@ -34,6 +34,8 @@ import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 
+import java.util.Arrays;
+
 /**
  * Wraps get for chuck caching capability
  *
@@ -65,11 +67,6 @@ public class BlockStateInterface {
     private final long[] cacheKeys;
     private final BlockState[] cacheVals;
 
-    // state -> flags cache for when the mixin isn't there, see PrecomputedData.flags
-    // it's here and not on the shared PrecomputedData so two threads can't half-write it
-    public final BlockState[] flagCacheStates;
-    public final int[] flagCacheVals;
-
     private static final BlockState AIR = Blocks.AIR.defaultBlockState();
 
     public BlockStateInterface(IPlayerContext ctx) {
@@ -95,13 +92,9 @@ public class BlockStateInterface {
         if (copyLoadedChunks) {
             this.cacheKeys = newCacheKeys();
             this.cacheVals = new BlockState[1 << CACHE_BITS];
-            this.flagCacheStates = new BlockState[1024];
-            this.flagCacheVals = new int[1024];
         } else {
             this.cacheKeys = null;
             this.cacheVals = null;
-            this.flagCacheStates = null;
-            this.flagCacheVals = null;
         }
         this.isPassableBlockPos = new BlockPos.MutableBlockPos();
         this.access = new BlockStateInterfaceAccessWrapper(this);
@@ -110,7 +103,7 @@ public class BlockStateInterface {
     private static long[] newCacheKeys() {
         long[] keys = new long[1 << CACHE_BITS];
         // -1 would be a block at shifted y=4095. good luck
-        java.util.Arrays.fill(keys, -1L);
+        Arrays.fill(keys, -1L);
         return keys;
     }
 
@@ -127,8 +120,6 @@ public class BlockStateInterface {
         this.maxY = minY + height - 1;
         this.cacheKeys = newCacheKeys();
         this.cacheVals = new BlockState[1 << CACHE_BITS];
-        this.flagCacheStates = new BlockState[1024];
-        this.flagCacheVals = new int[1024];
         this.isPassableBlockPos = new BlockPos.MutableBlockPos();
         this.access = new BlockStateInterfaceAccessWrapper(this);
     }

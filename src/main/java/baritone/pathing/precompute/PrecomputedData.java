@@ -141,11 +141,10 @@ public class PrecomputedData {
         return blockData;
     }
 
-    // three places to find the flags, fastest first
-    // 1. on the blockstate itself (mixin), stamped with our generation so an old table's answer gets ignored
-    // 2. a tiny identity cache on the bsi, for when there's no mixin (unit tests, benchmarks, cursed launchers)
-    // 3. the actual array by registry id, which is what fills the other two
-    private int flags(BlockStateInterface bsi, BlockState state) {
+    // the flags live on the blockstate itself (mixin), stamped with our generation so an old table's answer gets ignored
+    // the registry array is what fills that in, and is the whole story when there's no mixin (i.e. running the
+    // pathfinder outside the game, which is a thing you can do now)
+    private int flags(BlockState state) {
         if (STAMPED_STATES) {
             IBlockStateFlags stamped = (IBlockStateFlags) state;
             int word = stamped.baritone$getPathingFlags();
@@ -154,17 +153,6 @@ public class PrecomputedData {
             }
             int blockData = flagsFromRegistry(state);
             stamped.baritone$setPathingFlags((generation << FLAG_BITS) | blockData);
-            return blockData;
-        }
-        BlockState[] cacheStates = bsi.flagCacheStates;
-        if (cacheStates != null) {
-            int slot = System.identityHashCode(state) & (cacheStates.length - 1);
-            if (cacheStates[slot] == state) {
-                return bsi.flagCacheVals[slot];
-            }
-            int blockData = flagsFromRegistry(state);
-            cacheStates[slot] = state;
-            bsi.flagCacheVals[slot] = blockData;
             return blockData;
         }
         return flagsFromRegistry(state);
@@ -180,7 +168,7 @@ public class PrecomputedData {
     }
 
     public boolean canWalkOn(BlockStateInterface bsi, int x, int y, int z, BlockState state) {
-        int blockData = flags(bsi, state);
+        int blockData = flags(state);
         if ((blockData & CAN_WALK_ON_MAYBE_MASK) != 0) {
             return MovementHelper.canWalkOnPosition(bsi, x, y, z, state);
         } else {
@@ -189,7 +177,7 @@ public class PrecomputedData {
     }
 
     public boolean canWalkThrough(BlockStateInterface bsi, int x, int y, int z, BlockState state) {
-        int blockData = flags(bsi, state);
+        int blockData = flags(state);
         if ((blockData & CAN_WALK_THROUGH_MAYBE_MASK) != 0) {
             return MovementHelper.canWalkThroughPosition(bsi, x, y, z, state);
         } else {
@@ -198,7 +186,7 @@ public class PrecomputedData {
     }
 
     public boolean fullyPassable(BlockStateInterface bsi, int x, int y, int z, BlockState state) {
-        int blockData = flags(bsi, state);
+        int blockData = flags(state);
         if ((blockData & FULLY_PASSABLE_MAYBE_MASK) != 0) {
             return MovementHelper.fullyPassablePosition(bsi, x, y, z, state);
         } else {
@@ -208,11 +196,11 @@ public class PrecomputedData {
 
     // the block half of MovementHelper.canPlaceAgainst, the world border half is your problem
     public boolean canPlaceAgainst(BlockStateInterface bsi, BlockState state) {
-        return (flags(bsi, state) & CAN_PLACE_AGAINST_MASK) != 0;
+        return (flags(state) & CAN_PLACE_AGAINST_MASK) != 0;
     }
 
     // the block half of MovementHelper.avoidBreaking, go look at the neighbours yourself
     public boolean neverBreak(BlockStateInterface bsi, BlockState state) {
-        return (flags(bsi, state) & NEVER_BREAK_MASK) != 0;
+        return (flags(state) & NEVER_BREAK_MASK) != 0;
     }
 }
