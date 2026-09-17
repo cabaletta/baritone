@@ -34,6 +34,8 @@ import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 
+import java.util.Arrays;
+
 /**
  * Wraps get for chuck caching capability
  *
@@ -52,6 +54,18 @@ public class BlockStateInterface {
     private CachedRegion prevCached = null;
 
     private final boolean useTheRealWorld;
+
+    // world.dimensionType() goes through a Holder and we were calling it twice per block. per block!
+    public final int minY;
+    public final int maxY;
+    private final int height;
+
+    // position -> state cache, only for the pathing thread's copy (null keys = no cache)
+    // the per tick ones on the main thread look up like four blocks and get garbage collected, not worth it
+    // 64k entries hits ~80% of the time, 16k only managed 73%, so 64k it is
+    private static final int CACHE_BITS = 16;
+    private final long[] cacheKeys;
+    private final BlockState[] cacheVals;
 
     private static final BlockState AIR = Blocks.AIR.defaultBlockState();
 
@@ -72,6 +86,40 @@ public class BlockStateInterface {
         if (!ctx.minecraft().isSameThread()) {
             throw new IllegalStateException("BlockStateInterface must be constructed on the main thread");
         }
+        this.minY = world.dimensionType().minY();
+        this.height = world.dimensionType().height();
+        this.maxY = minY + height - 1;
+        if (copyLoadedChunks) {
+            this.cacheKeys = newCacheKeys();
+            this.cacheVals = new BlockState[1 << CACHE_BITS];
+        } else {
+            this.cacheKeys = null;
+            this.cacheVals = null;
+        }
+        this.isPassableBlockPos = new BlockPos.MutableBlockPos();
+        this.access = new BlockStateInterfaceAccessWrapper(this);
+    }
+
+    private static long[] newCacheKeys() {
+        long[] keys = new long[1 << CACHE_BITS];
+        // -1 would be a block at shifted y=4095. good luck
+        Arrays.fill(keys, -1L);
+        return keys;
+    }
+
+    // for subclasses that get their blocks from somewhere that isn't a client world (benchmarks, tests)
+    // there's no chunk provider so you have to override getUncached, isLoaded and worldContainsLoadedChunk or it'll npe
+    protected BlockStateInterface(BetterWorldBorder worldBorder, int minY, int height) {
+        this.world = null;
+        this.worldBorder = worldBorder;
+        this.worldData = null;
+        this.provider = null;
+        this.useTheRealWorld = true;
+        this.minY = minY;
+        this.height = height;
+        this.maxY = minY + height - 1;
+        this.cacheKeys = newCacheKeys();
+        this.cacheVals = new BlockState[1 << CACHE_BITS];
         this.isPassableBlockPos = new BlockPos.MutableBlockPos();
         this.access = new BlockStateInterfaceAccessWrapper(this);
     }
@@ -95,12 +143,30 @@ public class BlockStateInterface {
     }
 
     public BlockState get0(int x, int y, int z) { // Mickey resigned
-        y -= world.dimensionType().minY();
+        y -= minY;
         // Invalid vertical position
-        if (y < 0 || y >= world.dimensionType().height()) {
+        if (y < 0 || y >= height) {
             return AIR;
         }
+        long[] keys = cacheKeys;
+        if (keys == null) {
+            return getUncached(x, y, z);
+        }
+        // the 22 movements out of one node read the same 50 blocks about 110 times between them
+        // and then the next node reads most of them again. so, cache
+        long key = ((long) (x & 0x3FFFFFF) << 38) | ((long) (z & 0x3FFFFFF) << 12) | y;
+        int slot = (int) ((key * 0x9E3779B97F4A7C15L) >>> (64 - CACHE_BITS));
+        if (keys[slot] == key) {
+            return cacheVals[slot];
+        }
+        BlockState state = getUncached(x, y, z);
+        keys[slot] = key;
+        cacheVals[slot] = state;
+        return state;
+    }
 
+    // y is already shifted so 0 is bedrock, and already known to be in range
+    protected BlockState getUncached(int x, int y, int z) {
         if (useTheRealWorld) {
             LevelChunk cached = prev;
             // there's great cache locality in block state lookups
@@ -132,7 +198,7 @@ public class BlockStateInterface {
             prevCached = region;
             cached = region;
         }
-        BlockState type = cached.getBlock(x & 511, y + world.dimensionType().minY(), z & 511);
+        BlockState type = cached.getBlock(x & 511, y + minY, z & 511);
         if (type == null) {
             return AIR;
         }
@@ -166,7 +232,11 @@ public class BlockStateInterface {
 
     // get the block at x,y,z from this chunk WITHOUT creating a single blockpos object
     public static BlockState getFromChunk(LevelChunk chunk, int x, int y, int z) {
-        LevelChunkSection section = chunk.getSections()[y >> 4];
+        return getFromChunk(chunk.getSections(), x, y, z);
+    }
+
+    public static BlockState getFromChunk(LevelChunkSection[] sections, int x, int y, int z) {
+        LevelChunkSection section = sections[y >> 4];
         if (section.hasOnlyAir()) {
             return AIR;
         }

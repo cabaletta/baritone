@@ -46,9 +46,21 @@ public abstract class AbstractNodeCostSearch implements IPathFinder, Helper {
     private final CalculationContext context;
 
     /**
+     * nodes live in 16x8x16 cells and only the cells go in the map
+     * one big position to node map meant every single lookup was a cache miss into like 8 megs of keys
+     * the next node is basically always right next to the last one so it's in the cell we just had. computers love that
+     *
      * @see <a href="https://github.com/cabaletta/baritone/issues/107">Issue #107</a>
      */
-    private final Long2ObjectOpenHashMap<PathNode> map;
+    private final Long2ObjectOpenHashMap<PathNode[]> cells;
+    private PathNode[] prevCell;
+    private long prevCellKey = Long.MIN_VALUE; // nobody is pathing 2^27 chunks from spawn. nobody
+    private int numNodesCreated;
+
+    private static final int CELL_BITS_X = 4;
+    private static final int CELL_BITS_Y = 3;
+    private static final int CELL_BITS_Z = 4;
+    private static final int CELL_SIZE = 1 << (CELL_BITS_X + CELL_BITS_Y + CELL_BITS_Z);
 
     protected PathNode startNode;
 
@@ -67,6 +79,15 @@ public abstract class AbstractNodeCostSearch implements IPathFinder, Helper {
      * @see <a href="https://docs.google.com/document/d/1WVHHXKXFdCR1Oz__KtK8sFqyvSwJN_H4lftkHFgmzlc/edit">here</a>
      */
     protected static final double[] COEFFICIENTS = {1.5, 2, 2.5, 3, 4, 5, 10};
+
+    // 1 / COEFFICIENTS. dividing seven times per node is for people who want slow code
+    protected static final double[] INVERSE_COEFFICIENTS = new double[COEFFICIENTS.length];
+
+    static {
+        for (int i = 0; i < COEFFICIENTS.length; i++) {
+            INVERSE_COEFFICIENTS[i] = 1 / COEFFICIENTS[i];
+        }
+    }
 
     /**
      * If a path goes less than 5 blocks and doesn't make it to its goal, it's not worth considering.
@@ -89,7 +110,7 @@ public abstract class AbstractNodeCostSearch implements IPathFinder, Helper {
         this.startZ = startZ;
         this.goal = goal;
         this.context = context;
-        this.map = new Long2ObjectOpenHashMap<>(Baritone.settings().pathingMapDefaultSize.value, Baritone.settings().pathingMapLoadFactor.value);
+        this.cells = new Long2ObjectOpenHashMap<>(Baritone.settings().pathingMapDefaultSize.value, Baritone.settings().pathingMapLoadFactor.value);
     }
 
     public void cancel() {
@@ -169,10 +190,29 @@ public abstract class AbstractNodeCostSearch implements IPathFinder, Helper {
      */
 
     protected PathNode getNodeAtPosition(int x, int y, int z, long hashCode) {
-        PathNode node = map.get(hashCode);
+        long cellKey = ((long) ((x >> CELL_BITS_X) & 0xFFFFFFF) << 36)
+                | ((long) ((z >> CELL_BITS_Z) & 0xFFFFFFF) << 8)
+                | ((y >> CELL_BITS_Y) & 0xFF);
+        PathNode[] cell;
+        if (cellKey == prevCellKey) {
+            cell = prevCell;
+        } else {
+            cell = cells.get(cellKey);
+            if (cell == null) {
+                cell = new PathNode[CELL_SIZE];
+                cells.put(cellKey, cell);
+            }
+            prevCell = cell;
+            prevCellKey = cellKey;
+        }
+        int index = ((y & ((1 << CELL_BITS_Y) - 1)) << (CELL_BITS_X + CELL_BITS_Z))
+                | ((z & ((1 << CELL_BITS_Z) - 1)) << CELL_BITS_X)
+                | (x & ((1 << CELL_BITS_X) - 1));
+        PathNode node = cell[index];
         if (node == null) {
             node = new PathNode(x, y, z, goal);
-            map.put(hashCode, node);
+            cell[index] = node;
+            numNodesCreated++;
         }
         return node;
     }
@@ -238,6 +278,6 @@ public abstract class AbstractNodeCostSearch implements IPathFinder, Helper {
     }
 
     protected int mapSize() {
-        return map.size();
+        return numNodesCreated;
     }
 }

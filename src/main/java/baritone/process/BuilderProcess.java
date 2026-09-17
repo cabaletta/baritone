@@ -1052,7 +1052,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         Map<Property<?>, Comparable<?>> map1 = first.getValues();
         Map<Property<?>, Comparable<?>> map2 = second.getValues();
         for (Property<?> prop : map1.keySet()) {
-            if (map1.get(prop) != map2.get(prop)
+            if (!Objects.equals(map1.get(prop), map2.get(prop))
                     && !(ignoreDirection && ORIENTATION_PROPS.contains(prop))
                     && !ignoredProps.contains(prop.getName())) {
                 return false;
