@@ -734,7 +734,8 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         });
         incorrectPositions.removeAll(outOfBounds);
         List<Goal> toBreak = new ArrayList<>();
-        breakable.forEach(pos -> toBreak.add(breakGoal(pos, bcc)));
+        BetterBlockPos feet = ctx.playerFeet();
+        breakable.forEach(pos -> addGoalIfNotAlreadySatisfied(toBreak, breakGoal(pos, bcc), feet));
         List<Goal> toPlace = new ArrayList<>();
         placeable.forEach(pos -> {
             if (!placeable.contains(pos.below()) && !placeable.contains(pos.below(2))) {
@@ -762,6 +763,14 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             return null;
         }
         return new GoalComposite(toBreak.toArray(new Goal[0]));
+    }
+
+    static void addGoalIfNotAlreadySatisfied(List<Goal> goals, Goal goal, BetterBlockPos feet) {
+        // Direct breaking is attempted before assemble. If it found nothing reachable, a break goal which
+        // already contains our current position would make PathingBehavior skip path calculation entirely.
+        if (!goal.isInGoal(feet)) {
+            goals.add(goal);
+        }
     }
 
     public static class JankyGoalComposite implements Goal {
