@@ -177,7 +177,11 @@ public class CalculationContext {
             waterSpeed = Math.min(waterSpeed, ActionCosts.SWIM_ONE_BLOCK_COST);
         }
         this.waterWalkSpeed = waterSpeed;
-        this.boatWaterSpeed = Baritone.settings().allowBoats.value && hasBoat ? Math.min(waterSpeed, ActionCosts.BOAT_ONE_BLOCK_COST) : waterSpeed;
+        // a boat really is faster than sprinting, but the heuristic assumes nothing is. price it under
+        // costHeuristic and A* stops being A* and wanders off on scenic detours across the lake. so rowing
+        // costs what the heuristic thinks a block costs and not a tick less. still way under swimming
+        double boatSpeed = Math.max(ActionCosts.BOAT_ONE_BLOCK_COST, Baritone.settings().costHeuristic.value);
+        this.boatWaterSpeed = Baritone.settings().allowBoats.value && hasBoat ? Math.min(waterSpeed, boatSpeed) : waterSpeed;
         this.breakBlockAdditionalCost = Baritone.settings().blockBreakAdditionalPenalty.value;
         this.backtrackCostFavoringCoefficient = Baritone.settings().backtrackCostFavoringCoefficient.value;
         this.jumpPenalty = Baritone.settings().jumpPenalty.value;

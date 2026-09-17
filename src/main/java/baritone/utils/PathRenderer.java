@@ -167,23 +167,49 @@ public final class PathRenderer implements IRenderer {
     // a boat run is drawn as a lane, two lines either side of a rounded centerline. no fade on these
     private static void drawLane(PoseStack stack, List<net.minecraft.world.phys.Vec3> lane, Color color) {
         BufferBuilder bufferBuilder = IRenderer.startLines(color, settings.pathRenderLineWidthPixels.value, settings.renderPathIgnoreDepth.value);
-        for (int i = 0; i + 1 < lane.size(); i++) {
-            net.minecraft.world.phys.Vec3 a = lane.get(i);
-            net.minecraft.world.phys.Vec3 b = lane.get(i + 1);
-            double dx = b.x - a.x;
-            double dz = b.z - a.z;
-            double len = Math.sqrt(dx * dx + dz * dz);
-            if (len == 0) {
-                continue;
+        for (int side = -1; side <= 1; side += 2) {
+            net.minecraft.world.phys.Vec3 prev = null;
+            for (int i = 0; i < lane.size(); i++) {
+                // normal from the neighbours either side, not per segment, so the edge is one connected line
+                // instead of a pile of little planks that gap on the outside of a turn
+                net.minecraft.world.phys.Vec3 a = lane.get(Math.max(i - 1, 0));
+                net.minecraft.world.phys.Vec3 b = lane.get(Math.min(i + 1, lane.size() - 1));
+                double dx = b.x - a.x;
+                double dz = b.z - a.z;
+                double len = Math.sqrt(dx * dx + dz * dz);
+                if (len == 0) {
+                    continue;
+                }
+                net.minecraft.world.phys.Vec3 c = lane.get(i);
+                double x = c.x - dz / len * BoatTrip.LANE_HALF * side;
+                double z = c.z + dx / len * BoatTrip.LANE_HALF * side;
+                if (laneEdgeFolds(lane, i, x, z)) {
+                    continue;
+                }
+                net.minecraft.world.phys.Vec3 cur = new net.minecraft.world.phys.Vec3(x, c.y, z);
+                if (prev != null) {
+                    // the lane points are already block centers, so only the y needs the half block lift
+                    emitPathLine(bufferBuilder, stack, prev.x - 0.5, prev.y, prev.z - 0.5, cur.x - 0.5, cur.y, cur.z - 0.5, 0.5D);
+                }
+                prev = cur;
             }
-            // unit normal to the segment, in the flat plane. the lane points are already block centers, so
-            // only the y needs the half block lift the path lines get from the offset
-            double nx = -dz / len * BoatTrip.LANE_HALF;
-            double nz = dx / len * BoatTrip.LANE_HALF;
-            emitPathLine(bufferBuilder, stack, a.x + nx - 0.5, a.y, a.z + nz - 0.5, b.x + nx - 0.5, b.y, b.z + nz - 0.5, 0.5D);
-            emitPathLine(bufferBuilder, stack, a.x - nx - 0.5, a.y, a.z - nz - 0.5, b.x - nx - 0.5, b.y, b.z - nz - 0.5, 0.5D);
         }
         IRenderer.endLines(bufferBuilder, settings.renderPathIgnoreDepth.value);
+    }
+
+    // on the inside of a turn tighter than the lane is wide the offset edge folds back over itself and
+    // draws a little bow tie. any edge point that ended up closer to the centerline than it started is
+    // part of the fold, skip it and the line just cuts the corner
+    private static boolean laneEdgeFolds(List<net.minecraft.world.phys.Vec3> lane, int i, double x, double z) {
+        double min = (BoatTrip.LANE_HALF - 0.1) * (BoatTrip.LANE_HALF - 0.1);
+        // four lane points to a block, so this looks about five blocks either way. plenty for a 1.75 offset
+        for (int j = Math.max(i - 20, 0); j < Math.min(i + 21, lane.size()); j++) {
+            net.minecraft.world.phys.Vec3 o = lane.get(j);
+            if ((o.x - x) * (o.x - x) + (o.z - z) * (o.z - z) < min) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static void drawPath(PoseStack stack, List<BetterBlockPos> positions, int startIndex, Color color, boolean fadeOut, int fadeStart0, int fadeEnd0, double offset) {
