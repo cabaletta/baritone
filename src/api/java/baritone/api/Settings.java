@@ -816,6 +816,19 @@ public final class Settings {
     public final Setting<Boolean> sprintInWater = new Setting<>(true);
 
     /**
+     * Actually swim through water instead of bobbing along the bottom of it
+     * <p>
+     * Swimming works the same way it does for a player: hold sprint (ctrl) while in water to enter the swim
+     * state, then steer with yaw and pitch towards the goal. Since sprinting is what keeps the swim state
+     * alive, this requires {@link #allowSprint} and enough hunger to sprint; without it, baritone falls back
+     * to the normal walk-on-the-bottom behavior.
+     * <p>
+     * Water traversal is also costed at swim speed when this is on, unless depth strider makes walking the
+     * bottom the faster option.
+     */
+    public final Setting<Boolean> allowSwimming = new Setting<>(false);
+
+    /**
      * When GetToBlockProcess or MineProcess fails to calculate a path, instead of just giving up, mark the closest instance
      * of that block as "unreachable" and go towards the next closest. GetToBlock expands this search to the whole "vein"; MineProcess does not.
      * This is because MineProcess finds individual impossible blocks (like one block in a vein that has gravel on top then lava, so it can't break)

@@ -341,6 +341,17 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
                 if (ctx.player().isFallFlying()) {
                     // always need to set angles while flying
                     return settings.elytraFreeLook.value ? SERVER : CLIENT;
+                } else if (settings.allowSwimming.value && ctx.player().isSwimming()) {
+                    // same idea as fall flying: pitch is what actually steers you up and down while
+                    // swimming, so the angles always need to be set. SERVER restores the free look camera
+                    // afterwards, so the user's view stays put either way.
+                    // unless we're mining: the crosshair has to actually be on the block or objectMouseOver
+                    // never sees it and we swim in place clicking at the user's view forever. same rule as
+                    // the freeLook branch below
+                    if (blockInteract && !blockFreeLook) {
+                        return CLIENT;
+                    }
+                    return settings.freeLook.value ? SERVER : CLIENT;
                 } else if (settings.freeLook.value) {
                     // Regardless of if antiCheatCompatibility is enabled, if a blockInteract is requested then the player
                     // rotation needs to be set somehow, otherwise Baritone will halt since objectMouseOver() will just be

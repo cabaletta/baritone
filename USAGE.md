@@ -75,6 +75,7 @@ There are about a hundred settings, but here are some fun / interesting / import
 - `allowParkour`
 - `allowParkourPlace`
 - `headHitters` (sprint jump head bonks in 1x2 tunnels, slightly faster than plain sprinting)
+- `allowSwimming` (sprint swim along the waterline, head out and body in, instead of bobbing through water)
 - `blockPlacementPenalty`
 - `renderCachedChunks` (and `cachedChunksOpacity`) <-- very fun but you need a beefy computer
 - `avoidance` (avoidance of mobs / mob spawners)
