@@ -24,6 +24,7 @@ import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.interfaces.IGoalRenderPos;
 import baritone.behavior.PathingBehavior;
+import baritone.pathing.path.BoatTrip;
 import baritone.pathing.path.PathExecutor;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
@@ -110,11 +111,11 @@ public final class PathRenderer implements IRenderer {
         // Render the current path, if there is one
         if (current != null && current.getPath() != null) {
             int renderBegin = Math.max(current.getPosition() - 3, 0);
-            drawPath(event.getModelViewStack(), current.getPath().positions(), renderBegin, settings.colorCurrentPath.value, settings.fadePath.value, 10, 20);
+            drawPathWithBoats(event.getModelViewStack(), current, renderBegin, settings.colorCurrentPath.value);
         }
 
         if (next != null && next.getPath() != null) {
-            drawPath(event.getModelViewStack(), next.getPath().positions(), 0, settings.colorNextPath.value, settings.fadePath.value, 10, 20);
+            drawPathWithBoats(event.getModelViewStack(), next, 0, settings.colorNextPath.value);
         }
 
         // If there is a path calculation currently running, render the path calculation process
@@ -132,6 +133,57 @@ public final class PathRenderer implements IRenderer {
 
     public static void drawPath(PoseStack stack, List<BetterBlockPos> positions, int startIndex, Color color, boolean fadeOut, int fadeStart0, int fadeEnd0) {
         drawPath(stack, positions, startIndex, color, fadeOut, fadeStart0, fadeEnd0, 0.5D);
+    }
+
+    // the path in its own color, except the stretches that'll be rowed, which get colorBoatPath. drawn as a
+    // handful of sublists rather than one overlay so the two colors never fight over the same line.
+    // the fade indices shift with each piece so the fade still lands on the same nodes it would have
+    private static void drawPathWithBoats(PoseStack stack, PathExecutor executor, int startIndex, Color color) {
+        List<BetterBlockPos> positions = executor.getPath().positions();
+        List<int[]> boatRuns = executor.boatRuns();
+        if (boatRuns.isEmpty()) {
+            drawPath(stack, positions, startIndex, color, settings.fadePath.value, 10, 20);
+            return;
+        }
+        int at = startIndex;
+        for (int[] run : boatRuns) {
+            int runStart = run[0];
+            int runEnd = run[1];
+            if (runEnd <= at) {
+                continue; // already rowed that one
+            }
+            if (runStart > at) {
+                drawPath(stack, positions.subList(0, runStart + 1), at, color, settings.fadePath.value, 10 + startIndex - at, 20 + startIndex - at);
+            }
+            int from = Math.max(at, runStart);
+            drawLane(stack, executor.boatLane(run), settings.colorBoatPath.value);
+            at = runEnd;
+        }
+        if (at < positions.size() - 1) {
+            drawPath(stack, positions, at, color, settings.fadePath.value, 10 + startIndex - at, 20 + startIndex - at);
+        }
+    }
+
+    // a boat run is drawn as a lane, two lines either side of a rounded centerline. no fade on these
+    private static void drawLane(PoseStack stack, List<net.minecraft.world.phys.Vec3> lane, Color color) {
+        BufferBuilder bufferBuilder = IRenderer.startLines(color, settings.pathRenderLineWidthPixels.value, settings.renderPathIgnoreDepth.value);
+        for (int i = 0; i + 1 < lane.size(); i++) {
+            net.minecraft.world.phys.Vec3 a = lane.get(i);
+            net.minecraft.world.phys.Vec3 b = lane.get(i + 1);
+            double dx = b.x - a.x;
+            double dz = b.z - a.z;
+            double len = Math.sqrt(dx * dx + dz * dz);
+            if (len == 0) {
+                continue;
+            }
+            // unit normal to the segment, in the flat plane. the lane points are already block centers, so
+            // only the y needs the half block lift the path lines get from the offset
+            double nx = -dz / len * BoatTrip.LANE_HALF;
+            double nz = dx / len * BoatTrip.LANE_HALF;
+            emitPathLine(bufferBuilder, stack, a.x + nx - 0.5, a.y, a.z + nz - 0.5, b.x + nx - 0.5, b.y, b.z + nz - 0.5, 0.5D);
+            emitPathLine(bufferBuilder, stack, a.x - nx - 0.5, a.y, a.z - nz - 0.5, b.x - nx - 0.5, b.y, b.z - nz - 0.5, 0.5D);
+        }
+        IRenderer.endLines(bufferBuilder, settings.renderPathIgnoreDepth.value);
     }
 
     public static void drawPath(PoseStack stack, List<BetterBlockPos> positions, int startIndex, Color color, boolean fadeOut, int fadeStart0, int fadeEnd0, double offset) {

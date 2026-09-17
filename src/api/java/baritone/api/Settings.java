@@ -829,6 +829,34 @@ public final class Settings {
     public final Setting<Boolean> allowSwimming = new Setting<>(false);
 
     /**
+     * Take a boat across water if there's one in the inventory
+     * <p>
+     * When the path is about to enter a long enough stretch of open water (see {@link #boatMinWaterLength}),
+     * baritone places the boat from the shore, climbs in, rows along the path, and at the far side breaks the
+     * boat and picks it back up (see {@link #boatPickup}) before carrying on on foot. Water traversal is costed
+     * at rowing speed while a boat is in the inventory, so the planner will prefer going across a lake instead
+     * of around it.
+     * <p>
+     * A boat is wider than a block, so it only counts water with open water or air on every side at water
+     * level; the planner routes a block off the banks for the same reason. Bubble columns (water over magma
+     * blocks or soul sand) sink or launch boats, so water on or next to one is never rowed through. If the
+     * boat can't be placed or gets stuck, baritone gets out and continues the path the normal way.
+     */
+    public final Setting<Boolean> allowBoats = new Setting<>(false);
+
+    /**
+     * Placing, boarding and scuttling a boat costs a few seconds, so don't bother for a puddle. This is the
+     * number of consecutive water blocks the path has to cross before {@link #allowBoats} uses the boat.
+     */
+    public final Setting<Integer> boatMinWaterLength = new Setting<>(8);
+
+    /**
+     * Break the boat and pick it back up when leaving the water, so it can be used again. When off, baritone
+     * just climbs out and leaves the boat behind.
+     */
+    public final Setting<Boolean> boatPickup = new Setting<>(true);
+
+    /**
      * When GetToBlockProcess or MineProcess fails to calculate a path, instead of just giving up, mark the closest instance
      * of that block as "unreachable" and go towards the next closest. GetToBlock expands this search to the whole "vein"; MineProcess does not.
      * This is because MineProcess finds individual impossible blocks (like one block in a vein that has gravel on top then lava, so it can't break)
@@ -1344,6 +1372,12 @@ public final class Settings {
      * The color of the next path
      */
     public final Setting<Color> colorNextPath = new Setting<>(Color.MAGENTA);
+
+    /**
+     * The color of the parts of a path that will be crossed by boat (see {@link #allowBoats}). Water that
+     * will be swum or waded stays in the normal path color.
+     */
+    public final Setting<Color> colorBoatPath = new Setting<>(Color.GREEN);
 
     /**
      * The color of the blocks to break

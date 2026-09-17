@@ -188,7 +188,7 @@ public class MovementDiagonal extends Movement {
             // Ignore previous multiplier
             // Whatever we were walking on (possibly soul sand) doesn't matter as we're actually floating on water
             // Not even touching the blocks below
-            multiplier = context.waterWalkSpeed;
+            multiplier = context.waterCost(destX, y, destZ);
             water = true;
         }
         BlockState pb0 = context.get(x, y, destZ);

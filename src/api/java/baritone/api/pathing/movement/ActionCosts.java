@@ -29,6 +29,12 @@ public interface ActionCosts {
      * how level you keep your pitch while doing it
      */
     double SWIM_ONE_BLOCK_COST = 20 / 2.86; // 6.993
+    /**
+     * Rowing a boat. Top speed on water is about 8 blocks a second but corners and the run up eat some of
+     * that, so this is a bit under. The place / board / scuttle overhead isn't in here, that's what
+     * {@code boatMinWaterLength} is for
+     */
+    double BOAT_ONE_BLOCK_COST = 20 / 7.0; // 2.857
     double WALK_ONE_OVER_SOUL_SAND_COST = WALK_ONE_BLOCK_COST * 2; // 0.4 in BlockSoulSand but effectively about half
     double LADDER_UP_ONE_COST = 20 / 2.35; // 8.511
     double LADDER_DOWN_ONE_COST = 20 / 3.0; // 6.667
