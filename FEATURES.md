@@ -52,5 +52,4 @@ See <a href="https://github.com/cabaletta/baritone/issues">issues</a> for more.
 
 Things it may not ever have, from most likely to least likely =(
 
-- Boats
 - Horses (2x3 path instead of 1x2)

@@ -86,7 +86,7 @@ public class MovementTraverse extends Movement {
             boolean water = false;
             boolean sneaking = false;
             if (MovementHelper.isWater(pb0) || MovementHelper.isWater(pb1)) {
-                WC = context.waterWalkSpeed;
+                WC = context.waterCost(destX, y, destZ);
                 water = true;
             } else {
                 if (destOn.getBlock() == Blocks.SOUL_SAND) {
