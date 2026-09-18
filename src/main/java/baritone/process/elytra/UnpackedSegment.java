@@ -18,9 +18,8 @@
 package baritone.process.elytra;
 
 import baritone.api.utils.BetterBlockPos;
-import dev.babbaj.pathfinder.PathSegment;
+import baritone.process.elytra.pathfinder.PathSegment;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -76,7 +75,7 @@ public final class UnpackedSegment {
 
     public static UnpackedSegment from(final PathSegment segment) {
         return new UnpackedSegment(
-                Arrays.stream(segment.packed).mapToObj(BetterBlockPos::deserializeFromLong),
+                segment.blocks.stream().map(BetterBlockPos::new),
                 segment.finished
         );
     }
