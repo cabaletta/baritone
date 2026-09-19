@@ -63,26 +63,26 @@ public interface IRenderer {
         .buildSnippet();
 
     RenderPipeline.Snippet BARITONE_BEACON_BEAM_SNIPPET = RenderPipeline.builder(((IRenderPipelines) new RenderPipelines()).getMatricesFogSnippet())
-        .withVertexShader("core/rendertype_beacon_beam")
-        .withFragmentShader("core/rendertype_beacon_beam")
-        .withBindGroupLayout(BindGroupLayouts.SAMPLER0)
-        .withVertexBinding(0, DefaultVertexFormat.BLOCK)
-        .withPrimitiveTopology(PrimitiveTopology.QUADS)
-        .buildSnippet();
+            .withVertexShader("core/rendertype_beacon_beam")
+            .withFragmentShader("core/rendertype_beacon_beam")
+            .withBindGroupLayout(BindGroupLayouts.SAMPLER0)
+            .withVertexBinding(0, DefaultVertexFormat.BLOCK)
+            .withPrimitiveTopology(PrimitiveTopology.QUADS)
+            .buildSnippet();
 
     RenderPipeline BEACON_BEAM_OPAQUE = ((IRenderPipelines) new RenderPipelines()).baritone$registerPipeline(RenderPipeline.builder(BARITONE_BEACON_BEAM_SNIPPET)
-        .withLocation("pipeline/baritone_beacon_beam_opaque")
-        .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
-        .withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, false))
-        .withCull(true)
-        .build());
+            .withLocation("pipeline/baritone_beacon_beam_opaque")
+            .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
+            .withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, false))
+            .withCull(true)
+            .build());
 
     RenderPipeline BEACON_BEAM_TRANSLUCENT = ((IRenderPipelines) new RenderPipelines()).baritone$registerPipeline(RenderPipeline.builder(BARITONE_BEACON_BEAM_SNIPPET)
-        .withLocation("pipeline/baritone_beacon_beam_translucent")
-        .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
-        .withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, false))
-        .withCull(true)
-        .build());
+            .withLocation("pipeline/baritone_beacon_beam_translucent")
+            .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
+            .withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, false))
+            .withCull(true)
+            .build());
 
     RenderType linesWithDepthRenderType = ((IRenderType) RenderTypes.lines()).createRenderType(
         "renderType/baritone_lines_with_depth",
