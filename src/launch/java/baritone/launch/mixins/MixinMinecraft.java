@@ -114,7 +114,7 @@ public class MixinMinecraft {
             method = "tick",
             at = @At(
                     value = "INVOKE",
-                    target = "net/minecraft/client/multiplayer/ClientLevel.tickEntities()V",
+                    target = "Lnet/minecraft/client/player/LocalPlayer;sendChanges()V",
                     shift = At.Shift.AFTER
             )
     )
