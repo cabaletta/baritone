@@ -21,8 +21,8 @@ import baritone.Baritone;
 import baritone.api.BaritoneAPI;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalBlock;
-import baritone.api.pathing.goals.GoalGetToBlock;
 import baritone.api.pathing.goals.GoalComposite;
+import baritone.api.pathing.goals.GoalGetToBlock;
 import baritone.api.process.IFarmProcess;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
@@ -42,16 +42,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.AirBlock;
-import net.minecraft.world.level.block.BambooStalkBlock;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.BonemealableBlock;
-import net.minecraft.world.level.block.CactusBlock;
-import net.minecraft.world.level.block.CocoaBlock;
-import net.minecraft.world.level.block.CropBlock;
-import net.minecraft.world.level.block.NetherWartBlock;
-import net.minecraft.world.level.block.SugarCaneBlock;
+import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -267,7 +258,7 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
             }
             if (state.getBlock() instanceof BonemealableBlock) {
                 BonemealableBlock ig = (BonemealableBlock) state.getBlock();
-                if (ig.isValidBonemealTarget(ctx.world(), pos, state) && ig.isBonemealSuccess(ctx.world(), ctx.world().getRandom(), pos, state)) {
+                if (ig.isValidBonemealTarget(ctx.world(), pos, state, BonemealSource.INTERACTION) && ig.isBonemealSuccess(ctx.world(), ctx.world().getRandom(), pos, state, BonemealSource.INTERACTION)) {
                     bonemealable.add(pos);
                 }
             }

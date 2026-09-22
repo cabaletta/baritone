@@ -21,6 +21,7 @@ import baritone.Baritone;
 import baritone.api.utils.IPlayerContext;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 
@@ -47,7 +48,7 @@ public class BlockPlaceHelper {
         rightClickTimer = Baritone.settings().rightClickSpeed.value - BASE_PLACE_DELAY;
         for (InteractionHand hand : InteractionHand.values()) {
             if (ctx.playerController().processRightClickBlock(ctx.player(), ctx.world(), hand, (BlockHitResult) mouseOver) == InteractionResult.SUCCESS) {
-                ctx.player().swing(hand);
+                ctx.player().swing(hand, SwingAnimation.DEFAULT, false);
                 return;
             }
             if (!ctx.player().getItemInHand(hand).isEmpty() && ctx.playerController().processRightClick(ctx.player(), ctx.world(), hand) == InteractionResult.SUCCESS) {

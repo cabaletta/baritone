@@ -108,8 +108,8 @@ public abstract class MixinClientPlayNetHandler extends ClientCommonPacketListen
                         new ChunkEvent(
                                 EventState.POST,
                                 !packetIn.isSkippable() ? ChunkEvent.Type.POPULATE_FULL : ChunkEvent.Type.POPULATE_PARTIAL,
-                                packetIn.getX(),
-                                packetIn.getZ()
+                                packetIn.x(),
+                                packetIn.z()
                         )
                 );
             }

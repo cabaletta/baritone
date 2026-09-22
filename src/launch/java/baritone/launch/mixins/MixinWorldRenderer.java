@@ -20,13 +20,11 @@ package baritone.launch.mixins;
 import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.event.events.RenderEvent;
-import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.resource.GraphicsResourceAllocator;
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.DeltaTracker;
+import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
-import org.joml.Matrix4fc;
 import org.joml.Vector4f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -44,11 +42,11 @@ public class MixinWorldRenderer {
             method = "render",
             at = @At("RETURN")
     )
-    private void onStartHand(final GraphicsResourceAllocator allocator, final DeltaTracker deltaTracker, final boolean outline, final CameraRenderState camera, final Matrix4fc modelViewMatrix, final GpuBufferSlice fog, final Vector4f fogColor, final boolean sky, final CallbackInfo ci) {
+    private void onStartHand(final GraphicsResourceAllocator resourceAllocator, final boolean renderOutline, final CameraRenderState cameraState, final GpuBufferSlice terrainFog, final Vector4f fogColor, final boolean shouldRenderSky, final boolean consistentDepthRequired, final CallbackInfo ci) {
         for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
             PoseStack poseStack = new PoseStack();
-            poseStack.mulPose(modelViewMatrix);
-            ibaritone.getGameEventHandler().onRenderPass(new RenderEvent(deltaTracker.getGameTimeDeltaPartialTick(false), poseStack, camera.projectionMatrix));
+            poseStack.mulPose(cameraState.viewRotationMatrix);
+            ibaritone.getGameEventHandler().onRenderPass(new RenderEvent(cameraState.cameraEntityPartialTicks, poseStack, cameraState.projectionMatrix));
         }
     }
 }

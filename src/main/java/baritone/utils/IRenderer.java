@@ -22,17 +22,14 @@ import baritone.api.Settings;
 import baritone.utils.accessor.IEntityRenderManager;
 import baritone.utils.accessor.IRenderPipelines;
 import baritone.utils.accessor.IRenderType;
-import com.mojang.blaze3d.pipeline.BlendFunction;
-import com.mojang.blaze3d.pipeline.ColorTargetState;
-import com.mojang.blaze3d.pipeline.DepthStencilState;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.platform.CompareOp;
-import com.mojang.blaze3d.platform.BlendFactor;
-import com.mojang.blaze3d.PrimitiveTopology;
-import com.mojang.blaze3d.vertex.*;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.renderpearl.api.pipeline.*;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.BindGroupLayouts;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.StagedVertexBuffer;
 import net.minecraft.client.renderer.blockentity.BeaconRenderer;
 import net.minecraft.client.renderer.rendertype.RenderSetup;
@@ -45,6 +42,8 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 import java.awt.*;
+import java.util.Optional;
+import java.util.OptionalDouble;
 import java.util.function.BiFunction;
 
 public interface IRenderer {
@@ -73,6 +72,7 @@ public interface IRenderer {
 
     RenderPipeline BEACON_BEAM_OPAQUE = ((IRenderPipelines) new RenderPipelines()).baritone$registerPipeline(RenderPipeline.builder(BARITONE_BEACON_BEAM_SNIPPET)
             .withLocation("pipeline/baritone_beacon_beam_opaque")
+            .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
             .withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, false))
             .withCull(true)
             .build());
@@ -145,7 +145,17 @@ public interface IRenderer {
         stagedVertexBuffer.upload();
         StagedVertexBuffer.ExecuteInfo info = stagedVertexBuffer.getExecuteInfo(draw[0]);
         if (info != null) {
-            renderType.prepare().drawFromBuffer(info);
+            var preparedRenderType = renderType.prepare();
+            var renderTarget = Minecraft.getInstance().gameRenderer.mainRenderTarget();
+            try (var renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(
+                () -> "Baritone Render Pass",
+                renderTarget.getColorTextureView(),
+                Optional.empty(),
+                renderTarget.getDepthTextureView(),
+                OptionalDouble.empty())
+            ) {
+                preparedRenderType.drawFromBuffer(info, renderPass);
+            }
         }
         stagedVertexBuffer.endFrame();
     }
