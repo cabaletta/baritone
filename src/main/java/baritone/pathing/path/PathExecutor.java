@@ -510,6 +510,9 @@ public class PathExecutor implements IPathExecutor, Helper {
         if (!ctx.player().onGround() || MovementHelper.isLiquid(ctx, ctx.playerFeet())) {
             return false;
         }
+        if (!ctx.player().onGround() || MovementHelper.isLiquid(ctx, ctx.playerFeet()) || ctx.player().isInWater()) {
+            return false; // hopping in water or on a vine just sticks us to it instead
+        }
         if (((Movement) current).toBreakCached == null || !((Movement) current).toBreakCached.isEmpty()) {
             return false; // breaking is like 5x slower when you're jumping
         }
