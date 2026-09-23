@@ -64,7 +64,7 @@ public class MovementParkour extends Movement {
         if (!context.allowParkour) {
             return;
         }
-        if (!context.allowJumpAtBuildLimit && y >= context.world.getMaxY()) {
+        if (!context.allowJumpAtBuildLimit && y >= context.maxY) {
             return;
         }
         int xDiff = dir.getStepX();
@@ -189,7 +189,7 @@ public class MovementParkour extends Movement {
                 if (againstX == destX - xDiff && againstZ == destZ - zDiff) { // we can't turn around that fast
                     continue;
                 }
-                if (MovementHelper.canPlaceAgainst(context.bsi, againstX, againstY, againstZ)) {
+                if (MovementHelper.canPlaceAgainst(context, againstX, againstY, againstZ)) {
                     res.x = destX;
                     res.y = y;
                     res.z = destZ;

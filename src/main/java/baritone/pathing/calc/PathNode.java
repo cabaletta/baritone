@@ -64,6 +64,12 @@ public final class PathNode {
      */
     public int heapPosition;
 
+    /**
+     * The favoring multiplier for edges INTO this node (favoring is keyed on destination only), looked up once
+     * when the node is first reached instead of once per incoming edge. 0 means not looked up yet.
+     */
+    public double favor;
+
     public PathNode(int x, int y, int z, Goal goal) {
         this.previous = null;
         this.cost = ActionCosts.COST_INF;

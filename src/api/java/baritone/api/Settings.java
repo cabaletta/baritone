@@ -379,6 +379,13 @@ public final class Settings {
     public final Setting<Boolean> sprintAscends = new Setting<>(true);
 
     /**
+     * Sprint jump in 1x2 corridors and whenever walking under a low ceiling, bonking our head on it.
+     * <p>
+     * The sprint jump speed boost applies before we hit the ceiling, making this faster than just sprinting.
+     */
+    public final Setting<Boolean> headHitters = new Setting<>(false);
+
+    /**
      * If we overshoot a traverse and end up one block beyond the destination, mark it as successful anyway.
      * <p>
      * This helps with speed exceeding 20m/s
