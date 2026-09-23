@@ -50,10 +50,14 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  */
 public final class NetherPathfinderContext implements IElytraPathFinder {
 
-    // The native library needed this lock held while there were pointers to its chunks in Java.
-    // The port needs none of that -- a chunk is an object that stays valid for whoever holds it,
-    // and the table takes lookups, inserts and culls from any thread at once -- and the lock is
-    // kept so that the threads still run in the order they always have.
+    // Chunk is not synchronized, and this lock is what keeps its writers and readers apart. Packing
+    // fills a chunk after the table already holds it and a block update changes one that a search
+    // may be reading, so both take the write lock, as culling and a search that generates terrain
+    // do; every other search, and ElytraBehavior's tick and solver, take the read lock, which also
+    // makes the last write visible to them. The table itself is concurrent: a chunk generated or read
+    // from a region file goes in complete, and a culled one stays valid for whoever still holds it.
+    // The one ray cast without the lock is the landing check in ElytraBehavior.setPath, on the game
+    // thread, which can see a chunk that is being written and so a stale block, but nothing worse.
     public final ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
     public final ReentrantReadWriteLock.ReadLock readLock = rwl.readLock();
     public final ReentrantReadWriteLock.WriteLock writeLock = rwl.writeLock();

@@ -29,11 +29,10 @@ import java.util.Arrays;
  * asks of every x16 and x8 it enters, whether a cube that big is empty, is a bit test rather than a
  * scan of 64 or 8 longs.
  * <p>
- * Nothing here is synchronized, as nothing was in the native library, and nothing needs to be:
- * the callers keep writers and readers apart. NetherPathfinderContext holds its write lock to pack
- * a chunk, apply a block update, cull the table or run a search that generates terrain, and its
- * read lock for every other search and for every ray, and a chunk generated or read from a region
- * file is complete before the table publishes it.
+ * Nothing here is synchronized, as nothing was in the native library: NetherPathfinderContext's
+ * lock keeps writers and readers apart, and its comment says who takes which side. A read that
+ * races a write anyway sees some blocks from before it and some from after, never an exception,
+ * since every read takes its section once and checks it for null.
  */
 public final class Chunk {
 
