@@ -198,9 +198,7 @@ public final class ExploreProcess extends BaritoneProcessHelper implements IExpl
                 return Status.EXPLORED;
             }
             if (!((CachedWorld) cache).regionLoaded(centerX, centerZ)) {
-                Baritone.getExecutor().execute(() -> {
-                    ((CachedWorld) cache).tryLoadFromDisk(centerX >> 9, centerZ >> 9);
-                });
+                ((CachedWorld) cache).tryLoadFromDiskAsync(centerX >> 9, centerZ >> 9);
                 return Status.UNKNOWN; // we still need to load regions from disk in order to decide properly
             }
             return Status.NOT_EXPLORED;
