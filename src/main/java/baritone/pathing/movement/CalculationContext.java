@@ -31,6 +31,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.item.BoatItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.*;
@@ -79,6 +80,8 @@ public class CalculationContext {
     public int maxFallHeightNoWater;
     public final int maxFallHeightBucket;
     public final double waterWalkSpeed;
+    // rowing, when there's a boat to row. equal to waterWalkSpeed when there isn't so the min is a no-op
+    public final double boatWaterSpeed;
     public final double breakBlockAdditionalCost;
     public double backtrackCostFavoringCoefficient;
     public double jumpPenalty;
@@ -118,13 +121,14 @@ public class CalculationContext {
                 Baritone.settings().allowWaterBucketFall.value && Inventory.isHotbarSlot(baritone.getPlayerContext().player().getInventory().findSlotMatchingItem(STACK_BUCKET_WATER)) && baritone.getPlayerContext().world().dimension() != Level.NETHER,
                 Baritone.settings().allowSprint.value && baritone.getPlayerContext().player().getFoodData().getFoodLevel() > 6,
                 frostWalkerLevel(baritone.getPlayerContext().player()),
-                waterSpeedMultiplier(baritone.getPlayerContext().player())
+                waterSpeedMultiplier(baritone.getPlayerContext().player()),
+                hasBoat(baritone.getPlayerContext().player())
         );
     }
 
     // everything that needs a player or a world comes in as a parameter so you can build one of these with no game running
     // all the settings get snapshotted in here so nobody can accidentally read them differently
-    protected CalculationContext(IBaritone baritone, boolean forUseOnAnotherThread, Level world, WorldData worldData, BlockStateInterface bsi, ToolSet toolSet, boolean hasThrowaway, boolean hasWaterBucket, boolean canSprint, int frostWalker, float waterSpeedMultiplier) {
+    protected CalculationContext(IBaritone baritone, boolean forUseOnAnotherThread, Level world, WorldData worldData, BlockStateInterface bsi, ToolSet toolSet, boolean hasThrowaway, boolean hasWaterBucket, boolean canSprint, int frostWalker, float waterSpeedMultiplier, boolean hasBoat) {
         this.precomputedData = PrecomputedData.forCurrentSettings();
         this.safeForThreadedUse = forUseOnAnotherThread;
         this.baritone = baritone;
@@ -173,6 +177,11 @@ public class CalculationContext {
             waterSpeed = Math.min(waterSpeed, ActionCosts.SWIM_ONE_BLOCK_COST);
         }
         this.waterWalkSpeed = waterSpeed;
+        // a boat really is faster than sprinting, but the heuristic assumes nothing is. price it under
+        // costHeuristic and A* stops being A* and wanders off on scenic detours across the lake. so rowing
+        // costs what the heuristic thinks a block costs and not a tick less. still way under swimming
+        double boatSpeed = Math.max(ActionCosts.BOAT_ONE_BLOCK_COST, Baritone.settings().costHeuristic.value);
+        this.boatWaterSpeed = Baritone.settings().allowBoats.value && hasBoat ? Math.min(waterSpeed, boatSpeed) : waterSpeed;
         this.breakBlockAdditionalCost = Baritone.settings().blockBreakAdditionalPenalty.value;
         this.backtrackCostFavoringCoefficient = Baritone.settings().backtrackCostFavoringCoefficient.value;
         this.jumpPenalty = Baritone.settings().jumpPenalty.value;
@@ -182,6 +191,27 @@ public class CalculationContext {
         // because if some movements are calculated one way and others are calculated another way,
         // then you get a wildly inconsistent path that isn't optimal for either scenario.
         this.worldBorder = bsi.worldBorder;
+    }
+
+    /**
+     * The cost of one block of water at this node. Rowing if a boat could float here, otherwise whatever
+     * wading or swimming costs. Same answer the executor gives when it decides where to actually use the
+     * boat, so the estimate and the execution agree about which water counts
+     */
+    public double waterCost(int x, int y, int z) {
+        if (boatWaterSpeed >= waterWalkSpeed) {
+            return waterWalkSpeed; // no boat, don't go reading nine blocks for nothing
+        }
+        return MovementHelper.canFloatBoat(bsi, x, y, z) ? boatWaterSpeed : waterWalkSpeed;
+    }
+
+    private static boolean hasBoat(LocalPlayer player) {
+        for (ItemStack stack : player.getInventory().items) {
+            if (stack.getItem() instanceof BoatItem) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static int frostWalkerLevel(LocalPlayer player) {

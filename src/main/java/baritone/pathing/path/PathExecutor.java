@@ -77,6 +77,15 @@ public class PathExecutor implements IPathExecutor, Helper {
 
     private boolean sprintNextTick;
 
+    // the boat crossing we're in the middle of, if any. it owns the tick while it's alive
+    private BoatTrip boat;
+    // the last node of a run a trip gave up on, so we don't try again at every node while swimming it
+    private int boatRefusedUntil = -1;
+    // the stretches the renderer paints in the boat color, refreshed now and then since they depend on the world
+    private List<int[]> boatRuns;
+    private List<List<Vec3>> boatLanes;
+    private long boatRunsComputedAt;
+
     public PathExecutor(PathingBehavior behavior, IPath path) {
         this.behavior = behavior;
         this.ctx = behavior.ctx;
@@ -96,6 +105,40 @@ public class PathExecutor implements IPathExecutor, Helper {
         }
         if (pathPosition >= path.length()) {
             return true; // stop bugging me, I'm done
+        }
+        if (boat == null) {
+            boat = BoatTrip.plan(behavior.baritone, path, pathPosition, boatRefusedUntil);
+        }
+        if (boat != null) {
+            // everything below assumes feet on the path. in a boat the feet are wherever the boat says, so
+            // the trip does all the steering and we only come back here once it's over
+            switch (boat.tick()) {
+                case CONTINUE:
+                    sprintNextTick = false; // nobody's sprinting in a boat
+                    // keep the position moving with the boat: plan ahead measures the ticks left in this
+                    // segment from here, and with it stuck on the shore node the next segment never got
+                    // calculated until we'd already stopped at the end of this one
+                    pathPosition = Math.max(pathPosition, Math.min(boat.currentPosition(), path.length() - 2));
+                    return boat.safeToCancel();
+                case DONE: {
+                    int end = boat.endPosition();
+                    for (int j = pathPosition; j <= end && j < path.length() - 1; j++) {
+                        path.movements().get(j).reset();
+                    }
+                    pathPosition = end;
+                    boat = null;
+                    onChangeInPathPosition();
+                    onTick();
+                    return true;
+                }
+                case ABORT:
+                    boatRefusedUntil = boat.endPosition();
+                    boat = null;
+                    onChangeInPathPosition();
+                    break; // carry on on foot from wherever we ended up, the resync below sorts out where that is
+                default:
+                    throw new IllegalStateException();
+            }
         }
         Movement movement = (Movement) path.movements().get(pathPosition);
         BetterBlockPos whereAmI = ctx.playerFeet();
@@ -693,8 +736,52 @@ public class PathExecutor implements IPathExecutor, Helper {
             ret.currentMovementOriginalCostEstimate = currentMovementOriginalCostEstimate;
             ret.costEstimateIndex = costEstimateIndex;
             ret.ticksOnCurrent = ticksOnCurrent;
+            // a splice keeps every index of the first path, so the trip carries straight over. losing it
+            // mid placement would have the new executor place a second boat
+            if (boat != null) {
+                boat.rebase(path, 0);
+                ret.boat = boat;
+            }
+            ret.boatRefusedUntil = boatRefusedUntil;
             return ret;
         }).orElseGet(this::cutIfTooLong); // dont actually call cutIfTooLong every tick if we won't actually use it, use a method reference
+    }
+
+    // the lane the renderer draws for each of boatRuns(), same order, cached alongside them
+    public List<Vec3> boatLane(int[] run) {
+        boatRuns();
+        for (int i = 0; i < boatRuns.size(); i++) {
+            if (boatRuns.get(i) == run) {
+                return boatLanes.get(i);
+            }
+        }
+        return BoatTrip.smoothLane(path.positions(), run[0], run[1]);
+    }
+
+    // the stretches of this path that will be crossed by boat, as [first land index, last water index] pairs.
+    // for the renderer, which asks every frame, so it's only recomputed twice a second
+    public List<int[]> boatRuns() {
+        long now = System.currentTimeMillis();
+        if (boatRuns == null || now - boatRunsComputedAt > 500) {
+            boatRuns = BoatTrip.runs(behavior.baritone, path);
+            // the drawn lanes too, the renderer was rebuilding them every frame
+            boatLanes = new ArrayList<>();
+            for (int[] run : boatRuns) {
+                boatLanes.add(BoatTrip.smoothLane(path.positions(), run[0], run[1]));
+            }
+            boatRunsComputedAt = now;
+        }
+        if (boatRefusedUntil < 0) {
+            return boatRuns;
+        }
+        // a run we gave up on goes back to being drawn as a swim, since that's what it is now
+        List<int[]> stillOn = new ArrayList<>();
+        for (int[] run : boatRuns) {
+            if (run[1] > boatRefusedUntil) {
+                stillOn.add(run);
+            }
+        }
+        return stillOn;
     }
 
     private PathExecutor cutIfTooLong() {
@@ -714,6 +801,11 @@ public class PathExecutor implements IPathExecutor, Helper {
                 ret.costEstimateIndex = costEstimateIndex - cutoffAmt;
             }
             ret.ticksOnCurrent = ticksOnCurrent;
+            if (boat != null) {
+                boat.rebase(newPath, cutoffAmt);
+                ret.boat = boat;
+            }
+            ret.boatRefusedUntil = boatRefusedUntil < 0 ? -1 : boatRefusedUntil - cutoffAmt;
             return ret;
         }
         return this;

@@ -129,6 +129,60 @@ public interface MovementHelper extends ActionCosts, Helper {
         return canWalkThrough(new BlockStateInterface(ctx), pos.x, pos.y, pos.z);
     }
 
+    // whether a boat can float at this position with someone in it. surface water only, and the block above
+    // the headroom that a swimmer needs has to be open as well because a rider sits taller than the two
+    // blocks a water path node checks, and would suffocate under a low ceiling.
+    // bubble columns are the real killer: the whirlpool over a magma block drags a boat under and dumps the
+    // passenger, the soul sand kind launches it.
+    // and the boat is 1.375 wide, so centered on this block its box pokes 0.19 into all eight neighbours,
+    // at water level and the block above. a bank at water level there means the item refuses to place it
+    // and a moving boat scrapes to a stop, which is exactly what happened along a river. so every
+    // neighbour has to be open, which also makes A* route a block off the shore where the boat price applies
+    static boolean canFloatBoat(BlockStateInterface bsi, int x, int y, int z) {
+        return canFloatBoat(bsi, x, y, z, 0, 0);
+    }
+
+    // same, but the neighbours on the (landDx, landDz) side get a pass. that's the first water block off the
+    // shore, whose bank is always right there at water level: the boat gets placed well past the middle of
+    // that block so its box clears the bank, and we're off it a tick later
+    static boolean canFloatBoat(BlockStateInterface bsi, int x, int y, int z, int landDx, int landDz) {
+        BlockState here = bsi.get0(x, y, z);
+        if (!isWater(here) || isWater(bsi.get0(x, y + 1, z))) {
+            return false;
+        }
+        if (isBlockNormalCube(bsi.get0(x, y + 2, z))) {
+            return false;
+        }
+        Block under = bsi.get0(x, y - 1, z).getBlock();
+        if (under == Blocks.MAGMA_BLOCK || under == Blocks.SOUL_SAND) {
+            // the column hasn't necessarily formed yet (it needs a block update) but it will the moment we get there
+            return false;
+        }
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int dz = -1; dz <= 1; dz++) {
+                BlockState side = bsi.get0(x + dx, y, z + dz);
+                if (side.getBlock() == Blocks.BUBBLE_COLUMN) {
+                    return false;
+                }
+                if (dx == 0 && dz == 0) {
+                    continue;
+                }
+                if (dx * landDx + dz * landDz > 0 || landDx == 2) {
+                    continue; // the shore side we're launching from, or (2, 2) for "don't care about any of them"
+                }
+                if (!boatCanOverlap(side) || !boatCanOverlap(bsi.get0(x + dx, y + 1, z + dz))) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    // nothing the boat's box would bump: water, air, and the flowers-and-grass kind of block
+    static boolean boatCanOverlap(BlockState state) {
+        return isWater(state) || fullyPassableBlockState(state) == YES;
+    }
+
     static boolean canWalkThrough(BlockStateInterface bsi, int x, int y, int z) {
         return canWalkThrough(bsi, x, y, z, bsi.get0(x, y, z));
     }
