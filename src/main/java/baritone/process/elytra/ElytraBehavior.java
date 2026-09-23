@@ -353,7 +353,10 @@ public final class ElytraBehavior implements Helper {
 
             boolean canSeeAny = false;
             for (int i = rangeStartIncl; i < rangeEndExcl - 1; i++) {
-                if (ElytraBehavior.this.clearView(ctx.playerFeetAsVec(), this.path.getVec(i), false) || ElytraBehavior.this.clearView(ctx.playerHead(), this.path.getVec(i), false)) {
+                // once we can see one node there's no point casting two more rays to every node after it, and those rays
+                // get longer the further along the path we go. the range runs as far as the npf has chunks, which
+                // includes regions it read off disk, so this could be thousands of rays a tick
+                if (!canSeeAny && (ElytraBehavior.this.clearView(ctx.playerFeetAsVec(), this.path.getVec(i), false) || ElytraBehavior.this.clearView(ctx.playerHead(), this.path.getVec(i), false))) {
                     canSeeAny = true;
                 }
                 if (!ElytraBehavior.this.clearView(this.path.getVec(i), this.path.getVec(i + 1), false)) {
