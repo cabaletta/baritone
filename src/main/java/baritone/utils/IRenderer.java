@@ -51,23 +51,27 @@ public interface IRenderer {
         IRenderer.color[3] = alpha;
     }
 
-    static BufferBuilder startLines(Color color, float alpha, float lineWidth, boolean ignoreDepth) {
+    // see through, no depth writes, both sides. lines and quads want exactly the same things, and endLines undoes it for both
+    static void startTranslucent(boolean ignoreDepth) {
         RenderSystem.enableBlend();
-        RenderSystem.setShader(CoreShaders.POSITION_COLOR);
         RenderSystem.blendFuncSeparate(
                 GlStateManager.SourceFactor.SRC_ALPHA,
                 GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
                 GlStateManager.SourceFactor.ONE,
                 GlStateManager.DestFactor.ZERO
         );
-        glColor(color, alpha);
-        RenderSystem.lineWidth(lineWidth);
         RenderSystem.depthMask(false);
         RenderSystem.disableCull();
 
         if (ignoreDepth) {
             RenderSystem.disableDepthTest();
         }
+    }
+
+    static BufferBuilder startLines(Color color, float alpha, float lineWidth, boolean ignoreDepth) {
+        startTranslucent(ignoreDepth);
+        glColor(color, alpha);
+        RenderSystem.lineWidth(lineWidth);
         RenderSystem.setShader(CoreShaders.RENDERTYPE_LINES);
         return tessellator.begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR_NORMAL);
     }
@@ -89,6 +93,54 @@ public interface IRenderer {
         RenderSystem.enableCull();
         RenderSystem.depthMask(true);
         RenderSystem.disableBlend();
+    }
+
+    // same tesselator as the lines, so finish your quads before you start your lines (or the other way around)
+    static BufferBuilder startQuads(boolean ignoreDepth) {
+        startTranslucent(ignoreDepth);
+        RenderSystem.setShader(CoreShaders.POSITION_COLOR);
+        return tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+    }
+
+    static void endQuads(BufferBuilder bufferBuilder, boolean ignoredDepth) {
+        // the cleanup is identical, the shader got picked in startQuads
+        endLines(bufferBuilder, ignoredDepth);
+    }
+
+    // uses the rgb from glColor but its own alpha, which is what makes gradients possible
+    static void emitVertex(BufferBuilder bufferBuilder, PoseStack.Pose pose, double x, double y, double z, float alpha) {
+        bufferBuilder.addVertex(pose, (float) x, (float) y, (float) z).setColor(color[0], color[1], color[2], alpha);
+    }
+
+    // a box with no lid and no floor, alpha goes from bottomAlpha to topAlpha on the way up. coordinates are already camera relative
+    static void emitWalls(BufferBuilder bufferBuilder, PoseStack stack, double minX, double minY, double minZ, double maxX, double maxY, double maxZ, float bottomAlpha, float topAlpha) {
+        PoseStack.Pose pose = stack.last();
+        emitWall(bufferBuilder, pose, minX, minZ, maxX, minZ, minY, maxY, bottomAlpha, topAlpha);
+        emitWall(bufferBuilder, pose, maxX, minZ, maxX, maxZ, minY, maxY, bottomAlpha, topAlpha);
+        emitWall(bufferBuilder, pose, maxX, maxZ, minX, maxZ, minY, maxY, bottomAlpha, topAlpha);
+        emitWall(bufferBuilder, pose, minX, maxZ, minX, minZ, minY, maxY, bottomAlpha, topAlpha);
+    }
+
+    static void emitWall(BufferBuilder bufferBuilder, PoseStack.Pose pose, double x1, double z1, double x2, double z2, double minY, double maxY, float bottomAlpha, float topAlpha) {
+        emitVertex(bufferBuilder, pose, x1, minY, z1, bottomAlpha);
+        emitVertex(bufferBuilder, pose, x2, minY, z2, bottomAlpha);
+        emitVertex(bufferBuilder, pose, x2, maxY, z2, topAlpha);
+        emitVertex(bufferBuilder, pose, x1, maxY, z1, topAlpha);
+    }
+
+    static void emitHorizontalQuad(BufferBuilder bufferBuilder, PoseStack stack, double minX, double minZ, double maxX, double maxZ, double y, float alpha) {
+        PoseStack.Pose pose = stack.last();
+        emitVertex(bufferBuilder, pose, minX, y, minZ, alpha);
+        emitVertex(bufferBuilder, pose, maxX, y, minZ, alpha);
+        emitVertex(bufferBuilder, pose, maxX, y, maxZ, alpha);
+        emitVertex(bufferBuilder, pose, minX, y, maxZ, alpha);
+    }
+
+    static void emitFilledAABB(BufferBuilder bufferBuilder, PoseStack stack, AABB aabb, float alpha) {
+        AABB toDraw = aabb.move(-renderManager.renderPosX(), -renderManager.renderPosY(), -renderManager.renderPosZ());
+        emitWalls(bufferBuilder, stack, toDraw.minX, toDraw.minY, toDraw.minZ, toDraw.maxX, toDraw.maxY, toDraw.maxZ, alpha, alpha);
+        emitHorizontalQuad(bufferBuilder, stack, toDraw.minX, toDraw.minZ, toDraw.maxX, toDraw.maxZ, toDraw.minY, alpha);
+        emitHorizontalQuad(bufferBuilder, stack, toDraw.minX, toDraw.minZ, toDraw.maxX, toDraw.maxZ, toDraw.maxY, alpha);
     }
 
     static void emitLine(BufferBuilder bufferBuilder, PoseStack stack, double x1, double y1, double z1, double x2, double y2, double z2) {
