@@ -707,6 +707,35 @@ public final class Settings {
     public final Setting<Boolean> renderPathAsLine = new Setting<>(false);
 
     /**
+     * Render the path with soft edges, rounded corners and a tail that fades out behind you.
+     * <p>
+     * It's still the same floating line, {@link #pathRenderLineWidthPixels} wide, with the same bit of height
+     * to it unless {@link #renderPathAsLine} is on. When this is false you get the classic gl lines back.
+     */
+    public final Setting<Boolean> renderPathRibbon = new Setting<>(true);
+
+    /**
+     * Smooth out the rendering of the path calculation, so that the best path grows and fades instead of
+     * flickering around, and the most recent nodes branch off it as a tree.
+     * <p>
+     * Only does anything when {@link #renderPathRibbon} is on.
+     */
+    public final Setting<Boolean> renderSearchSmooth = new Setting<>(false);
+
+    /**
+     * Let a faint shimmer drift down the path, in the direction of travel.
+     * <p>
+     * Only does anything when {@link #renderPathRibbon} is on.
+     */
+    public final Setting<Boolean> renderPathAnimated = new Setting<>(true);
+
+    /**
+     * Fill the goal box and the selection boxes (to break, to place, to walk into) with a faint tint,
+     * instead of only drawing their outlines
+     */
+    public final Setting<Boolean> renderBoxFill = new Setting<>(true);
+
+    /**
      * Render the goal
      */
     public final Setting<Boolean> renderGoal = new Setting<>(true);
@@ -1325,47 +1354,47 @@ public final class Settings {
     /**
      * The color of the current path
      */
-    public final Setting<Color> colorCurrentPath = new Setting<>(Color.RED);
+    public final Setting<Color> colorCurrentPath = new Setting<>(new Color(0xD9182B));
 
     /**
      * The color of the next path
      */
-    public final Setting<Color> colorNextPath = new Setting<>(Color.MAGENTA);
+    public final Setting<Color> colorNextPath = new Setting<>(new Color(0xC77DFF));
 
     /**
      * The color of the blocks to break
      */
-    public final Setting<Color> colorBlocksToBreak = new Setting<>(Color.RED);
+    public final Setting<Color> colorBlocksToBreak = new Setting<>(new Color(0xE0303C));
 
     /**
      * The color of the blocks to place
      */
-    public final Setting<Color> colorBlocksToPlace = new Setting<>(Color.GREEN);
+    public final Setting<Color> colorBlocksToPlace = new Setting<>(new Color(0x5CFF9D));
 
     /**
      * The color of the blocks to walk into
      */
-    public final Setting<Color> colorBlocksToWalkInto = new Setting<>(Color.MAGENTA);
+    public final Setting<Color> colorBlocksToWalkInto = new Setting<>(new Color(0xC77DFF));
 
     /**
      * The color of the best path so far
      */
-    public final Setting<Color> colorBestPathSoFar = new Setting<>(Color.BLUE);
+    public final Setting<Color> colorBestPathSoFar = new Setting<>(new Color(0x4DA3FF));
 
     /**
      * The color of the path to the most recent considered node
      */
-    public final Setting<Color> colorMostRecentConsidered = new Setting<>(Color.CYAN);
+    public final Setting<Color> colorMostRecentConsidered = new Setting<>(new Color(0xA8D4FF));
 
     /**
      * The color of the goal box
      */
-    public final Setting<Color> colorGoalBox = new Setting<>(Color.GREEN);
+    public final Setting<Color> colorGoalBox = new Setting<>(new Color(0x5CFF9D));
 
     /**
      * The color of the goal box when it's inverted
      */
-    public final Setting<Color> colorInvertedGoalBox = new Setting<>(Color.RED);
+    public final Setting<Color> colorInvertedGoalBox = new Setting<>(new Color(0xE0303C));
 
     /**
      * The color of all selections

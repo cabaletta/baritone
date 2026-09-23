@@ -19,6 +19,7 @@ package baritone.utils;
 
 import baritone.api.BaritoneAPI;
 import baritone.api.event.events.RenderEvent;
+import baritone.api.pathing.calc.IPathFinder;
 import baritone.api.pathing.goals.*;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.IPlayerContext;
@@ -38,13 +39,14 @@ import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 /**
  * @author Brady
@@ -54,6 +56,12 @@ public final class PathRenderer implements IRenderer {
 
     private static final ResourceLocation TEXTURE_BEACON_BEAM = ResourceLocation.parse("textures/entity/beacon_beam.png");
 
+    private static final float BOX_FILL_ALPHA = 0.13F;
+    private static final float GOAL_FILL_ALPHA = 0.32F;
+    private static final float OUTLINE_ALPHA = 0.7F;
+
+    // it has to remember last frame to be smooth about this one, and every bot has its own search going
+    private static final Map<PathingBehavior, SearchGlow> SEARCH_GLOW = new WeakHashMap<>();
 
     private PathRenderer() {}
 
@@ -108,25 +116,37 @@ public final class PathRenderer implements IRenderer {
         //drawManySelectionBoxes(player, Collections.singletonList(behavior.pathStart()), partialTicks, Color.WHITE);
 
         // Render the current path, if there is one
+        double currentLength = 0;
         if (current != null && current.getPath() != null) {
             int renderBegin = Math.max(current.getPosition() - 3, 0);
-            drawPath(event.getModelViewStack(), current.getPath().positions(), renderBegin, settings.colorCurrentPath.value, settings.fadePath.value, 10, 20);
+            List<BetterBlockPos> positions = current.getPath().positions();
+            drawPath(event.getModelViewStack(), positions, renderBegin, settings.colorCurrentPath.value, 0, true);
+            currentLength = PathRibbon.length(positions, 0, positions.size() - 1, true);
         }
 
         if (next != null && next.getPath() != null) {
-            drawPath(event.getModelViewStack(), next.getPath().positions(), 0, settings.colorNextPath.value, settings.fadePath.value, 10, 20);
+            // next starts where current ends, so it picks up the shimmer right where current drops it
+            drawPath(event.getModelViewStack(), next.getPath().positions(), 0, settings.colorNextPath.value, currentLength, true);
         }
 
         // If there is a path calculation currently running, render the path calculation process
-        behavior.getInProgress().ifPresent(currentlyRunning -> {
-            currentlyRunning.bestPathSoFar().ifPresent(p -> {
-                drawPath(event.getModelViewStack(), p.positions(), 0, settings.colorBestPathSoFar.value, settings.fadePath.value, 10, 20);
-            });
+        // the classic one flickers like crazy, which is how you know it's thinking. some people like that
+        if (settings.renderPathRibbon.value && settings.renderSearchSmooth.value) {
+            // every frame, search or no search, because it has things to fade out after the search is over
+            SEARCH_GLOW.computeIfAbsent(behavior, b -> new SearchGlow()).render(event.getModelViewStack(), behavior.getInProgress());
+        } else {
+            behavior.getInProgress().ifPresent(currentlyRunning -> drawSearchClassic(event.getModelViewStack(), ctx, currentlyRunning));
+        }
+    }
 
-            currentlyRunning.pathToMostRecentNodeConsidered().ifPresent(mr -> {
-                drawPath(event.getModelViewStack(), mr.positions(), 0, settings.colorMostRecentConsidered.value, settings.fadePath.value, 10, 20);
-                drawManySelectionBoxes(event.getModelViewStack(), ctx.player(), Collections.singletonList(mr.getDest()), settings.colorMostRecentConsidered.value);
-            });
+    private static void drawSearchClassic(PoseStack stack, IPlayerContext ctx, IPathFinder currentlyRunning) {
+        currentlyRunning.bestPathSoFar().ifPresent(p -> {
+            drawPath(stack, p.positions(), 0, settings.colorBestPathSoFar.value, 0, false);
+        });
+
+        currentlyRunning.pathToMostRecentNodeConsidered().ifPresent(mr -> {
+            drawPath(stack, mr.positions(), 0, settings.colorMostRecentConsidered.value, 0, false);
+            drawManySelectionBoxes(stack, ctx.player(), Collections.singletonList(mr.getDest()), settings.colorMostRecentConsidered.value);
         });
     }
 
@@ -135,6 +155,23 @@ public final class PathRenderer implements IRenderer {
     }
 
     public static void drawPath(PoseStack stack, List<BetterBlockPos> positions, int startIndex, Color color, boolean fadeOut, int fadeStart0, int fadeEnd0, double offset) {
+        if (settings.renderPathRibbon.value) {
+            // whoever is calling this from outside might not be drawing something that walks (elytra isn't), so no steps
+            PathRibbon.draw(stack, positions, startIndex, color, fadeOut, fadeStart0, fadeEnd0, offset, 0, 1.0F, 1.0F, true, false, true);
+        } else {
+            drawPathLines(stack, positions, startIndex, color, fadeOut, fadeStart0, fadeEnd0, offset);
+        }
+    }
+
+    private static void drawPath(PoseStack stack, List<BetterBlockPos> positions, int startIndex, Color color, double arcOffset, boolean animated) {
+        if (settings.renderPathRibbon.value) {
+            PathRibbon.draw(stack, positions, startIndex, color, settings.fadePath.value, 10, 20, 0.5D, arcOffset, 1.0F, 1.0F, animated, true, true);
+        } else {
+            drawPathLines(stack, positions, startIndex, color, settings.fadePath.value, 10, 20, 0.5D);
+        }
+    }
+
+    private static void drawPathLines(PoseStack stack, List<BetterBlockPos> positions, int startIndex, Color color, boolean fadeOut, int fadeStart0, int fadeEnd0, double offset) {
         BufferBuilder bufferBuilder = IRenderer.startLines(color, settings.pathRenderLineWidthPixels.value, settings.renderPathIgnoreDepth.value);
 
         int fadeStart = fadeStart0 + startIndex;
@@ -204,30 +241,73 @@ public final class PathRenderer implements IRenderer {
     }
 
     public static void drawManySelectionBoxes(PoseStack stack, Entity player, Collection<BlockPos> positions, Color color) {
-        BufferBuilder bufferBuilder = IRenderer.startLines(color, settings.pathRenderLineWidthPixels.value, settings.renderSelectionBoxesIgnoreDepth.value);
+        if (positions.isEmpty()) {
+            return;
+        }
+        boolean ignoreDepth = settings.renderSelectionBoxesIgnoreDepth.value;
 
         //BlockPos blockpos = movingObjectPositionIn.getBlockPos();
         BlockStateInterface bsi = new BlockStateInterface(BaritoneAPI.getProvider().getPrimaryBaritone().getPlayerContext()); // TODO this assumes same dimension between primary baritone and render view? is this safe?
 
+        List<AABB> boxes = new ArrayList<>(positions.size());
         positions.forEach(pos -> {
             BlockState state = bsi.get0(pos);
             VoxelShape shape = state.getShape(player.level(), pos);
             AABB toDraw = shape.isEmpty() ? Shapes.block().bounds() : shape.bounds();
-            toDraw = toDraw.move(pos);
-            IRenderer.emitAABB(bufferBuilder, stack, toDraw, .002D);
+            boxes.add(toDraw.move(pos).inflate(.002D));
         });
 
-        IRenderer.endLines(bufferBuilder, settings.renderSelectionBoxesIgnoreDepth.value);
+        // two passes because there's only the one tesselator, quads and lines can't be open at the same time
+        if (settings.renderBoxFill.value) {
+            BufferBuilder quads = IRenderer.startQuads(ignoreDepth);
+            IRenderer.glColor(color, BOX_FILL_ALPHA);
+            boxes.forEach(box -> IRenderer.emitFilledAABB(quads, stack, box, BOX_FILL_ALPHA));
+            IRenderer.endQuads(quads, ignoreDepth);
+        }
+
+        BufferBuilder bufferBuilder = IRenderer.startLines(color, outlineAlpha(), boxLineWidth(), ignoreDepth);
+        boxes.forEach(box -> IRenderer.emitAABB(bufferBuilder, stack, box));
+        IRenderer.endLines(bufferBuilder, ignoreDepth);
+    }
+
+    // fat wireframes are most of why this looked like 2014. once there's a fill to carry the box the outline can calm down
+    private static float boxLineWidth() {
+        float width = settings.pathRenderLineWidthPixels.value;
+        return settings.renderBoxFill.value ? width / 2 : width;
+    }
+
+    // without the fill it's the classic look, and the classic look has see through outlines
+    private static float outlineAlpha() {
+        return settings.renderBoxFill.value ? OUTLINE_ALPHA : 0.4F;
     }
 
     public static void drawGoal(PoseStack stack, IPlayerContext ctx, Goal goal, float partialTicks, Color color) {
-        drawGoal(null, stack, ctx, goal, partialTicks, color, true);
+        // figure out every box first and draw after. composites can nest and mix goal types,
+        // and this way they all end up in one batch of fills and one batch of lines no matter what's in there
+        List<GoalBox> boxes = new ArrayList<>();
+        collectGoalBoxes(boxes, stack, ctx, goal, partialTicks, color);
+        if (boxes.isEmpty()) {
+            return;
+        }
+        boolean ignoreDepth = settings.renderGoalIgnoreDepth.value;
+
+        if (settings.renderBoxFill.value) {
+            BufferBuilder quads = IRenderer.startQuads(ignoreDepth);
+            boxes.forEach(box -> box.fill(quads, stack));
+            IRenderer.endQuads(quads, ignoreDepth);
+        }
+
+        BufferBuilder bufferBuilder = IRenderer.startLines(color, outlineAlpha(), settings.goalRenderLineWidthPixels.value, ignoreDepth);
+        boxes.forEach(box -> box.outline(bufferBuilder, stack));
+        IRenderer.endLines(bufferBuilder, ignoreDepth);
     }
 
-    private static void drawGoal(@Nullable BufferBuilder bufferBuilder, PoseStack stack, IPlayerContext ctx, Goal goal, float partialTicks, Color color, boolean setupRender) {
-        if (!setupRender && bufferBuilder == null) {
-            throw new RuntimeException("BufferBuilder must not be null if setupRender is false");
-        }
+    // -1 to 1 and back every two seconds. the rings ride it, and the fill breathes along with it
+    private static double goalWave() {
+        return Mth.cos((float) (((float) ((System.nanoTime() / 100000L) % 20000L)) / 20000F * Math.PI * 2));
+    }
+
+    private static void collectGoalBoxes(List<GoalBox> boxes, PoseStack stack, IPlayerContext ctx, Goal goal, float partialTicks, Color color) {
         double renderPosX = posX();
         double renderPosY = posY();
         double renderPosZ = posZ();
@@ -235,11 +315,13 @@ public final class PathRenderer implements IRenderer {
         double minZ, maxZ;
         double minY, maxY;
         double y, y1, y2;
+        float breath = 1;
         if (!settings.renderGoalAnimated.value) {
             // y = 1 causes rendering issues when the player is at the same y as the top of a block for some reason
             y = 0.999F;
         } else {
-            y = Mth.cos((float) (((float) ((System.nanoTime() / 100000L) % 20000L)) / 20000F * Math.PI * 2));
+            y = goalWave();
+            breath = 0.75F + 0.25F * (float) y;
         }
         if (goal instanceof IGoalRenderPos) {
             BlockPos goalPos = ((IGoalRenderPos) goal).getGoalPos();
@@ -259,7 +341,8 @@ public final class PathRenderer implements IRenderer {
                 y2 -= 0.5;
                 maxY--;
             }
-            drawDankLitGoalBox(bufferBuilder, stack, color, minX, maxX, minZ, maxZ, minY, maxY, y1, y2, setupRender);
+            // bright at the floor and gone by the top, like the block is glowing upwards
+            boxes.add(new GoalBox(color, minX, maxX, minZ, maxZ, minY, maxY, y1, y2, GOAL_FILL_ALPHA * breath, 0));
         } else if (goal instanceof GoalXZ) {
             GoalXZ goalPos = (GoalXZ) goal;
             minY = ctx.world().getMinY();
@@ -309,22 +392,15 @@ public final class PathRenderer implements IRenderer {
             y2 = 0;
             minY -= renderPosY;
             maxY -= renderPosY;
-            drawDankLitGoalBox(bufferBuilder, stack, color, minX, maxX, minZ, maxZ, minY, maxY, y1, y2, setupRender);
+            // a gradient over 384 blocks is just a flat color with extra steps
+            float alpha = GOAL_FILL_ALPHA / 2 * breath;
+            boxes.add(new GoalBox(color, minX, maxX, minZ, maxZ, minY, maxY, y1, y2, alpha, alpha));
         } else if (goal instanceof GoalComposite) {
-            // Simple way to determine if goals can be batched, without having some sort of GoalRenderer
-            boolean batch = Arrays.stream(((GoalComposite) goal).goals()).allMatch(IGoalRenderPos.class::isInstance);
-            BufferBuilder buf = bufferBuilder;
-            if (batch) {
-                buf = IRenderer.startLines(color, settings.goalRenderLineWidthPixels.value, settings.renderGoalIgnoreDepth.value);
-            }
             for (Goal g : ((GoalComposite) goal).goals()) {
-                drawGoal(buf, stack, ctx, g, partialTicks, color, !batch);
-            }
-            if (batch) {
-                IRenderer.endLines(buf, settings.renderGoalIgnoreDepth.value);
+                collectGoalBoxes(boxes, stack, ctx, g, partialTicks, color);
             }
         } else if (goal instanceof GoalInverted) {
-            drawGoal(stack, ctx, ((GoalInverted) goal).origin, partialTicks, settings.colorInvertedGoalBox.value);
+            collectGoalBoxes(boxes, stack, ctx, ((GoalInverted) goal).origin, partialTicks, settings.colorInvertedGoalBox.value);
         } else if (goal instanceof GoalYLevel) {
             GoalYLevel goalpos = (GoalYLevel) goal;
             minX = ctx.player().position().x - settings.yLevelBoxSize.value - renderPosX;
@@ -335,28 +411,8 @@ public final class PathRenderer implements IRenderer {
             maxY = minY + 2;
             y1 = 1 + y + goalpos.level - renderPosY;
             y2 = 1 - y + goalpos.level - renderPosY;
-            drawDankLitGoalBox(bufferBuilder, stack, color, minX, maxX, minZ, maxZ, minY, maxY, y1, y2, setupRender);
-        }
-    }
-
-    private static void drawDankLitGoalBox(BufferBuilder bufferBuilder, PoseStack stack, Color colorIn, double minX, double maxX, double minZ, double maxZ, double minY, double maxY, double y1, double y2, boolean setupRender) {
-        if (setupRender) {
-            bufferBuilder = IRenderer.startLines(colorIn, settings.goalRenderLineWidthPixels.value, settings.renderGoalIgnoreDepth.value);
-        }
-
-        renderHorizontalQuad(bufferBuilder, stack, minX, maxX, minZ, maxZ, y1);
-        renderHorizontalQuad(bufferBuilder, stack, minX, maxX, minZ, maxZ, y2);
-
-        for (double y = minY; y < maxY; y += 16) {
-            double max = Math.min(maxY, y + 16);
-            IRenderer.emitLine(bufferBuilder, stack, minX, y, minZ, minX, max, minZ, 0.0, 1.0, 0.0);
-            IRenderer.emitLine(bufferBuilder, stack, maxX, y, minZ, maxX, max, minZ, 0.0, 1.0, 0.0);
-            IRenderer.emitLine(bufferBuilder, stack, maxX, y, maxZ, maxX, max, maxZ, 0.0, 1.0, 0.0);
-            IRenderer.emitLine(bufferBuilder, stack, minX, y, maxZ, minX, max, maxZ, 0.0, 1.0, 0.0);
-        }
-
-        if (setupRender) {
-            IRenderer.endLines(bufferBuilder, settings.renderGoalIgnoreDepth.value);
+            // this one is thirty blocks wide and you're usually standing in it, so go easy
+            boxes.add(new GoalBox(color, minX, maxX, minZ, maxZ, minY, maxY, y1, y2, GOAL_FILL_ALPHA / 3 * breath, 0));
         }
     }
 
@@ -366,6 +422,38 @@ public final class PathRenderer implements IRenderer {
             IRenderer.emitLine(bufferBuilder, stack, maxX, y, minZ, maxX, y, maxZ, 0.0, 0.0, 1.0);
             IRenderer.emitLine(bufferBuilder, stack, maxX, y, maxZ, minX, y, maxZ, -1.0, 0.0, 0.0);
             IRenderer.emitLine(bufferBuilder, stack, minX, y, maxZ, minX, y, minZ, 0.0, 0.0, -1.0);
+        }
+    }
+
+    // one dank lit goal box, camera relative, remembered for long enough to draw it twice
+    // y1 and y2 are the two rings, zero means no ring
+    private record GoalBox(Color color, double minX, double maxX, double minZ, double maxZ, double minY, double maxY, double y1, double y2, float bottomAlpha, float topAlpha) {
+
+        private void fill(BufferBuilder quads, PoseStack stack) {
+            IRenderer.glColor(color, bottomAlpha);
+            IRenderer.emitWalls(quads, stack, minX, minY, minZ, maxX, maxY, maxZ, bottomAlpha, topAlpha);
+            if (y1 == 0 && y2 == 0) {
+                // the xz column. its floor is at bedrock, nobody is going to miss it
+                return;
+            }
+            IRenderer.emitHorizontalQuad(quads, stack, minX, minZ, maxX, maxZ, minY, bottomAlpha);
+            // the rings get a faint pane each, so they look like they're scanning the box and not just floating in it
+            IRenderer.emitHorizontalQuad(quads, stack, minX, minZ, maxX, maxZ, y1, bottomAlpha / 2);
+            IRenderer.emitHorizontalQuad(quads, stack, minX, minZ, maxX, maxZ, y2, bottomAlpha / 2);
+        }
+
+        private void outline(BufferBuilder bufferBuilder, PoseStack stack) {
+            IRenderer.glColor(color, outlineAlpha());
+            renderHorizontalQuad(bufferBuilder, stack, minX, maxX, minZ, maxZ, y1);
+            renderHorizontalQuad(bufferBuilder, stack, minX, maxX, minZ, maxZ, y2);
+
+            for (double y = minY; y < maxY; y += 16) {
+                double max = Math.min(maxY, y + 16);
+                IRenderer.emitLine(bufferBuilder, stack, minX, y, minZ, minX, max, minZ, 0.0, 1.0, 0.0);
+                IRenderer.emitLine(bufferBuilder, stack, maxX, y, minZ, maxX, max, minZ, 0.0, 1.0, 0.0);
+                IRenderer.emitLine(bufferBuilder, stack, maxX, y, maxZ, maxX, max, maxZ, 0.0, 1.0, 0.0);
+                IRenderer.emitLine(bufferBuilder, stack, minX, y, maxZ, minX, max, maxZ, 0.0, 1.0, 0.0);
+            }
         }
     }
 }
