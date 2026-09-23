@@ -17,9 +17,8 @@
 
 package baritone.process.elytra;
 
-import dev.babbaj.pathfinder.NetherPathfinder;
-import dev.babbaj.pathfinder.Octree;
-import net.minecraft.world.level.dimension.DimensionType;
+import baritone.process.elytra.pathfinder.Chunk;
+import baritone.process.elytra.pathfinder.NetherPathfinder;
 
 /**
  * @author Brady
@@ -27,9 +26,11 @@ import net.minecraft.world.level.dimension.DimensionType;
 public final class BlockStateOctreeInterface {
 
     private final NetherPathfinderContext context;
-    private final long contextPtr;
+    private final NetherPathfinder pathfinder;
     private final int minY;
-    transient long chunkPtr;
+    // The chunk the last lookup fell in, so that a run of lookups inside one chunk costs one table
+    // lookup. Cleared under the write lock by whatever replaces or culls chunks.
+    Chunk chunk;
 
     // Guarantee that the first lookup will fetch the context by setting MAX_VALUE
     private int prevChunkX = Integer.MAX_VALUE;
@@ -37,7 +38,7 @@ public final class BlockStateOctreeInterface {
 
     public BlockStateOctreeInterface(final NetherPathfinderContext context) {
         this.context = context;
-        this.contextPtr = context.context;
+        this.pathfinder = context.context;
         this.minY = context.minY;
     }
 
@@ -48,11 +49,11 @@ public final class BlockStateOctreeInterface {
         }
         final int chunkX = x >> 4;
         final int chunkZ = z >> 4;
-        if (this.chunkPtr == 0 | ((chunkX ^ this.prevChunkX) | (chunkZ ^ this.prevChunkZ)) != 0) {
+        if (this.chunk == null | ((chunkX ^ this.prevChunkX) | (chunkZ ^ this.prevChunkZ)) != 0) {
             this.prevChunkX = chunkX;
             this.prevChunkZ = chunkZ;
-            this.chunkPtr = NetherPathfinder.getChunkOrDefault(this.contextPtr, chunkX, chunkZ, true);
+            this.chunk = this.pathfinder.getChunkOrDefault(chunkX, chunkZ, true);
         }
-        return Octree.getBlock(this.chunkPtr, x & 0xF, adjustedY, z & 0xF);
+        return this.chunk.isSolid(x & 0xF, adjustedY, z & 0xF);
     }
 }

@@ -44,7 +44,7 @@ public final class CachedRegion implements ICachedRegion {
     /**
      * Magic value to detect invalid cache files, or incompatible cache files saved in an old version of Baritone
      */
-    private static final int CACHED_REGION_MAGIC = 456022911;
+    public static final int CACHED_REGION_MAGIC = 456022911;
 
     /**
      * All of the chunks in this region: A 32x32 array of them.
