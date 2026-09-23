@@ -60,12 +60,14 @@ public class BlockStateInterface {
     public final int maxY;
     private final int height;
 
-    // position -> state cache, only for the pathing thread's copy (null keys = no cache)
+    // position -> state cache, only while a search has claimed it (null keys = no cache)
     // the per tick ones on the main thread look up like four blocks and get garbage collected, not worth it
     // 64k entries hits ~80% of the time, 16k only managed 73%, so 64k it is
     private static final int CACHE_BITS = 16;
-    private final long[] cacheKeys;
-    private final BlockState[] cacheVals;
+    private long[] cacheKeys;
+    private BlockState[] cacheVals;
+    // whoever claimed it. everyone else goes around, same deal as CalculationContext.claimSearchCaches
+    private Thread cacheOwner;
 
     private static final BlockState AIR = Blocks.AIR.defaultBlockState();
 
@@ -89,22 +91,31 @@ public class BlockStateInterface {
         this.minY = world.dimensionType().minY();
         this.height = world.dimensionType().height();
         this.maxY = minY + height - 1;
-        if (copyLoadedChunks) {
-            this.cacheKeys = newCacheKeys();
-            this.cacheVals = new BlockState[1 << CACHE_BITS];
-        } else {
-            this.cacheKeys = null;
-            this.cacheVals = null;
-        }
         this.isPassableBlockPos = new BlockPos.MutableBlockPos();
         this.access = new BlockStateInterfaceAccessWrapper(this);
     }
 
-    private static long[] newCacheKeys() {
+    // GameEventHandler builds a copying one of these every tick and this used to be allocated in the constructor
+    // 768kb a tick so the main thread could look up four blocks. now only a search asks for it
+    public synchronized void claimCache() {
+        if (cacheOwner != null) {
+            return;
+        }
         long[] keys = new long[1 << CACHE_BITS];
         // -1 would be a block at shifted y=4095. good luck
         Arrays.fill(keys, -1L);
-        return keys;
+        cacheKeys = keys;
+        cacheVals = new BlockState[1 << CACHE_BITS];
+        cacheOwner = Thread.currentThread();
+    }
+
+    public synchronized void releaseCache() {
+        if (cacheOwner != Thread.currentThread()) {
+            return;
+        }
+        cacheOwner = null;
+        cacheKeys = null;
+        cacheVals = null;
     }
 
     // for subclasses that get their blocks from somewhere that isn't a client world (benchmarks, tests)
@@ -118,8 +129,6 @@ public class BlockStateInterface {
         this.minY = minY;
         this.height = height;
         this.maxY = minY + height - 1;
-        this.cacheKeys = newCacheKeys();
-        this.cacheVals = new BlockState[1 << CACHE_BITS];
         this.isPassableBlockPos = new BlockPos.MutableBlockPos();
         this.access = new BlockStateInterfaceAccessWrapper(this);
     }
@@ -149,7 +158,7 @@ public class BlockStateInterface {
             return AIR;
         }
         long[] keys = cacheKeys;
-        if (keys == null) {
+        if (keys == null || cacheOwner != Thread.currentThread()) {
             return getUncached(x, y, z);
         }
         // the 22 movements out of one node read the same 50 blocks about 110 times between them

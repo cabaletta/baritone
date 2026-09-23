@@ -28,6 +28,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.dimension.DimensionType;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.List;
 import java.util.Map;
@@ -233,16 +234,38 @@ public final class CachedChunk {
     }
 
     private void calculateHeightMap() {
-        for (int z = 0; z < 16; z++) {
-            for (int x = 0; x < 16; x++) {
-                int index = z << 4 | x;
-                heightMap[index] = 0;
-                for (int y = height; y >= 0; y--) {
-                    int i = getPositionIndex(x, y, z);
-                    if (data.get(i) || data.get(i + 1)) {
-                        heightMap[index] = y;
-                        break;
-                    }
+        calculateHeightMap(data, height, heightMap);
+    }
+
+    // highest non air y of every column (z << 4 | x), 0 if the whole column is air
+    // this used to be two BitSet.get per block per column from the top down, so ~130k calls for a chunk with its
+    // surface at y=64. and it runs for all 1024 chunks every time a region loads, plus twice per pack
+    // a y layer is 8 longs though, 2 bits per column, so do a whole layer of 32 columns per long instead
+    static void calculateHeightMap(BitSet data, int height, int[] heightMap) {
+        Arrays.fill(heightMap, 0);
+        long[] words = data.toLongArray(); // trailing zero words are cut off, those are air anyway
+        // bit 2i of each word = column i still hasn't found its top block
+        long[] todo = new long[8];
+        Arrays.fill(todo, 0x5555555555555555L);
+        int left = 256;
+        for (int y = Math.min(height - 1, (words.length >> 3)); y >= 0 && left > 0; y--) {
+            for (int w = 0; w < 8; w++) {
+                int wi = (y << 3) | w;
+                if (todo[w] == 0 || wi >= words.length) {
+                    continue;
+                }
+                long v = words[wi];
+                // either of a column's two bits set = not air, fold that onto the even bit
+                long found = (v | (v >>> 1)) & todo[w];
+                todo[w] &= ~found;
+                while (found != 0) {
+                    int bit = Long.numberOfTrailingZeros(found);
+                    // bit = ((z & 1) << 5) | (x << 1), and the word is z >> 1. see getPositionIndex
+                    int x = (bit & 31) >> 1;
+                    int z = (w << 1) | (bit >> 5);
+                    heightMap[z << 4 | x] = y;
+                    left--;
+                    found &= found - 1;
                 }
             }
         }

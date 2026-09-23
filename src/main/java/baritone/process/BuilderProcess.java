@@ -358,17 +358,22 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
     }
 
     private Optional<Placement> possibleToPlace(BlockState toPlace, int x, int y, int z, BlockStateInterface bsi) {
+        // these two don't care which face we're placing against, but they were asked for every face
+        // placementPlausible is an entity collision query, so that's up to six of those per position per tick
+        // still only asked once we've found something solid to place against, like before
+        boolean checkedPlaceable = false;
         for (Direction against : Direction.values()) {
             BetterBlockPos placeAgainstPos = new BetterBlockPos(x, y, z).relative(against);
             BlockState placeAgainstState = bsi.get0(placeAgainstPos);
             if (MovementHelper.isReplaceable(placeAgainstPos.x, placeAgainstPos.y, placeAgainstPos.z, placeAgainstState, bsi)) {
                 continue;
             }
-            if (!toPlace.canSurvive(ctx.world(), new BetterBlockPos(x, y, z))) {
-                continue;
-            }
-            if (!placementPlausible(new BetterBlockPos(x, y, z), toPlace)) {
-                continue;
+            if (!checkedPlaceable) {
+                BetterBlockPos pos = new BetterBlockPos(x, y, z);
+                if (!toPlace.canSurvive(ctx.world(), pos) || !placementPlausible(pos, toPlace)) {
+                    return Optional.empty();
+                }
+                checkedPlaceable = true;
             }
             VoxelShape shape = placeAgainstState.getShape(ctx.world(), placeAgainstPos);
             if (shape.isEmpty()) {
@@ -749,8 +754,10 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         List<Goal> toBreak = new ArrayList<>();
         breakable.forEach(pos -> toBreak.add(breakGoal(pos, bcc)));
         List<Goal> toPlace = new ArrayList<>();
+        // List.contains for every position was quadratic, and placeable is in the thousands on a big build
+        Set<BetterBlockPos> placeableSet = new HashSet<>(placeable);
         placeable.forEach(pos -> {
-            if (!placeable.contains(pos.below()) && !placeable.contains(pos.below(2))) {
+            if (!placeableSet.contains(pos.below()) && !placeableSet.contains(pos.below(2))) {
                 toPlace.add(placementGoal(pos, bcc));
             }
         });

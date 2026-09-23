@@ -17,6 +17,8 @@
 
 package baritone.process.elytra.pathfinder;
 
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -158,15 +160,27 @@ public final class NetherPathfinder implements AutoCloseable {
         return this.chunks.containsKey(key(x, z));
     }
 
-    /** Forgets every chunk more than maxDistanceBlocks (in whole chunks) from (chunkX, chunkZ). */
+    /**
+     * Forgets every chunk more than maxDistanceBlocks (in whole chunks) from (chunkX, chunkZ), and that the Baritone
+     * regions they were in have been read, so a search that comes back this way reads those regions again.
+     */
     public void cullFarChunks(int chunkX, int chunkZ, int maxDistanceBlocks) {
         final long distChunks = maxDistanceBlocks / 16;
         final long distSq = distChunks * distChunks;
+        // checkedRegions used to stay as it was, so once a region's chunks got culled, tryLoadRegion thought it had
+        // already read that region and flying back over it saw nothing but fake chunks. reloading a region that
+        // only lost some chunks is fine, the ones still here win (putIfAbsent)
+        final LongOpenHashSet culledRegions = new LongOpenHashSet();
         this.chunks.values().removeIf(entry -> {
             final long dx = entry.x - chunkX;
             final long dz = entry.z - chunkZ;
-            return dx * dx + dz * dz > distSq;
+            if (dx * dx + dz * dz > distSq) {
+                culledRegions.add(key(entry.x >> 5, entry.z >> 5));
+                return true;
+            }
+            return false;
         });
+        culledRegions.forEach((long region) -> this.checkedRegions.remove(region));
     }
 
     /** How many chunks the table holds. */
