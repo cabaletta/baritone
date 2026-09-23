@@ -17,7 +17,6 @@
 
 package baritone.process.elytra.pathfinder;
 
-import net.minecraft.core.BlockPos;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -198,8 +197,8 @@ public final class NetherPathfinder implements AutoCloseable {
         // honoured by the search it was aimed at and never leaks into the search after it.
         try {
             final Size size = atLeastX4 ? Size.X4 : Size.X2;
-            final NodePos start = PathFinder.findAir(this, size, new BlockPos(x1, y1, z1), defaultAirElseGenerate);
-            final NodePos goal = PathFinder.findAir(this, size, new BlockPos(x2, y2, z2), defaultAirElseGenerate);
+            final NodePos start = PathFinder.findAir(this, size, x1, y1, z1, defaultAirElseGenerate);
+            final NodePos goal = PathFinder.findAir(this, size, x2, y2, z2, defaultAirElseGenerate);
             final PathFinder.Path path = PathFinder.findPathSegment(this, start, goal, atLeastX4, failTimeoutInMillis, defaultAirElseGenerate, fakeChunkCost);
             if (path == null) {
                 return null;

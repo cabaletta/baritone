@@ -28,22 +28,41 @@ final class NodePos {
     private final int y;
     private final int z;
 
-    NodePos(Size size, BlockPos approxPosition) {
+    /** The cube of the given size that holds the block at (x, y, z). */
+    NodePos(Size size, int x, int y, int z) {
         this.size = size;
         final int shift = size.shift();
-        this.x = approxPosition.getX() >> shift;
-        this.y = approxPosition.getY() >> shift;
-        this.z = approxPosition.getZ() >> shift;
+        this.x = x >> shift;
+        this.y = y >> shift;
+        this.z = z >> shift;
     }
 
-    BlockPos absolutePosZero() {
-        final int shift = this.size.shift();
-        return new BlockPos(this.x << shift, this.y << shift, this.z << shift);
+    /** The absolute coordinates of the cube's lowest corner. */
+    int minX() {
+        return this.x << this.size.shift();
     }
 
+    int minY() {
+        return this.y << this.size.shift();
+    }
+
+    int minZ() {
+        return this.z << this.size.shift();
+    }
+
+    /** The block at the cube's centre, which is what a path is made of. */
     BlockPos absolutePosCenter() {
         final int half = this.size.width() / 2;
-        return this.absolutePosZero().offset(half, half, half);
+        return new BlockPos(this.minX() + half, this.minY() + half, this.minZ() + half);
+    }
+
+    /** The squared distance from the block at the cube's centre to pos, as BlockPos.distSqr has it. */
+    double centerDistSqr(BlockPos pos) {
+        final int half = this.size.width() / 2;
+        final double dx = this.minX() + half - pos.getX();
+        final double dy = this.minY() + half - pos.getY();
+        final double dz = this.minZ() + half - pos.getZ();
+        return dx * dx + dy * dy + dz * dz;
     }
 
     @Override

@@ -17,7 +17,6 @@
 
 package baritone.process.elytra.pathfinder;
 
-import net.minecraft.core.BlockPos;
 import java.util.Arrays;
 
 /**
@@ -102,8 +101,8 @@ public final class Bench {
 
         final NetherPathfinder fresh = new NetherPathfinder(Oracle.SEED, null, NetherPathfinder.Dimension.NETHER, 128);
         t0 = System.nanoTime();
-        final NodePos start = PathFinder.findAir(fresh, Size.X4, new BlockPos(0, 50, 0), false);
-        final NodePos goal = PathFinder.findAir(fresh, Size.X4, new BlockPos(100000, 50, 0), false);
+        final NodePos start = PathFinder.findAir(fresh, Size.X4, 0, 50, 0, false);
+        final NodePos goal = PathFinder.findAir(fresh, Size.X4, 100000, 50, 0, false);
         final PathFinder.Path path = PathFinder.findPathFull(fresh, start, goal, 1);
         final double s = (System.nanoTime() - t0) / 1e9;
         System.out.printf("java: 100k-block generating search (main.cpp): %.2f s, path of %d blocks to %s, %d chunks kept%n", s, path.blocks.size(), path.getEndPos(), fresh.chunkCount());

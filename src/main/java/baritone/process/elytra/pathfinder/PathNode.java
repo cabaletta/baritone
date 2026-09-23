@@ -40,6 +40,6 @@ final class PathNode {
     }
 
     private static double heuristic(NodePos pos, BlockPos goal) {
-        return Math.sqrt(pos.absolutePosCenter().distSqr(goal)) - (pos.size.width() * 4);
+        return Math.sqrt(pos.centerDistSqr(goal)) - (pos.size.width() * 4);
     }
 }

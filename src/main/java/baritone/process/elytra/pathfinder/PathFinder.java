@@ -89,25 +89,25 @@ final class PathFinder {
         return new Path(type, startPos, goal, blocks);
     }
 
-    static boolean isInBounds(int worldHeight, BlockPos pos) {
-        return pos.getY() >= 0 && pos.getY() < worldHeight;
+    static boolean isInBounds(int worldHeight, int y) {
+        return y >= 0 && y < worldHeight;
     }
 
     private static boolean closeToGoal(NodePos node, BlockPos goal) {
-        return node.absolutePosCenter().distSqr(goal) <= 16 * 16;
+        return node.centerDistSqr(goal) <= 16 * 16;
     }
 
     private static boolean inGoal(NodePos node, BlockPos goal) {
         if (!closeToGoal(node, goal)) return false;
-        final BlockPos c1 = node.absolutePosZero();
-        final BlockPos c2 = c1.offset(node.size.width(), node.size.width(), node.size.width());
-        return goal.getX() >= c1.getX() && goal.getX() <= c2.getX() &&
-                goal.getY() >= c1.getY() && goal.getY() <= c2.getY() &&
-                goal.getZ() >= c1.getZ() && goal.getZ() <= c2.getZ();
+        final int x = node.minX(), y = node.minY(), z = node.minZ();
+        final int w = node.size.width();
+        return goal.getX() >= x && goal.getX() <= x + w &&
+                goal.getY() >= y && goal.getY() <= y + w &&
+                goal.getZ() >= z && goal.getZ() <= z + w;
     }
 
     private static Path bestPathSoFar(PathNode end, BlockPos startPos, BlockPos goal) {
-        final double distSq = startPos.distSqr(end.pos.absolutePosCenter());
+        final double distSq = end.pos.centerDistSqr(startPos);
         if (distSq > MIN_DIST_PATH * MIN_DIST_PATH) {
             return createPath(end, startPos, goal, Path.Type.SEGMENT);
         }
@@ -122,32 +122,38 @@ final class PathFinder {
     }
 
     /**
-     * Called inside a big neighbour cube; returns the 4 sub cubes that are adjacent to the
-     * original cube. The face is relative to the original cube, the size is the sub cubes'.
+     * Called inside a big neighbour cube whose lowest corner is (x, y, z); iterates the 4 sub cubes
+     * that are adjacent to the original cube: the corner of the layer that touches it, one step
+     * along each of the layer's two axes, and both. The face is relative to the original cube, the
+     * size is the sub cubes'.
      */
-    private static BlockPos[] neighborCubes(Direction face, Size sz, BlockPos origin) {
-        final int size = sz.width();
-        final BlockPos corner;
+    private static void forEachSubCube(Chunk chunk, boolean fromCaller, int x, int y, int z, Direction face, Size sz, Size minSize, Callback callback) {
+        final int w = sz.width();
+        int ax = 0, ay = 0, az = 0, bx = 0, by = 0, bz = 0;
         switch (face) {
             case UP:
-                corner = origin;
-                return new BlockPos[]{corner, corner.east(size), corner.south(size), corner.east(size).south(size)};
+                ax = w; bz = w;
+                break;
             case DOWN:
-                corner = origin.above(size);
-                return new BlockPos[]{corner, corner.east(size), corner.south(size), corner.east(size).south(size)};
+                y += w; ax = w; bz = w;
+                break;
             case NORTH:
-                corner = origin.south(size);
-                return new BlockPos[]{corner, corner.east(size), corner.above(size), corner.east(size).above(size)};
+                z += w; ax = w; by = w;
+                break;
             case SOUTH:
-                corner = origin;
-                return new BlockPos[]{corner, corner.east(size), corner.above(size), corner.east(size).above(size)};
+                ax = w; by = w;
+                break;
             case EAST:
-                corner = origin;
-                return new BlockPos[]{corner, corner.south(size), corner.above(size), corner.south(size).above(size)};
+                az = w; by = w;
+                break;
             default: // WEST
-                corner = origin.east(size);
-                return new BlockPos[]{corner, corner.south(size), corner.above(size), corner.south(size).above(size)};
+                x += w; az = w; by = w;
+                break;
         }
+        forEachNeighborInCube(chunk, fromCaller, new NodePos(sz, x, y, z), face, sz, false, minSize, callback);
+        forEachNeighborInCube(chunk, fromCaller, new NodePos(sz, x + ax, y + ay, z + az), face, sz, false, minSize, callback);
+        forEachNeighborInCube(chunk, fromCaller, new NodePos(sz, x + bx, y + by, z + bz), face, sz, false, minSize, callback);
+        forEachNeighborInCube(chunk, fromCaller, new NodePos(sz, x + ax + bx, y + ay + by, z + az + bz), face, sz, false, minSize, callback);
     }
 
     private static void forEachNeighborInCube(Chunk chunk, boolean fromCaller, NodePos neighborNode, Direction face, Size size, boolean sizeChange, Size minSize, Callback callback) {
@@ -155,8 +161,8 @@ final class PathFinder {
             callback.accept(neighborNode, chunk, fromCaller);
             return;
         }
-        final BlockPos pos = neighborNode.absolutePosZero();
-        if (chunk.isEmpty(size, pos.getX() & 15, pos.getY(), pos.getZ() & 15)) {
+        final int x = neighborNode.minX(), y = neighborNode.minY(), z = neighborNode.minZ();
+        if (chunk.isEmpty(size, x & 15, y, z & 15)) {
             callback.accept(neighborNode, chunk, fromCaller);
             return;
         }
@@ -164,21 +170,17 @@ final class PathFinder {
             final Size nextSize = size.smaller();
             // Don't shrink cubes to X1 because they suck and make the path try to squeeze through small areas
             if (nextSize.ordinal() < minSize.ordinal()) return;
-            for (BlockPos subCube : neighborCubes(face, nextSize, pos)) {
-                forEachNeighborInCube(chunk, fromCaller, new NodePos(nextSize, subCube), face, nextSize, false, minSize, callback);
-            }
+            forEachSubCube(chunk, fromCaller, x, y, z, face, nextSize, minSize, callback);
         }
     }
 
     /** Grows the neighbour to the largest empty cube it is in, then iterates what is on the face. */
     private static void growThenIterate(Chunk chunk, boolean fromCaller, NodePos pos, Direction face, Size minSize, Callback callback) {
         final Size originalSize = pos.size;
-        final BlockPos bpos = pos.absolutePosZero();
-        final int lx = bpos.getX() & 15;
-        final int lz = bpos.getZ() & 15;
+        final int x = pos.minX(), y = pos.minY(), z = pos.minZ();
         for (Size s = originalSize; ; s = s.larger()) {
-            if (s == Size.X16 || !chunk.isEmpty(s.larger(), lx, bpos.getY(), lz)) {
-                forEachNeighborInCube(chunk, fromCaller, new NodePos(s, bpos), face, s, originalSize != s, minSize, callback);
+            if (s == Size.X16 || !chunk.isEmpty(s.larger(), x & 15, y, z & 15)) {
+                forEachNeighborInCube(chunk, fromCaller, new NodePos(s, x, y, z), face, s, originalSize != s, minSize, callback);
                 return;
             }
         }
@@ -223,7 +225,7 @@ final class PathFinder {
                 if (this.bestHeuristicSoFar - heuristic > MIN_IMPROVEMENT) {
                     this.bestHeuristicSoFar = heuristic;
                     this.bestSoFar = neighborNode;
-                    if (this.failing && this.startCenter.distSqr(neighborPos.absolutePosCenter()) > MIN_DIST_PATH * MIN_DIST_PATH) {
+                    if (this.failing && neighborPos.centerDistSqr(this.startCenter) > MIN_DIST_PATH * MIN_DIST_PATH) {
                         this.failing = false;
                     }
                 }
@@ -245,13 +247,12 @@ final class PathFinder {
         final Search s = new Search(goalCenter, startCenter, fakeChunkCost);
         final LongSet doneFull = new LongOpenHashSet();
 
-        final PathNode startNode = getNodeAtPosition(s.map, start, goal.absolutePosZero());
-        final BlockPos startZero = start.absolutePosZero();
-        ctx.tryLoadRegion((startZero.getX() >> 4), (startZero.getZ() >> 4));
+        final PathNode startNode = getNodeAtPosition(s.map, start, new BlockPos(goal.minX(), goal.minY(), goal.minZ()));
+        ctx.tryLoadRegion((start.minX() >> 4), (start.minZ() >> 4));
         startNode.cost = 0;
         startNode.combinedCost = startNode.estimatedCostToGoal;
         s.openSet.insert(startNode);
-        ctx.getRealChunkFromCacheOrFakeChunkMaybeGen((startZero.getX() >> 4), (startZero.getZ() >> 4), fakeChunkMode);
+        ctx.getRealChunkFromCacheOrFakeChunkMaybeGen((start.minX() >> 4), (start.minZ() >> 4), fakeChunkMode);
 
         s.bestSoFar = startNode;
         s.bestHeuristicSoFar = startNode.estimatedCostToGoal;
@@ -282,9 +283,10 @@ final class PathFinder {
             }
             final NodePos pos = currentNode.pos;
             final Size size = pos.size;
-            final BlockPos bpos = pos.absolutePosZero();
-            final int cx = (bpos.getX() >> 4);
-            final int cz = (bpos.getZ() >> 4);
+            final int x = pos.minX(), y = pos.minY(), z = pos.minZ();
+            final int w = size.width();
+            final int cx = (x >> 4);
+            final int cz = (z >> 4);
             final NetherPathfinder.Entry currentChunk = ctx.getChunkOrAir(cx, cz);
             if (!currentChunk.fromCaller) {
                 fakeChunkVisits++;
@@ -299,16 +301,17 @@ final class PathFinder {
             }
 
             for (Direction face : ALL_FACES) {
-                final NodePos neighborNodePos = new NodePos(size, bpos.relative(face, size.width()));
-                final BlockPos origin = neighborNodePos.absolutePosZero();
+                final int nx = x + face.getStepX() * w;
+                final int ny = y + face.getStepY() * w;
+                final int nz = z + face.getStepZ() * w;
                 if (face == Direction.UP || face == Direction.DOWN) {
-                    if (!isInBounds(ctx.maxHeight, origin)) continue;
+                    if (!isInBounds(ctx.maxHeight, ny)) continue;
                 }
-                final int neighborCx = (origin.getX() >> 4);
-                final int neighborCz = (origin.getZ() >> 4);
+                final int neighborCx = (nx >> 4);
+                final int neighborCz = (nz >> 4);
                 timeDoingIO += ctx.tryLoadRegion(neighborCx, neighborCz);
                 final NetherPathfinder.Entry entry = neighborCx == cx && neighborCz == cz ? currentChunk : ctx.getChunkOrAir(neighborCx, neighborCz);
-                growThenIterate(entry.chunk, entry.fromCaller, neighborNodePos, face, minSize, s);
+                growThenIterate(entry.chunk, entry.fromCaller, new NodePos(size, nx, ny, nz), face, minSize, s);
             }
         }
         return bestPathSoFar(s.bestSoFar, startCenter, goalCenter);
@@ -344,12 +347,18 @@ final class PathFinder {
 
     /** Segment after segment until the goal, generating terrain. What the native main.cpp ran. */
     static Path findPathFull(NetherPathfinder ctx, NodePos start, NodePos goal, double fakeChunkCost) {
-        if (!isInBounds(ctx.maxHeight, start.absolutePosCenter())) {
+        if (!isInBounds(ctx.maxHeight, start.absolutePosCenter().getY())) {
             throw new IllegalArgumentException("start is out of bounds");
         }
         final List<Path> segments = new ArrayList<>();
         while (true) {
-            final NodePos lastPathEnd = !segments.isEmpty() ? new NodePos(Size.X2, segments.get(segments.size() - 1).getEndPos()) : start;
+            final NodePos lastPathEnd;
+            if (!segments.isEmpty()) {
+                final BlockPos lastEnd = segments.get(segments.size() - 1).getEndPos();
+                lastPathEnd = new NodePos(Size.X2, lastEnd.getX(), lastEnd.getY(), lastEnd.getZ());
+            } else {
+                lastPathEnd = start;
+            }
             final Path path = findPathSegment(ctx, lastPathEnd, goal, true, 0, false, fakeChunkCost);
             if (path == null) {
                 if (ctx.clearCancelled()) {
@@ -373,12 +382,12 @@ final class PathFinder {
         return new Path(segments.get(segments.size() - 1).type, first.start, first.goal, blocks);
     }
 
-    /** The nearest cube of the given size around start that is all air, searching outwards. */
-    static NodePos findAir(NetherPathfinder ctx, Size size, BlockPos start1x, boolean airIfFake) {
-        if (!isInBounds(ctx.maxHeight, start1x)) {
-            throw new IllegalArgumentException("position is out of bounds: " + start1x);
+    /** The nearest cube of the given size around block (x, y, z) that is all air, searching outwards. */
+    static NodePos findAir(NetherPathfinder ctx, Size size, int x, int y, int z, boolean airIfFake) {
+        if (!isInBounds(ctx.maxHeight, y)) {
+            throw new IllegalArgumentException("position is out of bounds: " + x + ", " + y + ", " + z);
         }
-        final NodePos start = new NodePos(size, start1x);
+        final NodePos start = new NodePos(size, x, y, z);
         final ArrayDeque<NodePos> queue = new ArrayDeque<>();
         final Set<NodePos> visited = new HashSet<>();
         queue.add(start);
@@ -386,24 +395,24 @@ final class PathFinder {
         final int w = size.width();
         while (!queue.isEmpty()) {
             final NodePos node = queue.poll();
-            final BlockPos blockPos = node.absolutePosZero();
-            if (isInBounds(ctx.maxHeight, blockPos)) {
+            final int nx = node.minX(), ny = node.minY(), nz = node.minZ();
+            if (isInBounds(ctx.maxHeight, ny)) {
                 final Chunk chunk = airIfFake
-                        ? ctx.getChunkOrAir((blockPos.getX() >> 4), (blockPos.getZ() >> 4)).chunk
-                        : ctx.getOrGenChunk((blockPos.getX() >> 4), (blockPos.getZ() >> 4));
-                if (chunk.isEmpty(size, blockPos.getX() & 15, blockPos.getY(), blockPos.getZ() & 15)) {
+                        ? ctx.getChunkOrAir((nx >> 4), (nz >> 4)).chunk
+                        : ctx.getOrGenChunk((nx >> 4), (nz >> 4));
+                if (chunk.isEmpty(size, nx & 15, ny, nz & 15)) {
                     return node;
                 }
-                push(queue, visited, new NodePos(size, blockPos.west(w)));
-                push(queue, visited, new NodePos(size, blockPos.east(w)));
-                push(queue, visited, new NodePos(size, blockPos.north(w)));
-                push(queue, visited, new NodePos(size, blockPos.south(w)));
-                push(queue, visited, new NodePos(size, blockPos.above(w)));
-                push(queue, visited, new NodePos(size, blockPos.below(w)));
+                push(queue, visited, new NodePos(size, nx - w, ny, nz)); // west
+                push(queue, visited, new NodePos(size, nx + w, ny, nz)); // east
+                push(queue, visited, new NodePos(size, nx, ny, nz - w)); // north
+                push(queue, visited, new NodePos(size, nx, ny, nz + w)); // south
+                push(queue, visited, new NodePos(size, nx, ny + w, nz)); // above
+                push(queue, visited, new NodePos(size, nx, ny - w, nz)); // below
             }
         }
         // shouldn't be possible to exit the while loop
-        throw new IllegalStateException("no air anywhere around " + start1x);
+        throw new IllegalStateException("no air anywhere around " + x + ", " + y + ", " + z);
     }
 
     private static void push(ArrayDeque<NodePos> queue, Set<NodePos> visited, NodePos pos) {
