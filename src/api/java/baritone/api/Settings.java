@@ -676,6 +676,16 @@ public final class Settings {
     public final Setting<Boolean> backfill = new Setting<>(false);
 
     /**
+     * Place torches on dark blocks near the player
+     */
+    public final Setting<Boolean> autoTorch = new Setting<>(false);
+
+    /**
+     * Place a torch when the block light level (0 to 15) is at or below this
+     */
+    public final Setting<Integer> autoTorchLightLevel = new Setting<>(7);
+
+    /**
      * Shows popup message in the upper right corner, similarly to when you make an advancement
      */
     public final Setting<Boolean> logAsToast = new Setting<>(false);
