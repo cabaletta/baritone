@@ -39,9 +39,9 @@ There's also a [tutorial playlist](https://www.youtube.com/playlist?list=PLnwnJ1
 
 ## Waypoints
 
-`wp` for waypoints. A "tag" is like "home" (created automatically on right clicking a bed) or "death" (created automatically on death) or "user" (has to be created manually).
+`wp` for waypoints. A "tag" is like "bed" (created automatically on right clicking a bed), "death" (created automatically on death), "home" (saved with `sethome`) or "user" (has to be created manually).
 So you might want `#wp save user coolbiome`, then `#wp goal coolbiome` to set the goal, then `#path` to path to it.
-For death, `#wp goal death` will list waypoints under the "death" tag (remember stuff is clickable!).
+For death, `#wp list death` will list waypoints under the "death" tag (remember stuff is clickable!). `#wp goal death` immediately sets the goal if there is only one death waypoint, otherwise it lists them so you can pick one.
 
 `sethome` and `home` are shortcuts for saving and going to your home waypoint.
 
