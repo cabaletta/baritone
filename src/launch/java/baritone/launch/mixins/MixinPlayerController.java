@@ -17,12 +17,22 @@
 
 package baritone.launch.mixins;
 
+import baritone.api.BaritoneAPI;
+import baritone.api.IBaritone;
+import baritone.api.event.events.BlockInteractEvent;
 import baritone.utils.accessor.IPlayerControllerMP;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.phys.BlockHitResult;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 import org.spongepowered.asm.mixin.gen.Invoker;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(MultiPlayerGameMode.class)
 public abstract class MixinPlayerController implements IPlayerControllerMP {
@@ -46,4 +56,18 @@ public abstract class MixinPlayerController implements IPlayerControllerMP {
     @Accessor("destroyDelay")
     @Override
     public abstract void setDestroyDelay(int destroyDelay);
+
+    @Inject(
+            method = "useItemOn",
+            at = @At("RETURN")
+    )
+    private void onUseItemOn(LocalPlayer player, InteractionHand hand, BlockHitResult hitResult, CallbackInfoReturnable<InteractionResult> cir) {
+        if (!cir.getReturnValue().consumesAction()) {
+            return;
+        }
+        IBaritone baritone = BaritoneAPI.getProvider().getBaritoneForPlayer(player);
+        if (baritone != null) {
+            baritone.getGameEventHandler().onBlockInteract(new BlockInteractEvent(hitResult.getBlockPos(), BlockInteractEvent.Type.USE));
+        }
+    }
 }
