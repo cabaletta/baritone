@@ -32,6 +32,10 @@ import java.util.stream.Stream;
 
 public class ETACommand extends Command {
 
+    // we just assume tps is 20, it isn't worth the effort that is needed to calculate it exactly
+    private static final String[] UNITS = {"seconds", "minutes", "hours", "days", "weeks"};
+    private static final int[] TICKS_PER_UNIT = {20, 1200, 72000, 1728000, 12096000};
+
     public ETACommand(IBaritone baritone) {
         super(baritone, "eta");
     }
@@ -50,13 +54,28 @@ public class ETACommand extends Command {
         double ticksRemainingInGoal = pathingBehavior.estimatedTicksToGoal().orElse(Double.NaN);
 
         logDirect(String.format(
-                "Next segment: %.1fs (%.0f ticks)\n" +
-                        "Goal: %.1fs (%.0f ticks)",
-                ticksRemainingInSegment / 20, // we just assume tps is 20, it isn't worth the effort that is needed to calculate it exactly
-                ticksRemainingInSegment,
-                ticksRemainingInGoal / 20,
-                ticksRemainingInGoal
+                "Next segment: %s\n" +
+                "        Goal: %s",
+                formatTime(ticksRemainingInSegment),
+                formatTime(ticksRemainingInGoal)
         ));
+
+        if (Double.isFinite(ticksRemainingInGoal) && ticksRemainingInGoal >= 24192000) {
+            logDirect("Please don't do this to me.");
+        }
+    }
+
+    private static String formatTime(double ticks) {
+        if (!Double.isFinite(ticks)) {
+            return "" + ticks; // NaN, +Infinity and -Infinity don't need units
+        }
+        for (int i = UNITS.length - 1; i >= 0; i--) {
+            int value = (int) ticks / TICKS_PER_UNIT[i];
+            if (value >= 2) {
+                return String.format("%s %s (%.0f ticks)", value, UNITS[i], ticks);
+            }
+        }
+        return String.format("%.0f ticks", ticks);
     }
 
     @Override
