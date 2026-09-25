@@ -188,25 +188,4 @@ public class MixinMinecraft {
         }
         return instance.screen;
     }
-
-    // TODO
-    // FIXME
-    // bradyfix
-    // i cant mixin
-    // lol
-    // https://discordapp.com/channels/208753003996512258/503692253881958400/674760939681349652
-    // https://discordapp.com/channels/208753003996512258/503692253881958400/674756457966862376
-    /*@Inject(
-            method = "rightClickMouse",
-            at = @At(
-                    value = "INVOKE",
-                    target = "net/minecraft/client/entity/player/ClientPlayerEntity.swingArm(Lnet/minecraft/util/Hand;)V",
-                    ordinal = 1
-            ),
-            locals = LocalCapture.CAPTURE_FAILHARD
-    )
-    private void onBlockUse(CallbackInfo ci, Hand var1[], int var2, int var3, Hand enumhand, ItemStack itemstack, EntityRayTraceResult rt, Entity ent, ActionResultType art, BlockRayTraceResult raytrace, int i, ActionResultType enumactionresult) {
-        // rightClickMouse is only for the main player
-        BaritoneAPI.getProvider().getPrimaryBaritone().getGameEventHandler().onBlockInteract(new BlockInteractEvent(raytrace.getPos(), BlockInteractEvent.Type.USE));
-    }*/
 }

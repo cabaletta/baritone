@@ -1,27 +1,18 @@
-# Baritone
+<h1 align="center">Baritone</h1>
+
+<p align="center"><b>A Minecraft pathfinder bot.</b></p>
+
+<p align="center">
+  <a href="#downloads"><img src="https://img.shields.io/badge/MC-1.12.2%20--%201.21.3-yellow.svg" alt="Minecraft 1.12.2 - 1.21.3"/></a>
+  <a href="#downloads"><img src="https://img.shields.io/badge/MC-1.21.4%20--%2026.3-brightgreen.svg" alt="Minecraft 1.21.4 - 26.3"/></a>
+</p>
 
 <p align="center">
   <a href="https://github.com/cabaletta/baritone/releases/"><img src="https://img.shields.io/github/downloads/cabaletta/baritone/total.svg" alt="GitHub All Releases"/></a>
-</p>
-
-<p align="center">
-  <a href="#Baritone"><img src="https://img.shields.io/badge/MC-1.12.2-brightgreen.svg" alt="Minecraft"/></a>
-  <a href="#Baritone"><img src="https://img.shields.io/badge/MC-1.13.2-yellow.svg" alt="Minecraft"/></a>
-  <a href="#Baritone"><img src="https://img.shields.io/badge/MC-1.14.4-yellow.svg" alt="Minecraft"/></a>
-  <a href="#Baritone"><img src="https://img.shields.io/badge/MC-1.15.2-yellow.svg" alt="Minecraft"/></a>
-  <a href="#Baritone"><img src="https://img.shields.io/badge/MC-1.16.5-yellow.svg" alt="Minecraft"/></a>
-  <a href="#Baritone"><img src="https://img.shields.io/badge/MC-1.17.1-yellow.svg" alt="Minecraft"/></a>
-  <a href="#Baritone"><img src="https://img.shields.io/badge/MC-1.18.2-yellow.svg" alt="Minecraft"/></a>
-  <a href="#Baritone"><img src="https://img.shields.io/badge/MC-1.19.2-brightgreen.svg" alt="Minecraft"/></a>
-  <a href="#Baritone"><img src="https://img.shields.io/badge/MC-1.19.4-brightgreen.svg" alt="Minecraft"/></a>
-  <a href="#Baritone"><img src="https://img.shields.io/badge/MC-1.20.1-brightgreen.svg" alt="Minecraft"/></a>
-  <a href="#Baritone"><img src="https://img.shields.io/badge/MC-1.21.3-brightgreen.svg" alt="Minecraft"/></a>
-</p>
-
-<p align="center">
-  <a href="https://travis-ci.com/cabaletta/baritone/"><img src="https://travis-ci.com/cabaletta/baritone.svg?branch=master" alt="Build Status"/></a>
+  <a href="https://github.com/cabaletta/baritone/actions/workflows/gradle_build.yml"><img src="https://github.com/cabaletta/baritone/actions/workflows/gradle_build.yml/badge.svg" alt="Build Status"/></a>
   <a href="https://github.com/cabaletta/baritone/releases/"><img src="https://img.shields.io/github/release/cabaletta/baritone.svg" alt="Release"/></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-LGPL--3.0%20with%20anime%20exception-green.svg" alt="License"/></a>
+  <a href="http://discord.gg/s6fRBAUpmr"><img src="https://img.shields.io/badge/chat-discord-5865F2.svg" alt="Discord"/></a>
   <a href="https://www.codacy.com/gh/cabaletta/baritone/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=cabaletta/baritone&amp;utm_campaign=Badge_Grade"><img src="https://app.codacy.com/project/badge/Grade/cadab857dab049438b6e28b3cfc5570e" alt="Codacy Badge"/></a>
   <a href="https://github.com/cabaletta/baritone/blob/master/CODE_OF_CONDUCT.md"><img src="https://img.shields.io/badge/%E2%9D%A4-code%20of%20conduct-blue.svg?style=flat" alt="Code of Conduct"/></a>
   <a href="https://snyk.io/test/github/cabaletta/baritone?targetFile=build.gradle"><img src="https://snyk.io/test/github/cabaletta/baritone/badge.svg?targetFile=build.gradle" alt="Known Vulnerabilities"/></a>
@@ -33,18 +24,7 @@
   <a href="https://github.com/cabaletta/baritone/commit/"><img src="https://img.shields.io/github/commits-since/cabaletta/baritone/v1.0.0.svg" alt="GitHub commits"/></a>
   <img src="https://img.shields.io/github/languages/code-size/cabaletta/baritone.svg" alt="Code size"/>
   <img src="https://img.shields.io/github/repo-size/cabaletta/baritone.svg" alt="GitHub repo size"/>
-  <img src="https://tokei.rs/b1/github/cabaletta/baritone?category=code&style=flat" alt="Lines of Code"/>
   <img src="https://img.shields.io/badge/Badges-36-blue.svg" alt="yes"/>
-</p>
-
-<p align="center">
-  <a href="https://impactclient.net/"><img src="https://img.shields.io/badge/Impact%20integration-v1.2.14%20/%20v1.3.8%20/%20v1.4.6%20/%20v1.5.3%20/%20v1.6.3-brightgreen.svg" alt="Impact integration"/></a>
-  <a href="https://github.com/lambda-client/lambda"><img src="https://img.shields.io/badge/Lambda%20integration-v1.2.17-brightgreen.svg" alt="Lambda integration"/></a>
-  <a href="https://github.com/fr1kin/ForgeHax/"><img src="https://img.shields.io/badge/ForgeHax%20%22integration%22-scuffed-yellow.svg" alt="ForgeHax integration"/></a>
-  <a href="https://aristois.net/"><img src="https://img.shields.io/badge/Aristois%20add--on%20integration-v1.6.3-green.svg" alt="Aristois add-on integration"/></a>
-  <a href="https://rootnet.dev/"><img src="https://img.shields.io/badge/rootNET%20integration-v1.2.14-green.svg" alt="rootNET integration"/></a>
-  <a href="https://futureclient.net/"><img src="https://img.shields.io/badge/Future%20integration-v1.2.12%20%2F%20v1.3.6%20%2F%20v1.4.4-red" alt="Future integration"/></a>
-  <a href="https://rusherhack.org/"><img src="https://img.shields.io/badge/RusherHack%20integration-v1.2.14-green" alt="RusherHack integration"/></a>
 </p>
 
 <p align="center">
@@ -52,79 +32,82 @@
   <a href="http://forthebadge.com/"><img src="https://web.archive.org/web/20230604002050/https://forthebadge.com/images/badges/mom-made-pizza-rolls.svg" alt="forthebadge"/></a>
 </p>
 
-A Minecraft pathfinder bot.
+<p align="center">
+  <a href="#quick-start">Quick start</a> ·
+  <a href="#downloads">Downloads</a> ·
+  <a href="USAGE.md">Usage</a> ·
+  <a href="FEATURES.md">Features</a> ·
+  <a href="SETUP.md">Setup</a> ·
+  <a href="https://baritone.leijurv.com/">Javadocs</a> ·
+  <a href="http://discord.gg/s6fRBAUpmr">Discord</a>
+</p>
 
-Baritone is the pathfinding system used in [Impact](https://impactclient.net/) since 4.4. [Here's](https://www.youtube.com/watch?v=StquF69-_wI) a (very old!) video I made showing off what it can do.
+Baritone walks, mines, builds, farms and flies for you. Give it a goal and it figures out how to get there: breaking and placing blocks, parkour, ladders, water buckets, the lot.
 
-[**Baritone Discord Server**](http://discord.gg/s6fRBAUpmr)
+It's the pathfinding system used in [Impact](https://impactclient.net/) since 4.4, and an updated version of [MineBot](https://github.com/leijurv/MineBot/), the original bot for Minecraft 1.8.9. Baritone focuses on reliability and particularly performance (it's over [30x faster](https://github.com/cabaletta/baritone/pull/180#issuecomment-423822928) than MineBot at calculating paths).
 
-**Quick download links:**
+[Here's](https://www.youtube.com/watch?v=StquF69-_wI) a (very old!) video I made showing off what it can do, and there's a [showcase video](https://youtu.be/CZkLXWo4Fg4) by @Adovin#6313 which I recommend.
 
-| Forge                                                                                                          | Fabric                                                                                                           | NeoForge                                                                                                             |
-|----------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------|
-| [1.12.2 Forge](https://github.com/cabaletta/baritone/releases/download/v1.2.19/baritone-api-forge-1.2.19.jar)  |                                                                                                                  |                                                                                                                      |
-| [1.16.5 Forge](https://github.com/cabaletta/baritone/releases/download/v1.6.5/baritone-api-forge-1.6.5.jar)    | [1.16.5 Fabric](https://github.com/cabaletta/baritone/releases/download/v1.6.5/baritone-api-fabric-1.6.5.jar)    |                                                                                                                      |
-| [1.17.1 Forge](https://github.com/cabaletta/baritone/releases/download/v1.7.3/baritone-api-forge-1.7.3.jar)    | [1.17.1 Fabric](https://github.com/cabaletta/baritone/releases/download/v1.7.3/baritone-api-fabric-1.7.3.jar)    |                                                                                                                      |
-| [1.18.2 Forge](https://github.com/cabaletta/baritone/releases/download/v1.8.6/baritone-api-forge-1.8.6.jar)    | [1.18.2 Fabric](https://github.com/cabaletta/baritone/releases/download/v1.8.6/baritone-api-fabric-1.8.6.jar)    |                                                                                                                      |
-| [1.19.2 Forge](https://github.com/cabaletta/baritone/releases/download/v1.9.4/baritone-api-forge-1.9.4.jar)    | [1.19.2 Fabric](https://github.com/cabaletta/baritone/releases/download/v1.9.4/baritone-api-fabric-1.9.4.jar)    |                                                                                                                      |
-| [1.19.3 Forge](https://github.com/cabaletta/baritone/releases/download/v1.9.1/baritone-api-forge-1.9.1.jar)    | [1.19.3 Fabric](https://github.com/cabaletta/baritone/releases/download/v1.9.1/baritone-api-fabric-1.9.1.jar)    |                                                                                                                      |
-| [1.19.4 Forge](https://github.com/cabaletta/baritone/releases/download/v1.9.6/baritone-api-forge-1.9.6.jar)    | [1.19.4 Fabric](https://github.com/cabaletta/baritone/releases/download/v1.9.6/baritone-api-fabric-1.9.6.jar)    |                                                                                                                      |
-| [1.20.1 Forge](https://github.com/cabaletta/baritone/releases/download/v1.10.5/baritone-api-forge-1.10.5.jar)  | [1.20.1 Fabric](https://github.com/cabaletta/baritone/releases/download/v1.10.5/baritone-api-fabric-1.10.5.jar)  |                                                                                                                      |
-| [1.20.2 Forge](https://github.com/cabaletta/baritone/releases/download/v1.10.6/baritone-api-forge-1.10.6.jar)  | [1.20.2 Fabric](https://github.com/cabaletta/baritone/releases/download/v1.10.6/baritone-api-fabric-1.10.6.jar)  |                                                                                                                      |
-| [1.20.3 Forge](https://github.com/cabaletta/baritone/releases/download/v1.10.7/baritone-api-forge-1.10.7.jar)  | [1.20.3 Fabric](https://github.com/cabaletta/baritone/releases/download/v1.10.7/baritone-api-fabric-1.10.7.jar)  | [1.20.3 NeoForge](https://github.com/cabaletta/baritone/releases/download/v1.10.7/baritone-api-neoforge-1.10.7.jar)  |
-| [1.20.4 Forge](https://github.com/cabaletta/baritone/releases/download/v1.10.7/baritone-api-forge-1.10.7.jar)  | [1.20.4 Fabric](https://github.com/cabaletta/baritone/releases/download/v1.10.7/baritone-api-fabric-1.10.7.jar)  | [1.20.4 NeoForge](https://github.com/cabaletta/baritone/releases/download/v1.10.7/baritone-api-neoforge-1.10.7.jar)  |
-| [1.20.5 Forge](https://github.com/cabaletta/baritone/releases/download/v1.10.8/baritone-api-forge-1.10.8.jar)  | [1.20.5 Fabric](https://github.com/cabaletta/baritone/releases/download/v1.10.8/baritone-api-fabric-1.10.8.jar)  | [1.20.5 NeoForge](https://github.com/cabaletta/baritone/releases/download/v1.10.8/baritone-api-neoforge-1.10.8.jar)  |
-| [1.20.6 Forge](https://github.com/cabaletta/baritone/releases/download/v1.10.8/baritone-api-forge-1.10.8.jar)  | [1.20.6 Fabric](https://github.com/cabaletta/baritone/releases/download/v1.10.8/baritone-api-fabric-1.10.8.jar)  | [1.20.6 NeoForge](https://github.com/cabaletta/baritone/releases/download/v1.10.8/baritone-api-neoforge-1.10.8.jar)  |
-| [1.21.1 Forge](https://github.com/cabaletta/baritone/releases/download/v1.11.3/baritone-api-forge-1.11.3.jar)  | [1.21.1 Fabric](https://github.com/cabaletta/baritone/releases/download/v1.11.3/baritone-api-fabric-1.11.3.jar)  | [1.21.1 NeoForge](https://github.com/cabaletta/baritone/releases/download/v1.11.3/baritone-api-neoforge-1.11.3.jar)  |
-| [1.21.3 Forge](https://github.com/cabaletta/baritone/releases/download/v1.12.0/baritone-api-forge-1.12.0.jar)  | [1.21.3 Fabric](https://github.com/cabaletta/baritone/releases/download/v1.12.0/baritone-api-fabric-1.12.0.jar)  | [1.21.3 NeoForge](https://github.com/cabaletta/baritone/releases/download/v1.12.0/baritone-api-neoforge-1.12.0.jar)  |
-| [1.21.4 Forge](https://github.com/cabaletta/baritone/releases/download/v1.13.1/baritone-api-forge-1.13.1.jar)  | [1.21.4 Fabric](https://github.com/cabaletta/baritone/releases/download/v1.13.1/baritone-api-fabric-1.13.1.jar)  | [1.21.4 NeoForge](https://github.com/cabaletta/baritone/releases/download/v1.13.1/baritone-api-neoforge-1.13.1.jar)  |
-| [1.21.5 Forge](https://github.com/cabaletta/baritone/releases/download/v1.14.0/baritone-api-forge-1.14.0.jar)  | [1.21.5 Fabric](https://github.com/cabaletta/baritone/releases/download/v1.14.0/baritone-api-fabric-1.14.0.jar)  | [1.21.5 NeoForge](https://github.com/cabaletta/baritone/releases/download/v1.14.0/baritone-api-neoforge-1.14.0.jar)  |
-| [1.21.6 Forge](https://github.com/cabaletta/baritone/releases/download/v1.15.0/baritone-api-forge-1.15.0.jar)  | [1.21.6 Fabric](https://github.com/cabaletta/baritone/releases/download/v1.15.0/baritone-api-fabric-1.15.0.jar)  | [1.21.6 NeoForge](https://github.com/cabaletta/baritone/releases/download/v1.15.0/baritone-api-neoforge-1.15.0.jar)  |
-| [1.21.7 Forge](https://github.com/cabaletta/baritone/releases/download/v1.15.0/baritone-api-forge-1.15.0.jar)  | [1.21.7 Fabric](https://github.com/cabaletta/baritone/releases/download/v1.15.0/baritone-api-fabric-1.15.0.jar)  | [1.21.7 NeoForge](https://github.com/cabaletta/baritone/releases/download/v1.15.0/baritone-api-neoforge-1.15.0.jar)  |
-| [1.21.8 Forge](https://github.com/cabaletta/baritone/releases/download/v1.15.0/baritone-api-forge-1.15.0.jar)  | [1.21.8 Fabric](https://github.com/cabaletta/baritone/releases/download/v1.15.0/baritone-api-fabric-1.15.0.jar)  | [1.21.8 NeoForge](https://github.com/cabaletta/baritone/releases/download/v1.15.0/baritone-api-neoforge-1.15.0.jar)  |
-| [1.21.9 Forge](https://github.com/cabaletta/baritone/releases/download/v1.16.0/baritone-api-forge-1.16.0.jar)  | [1.21.9 Fabric](https://github.com/cabaletta/baritone/releases/download/v1.16.0/baritone-api-fabric-1.16.0.jar)  | [1.21.9 NeoForge](https://github.com/cabaletta/baritone/releases/download/v1.16.0/baritone-api-neoforge-1.16.0.jar)  |
-| [1.21.10 Forge](https://github.com/cabaletta/baritone/releases/download/v1.16.0/baritone-api-forge-1.16.0.jar) | [1.21.10 Fabric](https://github.com/cabaletta/baritone/releases/download/v1.16.0/baritone-api-fabric-1.16.0.jar) | [1.21.10 NeoForge](https://github.com/cabaletta/baritone/releases/download/v1.16.0/baritone-api-neoforge-1.16.0.jar) |
-| [1.21.11 Forge](https://github.com/cabaletta/baritone/releases/download/v1.17.0/baritone-api-forge-1.17.0.jar) | [1.21.11 Fabric](https://github.com/cabaletta/baritone/releases/download/v1.17.0/baritone-api-fabric-1.17.0.jar) | [1.21.11 NeoForge](https://github.com/cabaletta/baritone/releases/download/v1.17.0/baritone-api-neoforge-1.17.0.jar) |
-| [26.1 Forge](https://github.com/cabaletta/baritone/releases/download/v1.18.0/baritone-api-forge-1.18.0.jar)    | [26.1 Fabric](https://github.com/cabaletta/baritone/releases/download/v1.18.0/baritone-api-fabric-1.18.0.jar)    | [26.1 NeoForge](https://github.com/cabaletta/baritone/releases/download/v1.18.0/baritone-api-neoforge-1.18.0.jar)    |
-| [26.2 Forge](https://github.com/cabaletta/baritone/releases/download/v1.19.0/baritone-api-forge-1.19.0.jar)    | [26.2 Fabric](https://github.com/cabaletta/baritone/releases/download/v1.19.0/baritone-api-fabric-1.19.0.jar)    | [26.2 NeoForge](https://github.com/cabaletta/baritone/releases/download/v1.19.0/baritone-api-neoforge-1.19.0.jar)    |
-| [26.3 Forge](https://github.com/cabaletta/baritone/releases/download/v1.20.0/baritone-api-forge-1.20.0.jar)    | [26.3 Fabric](https://github.com/cabaletta/baritone/releases/download/v1.20.0/baritone-api-fabric-1.20.0.jar)    | [26.3 NeoForge](https://github.com/cabaletta/baritone/releases/download/v1.20.0/baritone-api-neoforge-1.20.0.jar)    |
+# Quick start
 
-**How to immediately get started:** Type `#goto 1000 500` in chat to go to x=1000 z=500. Type `#mine diamond_ore` to mine diamond ore. Type `#stop` to stop. For more, read [the usage page](USAGE.md) and/or watch this [tutorial playlist](https://www.youtube.com/playlist?list=PLnwnJ1qsS7CoQl9Si-RTluuzCo_4Oulpa). Also try `#elytra` for Elytra flying in the Nether using fireworks ([trailer](https://youtu.be/4bGGPo8yiHo), [usage](https://youtu.be/NnSlQi-68eQ)). For help, join the [Baritone Discord Server](http://discord.gg/s6fRBAUpmr).
+1. Download the jar for your Minecraft version and mod loader from [the table below](#downloads) and drop it in your `mods` folder.
+2. In game, type `#goto 1000 500` to go to x=1000 z=500, `#mine diamond_ore` to mine diamond ore, and `#stop` to stop.
+3. Try `#elytra` for Elytra flying using fireworks ([trailer](https://youtu.be/4bGGPo8yiHo), [usage](https://youtu.be/NnSlQi-68eQ)).
 
-For other versions of Minecraft or more complicated situations or for development, see [Installation & setup](SETUP.md). For 1.16.5, [click here](https://www.youtube.com/watch?v=_4eVJ9Qz2J8) and see description. Once Baritone is installed, look [here](USAGE.md) for instructions on how to use it. There's a [showcase video](https://youtu.be/CZkLXWo4Fg4) made by @Adovin#6313 on Baritone which I recommend. For help, join the [Baritone Discord Server](http://discord.gg/s6fRBAUpmr).
+After that, `#help` lists every command (it's clickable!). There's also [the usage page](USAGE.md) and a [tutorial playlist](https://www.youtube.com/playlist?list=PLnwnJ1qsS7CoQl9Si-RTluuzCo_4Oulpa). Stuck? Ask in the [Discord](http://discord.gg/s6fRBAUpmr).
 
-This project is an updated version of [MineBot](https://github.com/leijurv/MineBot/),
-the original version of the bot for Minecraft 1.8.9, rebuilt for 1.12.2 onwards. Baritone focuses on reliability and particularly performance (it's over [30x faster](https://github.com/cabaletta/baritone/pull/180#issuecomment-423822928) than MineBot at calculating paths).
+# Downloads
 
-Have committed at least once a day from Aug 1, 2018, to Aug 1, 2019.
+> [!IMPORTANT]
+> Before asking in the Discord for a new version of Baritone, check the [releases page](https://github.com/cabaletta/baritone/releases) for the Minecraft version you want.
+> If it's not there yet, please don't ask in the Discord. It'll be released soon enough.
 
-1Leijurv3DWTrGAfmmiTphjhXLvQiHg7K2
+These are the `api` jars, which is what you want unless you know otherwise. See [setup](SETUP.md) for the other flavors and for building it yourself.
 
-# Getting Started
+| Minecraft | Baritone | Download |
+|---|---|---|
+| 26.3 | v1.20.0 | [Forge](https://github.com/cabaletta/baritone/releases/download/v1.20.0/baritone-api-forge-1.20.0.jar) · [Fabric](https://github.com/cabaletta/baritone/releases/download/v1.20.0/baritone-api-fabric-1.20.0.jar) · [NeoForge](https://github.com/cabaletta/baritone/releases/download/v1.20.0/baritone-api-neoforge-1.20.0.jar) |
+| 26.2 | v1.19.0 | [Forge](https://github.com/cabaletta/baritone/releases/download/v1.19.0/baritone-api-forge-1.19.0.jar) · [Fabric](https://github.com/cabaletta/baritone/releases/download/v1.19.0/baritone-api-fabric-1.19.0.jar) · [NeoForge](https://github.com/cabaletta/baritone/releases/download/v1.19.0/baritone-api-neoforge-1.19.0.jar) |
+| 26.1 | v1.18.0 | [Forge](https://github.com/cabaletta/baritone/releases/download/v1.18.0/baritone-api-forge-1.18.0.jar) · [Fabric](https://github.com/cabaletta/baritone/releases/download/v1.18.0/baritone-api-fabric-1.18.0.jar) · [NeoForge](https://github.com/cabaletta/baritone/releases/download/v1.18.0/baritone-api-neoforge-1.18.0.jar) |
+| 1.21.11 | v1.17.0 | [Forge](https://github.com/cabaletta/baritone/releases/download/v1.17.0/baritone-api-forge-1.17.0.jar) · [Fabric](https://github.com/cabaletta/baritone/releases/download/v1.17.0/baritone-api-fabric-1.17.0.jar) · [NeoForge](https://github.com/cabaletta/baritone/releases/download/v1.17.0/baritone-api-neoforge-1.17.0.jar) |
+| 1.21.10 | v1.16.0 | [Forge](https://github.com/cabaletta/baritone/releases/download/v1.16.0/baritone-api-forge-1.16.0.jar) · [Fabric](https://github.com/cabaletta/baritone/releases/download/v1.16.0/baritone-api-fabric-1.16.0.jar) · [NeoForge](https://github.com/cabaletta/baritone/releases/download/v1.16.0/baritone-api-neoforge-1.16.0.jar) |
+| 1.21.9 | v1.16.0 | [Forge](https://github.com/cabaletta/baritone/releases/download/v1.16.0/baritone-api-forge-1.16.0.jar) · [Fabric](https://github.com/cabaletta/baritone/releases/download/v1.16.0/baritone-api-fabric-1.16.0.jar) · [NeoForge](https://github.com/cabaletta/baritone/releases/download/v1.16.0/baritone-api-neoforge-1.16.0.jar) |
+| 1.21.8 | v1.15.0 | [Forge](https://github.com/cabaletta/baritone/releases/download/v1.15.0/baritone-api-forge-1.15.0.jar) · [Fabric](https://github.com/cabaletta/baritone/releases/download/v1.15.0/baritone-api-fabric-1.15.0.jar) · [NeoForge](https://github.com/cabaletta/baritone/releases/download/v1.15.0/baritone-api-neoforge-1.15.0.jar) |
+| 1.21.7 | v1.15.0 | [Forge](https://github.com/cabaletta/baritone/releases/download/v1.15.0/baritone-api-forge-1.15.0.jar) · [Fabric](https://github.com/cabaletta/baritone/releases/download/v1.15.0/baritone-api-fabric-1.15.0.jar) · [NeoForge](https://github.com/cabaletta/baritone/releases/download/v1.15.0/baritone-api-neoforge-1.15.0.jar) |
+| 1.21.6 | v1.15.0 | [Forge](https://github.com/cabaletta/baritone/releases/download/v1.15.0/baritone-api-forge-1.15.0.jar) · [Fabric](https://github.com/cabaletta/baritone/releases/download/v1.15.0/baritone-api-fabric-1.15.0.jar) · [NeoForge](https://github.com/cabaletta/baritone/releases/download/v1.15.0/baritone-api-neoforge-1.15.0.jar) |
+| 1.21.5 | v1.14.0 | [Forge](https://github.com/cabaletta/baritone/releases/download/v1.14.0/baritone-api-forge-1.14.0.jar) · [Fabric](https://github.com/cabaletta/baritone/releases/download/v1.14.0/baritone-api-fabric-1.14.0.jar) · [NeoForge](https://github.com/cabaletta/baritone/releases/download/v1.14.0/baritone-api-neoforge-1.14.0.jar) |
+| 1.21.4 | v1.13.1 | [Forge](https://github.com/cabaletta/baritone/releases/download/v1.13.1/baritone-api-forge-1.13.1.jar) · [Fabric](https://github.com/cabaletta/baritone/releases/download/v1.13.1/baritone-api-fabric-1.13.1.jar) · [NeoForge](https://github.com/cabaletta/baritone/releases/download/v1.13.1/baritone-api-neoforge-1.13.1.jar) |
 
-Here are some links to help to get started:
+<details>
+<summary>Older versions</summary>
 
-- [Features](FEATURES.md)
+| Minecraft | Baritone | Download |
+|---|---|---|
+| 1.21.3 | v1.12.0 | [Forge](https://github.com/cabaletta/baritone/releases/download/v1.12.0/baritone-api-forge-1.12.0.jar) · [Fabric](https://github.com/cabaletta/baritone/releases/download/v1.12.0/baritone-api-fabric-1.12.0.jar) · [NeoForge](https://github.com/cabaletta/baritone/releases/download/v1.12.0/baritone-api-neoforge-1.12.0.jar) |
+| 1.21.1 | v1.11.3 | [Forge](https://github.com/cabaletta/baritone/releases/download/v1.11.3/baritone-api-forge-1.11.3.jar) · [Fabric](https://github.com/cabaletta/baritone/releases/download/v1.11.3/baritone-api-fabric-1.11.3.jar) · [NeoForge](https://github.com/cabaletta/baritone/releases/download/v1.11.3/baritone-api-neoforge-1.11.3.jar) |
+| 1.20.6 | v1.10.8 | [Forge](https://github.com/cabaletta/baritone/releases/download/v1.10.8/baritone-api-forge-1.10.8.jar) · [Fabric](https://github.com/cabaletta/baritone/releases/download/v1.10.8/baritone-api-fabric-1.10.8.jar) · [NeoForge](https://github.com/cabaletta/baritone/releases/download/v1.10.8/baritone-api-neoforge-1.10.8.jar) |
+| 1.20.5 | v1.10.8 | [Forge](https://github.com/cabaletta/baritone/releases/download/v1.10.8/baritone-api-forge-1.10.8.jar) · [Fabric](https://github.com/cabaletta/baritone/releases/download/v1.10.8/baritone-api-fabric-1.10.8.jar) · [NeoForge](https://github.com/cabaletta/baritone/releases/download/v1.10.8/baritone-api-neoforge-1.10.8.jar) |
+| 1.20.4 | v1.10.7 | [Forge](https://github.com/cabaletta/baritone/releases/download/v1.10.7/baritone-api-forge-1.10.7.jar) · [Fabric](https://github.com/cabaletta/baritone/releases/download/v1.10.7/baritone-api-fabric-1.10.7.jar) · [NeoForge](https://github.com/cabaletta/baritone/releases/download/v1.10.7/baritone-api-neoforge-1.10.7.jar) |
+| 1.20.3 | v1.10.7 | [Forge](https://github.com/cabaletta/baritone/releases/download/v1.10.7/baritone-api-forge-1.10.7.jar) · [Fabric](https://github.com/cabaletta/baritone/releases/download/v1.10.7/baritone-api-fabric-1.10.7.jar) · [NeoForge](https://github.com/cabaletta/baritone/releases/download/v1.10.7/baritone-api-neoforge-1.10.7.jar) |
+| 1.20.2 | v1.10.6 | [Forge](https://github.com/cabaletta/baritone/releases/download/v1.10.6/baritone-api-forge-1.10.6.jar) · [Fabric](https://github.com/cabaletta/baritone/releases/download/v1.10.6/baritone-api-fabric-1.10.6.jar) |
+| 1.20.1 | v1.10.5 | [Forge](https://github.com/cabaletta/baritone/releases/download/v1.10.5/baritone-api-forge-1.10.5.jar) · [Fabric](https://github.com/cabaletta/baritone/releases/download/v1.10.5/baritone-api-fabric-1.10.5.jar) |
+| 1.19.4 | v1.9.6 | [Forge](https://github.com/cabaletta/baritone/releases/download/v1.9.6/baritone-api-forge-1.9.6.jar) · [Fabric](https://github.com/cabaletta/baritone/releases/download/v1.9.6/baritone-api-fabric-1.9.6.jar) |
+| 1.19.3 | v1.9.1 | [Forge](https://github.com/cabaletta/baritone/releases/download/v1.9.1/baritone-api-forge-1.9.1.jar) · [Fabric](https://github.com/cabaletta/baritone/releases/download/v1.9.1/baritone-api-fabric-1.9.1.jar) |
+| 1.19.2 | v1.9.4 | [Forge](https://github.com/cabaletta/baritone/releases/download/v1.9.4/baritone-api-forge-1.9.4.jar) · [Fabric](https://github.com/cabaletta/baritone/releases/download/v1.9.4/baritone-api-fabric-1.9.4.jar) |
+| 1.18.2 | v1.8.6 | [Forge](https://github.com/cabaletta/baritone/releases/download/v1.8.6/baritone-api-forge-1.8.6.jar) · [Fabric](https://github.com/cabaletta/baritone/releases/download/v1.8.6/baritone-api-fabric-1.8.6.jar) |
+| 1.17.1 | v1.7.3 | [Forge](https://github.com/cabaletta/baritone/releases/download/v1.7.3/baritone-api-forge-1.7.3.jar) · [Fabric](https://github.com/cabaletta/baritone/releases/download/v1.7.3/baritone-api-fabric-1.7.3.jar) |
+| 1.16.5 | v1.6.5 | [Forge](https://github.com/cabaletta/baritone/releases/download/v1.6.5/baritone-api-forge-1.6.5.jar) · [Fabric](https://github.com/cabaletta/baritone/releases/download/v1.6.5/baritone-api-fabric-1.6.5.jar) |
+| 1.12.2 | v1.2.19 | [Forge](https://github.com/cabaletta/baritone/releases/download/v1.2.19/baritone-api-forge-1.2.19.jar) |
 
-- [Installation & setup](SETUP.md)
 
-- [API Javadocs](https://baritone.leijurv.com/)
-
-- [Settings](https://baritone.leijurv.com/baritone/api/Settings.html#field.detail)
-
-- [Usage (chat control)](USAGE.md)
-
-## Stars over time
-
-[![Stargazers over time](https://starchart.cc/cabaletta/baritone.svg)](https://starchart.cc/cabaletta/baritone)
+</details>
 
 # API
 
-The API is heavily documented, you can find the Javadocs for the latest release [here](https://baritone.leijurv.com/).
-Please note that usage of anything located outside of the `baritone.api` package is not supported by the API release
-jar.
+Baritone is meant to be used as a library too. The API is heavily documented, you can find the Javadocs for the latest release [here](https://baritone.leijurv.com/) and all the settings [here](https://baritone.leijurv.com/baritone/api/Settings.html#field.detail).
+Please note that usage of anything outside of the `baritone.api` package is not supported by the API release jar.
 
-Below is an example of basic usage for changing some settings, and then pathing to an X/Z goal.
+Here's how to change some settings and then path to an X/Z goal:
 
 ```java
 BaritoneAPI.getSettings().allowSprint.value = true;
@@ -134,24 +117,35 @@ BaritoneAPI.getProvider().getPrimaryBaritone().getCustomGoalProcess().setGoalAnd
 
 # FAQ
 
-## Can I use Baritone as a library in my custom utility client?
-
+**Can I use Baritone as a library in my custom utility client?**
 That's what it's for, sure! (As long as usage complies with the LGPL 3.0 License)
 
-## How is it so fast?
-
+**How is it so fast?**
 Magic. (Hours of [leijurv](https://github.com/leijurv/) enduring excruciating pain)
 
-### Additional Special Thanks To:
+**Why is it called Baritone?**
+It's named for FitMC's deep sultry voice.
 
-![YourKit-Logo](https://www.yourkit.com/images/yklogo.png)
+**Where's the version for Minecraft 1.xx?**
+See [the big purple box](#downloads).
+
+# Special thanks
+
+<a href="https://www.yourkit.com/"><img src="https://www.yourkit.com/images/yklogo.png" alt="YourKit"/></a>
 
 YourKit supports open source projects with innovative and intelligent tools for monitoring and profiling Java and .NET applications.
-
 YourKit is the creator of the [YourKit Java Profiler](https://www.yourkit.com/java/profiler/), [YourKit .NET Profiler](https://www.yourkit.com/.net/profiler/), and [YourKit YouMonitor](https://www.yourkit.com/youmonitor/).
-
 We thank them for granting Baritone an OSS license so that we can make our software the best it can be.
 
-## Why is it called Baritone?
+# Trivia
 
-It's named for FitMC's deep sultry voice.
+Have committed at least once a day from Aug 1, 2018, to Aug 1, 2019.
+
+1Leijurv3DWTrGAfmmiTphjhXLvQiHg7K2
+
+<a href="https://www.star-history.com/#cabaletta/baritone&amp;Date">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=cabaletta/baritone&amp;type=Date&amp;theme=dark"/>
+    <img alt="Stars over time" src="https://api.star-history.com/svg?repos=cabaletta/baritone&amp;type=Date"/>
+  </picture>
+</a>
