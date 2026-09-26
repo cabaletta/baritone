@@ -52,7 +52,10 @@ public class ClickCommand extends Command {
     @Override
     public List<String> getLongDesc() {
         return Arrays.asList(
-                "Opens click dude",
+                "Opens a GUI to select positions using your mouse.",
+                "- Right click to walk onto a block.",
+                "- Left click to walk into a block.",
+                "- Left click drag to create a selection for #selection.",
                 "",
                 "Usage:",
                 "> click"
