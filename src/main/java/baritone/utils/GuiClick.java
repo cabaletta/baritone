@@ -80,8 +80,10 @@ public class GuiClick extends Screen implements Helper {
             HitResult result = player.level().clip(new ClipContext(near.add(viewerPos), far.add(viewerPos), ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, player));
             if (result != null && result.getType() == HitResult.Type.BLOCK) {
                 currentMouseOver = ((BlockHitResult) result).getBlockPos();
+                return;
             }
         }
+        currentMouseOver = null;
     }
 
     @Override

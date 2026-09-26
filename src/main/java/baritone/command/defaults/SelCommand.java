@@ -241,7 +241,7 @@ public class SelCommand extends Command {
             if (clipboard == null) {
                 throw new CommandInvalidStateException("You need to copy a selection first");
             }
-            baritone.getBuilderProcess().build("Fill", clipboard, pos.offset(clipboardOffset));
+            baritone.getBuilderProcess().build("Paste", clipboard, pos.offset(clipboardOffset));
             logDirect("Building now");
         } else if (action == Action.EXPAND || action == Action.CONTRACT || action == Action.SHIFT) {
             args.requireExactly(3);
