@@ -386,6 +386,17 @@ public final class Settings {
     public final Setting<Boolean> headHitters = new Setting<>(false);
 
     /**
+     * Sprint jump along straight stretches of path, up single block steps and down small hills. Every jump is simulated
+     * first and only happens if it lands back on the path without fall damage.
+     */
+    public final Setting<Boolean> sprintJumping = new Setting<>(false);
+
+    /**
+     * Also sprint jump along flat diagonal stretches of path when {@link #sprintJumping} is enabled.
+     */
+    public final Setting<Boolean> sprintJumpingDiagonals = new Setting<>(true);
+
+    /**
      * If we overshoot a traverse and end up one block beyond the destination, mark it as successful anyway.
      * <p>
      * This helps with speed exceeding 20m/s
