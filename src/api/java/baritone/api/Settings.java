@@ -386,6 +386,12 @@ public final class Settings {
     public final Setting<Boolean> headHitters = new Setting<>(false);
 
     /**
+     * Also sprint jump under low ceilings on flat diagonal movements when {@link #headHitters} is enabled.
+     * Enabled by default. Disable this to limit head hitters to straight movements.
+     */
+    public final Setting<Boolean> headHittersDiagonal = new Setting<>(true);
+
+    /**
      * If we overshoot a traverse and end up one block beyond the destination, mark it as successful anyway.
      * <p>
      * This helps with speed exceeding 20m/s

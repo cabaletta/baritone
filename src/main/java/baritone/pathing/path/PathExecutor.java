@@ -507,6 +507,9 @@ public class PathExecutor implements IPathExecutor, Helper {
         if (!(current instanceof MovementTraverse || current instanceof MovementDiagonal) || current.getDirection().getY() != 0) {
             return false; // head hitting only applies to flat walking movements
         }
+        if (current instanceof MovementDiagonal && !Baritone.settings().headHittersDiagonal.value) {
+            return false;
+        }
         if (!ctx.player().onGround() || MovementHelper.isLiquid(ctx, ctx.playerFeet())) {
             return false;
         }
