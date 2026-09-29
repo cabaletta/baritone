@@ -129,7 +129,9 @@ public final class CachedRegion implements ICachedRegion {
             try (
                     FileOutputStream fileOut = new FileOutputStream(tempFile.toFile());
                     GZIPOutputStream gzipOut = new GZIPOutputStream(fileOut, 16384);
-                    DataOutputStream out = new DataOutputStream(gzipOut)
+                    // the 16384 up there only buffers the compressed side. without this every writeUTF is its own
+                    // trip through deflate, and there's 262k of them for the overview alone
+                    DataOutputStream out = new DataOutputStream(new BufferedOutputStream(gzipOut, 65536))
             ) {
                 out.writeInt(CACHED_REGION_MAGIC);
                 for (int x = 0; x < 32; x++) {
@@ -205,7 +207,8 @@ public final class CachedRegion implements ICachedRegion {
             try (
                     FileInputStream fileIn = new FileInputStream(regionFile.toFile());
                     GZIPInputStream gzipIn = new GZIPInputStream(fileIn, 32768);
-                    DataInputStream in = new DataInputStream(gzipIn)
+                    // same as save, readUTF does two single byte reads for the length and each one was a whole inflate call
+                    DataInputStream in = new DataInputStream(new BufferedInputStream(gzipIn, 65536))
             ) {
                 int magic = in.readInt();
                 if (magic != CACHED_REGION_MAGIC) {

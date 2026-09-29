@@ -123,6 +123,7 @@ public abstract class AbstractNodeCostSearch implements IPathFinder, Helper {
             throw new IllegalStateException("Path finder cannot be reused!");
         }
         cancelRequested = false;
+        context.claimSearchCaches();
         try {
             IPath path = calculate0(primaryTimeout, failureTimeout).map(IPath::postProcess).orElse(null);
             if (cancelRequested) {
@@ -156,6 +157,7 @@ public abstract class AbstractNodeCostSearch implements IPathFinder, Helper {
         } finally {
             // this is run regardless of what exception may or may not be raised by calculate0
             isFinished = true;
+            context.releaseSearchCaches();
         }
     }
 
