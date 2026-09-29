@@ -17,9 +17,6 @@
 
 package baritone.utils.type;
 
-import it.unimi.dsi.fastutil.bytes.ByteArrayList;
-import it.unimi.dsi.fastutil.bytes.ByteList;
-
 /**
  * @author Brady
  * @since 12/19/2019
@@ -55,16 +52,19 @@ public final class VarInt {
     }
 
     private static byte[] serialize0(int valueIn) {
-        ByteList bytes = new ByteArrayList();
+        int requiredBits = 32 - Integer.numberOfLeadingZeros(valueIn);
+        int size = Math.max(1, (6 + requiredBits) / 7);
+        byte[] bytes = new byte[size];
 
+        int i = 0;
         int value = valueIn;
-        while ((value & 0x80) != 0) {
-            bytes.add((byte) (value & 0x7F | 0x80));
+        while ((value & ~0x7F) != 0) {
+            bytes[i++] = (byte) (value & 0x7F | 0x80);
             value >>>= 7;
         }
-        bytes.add((byte) (value & 0xFF));
+        bytes[i++] = (byte) value;
 
-        return bytes.toByteArray();
+        return bytes;
     }
 
     public static VarInt read(byte[] bytes) {

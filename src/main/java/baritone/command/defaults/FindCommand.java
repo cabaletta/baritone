@@ -61,7 +61,7 @@ public class FindCommand extends Command {
                                 BuiltInRegistries.BLOCK.getKey(block).getPath(),
                                 Integer.MAX_VALUE,
                                 origin.x,
-                                origin.y,
+                                origin.z, // this was origin.y, so it searched around (x, your height) instead of where you are
                                 4
                         ).stream()
                 )

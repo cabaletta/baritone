@@ -55,8 +55,8 @@ public class LitematicaCommand extends Command {
                 "Build a schematic currently open in Litematica.",
                 "",
                 "Usage:",
-                "> litematica",
-                "> litematica <#>"
+                "> litematica - Build the first schematic placement",
+                "> litematica <n> - Build the n-th schematic placement"
         );
     }
 }

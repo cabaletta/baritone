@@ -88,7 +88,9 @@ public final class FollowProcess extends BaritoneProcessHelper implements IFollo
         if (maxDist != 0 && entity.distanceToSqr(ctx.player()) > maxDist * maxDist) {
             return false;
         }
-        return ctx.entitiesStream().anyMatch(entity::equals);
+        // this used to also check that the entity is in ctx.entitiesStream(), which it is, because that's where
+        // scanWorld got it from. for every entity, twice a tick. 2000 mobs in a farm = 8 million equals a tick
+        return true;
     }
 
     private void scanWorld() {

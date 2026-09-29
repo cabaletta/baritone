@@ -193,10 +193,26 @@ public final class GetToBlockProcess extends BaritoneProcessHelper implements IG
         return "Get To " + gettingTo + ", " + knownLocations.size() + " known locations";
     }
 
-    private synchronized void rescan(List<BlockPos> known, CalculationContext context) {
-        List<BlockPos> positions = MineProcess.searchWorld(context, new BlockOptionalMetaLookup(gettingTo), 64, known, blacklist, Collections.emptyList());
-        positions.removeIf(blacklist::contains);
-        knownLocations = positions;
+    private void rescan(List<BlockPos> known, CalculationContext context) {
+        BlockOptionalMeta target;
+        List<BlockPos> blacklistSnapshot;
+        synchronized (this) {
+            target = gettingTo;
+            if (target == null) {
+                return; // cancelled before the executor got to us
+            }
+            blacklistSnapshot = new ArrayList<>(blacklist);
+        }
+        // the scan is the slow part, and it used to run while holding the lock that onTick also takes
+        // so every mineGoalUpdateInterval ticks the client thread sat and waited for a whole world scan to finish
+        List<BlockPos> positions = MineProcess.searchWorld(context, new BlockOptionalMetaLookup(target), 64, known, blacklistSnapshot, Collections.emptyList());
+        synchronized (this) {
+            if (gettingTo != target) {
+                return; // we're getting to something else now (or nothing), this answer is for the old one
+            }
+            positions.removeIf(blacklist::contains);
+            knownLocations = positions;
+        }
     }
 
     private Goal createGoal(BlockPos pos) {

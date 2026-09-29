@@ -27,7 +27,6 @@ import baritone.api.utils.*;
 import baritone.api.utils.input.Input;
 import baritone.behavior.PathingBehavior;
 import baritone.pathing.calc.AbstractNodeCostSearch;
-import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
 import baritone.pathing.movement.MovementState;
@@ -76,6 +75,7 @@ public class PathExecutor implements IPathExecutor, Helper {
     private final IPlayerContext ctx;
 
     private boolean sprintNextTick;
+    private SprintJump flight;
 
     public PathExecutor(PathingBehavior behavior, IPath path) {
         this.behavior = behavior;
@@ -91,6 +91,9 @@ public class PathExecutor implements IPathExecutor, Helper {
      * not sneaking out over lava), false otherwise
      */
     public boolean onTick() {
+        if (flight != null && fly()) {
+            return false; // mid air is not a stable state, no matter what the movement we left behind thinks
+        }
         if (pathPosition == path.length() - 1) {
             pathPosition++;
         }
@@ -250,7 +253,7 @@ public class PathExecutor implements IPathExecutor, Helper {
                 return true;
             }
         }
-        return canCancel; // movement is in progress, but if it reports cancellable, PathingBehavior is good to cut onto the next path
+        return canCancel && flight == null; // movement is in progress, but if it reports cancellable, PathingBehavior is good to cut onto the next path
     }
 
     private Tuple<Double, BlockPos> closestPathPos(IPath path) {
@@ -349,10 +352,18 @@ public class PathExecutor implements IPathExecutor, Helper {
         behavior.baritone.getInputOverrideHandler().setInputForceState(Input.SPRINT, false);
 
         // first and foremost, if allowSprint is off, or if we don't have enough hunger, don't try and sprint
-        if (!new CalculationContext(behavior.baritone, false).canSprint) {
+        // same thing CalculationContext.canSprint works out. this used to build a whole context every tick to read it,
+        // which means a chunk provider, a ToolSet, an inventory scan and two enchantment scans for one boolean
+        if (!Baritone.settings().allowSprint.value || ctx.player().getFoodData().getFoodLevel() <= 6) {
             return false;
         }
         IMovement current = path.movements().get(pathPosition);
+
+        if (Baritone.settings().sprintJumping.value && !behavior.baritone.getInputOverrideHandler().isInputForcedDown(Input.SNEAK)
+                && (flight = SprintJump.plan(ctx, path, pathPosition)) != null) {
+            steer(true);
+            return true;
+        }
 
         // traverse requests sprinting, so we need to do this check first
         if (current instanceof MovementTraverse && pathPosition < path.length() - 3) {
@@ -491,6 +502,39 @@ public class PathExecutor implements IPathExecutor, Helper {
     }
 
     /**
+     * @return true if we're still in the air and this tick is handled
+     */
+    private boolean fly() {
+        if (!ctx.player().onGround() && !ctx.player().isInWater() && !ctx.player().isInLava() && !ctx.player().onClimbable()
+                && flight.ticks < SprintJump.MAX_TICKS && Baritone.settings().sprintJumping.value) {
+            steer(false);
+            sprintNextTick = true;
+            return true;
+        }
+        // we probably flew over a few movements, pick up at whichever one we came down in (diagonal side cells count).
+        // anywhere else and the usual valid positions / off path recovery takes it from here
+        for (int i = pathPosition; i < Math.min(path.movements().size(), pathPosition + flight.floors.length); i++) {
+            if (((Movement) path.movements().get(i)).getValidPositions().contains(ctx.playerFeet())) {
+                pathPosition = i;
+                break;
+            }
+        }
+        flight = null;
+        onChangeInPathPosition();
+        return false;
+    }
+
+    private void steer(boolean takeoff) {
+        // the movements steer at their own dest and drop W the moment our feet are a block up ("Wrong Y coordinate"),
+        // which was the mid air stall, so while we're up here nobody else gets a say. space only on takeoff: letting go
+        // in the air resets the vanilla 10 tick jump delay, holding it made a jump up a step (~9 ticks) wait on landing
+        clearKeys();
+        behavior.baritone.getLookBehavior().updateTarget(flight.steer(ctx), false);
+        behavior.baritone.getInputOverrideHandler().setInputForceState(Input.MOVE_FORWARD, true);
+        behavior.baritone.getInputOverrideHandler().setInputForceState(Input.JUMP, takeoff);
+    }
+
+    /**
      * Sprint jump into a low ceiling (1x2 corridors, overhangs, etc.) for a bit of extra speed.
      * The sprint jump boost applies on the first ticks of the jump, before we bonk our head on the ceiling.
      * This runs after movement.update() has cleared and reasserted the forced inputs,
@@ -509,6 +553,9 @@ public class PathExecutor implements IPathExecutor, Helper {
         }
         if (!ctx.player().onGround() || MovementHelper.isLiquid(ctx, ctx.playerFeet())) {
             return false;
+        }
+        if (!ctx.player().onGround() || MovementHelper.isLiquid(ctx, ctx.playerFeet()) || ctx.player().isInWater()) {
+            return false; // hopping in water or on a vine just sticks us to it instead
         }
         if (((Movement) current).toBreakCached == null || !((Movement) current).toBreakCached.isEmpty()) {
             return false; // breaking is like 5x slower when you're jumping
@@ -690,6 +737,7 @@ public class PathExecutor implements IPathExecutor, Helper {
             ret.currentMovementOriginalCostEstimate = currentMovementOriginalCostEstimate;
             ret.costEstimateIndex = costEstimateIndex;
             ret.ticksOnCurrent = ticksOnCurrent;
+            ret.flight = flight; // a new path showing up doesn't make us any less airborne
             return ret;
         }).orElseGet(this::cutIfTooLong); // dont actually call cutIfTooLong every tick if we won't actually use it, use a method reference
     }
@@ -711,6 +759,7 @@ public class PathExecutor implements IPathExecutor, Helper {
                 ret.costEstimateIndex = costEstimateIndex - cutoffAmt;
             }
             ret.ticksOnCurrent = ticksOnCurrent;
+            ret.flight = flight;
             return ret;
         }
         return this;

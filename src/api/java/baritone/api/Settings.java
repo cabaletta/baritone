@@ -286,7 +286,7 @@ public final class Settings {
      * <p>
      * If a schematic asks for a block on this mapping, all blocks on the mapped list will be accepted at that location as well
      * <p>
-     * Syntax same as <a href="https://baritone.leijurv.com/baritone/api/Settings.html#buildSubstitutes">buildSubstitutes</a>
+     * Syntax same as {@link #buildSubstitutes}
      */
     public final Setting<Map<Block, List<Block>>> buildValidSubstitutes = new Setting<>(new HashMap<>());
 
@@ -384,6 +384,17 @@ public final class Settings {
      * The sprint jump speed boost applies before we hit the ceiling, making this faster than just sprinting.
      */
     public final Setting<Boolean> headHitters = new Setting<>(false);
+
+    /**
+     * Sprint jump along straight stretches of path, up single block steps and down small hills. Every jump is simulated
+     * first and only happens if it lands back on the path without fall damage.
+     */
+    public final Setting<Boolean> sprintJumping = new Setting<>(false);
+
+    /**
+     * Also sprint jump along flat diagonal stretches of path when {@link #sprintJumping} is enabled.
+     */
+    public final Setting<Boolean> sprintJumpingDiagonals = new Setting<>(true);
 
     /**
      * If we overshoot a traverse and end up one block beyond the destination, mark it as successful anyway.
@@ -843,6 +854,19 @@ public final class Settings {
      * Continue sprinting while in water
      */
     public final Setting<Boolean> sprintInWater = new Setting<>(true);
+
+    /**
+     * Actually swim through water instead of bobbing along the bottom of it
+     * <p>
+     * Swimming works the same way it does for a player: hold sprint (ctrl) while in water to enter the swim
+     * state, then steer with yaw and pitch towards the goal. Since sprinting is what keeps the swim state
+     * alive, this requires {@link #allowSprint} and enough hunger to sprint; without it, baritone falls back
+     * to the normal walk-on-the-bottom behavior.
+     * <p>
+     * Water traversal is also costed at swim speed when this is on, unless depth strider makes walking the
+     * bottom the faster option.
+     */
+    public final Setting<Boolean> allowSwimming = new Setting<>(false);
 
     /**
      * When GetToBlockProcess or MineProcess fails to calculate a path, instead of just giving up, mark the closest instance
@@ -1585,10 +1609,6 @@ public final class Settings {
      */
     public final Setting<Boolean> elytraChatSpam = new Setting<>(false);
 
-    /**
-     * May reduce memory usage by using a custom allocator for pathfinding
-     */
-    public final Setting<Boolean> elytraCustomAllocator = new Setting<>(true);
 
     /**
      * Allow the pathfinder to attempt flight in tighter spaces, useful in caves but can be dangerous.

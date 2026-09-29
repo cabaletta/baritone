@@ -54,7 +54,6 @@ dependencies {
         common sourceSet.output
         shadowCommon sourceSet.output
     }
-    shadowCommon "dev.babbaj:nether-pathfinder:${project.nether_pathfinder_version}"
 }
 
 processResources {

@@ -25,6 +25,7 @@
     "MixinNetworkManager",
     "MixinPalettedContainer",
     "MixinPalettedContainer$Data",
+    "MixinPlayer",
     "MixinPlayerController",
     "MixinScreen",
     "MixinWorldRenderer",

@@ -605,7 +605,7 @@ public interface MovementHelper extends ActionCosts, Helper {
 
     static double getMiningDurationTicks(CalculationContext context, int x, int y, int z, BlockState state, boolean includeFalling) {
         long[] keys = includeFalling ? context.miningKeysFalling : context.miningKeys;
-        if (keys == null) {
+        if (keys == null || context.miningOwner != Thread.currentThread()) {
             return getMiningDurationTicks0(context, x, y, z, state, includeFalling);
         }
         // y is shifted so it's never negative, which means the all ones key would need y=4095. no
