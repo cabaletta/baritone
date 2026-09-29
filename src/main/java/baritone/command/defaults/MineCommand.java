@@ -73,7 +73,12 @@ public class MineCommand extends Command {
                 "Also see the legitMine settings (see #set l legitMine).",
                 "",
                 "Usage:",
-                "> mine diamond_ore - Mines all diamonds it can find."
+                "> mine <blocks...> - Mine blocks.",
+                "> mine <n> <blocks...> - Mine blocks until you have n of their drops.",
+                "",
+                "Examples:",
+                "> mine diamond_ore deepslate_diamond_ore - Mines all diamonds it can find.",
+                "> mine 64 diamond_ore - Mines diamond ore until you have 5 diamonds."
         );
     }
 }
