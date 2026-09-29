@@ -249,6 +249,9 @@ final class PathFinder {
 
         final PathNode startNode = getNodeAtPosition(s.map, start, new BlockPos(goal.minX(), goal.minY(), goal.minZ()));
         ctx.tryLoadRegion((start.minX() >> 4), (start.minZ() >> 4));
+        // tryLoadRegion boxes a Long and adds it to a concurrent set, which locks the bin when the key is already there
+        // (it always is). six times per node. the neighbours are nearly always in the region we just asked about
+        long lastRegion = NetherPathfinder.key(start.minX() >> 9, start.minZ() >> 9);
         startNode.cost = 0;
         startNode.combinedCost = startNode.estimatedCostToGoal;
         s.openSet.insert(startNode);
@@ -309,7 +312,11 @@ final class PathFinder {
                 }
                 final int neighborCx = (nx >> 4);
                 final int neighborCz = (nz >> 4);
-                timeDoingIO += ctx.tryLoadRegion(neighborCx, neighborCz);
+                final long region = NetherPathfinder.key(neighborCx >> 5, neighborCz >> 5);
+                if (region != lastRegion) {
+                    timeDoingIO += ctx.tryLoadRegion(neighborCx, neighborCz);
+                    lastRegion = region;
+                }
                 final NetherPathfinder.Entry entry = neighborCx == cx && neighborCz == cz ? currentChunk : ctx.getChunkOrAir(neighborCx, neighborCz);
                 growThenIterate(entry.chunk, entry.fromCaller, new NodePos(size, nx, ny, nz), face, minSize, s);
             }

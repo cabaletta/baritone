@@ -94,13 +94,14 @@ public class CalculationContext {
     // memo for getMiningDurationTicks by position
     // the block under you gets its break cost worked out by four descends, a downward, and then all your neighbours' descends
     // and every one of those reads five more blocks for avoidBreaking. the answer doesn't change mid search so just remember it
-    // only the pathing thread gets one, the per tick contexts ask like three questions and die
     // two of everything because includeFalling is part of the question
+    // only exists while a search has claimed it, see claimSearchCaches
     public static final int MINING_CACHE_BITS = 16;
-    public final long[] miningKeys;
-    public final long[] miningKeysFalling;
-    public final double[] miningVals;
-    public final double[] miningValsFalling;
+    long[] miningKeys;
+    long[] miningKeysFalling;
+    double[] miningVals;
+    double[] miningValsFalling;
+    Thread miningOwner;
 
     public CalculationContext(IBaritone baritone) {
         this(baritone, false);
@@ -137,20 +138,6 @@ public class CalculationContext {
         this.canSprint = canSprint;
         this.minY = bsi.minY;
         this.maxY = bsi.maxY;
-        if (forUseOnAnotherThread) {
-            this.miningKeys = new long[1 << MINING_CACHE_BITS];
-            this.miningKeysFalling = new long[1 << MINING_CACHE_BITS];
-            // -1 is the "nothing here" key, see getMiningDurationTicks for why that's safe
-            Arrays.fill(this.miningKeys, -1L);
-            Arrays.fill(this.miningKeysFalling, -1L);
-            this.miningVals = new double[1 << MINING_CACHE_BITS];
-            this.miningValsFalling = new double[1 << MINING_CACHE_BITS];
-        } else {
-            this.miningKeys = null;
-            this.miningKeysFalling = null;
-            this.miningVals = null;
-            this.miningValsFalling = null;
-        }
         this.placeBlockCost = Baritone.settings().blockPlacementPenalty.value;
         this.allowBreak = Baritone.settings().allowBreak.value;
         this.allowBreakAnyway = new ArrayList<>(Baritone.settings().allowBreakAnyway.value);
@@ -211,6 +198,42 @@ public class CalculationContext {
             }
         }
         return 1.0f;
+    }
+
+    // the memo and the bsi's block cache used to be allocated in the constructor. that's 2.8mb, and PathingBehavior
+    // builds one of these every tick whether it paths or not, so it was 50mb/s of garbage for contexts that ask three
+    // questions and die. now the search that actually wants them makes them, and drops them when it's done
+    // it's also the only thread allowed to touch them. PathExecutor checks costs with this same context on the main thread,
+    // and two threads scribbling on one open addressed table is how you get the key from one block and the value from another
+    public synchronized void claimSearchCaches() {
+        if (miningOwner != null) {
+            return; // somebody else is searching with this context. they keep it, we go without
+        }
+        miningKeys = newMiningKeys();
+        miningKeysFalling = newMiningKeys();
+        miningVals = new double[1 << MINING_CACHE_BITS];
+        miningValsFalling = new double[1 << MINING_CACHE_BITS];
+        miningOwner = Thread.currentThread();
+        bsi.claimCache();
+    }
+
+    public synchronized void releaseSearchCaches() {
+        if (miningOwner != Thread.currentThread()) {
+            return;
+        }
+        miningOwner = null;
+        miningKeys = null;
+        miningKeysFalling = null;
+        miningVals = null;
+        miningValsFalling = null;
+        bsi.releaseCache();
+    }
+
+    private static long[] newMiningKeys() {
+        long[] keys = new long[1 << MINING_CACHE_BITS];
+        // -1 is the "nothing here" key, see getMiningDurationTicks for why that's safe
+        Arrays.fill(keys, -1L);
+        return keys;
     }
 
     public final IBaritone getBaritone() {

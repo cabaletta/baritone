@@ -63,6 +63,7 @@ import java.util.List;
 import java.util.Queue;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.locks.LockSupport;
 import java.util.function.UnaryOperator;
 
 import static baritone.utils.BaritoneMath.fastCeil;
@@ -352,7 +353,10 @@ public final class ElytraBehavior implements Helper {
 
             boolean canSeeAny = false;
             for (int i = rangeStartIncl; i < rangeEndExcl - 1; i++) {
-                if (ElytraBehavior.this.clearView(ctx.playerFeetAsVec(), this.path.getVec(i), false) || ElytraBehavior.this.clearView(ctx.playerHead(), this.path.getVec(i), false)) {
+                // once we can see one node there's no point casting two more rays to every node after it, and those rays
+                // get longer the further along the path we go. the range runs as far as the npf has chunks, which
+                // includes regions it read off disk, so this could be thousands of rays a tick
+                if (!canSeeAny && (ElytraBehavior.this.clearView(ctx.playerFeetAsVec(), this.path.getVec(i), false) || ElytraBehavior.this.clearView(ctx.playerHead(), this.path.getVec(i), false))) {
                     canSeeAny = true;
                 }
                 if (!ElytraBehavior.this.clearView(this.path.getVec(i), this.path.getVec(i + 1), false)) {
@@ -648,7 +652,16 @@ public final class ElytraBehavior implements Helper {
 
             final SolverContext context = this.new SolverContext(true);
             this.solver = this.solverExecutor.submit(() -> {
-                npfContext.acquireReadLock();
+                // a path search holds the read lock for up to 10 seconds, and a chunk waiting to be packed queues for
+                // the write lock behind it. lock() won't cut in front of a queued writer, so this used to sit here for
+                // the whole search while every tick cancelled it and did the full solve on the main thread instead
+                // tryLock does cut in line, and the writer is stuck behind the search either way so it loses nothing
+                while (!npfContext.tryAcquireReadLock()) {
+                    if (Thread.interrupted()) {
+                        return null; // the tick gave up on us
+                    }
+                    LockSupport.parkNanos(100_000L);
+                }
                 try {
                     return this.solveAngles(context);
                 } finally {

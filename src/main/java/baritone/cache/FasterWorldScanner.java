@@ -24,10 +24,8 @@ import baritone.api.utils.BlockOptionalMeta;
 import baritone.api.utils.BlockOptionalMetaLookup;
 import baritone.api.utils.IPlayerContext;
 import baritone.utils.accessor.IPalettedContainer;
-import io.netty.buffer.Unpooled;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.IdMapper;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.util.BitStorage;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Block;
@@ -61,7 +59,7 @@ public enum FasterWorldScanner implements IWorldScanner {
 
     @Override
     public List<BlockPos> scanChunk(IPlayerContext ctx, BlockOptionalMetaLookup filter, ChunkPos pos, int max, int yLevelThreshold) {
-        Stream<BlockPos> stream = scanChunkInternal(ctx, filter, pos);
+        Stream<BlockPos> stream = scanChunkInternal(ctx, filter, pos, max);
         if (max >= 0) {
             stream = stream.limit(max);
         }
@@ -133,7 +131,7 @@ public enum FasterWorldScanner implements IWorldScanner {
         assert ctx.world() != null;
         try {
             // p -> scanChunkInternal(ctx, lookup, p)
-            Stream<BlockPos> posStream = chunkPositions.parallelStream().flatMap(p -> scanChunkInternal(ctx, lookup, p));
+            Stream<BlockPos> posStream = chunkPositions.parallelStream().flatMap(p -> scanChunkInternal(ctx, lookup, p, maxBlocks));
             if (maxBlocks >= 0) {
                 // WARNING: this can be expensive if maxBlocks is large...
                 // see limit's javadoc
@@ -146,7 +144,8 @@ public enum FasterWorldScanner implements IWorldScanner {
         }
     }
 
-    private Stream<BlockPos> scanChunkInternal(IPlayerContext ctx, BlockOptionalMetaLookup lookup, ChunkPos pos) {
+    // max < 0 means no limit
+    private Stream<BlockPos> scanChunkInternal(IPlayerContext ctx, BlockOptionalMetaLookup lookup, ChunkPos pos, int max) {
         ChunkSource chunkProvider = ctx.world().getChunkSource();
         // if chunk is not loaded, return empty stream
         if (!chunkProvider.hasChunk(pos.x, pos.z)) {
@@ -158,30 +157,36 @@ public enum FasterWorldScanner implements IWorldScanner {
 
         int playerSectionY = (ctx.playerFeet().y - ctx.world().getMinY()) >> 4;
 
-        return collectChunkSections(lookup, chunkProvider.getChunk(pos.x, pos.z, false), chunkX, chunkZ, playerSectionY).stream();
+        LevelChunk chunk = chunkProvider.getChunk(pos.x, pos.z, false);
+        if (chunk == null) { // unloaded between hasChunk and here, we're not on the main thread
+            return Stream.empty();
+        }
+        return collectChunkSections(lookup, chunk, chunkX, chunkZ, playerSectionY, max < 0 ? Integer.MAX_VALUE : max).stream();
     }
 
 
-    private List<BlockPos> collectChunkSections(BlockOptionalMetaLookup lookup, LevelChunk chunk, long chunkX, long chunkZ, int playerSection) {
+    private List<BlockPos> collectChunkSections(BlockOptionalMetaLookup lookup, LevelChunk chunk, long chunkX, long chunkZ, int playerSection, int max) {
         // iterate over sections relative to player
+        // the caller only keeps the first max hits overall, in order, so no one chunk can ever contribute more than max
+        // stop there. #mine stone used to build ~12k BlockPos per chunk, in every chunk, and throw nearly all of them out
         List<BlockPos> blocks = new ArrayList<>();
         int chunkY = chunk.getMinY();
         LevelChunkSection[] sections = chunk.getSections();
         int l = sections.length;
         int i = playerSection - 1;
         int j = playerSection;
-        for (; i >= 0 || j < l; ++j, --i) {
+        for (; (i >= 0 || j < l) && blocks.size() < max; ++j, --i) {
             if (j < l) {
-                visitSection(lookup, sections[j], blocks, chunkX, chunkY + j * 16, chunkZ);
+                visitSection(lookup, sections[j], blocks, chunkX, chunkY + j * 16, chunkZ, max);
             }
-            if (i >= 0) {
-                visitSection(lookup, sections[i], blocks, chunkX, chunkY + i * 16, chunkZ);
+            if (i >= 0 && blocks.size() < max) {
+                visitSection(lookup, sections[i], blocks, chunkX, chunkY + i * 16, chunkZ, max);
             }
         }
         return blocks;
     }
 
-    private void visitSection(BlockOptionalMetaLookup lookup, LevelChunkSection section, List<BlockPos> blocks, long chunkX, int sectionY, long chunkZ) {
+    private void visitSection(BlockOptionalMetaLookup lookup, LevelChunkSection section, List<BlockPos> blocks, long chunkX, int sectionY, long chunkZ, int max) {
         if (section == null || section.hasOnlyAir()) {
             return;
         }
@@ -197,10 +202,10 @@ public enum FasterWorldScanner implements IWorldScanner {
         if (palette instanceof SingleValuePalette) {
             // single value palette doesn't have any data
             if (lookup.has(palette.valueFor(0))) {
-                // TODO this is 4k hits, maybe don't return all of them?
+                // this is 4k hits, but collectChunkSections's max keeps us from returning more than anyone will look at
                 for (int x = 0; x < 16; ++x) {
                     for (int y = 0; y < 16; ++y) {
-                        for (int z = 0; z < 16; ++z) {
+                        for (int z = 0; z < 16 && blocks.size() < max; ++z) {
                             blocks.add(new BlockPos(
                                 (int) chunkX + x,
                                 sectionY + y,
@@ -228,7 +233,12 @@ public enum FasterWorldScanner implements IWorldScanner {
             long l = longArray[i];
             for (int offset = 0; offset <= (64 - bitsPerEntry) && idx < arraySize; offset += bitsPerEntry, ++idx) {
                 int value = (int) ((l >> offset) & maxEntryValue);
-                if (isInFilter[value]) {
+                // the palette and the storage were read separately and the main thread can resize the section in
+                // between, which used to be an ArrayIndexOutOfBoundsException from this line
+                if (value < isInFilter.length && isInFilter[value]) {
+                    if (blocks.size() >= max) {
+                        return;
+                    }
                     //noinspection DuplicateExpressions
                     blocks.add(new BlockPos(
                         (int) chunkX + ((idx & 255) & 15),
@@ -288,14 +298,12 @@ public enum FasterWorldScanner implements IWorldScanner {
             // copying the entire registry is not nice so we treat it as a special case
             return PALETTE_REGISTRY_SENTINEL;
         } else {
-            FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
-            palette.write(buf);
-            int size = buf.readVarInt();
+            // this used to write the palette to a netty buffer and read the ids back as varints, for every section of
+            // every scan. valueFor(i) for i < getSize() is the same list in the same order, that's what write() walks
+            int size = palette.getSize();
             BlockState[] states = new BlockState[size];
             for (int i = 0; i < size; i++) {
-                BlockState state = Block.BLOCK_STATE_REGISTRY.byId(buf.readVarInt());
-                assert state != null;
-                states[i] = state;
+                states[i] = palette.valueFor(i);
             }
             return states;
         }

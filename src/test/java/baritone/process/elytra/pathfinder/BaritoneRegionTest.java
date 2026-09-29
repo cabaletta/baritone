@@ -131,6 +131,38 @@ public class BaritoneRegionTest {
     }
 
     @Test
+    public void aCulledRegionIsReadAgain() throws Exception {
+        final Path dir = Files.createTempDirectory("np-cull");
+        final Path regions = dir.resolve("the_nether_128").resolve("cache");
+        Files.createDirectories(regions);
+        Files.write(regions.resolve("r.0.0.bcr"), region());
+        try {
+            final NetherPathfinder ctx = new NetherPathfinder(1, regions.toString(), NetherPathfinder.Dimension.NETHER, 128);
+            ctx.tryLoadRegion(3, 5);
+            assertNotNull(ctx.getChunk(3, 5));
+            // fly far away, the chunk gets culled
+            ctx.cullFarChunks(10000, 10000, 512);
+            assertNull(ctx.getChunk(3, 5));
+            // and coming back reads the file again instead of believing it already has
+            ctx.tryLoadRegion(3, 5);
+            assertNotNull(ctx.getChunk(3, 5));
+            assertTrue(ctx.getChunk(3, 5).isSolid(1, 2, 3));
+            // a chunk that survives the cull stays the one we had
+            final NetherPathfinder near = new NetherPathfinder(1, regions.toString(), NetherPathfinder.Dimension.NETHER, 128);
+            near.tryLoadRegion(3, 5);
+            near.cullFarChunks(3, 5, 512);
+            final Chunk kept = near.getChunk(3, 5);
+            near.tryLoadRegion(3, 5);
+            assertEquals(kept, near.getChunk(3, 5));
+        } finally {
+            Files.deleteIfExists(regions.resolve("r.0.0.bcr"));
+            Files.deleteIfExists(regions);
+            Files.deleteIfExists(regions.getParent());
+            Files.deleteIfExists(dir);
+        }
+    }
+
+    @Test
     public void directoryNamesDecideTheDimension() {
         assertEquals(NetherPathfinder.Dimension.NETHER, BaritoneRegion.dimensionOf("/a/b/the_nether_128/cache"));
         assertEquals(NetherPathfinder.Dimension.OVERWORLD, BaritoneRegion.dimensionOf("/a/b/overworld_384/cache"));

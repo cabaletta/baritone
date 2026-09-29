@@ -20,6 +20,7 @@ package baritone.process.elytra;
 import baritone.api.utils.BetterBlockPos;
 import baritone.process.elytra.pathfinder.PathSegment;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,22 +52,23 @@ public final class UnpackedSegment {
     public List<BetterBlockPos> collect() {
         final List<BetterBlockPos> path = this.path.collect(Collectors.toList());
 
-        // Remove backtracks
-        final Map<BetterBlockPos, Integer> positionFirstSeen = new HashMap<>();
-        for (int i = 0; i < path.size(); i++) {
-            BetterBlockPos pos = path.get(i);
-            if (positionFirstSeen.containsKey(pos)) {
-                int j = positionFirstSeen.get(pos);
-                while (i > j) {
-                    path.remove(i);
-                    i--;
-                }
-            } else {
-                positionFirstSeen.put(pos, i);
+        // Remove backtracks: coming back to a spot we've been means everything since then was a loop, cut it out
+        // this used to remove from the list in place but leave the removed spots in the map with their old index,
+        // so A B C B D C came out as A B D. the stale C -> 2 ate the real end of the path. also O(n^2) from remove(i)
+        final List<BetterBlockPos> out = new ArrayList<>(path.size());
+        final Map<BetterBlockPos, Integer> index = new HashMap<>();
+        for (BetterBlockPos pos : path) {
+            Integer j = index.get(pos);
+            if (j == null) {
+                index.put(pos, out.size());
+                out.add(pos);
+                continue;
+            }
+            while (out.size() > j + 1) {
+                index.remove(out.remove(out.size() - 1));
             }
         }
-
-        return path;
+        return out;
     }
 
     public boolean isFinished() {
