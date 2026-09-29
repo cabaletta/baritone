@@ -55,7 +55,7 @@ public class PathExecutor implements IPathExecutor, Helper {
      * For more information, see issue #102.
      *
      * @see <a href="https://github.com/cabaletta/baritone/issues/102">Issue #102</a>
-     * @see <a href="https://i.imgur.com/5s5GLnI.png">Anime</a>
+     * @see <a href="https://i.imgur.com/5s5GLnI.png"></a>
      */
     private static final double MAX_TICKS_AWAY = 200;
 
