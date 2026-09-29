@@ -574,6 +574,16 @@ public final class Settings {
     public final Setting<Float> pathingMapLoadFactor = new Setting<>(0.75f);
 
     /**
+     * Number of entries in each block-state and mining-cost cache used during a path search.
+     * <p>
+     * Rounded up to a power of two and clamped between 1024 and 65536.
+     * Smaller caches reduce memory usage but may require more block lookups.
+     * The size is captured when a calculation context is created.
+     * Worker threads reuse the arrays between searches, clearing their keys each time.
+     */
+    public final Setting<Integer> pathingCacheSize = new Setting<>(65536);
+
+    /**
      * How far are you allowed to fall onto solid ground (without a water bucket)?
      * 3 won't deal any damage. But if you just want to get down the mountain quickly and you have
      * Feather Falling IV, you might set it a bit higher, like 4 or 5.
