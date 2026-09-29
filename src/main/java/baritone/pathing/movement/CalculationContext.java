@@ -25,6 +25,7 @@ import baritone.pathing.precompute.PrecomputedData;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.ToolSet;
 import baritone.utils.pathing.BetterWorldBorder;
+import baritone.utils.pathing.SearchCache;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -40,7 +41,6 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static baritone.api.pathing.movement.ActionCosts.COST_INF;
@@ -97,6 +97,8 @@ public class CalculationContext {
     // two of everything because includeFalling is part of the question
     // only exists while a search has claimed it, see claimSearchCaches
     public static final int MINING_CACHE_BITS = 16;
+    final int miningCacheBits;
+    private SearchCache.MiningBuffers miningBuffers;
     long[] miningKeys;
     long[] miningKeysFalling;
     double[] miningVals;
@@ -127,6 +129,7 @@ public class CalculationContext {
     // all the settings get snapshotted in here so nobody can accidentally read them differently
     protected CalculationContext(IBaritone baritone, boolean forUseOnAnotherThread, Level world, WorldData worldData, BlockStateInterface bsi, ToolSet toolSet, boolean hasThrowaway, boolean hasWaterBucket, boolean canSprint, int frostWalker, float waterSpeedMultiplier) {
         this.precomputedData = PrecomputedData.forCurrentSettings();
+        this.miningCacheBits = SearchCache.bitsForSize(Baritone.settings().pathingCacheSize.value);
         this.safeForThreadedUse = forUseOnAnotherThread;
         this.baritone = baritone;
         this.world = world;
@@ -202,17 +205,18 @@ public class CalculationContext {
 
     // the memo and the bsi's block cache used to be allocated in the constructor. that's 2.8mb, and PathingBehavior
     // builds one of these every tick whether it paths or not, so it was 50mb/s of garbage for contexts that ask three
-    // questions and die. now the search that actually wants them makes them, and drops them when it's done
+    // questions and die. searches now borrow a worker's arrays and detach them when they're done
     // it's also the only thread allowed to touch them. PathExecutor checks costs with this same context on the main thread,
     // and two threads scribbling on one open addressed table is how you get the key from one block and the value from another
     public synchronized void claimSearchCaches() {
         if (miningOwner != null) {
             return; // somebody else is searching with this context. they keep it, we go without
         }
-        miningKeys = newMiningKeys();
-        miningKeysFalling = newMiningKeys();
-        miningVals = new double[1 << MINING_CACHE_BITS];
-        miningValsFalling = new double[1 << MINING_CACHE_BITS];
+        miningBuffers = SearchCache.acquireMining(1 << miningCacheBits);
+        miningKeys = miningBuffers.keys;
+        miningKeysFalling = miningBuffers.fallingKeys;
+        miningVals = miningBuffers.values;
+        miningValsFalling = miningBuffers.fallingValues;
         miningOwner = Thread.currentThread();
         bsi.claimCache();
     }
@@ -226,14 +230,9 @@ public class CalculationContext {
         miningKeysFalling = null;
         miningVals = null;
         miningValsFalling = null;
+        SearchCache.release(miningBuffers);
+        miningBuffers = null;
         bsi.releaseCache();
-    }
-
-    private static long[] newMiningKeys() {
-        long[] keys = new long[1 << MINING_CACHE_BITS];
-        // -1 is the "nothing here" key, see getMiningDurationTicks for why that's safe
-        Arrays.fill(keys, -1L);
-        return keys;
     }
 
     public final IBaritone getBaritone() {

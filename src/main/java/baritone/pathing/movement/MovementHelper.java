@@ -610,7 +610,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         }
         // y is shifted so it's never negative, which means the all ones key would need y=4095. no
         long key = ((long) (x & 0x3FFFFFF) << 38) | ((long) (z & 0x3FFFFFF) << 12) | ((y - context.minY) & 0xFFF);
-        int slot = (int) ((key * 0x9E3779B97F4A7C15L) >>> (64 - CalculationContext.MINING_CACHE_BITS));
+        int slot = (int) ((key * 0x9E3779B97F4A7C15L) >>> (64 - context.miningCacheBits));
         double[] vals = includeFalling ? context.miningValsFalling : context.miningVals;
         if (keys[slot] == key) {
             return vals[slot];

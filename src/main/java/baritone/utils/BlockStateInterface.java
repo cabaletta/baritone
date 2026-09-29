@@ -23,6 +23,7 @@ import baritone.cache.CachedRegion;
 import baritone.cache.WorldData;
 import baritone.utils.accessor.IClientChunkProvider;
 import baritone.utils.pathing.BetterWorldBorder;
+import baritone.utils.pathing.SearchCache;
 import net.minecraft.client.multiplayer.ClientChunkCache;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.BlockGetter;
@@ -33,8 +34,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
-
-import java.util.Arrays;
 
 /**
  * Wraps get for chuck caching capability
@@ -63,7 +62,8 @@ public class BlockStateInterface {
     // position -> state cache, only while a search has claimed it (null keys = no cache)
     // the per tick ones on the main thread look up like four blocks and get garbage collected, not worth it
     // 64k entries hits ~80% of the time, 16k only managed 73%, so 64k it is
-    private static final int CACHE_BITS = 16;
+    private final int cacheBits = SearchCache.bitsForSize(Baritone.settings().pathingCacheSize.value);
+    private SearchCache.BlockBuffers blockBuffers;
     private long[] cacheKeys;
     private BlockState[] cacheVals;
     // whoever claimed it. everyone else goes around, same deal as CalculationContext.claimSearchCaches
@@ -101,11 +101,9 @@ public class BlockStateInterface {
         if (cacheOwner != null) {
             return;
         }
-        long[] keys = new long[1 << CACHE_BITS];
-        // -1 would be a block at shifted y=4095. good luck
-        Arrays.fill(keys, -1L);
-        cacheKeys = keys;
-        cacheVals = new BlockState[1 << CACHE_BITS];
+        blockBuffers = SearchCache.acquireBlocks(1 << cacheBits);
+        cacheKeys = blockBuffers.keys;
+        cacheVals = blockBuffers.values;
         cacheOwner = Thread.currentThread();
     }
 
@@ -116,6 +114,8 @@ public class BlockStateInterface {
         cacheOwner = null;
         cacheKeys = null;
         cacheVals = null;
+        SearchCache.release(blockBuffers);
+        blockBuffers = null;
     }
 
     // for subclasses that get their blocks from somewhere that isn't a client world (benchmarks, tests)
@@ -164,7 +164,7 @@ public class BlockStateInterface {
         // the 22 movements out of one node read the same 50 blocks about 110 times between them
         // and then the next node reads most of them again. so, cache
         long key = ((long) (x & 0x3FFFFFF) << 38) | ((long) (z & 0x3FFFFFF) << 12) | y;
-        int slot = (int) ((key * 0x9E3779B97F4A7C15L) >>> (64 - CACHE_BITS));
+        int slot = (int) ((key * 0x9E3779B97F4A7C15L) >>> (64 - cacheBits));
         if (keys[slot] == key) {
             return cacheVals[slot];
         }
