@@ -286,7 +286,7 @@ public final class Settings {
      * <p>
      * If a schematic asks for a block on this mapping, all blocks on the mapped list will be accepted at that location as well
      * <p>
-     * Syntax same as <a href="https://baritone.leijurv.com/baritone/api/Settings.html#buildSubstitutes">buildSubstitutes</a>
+     * Syntax same as {@link #buildSubstitutes}
      */
     public final Setting<Map<Block, List<Block>>> buildValidSubstitutes = new Setting<>(new HashMap<>());
 

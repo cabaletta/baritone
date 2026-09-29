@@ -204,6 +204,9 @@ public final class PathRenderer implements IRenderer {
     }
 
     public static void drawManySelectionBoxes(PoseStack stack, Entity player, Collection<BlockPos> positions, Color color) {
+        if (positions.isEmpty()) {
+            return;
+        }
         BufferBuilder bufferBuilder = IRenderer.startLines(color, settings.pathRenderLineWidthPixels.value, settings.renderSelectionBoxesIgnoreDepth.value);
 
         //BlockPos blockpos = movingObjectPositionIn.getBlockPos();

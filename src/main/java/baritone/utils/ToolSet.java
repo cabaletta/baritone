@@ -18,6 +18,7 @@
 package baritone.utils;
 
 import baritone.Baritone;
+import it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.Holder;
 import net.minecraft.tags.ItemTags;
@@ -35,10 +36,8 @@ import net.minecraft.world.item.enchantment.effects.EnchantmentAttributeEffect;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
+import java.util.function.ToDoubleFunction;
 
 /**
  * A cached list of the best tools on the hotbar for any block
@@ -51,12 +50,12 @@ public class ToolSet {
      * A cache mapping a {@link Block} to how long it will take to break
      * with this toolset, given the optimum tool is used.
      */
-    private final Map<Block, Double> breakStrengthCache;
+    private final Object2DoubleOpenHashMap<Block> breakStrengthCache;
 
     /**
      * My buddy leijurv owned me so we have this to not create a new lambda instance.
      */
-    private final Function<Block, Double> backendCalculation;
+    private final ToDoubleFunction<Block> backendCalculation;
 
     private final LocalPlayer player;
 
@@ -75,13 +74,12 @@ public class ToolSet {
     );
 
     public ToolSet(LocalPlayer player) {
-        breakStrengthCache = new HashMap<>();
+        breakStrengthCache = new Object2DoubleOpenHashMap<>();
         this.player = player;
 
         if (Baritone.settings().considerPotionEffects.value) {
             double amplifier = potionAmplifier();
-            Function<Double, Double> amplify = x -> amplifier * x;
-            backendCalculation = amplify.compose(this::getBestDestructionTime);
+            backendCalculation = b -> amplifier * this.getBestDestructionTime(b);
         } else {
             backendCalculation = this::getBestDestructionTime;
         }
