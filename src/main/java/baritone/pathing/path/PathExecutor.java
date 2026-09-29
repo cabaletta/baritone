@@ -548,8 +548,11 @@ public class PathExecutor implements IPathExecutor, Helper {
     }
 
     private boolean canStartHeadHitting(IMovement current) {
-        if (!(current instanceof MovementTraverse) || current.getDirection().getY() != 0) {
+        if (!(current instanceof MovementTraverse || current instanceof MovementDiagonal) || current.getDirection().getY() != 0) {
             return false; // head hitting only applies to flat walking movements
+        }
+        if (current instanceof MovementDiagonal && !Baritone.settings().headHittersDiagonal.value) {
+            return false;
         }
         if (!ctx.player().onGround() || MovementHelper.isLiquid(ctx, ctx.playerFeet())) {
             return false;
@@ -569,10 +572,18 @@ public class PathExecutor implements IPathExecutor, Helper {
         if (MovementHelper.fullyPassable(ctx, ceiling) || !MovementHelper.isBlockNormalCube(ctx.world().getBlockState(ceiling))) {
             return false; // not under a ceiling yet, or the thing overhead is something like a trapdoor that we can't reliably bonk against
         }
+        // diagonals can enter through either face, so clear each axis separately
+        return clearOfCeilingEntrance(feet, dir.getX(), 0) && clearOfCeilingEntrance(feet, 0, dir.getZ());
+    }
+
+    private boolean clearOfCeilingEntrance(BetterBlockPos feet, int dx, int dz) {
+        if (dx == 0 && dz == 0) {
+            return true;
+        }
         // make sure we're fully inside the corridor before we start jumping, same idea as skipNow
-        BlockPos behind = feet.subtract(dir).above(2);
+        BlockPos behind = feet.offset(-dx, 0, -dz).above(2);
         if (MovementHelper.fullyPassable(ctx, behind)) {
-            double flatDist = Math.abs(dir.getX() * (behind.getX() + 0.5D - ctx.player().position().x)) + Math.abs(dir.getZ() * (behind.getZ() + 0.5D - ctx.player().position().z));
+            double flatDist = Math.abs(dx * (behind.getX() + 0.5D - ctx.player().position().x)) + Math.abs(dz * (behind.getZ() + 0.5D - ctx.player().position().z));
             return flatDist >= 0.8; // just entered, wait until we're clear of the entrance face
         }
         return true;

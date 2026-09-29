@@ -75,6 +75,7 @@ There are about a hundred settings, but here are some fun / interesting / import
 - `allowParkour`
 - `allowParkourPlace`
 - `headHitters` (sprint jump head bonks in 1x2 tunnels, slightly faster than plain sprinting)
+- `headHittersDiagonal` (on by default, allows diagonal head bonks when `headHitters` is enabled)
 - `sprintJumping` (sprint jump along straight path stretches, up single steps and down small hills)
 - `sprintJumpingDiagonals` (on by default, allows diagonal sprint jumps when `sprintJumping` is enabled)
 - `allowSwimming` (sprint swim along the waterline, head out and body in, instead of bobbing through water)
