@@ -154,6 +154,15 @@ public final class Settings {
     public final Setting<Boolean> allowWaterBucketFall = new Setting<>(true);
 
     /**
+     * Allow Baritone to survive a long fall by placing a ladder or vine on a wall next to the fall at the last moment, like
+     * a water bucket clutch but with a block you can carry in the nether.
+     * <p>
+     * Needs a ladder or vine on the hotbar and a wall beside the last few blocks of the fall. The water bucket is still
+     * preferred when you have one. Reliability: also questionable, it's all about the timing.
+     */
+    public final Setting<Boolean> allowLadderClutch = new Setting<>(false);
+
+    /**
      * Allow Baritone to assume it can walk on still water just like any other block.
      * This functionality is assumed to be provided by a separate library that might have imported Baritone.
      * <p>

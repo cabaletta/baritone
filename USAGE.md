@@ -78,6 +78,7 @@ There are about a hundred settings, but here are some fun / interesting / import
 - `headHittersDiagonal` (on by default, allows diagonal head bonks when `headHitters` is enabled)
 - `sprintJumping` (sprint jump along straight path stretches, up single steps and down small hills)
 - `sprintJumpingDiagonals` (on by default, allows diagonal sprint jumps when `sprintJumping` is enabled)
+- `allowLadderClutch` (survive long falls by placing a ladder or vine on a wall beside the landing, needs one on the hotbar)
 - `allowSwimming` (sprint swim along the waterline, head out and body in, instead of bobbing through water)
 - `blockPlacementPenalty`
 - `renderCachedChunks` (and `cachedChunksOpacity`) <-- very fun but you need a beefy computer
