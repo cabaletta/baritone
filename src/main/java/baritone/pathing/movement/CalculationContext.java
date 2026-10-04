@@ -60,6 +60,9 @@ public class CalculationContext {
     public final BlockStateInterface bsi;
     public final ToolSet toolSet;
     public final boolean hasWaterBucket;
+    // a ladder or vine on the hotbar and allowLadderClutch on, see MovementDescend.dynamicFallCost
+    public final boolean hasClutchItem;
+    public final float blockReach;
     public final boolean hasThrowaway;
     public final boolean canSprint;
     protected final double placeBlockCost; // protected because you should call the function instead
@@ -135,6 +138,9 @@ public class CalculationContext {
         this.toolSet = toolSet;
         this.hasThrowaway = hasThrowaway;
         this.hasWaterBucket = hasWaterBucket;
+        // same idea as the bucket, except it isn't banned in the nether. the setting goes first so nobody scans the hotbar for nothing
+        this.hasClutchItem = Baritone.settings().allowLadderClutch.value && ((Baritone) baritone).getInventoryBehavior().pickClutchItem(false) != null;
+        this.blockReach = Baritone.settings().blockReachDistance.value;
         this.canSprint = canSprint;
         this.minY = bsi.minY;
         this.maxY = bsi.maxY;

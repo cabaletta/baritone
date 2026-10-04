@@ -30,6 +30,8 @@ public final class MutableMoveResult {
     public int y;
     public int z;
     public double cost;
+    // this fall is only survivable by clutching a ladder or vine into the column, see MovementDescend.dynamicFallCost
+    public boolean clutch;
 
     public MutableMoveResult() {
         reset();
@@ -40,5 +42,6 @@ public final class MutableMoveResult {
         y = 0;
         z = 0;
         cost = ActionCosts.COST_INF;
+        clutch = false;
     }
 }
