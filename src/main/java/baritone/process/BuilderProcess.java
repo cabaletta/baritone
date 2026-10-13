@@ -143,6 +143,15 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
     // stand positions we already tried this stuck episode, so we never ping-pong between two of them
     private final Set<BlockPos> triedNudges = new HashSet<>();
 
+    // --- build tracing (diagnostics) ---
+    // a monotonically increasing tick counter and bookkeeping to detect "standing still for too long"
+    private long traceTick = 0;
+    private long lastPlaceTraceTick = -1000;
+    private String lastPlaceTraceKey = "";
+    private BetterBlockPos traceLastFeet;
+    private long traceLastFeetChange = 0;
+    private long lastStallLogTick = -1000;
+
     public BuilderProcess(Baritone baritone) {
         super(baritone);
     }
@@ -541,6 +550,11 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         if (recursions > 100) { // onTick calls itself, don't crash
             return new PathingCommand(null, PathingCommandType.SET_GOAL_AND_PATH);
         }
+        traceTick++;
+        if (traceLastFeet == null || !traceLastFeet.equals(ctx.playerFeet())) {
+            traceLastFeet = new BetterBlockPos(ctx.playerFeet());
+            traceLastFeetChange = traceTick;
+        }
         approxPlaceable = approxPlaceable(36);
         if (baritone.getInputOverrideHandler().isInputForcedDown(Input.CLICK_LEFT)) {
             ticks = 5;
@@ -647,7 +661,11 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                 // and is unable since it's unsneaked in the intermediary tick
                 baritone.getInputOverrideHandler().setInputForceState(Input.SNEAK, true);
             }
-            if (ctx.isLookingAt(pos) || ctx.playerRotations().isReallyCloseTo(rot)) {
+            boolean clicking = ctx.isLookingAt(pos) || ctx.playerRotations().isReallyCloseTo(rot);
+            buildTrace(String.format("BREAK %s at %s (now=%s) target(%s) player(%s) clicking=%s",
+                    describeState(bcc.bsi.get0(pos)), pos, describeState(bcc.getSchematic(pos.x, pos.y, pos.z, bcc.bsi.get0(pos))),
+                    describeRotation(rot), describeRotation(ctx.playerRotations()), clicking));
+            if (clicking) {
                 baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_LEFT, true);
             }
             return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
@@ -659,7 +677,21 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             baritone.getLookBehavior().updateTarget(rot, true);
             ctx.player().getInventory().selected = toPlace.get().hotbarSelection;
             baritone.getInputOverrideHandler().setInputForceState(Input.SNEAK, true);
-            if ((ctx.isLookingAt(toPlace.get().placeAgainst) && ((BlockHitResult) ctx.objectMouseOver()).getDirection().equals(toPlace.get().side)) || ctx.playerRotations().isReallyCloseTo(rot)) {
+            boolean lookingAtTarget = ctx.isLookingAt(toPlace.get().placeAgainst) && ((BlockHitResult) ctx.objectMouseOver()).getDirection().equals(toPlace.get().side);
+            boolean closeToRot = ctx.playerRotations().isReallyCloseTo(rot);
+            BlockPos placePos = toPlace.get().placeAgainst.relative(toPlace.get().side);
+            BlockState desired = bcc.getSchematic(placePos.getX(), placePos.getY(), placePos.getZ(), bcc.bsi.get0(placePos));
+            String placeKey = placePos + "|" + (desired == null ? "null" : desired.toString());
+            if (!placeKey.equals(lastPlaceTraceKey) || traceTick - lastPlaceTraceTick > 20) {
+                lastPlaceTraceKey = placeKey;
+                lastPlaceTraceTick = traceTick;
+                ItemStack held = ctx.player().getInventory().items.get(toPlace.get().hotbarSelection);
+                buildTrace(String.format("PLACE %s at %s against %s side=%s slot=%d held=%s target(%s) player(%s) lookingAtTarget=%s closeToRot=%s",
+                        desired, placePos, toPlace.get().placeAgainst, toPlace.get().side, toPlace.get().hotbarSelection,
+                        held.isEmpty() ? "-" : BuiltInRegistries.ITEM.getKey(held.getItem()), describeRotation(rot),
+                        describeRotation(ctx.playerRotations()), lookingAtTarget, closeToRot));
+            }
+            if (lookingAtTarget || closeToRot) {
                 baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
             }
             return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
@@ -691,6 +723,21 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                     }
                 }
             }
+        }
+
+        // Stand-still watchdog: if we have not moved for 5 seconds while the builder is in control, dump a
+        // full snapshot (position, camera, what we are trying to place, inventory) so a stuck build can be
+        // diagnosed from the log even when the bot does not report anything to chat.
+        if (!baritone.getPathingBehavior().isPathing()
+                && traceTick - traceLastFeetChange >= 100
+                && traceTick - lastStallLogTick >= 100) {
+            lastStallLogTick = traceTick;
+            buildTrace(String.format(
+                    "STALL %.1fs at %s | toPlace=%s pathing=%s player(%s) | left=%d need=[%s]",
+                    (traceTick - traceLastFeetChange) / 20.0, ctx.playerFeet(), toPlace.isPresent(),
+                    baritone.getPathingBehavior().isPathing(), describeRotation(ctx.playerRotations()),
+                    incorrectPositions == null ? 0 : incorrectPositions.size(), summarizeNeeded(desirableOnHotbar)));
+            logStuckDiagnostics(desirableOnHotbar);
         }
 
         // The goal returned below is a GoalComposite satisfied by being adjacent to ANY target, so if we
@@ -735,6 +782,41 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             }
         }
         return new PathingCommandContext(goal, PathingCommandType.FORCE_REVALIDATE_GOAL_AND_PATH, bcc);
+    }
+
+    /**
+     * Detailed build trace, written to the game log (as [STDOUT]) without filling the chat. Every state
+     * change the builder goes through is recorded here so a stuck build can be diagnosed after the fact.
+     */
+    private static void buildTrace(String message) {
+        System.out.println("[Baritone-Build] " + message);
+    }
+
+    private static String describeRotation(Rotation rot) {
+        return String.format("yaw=%.1f pitch=%.1f", rot.getYaw(), rot.getPitch());
+    }
+
+    /**
+     * Compact listing of the first few distinct blockstates the builder still wants to place.
+     */
+    private static String summarizeNeeded(List<BlockState> desirableOnHotbar) {
+        Map<BlockState, Integer> counts = new LinkedHashMap<>();
+        for (BlockState desired : desirableOnHotbar) {
+            counts.merge(desired, 1, Integer::sum);
+        }
+        StringBuilder sb = new StringBuilder();
+        int shown = 0;
+        for (Map.Entry<BlockState, Integer> entry : counts.entrySet()) {
+            if (shown++ >= 6) {
+                sb.append("...");
+                break;
+            }
+            if (shown > 1) {
+                sb.append(' ');
+            }
+            sb.append(describeState(entry.getKey())).append('x').append(entry.getValue());
+        }
+        return sb.toString();
     }
 
     /**
