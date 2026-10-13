@@ -51,13 +51,18 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.block.AirBlock;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.LiquidBlock;
@@ -66,6 +71,7 @@ import net.minecraft.world.level.block.RotatedPillarBlock;
 import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.TrapDoorBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
@@ -91,6 +97,29 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                     TrapDoorBlock.OPEN, TrapDoorBlock.HALF
             );
 
+    /**
+     * Properties whose value is decided by the surrounding world, not by how the player places the block:
+     * stair shape, double-chest type, fence/wall/pipe connections, waterlogging and the like. A freshly
+     * placed block gets whatever value the neighbours imply, and the value updates again when those
+     * neighbours change. Comparing them for equality would make a correctly placed block look wrong
+     * forever (so the builder would break and replace it in an endless loop), and would make the
+     * placement search unable to find any acceptable face. They are therefore always ignored.
+     * Controllable properties (facing, axis, slab top/bottom half) are deliberately NOT here.
+     */
+    private static final Set<Property<?>> WORLD_DETERMINED_PROPS =
+            ImmutableSet.of(
+                    BlockStateProperties.WATERLOGGED,
+                    BlockStateProperties.STAIRS_SHAPE,
+                    BlockStateProperties.CHEST_TYPE,
+                    BlockStateProperties.NORTH, BlockStateProperties.EAST,
+                    BlockStateProperties.SOUTH, BlockStateProperties.WEST,
+                    BlockStateProperties.UP,
+                    BlockStateProperties.NORTH_WALL, BlockStateProperties.EAST_WALL,
+                    BlockStateProperties.SOUTH_WALL, BlockStateProperties.WEST_WALL,
+                    BlockStateProperties.NORTH_REDSTONE, BlockStateProperties.EAST_REDSTONE,
+                    BlockStateProperties.SOUTH_REDSTONE, BlockStateProperties.WEST_REDSTONE
+            );
+
     private HashSet<BetterBlockPos> incorrectPositions;
     private LongOpenHashSet observedCompleted; // positions that are completed even if they're out of render distance and we can't make sure right now
     private String name;
@@ -103,6 +132,16 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
     private int numRepeats;
     private List<BlockState> approxPlaceable;
     public int stopAtHeight = 0;
+
+    // creative mode auto /give bookkeeping
+    private final Map<Block, Integer> creativeGiveAttempts = new HashMap<>();
+    private final Set<Block> creativeUnGiveable = new HashSet<>();
+    private int creativeGiveCooldown = 0;
+
+    // counts ticks where we have work to do but cannot place anything and are not pathing (see unstickGoal)
+    private int stuckTicks = 0;
+    // stand positions we already tried this stuck episode, so we never ping-pong between two of them
+    private final Set<BlockPos> triedNudges = new HashSet<>();
 
     public BuilderProcess(Baritone baritone) {
         super(baritone);
@@ -168,6 +207,11 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         this.numRepeats = 0;
         this.observedCompleted = new LongOpenHashSet();
         this.incorrectPositions = null;
+        this.creativeGiveAttempts.clear();
+        this.creativeUnGiveable.clear();
+        this.creativeGiveCooldown = 0;
+        this.stuckTicks = 0;
+        this.triedNudges.clear();
     }
 
     public void resume() {
@@ -278,6 +322,41 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         return state;
     }
 
+    /**
+     * Creative mode with auto-give enabled. In this mode we do not require the desired block to already
+     * be in the inventory; we obtain it with /give on demand instead.
+     */
+    private boolean isCreativeBuild() {
+        return Baritone.settings().buildCreativeAutoGive.value && ctx.playerController().getGameType().isCreative();
+    }
+
+    /**
+     * Whether a block has an item form and can therefore be obtained with /give and placed by hand.
+     * Fluids, fire, portal blocks, piston heads and other technical blocks do not.
+     */
+    private static boolean giveable(BlockState state) {
+        return state.getBlock().asItem() != Items.AIR;
+    }
+
+    /**
+     * A desired block that is not air but has no item form can never be placed, so it must be ignored
+     * rather than reported as missing material.
+     */
+    private boolean unobtainable(BlockState desired) {
+        return desired != null
+                && !(desired.getBlock() instanceof AirBlock)
+                && (!giveable(desired) || creativeUnGiveable.contains(desired.getBlock()));
+    }
+
+    private boolean hasBlockInInventory(Block block) {
+        for (ItemStack stack : ctx.player().getInventory().items) {
+            if (!stack.isEmpty() && stack.getItem() instanceof BlockItem && ((BlockItem) stack.getItem()).getBlock() == block) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private Optional<Tuple<BetterBlockPos, Rotation>> toBreakNearPlayer(BuilderCalculationContext bcc) {
         BetterBlockPos center = ctx.playerFeet();
         BetterBlockPos pathStart = baritone.getPathingBehavior().pathStart();
@@ -385,10 +464,13 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                 double placeY = placeAgainstPos.y + aabb.minY * placementMultiplier.y + aabb.maxY * (1 - placementMultiplier.y);
                 double placeZ = placeAgainstPos.z + aabb.minZ * placementMultiplier.z + aabb.maxZ * (1 - placementMultiplier.z);
                 Rotation rot = RotationUtils.calcRotationFromVec3d(RayTraceUtils.inferSneakingEyePosition(ctx.player()), new Vec3(placeX, placeY, placeZ), ctx.playerRotations());
-                Rotation actualRot = baritone.getLookBehavior().getAimProcessor().peekRotation(rot);
-                HitResult result = RayTraceUtils.rayTraceTowards(ctx.player(), actualRot, ctx.playerController().getBlockReachDistance(), true);
+                // Simulate and ray trace using the exact target rotation, not the smoothed/randomized
+                // aim. Directional blocks (logs, stairs, chests) take their orientation from the aim, so
+                // using the not-yet-converged actual rotation would pick the wrong axis/facing and the
+                // builder would place it wrong and then immediately break it again.
+                HitResult result = RayTraceUtils.rayTraceTowards(ctx.player(), rot, ctx.playerController().getBlockReachDistance(), true);
                 if (result != null && result.getType() == HitResult.Type.BLOCK && ((BlockHitResult) result).getBlockPos().equals(placeAgainstPos) && ((BlockHitResult) result).getDirection() == against.getOpposite()) {
-                    OptionalInt hotbar = hasAnyItemThatWouldPlace(toPlace, result, actualRot);
+                    OptionalInt hotbar = hasAnyItemThatWouldPlace(toPlace, result, rot);
                     if (hotbar.isPresent()) {
                         return Optional.of(new Placement(hotbar.getAsInt(), placeAgainstPos, against.getOpposite(), rot));
                     }
@@ -547,6 +629,9 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         if (Baritone.settings().distanceTrim.value) {
             trim();
         }
+        if (isCreativeBuild()) {
+            creativeGive(bcc);
+        }
 
         Optional<Tuple<BetterBlockPos, Rotation>> toBreak = toBreakNearPlayer(bcc);
         if (toBreak.isPresent() && isSafeToCancel && ctx.player().onGround()) {
@@ -580,13 +665,13 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
         }
 
-        if (Baritone.settings().allowInventory.value) {
+        if (Baritone.settings().allowInventory.value || isCreativeBuild()) {
             ArrayList<Integer> usefulSlots = new ArrayList<>();
             List<BlockState> noValidHotbarOption = new ArrayList<>();
             outer:
             for (BlockState desired : desirableOnHotbar) {
                 for (int i = 0; i < 9; i++) {
-                    if (valid(approxPlaceable.get(i), desired, true)) {
+                    if (canPlaceBlock(approxPlaceable.get(i), desired)) {
                         usefulSlots.add(i);
                         continue outer;
                     }
@@ -597,7 +682,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             outer:
             for (int i = 9; i < 36; i++) {
                 for (BlockState desired : noValidHotbarOption) {
-                    if (valid(approxPlaceable.get(i), desired, true)) {
+                    if (canPlaceBlock(approxPlaceable.get(i), desired)) {
                         if (!baritone.getInventoryBehavior().attemptToPutOnHotbar(i, usefulSlots::contains)) {
                             // awaiting inventory move, so pause
                             return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
@@ -606,6 +691,33 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                     }
                 }
             }
+        }
+
+        // The goal returned below is a GoalComposite satisfied by being adjacent to ANY target, so if we
+        // are already adjacent but cannot place anything (e.g. the only reachable face is occluded), no path
+        // is computed and we stand still until the player nudges us. Detect that and force a reposition.
+        // We must not nudge while a /give is still on cooldown (the item may simply not have arrived yet) nor
+        // while an inventory move is queued, and to avoid ping-ponging between two equally bad spots we only
+        // ever try each stand position once per stuck episode. If every candidate has been tried we stop.
+        boolean awaitingCreativeGive = isCreativeBuild() && creativeGiveCooldown > 0;
+        if (toPlace.isPresent() || baritone.getPathingBehavior().isPathing() || awaitingCreativeGive) {
+            stuckTicks = 0;
+            if (toPlace.isPresent()) {
+                triedNudges.clear();
+            }
+        } else if (incorrectPositions != null && !incorrectPositions.isEmpty()) {
+            if (++stuckTicks > 60) {
+                stuckTicks = 0;
+                logStuckDiagnostics(desirableOnHotbar);
+                Goal nudge = unstickGoal(triedNudges);
+                if (nudge != null) {
+                    logDirect("Stuck, repositioning to continue building");
+                    logDebug("Builder could not place anything from here, repositioning to " + nudge);
+                    return new PathingCommandContext(nudge, PathingCommandType.SET_GOAL_AND_PATH, bcc);
+                }
+            }
+        } else {
+            stuckTicks = 0;
         }
 
         Goal goal = assemble(bcc, approxPlaceable.subList(0, 9));
@@ -623,6 +735,252 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             }
         }
         return new PathingCommandContext(goal, PathingCommandType.FORCE_REVALIDATE_GOAL_AND_PATH, bcc);
+    }
+
+    /**
+     * Build-status diagnostic, emitted (throttled) only when the builder is stuck. Reports what blocks
+     * are still needed and how many of each, whether each is on the hotbar / in the inventory / nowhere,
+     * what is currently on the hotbar, how much inventory room is left, and whether pathing is active.
+     * This is what makes a stuck build debuggable from the log.
+     */
+    private void logStuckDiagnostics(List<BlockState> desirableOnHotbar) {
+        List<BlockState> hotbar = approxPlaceable.subList(0, 9);
+        int emptySlots = 0;
+        Set<Block> invBlocks = new HashSet<>();
+        for (ItemStack stack : ctx.player().getInventory().items) {
+            if (stack.isEmpty()) {
+                emptySlots++;
+            } else if (stack.getItem() instanceof BlockItem) {
+                invBlocks.add(((BlockItem) stack.getItem()).getBlock());
+            }
+        }
+
+        // group still-needed blocks by their exact blockstate, preserving insertion order
+        Map<BlockState, Integer> counts = new LinkedHashMap<>();
+        for (BlockState desired : desirableOnHotbar) {
+            counts.merge(desired, 1, Integer::sum);
+        }
+        StringBuilder need = new StringBuilder();
+        int shown = 0;
+        int onHotbar = 0;
+        int inInventory = 0;
+        int nowhere = 0;
+        for (Map.Entry<BlockState, Integer> entry : counts.entrySet()) {
+            BlockState desired = entry.getKey();
+            boolean hot = containsBlockState(hotbar, desired) || anyHotbarCanPlace(desired);
+            boolean inv = invBlocks.contains(desired.getBlock());
+            if (hot) {
+                onHotbar++;
+            } else if (inv) {
+                inInventory++;
+            } else {
+                nowhere++;
+            }
+            if (shown++ < 6) {
+                need.append(describeState(desired)).append('x').append(entry.getValue())
+                    .append(hot ? "(hotbar)" : inv ? "(inventory)" : "(NOWHERE)")
+                    .append(' ');
+            }
+        }
+        if (counts.size() > 6) {
+            need.append("...");
+        }
+
+        StringBuilder bar = new StringBuilder();
+        for (int i = 0; i < 9; i++) {
+            ItemStack stack = ctx.player().getInventory().items.get(i);
+            bar.append(i).append(':').append(stack.isEmpty() ? "-" : BuiltInRegistries.ITEM.getKey(stack.getItem()).getPath()).append(' ');
+        }
+
+        logDirect(String.format(
+                "Build status: %d left, %d types need [%s] hotbar=%d inventory=%d nowhere=%d | slots[%s] empty=%d invTypes=%d pathing=%s",
+                incorrectPositions.size(), counts.size(), need.toString().trim(),
+                onHotbar, inInventory, nowhere, bar.toString().trim(),
+                emptySlots, invBlocks.size(), baritone.getPathingBehavior().isPathing()));
+    }
+
+    private boolean anyHotbarCanPlace(BlockState desired) {
+        for (int i = 0; i < 9; i++) {
+            if (canPlaceBlock(approxPlaceable.get(i), desired)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static String describeState(BlockState state) {
+        StringBuilder sb = new StringBuilder(BuiltInRegistries.BLOCK.getKey(state.getBlock()).getPath());
+        if (!state.getValues().isEmpty()) {
+            sb.append('[');
+            boolean first = true;
+            for (Map.Entry<Property<?>, Comparable<?>> e : state.getValues().entrySet()) {
+                if (!first) {
+                    sb.append(',');
+                }
+                sb.append(e.getKey().getName()).append('=').append(e.getValue());
+                first = false;
+            }
+            sb.append(']');
+        }
+        return sb.toString();
+    }
+
+    /**
+     * When the builder is adjacent to its target but cannot place anything from where it stands, pick a
+     * standable spot next to the nearest block still needing work so that pathing moves us somewhere we
+     * can actually build from. Candidates already tried during this stuck episode are skipped so that we
+     * never bounce between two spots; returns null once every reachable candidate has been tried.
+     */
+    private Goal unstickGoal(Set<BlockPos> tried) {
+        BetterBlockPos feet = ctx.playerFeet();
+        BlockPos nearest = null;
+        double bestDist = Double.MAX_VALUE;
+        for (BetterBlockPos pos : incorrectPositions) {
+            double dist = pos.distSqr(feet);
+            if (dist < bestDist) {
+                bestDist = dist;
+                nearest = pos;
+            }
+        }
+        if (nearest == null) {
+            return null;
+        }
+        List<BlockPos> candidates = new ArrayList<>();
+        for (Direction dir : Direction.Plane.HORIZONTAL) {
+            BlockPos side = nearest.relative(dir);
+            candidates.add(side);
+            candidates.add(side.above());
+        }
+        candidates.add(nearest);
+        candidates.add(nearest.above());
+        BlockPos best = null;
+        double bestScore = Double.MAX_VALUE;
+        for (BlockPos candidate : candidates) {
+            if (candidate.equals(feet) || tried.contains(candidate) || !standable(candidate)) {
+                continue;
+            }
+            double score = candidate.distSqr(feet);
+            if (score < bestScore) {
+                bestScore = score;
+                best = candidate;
+            }
+        }
+        if (best == null) {
+            return null;
+        }
+        tried.add(best);
+        return new GoalBlock(best);
+    }
+
+    /**
+     * Whether the player could stand with their feet at the given position: both the feet and head blocks
+     * passable, and the block below solid enough to stand on.
+     */
+    private boolean standable(BlockPos pos) {
+        BlockState feet = ctx.world().getBlockState(pos);
+        BlockState head = ctx.world().getBlockState(pos.above());
+        if (!feet.getCollisionShape(ctx.world(), pos).isEmpty()) {
+            return false;
+        }
+        if (!head.getCollisionShape(ctx.world(), pos.above()).isEmpty()) {
+            return false;
+        }
+        return !ctx.world().getBlockState(pos.below()).getCollisionShape(ctx.world(), pos.below()).isEmpty();
+    }
+
+    private static final int CREATIVE_GIVE_COOLDOWN = 40;
+    private static final int CREATIVE_GIVE_MAX_ATTEMPTS = 5;
+    private static final int CREATIVE_GIVE_RADIUS = 32;
+
+    /**
+     * Creative mode: obtain, via /give, blocks the schematic needs that we don't have in the inventory.
+     * Only the number of nearby positions that actually need the block is requested, capped at one stack,
+     * and only one block type is given per invocation. Giving a full stack of every block type fills the
+     * inventory and starves the other blocks, which is exactly what we must avoid.
+     * Throttled so the item has time to arrive, and gives up (marking the block unobtainable) after a few
+     * attempts so a permission-less server isn't spammed.
+     */
+    private void creativeGive(BuilderCalculationContext bcc) {
+        if (creativeGiveCooldown > 0) {
+            creativeGiveCooldown--;
+            return;
+        }
+        if (incorrectPositions == null) {
+            return;
+        }
+        BlockPos playerPos = ctx.player().blockPosition();
+        int radiusSq = CREATIVE_GIVE_RADIUS * CREATIVE_GIVE_RADIUS;
+        Map<Block, Integer> needed = new LinkedHashMap<>();
+        for (BetterBlockPos pos : incorrectPositions) {
+            if (pos.distSqr(playerPos) > radiusSq) {
+                continue; // only stock up for what's near us, not the entire schematic at once
+            }
+            BlockState current = bcc.bsi.get0(pos);
+            if (!(current.getBlock() instanceof AirBlock)) {
+                continue;
+            }
+            BlockState desired = bcc.getSchematic(pos.x, pos.y, pos.z, current);
+            if (desired == null || desired.getBlock() instanceof AirBlock) {
+                continue;
+            }
+            Block block = desired.getBlock();
+            if (!giveable(desired) || creativeUnGiveable.contains(block)) {
+                continue;
+            }
+            if (hasBlockInInventory(block)) {
+                continue;
+            }
+            needed.merge(block, 1, Integer::sum);
+        }
+        if (needed.isEmpty()) {
+            return;
+        }
+        // pick the block we need the most of, so a limited number of gives goes as far as possible
+        Block block = null;
+        int bestCount = 0;
+        for (Map.Entry<Block, Integer> entry : needed.entrySet()) {
+            if (entry.getValue() > bestCount) {
+                bestCount = entry.getValue();
+                block = entry.getKey();
+            }
+        }
+        ResourceLocation id = BuiltInRegistries.ITEM.getKey(block.asItem());
+        if (id == null) {
+            creativeUnGiveable.add(block);
+            return;
+        }
+        int attempts = creativeGiveAttempts.getOrDefault(block, 0);
+        if (attempts >= CREATIVE_GIVE_MAX_ATTEMPTS) {
+            creativeUnGiveable.add(block);
+            logDirect(String.format("Could not obtain %s via /give; skipping it (is /give allowed here?)", id));
+            return;
+        }
+        if (ctx.player().connection == null || !canReceiveGive(block)) {
+            return; // no room to receive it; a give now would just drop on the ground
+        }
+        int amount = Math.min(64, bestCount);
+        creativeGiveAttempts.put(block, attempts + 1);
+        ctx.player().connection.sendCommand(String.format("give @s %s %d", id, amount));
+        logDebug("Creative auto-give: " + amount + " " + id);
+        creativeGiveCooldown = CREATIVE_GIVE_COOLDOWN;
+    }
+
+    /**
+     * Whether a /give of this block would actually fit: either there is an empty slot, or there is an
+     * existing stack of the same item that still has room. Without this, once every slot holds a different
+     * block type the inventory is full and no further block can be obtained.
+     */
+    private boolean canReceiveGive(Block block) {
+        Item item = block.asItem();
+        for (ItemStack stack : ctx.player().getInventory().items) {
+            if (stack.isEmpty()) {
+                return true;
+            }
+            if (stack.getItem() == item && stack.getCount() < stack.getMaxStackSize()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean recalc(BuilderCalculationContext bcc) {
@@ -661,7 +1019,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                     if (desired != null) {
                         // we care about this position
                         BetterBlockPos pos = new BetterBlockPos(x, y, z);
-                        if (valid(bcc.bsi.get0(x, y, z), desired, false)) {
+                        if (unobtainable(desired) || valid(bcc.bsi.get0(x, y, z), desired, false)) {
                             incorrectPositions.remove(pos);
                             observedCompleted.add(BetterBlockPos.longHash(pos));
                         } else {
@@ -686,9 +1044,15 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                     if (!schematic.inSchematic(x, y, z, current)) {
                         continue;
                     }
+                    BlockState desired = schematic.desiredState(x, y, z, current, this.approxPlaceable);
+                    if (unobtainable(desired)) {
+                        // no item form (or we gave up on /give); this can never be built, so treat as done
+                        observedCompleted.add(BetterBlockPos.longHash(blockX, blockY, blockZ));
+                        continue;
+                    }
                     if (bcc.bsi.worldContainsLoadedChunk(blockX, blockZ)) { // check if its in render distance, not if its in cache
                         // we can directly observe this block, it is in render distance
-                        if (valid(bcc.bsi.get0(blockX, blockY, blockZ), schematic.desiredState(x, y, z, current, this.approxPlaceable), false)) {
+                        if (valid(current, desired, false)) {
                             observedCompleted.add(BetterBlockPos.longHash(blockX, blockY, blockZ));
                         } else {
                             incorrectPositions.add(new BetterBlockPos(blockX, blockY, blockZ));
@@ -730,7 +1094,10 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                 BlockState desired = bcc.getSchematic(pos.x, pos.y, pos.z, state);
                 if (desired == null) {
                     outOfBounds.add(pos);
-                } else if (containsBlockState(approxPlaceable, desired)) {
+                } else if (unobtainable(desired)) {
+                    // cannot be placed (no item form, or /give gave up); ignore it instead of pausing
+                } else if (isCreativeBuild() || containsBlockState(approxPlaceable, desired)) {
+                    // in creative we can /give the exact block on demand, so treat it as placeable
                     placeable.add(pos);
                 } else {
                     missing.put(desired, 1 + missing.getOrDefault(desired, 0));
@@ -871,9 +1238,18 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         }
         boolean allowSameLevel = !(ctx.world().getBlockState(pos.above()).getBlock() instanceof AirBlock);
         BlockState current = ctx.world().getBlockState(pos);
+        int minStand = Math.max(1, Baritone.settings().builderMinStandDistance.value);
         for (Direction facing : Movement.HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP) {
             //noinspection ConstantConditions
             if (MovementHelper.canPlaceAgainst(ctx, pos.relative(facing)) && placementPlausible(pos, bcc.getSchematic(pos.getX(), pos.getY(), pos.getZ(), current))) {
+                // optionally stand further back, on the side the placement face is visible from, so the
+                // block is placed from a comfortable angle instead of right on top of it
+                for (int d = minStand; d >= 2; d--) {
+                    BlockPos stand = pos.relative(facing.getOpposite(), d);
+                    if (standable(stand)) {
+                        return new GoalBlock(stand);
+                    }
+                }
                 return new GoalAdjacent(pos, pos.relative(facing), allowSameLevel);
             }
         }
@@ -998,6 +1374,11 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         numRepeats = 0;
         paused = false;
         observedCompleted = null;
+        creativeGiveAttempts.clear();
+        creativeUnGiveable.clear();
+        creativeGiveCooldown = 0;
+        stuckTicks = 0;
+        triedNudges.clear();
     }
 
     @Override
@@ -1047,19 +1428,30 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         return result;
     }
 
+    /**
+     * Whether the item currently occupying a slot could place the desired block, ignoring the orientation
+     * it happens to have. Used for hotbar moves: a log in inventory with axis=Y can still place an
+     * axis=X log by clicking a different face, so requiring an exact blockstate here would leave
+     * directional blocks stuck in the inventory forever.
+     */
+    private static boolean canPlaceBlock(BlockState itemState, BlockState desired) {
+        if (itemState.getBlock() instanceof AirBlock) {
+            return false;
+        }
+        return itemState.getBlock() == desired.getBlock();
+    }
+
     private static boolean sameBlockstate(BlockState first, BlockState second) {
         if (first.getBlock() != second.getBlock()) {
             return false;
         }
         boolean ignoreDirection = Baritone.settings().buildIgnoreDirection.value;
         List<String> ignoredProps = Baritone.settings().buildIgnoreProperties.value;
-        if (!ignoreDirection && ignoredProps.isEmpty()) {
-            return first.equals(second); // early return if no properties are being ignored
-        }
         Map<Property<?>, Comparable<?>> map1 = first.getValues();
         Map<Property<?>, Comparable<?>> map2 = second.getValues();
         for (Property<?> prop : map1.keySet()) {
             if (!Objects.equals(map1.get(prop), map2.get(prop))
+                    && !WORLD_DETERMINED_PROPS.contains(prop)
                     && !(ignoreDirection && ORIENTATION_PROPS.contains(prop))
                     && !ignoredProps.contains(prop.getName())) {
                 return false;
@@ -1152,6 +1544,10 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                     // i'm such an idiot that i just tried to copy and paste the epic gamer moment emoji too
                     // get added to unicode when?
                 }
+                if (isCreativeBuild() && giveable(sch) && !creativeUnGiveable.contains(sch.getBlock())) {
+                    // creative: we can /give the exact block on demand, so it is as good as held
+                    return 0;
+                }
                 if (!hasThrowaway) {
                     return COST_INF;
                 }
@@ -1159,7 +1555,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                 // even more of a pain to place something wrong
                 return placeBlockCost * 1.5 * Baritone.settings().placeIncorrectBlockPenaltyMultiplier.value;
             } else {
-                if (hasThrowaway) {
+                if (hasThrowaway || isCreativeBuild()) {
                     return placeBlockCost;
                 } else {
                     return COST_INF;
