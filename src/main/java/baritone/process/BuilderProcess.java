@@ -143,6 +143,12 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
     // stand positions we already tried this stuck episode, so we never ping-pong between two of them
     private final Set<BlockPos> triedNudges = new HashSet<>();
 
+    // random-looking jitter is temporarily disabled while building so the camera settles on a target
+    // immediately instead of taking a second to converge; restored when the builder loses control
+    private boolean randomLookingDisabled = false;
+    private double savedRandomLooking = 0.01;
+    private double savedRandomLooking113 = 2;
+
     // --- build tracing (diagnostics) ---
     // a monotonically increasing tick counter and bookkeeping to detect "standing still for too long"
     private long traceTick = 0;
@@ -471,11 +477,20 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                 continue;
             }
             AABB aabb = shape.bounds();
+            Vec3 eye = RayTraceUtils.inferSneakingEyePosition(ctx.player());
+            // Only accept placements we can comfortably reach. A position right at the edge of the reach
+            // distance is hit by this ray trace but not by the client's, so the bot would aim, never click,
+            // and just thrash between several equally-too-far targets. Leaving it out makes the builder
+            // walk closer instead.
+            double maxReach = ctx.playerController().getBlockReachDistance() - 1.0;
             for (Vec3 placementMultiplier : aabbSideMultipliers(against)) {
                 double placeX = placeAgainstPos.x + aabb.minX * placementMultiplier.x + aabb.maxX * (1 - placementMultiplier.x);
                 double placeY = placeAgainstPos.y + aabb.minY * placementMultiplier.y + aabb.maxY * (1 - placementMultiplier.y);
                 double placeZ = placeAgainstPos.z + aabb.minZ * placementMultiplier.z + aabb.maxZ * (1 - placementMultiplier.z);
-                Rotation rot = RotationUtils.calcRotationFromVec3d(RayTraceUtils.inferSneakingEyePosition(ctx.player()), new Vec3(placeX, placeY, placeZ), ctx.playerRotations());
+                if (eye.distanceTo(new Vec3(placeX, placeY, placeZ)) > maxReach) {
+                    continue;
+                }
+                Rotation rot = RotationUtils.calcRotationFromVec3d(eye, new Vec3(placeX, placeY, placeZ), ctx.playerRotations());
                 // Ray trace and simulate with the stable ideal rotation, NOT the randomized aim. If we used
                 // the aim (which jitters by randomLooking every tick) the "first placeable position" would
                 // change every tick, so the builder would keep switching targets and the camera would never
@@ -551,11 +566,37 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         return onTick(calcFailed, isSafeToCancel, 0);
     }
 
+    /**
+     * Zero the random-looking jitter while the builder is placing blocks. With the jitter on, the aim
+     * only lines up with the intended block face by chance, so every placement waits for the camera to
+     * converge and the build looks like it is freezing between blocks. Restored in {@link #onLostControl}.
+     */
+    private void disableRandomLooking() {
+        if (randomLookingDisabled) {
+            return;
+        }
+        savedRandomLooking = Baritone.settings().randomLooking.value;
+        savedRandomLooking113 = Baritone.settings().randomLooking113.value;
+        Baritone.settings().randomLooking.value = 0d;
+        Baritone.settings().randomLooking113.value = 0d;
+        randomLookingDisabled = true;
+    }
+
+    private void restoreRandomLooking() {
+        if (!randomLookingDisabled) {
+            return;
+        }
+        Baritone.settings().randomLooking.value = savedRandomLooking;
+        Baritone.settings().randomLooking113.value = savedRandomLooking113;
+        randomLookingDisabled = false;
+    }
+
     private PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel, int recursions) {
         if (recursions > 100) { // onTick calls itself, don't crash
             return new PathingCommand(null, PathingCommandType.SET_GOAL_AND_PATH);
         }
         traceTick++;
+        disableRandomLooking();
         if (traceLastFeet == null || !traceLastFeet.equals(ctx.playerFeet())) {
             traceLastFeet = new BetterBlockPos(ctx.playerFeet());
             traceLastFeetChange = traceTick;
@@ -1532,6 +1573,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         creativeGiveCooldown = 0;
         stuckTicks = 0;
         triedNudges.clear();
+        restoreRandomLooking();
     }
 
     @Override
