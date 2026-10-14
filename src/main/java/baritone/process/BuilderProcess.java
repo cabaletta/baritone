@@ -733,14 +733,19 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             }
             if (lookingAtTarget || closeToRot) {
                 baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
-            } else if (placeAttemptTicks > 40) {
-                // We have been aiming at this exact placement for 2 seconds and the client still is not
-                // looking at the required face, so it can never be clicked from here. Give up on this
-                // stance and reposition instead of standing still forever.
+            } else if (placeAttemptTicks > 20) {
+                // We have been aiming at this exact placement for a second and the client still is not
+                // looking at the required face, so it can never be clicked from here. If the target is far
+                // away, walk to it; if we are already next to it, shuffle to a different stance.
                 buildTrace(String.format("PLACE stuck %dt at %s from %s, repositioning", placeAttemptTicks, placePos, ctx.playerFeet()));
-                triedNudges.add(ctx.playerFeet());
                 placeAttemptPos = null;
                 placeAttemptTicks = 0;
+                double distSq = ctx.player().getEyePosition()
+                        .distanceToSqr(placePos.getX() + 0.5, placePos.getY() + 0.5, placePos.getZ() + 0.5);
+                if (distSq > 2.25) { // more than 1.5 blocks away: go stand next to the target
+                    return new PathingCommandContext(new GoalGetToBlock(placePos), PathingCommandType.SET_GOAL_AND_PATH, bcc);
+                }
+                triedNudges.add(ctx.playerFeet());
                 Goal nudge = unstickGoal(triedNudges);
                 if (nudge != null) {
                     return new PathingCommandContext(nudge, PathingCommandType.SET_GOAL_AND_PATH, bcc);
