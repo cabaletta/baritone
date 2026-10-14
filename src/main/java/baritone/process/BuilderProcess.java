@@ -844,7 +844,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                 triedNudges.clear();
             }
         } else if (incorrectPositions != null && !incorrectPositions.isEmpty()) {
-            if (++stuckTicks > 30) {
+            if (++stuckTicks > 12) {
                 stuckTicks = 0;
                 logStuckDiagnostics(desirableOnHotbar);
                 Goal nudge = unstickGoal(triedNudges);
