@@ -736,19 +736,23 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                 // against. Clicking merely because the aim is close to the target (closeToRot) can hit a
                 // different face, which places directional blocks (stairs, etc.) the wrong way round and
                 // then the builder breaks and replaces them forever.
+                placeAttemptPos = null;
+                placeAttemptTicks = 0;
                 baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
             } else if (placeAttemptTicks > 20) {
-                // We have been aiming at this exact placement for a second and the client still is not
-                // looking at the required face, so it can never be clicked from here. If the target is far
-                // away, walk to it; if we are already next to it, shuffle to a different stance.
+                double distSq = ctx.player().getEyePosition()
+                        .distanceToSqr(placePos.getX() + 0.5, placePos.getY() + 0.5, placePos.getZ() + 0.5);
+                if (distSq > 2.25) {
+                    // Too far to click from here. Keep walking to the target on every tick until we arrive.
+                    // The attempt counter is deliberately NOT reset, otherwise the following ticks would
+                    // fall through to CANCEL_AND_SET_GOAL and cancel the path we just started.
+                    buildTrace(String.format("PLACE out of reach at %s from %s, walking there", placePos, ctx.playerFeet()));
+                    return new PathingCommandContext(new GoalGetToBlock(placePos), PathingCommandType.SET_GOAL_AND_PATH, bcc);
+                }
+                // Already next to it but still not looking at the required face: shuffle to another stance.
                 buildTrace(String.format("PLACE stuck %dt at %s from %s, repositioning", placeAttemptTicks, placePos, ctx.playerFeet()));
                 placeAttemptPos = null;
                 placeAttemptTicks = 0;
-                double distSq = ctx.player().getEyePosition()
-                        .distanceToSqr(placePos.getX() + 0.5, placePos.getY() + 0.5, placePos.getZ() + 0.5);
-                if (distSq > 2.25) { // more than 1.5 blocks away: go stand next to the target
-                    return new PathingCommandContext(new GoalGetToBlock(placePos), PathingCommandType.SET_GOAL_AND_PATH, bcc);
-                }
                 triedNudges.add(ctx.playerFeet());
                 Goal nudge = unstickGoal(triedNudges);
                 if (nudge != null) {
