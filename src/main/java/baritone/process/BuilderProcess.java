@@ -549,6 +549,21 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         return OptionalInt.empty();
     }
 
+    /**
+     * Whether clicking the given hit result, holding the currently selected block with the player's
+     * current rotation, would actually place the desired block/orientation. Used right before clicking so
+     * the builder never places e.g. a stair facing the wrong way and then has to break it again.
+     */
+    private boolean wouldPlaceCorrectly(BlockState desired, BlockHitResult hit) {
+        ItemStack held = ctx.player().getInventory().items.get(ctx.player().getInventory().selected);
+        if (held.isEmpty() || !(held.getItem() instanceof BlockItem)) {
+            return false;
+        }
+        BlockState wouldBePlaced = ((BlockItem) held.getItem()).getBlock().getStateForPlacement(
+                new BlockPlaceContext(new UseOnContext(ctx.world(), ctx.player(), InteractionHand.MAIN_HAND, held, hit) {}));
+        return wouldBePlaced != null && valid(wouldBePlaced, desired, true);
+    }
+
     private static Vec3[] aabbSideMultipliers(Direction side) {
         switch (side) {
             case UP:
@@ -760,22 +775,26 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             boolean lookingAtTarget = ctx.isLookingAt(toPlace.get().placeAgainst) && ((BlockHitResult) ctx.objectMouseOver()).getDirection().equals(toPlace.get().side);
             boolean closeToRot = ctx.playerRotations().isReallyCloseTo(rot);
             BlockPos placePos = toPlace.get().placeAgainst.relative(toPlace.get().side);
-            if (lookingAtTarget) {
-                placeAttemptPos = null;
-                placeAttemptTicks = 0;
-            } else if (placePos.equals(placeAttemptPos)) {
-                placeAttemptTicks++;
-            } else {
-                placeAttemptPos = placePos;
-                placeAttemptTicks = 1;
-            }
             BlockState desired = bcc.getSchematic(placePos.getX(), placePos.getY(), placePos.getZ(), bcc.bsi.get0(placePos));
+            HitResult over = ctx.objectMouseOver();
+            // Only place if the click would actually produce the desired block/orientation. Aiming at the
+            // right block but with the wrong yaw (or hitting a different face) places stairs/logs/chests
+            // the wrong way round, after which the builder breaks and replaces them forever.
+            boolean correctPlacement = lookingAtTarget && desired != null && over instanceof BlockHitResult
+                    && wouldPlaceCorrectly(desired, (BlockHitResult) over);
+            // count consecutive ticks without a correctly-oriented placement (the chosen target may keep
+            // changing while the camera catches up, so this is deliberately not per-target)
+            placeAttemptPos = placePos;
+            if (correctPlacement) {
+                placeAttemptTicks = 0;
+            } else {
+                placeAttemptTicks++;
+            }
             String placeKey = placePos + "|" + (desired == null ? "null" : desired.toString());
             if (!placeKey.equals(lastPlaceTraceKey) || traceTick - lastPlaceTraceTick > 20) {
                 lastPlaceTraceKey = placeKey;
                 lastPlaceTraceTick = traceTick;
                 ItemStack held = ctx.player().getInventory().items.get(toPlace.get().hotbarSelection);
-                HitResult over = ctx.objectMouseOver();
                 String overStr;
                 if (over instanceof BlockHitResult) {
                     BlockHitResult bhr = (BlockHitResult) over;
@@ -783,19 +802,16 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                 } else {
                     overStr = over == null ? "null" : over.getType().name();
                 }
-                buildTrace(String.format("PLACE %s at %s against %s side=%s slot=%d held=%s feet=%s eye=(%.2f,%.2f,%.2f) target(%s) player(%s) over=%s lookingAtTarget=%s closeToRot=%s",
+                buildTrace(String.format("PLACE %s at %s against %s side=%s slot=%d held=%s feet=%s eye=(%.2f,%.2f,%.2f) target(%s) player(%s) over=%s lookingAtTarget=%s correct=%s",
                         desired, placePos, toPlace.get().placeAgainst, toPlace.get().side, toPlace.get().hotbarSelection,
                         held.isEmpty() ? "-" : BuiltInRegistries.ITEM.getKey(held.getItem()), ctx.playerFeet(),
                         ctx.player().getEyePosition().x, ctx.player().getEyePosition().y, ctx.player().getEyePosition().z,
-                        describeRotation(rot), describeRotation(ctx.playerRotations()), overStr, lookingAtTarget, closeToRot));
+                        describeRotation(rot), describeRotation(ctx.playerRotations()), overStr, lookingAtTarget, correctPlacement));
             }
-            if (lookingAtTarget) {
-                // Only click when the client is actually looking at the exact face we intend to place
-                // against. Clicking merely because the aim is close to the target (closeToRot) can hit a
-                // different face, which places directional blocks (stairs, etc.) the wrong way round and
-                // then the builder breaks and replaces them forever.
-                placeAttemptPos = null;
-                placeAttemptTicks = 0;
+            if (correctPlacement) {
+                // Only click when the actual placement would produce the desired block/orientation. Aiming
+                // at the right block with a yaw (or a hit face) that places the wrong orientation would
+                // otherwise loop break/replace forever.
                 baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
             } else if (placeAttemptTicks > 20) {
                 double distSq = ctx.player().getEyePosition()
