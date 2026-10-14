@@ -702,7 +702,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             boolean lookingAtTarget = ctx.isLookingAt(toPlace.get().placeAgainst) && ((BlockHitResult) ctx.objectMouseOver()).getDirection().equals(toPlace.get().side);
             boolean closeToRot = ctx.playerRotations().isReallyCloseTo(rot);
             BlockPos placePos = toPlace.get().placeAgainst.relative(toPlace.get().side);
-            if (lookingAtTarget || closeToRot) {
+            if (lookingAtTarget) {
                 placeAttemptPos = null;
                 placeAttemptTicks = 0;
             } else if (placePos.equals(placeAttemptPos)) {
@@ -731,7 +731,11 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                         ctx.player().getEyePosition().x, ctx.player().getEyePosition().y, ctx.player().getEyePosition().z,
                         describeRotation(rot), describeRotation(ctx.playerRotations()), overStr, lookingAtTarget, closeToRot));
             }
-            if (lookingAtTarget || closeToRot) {
+            if (lookingAtTarget) {
+                // Only click when the client is actually looking at the exact face we intend to place
+                // against. Clicking merely because the aim is close to the target (closeToRot) can hit a
+                // different face, which places directional blocks (stairs, etc.) the wrong way round and
+                // then the builder breaks and replaces them forever.
                 baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
             } else if (placeAttemptTicks > 20) {
                 // We have been aiming at this exact placement for a second and the client still is not
