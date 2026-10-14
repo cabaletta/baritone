@@ -148,6 +148,9 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
     private long traceTick = 0;
     private long lastPlaceTraceTick = -1000;
     private String lastPlaceTraceKey = "";
+    // how many ticks we have been trying (aiming at) the same placement without managing to click it
+    private BlockPos placeAttemptPos;
+    private int placeAttemptTicks;
     private BetterBlockPos traceLastFeet;
     private long traceLastFeetChange = 0;
     private long lastStallLogTick = -1000;
@@ -473,14 +476,15 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                 double placeY = placeAgainstPos.y + aabb.minY * placementMultiplier.y + aabb.maxY * (1 - placementMultiplier.y);
                 double placeZ = placeAgainstPos.z + aabb.minZ * placementMultiplier.z + aabb.maxZ * (1 - placementMultiplier.z);
                 Rotation rot = RotationUtils.calcRotationFromVec3d(RayTraceUtils.inferSneakingEyePosition(ctx.player()), new Vec3(placeX, placeY, placeZ), ctx.playerRotations());
-                // Ray trace and simulate with the rotation that will actually be applied this tick (the
-                // target run through the aim processor, which includes the random-looking offset). If we
-                // used the ideal target instead, the builder would report a placement it can never actually
-                // click, and once it is standing still it would loop forever on that phantom placement.
-                Rotation actualRot = baritone.getLookBehavior().getAimProcessor().peekRotation(rot);
-                HitResult result = RayTraceUtils.rayTraceTowards(ctx.player(), actualRot, ctx.playerController().getBlockReachDistance(), true);
+                // Ray trace and simulate with the stable ideal rotation, NOT the randomized aim. If we used
+                // the aim (which jitters by randomLooking every tick) the "first placeable position" would
+                // change every tick, so the builder would keep switching targets and the camera would never
+                // settle on one, which looks like it freezing. The click path below still requires the
+                // client to actually look at the target, so a target that can never be clicked is dropped
+                // by the placement-timeout logic in onTick.
+                HitResult result = RayTraceUtils.rayTraceTowards(ctx.player(), rot, ctx.playerController().getBlockReachDistance(), true);
                 if (result != null && result.getType() == HitResult.Type.BLOCK && ((BlockHitResult) result).getBlockPos().equals(placeAgainstPos) && ((BlockHitResult) result).getDirection() == against.getOpposite()) {
-                    OptionalInt hotbar = hasAnyItemThatWouldPlace(toPlace, result, actualRot);
+                    OptionalInt hotbar = hasAnyItemThatWouldPlace(toPlace, result, rot);
                     if (hotbar.isPresent()) {
                         return Optional.of(new Placement(hotbar.getAsInt(), placeAgainstPos, against.getOpposite(), rot));
                     }
@@ -698,6 +702,15 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             boolean lookingAtTarget = ctx.isLookingAt(toPlace.get().placeAgainst) && ((BlockHitResult) ctx.objectMouseOver()).getDirection().equals(toPlace.get().side);
             boolean closeToRot = ctx.playerRotations().isReallyCloseTo(rot);
             BlockPos placePos = toPlace.get().placeAgainst.relative(toPlace.get().side);
+            if (lookingAtTarget || closeToRot) {
+                placeAttemptPos = null;
+                placeAttemptTicks = 0;
+            } else if (placePos.equals(placeAttemptPos)) {
+                placeAttemptTicks++;
+            } else {
+                placeAttemptPos = placePos;
+                placeAttemptTicks = 1;
+            }
             BlockState desired = bcc.getSchematic(placePos.getX(), placePos.getY(), placePos.getZ(), bcc.bsi.get0(placePos));
             String placeKey = placePos + "|" + (desired == null ? "null" : desired.toString());
             if (!placeKey.equals(lastPlaceTraceKey) || traceTick - lastPlaceTraceTick > 20) {
@@ -720,6 +733,18 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             }
             if (lookingAtTarget || closeToRot) {
                 baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
+            } else if (placeAttemptTicks > 40) {
+                // We have been aiming at this exact placement for 2 seconds and the client still is not
+                // looking at the required face, so it can never be clicked from here. Give up on this
+                // stance and reposition instead of standing still forever.
+                buildTrace(String.format("PLACE stuck %dt at %s from %s, repositioning", placeAttemptTicks, placePos, ctx.playerFeet()));
+                triedNudges.add(ctx.playerFeet());
+                placeAttemptPos = null;
+                placeAttemptTicks = 0;
+                Goal nudge = unstickGoal(triedNudges);
+                if (nudge != null) {
+                    return new PathingCommandContext(nudge, PathingCommandType.SET_GOAL_AND_PATH, bcc);
+                }
             }
             return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
         }
@@ -765,7 +790,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                 triedNudges.clear();
             }
         } else if (incorrectPositions != null && !incorrectPositions.isEmpty()) {
-            if (++stuckTicks > 60) {
+            if (++stuckTicks > 30) {
                 stuckTicks = 0;
                 logStuckDiagnostics(desirableOnHotbar);
                 Goal nudge = unstickGoal(triedNudges);
