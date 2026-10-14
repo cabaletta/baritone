@@ -157,6 +157,12 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
     // how many ticks we have been trying (aiming at) the same placement without managing to click it
     private BlockPos placeAttemptPos;
     private int placeAttemptTicks;
+    // the LookBehavior ticks before the builder, so updateTarget() from this tick is only applied next
+    // tick. The placement search uses the current rotation, so without holding a placement for a few
+    // ticks the chosen target would change before the camera ever turned onto it and nothing got placed.
+    private Placement stickyPlacement;
+    private long stickyPlacementTick = -1000;
+    private static final int STICKY_PLACEMENT_TICKS = 4;
     private BetterBlockPos traceLastFeet;
     private long traceLastFeetChange = 0;
     private long lastStallLogTick = -1000;
@@ -600,6 +606,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         if (traceLastFeet == null || !traceLastFeet.equals(ctx.playerFeet())) {
             traceLastFeet = new BetterBlockPos(ctx.playerFeet());
             traceLastFeetChange = traceTick;
+            stickyPlacement = null; // moved, so a held placement is no longer aimable
         }
         approxPlaceable = approxPlaceable(36);
         if (baritone.getInputOverrideHandler().isInputForcedDown(Input.CLICK_LEFT)) {
@@ -717,7 +724,17 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
         }
         List<BlockState> desirableOnHotbar = new ArrayList<>();
-        Optional<Placement> toPlace = searchForPlacables(bcc, desirableOnHotbar);
+        Optional<Placement> fresh = searchForPlacables(bcc, desirableOnHotbar);
+        Optional<Placement> toPlace;
+        if (stickyPlacement != null && traceTick - stickyPlacementTick < STICKY_PLACEMENT_TICKS) {
+            // hold the previously chosen placement so the camera (which ticks before us and therefore
+            // only applies our rotation next tick) actually has time to turn onto it
+            toPlace = Optional.of(stickyPlacement);
+        } else {
+            toPlace = fresh;
+            stickyPlacement = fresh.orElse(null);
+            stickyPlacementTick = traceTick;
+        }
 
         // Stand-still watchdog: if we have not moved for 5 seconds while the builder is in control, dump a
         // full snapshot (position, camera, target, inventory) so a stuck build can be diagnosed from the
@@ -1573,6 +1590,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         creativeGiveCooldown = 0;
         stuckTicks = 0;
         triedNudges.clear();
+        stickyPlacement = null;
         restoreRandomLooking();
     }
 
