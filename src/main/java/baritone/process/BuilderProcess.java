@@ -961,6 +961,25 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
      */
     private Goal unstickGoal(Set<BlockPos> tried) {
         BetterBlockPos feet = ctx.playerFeet();
+
+        // 1) Prefer relocating to a target that is not already in reach. Being adjacent to any single
+        // target satisfies the composite goal, so the pathfinder would otherwise never take us to the
+        // remaining (far away) targets and we would sit still forever.
+        BlockPos far = null;
+        double farDist = Double.MAX_VALUE;
+        for (BetterBlockPos pos : incorrectPositions) {
+            double dist = pos.distSqr(feet);
+            if (dist >= 4 && dist < farDist) { // >= 2 blocks away so the goal is not already satisfied
+                farDist = dist;
+                far = pos;
+            }
+        }
+        if (far != null) {
+            tried.clear();
+            return new GoalGetToBlock(far);
+        }
+
+        // 2) Everything left is within reach: shuffle to an untried standable spot beside the nearest one.
         BlockPos nearest = null;
         double bestDist = Double.MAX_VALUE;
         for (BetterBlockPos pos : incorrectPositions) {
@@ -994,6 +1013,8 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             }
         }
         if (best == null) {
+            // Every close stance has been tried; start the shuffle over rather than freezing.
+            tried.clear();
             return null;
         }
         tried.add(best);
