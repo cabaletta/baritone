@@ -473,13 +473,14 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                 double placeY = placeAgainstPos.y + aabb.minY * placementMultiplier.y + aabb.maxY * (1 - placementMultiplier.y);
                 double placeZ = placeAgainstPos.z + aabb.minZ * placementMultiplier.z + aabb.maxZ * (1 - placementMultiplier.z);
                 Rotation rot = RotationUtils.calcRotationFromVec3d(RayTraceUtils.inferSneakingEyePosition(ctx.player()), new Vec3(placeX, placeY, placeZ), ctx.playerRotations());
-                // Simulate and ray trace using the exact target rotation, not the smoothed/randomized
-                // aim. Directional blocks (logs, stairs, chests) take their orientation from the aim, so
-                // using the not-yet-converged actual rotation would pick the wrong axis/facing and the
-                // builder would place it wrong and then immediately break it again.
-                HitResult result = RayTraceUtils.rayTraceTowards(ctx.player(), rot, ctx.playerController().getBlockReachDistance(), true);
+                // Ray trace and simulate with the rotation that will actually be applied this tick (the
+                // target run through the aim processor, which includes the random-looking offset). If we
+                // used the ideal target instead, the builder would report a placement it can never actually
+                // click, and once it is standing still it would loop forever on that phantom placement.
+                Rotation actualRot = baritone.getLookBehavior().getAimProcessor().peekRotation(rot);
+                HitResult result = RayTraceUtils.rayTraceTowards(ctx.player(), actualRot, ctx.playerController().getBlockReachDistance(), true);
                 if (result != null && result.getType() == HitResult.Type.BLOCK && ((BlockHitResult) result).getBlockPos().equals(placeAgainstPos) && ((BlockHitResult) result).getDirection() == against.getOpposite()) {
-                    OptionalInt hotbar = hasAnyItemThatWouldPlace(toPlace, result, rot);
+                    OptionalInt hotbar = hasAnyItemThatWouldPlace(toPlace, result, actualRot);
                     if (hotbar.isPresent()) {
                         return Optional.of(new Placement(hotbar.getAsInt(), placeAgainstPos, against.getOpposite(), rot));
                     }
@@ -672,6 +673,23 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         }
         List<BlockState> desirableOnHotbar = new ArrayList<>();
         Optional<Placement> toPlace = searchForPlacables(bcc, desirableOnHotbar);
+
+        // Stand-still watchdog: if we have not moved for 5 seconds while the builder is in control, dump a
+        // full snapshot (position, camera, target, inventory) so a stuck build can be diagnosed from the
+        // log. This runs before the placement return below, otherwise it would never fire while the bot is
+        // stuck repeating a placement it can never actually perform.
+        if (!baritone.getPathingBehavior().isPathing()
+                && traceTick - traceLastFeetChange >= 100
+                && traceTick - lastStallLogTick >= 100) {
+            lastStallLogTick = traceTick;
+            buildTrace(String.format(
+                    "STALL %.1fs at %s | toPlace=%s pathing=%s player(%s) | left=%d need=[%s]",
+                    (traceTick - traceLastFeetChange) / 20.0, ctx.playerFeet(), toPlace.isPresent(),
+                    baritone.getPathingBehavior().isPathing(), describeRotation(ctx.playerRotations()),
+                    incorrectPositions == null ? 0 : incorrectPositions.size(), summarizeNeeded(desirableOnHotbar)));
+            logStuckDiagnostics(desirableOnHotbar);
+        }
+
         if (toPlace.isPresent() && isSafeToCancel && ctx.player().onGround() && ticks <= 0) {
             Rotation rot = toPlace.get().rot;
             baritone.getLookBehavior().updateTarget(rot, true);
@@ -686,10 +704,19 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                 lastPlaceTraceKey = placeKey;
                 lastPlaceTraceTick = traceTick;
                 ItemStack held = ctx.player().getInventory().items.get(toPlace.get().hotbarSelection);
-                buildTrace(String.format("PLACE %s at %s against %s side=%s slot=%d held=%s target(%s) player(%s) lookingAtTarget=%s closeToRot=%s",
+                HitResult over = ctx.objectMouseOver();
+                String overStr;
+                if (over instanceof BlockHitResult) {
+                    BlockHitResult bhr = (BlockHitResult) over;
+                    overStr = bhr.getBlockPos() + "/" + bhr.getDirection();
+                } else {
+                    overStr = over == null ? "null" : over.getType().name();
+                }
+                buildTrace(String.format("PLACE %s at %s against %s side=%s slot=%d held=%s feet=%s eye=(%.2f,%.2f,%.2f) target(%s) player(%s) over=%s lookingAtTarget=%s closeToRot=%s",
                         desired, placePos, toPlace.get().placeAgainst, toPlace.get().side, toPlace.get().hotbarSelection,
-                        held.isEmpty() ? "-" : BuiltInRegistries.ITEM.getKey(held.getItem()), describeRotation(rot),
-                        describeRotation(ctx.playerRotations()), lookingAtTarget, closeToRot));
+                        held.isEmpty() ? "-" : BuiltInRegistries.ITEM.getKey(held.getItem()), ctx.playerFeet(),
+                        ctx.player().getEyePosition().x, ctx.player().getEyePosition().y, ctx.player().getEyePosition().z,
+                        describeRotation(rot), describeRotation(ctx.playerRotations()), overStr, lookingAtTarget, closeToRot));
             }
             if (lookingAtTarget || closeToRot) {
                 baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
@@ -723,21 +750,6 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                     }
                 }
             }
-        }
-
-        // Stand-still watchdog: if we have not moved for 5 seconds while the builder is in control, dump a
-        // full snapshot (position, camera, what we are trying to place, inventory) so a stuck build can be
-        // diagnosed from the log even when the bot does not report anything to chat.
-        if (!baritone.getPathingBehavior().isPathing()
-                && traceTick - traceLastFeetChange >= 100
-                && traceTick - lastStallLogTick >= 100) {
-            lastStallLogTick = traceTick;
-            buildTrace(String.format(
-                    "STALL %.1fs at %s | toPlace=%s pathing=%s player(%s) | left=%d need=[%s]",
-                    (traceTick - traceLastFeetChange) / 20.0, ctx.playerFeet(), toPlace.isPresent(),
-                    baritone.getPathingBehavior().isPathing(), describeRotation(ctx.playerRotations()),
-                    incorrectPositions == null ? 0 : incorrectPositions.size(), summarizeNeeded(desirableOnHotbar)));
-            logStuckDiagnostics(desirableOnHotbar);
         }
 
         // The goal returned below is a GoalComposite satisfied by being adjacent to ANY target, so if we
