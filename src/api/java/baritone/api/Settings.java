@@ -131,7 +131,7 @@ public final class Settings {
     public final Setting<Double> blockBreakAdditionalPenalty = new Setting<>(2D);
 
     /**
-     * Additional penalty for hitting the space bar (ascend, pillar, or parkour) because it uses hunger
+     * Additional penalty for hitting the space bar (ascend, diagonal ascend, pillar, or parkour) because it uses hunger
      */
     public final Setting<Double> jumpPenalty = new Setting<>(2D);
 
