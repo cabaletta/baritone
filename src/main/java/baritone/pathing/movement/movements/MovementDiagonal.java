@@ -211,7 +211,7 @@ public class MovementDiagonal extends Movement {
                     || (!BTop && BMid && BLow)) { // head bonk B
                 return;
             }
-            res.cost = multiplier * SQRT_2 + JUMP_ONE_BLOCK_COST;
+            res.cost = multiplier * SQRT_2 + JUMP_ONE_BLOCK_COST + context.jumpPenalty;
             res.x = destX;
             res.z = destZ;
             res.y = y + 1;
