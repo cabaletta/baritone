@@ -37,9 +37,11 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
+import net.minecraft.world.level.EmptyBlockGetter;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.piston.MovingPistonBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DoorHingeSide;
 import net.minecraft.world.level.block.state.properties.Half;
@@ -418,7 +420,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         if (block instanceof StairBlock) {
             return YES;
         }
-        if (isWater(state)) {
+        if (isWater(state) && !isWaterloggedSolidTop(state)) {
             return MAYBE;
         }
         if (MovementHelper.isLava(state) && Baritone.settings().assumeWalkOnLava.value) {
@@ -748,6 +750,19 @@ public interface MovementHelper extends ActionCosts, Helper {
      */
     static boolean isWater(IPlayerContext ctx, BlockPos bp) {
         return isWater(BlockStateInterface.get(ctx, bp));
+    }
+
+    /**
+     * Returns whether or not the block is waterlogged with a full, sturdy top face, such as a top slab. Its water
+     * stays below the feet of anything standing on it, so it is a floor like its dry form, not water to swim in
+     * or to break a fall.
+     *
+     * @param state The block state
+     * @return Whether or not the block is a waterlogged block with a solid top
+     */
+    static boolean isWaterloggedSolidTop(BlockState state) {
+        return state.hasProperty(BlockStateProperties.WATERLOGGED) && state.getValue(BlockStateProperties.WATERLOGGED)
+                && state.isFaceSturdy(EmptyBlockGetter.INSTANCE, BlockPos.ZERO, Direction.UP);
     }
 
     static boolean isLava(BlockState state) {
