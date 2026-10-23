@@ -269,7 +269,14 @@ public final class Settings {
      * If a schematic asks for air at a certain position, and that position currently contains a block on this list, it will be treated as correct.
      */
     public final Setting<List<Block>> buildIgnoreBlocks = new Setting<>(new ArrayList<>(Arrays.asList(
-
+            // naturally regrowing overgrowth: the builder should never mine these away where the
+            // schematic asks for air, otherwise it fights the world and breaks the same block forever
+            Blocks.SHORT_GRASS,
+            Blocks.TALL_GRASS,
+            Blocks.FERN,
+            Blocks.LARGE_FERN,
+            Blocks.DEAD_BUSH,
+            Blocks.SNOW
     )));
 
     /**
@@ -288,7 +295,17 @@ public final class Settings {
      * <p>
      * Syntax same as {@link #buildSubstitutes}
      */
-    public final Setting<Map<Block, List<Block>>> buildValidSubstitutes = new Setting<>(new HashMap<>());
+    public final Setting<Map<Block, List<Block>>> buildValidSubstitutes = new Setting<>(defaultValidSubstitutes());
+
+    /**
+     * By default grass is accepted where dirt is requested, because grass spreads onto placed dirt and
+     * the builder would otherwise break and replace the same block forever as the grass regrows.
+     */
+    private static Map<Block, List<Block>> defaultValidSubstitutes() {
+        Map<Block, List<Block>> map = new HashMap<>();
+        map.put(Blocks.DIRT, new ArrayList<>(Arrays.asList(Blocks.GRASS_BLOCK)));
+        return map;
+    }
 
     /**
      * A mapping of blocks to blocks to be built instead
@@ -1070,6 +1087,15 @@ public final class Settings {
     public final Setting<Boolean> skipFailedLayers = new Setting<>(false);
 
     /**
+     * While in creative mode, automatically run /give to obtain blocks the schematic needs
+     * but that are not currently in the inventory.
+     * <p>
+     * Requires permission to use /give on the server; if the item never arrives after a few
+     * attempts, the build pauses rather than spamming commands.
+     */
+    public final Setting<Boolean> buildCreativeAutoGive = new Setting<>(true);
+
+    /**
      * Only build the selected part of schematics
      */
     public final Setting<Boolean> buildOnlySelection = new Setting<>(false);
@@ -1178,6 +1204,16 @@ public final class Settings {
      * is only necessary in very large schematics where rescanning the whole thing is costly.
      */
     public final Setting<Integer> builderTickScanRadius = new Setting<>(5);
+
+    /**
+     * When placing a block, prefer to stand at least this many blocks away from it (up to the player's
+     * reach). Standing right next to a block can make the builder place it facing the wrong way or from
+     * an awkward angle. Values above 1 are best effort: if no standable spot exists at that distance the
+     * builder falls back to standing adjacent.
+     * <p>
+     * 1 disables this and keeps the original behaviour.
+     */
+    public final Setting<Integer> builderMinStandDistance = new Setting<>(1);
 
     /**
      * While mining, should it also consider dropped items of the correct type as a pathing destination (as well as ore blocks)?
