@@ -42,6 +42,10 @@ public final class BlockStateOctreeInterface {
         this.minY = context.minY;
     }
 
+    /**
+     * The caller must hold the context read lock and have exclusive access
+     * to this {@code BlockStateOctreeInterface}.
+     */
     public boolean get0(final int x, final int y, final int z) {
         final int adjustedY = y - this.minY;
         if (adjustedY < 0 || adjustedY > 383) {
