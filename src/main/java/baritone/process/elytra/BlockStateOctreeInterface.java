@@ -28,10 +28,9 @@ public final class BlockStateOctreeInterface {
     private final NetherPathfinderContext context;
     private final NetherPathfinder pathfinder;
     private final int minY;
-    // The chunk the last lookup fell in, so that a run of lookups inside one chunk costs one table
-    // lookup. Cleared under the write lock by whatever replaces or culls chunks.
-    Chunk chunk;
 
+    // The chunk the last lookup fell in, so that a run of lookups inside one chunk costs one table lookup.
+    private Chunk chunk;
     // Guarantee that the first lookup will fetch the context by setting MAX_VALUE
     private int prevChunkX = Integer.MAX_VALUE;
     private int prevChunkZ = Integer.MAX_VALUE;
@@ -44,7 +43,8 @@ public final class BlockStateOctreeInterface {
 
     /**
      * The caller must hold the context read lock and have exclusive access
-     * to this {@code BlockStateOctreeInterface}.
+     * to this {@code BlockStateOctreeInterface}. Has an internal cache which
+     * may go stale when releasing the read lock.
      */
     public boolean get0(final int x, final int y, final int z) {
         final int adjustedY = y - this.minY;
@@ -53,7 +53,7 @@ public final class BlockStateOctreeInterface {
         }
         final int chunkX = x >> 4;
         final int chunkZ = z >> 4;
-        if (this.chunk == null | ((chunkX ^ this.prevChunkX) | (chunkZ ^ this.prevChunkZ)) != 0) {
+        if (((chunkX ^ this.prevChunkX) | (chunkZ ^ this.prevChunkZ)) != 0) {
             this.prevChunkX = chunkX;
             this.prevChunkZ = chunkZ;
             this.chunk = this.pathfinder.getChunkOrDefault(chunkX, chunkZ, true);

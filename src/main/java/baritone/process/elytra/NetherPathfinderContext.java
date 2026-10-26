@@ -38,9 +38,6 @@ import net.minecraft.world.phys.Vec3;
 
 import java.lang.ref.SoftReference;
 import java.nio.file.Path;
-import java.util.Collections;
-import java.util.Set;
-import java.util.WeakHashMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -76,12 +73,6 @@ public final class NetherPathfinderContext implements IElytraPathFinder {
     private final ResourceKey<Level> dimension;
     final int minY;
 
-    // We want to do caching on concurrent lookups without synchronizing the cache,
-    // so we need to give each reader a separate cache. We also need to keep
-    // references to all caches so we can invalidate them, and those references
-    // have to be weak so we don't leak memory. That gets us this funky setup.
-    private final Set<BlockStateOctreeInterface> bois = Collections.newSetFromMap(new WeakHashMap<>());
-
     public NetherPathfinderContext(long seed, Path cache, Level world) {
         this.dimension = world.dimension();
         this.minY = world.dimensionType().minY();
@@ -104,7 +95,6 @@ public final class NetherPathfinderContext implements IElytraPathFinder {
         this.writeExecutor.execute(() -> {
             writeLock.lock();
             try {
-                this.bois.forEach(boi -> boi.chunk = null);
                 this.context.cullFarChunks(chunkX, chunkZ, maxDistanceBlocks);
             } finally {
                 writeLock.unlock();
@@ -121,8 +111,6 @@ public final class NetherPathfinderContext implements IElytraPathFinder {
             if (chunk != null) {
                 writeLock.lock();
                 try {
-                    // we might replace this chunk
-                    this.bois.forEach(boi -> boi.chunk = null);
                     final Chunk packed = this.context.allocateAndInsertChunk(chunk.getPos().x, chunk.getPos().z);
                     writeChunkData(chunk, packed);
                 } finally {
@@ -277,9 +265,9 @@ public final class NetherPathfinderContext implements IElytraPathFinder {
     }
 
     public BlockStateOctreeInterface getBoi() {
-        BlockStateOctreeInterface boi = new BlockStateOctreeInterface(this);
-        this.bois.add(boi);
-        return boi;
+        // If we end up needing cache invalidation we can keep references in a
+        // Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()))
+        return new BlockStateOctreeInterface(this);
     }
 
     public void cancel() {
