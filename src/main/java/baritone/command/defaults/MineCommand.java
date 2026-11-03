@@ -17,6 +17,7 @@
 
 package baritone.command.defaults;
 
+import baritone.Baritone;
 import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.command.Command;
@@ -46,7 +47,7 @@ public class MineCommand extends Command {
         }
         BaritoneAPI.getProvider().getWorldScanner().repack(ctx);
         logDirect(String.format("Mining %s", boms.toString()));
-        baritone.getMineProcess().mine(quantity, boms.toArray(new BlockOptionalMeta[0]));
+        baritone.getMineProcess().mine(quantity, boms, Baritone.settings().mineDropsConsiderSilkTouch.value);
     }
 
     @Override

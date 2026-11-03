@@ -19,6 +19,10 @@ package baritone.api.process;
 
 import baritone.api.utils.BlockOptionalMeta;
 import baritone.api.utils.BlockOptionalMetaLookup;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 import net.minecraft.world.level.block.Block;
 
@@ -69,10 +73,22 @@ public interface IMineProcess extends IBaritoneProcess {
     /**
      * Begin to search for and mine the specified blocks.
      *
+     * @param quantity The total number of items to get
      * @param boms The blocks to mine
      */
     default void mine(int quantity, BlockOptionalMeta... boms) {
         mine(quantity, new BlockOptionalMetaLookup(boms));
+    }
+
+    /**
+     * Begin to search for and mine the specified blocks.
+     *
+     * @param quantity The total number of items to get
+     * @param boms The blocks to mine
+     * @param considerSilkTouch Whether to consider silk touch when determining drops
+     */
+    default void mine(int quantity, List<BlockOptionalMeta> boms, boolean considerSilkTouch) {
+        mine(quantity, new BlockOptionalMetaLookup(boms, Optional.of(considerSilkTouch)));
     }
 
     /**
@@ -91,6 +107,7 @@ public interface IMineProcess extends IBaritoneProcess {
      * @param blocks   The blocks to mine
      */
     default void mine(int quantity, Block... blocks) {
+        System.out.println("Mining with blocks: " + Stream.of(blocks).map(Block::toString).reduce((a, b) -> a + ", " + b).orElse("none"));
         mine(quantity, new BlockOptionalMetaLookup(
                 Stream.of(blocks)
                         .map(BlockOptionalMeta::new)

@@ -23,10 +23,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Stream;
 
 public class BlockOptionalMetaLookup {
@@ -45,6 +42,24 @@ public class BlockOptionalMetaLookup {
             blockStates.addAll(bom.getAllBlockStates());
             stacks.addAll(bom.stackHashes());
         }
+        this.blockSet = ImmutableSet.copyOf(blocks);
+        this.blockStateSet = ImmutableSet.copyOf(blockStates);
+        this.stackHashes = ImmutableSet.copyOf(stacks);
+    }
+
+    public BlockOptionalMetaLookup(List<BlockOptionalMeta> boms,  Optional<Boolean> considerSilkTouch) {
+        this.boms = boms.stream()
+                .map(bom -> new BlockOptionalMeta(bom.getBlock(), considerSilkTouch))
+                .toArray(BlockOptionalMeta[]::new);
+        Set<Block> blocks = new HashSet<>();
+        Set<BlockState> blockStates = new HashSet<>();
+        Set<Integer> stacks = new HashSet<>();
+        boms.stream()
+                .map(bom -> new BlockOptionalMeta(bom.getBlock(), considerSilkTouch))
+                .forEach(bom -> {
+                    blocks.add(bom.getBlock());
+                    blockStates.addAll(bom.getAllBlockStates());
+                    stacks.addAll(bom.stackHashes());});
         this.blockSet = ImmutableSet.copyOf(blocks);
         this.blockStateSet = ImmutableSet.copyOf(blockStates);
         this.stackHashes = ImmutableSet.copyOf(stacks);
