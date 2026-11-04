@@ -157,7 +157,8 @@ public interface IRenderer {
                 preparedRenderType.drawFromBuffer(info, renderPass);
             }
         }
-        stagedVertexBuffer.endFrame();
+        // Keep buffer pools alive until every overlay in this frame has drawn.
+        stagedVertexBuffer.endDraw();
     }
 
     static void emitLine(BufferBuilder bufferBuilder, PoseStack stack, double x1, double y1, double z1, double x2, double y2, double z2, float lineWidth) {

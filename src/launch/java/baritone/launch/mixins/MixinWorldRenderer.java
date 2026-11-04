@@ -20,6 +20,7 @@ package baritone.launch.mixins;
 import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.event.events.RenderEvent;
+import baritone.utils.IRenderer;
 import com.mojang.blaze3d.resource.GraphicsResourceAllocator;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
@@ -43,10 +44,14 @@ public class MixinWorldRenderer {
             at = @At("RETURN")
     )
     private void onStartHand(final GraphicsResourceAllocator resourceAllocator, final boolean renderOutline, final CameraRenderState cameraState, final GpuBufferSlice terrainFog, final Vector4f fogColor, final boolean shouldRenderSky, final boolean consistentDepthRequired, final CallbackInfo ci) {
-        for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
-            PoseStack poseStack = new PoseStack();
-            poseStack.mulPose(cameraState.viewRotationMatrix);
-            ibaritone.getGameEventHandler().onRenderPass(new RenderEvent(cameraState.cameraEntityPartialTicks, poseStack, cameraState.projectionMatrix));
+        try {
+            for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
+                PoseStack poseStack = new PoseStack();
+                poseStack.mulPose(cameraState.viewRotationMatrix);
+                ibaritone.getGameEventHandler().onRenderPass(new RenderEvent(cameraState.cameraEntityPartialTicks, poseStack, cameraState.projectionMatrix));
+            }
+        } finally {
+            IRenderer.stagedVertexBuffer.endFrame();
         }
     }
 }
