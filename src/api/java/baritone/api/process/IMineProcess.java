@@ -83,17 +83,6 @@ public interface IMineProcess extends IBaritoneProcess {
     /**
      * Begin to search for and mine the specified blocks.
      *
-     * @param quantity The total number of items to get
-     * @param boms The blocks to mine
-     * @param considerSilkTouch Whether to consider silk touch when determining drops
-     */
-    default void mine(int quantity, List<BlockOptionalMeta> boms, boolean considerSilkTouch) {
-        mine(quantity, new BlockOptionalMetaLookup(boms, Optional.of(considerSilkTouch)));
-    }
-
-    /**
-     * Begin to search for and mine the specified blocks.
-     *
      * @param boms The blocks to mine
      */
     default void mine(BlockOptionalMeta... boms) {

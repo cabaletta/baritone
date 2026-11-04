@@ -1187,7 +1187,7 @@ public final class Settings {
     /**
      * While mining, should it also consider dropped items of the correct type as if they were broken with silk touch as a pathing destination.
      */
-    public final Setting<Boolean> mineDropsConsiderSilkTouch = new Setting<>(false);
+    public final Setting<Boolean> mineDropsConsiderSilkTouch = new Setting<>(true);
 
     /**
      * While mining, wait this number of milliseconds after mining an ore to see if it will drop an item

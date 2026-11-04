@@ -25,6 +25,7 @@ import baritone.api.command.argument.IArgConsumer;
 import baritone.api.command.datatypes.ForBlockOptionalMeta;
 import baritone.api.command.exception.CommandException;
 import baritone.api.utils.BlockOptionalMeta;
+import baritone.api.utils.BlockOptionalMetaLookup;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -47,7 +48,7 @@ public class MineCommand extends Command {
         }
         BaritoneAPI.getProvider().getWorldScanner().repack(ctx);
         logDirect(String.format("Mining %s", boms.toString()));
-        baritone.getMineProcess().mine(quantity, boms, Baritone.settings().mineDropsConsiderSilkTouch.value);
+        baritone.getMineProcess().mine(quantity, new BlockOptionalMetaLookup(boms, Baritone.settings().mineDropsConsiderSilkTouch.value));
     }
 
     @Override

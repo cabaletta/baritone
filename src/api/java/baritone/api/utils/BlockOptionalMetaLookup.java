@@ -47,7 +47,7 @@ public class BlockOptionalMetaLookup {
         this.stackHashes = ImmutableSet.copyOf(stacks);
     }
 
-    public BlockOptionalMetaLookup(List<BlockOptionalMeta> boms,  Optional<Boolean> considerSilkTouch) {
+    public BlockOptionalMetaLookup(List<BlockOptionalMeta> boms,  Boolean considerSilkTouch) {
         this.boms = boms.stream()
                 .map(bom -> new BlockOptionalMeta(bom.getBlock(), considerSilkTouch))
                 .toArray(BlockOptionalMeta[]::new);

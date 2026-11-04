@@ -87,10 +87,10 @@ public final class BlockOptionalMeta {
         this.propertiesDescription = "{}";
         this.blockstates = getStates(block, Collections.emptyMap());
         this.stateHashes = getStateHashes(blockstates);
-        this.stackHashes = getStackHashes(blockstates, Optional.empty());
+        this.stackHashes = getStackHashes(blockstates, false);
     }
 
-    public BlockOptionalMeta(@Nonnull Block block, @Nonnull Optional<Boolean> considerSilkTouch) {
+    public BlockOptionalMeta(@Nonnull Block block, @Nonnull Boolean considerSilkTouch) {
         this.block = block;
         this.propertiesDescription = "{}";
         this.blockstates = getStates(block, Collections.emptyMap());
@@ -113,7 +113,7 @@ public final class BlockOptionalMeta {
         propertiesDescription = props == null ? "{}" : "{" + props.replace("=", ":") + "}";
         blockstates = getStates(block, properties);
         stateHashes = getStateHashes(blockstates);
-        stackHashes = getStackHashes(blockstates, Optional.empty());
+        stackHashes = getStackHashes(blockstates, false);
         // This is a bit of a hack to clear the drops cache when calling the constructor with a new selector
         // The reason this is done is because the selector function is used to identify the block and its properties initally, but the blocks drops are cached and dont take silk into account.
         drops = new HashMap<>();
@@ -160,7 +160,7 @@ public final class BlockOptionalMeta {
         );
     }
 
-    private static ImmutableSet<Integer> getStackHashes(Set<BlockState> blockstates, Optional<Boolean> considerSilkTouch) {
+    private static ImmutableSet<Integer> getStackHashes(Set<BlockState> blockstates, Boolean considerSilkTouch) {
         //noinspection ConstantConditions
         return ImmutableSet.copyOf(
                 blockstates.stream()
@@ -232,7 +232,7 @@ public final class BlockOptionalMeta {
         return null;
     }
 
-    private static synchronized List<Item> drops(Block b, Optional<Boolean> considerSilkTouch) {
+    private static synchronized List<Item> drops(Block b, Boolean considerSilkTouch) {
         return drops.computeIfAbsent(b, block -> {
             Optional<ResourceKey<LootTable>> optionalLootTableKey = block.getLootTable();
             if (optionalLootTableKey.isEmpty()) {
@@ -249,7 +249,7 @@ public final class BlockOptionalMeta {
                     LootParams.Builder lv5NoSilk = lv5base.withParameter(LootContextParams.TOOL, new ItemStack(Items.NETHERITE_PICKAXE));
                     getDrops(block, lv5NoSilk).stream().map(ItemStack::getItem).forEach(items::add);
 
-                    if (considerSilkTouch.isPresent() && considerSilkTouch.get()){
+                    if (considerSilkTouch != null && considerSilkTouch){
                         ItemStack silkTool = new ItemStack(Items.NETHERITE_PICKAXE);
                         lv2.registryAccess().lookupOrThrow(Registries.ENCHANTMENT)
                                 .get(Enchantments.SILK_TOUCH)
