@@ -54,26 +54,29 @@ public final class InventoryBehavior extends Behavior implements Helper {
 
     @Override
     public void onTick(TickEvent event) {
-        if (!Baritone.settings().allowInventory.value) {
-            return;
-        }
         if (event.getType() == TickEvent.Type.OUT) {
             return;
         }
-        if (ctx.player().containerMenu != ctx.player().inventoryMenu) {
+        if (ctx.player() == null || ctx.player().containerMenu != ctx.player().inventoryMenu) {
             // we have a crafting table or a chest or something open
             return;
         }
+        // count ticks even when allowInventory is off, so that builder-driven /give hotbar moves
+        // (which bypass the allowInventory gate in BuilderProcess) can be paced correctly
         ticksSinceLastInventoryMove++;
-        if (baritone.getPathingBehavior().isPathing()) {
-            if (firstValidThrowaway() >= 9) { // aka there are none on the hotbar, but there are some in main inventory
-                requestSwapWithHotBar(firstValidThrowaway(), 8);
-            }
-            int pick = bestToolAgainst(Blocks.STONE, PickaxeItem.class);
-            if (pick >= 9) {
-                requestSwapWithHotBar(pick, 0);
+        if (Baritone.settings().allowInventory.value) {
+            if (baritone.getPathingBehavior().isPathing()) {
+                if (firstValidThrowaway() >= 9) { // aka there are none on the hotbar, but there are some in main inventory
+                    requestSwapWithHotBar(firstValidThrowaway(), 8);
+                }
+                int pick = bestToolAgainst(Blocks.STONE, PickaxeItem.class);
+                if (pick >= 9) {
+                    requestSwapWithHotBar(pick, 0);
+                }
             }
         }
+        // a move requested by the builder (creative /give) must still run when allowInventory is off,
+        // otherwise attemptToPutOnHotbar always fails and the builder stalls in REQUEST_PAUSE forever
         if (lastTickRequestedMove != null) {
             logDebug("Remembering to move " + lastTickRequestedMove[0] + " " + lastTickRequestedMove[1] + " from a previous tick");
             requestSwapWithHotBar(lastTickRequestedMove[0], lastTickRequestedMove[1]);

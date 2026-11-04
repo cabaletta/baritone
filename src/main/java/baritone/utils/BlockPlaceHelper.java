@@ -42,11 +42,23 @@ public class BlockPlaceHelper {
         }
         HitResult mouseOver = ctx.objectMouseOver();
         if (!rightClickRequested || ctx.player().isHandsBusy() || mouseOver == null || mouseOver.getType() != HitResult.Type.BLOCK) {
+            if (rightClickRequested && debugCooldown-- <= 0) {
+                debugCooldown = 20;
+                System.out.println("[Baritone-Build] PLACE-ATTEMPT skipped busy=" + ctx.player().isHandsBusy()
+                        + " over=" + (mouseOver == null ? "null" : mouseOver.getType()) + " timer=" + rightClickTimer);
+            }
             return;
         }
         rightClickTimer = Baritone.settings().rightClickSpeed.value - BASE_PLACE_DELAY;
         for (InteractionHand hand : InteractionHand.values()) {
-            if (ctx.playerController().processRightClickBlock(ctx.player(), ctx.world(), hand, (BlockHitResult) mouseOver) == InteractionResult.SUCCESS) {
+            InteractionResult res = ctx.playerController().processRightClickBlock(ctx.player(), ctx.world(), hand, (BlockHitResult) mouseOver);
+            if (debugCooldown-- <= 0) {
+                debugCooldown = 20;
+                System.out.println("[Baritone-Build] PLACE-ATTEMPT hand=" + hand + " result=" + res
+                        + " over=" + ((BlockHitResult) mouseOver).getBlockPos() + "/" + ((BlockHitResult) mouseOver).getDirection()
+                        + " held=" + ctx.player().getItemInHand(hand).getItem());
+            }
+            if (res == InteractionResult.SUCCESS) {
                 ctx.player().swing(hand);
                 return;
             }
@@ -55,4 +67,6 @@ public class BlockPlaceHelper {
             }
         }
     }
+
+    private int debugCooldown = 0;
 }
