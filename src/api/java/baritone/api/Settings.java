@@ -1180,12 +1180,12 @@ public final class Settings {
     public final Setting<Integer> builderTickScanRadius = new Setting<>(5);
 
     /**
-     * While mining, should it also consider dropped items of the correct type as a pathing destination (as well as ore blocks)?
+     * While mining, should it also consider dropped items of the correct type as a pathing destination.
      */
     public final Setting<Boolean> mineScanDroppedItems = new Setting<>(true);
 
     /**
-     * While mining, should it also consider dropped items of the correct type as a pathing destination (as well as ore blocks)?
+     * While mining, should it also consider dropped items of the correct type as if they were broken with silk touch as a pathing destination.
      */
     public final Setting<Boolean> mineDropsConsiderSilkTouch = new Setting<>(false);
 
