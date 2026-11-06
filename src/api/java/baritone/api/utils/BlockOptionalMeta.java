@@ -79,14 +79,11 @@ public final class BlockOptionalMeta {
     private final Set<BlockState> blockstates;
     private final ImmutableSet<Integer> stateHashes;
     private final ImmutableSet<Integer> stackHashes;
-    private static Map<Block, List<Item>> drops = new HashMap<>();
+    private static final Map<Block, List<Item>> normalDrops = new HashMap<>();
+    private static final Map<Block, List<Item>> dropsIncludingSilkTouch = new HashMap<>();
 
     public BlockOptionalMeta(@Nonnull Block block) {
-        this.block = block;
-        this.propertiesDescription = "{}";
-        this.blockstates = getStates(block, Collections.emptyMap());
-        this.stateHashes = getStateHashes(blockstates);
-        this.stackHashes = getStackHashes(blockstates, false);
+        this(block, false);
     }
 
     public BlockOptionalMeta(@Nonnull Block block, @Nonnull Boolean considerSilkTouch) {
@@ -94,6 +91,14 @@ public final class BlockOptionalMeta {
         this.propertiesDescription = "{}";
         this.blockstates = getStates(block, Collections.emptyMap());
         this.stateHashes = getStateHashes(blockstates);
+        this.stackHashes = getStackHashes(blockstates, Boolean.TRUE.equals(considerSilkTouch));
+    }
+
+    BlockOptionalMeta(BlockOptionalMeta selector, boolean considerSilkTouch) {
+        this.block = selector.block;
+        this.propertiesDescription = selector.propertiesDescription;
+        this.blockstates = selector.blockstates;
+        this.stateHashes = selector.stateHashes;
         this.stackHashes = getStackHashes(blockstates, considerSilkTouch);
     }
 
@@ -113,9 +118,6 @@ public final class BlockOptionalMeta {
         blockstates = getStates(block, properties);
         stateHashes = getStateHashes(blockstates);
         stackHashes = getStackHashes(blockstates, false);
-        // This is a bit of a hack to clear the drops cache when calling the constructor with a new selector
-        // The reason this is done is because the selector function is used to identify the block and its properties initally, but the blocks drops are cached and dont take silk into account.
-        drops = new HashMap<>();
     }
 
     private static <C extends Comparable<C>, P extends Property<C>> P castToIProperty(Object value) {
@@ -159,7 +161,7 @@ public final class BlockOptionalMeta {
         );
     }
 
-    private static ImmutableSet<Integer> getStackHashes(Set<BlockState> blockstates, Boolean considerSilkTouch) {
+    private static ImmutableSet<Integer> getStackHashes(Set<BlockState> blockstates, boolean considerSilkTouch) {
         //noinspection ConstantConditions
         return ImmutableSet.copyOf(
                 blockstates.stream()
@@ -231,38 +233,38 @@ public final class BlockOptionalMeta {
         return null;
     }
 
-    private static synchronized List<Item> drops(Block b, Boolean considerSilkTouch) {
-        return drops.computeIfAbsent(b, block -> {
-            Optional<ResourceKey<LootTable>> optionalLootTableKey = block.getLootTable();
-            if (optionalLootTableKey.isEmpty()) {
-                return Collections.emptyList();
-            } else {
-                List<Item> items = new ArrayList<>();
-                try {
-                    ServerLevel lv2 = ServerLevelStub.fastCreate();
+    private static synchronized List<Item> drops(Block block, boolean considerSilkTouch) {
+        Map<Block, List<Item>> cache = considerSilkTouch ? dropsIncludingSilkTouch : normalDrops;
+        List<Item> cached = cache.get(block);
+        if (cached != null) {
+            return cached;
+        }
+        if (block.getLootTable().isEmpty()) {
+            return Collections.emptyList();
+        }
 
-                    LootParams.Builder lv5base = new LootParams.Builder(lv2)
-                            .withParameter(LootContextParams.ORIGIN, Vec3.ZERO)
-                            .withParameter(LootContextParams.BLOCK_STATE, b.defaultBlockState());
+        List<Item> items = new ArrayList<>();
+        try {
+            ServerLevel level = ServerLevelStub.fastCreate();
+            LootParams.Builder params = new LootParams.Builder(level)
+                    .withParameter(LootContextParams.ORIGIN, Vec3.ZERO)
+                    .withParameter(LootContextParams.BLOCK_STATE, block.defaultBlockState())
+                    .withParameter(LootContextParams.TOOL, new ItemStack(Items.NETHERITE_PICKAXE));
+            getDrops(block, params).stream().map(ItemStack::getItem).forEach(items::add);
 
-                    LootParams.Builder lv5NoSilk = lv5base.withParameter(LootContextParams.TOOL, new ItemStack(Items.NETHERITE_PICKAXE));
-                    getDrops(block, lv5NoSilk).stream().map(ItemStack::getItem).forEach(items::add);
-
-                    if (considerSilkTouch != null && considerSilkTouch){
-                        ItemStack silkTool = new ItemStack(Items.NETHERITE_PICKAXE);
-                        lv2.registryAccess().lookupOrThrow(Registries.ENCHANTMENT)
-                                .get(Enchantments.SILK_TOUCH)
-                                .ifPresent(holder -> silkTool.enchant(holder, 1));
-                        LootParams.Builder lv5Silk =  lv5base.withParameter(LootContextParams.TOOL, silkTool);
-
-                        getDrops(block, lv5Silk).stream().map(ItemStack::getItem).forEach(items::add);
-                    }
-                } catch (Throwable e) {
-                    e.printStackTrace();
-                }
-                return items;
+            if (considerSilkTouch) {
+                ItemStack silkTool = new ItemStack(Items.NETHERITE_PICKAXE);
+                level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT)
+                        .get(Enchantments.SILK_TOUCH)
+                        .ifPresent(holder -> silkTool.enchant(holder, 1));
+                params.withParameter(LootContextParams.TOOL, silkTool);
+                getDrops(block, params).stream().map(ItemStack::getItem).forEach(items::add);
             }
-        });
+            cache.put(block, items);
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
+        return items;
     }
 
     private static List<ItemStack> getDrops(Block state, LootParams.Builder params) {

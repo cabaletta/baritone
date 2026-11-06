@@ -47,22 +47,10 @@ public class BlockOptionalMetaLookup {
         this.stackHashes = ImmutableSet.copyOf(stacks);
     }
 
-    public BlockOptionalMetaLookup(List<BlockOptionalMeta> boms,  Boolean considerSilkTouch) {
-        this.boms = boms.stream()
-                .map(bom -> new BlockOptionalMeta(bom.getBlock(), considerSilkTouch))
-                .toArray(BlockOptionalMeta[]::new);
-        Set<Block> blocks = new HashSet<>();
-        Set<BlockState> blockStates = new HashSet<>();
-        Set<Integer> stacks = new HashSet<>();
-        boms.stream()
-                .map(bom -> new BlockOptionalMeta(bom.getBlock(), considerSilkTouch))
-                .forEach(bom -> {
-                    blocks.add(bom.getBlock());
-                    blockStates.addAll(bom.getAllBlockStates());
-                    stacks.addAll(bom.stackHashes());});
-        this.blockSet = ImmutableSet.copyOf(blocks);
-        this.blockStateSet = ImmutableSet.copyOf(blockStates);
-        this.stackHashes = ImmutableSet.copyOf(stacks);
+    public BlockOptionalMetaLookup(List<BlockOptionalMeta> boms, Boolean considerSilkTouch) {
+        this(boms.stream()
+                .map(bom -> new BlockOptionalMeta(bom, Boolean.TRUE.equals(considerSilkTouch)))
+                .toArray(BlockOptionalMeta[]::new));
     }
 
     public BlockOptionalMetaLookup(Block... blocks) {
