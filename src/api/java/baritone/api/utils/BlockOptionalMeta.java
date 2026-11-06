@@ -22,10 +22,8 @@ import baritone.api.utils.accessor.ILootTable;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import net.minecraft.client.Minecraft;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.core.LayeredRegistryAccess;
-import net.minecraft.core.Registry;
-import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.*;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.RegistryDataLoader;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
@@ -44,6 +42,7 @@ import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.CustomSpawner;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -87,7 +86,15 @@ public final class BlockOptionalMeta {
         this.propertiesDescription = "{}";
         this.blockstates = getStates(block, Collections.emptyMap());
         this.stateHashes = getStateHashes(blockstates);
-        this.stackHashes = getStackHashes(blockstates);
+        this.stackHashes = getStackHashes(blockstates, false);
+    }
+
+    public BlockOptionalMeta(@Nonnull Block block, @Nonnull Boolean considerSilkTouch) {
+        this.block = block;
+        this.propertiesDescription = "{}";
+        this.blockstates = getStates(block, Collections.emptyMap());
+        this.stateHashes = getStateHashes(blockstates);
+        this.stackHashes = getStackHashes(blockstates, considerSilkTouch);
     }
 
     public BlockOptionalMeta(@Nonnull String selector) {
@@ -105,7 +112,10 @@ public final class BlockOptionalMeta {
         propertiesDescription = props == null ? "{}" : "{" + props.replace("=", ":") + "}";
         blockstates = getStates(block, properties);
         stateHashes = getStateHashes(blockstates);
-        stackHashes = getStackHashes(blockstates);
+        stackHashes = getStackHashes(blockstates, false);
+        // This is a bit of a hack to clear the drops cache when calling the constructor with a new selector
+        // The reason this is done is because the selector function is used to identify the block and its properties initally, but the blocks drops are cached and dont take silk into account.
+        drops = new HashMap<>();
     }
 
     private static <C extends Comparable<C>, P extends Property<C>> P castToIProperty(Object value) {
@@ -149,14 +159,13 @@ public final class BlockOptionalMeta {
         );
     }
 
-    private static ImmutableSet<Integer> getStackHashes(Set<BlockState> blockstates) {
+    private static ImmutableSet<Integer> getStackHashes(Set<BlockState> blockstates, Boolean considerSilkTouch) {
         //noinspection ConstantConditions
         return ImmutableSet.copyOf(
                 blockstates.stream()
-                        .flatMap(state -> drops(state.getBlock())
+                        .flatMap(state -> drops(state.getBlock(), considerSilkTouch)
                                 .stream()
-                                .map(item -> new ItemStack(item, 1))
-                        )
+                                .map(item -> new ItemStack(item, 1)))
                         .map(stack -> ((IItemStack) (Object) stack).getBaritoneHash())
                         .toArray(Integer[]::new)
         );
@@ -222,7 +231,7 @@ public final class BlockOptionalMeta {
         return null;
     }
 
-    private static synchronized List<Item> drops(Block b) {
+    private static synchronized List<Item> drops(Block b, Boolean considerSilkTouch) {
         return drops.computeIfAbsent(b, block -> {
             Optional<ResourceKey<LootTable>> optionalLootTableKey = block.getLootTable();
             if (optionalLootTableKey.isEmpty()) {
@@ -232,11 +241,22 @@ public final class BlockOptionalMeta {
                 try {
                     ServerLevel lv2 = ServerLevelStub.fastCreate();
 
-                    LootParams.Builder lv5 = new LootParams.Builder(lv2)
-                        .withParameter(LootContextParams.ORIGIN, Vec3.ZERO)
-                        .withParameter(LootContextParams.BLOCK_STATE, b.defaultBlockState())
-                        .withParameter(LootContextParams.TOOL, new ItemStack(Items.NETHERITE_PICKAXE, 1));
-                    getDrops(block, lv5).stream().map(ItemStack::getItem).forEach(items::add);
+                    LootParams.Builder lv5base = new LootParams.Builder(lv2)
+                            .withParameter(LootContextParams.ORIGIN, Vec3.ZERO)
+                            .withParameter(LootContextParams.BLOCK_STATE, b.defaultBlockState());
+
+                    LootParams.Builder lv5NoSilk = lv5base.withParameter(LootContextParams.TOOL, new ItemStack(Items.NETHERITE_PICKAXE));
+                    getDrops(block, lv5NoSilk).stream().map(ItemStack::getItem).forEach(items::add);
+
+                    if (considerSilkTouch != null && considerSilkTouch){
+                        ItemStack silkTool = new ItemStack(Items.NETHERITE_PICKAXE);
+                        lv2.registryAccess().lookupOrThrow(Registries.ENCHANTMENT)
+                                .get(Enchantments.SILK_TOUCH)
+                                .ifPresent(holder -> silkTool.enchant(holder, 1));
+                        LootParams.Builder lv5Silk =  lv5base.withParameter(LootContextParams.TOOL, silkTool);
+
+                        getDrops(block, lv5Silk).stream().map(ItemStack::getItem).forEach(items::add);
+                    }
                 } catch (Throwable e) {
                     e.printStackTrace();
                 }
