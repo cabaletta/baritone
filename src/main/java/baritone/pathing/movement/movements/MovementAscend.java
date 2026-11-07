@@ -134,7 +134,11 @@ public class MovementAscend extends Movement {
             if (toPlace.is(Blocks.SOUL_SAND)) {
                 walk = WALK_ONE_OVER_SOUL_SAND_COST;
             } else if (toPlace.is(Blocks.MAGMA_BLOCK)) {
-                walk = SNEAK_ONE_BLOCK_COST;
+                if (context.frostWalker == 0) {
+                    walk = SNEAK_ONE_BLOCK_COST;
+                } else {
+                    walk = WALK_ONE_BLOCK_COST;
+                }
             } else {
                 walk = Math.max(JUMP_ONE_BLOCK_COST, WALK_ONE_BLOCK_COST);
             }
@@ -195,7 +199,7 @@ public class MovementAscend extends Movement {
         }
         MovementHelper.moveTowards(ctx, state, dest);
 
-        state.setInput(Input.SNEAK, Baritone.settings().allowWalkOnMagmaBlocks.value && jumpingOnto.is(Blocks.MAGMA_BLOCK));
+        state.setInput(Input.SNEAK, Baritone.settings().allowWalkOnMagmaBlocks.value && jumpingOnto.is(Blocks.MAGMA_BLOCK) && !MovementHelper.hasFrostWalker(ctx));
 
         if (MovementHelper.isBottomSlab(jumpingOnto) && !MovementHelper.isBottomSlab(BlockStateInterface.get(ctx, src.below()))) {
             return state; // don't jump while walking from a non double slab into a bottom slab

@@ -42,7 +42,6 @@ import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.piston.MovingPistonBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DoorHingeSide;
 import net.minecraft.world.level.block.state.properties.Half;
 import net.minecraft.world.level.block.state.properties.SlabType;
@@ -488,6 +487,21 @@ public interface MovementHelper extends ActionCosts, Helper {
         return canWalkOn(bsi, x, y, z, bsi.get0(x, y, z));
     }
 
+    static boolean hasFrostWalker(IPlayerContext ctx) {
+        for (EquipmentSlot slot : EquipmentSlot.values()) {
+            ItemEnchantments itemEnchantments = ctx
+                .player()
+                .getItemBySlot(slot)
+                .getEnchantments();
+            for (Holder<Enchantment> enchant : itemEnchantments.keySet()) {
+                if (enchant.is(Enchantments.FROST_WALKER)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     static boolean canUseFrostWalker(CalculationContext context, BlockState state) {
         return context.frostWalker != 0
                 && state == FrostedIceBlock.meltsInto()
@@ -495,19 +509,7 @@ public interface MovementHelper extends ActionCosts, Helper {
     }
 
     static boolean canUseFrostWalker(IPlayerContext ctx, BlockPos pos) {
-        boolean hasFrostWalker = false;
-        OUTER: for (EquipmentSlot slot : EquipmentSlot.values()) {
-            ItemEnchantments itemEnchantments = ctx
-                .player()
-                .getItemBySlot(slot)
-                .getEnchantments();
-            for (Holder<Enchantment> enchant : itemEnchantments.keySet()) {
-                if (enchant.is(Enchantments.FROST_WALKER)) {
-                    hasFrostWalker = true;
-                    break OUTER;
-                }
-            }
-        }
+        boolean hasFrostWalker = hasFrostWalker(ctx);
         BlockState state = BlockStateInterface.get(ctx, pos);
         return hasFrostWalker
                 && state == FrostedIceBlock.meltsInto()
