@@ -1,0 +1,134 @@
+# Сборка Baritone для обеих версий: 1.16.5 (Java 8) + 1.21.4 (Java 21)
+# Комбинированный артефакт — baritone-multi-*.jar + ZIP
+name: Build Both Versions (1.16.5 + 1.21.4)
+
+on:
+  push:
+    branches: [ "arena/*", "1.16.5", "1.21.4", "master" ]
+  pull_request:
+    branches: [ "1.21.4", "1.16.5" ]
+  workflow_dispatch:
+
+jobs:
+  build-1_21_4:
+    name: Build 1.21.4 (Java 21)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v5
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build 1.21.4
+        run: ./gradlew build -Pmod_version="$(git describe --always --tags --first-parent | cut -c2- || echo '1.13.1')"
+
+      - name: Upload 1.21.4 artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: baritone-1.21.4-jars
+          path: |
+            dist/
+            mapping/
+          if-no-files-found: warn
+
+  build-1_16_5:
+    name: Build 1.16.5 (Java 8)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 8
+        uses: actions/setup-java@v5
+        with:
+          java-version: '8'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      # Переключаемся на ветку 1.16.5 для сборки (или используем worktree)
+      - name: Checkout 1.16.5 branch
+        run: |
+          git fetch origin 1.16.5:1.16.5 || git fetch https://github.com/cabaletta/baritone.git 1.16.5:1.16.5 || true
+          git checkout 1.16.5 || git checkout -b 1.16.5 origin/1.16.5
+          git log --oneline -3
+
+      - name: Build 1.16.5 (Forge)
+        run: ./gradlew build -Pbaritone.forge_build
+        # Для Fabric: ./gradlew build -Pbaritone.fabric_build
+
+      - name: Upload 1.16.5 artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: baritone-1.16.5-jars
+          path: |
+            dist/
+            build/libs/
+          if-no-files-found: warn
+
+  combine:
+    name: Combine Both Versions
+    runs-on: ubuntu-latest
+    needs: [build-1_21_4, build-1_16_5]
+    if: always()
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          ref: arena/52d1d874-baritone
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Download 1.21.4 artifacts
+        uses: actions/download-artifact@v7
+        with:
+          name: baritone-1.21.4-jars
+          path: dist-1214
+        continue-on-error: true
+
+      - name: Download 1.16.5 artifacts
+        uses: actions/download-artifact@v7
+        with:
+          name: baritone-1.16.5-jars
+          path: dist-1165
+        continue-on-error: true
+
+      - name: Merge dist folders
+        run: |
+          mkdir -p dist
+          echo "=== dist-1214 ==="; ls -lh dist-1214 2>&1 | head -30 || echo "(нет)"
+          echo "=== dist-1165 ==="; ls -lh dist-1165 2>&1 | head -30 || echo "(нет)"
+          cp -v dist-1214/dist/*.jar dist/ 2>/dev/null || cp -v dist-1214/*.jar dist/ 2>/dev/null || true
+          cp -v dist-1165/dist/*.jar dist/ 2>/dev/null || cp -v dist-1165/build/libs/*.jar dist/ 2>/dev/null || cp -v dist-1165/*.jar dist/ 2>/dev/null || true
+          mkdir -p mapping
+          cp -v dist-1214/mapping/* mapping/ 2>/dev/null || true
+          ls -lh dist/ || echo "dist пусто — будут placeholder'ы"
+
+      - name: Create combined JAR
+        run: |
+          chmod +x scripts/*.sh 2>/dev/null || true
+          python3 scripts/combine-jars.py
+          ls -lh dist/
+
+      - name: Upload Combined Distribution
+        uses: actions/upload-artifact@v7
+        with:
+          name: baritone-both-versions
+          path: |
+            dist/
+            mapping/

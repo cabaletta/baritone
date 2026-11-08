@@ -1,0 +1,9 @@
+be543bd85ee90205620d242ef2702c829b6fd055  baritone-api-fabric-1.16.5-1.6.5.jar
+e0e79eb3393c5675278c53427dc2299d7c1bc7b0  baritone-api-fabric-1.21.4-1.13.1.jar
+7701bb598fb116c32193e6254842e495486d48f6  baritone-api-forge-1.16.5-1.6.5.jar
+5caca271d4f2d180f9e28276bf24237e4fcda332  baritone-api-forge-1.21.4-1.13.1.jar
+c17317690baa2d6de040cfd4ce4f0b365fd3c048  baritone-api-neoforge-1.21.4-1.13.1.jar
+5b88acca2fa16c1c4d29595a5231dccae4af6f07  baritone-multi-1.16.5_1.21.4-1.13.1.jar
+ef62157e697fff4347c97346176edb88c35bfcd8  baritone-standalone-forge-1.16.5-1.6.5.jar
+74fadbf303d6a6ed61e39ecaec99830522569029  baritone-standalone-forge-1.21.4-1.13.1.jar
+466a0d1b6d2d580e431f046226b17b03bed93df2  baritone-both-versions-1.16.5_1.21.4.zip
