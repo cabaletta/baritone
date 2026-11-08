@@ -1,0 +1,254 @@
+# Сборка Baritone для обеих версий: 1.16.5 (Java 8) + 1.21.4 (Java 21)
+# Комбинированный артефакт — baritone-multi-*.jar + ZIP
+name: Build Both Versions (1.16.5 + 1.21.4)
+
+on:
+  push:
+    branches: [ "arena/*", "1.16.5", "1.21.4", "master" ]
+  pull_request:
+    branches: [ "1.21.4", "1.16.5" ]
+  workflow_dispatch:
+    inputs:
+      publish_release:
+        description: Upload validated artifacts to the multi-version GitHub Release and publish it
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  build-1_21_4:
+    name: Build 1.21.4 (Java 21)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v5
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build 1.21.4
+        run: ./gradlew build -Pmod_version="$(git describe --always --tags --first-parent | cut -c2- || echo '1.13.1')"
+
+      - name: Upload 1.21.4 artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: baritone-1.21.4-jars
+          path: |
+            dist/
+            mapping/
+          if-no-files-found: warn
+
+  build-1_16_5:
+    name: Build 1.16.5 (Java 8)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 8
+        uses: actions/setup-java@v5
+        with:
+          java-version: '8'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      # Переключаемся на ветку 1.16.5 для сборки (или используем worktree)
+      - name: Checkout 1.16.5 branch
+        run: |
+          git fetch origin 1.16.5:1.16.5 || git fetch https://github.com/cabaletta/baritone.git 1.16.5:1.16.5 || true
+          git checkout 1.16.5 || git checkout -b 1.16.5 origin/1.16.5
+          git log --oneline -3
+
+      - name: Build 1.16.5 (Forge)
+        run: ./gradlew build -Pbaritone.forge_build
+
+      - name: Build 1.16.5 (Fabric)
+        run: ./gradlew build -Pbaritone.fabric_build
+
+      - name: Upload 1.16.5 artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: baritone-1.16.5-jars
+          path: |
+            dist/
+            build/libs/
+          if-no-files-found: warn
+
+  combine:
+    name: Combine Both Versions
+    runs-on: ubuntu-latest
+    needs: [build-1_21_4, build-1_16_5]
+    if: always()
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          ref: arena/52d1d874-baritone
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Download 1.21.4 artifacts
+        uses: actions/download-artifact@v7
+        with:
+          name: baritone-1.21.4-jars
+          path: dist-1214
+        continue-on-error: true
+
+      - name: Download 1.16.5 artifacts
+        uses: actions/download-artifact@v7
+        with:
+          name: baritone-1.16.5-jars
+          path: dist-1165
+        continue-on-error: true
+
+      - name: Merge dist folders
+        run: |
+          mkdir -p dist
+          echo "=== dist-1214 ==="; ls -lh dist-1214 2>&1 | head -30 || echo "(нет)"
+          echo "=== dist-1165 ==="; ls -lh dist-1165 2>&1 | head -30 || echo "(нет)"
+          copy_artifact() {
+            source="$1"
+            target="$2"
+            if [ ! -s "$source" ]; then
+              echo "Missing build artifact: $source" >&2
+              exit 1
+            fi
+            cp -v "$source" "dist/$target"
+          }
+
+          # The modern build artifacts are named with the loader and Baritone version.
+          # Normalize them to include the Minecraft version in the distribution names.
+          copy_artifact dist-1214/dist/baritone-api-forge-1.13.1.jar baritone-api-forge-1.21.4-1.13.1.jar
+          copy_artifact dist-1214/dist/baritone-api-fabric-1.13.1.jar baritone-api-fabric-1.21.4-1.13.1.jar
+          copy_artifact dist-1214/dist/baritone-api-neoforge-1.13.1.jar baritone-api-neoforge-1.21.4-1.13.1.jar
+          copy_artifact dist-1214/dist/baritone-standalone-forge-1.13.1.jar baritone-standalone-forge-1.21.4-1.13.1.jar
+
+          # The legacy 1.16.5 build uses the same loader names but Baritone version 1.6.5.
+          copy_artifact dist-1165/dist/baritone-api-forge-1.6.5.jar baritone-api-forge-1.16.5-1.6.5.jar
+          copy_artifact dist-1165/dist/baritone-api-fabric-1.6.5.jar baritone-api-fabric-1.16.5-1.6.5.jar
+          copy_artifact dist-1165/dist/baritone-standalone-forge-1.6.5.jar baritone-standalone-forge-1.16.5-1.6.5.jar
+          mkdir -p mapping
+          cp -v dist-1214/mapping/* mapping/ 2>/dev/null || true
+          ls -lh dist/ || echo "dist пусто — будут placeholder'ы"
+
+      - name: Create combined JAR
+        run: |
+          chmod +x scripts/*.sh 2>/dev/null || true
+          python3 scripts/combine-jars.py
+          ls -lh dist/
+
+      - name: Upload Combined Distribution
+        uses: actions/upload-artifact@v7
+        with:
+          name: baritone-both-versions
+          path: |
+            dist/
+            mapping/
+
+      - name: Validate and publish GitHub Release
+        if: ${{ (github.event_name == 'workflow_dispatch' && inputs.publish_release == true) || (github.event_name == 'push' && contains(github.event.head_commit.message, '[publish-release]')) }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: v1.13.1-multi-1.16.5-1.21.4
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from io import BytesIO
+          from pathlib import Path
+          from zipfile import ZipFile
+
+          def fail(message):
+              print(f"::error title=Release artifact validation::{message}")
+              raise SystemExit(message)
+
+          dist = Path("dist")
+          expected = [
+              "baritone-api-forge-1.16.5-1.6.5.jar",
+              "baritone-api-fabric-1.16.5-1.6.5.jar",
+              "baritone-standalone-forge-1.16.5-1.6.5.jar",
+              "baritone-api-forge-1.21.4-1.13.1.jar",
+              "baritone-api-fabric-1.21.4-1.13.1.jar",
+              "baritone-api-neoforge-1.21.4-1.13.1.jar",
+              "baritone-standalone-forge-1.21.4-1.13.1.jar",
+              "baritone-multi-1.16.5_1.21.4-1.13.1.jar",
+              "baritone-both-versions-1.16.5_1.21.4.zip",
+          ]
+          missing = [name for name in expected if not (dist / name).is_file()]
+          if missing:
+              fail("Missing release files: " + ", ".join(missing))
+
+          for name in expected:
+              path = dist / name
+              if path.stat().st_size < 100_000:
+                  fail(f"Refusing placeholder/suspicious file {name}: {path.stat().st_size} bytes")
+              with ZipFile(path) as archive:
+                  if archive.testzip():
+                      fail(f"Corrupt archive: {name}")
+                  if name.endswith(".jar") and "multi-" not in name:
+                      classes = [entry for entry in archive.namelist() if entry.endswith(".class")]
+                      if not classes:
+                          fail(f"No compiled classes in {name}")
+                      if any(b"PLACEHOLDER_CLASS_FOR" in archive.read(entry) for entry in classes):
+                          fail(f"Placeholder class found in {name}")
+
+          with ZipFile(dist / "baritone-multi-1.16.5_1.21.4-1.13.1.jar") as archive:
+              embedded = [entry for entry in archive.namelist() if entry.endswith(".jar")]
+              if len(embedded) < 7:
+                  fail(f"Combined JAR only contains {len(embedded)} version-specific JARs")
+              for entry in embedded:
+                  with ZipFile(BytesIO(archive.read(entry))) as inner:
+                      classes = [name for name in inner.namelist() if name.endswith(".class")]
+                      if not classes or any(b"PLACEHOLDER_CLASS_FOR" in inner.read(name) for name in classes):
+                          fail(f"Invalid embedded JAR: {entry}")
+
+          if not (dist / "checksums.txt").is_file():
+              fail("Missing checksums.txt")
+          print("All version-specific JARs validated as compiled artifacts.")
+          PY
+
+          cat > release-notes.md <<'EOF'
+          # Baritone Multi-Version: Minecraft 1.16.5 + 1.21.4
+
+          Готовые сборки Baritone для двух версий Minecraft:
+
+          - **Minecraft 1.16.5 / Baritone 1.6.5** — Java 8, Forge и Fabric.
+          - **Minecraft 1.21.4 / Baritone 1.13.1** — Java 21, Forge, Fabric и NeoForge.
+
+          ## Установка
+
+          Скачайте подходящий `baritone-api-*.jar` из Assets и положите его в папку `mods` соответствующей игры.
+          `baritone-standalone-*.jar` предназначен для соответствующей standalone-сборки.
+
+          `baritone-multi-*.jar` — контейнер с отдельными версиями, а не мод для прямой установки. Его можно открыть как ZIP; внутри находятся JAR'ы в `versions/1.16.5/` и `versions/1.21.4/`.
+          Альтернативно скачайте `baritone-both-versions-*.zip` со всеми сборками и документацией.
+
+          Исходный код и инструкции: [`MULTI_VERSION.md`](https://github.com/egefefefefef/baritone/blob/arena/52d1d874-baritone/MULTI_VERSION.md).
+          EOF
+
+          gh release upload "$RELEASE_TAG" dist/*.jar dist/*.zip dist/checksums.txt --clobber
+          gh release edit "$RELEASE_TAG" \
+            --title "Baritone Multi-Version — Minecraft 1.16.5 + 1.21.4" \
+            --notes-file release-notes.md \
+            --target "${GITHUB_SHA}" \
+            --draft=false \
+            --latest
