@@ -1,0 +1,122 @@
+name: Publish Multi-Version Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_run_id:
+        description: Successful "Build Both Versions" Actions run ID to publish
+        required: true
+        type: string
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  publish:
+    name: Upload JARs to GitHub Releases
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download combined build artifact
+        uses: actions/download-artifact@v7
+        with:
+          name: baritone-both-versions
+          run-id: ${{ inputs.build_run_id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: release-artifact
+
+      - name: Prepare and validate real JARs
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          find release-artifact -type f \( -name '*.jar' -o -name '*.zip' -o -name 'checksums.txt' \) -exec cp -f {} dist/ \;
+
+          python3 - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile
+
+          dist = Path("dist")
+          expected = [
+              "baritone-api-forge-1.16.5-1.6.5.jar",
+              "baritone-api-fabric-1.16.5-1.6.5.jar",
+              "baritone-standalone-forge-1.16.5-1.6.5.jar",
+              "baritone-api-forge-1.21.4-1.13.1.jar",
+              "baritone-api-fabric-1.21.4-1.13.1.jar",
+              "baritone-api-neoforge-1.21.4-1.13.1.jar",
+              "baritone-standalone-forge-1.21.4-1.13.1.jar",
+              "baritone-multi-1.16.5_1.21.4-1.13.1.jar",
+              "baritone-both-versions-1.16.5_1.21.4.zip",
+          ]
+          missing = [name for name in expected if not (dist / name).is_file()]
+          if missing:
+              raise SystemExit("Missing release artifacts: " + ", ".join(missing))
+
+          for name in expected:
+              path = dist / name
+              if path.stat().st_size < 100_000:
+                  raise SystemExit(f"Refusing placeholder/suspicious artifact: {name} ({path.stat().st_size} bytes)")
+              with ZipFile(path) as archive:
+                  bad_entry = archive.testzip()
+                  if bad_entry:
+                      raise SystemExit(f"Corrupt archive {name}: {bad_entry}")
+                  if name.endswith(".jar") and "multi-" not in name:
+                      entries = archive.namelist()
+                      if not any(entry.endswith(".class") for entry in entries):
+                          raise SystemExit(f"No compiled classes in {name}")
+                      if any(b"PLACEHOLDER_CLASS_FOR" in archive.read(entry) for entry in entries if entry.endswith(".class")):
+                          raise SystemExit(f"Placeholder bytecode found in {name}")
+
+          # The multi-version JAR is a container, so inspect every embedded installable JAR too.
+          multi = dist / "baritone-multi-1.16.5_1.21.4-1.13.1.jar"
+          with ZipFile(multi) as archive:
+              embedded = [name for name in archive.namelist() if name.endswith(".jar")]
+              if len(embedded) < 7:
+                  raise SystemExit(f"Combined JAR has only {len(embedded)} embedded JARs")
+              for name in embedded:
+                  data = archive.read(name)
+                  from io import BytesIO
+                  with ZipFile(BytesIO(data)) as nested:
+                      if any(b"PLACEHOLDER_CLASS_FOR" in nested.read(entry) for entry in nested.namelist() if entry.endswith(".class")):
+                          raise SystemExit(f"Placeholder bytecode found inside {name}")
+
+          if not (dist / "checksums.txt").is_file():
+              raise SystemExit("Missing checksums.txt")
+          print("Validated release assets:")
+          for path in sorted(dist.iterdir()):
+              print(f"  {path.name}: {path.stat().st_size} bytes")
+          PY
+
+      - name: Upload assets and publish draft release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: v1.13.1-multi-1.16.5-1.21.4
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > release-notes.md <<'EOF'
+          # Baritone Multi-Version: Minecraft 1.16.5 + 1.21.4
+
+          Готовые сборки Baritone для двух версий Minecraft:
+
+          - **Minecraft 1.16.5 / Baritone 1.6.5** — Java 8, Forge и Fabric.
+          - **Minecraft 1.21.4 / Baritone 1.13.1** — Java 21, Forge, Fabric и NeoForge.
+
+          ## Установка
+
+          Скачайте подходящий `baritone-api-*.jar` из Assets и положите его в папку `mods` соответствующей игры.
+          `baritone-standalone-*.jar` предназначен для соответствующей standalone-сборки.
+
+          `baritone-multi-*.jar` — контейнер с отдельными версиями, а не мод для прямой установки. Его можно открыть как ZIP; внутри находятся JAR'ы в `versions/1.16.5/` и `versions/1.21.4/`.
+          Альтернативно скачайте `baritone-both-versions-*.zip` со всеми сборками и документацией.
+
+          Исходный код и инструкции: [`MULTI_VERSION.md`](https://github.com/egefefefefef/baritone/blob/arena/52d1d874-baritone/MULTI_VERSION.md).
+          EOF
+
+          gh release upload "$RELEASE_TAG" dist/*.jar dist/*.zip dist/checksums.txt --clobber
+          gh release edit "$RELEASE_TAG" \
+            --title "Baritone Multi-Version — Minecraft 1.16.5 + 1.21.4" \
+            --notes-file release-notes.md \
+            --target "${GITHUB_SHA}" \
+            --draft=false \
+            --latest
