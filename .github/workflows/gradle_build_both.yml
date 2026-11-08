@@ -125,27 +125,27 @@ jobs:
           mkdir -p dist
           echo "=== dist-1214 ==="; ls -lh dist-1214 2>&1 | head -30 || echo "(нет)"
           echo "=== dist-1165 ==="; ls -lh dist-1165 2>&1 | head -30 || echo "(нет)"
-          cp -v dist-1214/dist/*.jar dist/ 2>/dev/null || cp -v dist-1214/*.jar dist/ 2>/dev/null || true
-
-          # The legacy 1.16.5 build names its artifacts by Baritone version only.
-          # Rename the real artifacts to include the Minecraft version so they replace
-          # the checked-in placeholders expected by combine-jars.py.
-          for artifact in \
-            baritone-api-forge-1.6.5.jar \
-            baritone-api-fabric-1.6.5.jar \
-            baritone-standalone-forge-1.6.5.jar; do
-            source="dist-1165/dist/$artifact"
-            if [ ! -f "$source" ]; then
-              echo "Missing legacy build artifact: $source" >&2
+          copy_artifact() {
+            source="$1"
+            target="$2"
+            if [ ! -s "$source" ]; then
+              echo "Missing build artifact: $source" >&2
               exit 1
             fi
-            case "$artifact" in
-              baritone-api-forge-1.6.5.jar) target="baritone-api-forge-1.16.5-1.6.5.jar" ;;
-              baritone-api-fabric-1.6.5.jar) target="baritone-api-fabric-1.16.5-1.6.5.jar" ;;
-              baritone-standalone-forge-1.6.5.jar) target="baritone-standalone-forge-1.16.5-1.6.5.jar" ;;
-            esac
             cp -v "$source" "dist/$target"
-          done
+          }
+
+          # The modern build artifacts are named with the loader and Baritone version.
+          # Normalize them to include the Minecraft version in the distribution names.
+          copy_artifact dist-1214/dist/baritone-api-forge-1.13.1.jar baritone-api-forge-1.21.4-1.13.1.jar
+          copy_artifact dist-1214/dist/baritone-api-fabric-1.13.1.jar baritone-api-fabric-1.21.4-1.13.1.jar
+          copy_artifact dist-1214/dist/baritone-api-neoforge-1.13.1.jar baritone-api-neoforge-1.21.4-1.13.1.jar
+          copy_artifact dist-1214/dist/baritone-standalone-forge-1.13.1.jar baritone-standalone-forge-1.21.4-1.13.1.jar
+
+          # The legacy 1.16.5 build uses the same loader names but Baritone version 1.6.5.
+          copy_artifact dist-1165/dist/baritone-api-forge-1.6.5.jar baritone-api-forge-1.16.5-1.6.5.jar
+          copy_artifact dist-1165/dist/baritone-api-fabric-1.6.5.jar baritone-api-fabric-1.16.5-1.6.5.jar
+          copy_artifact dist-1165/dist/baritone-standalone-forge-1.6.5.jar baritone-standalone-forge-1.16.5-1.6.5.jar
           mkdir -p mapping
           cp -v dist-1214/mapping/* mapping/ 2>/dev/null || true
           ls -lh dist/ || echo "dist пусто — будут placeholder'ы"
@@ -165,7 +165,7 @@ jobs:
             mapping/
 
       - name: Validate and publish GitHub Release
-        if: github.event_name == 'workflow_dispatch' && inputs.publish_release == true
+        if: ${{ (github.event_name == 'workflow_dispatch' && inputs.publish_release == true) || (github.event_name == 'push' && contains(github.event.head_commit.message, '[publish-release]')) }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RELEASE_TAG: v1.13.1-multi-1.16.5-1.21.4
@@ -176,6 +176,10 @@ jobs:
           from io import BytesIO
           from pathlib import Path
           from zipfile import ZipFile
+
+          def fail(message):
+              print(f"::error title=Release artifact validation::{message}")
+              raise SystemExit(message)
 
           dist = Path("dist")
           expected = [
@@ -191,34 +195,34 @@ jobs:
           ]
           missing = [name for name in expected if not (dist / name).is_file()]
           if missing:
-              raise SystemExit("Missing release files: " + ", ".join(missing))
+              fail("Missing release files: " + ", ".join(missing))
 
           for name in expected:
               path = dist / name
               if path.stat().st_size < 100_000:
-                  raise SystemExit(f"Refusing placeholder/suspicious file {name}: {path.stat().st_size} bytes")
+                  fail(f"Refusing placeholder/suspicious file {name}: {path.stat().st_size} bytes")
               with ZipFile(path) as archive:
                   if archive.testzip():
-                      raise SystemExit(f"Corrupt archive: {name}")
+                      fail(f"Corrupt archive: {name}")
                   if name.endswith(".jar") and "multi-" not in name:
                       classes = [entry for entry in archive.namelist() if entry.endswith(".class")]
                       if not classes:
-                          raise SystemExit(f"No compiled classes in {name}")
+                          fail(f"No compiled classes in {name}")
                       if any(b"PLACEHOLDER_CLASS_FOR" in archive.read(entry) for entry in classes):
-                          raise SystemExit(f"Placeholder class found in {name}")
+                          fail(f"Placeholder class found in {name}")
 
           with ZipFile(dist / "baritone-multi-1.16.5_1.21.4-1.13.1.jar") as archive:
               embedded = [entry for entry in archive.namelist() if entry.endswith(".jar")]
               if len(embedded) < 7:
-                  raise SystemExit(f"Combined JAR only contains {len(embedded)} version-specific JARs")
+                  fail(f"Combined JAR only contains {len(embedded)} version-specific JARs")
               for entry in embedded:
                   with ZipFile(BytesIO(archive.read(entry))) as inner:
                       classes = [name for name in inner.namelist() if name.endswith(".class")]
                       if not classes or any(b"PLACEHOLDER_CLASS_FOR" in inner.read(name) for name in classes):
-                          raise SystemExit(f"Invalid embedded JAR: {entry}")
+                          fail(f"Invalid embedded JAR: {entry}")
 
           if not (dist / "checksums.txt").is_file():
-              raise SystemExit("Missing checksums.txt")
+              fail("Missing checksums.txt")
           print("All version-specific JARs validated as compiled artifacts.")
           PY
 
