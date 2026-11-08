@@ -126,7 +126,26 @@ jobs:
           echo "=== dist-1214 ==="; ls -lh dist-1214 2>&1 | head -30 || echo "(нет)"
           echo "=== dist-1165 ==="; ls -lh dist-1165 2>&1 | head -30 || echo "(нет)"
           cp -v dist-1214/dist/*.jar dist/ 2>/dev/null || cp -v dist-1214/*.jar dist/ 2>/dev/null || true
-          cp -v dist-1165/dist/*.jar dist/ 2>/dev/null || cp -v dist-1165/build/libs/*.jar dist/ 2>/dev/null || cp -v dist-1165/*.jar dist/ 2>/dev/null || true
+
+          # The legacy 1.16.5 build names its artifacts by Baritone version only.
+          # Rename the real artifacts to include the Minecraft version so they replace
+          # the checked-in placeholders expected by combine-jars.py.
+          for artifact in \
+            baritone-api-forge-1.6.5.jar \
+            baritone-api-fabric-1.6.5.jar \
+            baritone-standalone-forge-1.6.5.jar; do
+            source="dist-1165/dist/$artifact"
+            if [ ! -f "$source" ]; then
+              echo "Missing legacy build artifact: $source" >&2
+              exit 1
+            fi
+            case "$artifact" in
+              baritone-api-forge-1.6.5.jar) target="baritone-api-forge-1.16.5-1.6.5.jar" ;;
+              baritone-api-fabric-1.6.5.jar) target="baritone-api-fabric-1.16.5-1.6.5.jar" ;;
+              baritone-standalone-forge-1.6.5.jar) target="baritone-standalone-forge-1.16.5-1.6.5.jar" ;;
+            esac
+            cp -v "$source" "dist/$target"
+          done
           mkdir -p mapping
           cp -v dist-1214/mapping/* mapping/ 2>/dev/null || true
           ls -lh dist/ || echo "dist пусто — будут placeholder'ы"
