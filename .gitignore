@@ -3,7 +3,11 @@
 
 run/
 autotest/
-dist/
+dist/*
+!dist/*.jar
+!dist/*.zip
+!dist/checksums.txt
+!dist/README.txt
 volderyarn/
 
 # Gradle
