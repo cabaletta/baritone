@@ -177,7 +177,7 @@ public class CalculationContext {
         for (EquipmentSlot slot : EquipmentSlot.values()) {
             ItemEnchantments itemEnchantments = player.getItemBySlot(slot).getEnchantments();
             for (Holder<Enchantment> enchant : itemEnchantments.keySet()) {
-                if (enchant.is(Enchantments.FROST_WALKER)) {
+                if (enchant.is(Enchantments.FROST_WALKER) && enchant.value().matchingSlot(slot)) {
                     frostWalkerLevel = itemEnchantments.getLevel(enchant);
                 }
             }
