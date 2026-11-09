@@ -101,7 +101,7 @@ public class MovementTraverse extends Movement {
                     if (context.frostWalker == 0) {
                         sneaking = true;
                     }
-                    WC += sneaking ? (SNEAK_ONE_BLOCK_COST - WALK_ONE_BLOCK_COST) / 2 : WALK_ONE_BLOCK_COST;
+                    WC += sneaking ? (SNEAK_ONE_BLOCK_COST - WALK_ONE_BLOCK_COST) / 2 : 0;
                 }
             }
             double hardness1 = MovementHelper.getMiningDurationTicks(context, destX, y, destZ, pb1, false);
