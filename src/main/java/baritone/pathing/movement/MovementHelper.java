@@ -494,7 +494,7 @@ public interface MovementHelper extends ActionCosts, Helper {
                 .getItemBySlot(slot)
                 .getEnchantments();
             for (Holder<Enchantment> enchant : itemEnchantments.keySet()) {
-                if (enchant.is(Enchantments.FROST_WALKER)) {
+                if (enchant.is(Enchantments.FROST_WALKER) && enchant.value().matchingSlot(slot)) {
                     return true;
                 }
             }

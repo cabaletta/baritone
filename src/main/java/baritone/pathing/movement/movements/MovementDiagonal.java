@@ -157,7 +157,7 @@ public class MovementDiagonal extends Movement {
             if (context.frostWalker == 0) {
                 sneaking = true;
             }
-            multiplier += sneaking ? (SNEAK_ONE_BLOCK_COST - WALK_ONE_BLOCK_COST) / 2 : WALK_ONE_BLOCK_COST;
+            multiplier += sneaking ? (SNEAK_ONE_BLOCK_COST - WALK_ONE_BLOCK_COST) / 2 : 0;
         } else if (frostWalker) {
             // frostwalker lets us walk on water without the penalty
         } else if (destWalkOn.getBlock() == Blocks.WATER) {
@@ -173,7 +173,7 @@ public class MovementDiagonal extends Movement {
             if (context.frostWalker == 0) {
                 sneaking = true;
             }
-            multiplier += sneaking ? (SNEAK_ONE_BLOCK_COST - WALK_ONE_BLOCK_COST) / 2 : WALK_ONE_BLOCK_COST;
+            multiplier += sneaking ? (SNEAK_ONE_BLOCK_COST - WALK_ONE_BLOCK_COST) / 2 : 0;
         }
         BlockState cuttingOver1 = context.get(x, y - 1, destZ);
         if ((!context.allowWalkOnMagmaBlocks && cuttingOver1.is(Blocks.MAGMA_BLOCK)) || MovementHelper.isLava(cuttingOver1)) {
