@@ -81,12 +81,12 @@ public class ProguardTask extends BaritoneGradleTask {
     }
 
     /**
-     * The MC jar in the environment's production (mod-source) namespace —
-     * unimined 2.0 exposes it as the resolvable {@code minecraftModSource}
+     * The MC jar in the environment's production namespace —
+     * unimined 2.0 exposes it as the resolvable {@code minecraftProd}
      * view for the {@code main} environment.
      */
     private File getMcJar() {
-        return getProject().getConfigurations().getByName("minecraftModSource").getSingleFile();
+        return getProject().getConfigurations().getByName("minecraftProd").getSingleFile();
     }
 
     /** The dev-namespace MC jar on this project's compile classpath. */
