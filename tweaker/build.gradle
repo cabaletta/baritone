@@ -19,20 +19,17 @@ import baritone.gradle.task.CreateDistTask
 import baritone.gradle.task.ProguardTask
 //import baritone.gradle.task.TweakerJsonAssembler
 
-plugins {
-    id "com.github.johnrengelman.shadow" version "8.1.1"
-}
-
-unimined.minecraft {
-    runs.client = {
-        mainClass = "net.minecraft.launchwrapper.Launch"
-        args.addAll(["--tweakClass", "baritone.launch.tweaker.BaritoneTweaker"])
+unimined {
+    runs {
+        named("client") {
+            mainClass.set("net.minecraft.launchwrapper.Launch")
+            programArgs.addAll(["--tweakClass", "baritone.launch.tweaker.BaritoneTweaker"])
+        }
     }
 }
 
 configurations {
     common
-    shadowCommon // Don't use shadow from the shadow plugin because we don't want IDEA to index this.
     compileClasspath.extendsFrom common
     runtimeClasspath.extendsFrom common
 }
@@ -61,25 +58,16 @@ dependencies {
         if (sourceSet == rootProject.sourceSets.test) continue
         if (sourceSet == rootProject.sourceSets.schematica_api) continue
         common sourceSet.output
-        shadowCommon sourceSet.output
     }
 }
 
-shadowJar {
-    configurations = [project.configurations.shadowCommon]
-    archiveClassifier.set "dev-shadow"
-}
-
-
-remapJar {
-    inputFile.set shadowJar.archiveFile
-    dependsOn shadowJar
-    archiveClassifier.set null
+// unimined 2.0's remapJar mirrors jar's spec + manifest — add the common
+// contents so the production jar is fat while the -dev jar stays thin
+tasks.matching { it.name == "remapJar" }.configureEach {
+    from(configurations.common)
 }
 
 jar {
-    archiveClassifier.set "dev"
-
     preserveFileTimestamps = false
     reproducibleFileOrder = true
 
@@ -95,7 +83,7 @@ jar {
 }
 
 task proguard(type: ProguardTask) {
-    proguardVersion "7.4.2"
+    proguardVersion "7.8.0"
 }
 
 task createDist(type: CreateDistTask, dependsOn: proguard)

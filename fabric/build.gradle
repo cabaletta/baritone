@@ -18,23 +18,23 @@
 import baritone.gradle.task.CreateDistTask
 import baritone.gradle.task.ProguardTask
 
-plugins {
-    id "com.github.johnrengelman.shadow" version "8.1.1"
-}
-
 base {
     archivesName = archivesName.get() + "-fabric"
 }
 
-unimined.minecraft {
-    fabric {
-        loader project.fabric_version
+unimined {
+    minecraft {
+        loader("fabric", project.fabric_version)
+    }
+    // upstream's fabric.mod.json references an icon that isn't in the repo —
+    // pre-existing packaging wart, not a remap error
+    remap {
+        footgunChecks.set(xyz.wagyourtail.unimined.remap.FootgunCheckLevel.WARN)
     }
 }
 
 configurations {
     common
-    shadowCommon // Don't use shadow from the shadow plugin because we don't want IDEA to index this.
     compileClasspath.extendsFrom common
     runtimeClasspath.extendsFrom common
 }
@@ -45,7 +45,6 @@ dependencies {
         if (sourceSet == rootProject.sourceSets.test) continue
         if (sourceSet == rootProject.sourceSets.schematica_api) continue
         common sourceSet.output
-        shadowCommon sourceSet.output
     }
 }
 
@@ -57,29 +56,14 @@ processResources {
     }
 }
 
-shadowJar {
-    configurations = [project.configurations.shadowCommon]
-    archiveClassifier.set "dev-shadow"
-}
-
-remapJar {
-    inputFile.set shadowJar.archiveFile
-    dependsOn shadowJar
-    archiveClassifier.set null
-}
-
-jar {
-    archiveClassifier.set "dev"
-}
-
-components.java {
-    withVariantsFromConfiguration(project.configurations.shadowRuntimeElements) {
-        skip()
-    }
+// unimined 2.0's remapJar mirrors jar's spec — add the common contents
+// so the production jar is fat while the -dev jar stays thin
+tasks.matching { it.name == "remapJar" }.configureEach {
+    from(configurations.common)
 }
 
 task proguard(type: ProguardTask) {
-    proguardVersion "7.4.2"
+    proguardVersion "7.8.0"
     compType "fabric"
 }
 

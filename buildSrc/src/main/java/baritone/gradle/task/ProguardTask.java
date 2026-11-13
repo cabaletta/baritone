@@ -20,7 +20,6 @@ package baritone.gradle.task;
 import baritone.gradle.util.Determinizer;
 import org.gradle.api.plugins.JavaPluginExtension;
 import org.gradle.api.tasks.Input;
-import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.api.tasks.TaskCollection;
 import org.gradle.api.tasks.compile.ForkOptions;
@@ -29,8 +28,9 @@ import org.gradle.internal.jvm.Jvm;
 import org.gradle.jvm.toolchain.JavaLanguageVersion;
 import org.gradle.jvm.toolchain.JavaLauncher;
 import org.gradle.jvm.toolchain.JavaToolchainService;
-import xyz.wagyourtail.unimined.api.UniminedExtension;
-import xyz.wagyourtail.unimined.api.minecraft.MinecraftConfig;
+import org.gradle.process.ExecOperations;
+
+import javax.inject.Inject;
 
 import java.io.*;
 import java.net.URI;
@@ -56,6 +56,13 @@ public class ProguardTask extends BaritoneGradleTask {
         return proguardVersion;
     }
 
+    private final ExecOperations execOperations;
+
+    @Inject
+    public ProguardTask(ExecOperations execOperations) {
+        this.execOperations = execOperations;
+    }
+
     private List<String> requiredLibraries;
 
     @TaskAction
@@ -73,17 +80,23 @@ public class ProguardTask extends BaritoneGradleTask {
         cleanup();
     }
 
-    UniminedExtension ext = getProject().getExtensions().getByType(UniminedExtension.class);
-    SourceSetContainer sourceSets = getProject().getExtensions().getByType(SourceSetContainer.class);
-
+    /**
+     * The MC jar in the environment's production namespace —
+     * unimined 2.0 exposes it as the resolvable {@code minecraftProd}
+     * view for the {@code main} environment.
+     */
     private File getMcJar() {
-        MinecraftConfig mcc = ext.getMinecrafts().get(sourceSets.getByName("main"));
-        return mcc.getMinecraft(mcc.getMcPatcher().getProdNamespace(), mcc.getMcPatcher().getProdNamespace()).toFile();
+        return getProject().getConfigurations().getByName("minecraftProd").getSingleFile();
+    }
+
+    /** The dev-namespace MC jar on this project's compile classpath. */
+    private File getDevMcJar() {
+        return getProject().getConfigurations().getByName("minecraftDev").getSingleFile();
     }
 
     private boolean isMcJar(File f) {
-        MinecraftConfig mcc = ext.getMinecrafts().get(sourceSets.getByName("main"));
-        return mcc.isMinecraftJar(f.toPath());
+        return f.toPath().toAbsolutePath().normalize()
+                .equals(getDevMcJar().toPath().toAbsolutePath().normalize());
     }
 
     private void processArtifact() throws Exception {
@@ -97,7 +110,8 @@ public class ProguardTask extends BaritoneGradleTask {
     private void downloadProguard() throws Exception {
         Path proguardZip = getTemporaryFile(String.format(PROGUARD_ZIP, proguardVersion));
         if (!Files.exists(proguardZip)) {
-            String downloadAddress = String.format("https://github.com/Guardsquare/proguard/releases/download/v%s/proguard-%s.zip", proguardVersion, proguardVersion);
+            String tag = proguardVersion.replaceAll("\\.0$", "");
+            String downloadAddress = String.format("https://github.com/Guardsquare/proguard/releases/download/v%s/proguard-%s.zip", tag, proguardVersion);
             write(new URI(downloadAddress).toURL().openStream(), proguardZip);
         }
     }
@@ -228,7 +242,7 @@ public class ProguardTask extends BaritoneGradleTask {
 
         Path workingDirectory = getTemporaryFile("");
 
-        getProject().javaexec(spec -> {
+        execOperations.javaexec(spec -> {
             spec.workingDir(workingDirectory.toFile());
             spec.args("@" + workingDirectory.relativize(config));
             spec.classpath(getTemporaryFile(String.format(PROGUARD_JAR, proguardVersion)));
