@@ -79,17 +79,19 @@ allprojects {
         compileOnly "org.ow2.asm:asm:${project.asm_version}"
 
         implementation 'com.google.code.findbugs:jsr305:3.0.2'
+        // unimined 1.x injected this into minecraftLibraries; 2.0 doesn't
+        compileOnly 'org.jetbrains:annotations:24.0.1'
     }
 
-    unimined.minecraft(sourceSets.main, true) {
-        version rootProject.minecraft_version
+    unimined {
+        minecraft {
+            version.set(rootProject.minecraft_version)
 
-        mappings {
-            intermediary()
-            mojmap()
-            parchment("1.20.6", "2024.05.01")
-
-            devFallbackNamespace "official"
+            mappings {
+                intermediary()
+                mojmap()
+                parchment("1.20.6", "2024.05.01")
+            }
         }
     }
 
@@ -103,9 +105,15 @@ allprojects {
     }
 }
 
-unimined.minecraft {
-    runs.off = true
-    defaultRemapJar = false
+unimined {
+    minecraft {
+        sourceSet("main") {
+            defaultRemapJar.set(false)
+        }
+    }
+    runs {
+        enabled.set(false)
+    }
 }
 
 base {

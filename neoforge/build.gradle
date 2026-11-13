@@ -18,38 +18,18 @@
 import baritone.gradle.task.CreateDistTask
 import baritone.gradle.task.ProguardTask
 
-plugins {
-    id "com.github.johnrengelman.shadow" version "8.0.0"
+base {
+    archivesName = archivesName.get() + "-neoforge"
 }
 
-archivesBaseName = archivesBaseName + "-neoforge"
-
-unimined.minecraft {
-
-    neoForge {
-        loader project.neoforge_version
-        mixinConfig ["mixins.baritone.json"]
+unimined {
+    minecraft {
+        loader("neoforge", project.neoforge_version)
     }
-
-    minecraftRemapper.config {
-        // neoforge adds 1 conflict, where 2 interfaces have a method with the same name on yarn/mojmap,
-        // but the method has different names in the intermediary mappings.
-        // this is a conflict because they have a class that extends both interfaces.
-        // this shouldn't be a problem as long as named mappings don't make the name of those 2 methods different.
-        ignoreConflicts(true)
-    }
-
 }
-
-//loom {
-//    forge {
-//        mixinConfig 'mixins.baritone.json'
-//    }
-//}
 
 configurations {
     common
-    shadowCommon // Don't use shadow from the shadow plugin because we don't want IDEA to index this.
     compileClasspath.extendsFrom common
     runtimeClasspath.extendsFrom common
 }
@@ -60,7 +40,6 @@ dependencies {
         if (sourceSet == rootProject.sourceSets.test) continue
         if (sourceSet == rootProject.sourceSets.schematica_api) continue
         common sourceSet.output
-        shadowCommon sourceSet.output
     }
 }
 
@@ -72,20 +51,11 @@ processResources {
     }
 }
 
-shadowJar {
-    configurations = [project.configurations.shadowCommon]
-    archiveClassifier.set "dev-shadow"
-}
-
-remapJar {
-    inputFile.set shadowJar.archiveFile
-    dependsOn shadowJar
-    archiveClassifier.set null
-}
-
 jar {
-    archiveClassifier.set "dev"
-
+    // neoforge dev and prod namespaces are both mojmap, so unimined 2.0
+    // skips remapJar and a single fat artifact serves both — bundle the
+    // common contents here rather than on remapJar
+    from(configurations.common)
     manifest {
         attributes(
                 'MixinConfigs': 'mixins.baritone.json',
@@ -97,14 +67,8 @@ jar {
     }
 }
 
-components.java {
-    withVariantsFromConfiguration(project.configurations.shadowRuntimeElements) {
-        skip()
-    }
-}
-
 task proguard(type: ProguardTask) {
-    proguardVersion "7.4.2"
+    proguardVersion "7.8.0"
     compType "neoforge"
 }
 
