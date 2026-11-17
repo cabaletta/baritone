@@ -651,7 +651,7 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
                     return new BetterBlockPos(mut);
                 }
                 return null;
-            } else if (block != Blocks.AIR) {
+            } else if (!(block instanceof AirBlock)) {
                 return null;
             }
             mut.set(mut.getX(), mut.getY() - 1, mut.getZ());
@@ -726,7 +726,7 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
         }
 
         private BetterBlockPos advanceUnderground(BetterBlockPos pos) {
-            if (isInBounds(ctx.world(), pos) && ctx.world().getBlockState(pos).getBlock() == Blocks.AIR) {
+            if (isInBounds(ctx.world(), pos) && ctx.world().getBlockState(pos).getBlock() instanceof AirBlock) {
                 BetterBlockPos actualLandingSpot = checkLandingSpot(pos, this.checkedPositions);
                 if (actualLandingSpot != null) {
                     landingColumnHeight = SHORT_LANDING_COLUMN_HEIGHT;
@@ -747,7 +747,7 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
         private BetterBlockPos advanceHeightmap(BetterBlockPos qPos) {
             int height = ctx.world().getHeight(Heightmap.Types.MOTION_BLOCKING, qPos.getX(), qPos.getZ());
             BetterBlockPos pos = new BetterBlockPos(qPos.getX(), height + 1, qPos.getZ());
-            if (isInBounds(ctx.world(), pos) && ctx.world().getBlockState(pos).getBlock() == Blocks.AIR) {
+            if (isInBounds(ctx.world(), pos) && ctx.world().getBlockState(pos).getBlock() instanceof AirBlock) {
                 BetterBlockPos actualLandingSpot = checkLandingSpot(pos, this.checkedPositions);
                 if (actualLandingSpot != null) {
                     landingColumnHeight = ctx.playerFeet().y - actualLandingSpot.y < LONG_LANDING_COLUMN_HEIGHT ? SHORT_LANDING_COLUMN_HEIGHT : LONG_LANDING_COLUMN_HEIGHT;
