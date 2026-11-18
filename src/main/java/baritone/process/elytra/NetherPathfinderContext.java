@@ -72,7 +72,6 @@ public final class NetherPathfinderContext implements IElytraPathFinder {
     private final ExecutorService readExecutor = Executors.newSingleThreadExecutor();
     private final ResourceKey<Level> dimension;
     final int minY;
-    private final BlockStateOctreeInterface boi;
 
     public NetherPathfinderContext(long seed, Path cache, Level world) {
         this.dimension = world.dimension();
@@ -86,7 +85,6 @@ public final class NetherPathfinderContext implements IElytraPathFinder {
         this.maxHeight = height;
         this.context = new NetherPathfinder(seed, cache != null ? cache.toString() : null, dim, height);
         this.seed = seed;
-        this.boi = new BlockStateOctreeInterface(this);
     }
 
     public boolean hasChunk(ChunkPos pos) {
@@ -97,7 +95,6 @@ public final class NetherPathfinderContext implements IElytraPathFinder {
         this.writeExecutor.execute(() -> {
             writeLock.lock();
             try {
-                this.boi.chunk = null;
                 this.context.cullFarChunks(chunkX, chunkZ, maxDistanceBlocks);
             } finally {
                 writeLock.unlock();
@@ -114,8 +111,6 @@ public final class NetherPathfinderContext implements IElytraPathFinder {
             if (chunk != null) {
                 writeLock.lock();
                 try {
-                    // we might replace this chunk
-                    this.boi.chunk = null;
                     final Chunk packed = this.context.allocateAndInsertChunk(chunk.getPos().x, chunk.getPos().z);
                     writeChunkData(chunk, packed);
                 } finally {
@@ -269,8 +264,10 @@ public final class NetherPathfinderContext implements IElytraPathFinder {
         }
     }
 
-    public boolean passable(int x, int y, int z) {
-        return !this.boi.get0(x, y, z);
+    public BlockStateOctreeInterface getBoi() {
+        // If we end up needing cache invalidation we can keep references in a
+        // Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()))
+        return new BlockStateOctreeInterface(this);
     }
 
     public void cancel() {
