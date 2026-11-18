@@ -18,30 +18,18 @@
 import baritone.gradle.task.CreateDistTask
 import baritone.gradle.task.ProguardTask
 
-plugins {
-    id "com.github.johnrengelman.shadow" version "8.1.1"
-}
-
 base {
     archivesName = archivesName.get() + "-forge"
 }
 
-unimined.minecraft {
-    minecraftForge {
-        loader project.forge_version
-        mixinConfig ["mixins.baritone.json"]
+unimined {
+    minecraft {
+        loader("forge", project.forge_version)
     }
 }
 
-//loom {
-//    forge {
-//        mixinConfig 'mixins.baritone.json'
-//    }
-//}
-
 configurations {
     common
-    shadowCommon // Don't use shadow from the shadow plugin because we don't want IDEA to index this.
     compileClasspath.extendsFrom common
     runtimeClasspath.extendsFrom common
 }
@@ -52,7 +40,6 @@ dependencies {
         if (sourceSet == rootProject.sourceSets.test) continue
         if (sourceSet == rootProject.sourceSets.schematica_api) continue
         common sourceSet.output
-        shadowCommon sourceSet.output
     }
 }
 
@@ -64,20 +51,13 @@ processResources {
     }
 }
 
-shadowJar {
-    configurations = [project.configurations.shadowCommon]
-    archiveClassifier.set "dev-shadow"
-}
-
-remapJar {
-    inputFile.set shadowJar.archiveFile
-    dependsOn shadowJar
-    archiveClassifier.set null
+// unimined 2.0's remapJar mirrors jar's spec + manifest — add the common
+// contents so the production jar is fat while the -dev jar stays thin
+tasks.matching { it.name == "remapJar" }.configureEach {
+    from(configurations.common)
 }
 
 jar {
-    archiveClassifier.set "dev"
-
     manifest {
         attributes(
                 'MixinConfigs': 'mixins.baritone.json',
@@ -89,14 +69,8 @@ jar {
     }
 }
 
-components.java {
-    withVariantsFromConfiguration(project.configurations.shadowRuntimeElements) {
-        skip()
-    }
-}
-
 task proguard(type: ProguardTask) {
-    proguardVersion "7.4.2"
+    proguardVersion "7.8.0"
     compType "forge"
 }
 
