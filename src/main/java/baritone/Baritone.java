@@ -32,7 +32,6 @@ import baritone.event.GameEventHandler;
 import baritone.process.*;
 import baritone.selection.SelectionManager;
 import baritone.utils.BlockStateInterface;
-import baritone.utils.GuiClick;
 import baritone.utils.InputOverrideHandler;
 import baritone.utils.PathingControlManager;
 import baritone.utils.player.BaritonePlayerContext;
@@ -85,6 +84,7 @@ public class Baritone implements IBaritone {
     private final PathingBehavior pathingBehavior;
     private final LookBehavior lookBehavior;
     private final InventoryBehavior inventoryBehavior;
+    private final ClickBehavior clickBehavior;
     private final InputOverrideHandler inputOverrideHandler;
 
     private final FollowProcess followProcess;
@@ -125,6 +125,7 @@ public class Baritone implements IBaritone {
             this.pathingBehavior      = this.registerBehavior(PathingBehavior::new);
             this.inventoryBehavior    = this.registerBehavior(InventoryBehavior::new);
             this.inputOverrideHandler = this.registerBehavior(InputOverrideHandler::new);
+            this.clickBehavior        = this.registerBehavior(ClickBehavior::new);
             this.registerBehavior(WaypointBehavior::new);
         }
 
@@ -258,12 +259,7 @@ public class Baritone implements IBaritone {
 
     @Override
     public void openClick() {
-        new Thread(() -> {
-            try {
-                Thread.sleep(100);
-                mc.execute(() -> mc.setScreen(new GuiClick()));
-            } catch (Exception ignored) {}
-        }).start();
+        this.clickBehavior.toggle();
     }
 
     public Path getDirectory() {

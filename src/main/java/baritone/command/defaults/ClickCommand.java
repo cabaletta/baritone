@@ -36,7 +36,6 @@ public class ClickCommand extends Command {
     public void execute(String label, IArgConsumer args) throws CommandException {
         args.requireMax(0);
         baritone.openClick();
-        logDirect("aight dude");
     }
 
     @Override
@@ -46,19 +45,17 @@ public class ClickCommand extends Command {
 
     @Override
     public String getShortDesc() {
-        return "Open click";
+        return "Select an area by clicking two blocks";
     }
 
     @Override
     public List<String> getLongDesc() {
         return Arrays.asList(
-                "Opens a GUI to select positions using your mouse.",
-                "- Right click to walk onto a block.",
-                "- Left click to walk into a block.",
-                "- Left click drag to create a selection for #selection.",
+                "Toggles click mode. While it's on, click two blocks to make a selection for #sel.",
+                "The clicks don't break, place or use anything, and the mode turns itself off once the selection is made.",
                 "",
                 "Usage:",
-                "> click"
+                "> click - Start click mode or cancel it"
         );
     }
 }

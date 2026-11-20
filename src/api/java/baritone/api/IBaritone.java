@@ -140,7 +140,7 @@ public interface IBaritone {
     ICommandManager getCommandManager();
 
     /**
-     * Open click
+     * Toggles click mode, in which the next two blocks clicked become the corners of a new selection
      */
     void openClick();
 }
