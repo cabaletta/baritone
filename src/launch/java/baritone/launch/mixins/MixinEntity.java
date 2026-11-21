@@ -18,6 +18,8 @@
 package baritone.launch.mixins;
 
 import baritone.api.BaritoneAPI;
+import baritone.api.IBaritone;
+import baritone.api.Settings;
 import baritone.api.event.events.RotationMoveEvent;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.Entity;
@@ -26,6 +28,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(Entity.class)
@@ -65,5 +68,28 @@ public class MixinEntity {
             this.xRot = this.motionUpdateRotationEvent.getOriginal().getPitch();
             this.motionUpdateRotationEvent = null;
         }
+    }
+
+    @Redirect(
+            method = "updateSwimming",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/world/entity/Entity;isUnderWater()Z"
+            )
+    )
+    private boolean allowSwimStart(Entity self) {
+        // vanilla only latches the swim state once the eye is underwater, which at the surface means
+        // bobbing around waiting for gravity (water sink speed is 0.005/tick, it takes forever).
+        // while baritone is actively swimming, pretend the eye is already under so the swim state
+        // latches immediately and the pitch steering dives right away
+        if (LocalPlayer.class.isInstance(self)) {
+            IBaritone baritone = BaritoneAPI.getProvider().getBaritoneForPlayer((LocalPlayer) self);
+            if (baritone != null && BaritoneAPI.getSettings().allowSwimming.value
+                    && baritone.getPathingBehavior().isPathing()
+                    && self.isInWater() && self.isSprinting()) {
+                return true;
+            }
+        }
+        return self.isUnderWater();
     }
 }

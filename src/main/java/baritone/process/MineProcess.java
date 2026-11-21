@@ -30,6 +30,7 @@ import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.MovementHelper;
 import baritone.utils.BaritoneProcessHelper;
 import baritone.utils.BlockStateInterface;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
@@ -104,7 +105,8 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
         updateLoucaSystem();
         int mineGoalUpdateInterval = Baritone.settings().mineGoalUpdateInterval.value;
         List<BlockPos> curr = new ArrayList<>(knownOreLocations);
-        if (mineGoalUpdateInterval != 0 && tickCount++ % mineGoalUpdateInterval == 0) { // big brain
+        // rescan does nothing in legit mode, so don't copy the chunk provider and spin up a thread for it to do nothing
+        if (mineGoalUpdateInterval != 0 && tickCount++ % mineGoalUpdateInterval == 0 && !Baritone.settings().legitMine.value) { // big brain
             CalculationContext context = new CalculationContext(baritone, true);
             Baritone.getExecutor().execute(() -> rescan(curr, context));
         }
@@ -408,12 +410,18 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
 
         int searchDist = 10;
         double fakedBlockReachDistance = 20; // at least 10 * sqrt(3) with some extra space to account for positioning within the block
+        // ores we already know about were getting raytraced again every tick (up to 7 rays each) just to be added a
+        // second time and deduplicated by prune. longs because BetterBlockPos and BlockPos don't agree on hashCode
+        LongOpenHashSet alreadyKnown = new LongOpenHashSet();
+        for (BlockPos known : knownOreLocations) {
+            alreadyKnown.add(known.asLong());
+        }
         for (int x = playerFeet.getX() - searchDist; x <= playerFeet.getX() + searchDist; x++) {
             for (int y = playerFeet.getY() - searchDist; y <= playerFeet.getY() + searchDist; y++) {
                 for (int z = playerFeet.getZ() - searchDist; z <= playerFeet.getZ() + searchDist; z++) {
                     // crucial to only add blocks we can see because otherwise this
                     // is an x-ray and it'll get caught
-                    if (filter.has(bsi.get0(x, y, z))) {
+                    if (filter.has(bsi.get0(x, y, z)) && !alreadyKnown.contains(BlockPos.asLong(x, y, z))) {
                         BlockPos pos = new BlockPos(x, y, z);
                         if ((Baritone.settings().legitMineIncludeDiagonals.value && knownOreLocations.stream().anyMatch(ore -> ore.distSqr(pos) <= 2 /* sq means this is pytha dist <= sqrt(2) */)) || RotationUtils.reachable(ctx, pos, fakedBlockReachDistance).isPresent()) {
                             knownOreLocations.add(pos);
