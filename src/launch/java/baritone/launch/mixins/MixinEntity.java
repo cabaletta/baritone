@@ -28,11 +28,32 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Group;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
+
 @Mixin(Entity.class)
 public class MixinEntity {
+
+    @Unique
+    private static final MethodHandle CAN_START_SWIMMING = resolveCanStartSwimming();
+
+    @Unique
+    private static MethodHandle resolveCanStartSwimming() {
+        MethodHandles.Lookup lookup = MethodHandles.publicLookup();
+        MethodType type = MethodType.methodType(boolean.class);
+        try {
+            return lookup.findVirtual(Entity.class, "canStartSwimming", type);
+        } catch (NoSuchMethodException e) {
+            return null; // no NeoForge or LexForge
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     @Shadow
     private float yRot;
@@ -77,7 +98,27 @@ public class MixinEntity {
                     target = "Lnet/minecraft/world/entity/Entity;isUnderWater()Z"
             )
     )
+    // With LexForge both redirectors will fire. The results of both calls are or-ed and
+    // we do the same in both redirects, so this is correct, albeit a bit silly.
+    @Group(name="allowSwimStart", min=1, max=2)
     private boolean allowSwimStart(Entity self) {
+        return overrideAllowSimming(self) || self.isUnderWater();
+    }
+
+    @Redirect(
+            method = "updateSwimming",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/world/entity/Entity;canStartSwimming()Z"
+            )
+    )
+    @Group(name="allowSwimStart")
+    private boolean allowSwimStartNeo(Entity self) throws Throwable {
+        return overrideAllowSimming(self) || (boolean) CAN_START_SWIMMING.invokeExact(self);
+    }
+
+    @Unique
+    private boolean overrideAllowSimming(Entity self) {
         // vanilla only latches the swim state once the eye is underwater, which at the surface means
         // bobbing around waiting for gravity (water sink speed is 0.005/tick, it takes forever).
         // while baritone is actively swimming, pretend the eye is already under so the swim state
@@ -90,6 +131,6 @@ public class MixinEntity {
                 return true;
             }
         }
-        return self.isUnderWater();
+        return false;
     }
 }
