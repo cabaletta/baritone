@@ -53,19 +53,24 @@ public final class ChunkPacker {
         Map<String, List<BlockPos>> specialBlocks = new HashMap<>();
         final int height = chunk.getLevel().dimensionType().height();
         BitSet bitSet = new BitSet(CachedChunk.size(height));
+        // this goes through the level and a Holder every time, and we used to ask for it twice per block
+        final int minY = chunk.getMinY();
         try {
             LevelChunkSection[] chunkInternalStorageArray = chunk.getSections();
             for (int y0 = 0; y0 < height / 16; y0++) {
                 LevelChunkSection extendedblockstorage = chunkInternalStorageArray[y0];
-                if (extendedblockstorage == null) {
-                    // any 16x16x16 area that's all air will have null storage
-                    // for example, in an ocean biome, with air from y=64 to y=256
-                    // the first 4 extended blocks storages will be full
-                    // and the remaining 12 will be null
+                if (extendedblockstorage == null || extendedblockstorage.hasOnlyAir()) {
+                    // any 16x16x16 area that's all air can be skipped entirely
+                    // for example, in an ocean biome, with air from y=64 to y=320
+                    // the first few sections are full and everything above is air
 
                     // since the index into the bitset is calculated from the x y and z
                     // and doesn't function as an append, we can entirely skip the scanning
                     // since a bitset is initialized to all zero, and air is saved as zeros
+
+                    // this used to only check for null, which is what an empty section was back in 1.12
+                    // they haven't been null since 1.18, so we were walking all 4096 air blocks of the
+                    // ~14 empty sections in a normal overworld chunk, twice per chunk (load and unload)
                     continue;
                 }
                 PalettedContainer<BlockState> bsc = extendedblockstorage.getStates();
@@ -78,13 +83,13 @@ public final class ChunkPacker {
                         for (int x = 0; x < 16; x++) {
                             int index = CachedChunk.getPositionIndex(x, y, z);
                             BlockState state = bsc.get(x, y1, z);
-                            boolean[] bits = getPathingBlockType(state, chunk, x, y + chunk.getMinY(), z).getBits();
+                            boolean[] bits = getPathingBlockType(state, chunk, x, y + minY, z).getBits();
                             bitSet.set(index, bits[0]);
                             bitSet.set(index + 1, bits[1]);
                             Block block = state.getBlock();
                             if (CachedChunk.BLOCKS_TO_KEEP_TRACK_OF.contains(block)) {
                                 String name = BlockUtils.blockToString(block);
-                                specialBlocks.computeIfAbsent(name, b -> new ArrayList<>()).add(new BlockPos(x, y+chunk.getMinY(), z));
+                                specialBlocks.computeIfAbsent(name, b -> new ArrayList<>()).add(new BlockPos(x, y + minY, z));
                             }
                         }
                     }

@@ -17,6 +17,7 @@
 
 package baritone.command.defaults;
 
+import baritone.Baritone;
 import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.command.Command;
@@ -24,6 +25,7 @@ import baritone.api.command.argument.IArgConsumer;
 import baritone.api.command.datatypes.ForBlockOptionalMeta;
 import baritone.api.command.exception.CommandException;
 import baritone.api.utils.BlockOptionalMeta;
+import baritone.api.utils.BlockOptionalMetaLookup;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -46,7 +48,7 @@ public class MineCommand extends Command {
         }
         BaritoneAPI.getProvider().getWorldScanner().repack(ctx);
         logDirect(String.format("Mining %s", boms.toString()));
-        baritone.getMineProcess().mine(quantity, boms.toArray(new BlockOptionalMeta[0]));
+        baritone.getMineProcess().mine(quantity, new BlockOptionalMetaLookup(boms, Baritone.settings().mineDropsConsiderSilkTouch.value));
     }
 
     @Override
@@ -73,7 +75,12 @@ public class MineCommand extends Command {
                 "Also see the legitMine settings (see #set l legitMine).",
                 "",
                 "Usage:",
-                "> mine diamond_ore - Mines all diamonds it can find."
+                "> mine <blocks...> - Mine blocks.",
+                "> mine <n> <blocks...> - Mine blocks until you have n of their drops.",
+                "",
+                "Examples:",
+                "> mine diamond_ore deepslate_diamond_ore - Mines all diamonds it can find.",
+                "> mine 64 diamond_ore - Mines diamond ore until you have 5 diamonds."
         );
     }
 }

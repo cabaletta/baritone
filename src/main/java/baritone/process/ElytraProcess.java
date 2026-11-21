@@ -110,9 +110,7 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
     }
 
     public static IElytraProcess create(final Baritone baritone) {
-        return NetherPathfinderContext.isSupported()
-                ? new ElytraProcess(baritone)
-                : new NullElytraProcess(baritone);
+        return new ElytraProcess(baritone);
     }
 
     @Override

@@ -13,9 +13,9 @@ Link to the releases page: [Releases](https://github.com/cabaletta/baritone/rele
 
 The mapping between Minecraft versions and major Baritone versions is as follows
 
-| Minecraft version | 1.12 | 1.13 | 1.14 | 1.15 | 1.16 | 1.17 | 1.18 | 1.19 | 1.20  | 1.21  | 1.21.4 | 1.21.5 |  1.21.6 - 1.21.8 |
-|-------------------|------|------|------|------|------|------|------|------|-------|-------|--------|--------|------------------|
-| Baritone version  | v1.2 | v1.3 | v1.4 | v1.5 | v1.6 | v1.7 | v1.8 | v1.9 | v1.10 | v1.11 | v1.13  | v1.14  | v1.15            |
+| Minecraft version | 1.12 | 1.13 | 1.14 | 1.15 | 1.16 | 1.17 | 1.18 | 1.19 | 1.20  | 1.21  | 1.21.4 | 1.21.5 | 1.21.6 - 1.21.8 | 1.21.9 - 1.21.10 | 1.21.11 | 26.1  | 26.2  | 26.3  |
+|-------------------|------|------|------|------|------|------|------|------|-------|-------|--------|--------|-----------------|------------------|---------|-------|-------|-------|
+| Baritone version  | v1.2 | v1.3 | v1.4 | v1.5 | v1.6 | v1.7 | v1.8 | v1.9 | v1.10 | v1.11 | v1.13  | v1.14  | v1.15           | v1.16            | v1.17   | v1.18 | v1.19 | v1.20 |
 
 Any official release will be GPG signed by leijurv (44A3EA646EADAC6A). Please verify that the hash of the file you download is in `checksums.txt` and that `checksums_signed.asc` is a valid signature by that public keys of `checksums.txt`.
 
@@ -61,7 +61,8 @@ The recommended Java versions by Minecraft version are
 | 1.12.2 - 1.16.5               | 8             |
 | 1.17.1                        | 16            |
 | 1.18.2 - 1.20.4               | 17            |
-| 1.20.5 - 1.21.8               | 21            |
+| 1.20.5 - 1.21.11              | 21            |
+| 26.1 - 26.3                   | 25            |
 
 Download java: <https://adoptium.net/>
 
