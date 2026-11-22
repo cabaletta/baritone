@@ -83,7 +83,7 @@ public class MovementAscend extends Movement {
                 if (againstX == x && againstZ == z) { // we might be able to backplace now, but it doesn't matter because it will have been broken by the time we'd need to use it
                     continue;
                 }
-                if (MovementHelper.canPlaceAgainst(context.bsi, againstX, againstY, againstZ)) {
+                if (MovementHelper.canPlaceAgainst(context, againstX, againstY, againstZ)) {
                     foundPlaceOption = true;
                     break;
                 }
@@ -134,7 +134,11 @@ public class MovementAscend extends Movement {
             if (toPlace.is(Blocks.SOUL_SAND)) {
                 walk = WALK_ONE_OVER_SOUL_SAND_COST;
             } else if (toPlace.is(Blocks.MAGMA_BLOCK)) {
-                walk = SNEAK_ONE_BLOCK_COST;
+                if (context.frostWalker == 0) {
+                    walk = SNEAK_ONE_BLOCK_COST;
+                } else {
+                    walk = WALK_ONE_BLOCK_COST;
+                }
             } else {
                 walk = Math.max(JUMP_ONE_BLOCK_COST, WALK_ONE_BLOCK_COST);
             }
@@ -173,6 +177,10 @@ public class MovementAscend extends Movement {
             return state.setStatus(MovementStatus.SUCCESS);
         }
 
+        if (!MovementHelper.openDoors(ctx, state, src.above(), dest)) {
+            return state;
+        }
+
         BlockState jumpingOnto = BlockStateInterface.get(ctx, positionToPlace);
         if (!MovementHelper.canWalkOn(ctx, positionToPlace, jumpingOnto)) {
             ticksWithoutPlacement++;
@@ -191,7 +199,7 @@ public class MovementAscend extends Movement {
         }
         MovementHelper.moveTowards(ctx, state, dest);
 
-        state.setInput(Input.SNEAK, Baritone.settings().allowWalkOnMagmaBlocks.value && jumpingOnto.is(Blocks.MAGMA_BLOCK));
+        state.setInput(Input.SNEAK, Baritone.settings().allowWalkOnMagmaBlocks.value && jumpingOnto.is(Blocks.MAGMA_BLOCK) && !MovementHelper.hasFrostWalker(ctx));
 
         if (MovementHelper.isBottomSlab(jumpingOnto) && !MovementHelper.isBottomSlab(BlockStateInterface.get(ctx, src.below()))) {
             return state; // don't jump while walking from a non double slab into a bottom slab

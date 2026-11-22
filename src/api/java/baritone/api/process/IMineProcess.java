@@ -19,6 +19,7 @@ package baritone.api.process;
 
 import baritone.api.utils.BlockOptionalMeta;
 import baritone.api.utils.BlockOptionalMetaLookup;
+
 import java.util.stream.Stream;
 import net.minecraft.world.level.block.Block;
 
@@ -69,6 +70,7 @@ public interface IMineProcess extends IBaritoneProcess {
     /**
      * Begin to search for and mine the specified blocks.
      *
+     * @param quantity The total number of items to get
      * @param boms The blocks to mine
      */
     default void mine(int quantity, BlockOptionalMeta... boms) {

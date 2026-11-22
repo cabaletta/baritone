@@ -96,7 +96,7 @@ public class MovementFall extends Movement {
         BlockState destState = ctx.world().getBlockState(dest);
         Block destBlock = destState.getBlock();
 
-        if (ctx.world().getBlockState(dest.below()).is(Blocks.MAGMA_BLOCK) && MovementHelper.steppingOnBlocks(ctx).stream().allMatch(block -> MovementHelper.canWalkThrough(ctx, block))) {
+        if (ctx.world().getBlockState(dest.below()).is(Blocks.MAGMA_BLOCK)  && !MovementHelper.hasFrostWalker(ctx) && MovementHelper.steppingOnBlocks(ctx).stream().allMatch(block -> MovementHelper.canWalkThrough(ctx, block))) {
             state.setInput(Input.SNEAK, true);
         }
 
@@ -116,6 +116,11 @@ public class MovementFall extends Movement {
                 }
             }
         }
+
+        if (!MovementHelper.openDoors(ctx, state, src, new BetterBlockPos(dest.x, src.y, dest.z))) {
+            return state;
+        }
+
         if (targetRotation != null) {
             state.setTarget(new MovementTarget(targetRotation, true));
         } else {

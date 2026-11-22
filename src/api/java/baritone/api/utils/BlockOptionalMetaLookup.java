@@ -23,10 +23,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Stream;
 
 public class BlockOptionalMetaLookup {
@@ -48,6 +45,12 @@ public class BlockOptionalMetaLookup {
         this.blockSet = ImmutableSet.copyOf(blocks);
         this.blockStateSet = ImmutableSet.copyOf(blockStates);
         this.stackHashes = ImmutableSet.copyOf(stacks);
+    }
+
+    public BlockOptionalMetaLookup(List<BlockOptionalMeta> boms, Boolean considerSilkTouch) {
+        this(boms.stream()
+                .map(bom -> new BlockOptionalMeta(bom, Boolean.TRUE.equals(considerSilkTouch)))
+                .toArray(BlockOptionalMeta[]::new));
     }
 
     public BlockOptionalMetaLookup(Block... blocks) {

@@ -148,7 +148,7 @@ public class MovementDescend extends Movement {
         int effectiveStartHeight = y;
         for (int fallHeight = 3; true; fallHeight++) {
             int newY = y - fallHeight;
-            if (newY < context.world.getMinY()) {
+            if (newY < context.minY) {
                 // when pathing in the end, where you could plausibly fall into the void
                 // this check prevents it from getting the block at y=(below whatever the minimum height is) and crashing
                 return false;
@@ -157,7 +157,7 @@ public class MovementDescend extends Movement {
             BlockState ontoBlock = context.get(destX, newY, destZ);
             int unprotectedFallHeight = fallHeight - (y - effectiveStartHeight); // equal to fallHeight - y + effectiveFallHeight, which is equal to -newY + effectiveFallHeight, which is equal to effectiveFallHeight - newY
             double tentativeCost = WALK_OFF_BLOCK_COST + FALL_N_BLOCKS_COST[unprotectedFallHeight] + frontBreak + costSoFar;
-            if (reachedMinimum && MovementHelper.isWater(ontoBlock)) {
+            if (reachedMinimum && MovementHelper.isWater(ontoBlock) && !MovementHelper.isWaterloggedSolidTop(ontoBlock)) {
                 if (!MovementHelper.canWalkThrough(context, destX, newY, destZ, ontoBlock)) {
                     return false;
                 }
@@ -239,6 +239,11 @@ public class MovementDescend extends Movement {
                 // System.out.println(player().position().y + " " + playerFeet.getY() + " " + (player().position().y - playerFeet.getY()));
             }*/
         }
+
+        if (!MovementHelper.openDoors(ctx, state, src, dest.above())) {
+            return state;
+        }
+
         if (safeMode()) {
             double destX = (src.getX() + 0.5) * 0.17 + (dest.getX() + 0.5) * 0.83;
             double destZ = (src.getZ() + 0.5) * 0.17 + (dest.getZ() + 0.5) * 0.83;
@@ -257,7 +262,7 @@ public class MovementDescend extends Movement {
         double z = ctx.player().position().z - (src.getZ() + 0.5);
         double fromStart = Math.sqrt(x * x + z * z);
 
-        state.setInput(Input.SNEAK, Baritone.settings().allowWalkOnMagmaBlocks.value && ctx.world().getBlockState(ctx.player().blockPosition().below()).is(Blocks.MAGMA_BLOCK));
+        state.setInput(Input.SNEAK, Baritone.settings().allowWalkOnMagmaBlocks.value && ctx.world().getBlockState(ctx.player().blockPosition().below()).is(Blocks.MAGMA_BLOCK) && !MovementHelper.hasFrostWalker(ctx));
 
         if (!playerFeet.equals(dest) || ab > 0.25) {
             if (numTicks++ < 20 && fromStart < 1.25) {

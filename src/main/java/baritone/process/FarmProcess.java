@@ -232,6 +232,7 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
         List<BlockPos> bonemealable = new ArrayList<>();
         List<BlockPos> openSoulsand = new ArrayList<>();
         List<BlockPos> openLog = new ArrayList<>();
+        boolean hasImmatureCrop = false;
         for (BlockPos pos : locations) {
             //check if the target block is out of range.
             if (range != 0 && pos.distSqr(center) > range * range) {
@@ -264,6 +265,12 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
             if (readyForHarvest(ctx.world(), pos, state)) {
                 toBreak.add(pos);
                 continue;
+            }
+            for (Harvest harvest : Harvest.values()) {
+                if (harvest.block == state.getBlock()) {
+                    hasImmatureCrop = true;
+                    break;
+                }
             }
             if (state.getBlock() instanceof BonemealableBlock) {
                 BonemealableBlock ig = (BonemealableBlock) state.getBlock();
@@ -392,6 +399,9 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
             }
         }
         if (goalz.isEmpty()) {
+            if (hasImmatureCrop && Baritone.settings().farmWaitForGrowth.value) {
+                return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
+            }
             logDirect("Farm failed");
             if (Baritone.settings().notificationOnFarmFail.value) {
                 logNotification("Farm failed", true);
