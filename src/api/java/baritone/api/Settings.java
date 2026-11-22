@@ -131,7 +131,7 @@ public final class Settings {
     public final Setting<Double> blockBreakAdditionalPenalty = new Setting<>(2D);
 
     /**
-     * Additional penalty for hitting the space bar (ascend, pillar, or parkour) because it uses hunger
+     * Additional penalty for hitting the space bar (ascend, diagonal ascend, pillar, or parkour) because it uses hunger
      */
     public final Setting<Double> jumpPenalty = new Setting<>(2D);
 
@@ -286,7 +286,7 @@ public final class Settings {
      * <p>
      * If a schematic asks for a block on this mapping, all blocks on the mapped list will be accepted at that location as well
      * <p>
-     * Syntax same as <a href="https://baritone.leijurv.com/baritone/api/Settings.html#buildSubstitutes">buildSubstitutes</a>
+     * Syntax same as {@link #buildSubstitutes}
      */
     public final Setting<Map<Block, List<Block>>> buildValidSubstitutes = new Setting<>(new HashMap<>());
 
@@ -377,6 +377,30 @@ public final class Settings {
      * Sprint and jump a block early on ascends wherever possible
      */
     public final Setting<Boolean> sprintAscends = new Setting<>(true);
+
+    /**
+     * Sprint jump in 1x2 corridors and whenever walking under a low ceiling, bonking our head on it.
+     * <p>
+     * The sprint jump speed boost applies before we hit the ceiling, making this faster than just sprinting.
+     */
+    public final Setting<Boolean> headHitters = new Setting<>(false);
+
+    /**
+     * Also sprint jump under low ceilings on flat diagonal movements when {@link #headHitters} is enabled.
+     * Enabled by default. Disable this to limit head hitters to straight movements.
+     */
+    public final Setting<Boolean> headHittersDiagonal = new Setting<>(true);
+
+    /**
+     * Sprint jump along straight stretches of path, up single block steps and down small hills. Every jump is simulated
+     * first and only happens if it lands back on the path without fall damage.
+     */
+    public final Setting<Boolean> sprintJumping = new Setting<>(false);
+
+    /**
+     * Also sprint jump along flat diagonal stretches of path when {@link #sprintJumping} is enabled.
+     */
+    public final Setting<Boolean> sprintJumpingDiagonals = new Setting<>(true);
 
     /**
      * If we overshoot a traverse and end up one block beyond the destination, mark it as successful anyway.
@@ -808,6 +832,19 @@ public final class Settings {
     public final Setting<Boolean> sprintInWater = new Setting<>(true);
 
     /**
+     * Actually swim through water instead of bobbing along the bottom of it
+     * <p>
+     * Swimming works the same way it does for a player: hold sprint (ctrl) while in water to enter the swim
+     * state, then steer with yaw and pitch towards the goal. Since sprinting is what keeps the swim state
+     * alive, this requires {@link #allowSprint} and enough hunger to sprint; without it, baritone falls back
+     * to the normal walk-on-the-bottom behavior.
+     * <p>
+     * Water traversal is also costed at swim speed when this is on, unless depth strider makes walking the
+     * bottom the faster option.
+     */
+    public final Setting<Boolean> allowSwimming = new Setting<>(false);
+
+    /**
      * When GetToBlockProcess or MineProcess fails to calculate a path, instead of just giving up, mark the closest instance
      * of that block as "unreachable" and go towards the next closest. GetToBlock expands this search to the whole "vein"; MineProcess does not.
      * This is because MineProcess finds individual impossible blocks (like one block in a vein that has gravel on top then lava, so it can't break)
@@ -996,6 +1033,12 @@ public final class Settings {
     public final Setting<Integer> farmMaxScanSize = new Setting<>(256);
 
     /**
+     * Keep the farm process active when crops are present but none are mature
+     * enough to harvest yet. Disabled by default to preserve legacy behavior.
+     */
+    public final Setting<Boolean> farmWaitForGrowth = new Setting<>(false);
+
+    /**
      * When the cache scan gives less blocks than the maximum threshold (but still above zero), scan the main world too.
      * <p>
      * Only if you have a beefy CPU and automatically mine blocks that are in cache
@@ -1141,9 +1184,14 @@ public final class Settings {
     public final Setting<Integer> builderTickScanRadius = new Setting<>(5);
 
     /**
-     * While mining, should it also consider dropped items of the correct type as a pathing destination (as well as ore blocks)?
+     * While mining, should it also consider dropped items of the correct type as a pathing destination.
      */
     public final Setting<Boolean> mineScanDroppedItems = new Setting<>(true);
+
+    /**
+     * While mining, should it also consider dropped items of the correct type as if they were broken with silk touch as a pathing destination.
+     */
+    public final Setting<Boolean> mineDropsConsiderSilkTouch = new Setting<>(true);
 
     /**
      * While mining, wait this number of milliseconds after mining an ore to see if it will drop an item
@@ -1547,10 +1595,6 @@ public final class Settings {
      */
     public final Setting<Boolean> elytraChatSpam = new Setting<>(false);
 
-    /**
-     * May reduce memory usage by using a custom allocator for pathfinding
-     */
-    public final Setting<Boolean> elytraCustomAllocator = new Setting<>(true);
 
     /**
      * Allow the pathfinder to attempt flight in tighter spaces, useful in caves but can be dangerous.

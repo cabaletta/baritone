@@ -198,9 +198,7 @@ public final class ExploreProcess extends BaritoneProcessHelper implements IExpl
                 return Status.EXPLORED;
             }
             if (!((CachedWorld) cache).regionLoaded(centerX, centerZ)) {
-                Baritone.getExecutor().execute(() -> {
-                    ((CachedWorld) cache).tryLoadFromDisk(centerX >> 9, centerZ >> 9);
-                });
+                ((CachedWorld) cache).tryLoadFromDiskAsync(centerX >> 9, centerZ >> 9);
                 return Status.UNKNOWN; // we still need to load regions from disk in order to decide properly
             }
             return Status.NOT_EXPLORED;
@@ -221,7 +219,10 @@ public final class ExploreProcess extends BaritoneProcessHelper implements IExpl
         private JsonChunkFilter(Path path, boolean invert) throws Exception { // ioexception, json exception, etc
             this.invert = invert;
             Gson gson = new GsonBuilder().create();
-            positions = gson.fromJson(new InputStreamReader(Files.newInputStream(path)), MyChunkPos[].class);
+            // close the file once it's read, an open handle keeps it locked on windows
+            try (InputStreamReader reader = new InputStreamReader(Files.newInputStream(path))) {
+                positions = gson.fromJson(reader, MyChunkPos[].class);
+            }
             logDirect("Loaded " + positions.length + " positions");
             inFilter = new LongOpenHashSet();
             for (MyChunkPos mcp : positions) {

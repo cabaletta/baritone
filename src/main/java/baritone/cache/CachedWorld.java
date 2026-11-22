@@ -26,6 +26,9 @@ import baritone.api.utils.Helper;
 import com.google.common.cache.CacheBuilder;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import it.unimi.dsi.fastutil.longs.LongSet;
+import it.unimi.dsi.fastutil.longs.LongSets;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.ChunkPos;
@@ -56,6 +59,16 @@ public final class CachedWorld implements ICachedWorld, Helper {
      * A map of all of the cached regions.
      */
     private Long2ObjectMap<CachedRegion> cachedRegions = new Long2ObjectOpenHashMap<>();
+
+    /**
+     * Held while a region is read from disk, so two threads don't load the same one. Not the lock on this.
+     */
+    private final Object diskLock = new Object();
+
+    /**
+     * Regions with a background load already on the way, see tryLoadFromDiskAsync
+     */
+    private final LongSet pendingLoads = LongSets.synchronize(new LongOpenHashSet());
 
     /**
      * The directory that the cached region files are saved to
@@ -197,8 +210,9 @@ public final class CachedWorld implements ICachedWorld, Helper {
             if (region == null) {
                 continue;
             }
-            int distX = ((region.getX() << 9) + 256) - pruneCenter.getX();
-            int distZ = ((region.getZ() << 9) + 256) - pruneCenter.getZ();
+            // doubles, not ints: past ~46k blocks away distX * distX overflowed, so far away regions could stay in ram forever
+            double distX = ((region.getX() << 9) + 256) - pruneCenter.getX();
+            double distZ = ((region.getZ() << 9) + 256) - pruneCenter.getZ();
             double dist = Math.sqrt(distX * distX + distZ * distZ);
             if (dist > 1024) {
                 logDebug("Deleting cached region from ram");
@@ -265,16 +279,46 @@ public final class CachedWorld implements ICachedWorld, Helper {
      * @param regionZ The region Z coordinate
      * @return The region located at the specified coordinates
      */
-    private synchronized CachedRegion getOrCreateRegion(int regionX, int regionZ) {
-        return cachedRegions.computeIfAbsent(getRegionID(regionX, regionZ), id -> {
+    private CachedRegion getOrCreateRegion(int regionX, int regionZ) {
+        CachedRegion region = getRegion(regionX, regionZ);
+        if (region != null) {
+            return region;
+        }
+        // this used to load the file while holding the lock on the whole world, so the pathing thread asking
+        // isLoaded / getRegion for any region at all sat there until the gzip was done. same for the main thread
+        // in ExploreProcess. now the disk gets its own lock and the world lock is only held for the put
+        synchronized (diskLock) {
+            region = getRegion(regionX, regionZ); // somebody else could have loaded it while we waited
+            if (region != null) {
+                return region;
+            }
             CachedRegion newRegion = new CachedRegion(regionX, regionZ, dimension, dimensionId);
             newRegion.load(this.directory);
+            synchronized (this) {
+                cachedRegions.put(getRegionID(regionX, regionZ), newRegion);
+            }
             return newRegion;
-        });
+        }
     }
 
     public void tryLoadFromDisk(int regionX, int regionZ) {
         getOrCreateRegion(regionX, regionZ);
+    }
+
+    // ExploreProcess asks about every chunk it's considering every tick, and each one in a region that isn't loaded
+    // yet used to get its own executor task (and its own thread, the executor doesn't queue). one per region is plenty
+    public void tryLoadFromDiskAsync(int regionX, int regionZ) {
+        long id = getRegionID(regionX, regionZ);
+        if (!pendingLoads.add(id)) {
+            return;
+        }
+        Baritone.getExecutor().execute(() -> {
+            try {
+                getOrCreateRegion(regionX, regionZ);
+            } finally {
+                pendingLoads.remove(id);
+            }
+        });
     }
 
     /**
@@ -311,6 +355,11 @@ public final class CachedWorld implements ICachedWorld, Helper {
                 try {
                     ChunkPos pos = toPackQueue.take();
                     LevelChunk chunk = toPackMap.remove(pos);
+                    if (chunk == null) {
+                        // toPackMap has soft values, so the chunk can be collected while it waits in the queue
+                        // and then queueForPacking queues its position a second time
+                        continue;
+                    }
                     if (toPackQueue.size() > Baritone.settings().chunkPackerQueueMaxSize.value) {
                         continue;
                     }

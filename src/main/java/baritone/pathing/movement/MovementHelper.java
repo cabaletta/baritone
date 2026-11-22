@@ -37,10 +37,12 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
+import net.minecraft.world.level.EmptyBlockGetter;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.piston.MovingPistonBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.DoorHingeSide;
 import net.minecraft.world.level.block.state.properties.Half;
 import net.minecraft.world.level.block.state.properties.SlabType;
 import net.minecraft.world.level.block.state.properties.StairsShape;
@@ -54,6 +56,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static baritone.api.utils.RotationUtils.DEG_TO_RAD_F;
 import static baritone.pathing.movement.Movement.HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP;
@@ -65,6 +68,17 @@ import static baritone.pathing.precompute.Ternary.*;
  * @author leijurv
  */
 public interface MovementHelper extends ActionCosts, Helper {
+
+    static boolean avoidBreaking(CalculationContext context, int x, int y, int z, BlockState state) {
+        // same as the one below except the "is this block ever ok to break" bit is precomputed instead of a list scan every time
+        return !context.bsi.worldBorder.canPlaceAt(x, z)
+                || context.precomputedData.neverBreak(context.bsi, state)
+                || avoidAdjacentBreaking(context.bsi, x, y + 1, z, true)
+                || avoidAdjacentBreaking(context.bsi, x + 1, y, z, false)
+                || avoidAdjacentBreaking(context.bsi, x - 1, y, z, false)
+                || avoidAdjacentBreaking(context.bsi, x, y, z + 1, false)
+                || avoidAdjacentBreaking(context.bsi, x, y, z - 1, false);
+    }
 
     static boolean avoidBreaking(BlockStateInterface bsi, int x, int y, int z, BlockState state) {
         if (!bsi.worldBorder.canPlaceAt(x, z)) {
@@ -155,11 +169,10 @@ public interface MovementHelper extends ActionCosts, Helper {
         if (Baritone.settings().blocksToAvoid.value.contains(block)) {
             return NO;
         }
-        if (block instanceof DoorBlock || block instanceof FenceGateBlock) {
-            // TODO this assumes that all doors in all mods are openable
-            if (block == Blocks.IRON_DOOR) {
-                return NO;
-            }
+        if (block instanceof DoorBlock) {
+            return DoorBlock.isWoodenDoor(state) ? YES : NO;
+        }
+        if (block instanceof FenceGateBlock) {
             return YES;
         }
         if (block instanceof CarpetBlock) {
@@ -322,17 +335,14 @@ public interface MovementHelper extends ActionCosts, Helper {
         return state.canBeReplaced();
     }
 
-    static boolean isDoorPassable(IPlayerContext ctx, BlockPos doorPos, BlockPos playerPos) {
-        if (playerPos.equals(doorPos)) {
-            return false;
-        }
+    static boolean isDoorPassable(BlockState state, Direction side) {
+        boolean open = state.getValue(DoorBlock.OPEN);
+        Direction closedFacing = state.getValue(HorizontalDirectionalBlock.FACING);
+        Direction openFacing = state.getValue(DoorBlock.HINGE) == DoorHingeSide.LEFT
+                ? closedFacing.getClockWise()
+                : closedFacing.getCounterClockWise();
 
-        BlockState state = BlockStateInterface.get(ctx, doorPos);
-        if (!(state.getBlock() instanceof DoorBlock)) {
-            return true;
-        }
-
-        return isHorizontalBlockPassable(doorPos, state, playerPos, DoorBlock.OPEN);
+        return side != (open ? openFacing : closedFacing);
     }
 
     static boolean isGatePassable(IPlayerContext ctx, BlockPos gatePos, BlockPos playerPos) {
@@ -346,26 +356,6 @@ public interface MovementHelper extends ActionCosts, Helper {
         }
 
         return state.getValue(FenceGateBlock.OPEN);
-    }
-
-    static boolean isHorizontalBlockPassable(BlockPos blockPos, BlockState blockState, BlockPos playerPos, BooleanProperty propertyOpen) {
-        if (playerPos.equals(blockPos)) {
-            return false;
-        }
-
-        Direction.Axis facing = blockState.getValue(HorizontalDirectionalBlock.FACING).getAxis();
-        boolean open = blockState.getValue(propertyOpen);
-
-        Direction.Axis playerFacing;
-        if (playerPos.north().equals(blockPos) || playerPos.south().equals(blockPos)) {
-            playerFacing = Direction.Axis.Z;
-        } else if (playerPos.east().equals(blockPos) || playerPos.west().equals(blockPos)) {
-            playerFacing = Direction.Axis.X;
-        } else {
-            return true;
-        }
-
-        return (facing == playerFacing) == open;
     }
 
     static boolean avoidWalkingInto(BlockState state) {
@@ -428,7 +418,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         if (block instanceof StairBlock) {
             return YES;
         }
-        if (isWater(state)) {
+        if (isWater(state) && !isWaterloggedSolidTop(state)) {
             return MAYBE;
         }
         if (MovementHelper.isLava(state) && Baritone.settings().assumeWalkOnLava.value) {
@@ -496,6 +486,21 @@ public interface MovementHelper extends ActionCosts, Helper {
         return canWalkOn(bsi, x, y, z, bsi.get0(x, y, z));
     }
 
+    static boolean hasFrostWalker(IPlayerContext ctx) {
+        for (EquipmentSlot slot : EquipmentSlot.values()) {
+            ItemEnchantments itemEnchantments = ctx
+                .player()
+                .getItemBySlot(slot)
+                .getEnchantments();
+            for (Holder<Enchantment> enchant : itemEnchantments.keySet()) {
+                if (enchant.is(Enchantments.FROST_WALKER) && enchant.value().matchingSlot(slot)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     static boolean canUseFrostWalker(CalculationContext context, BlockState state) {
         return context.frostWalker != 0
                 && state == FrostedIceBlock.meltsInto()
@@ -503,19 +508,7 @@ public interface MovementHelper extends ActionCosts, Helper {
     }
 
     static boolean canUseFrostWalker(IPlayerContext ctx, BlockPos pos) {
-        boolean hasFrostWalker = false;
-        OUTER: for (EquipmentSlot slot : EquipmentSlot.values()) {
-            ItemEnchantments itemEnchantments = ctx
-                .player()
-                .getItemBySlot(slot)
-                .getEnchantments();
-            for (Holder<Enchantment> enchant : itemEnchantments.keySet()) {
-                if (enchant.is(Enchantments.FROST_WALKER)) {
-                    hasFrostWalker = true;
-                    break OUTER;
-                }
-            }
-        }
+        boolean hasFrostWalker = hasFrostWalker(ctx);
         BlockState state = BlockStateInterface.get(ctx, pos);
         return hasFrostWalker
                 && state == FrostedIceBlock.meltsInto()
@@ -568,6 +561,15 @@ public interface MovementHelper extends ActionCosts, Helper {
         return canPlaceAgainst(bsi, x, y, z, bsi.get0(x, y, z));
     }
 
+    static boolean canPlaceAgainst(CalculationContext context, int x, int y, int z) {
+        return canPlaceAgainst(context, x, y, z, context.get(x, y, z));
+    }
+
+    static boolean canPlaceAgainst(CalculationContext context, int x, int y, int z, BlockState state) {
+        // precomputed version of the one below. ascend asks this five times per direction, mostly about air
+        return context.bsi.worldBorder.canPlaceAt(x, z) && context.precomputedData.canPlaceAgainst(context.bsi, state);
+    }
+
     static boolean canPlaceAgainst(BlockStateInterface bsi, BlockPos pos) {
         return canPlaceAgainst(bsi, pos.getX(), pos.getY(), pos.getZ());
     }
@@ -605,6 +607,24 @@ public interface MovementHelper extends ActionCosts, Helper {
     }
 
     static double getMiningDurationTicks(CalculationContext context, int x, int y, int z, BlockState state, boolean includeFalling) {
+        long[] keys = includeFalling ? context.miningKeysFalling : context.miningKeys;
+        if (keys == null || context.miningOwner != Thread.currentThread()) {
+            return getMiningDurationTicks0(context, x, y, z, state, includeFalling);
+        }
+        // y is shifted so it's never negative, which means the all ones key would need y=4095. no
+        long key = ((long) (x & 0x3FFFFFF) << 38) | ((long) (z & 0x3FFFFFF) << 12) | ((y - context.minY) & 0xFFF);
+        int slot = (int) ((key * 0x9E3779B97F4A7C15L) >>> (64 - CalculationContext.MINING_CACHE_BITS));
+        double[] vals = includeFalling ? context.miningValsFalling : context.miningVals;
+        if (keys[slot] == key) {
+            return vals[slot];
+        }
+        double result = getMiningDurationTicks0(context, x, y, z, state, includeFalling);
+        keys[slot] = key;
+        vals[slot] = result;
+        return result;
+    }
+
+    static double getMiningDurationTicks0(CalculationContext context, int x, int y, int z, BlockState state, boolean includeFalling) {
         Block block = state.getBlock();
         if (!canWalkThrough(context, x, y, z, state)) {
             if (!state.getFluidState().isEmpty()) {
@@ -614,7 +634,7 @@ public interface MovementHelper extends ActionCosts, Helper {
             if (mult >= COST_INF) {
                 return COST_INF;
             }
-            if (avoidBreaking(context.bsi, x, y, z, state)) {
+            if (avoidBreaking(context, x, y, z, state)) {
                 return COST_INF;
             }
             double strVsBlock = context.toolSet.getStrVsBlock(state);
@@ -733,6 +753,19 @@ public interface MovementHelper extends ActionCosts, Helper {
         return isWater(BlockStateInterface.get(ctx, bp));
     }
 
+    /**
+     * Returns whether or not the block is waterlogged with a full, sturdy top face, such as a top slab. Its water
+     * stays below the feet of anything standing on it, so it is a floor like its dry form, not water to swim in
+     * or to break a fall.
+     *
+     * @param state The block state
+     * @return Whether or not the block is a waterlogged block with a solid top
+     */
+    static boolean isWaterloggedSolidTop(BlockState state) {
+        return state.hasProperty(BlockStateProperties.WATERLOGGED) && state.getValue(BlockStateProperties.WATERLOGGED)
+                && state.isFaceSturdy(EmptyBlockGetter.INSTANCE, BlockPos.ZERO, Direction.UP);
+    }
+
     static boolean isLava(BlockState state) {
         Fluid f = state.getFluidState().getType();
         return f == Fluids.LAVA || f == Fluids.FLOWING_LAVA;
@@ -789,6 +822,24 @@ public interface MovementHelper extends ActionCosts, Helper {
             // if we can't get the collision shape, assume it's bad and add to blocksToAvoid
         }
         return false;
+    }
+
+    static boolean openDoors(IPlayerContext ctx, MovementState state, BetterBlockPos from, BetterBlockPos to) {
+        Direction direction = Stream.of(Direction.values())
+                .filter(d -> from.relative(d).equals(to))
+                .findFirst()
+                .get();
+
+        for (BetterBlockPos pos : new BetterBlockPos[]{from, to, from.above(), to.above()}) {
+            Direction side = pos.equals(to) || pos.equals(to.above()) ? direction : direction.getOpposite();
+            BlockState door = BlockStateInterface.get(ctx, pos);
+            if (DoorBlock.isWoodenDoor(door) && !isDoorPassable(door, side)) {
+                state.setTarget(new MovementState.MovementTarget(RotationUtils.calcRotationFromVec3d(ctx.playerHead(), VecUtils.calculateBlockCenter(ctx.world(), pos), ctx.playerRotations()), true))
+                        .setInput(Input.CLICK_RIGHT, true);
+                return false;
+            }
+        }
+        return true;
     }
 
     static PlaceResult attemptToPlaceABlock(MovementState state, IBaritone baritone, BlockPos placeAt, boolean preferDown, boolean wouldSneak) {

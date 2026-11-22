@@ -27,9 +27,9 @@ import baritone.api.utils.*;
 import baritone.api.utils.input.Input;
 import baritone.behavior.PathingBehavior;
 import baritone.pathing.calc.AbstractNodeCostSearch;
-import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
+import baritone.pathing.movement.MovementState;
 import baritone.pathing.movement.movements.*;
 import baritone.utils.BlockStateInterface;
 import net.minecraft.core.BlockPos;
@@ -55,7 +55,7 @@ public class PathExecutor implements IPathExecutor, Helper {
      * For more information, see issue #102.
      *
      * @see <a href="https://github.com/cabaletta/baritone/issues/102">Issue #102</a>
-     * @see <a href="https://i.imgur.com/5s5GLnI.png">Anime</a>
+     * @see <a href="https://i.imgur.com/5s5GLnI.png"></a>
      */
     private static final double MAX_TICKS_AWAY = 200;
 
@@ -75,6 +75,7 @@ public class PathExecutor implements IPathExecutor, Helper {
     private final IPlayerContext ctx;
 
     private boolean sprintNextTick;
+    private SprintJump flight;
 
     public PathExecutor(PathingBehavior behavior, IPath path) {
         this.behavior = behavior;
@@ -90,6 +91,9 @@ public class PathExecutor implements IPathExecutor, Helper {
      * not sneaking out over lava), false otherwise
      */
     public boolean onTick() {
+        if (flight != null && fly()) {
+            return false; // mid air is not a stable state, no matter what the movement we left behind thinks
+        }
         if (pathPosition == path.length() - 1) {
             pathPosition++;
         }
@@ -249,7 +253,7 @@ public class PathExecutor implements IPathExecutor, Helper {
                 return true;
             }
         }
-        return canCancel; // movement is in progress, but if it reports cancellable, PathingBehavior is good to cut onto the next path
+        return canCancel && flight == null; // movement is in progress, but if it reports cancellable, PathingBehavior is good to cut onto the next path
     }
 
     private Tuple<Double, BlockPos> closestPathPos(IPath path) {
@@ -348,10 +352,18 @@ public class PathExecutor implements IPathExecutor, Helper {
         behavior.baritone.getInputOverrideHandler().setInputForceState(Input.SPRINT, false);
 
         // first and foremost, if allowSprint is off, or if we don't have enough hunger, don't try and sprint
-        if (!new CalculationContext(behavior.baritone, false).canSprint) {
+        // same thing CalculationContext.canSprint works out. this used to build a whole context every tick to read it,
+        // which means a chunk provider, a ToolSet, an inventory scan and two enchantment scans for one boolean
+        if (!Baritone.settings().allowSprint.value || ctx.player().getFoodData().getFoodLevel() <= 6) {
             return false;
         }
         IMovement current = path.movements().get(pathPosition);
+
+        if (Baritone.settings().sprintJumping.value && !behavior.baritone.getInputOverrideHandler().isInputForcedDown(Input.SNEAK)
+                && (flight = SprintJump.plan(ctx, path, pathPosition)) != null) {
+            steer(true);
+            return true;
+        }
 
         // traverse requests sprinting, so we need to do this check first
         if (current instanceof MovementTraverse && pathPosition < path.length() - 3) {
@@ -372,6 +384,9 @@ public class PathExecutor implements IPathExecutor, Helper {
 
         // if the movement requested sprinting, then we're done
         if (requested) {
+            if (Baritone.settings().headHitters.value) {
+                headHitJump(current);
+            }
             return true;
         }
 
@@ -466,12 +481,131 @@ public class PathExecutor implements IPathExecutor, Helper {
                     return true;
                 }
                 clearKeys();
+                // we are not ticking the movement, so we gotta do this ourselves
+                BetterBlockPos src = current.getSrc();
+                BetterBlockPos dest = current.getDest();
+                MovementState fakeState = new MovementState();
+                if (!MovementHelper.openDoors(ctx, fakeState, src, new BetterBlockPos(dest.x, src.y, dest.z))) {
+                    boolean forceRotations = fakeState.getTarget().hasToForceRotations();
+                    fakeState.getTarget().getRotation().ifPresent(rotation ->
+                            behavior.baritone.getLookBehavior().updateTarget(rotation, forceRotations));
+                    fakeState.getInputStates().forEach(behavior.baritone.getInputOverrideHandler()::setInputForceState);
+                    fakeState.getInputStates().clear();
+                    return true;
+                }
                 behavior.baritone.getLookBehavior().updateTarget(RotationUtils.calcRotationFromVec3d(ctx.playerHead(), data.getA(), ctx.playerRotations()), false);
                 behavior.baritone.getInputOverrideHandler().setInputForceState(Input.MOVE_FORWARD, true);
                 return true;
             }
         }
         return false;
+    }
+
+    /**
+     * @return true if we're still in the air and this tick is handled
+     */
+    private boolean fly() {
+        if (!ctx.player().onGround() && !ctx.player().isInWater() && !ctx.player().isInLava() && !ctx.player().onClimbable()
+                && flight.ticks < SprintJump.MAX_TICKS && Baritone.settings().sprintJumping.value) {
+            steer(false);
+            sprintNextTick = true;
+            return true;
+        }
+        // we probably flew over a few movements, pick up at whichever one we came down in (diagonal side cells count).
+        // anywhere else and the usual valid positions / off path recovery takes it from here
+        for (int i = pathPosition; i < Math.min(path.movements().size(), pathPosition + flight.floors.length); i++) {
+            if (((Movement) path.movements().get(i)).getValidPositions().contains(ctx.playerFeet())) {
+                pathPosition = i;
+                break;
+            }
+        }
+        flight = null;
+        onChangeInPathPosition();
+        return false;
+    }
+
+    private void steer(boolean takeoff) {
+        // the movements steer at their own dest and drop W the moment our feet are a block up ("Wrong Y coordinate"),
+        // which was the mid air stall, so while we're up here nobody else gets a say. space only on takeoff: letting go
+        // in the air resets the vanilla 10 tick jump delay, holding it made a jump up a step (~9 ticks) wait on landing
+        clearKeys();
+        behavior.baritone.getLookBehavior().updateTarget(flight.steer(ctx), false);
+        behavior.baritone.getInputOverrideHandler().setInputForceState(Input.MOVE_FORWARD, true);
+        behavior.baritone.getInputOverrideHandler().setInputForceState(Input.JUMP, takeoff);
+    }
+
+    /**
+     * Sprint jump into a low ceiling (1x2 corridors, overhangs, etc.) for a bit of extra speed.
+     * The sprint jump boost applies on the first ticks of the jump, before we bonk our head on the ceiling.
+     * This runs after movement.update() has cleared and reasserted the forced inputs,
+     * so a jump forced here lasts exactly one tick.
+     */
+    private void headHitJump(IMovement current) {
+        if (!canStartHeadHitting(current) || !underHeadBonkCeiling(current.getDirection(), ctx.playerFeet()) || !clearOfLedgesAhead(current.getDirection())) {
+            return;
+        }
+        behavior.baritone.getInputOverrideHandler().setInputForceState(Input.JUMP, true);
+    }
+
+    private boolean canStartHeadHitting(IMovement current) {
+        if (!(current instanceof MovementTraverse || current instanceof MovementDiagonal) || current.getDirection().getY() != 0) {
+            return false; // head hitting only applies to flat walking movements
+        }
+        if (current instanceof MovementDiagonal && !Baritone.settings().headHittersDiagonal.value) {
+            return false;
+        }
+        if (!ctx.player().onGround() || MovementHelper.isLiquid(ctx, ctx.playerFeet())) {
+            return false;
+        }
+        if (!ctx.player().onGround() || MovementHelper.isLiquid(ctx, ctx.playerFeet()) || ctx.player().isInWater()) {
+            return false; // hopping in water or on a vine just sticks us to it instead
+        }
+        if (((Movement) current).toBreakCached == null || !((Movement) current).toBreakCached.isEmpty()) {
+            return false; // breaking is like 5x slower when you're jumping
+        }
+        // not while sneaking either, e.g. walking on magma, a jump would break the sneak and the edge safety with it
+        return !behavior.baritone.getInputOverrideHandler().isInputForcedDown(Input.SNEAK);
+    }
+
+    private boolean underHeadBonkCeiling(BlockPos dir, BetterBlockPos feet) {
+        BlockPos ceiling = feet.above(2);
+        if (MovementHelper.fullyPassable(ctx, ceiling) || !MovementHelper.isBlockNormalCube(ctx.world().getBlockState(ceiling))) {
+            return false; // not under a ceiling yet, or the thing overhead is something like a trapdoor that we can't reliably bonk against
+        }
+        // diagonals can enter through either face, so clear each axis separately
+        return clearOfCeilingEntrance(feet, dir.getX(), 0) && clearOfCeilingEntrance(feet, 0, dir.getZ());
+    }
+
+    private boolean clearOfCeilingEntrance(BetterBlockPos feet, int dx, int dz) {
+        if (dx == 0 && dz == 0) {
+            return true;
+        }
+        // make sure we're fully inside the corridor before we start jumping, same idea as skipNow
+        BlockPos behind = feet.offset(-dx, 0, -dz).above(2);
+        if (MovementHelper.fullyPassable(ctx, behind)) {
+            double flatDist = Math.abs(dx * (behind.getX() + 0.5D - ctx.player().position().x)) + Math.abs(dz * (behind.getZ() + 0.5D - ctx.player().position().z));
+            return flatDist >= 0.8; // just entered, wait until we're clear of the entrance face
+        }
+        return true;
+    }
+
+    private boolean clearOfLedgesAhead(BlockPos dir) {
+        // momentum from the head bonk can carry us an extra block or two, so don't headhit unless the next two blocks
+        // in this direction are also part of the path, that way momentum can never send us off it
+        for (int i = 1; i <= 2; i++) {
+            if (pathPosition + i > path.length() - 2 || !path.movements().get(pathPosition + i).getDirection().equals(dir)) {
+                return false; // the path turns or ends within two blocks, don't add any momentum
+            }
+            Movement next = (Movement) path.movements().get(pathPosition + i);
+            if (next.toPlaceCached != null && !next.toPlaceCached.isEmpty()) {
+                return false; // the movement is going to place its own support, and momentum can arrive before those blocks do
+            }
+            BlockPos floor = next.getDest().below();
+            if (MovementHelper.isLiquid(ctx, floor) || !MovementHelper.canWalkOn(ctx, floor)) {
+                return false; // no real support under the destination yet: liquid (frostwalker ice hasn't frozen yet) or passable (ladders/vines have no floor at all), and momentum can't wait for it to appear
+            }
+        }
+        return true;
     }
 
     private Tuple<Vec3, BlockPos> overrideFall(MovementFall movement) {
@@ -614,6 +748,7 @@ public class PathExecutor implements IPathExecutor, Helper {
             ret.currentMovementOriginalCostEstimate = currentMovementOriginalCostEstimate;
             ret.costEstimateIndex = costEstimateIndex;
             ret.ticksOnCurrent = ticksOnCurrent;
+            ret.flight = flight; // a new path showing up doesn't make us any less airborne
             return ret;
         }).orElseGet(this::cutIfTooLong); // dont actually call cutIfTooLong every tick if we won't actually use it, use a method reference
     }
@@ -635,6 +770,7 @@ public class PathExecutor implements IPathExecutor, Helper {
                 ret.costEstimateIndex = costEstimateIndex - cutoffAmt;
             }
             ret.ticksOnCurrent = ticksOnCurrent;
+            ret.flight = flight;
             return ret;
         }
         return this;
