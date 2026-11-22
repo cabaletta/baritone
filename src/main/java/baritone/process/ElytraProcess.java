@@ -77,7 +77,7 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
     private Set<BetterBlockPos> badLandingSpots = new HashSet<>();
     private LandingSearchState landingSearchState;
 
-    private long startedJumpStateTime = 0L;
+    private int jumpStateTime = 0;
 
     @Override
     public void onLostControl() {
@@ -90,7 +90,7 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
         this.landingSpot = null;
         this.landingSearchState = null;
         this.reachedGoal = false;
-        startedJumpStateTime = 0L;
+        this.jumpStateTime = 0;
         destroyBehaviorAsync();
         if (destroyNpf) {
             destroyNpfContextAsync();
@@ -253,9 +253,7 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
         }
 
         if (this.state == State.JUMP) {
-            if (startedJumpStateTime == 0L) {
-                startedJumpStateTime = System.currentTimeMillis();
-            }
+            jumpStateTime++;
             if (shouldLandForSafety()) {
                 logDirect("Not taking off, because elytra durability or fireworks are so low that I would immediately emergency land anyway.");
                 onLostControl();
@@ -272,7 +270,7 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
                 this.state = State.START_FLYING;
             } else {
                 // todo: would be better if we searched for a safe pos to takeoff from, and then pathed directly there
-                if (System.currentTimeMillis() - startedJumpStateTime > 2500) {
+                if (jumpStateTime > 50) {
                     logDirect("Unable to perform autoJump takeoff, pathing forward");
                     final GoalXZ goal = GoalXZ.fromDirection(
                         ctx.playerFeetAsVec(),
@@ -284,6 +282,7 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
                 return new PathingCommand(null, PathingCommandType.SET_GOAL_AND_PATH);
             }
         }
+        jumpStateTime = 0;
 
         // yucky
         if (this.state == State.PAUSE) {
