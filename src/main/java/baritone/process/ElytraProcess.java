@@ -259,8 +259,8 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
                 onLostControl();
                 return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
             }
-            final boolean isJumpBlocked = !ctx.world().getBlockCollisions(ctx.player(), ctx.player().getBoundingBox().move(0, 0.5, 0)).iterator().hasNext();
-            if (ctx.player().onGround() && isJumpBlocked) {
+            final boolean isJumpBlocked = ctx.world().getBlockCollisions(ctx.player(), ctx.player().getBoundingBox().move(0, 0.5, 0)).iterator().hasNext();
+            if (ctx.player().onGround() && !isJumpBlocked) {
                 ctx.player().jumpFromGround();
                 return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
             }
