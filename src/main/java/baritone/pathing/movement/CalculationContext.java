@@ -40,6 +40,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static baritone.api.pathing.movement.ActionCosts.COST_INF;
@@ -84,25 +85,59 @@ public class CalculationContext {
     public final double walkOnWaterOnePenalty;
     public final boolean allowWalkOnMagmaBlocks;
     public final BetterWorldBorder worldBorder;
+    // world.dimensionType() goes through a Holder and we were calling it twice per block. per block!
+    public final int minY;
+    public final int maxY;
 
     public final PrecomputedData precomputedData;
+
+    // memo for getMiningDurationTicks by position
+    // the block under you gets its break cost worked out by four descends, a downward, and then all your neighbours' descends
+    // and every one of those reads five more blocks for avoidBreaking. the answer doesn't change mid search so just remember it
+    // two of everything because includeFalling is part of the question
+    // only exists while a search has claimed it, see claimSearchCaches
+    public static final int MINING_CACHE_BITS = 16;
+    long[] miningKeys;
+    long[] miningKeysFalling;
+    double[] miningVals;
+    double[] miningValsFalling;
+    Thread miningOwner;
 
     public CalculationContext(IBaritone baritone) {
         this(baritone, false);
     }
 
     public CalculationContext(IBaritone baritone, boolean forUseOnAnotherThread) {
-        this.precomputedData = new PrecomputedData();
+        this(
+                baritone,
+                forUseOnAnotherThread,
+                baritone.getPlayerContext().world(),
+                (WorldData) baritone.getPlayerContext().worldData(),
+                new BlockStateInterface(baritone.getPlayerContext(), forUseOnAnotherThread),
+                new ToolSet(baritone.getPlayerContext().player()),
+                Baritone.settings().allowPlace.value && ((Baritone) baritone).getInventoryBehavior().hasGenericThrowaway(),
+                Baritone.settings().allowWaterBucketFall.value && Inventory.isHotbarSlot(baritone.getPlayerContext().player().getInventory().findSlotMatchingItem(STACK_BUCKET_WATER)) && baritone.getPlayerContext().world().dimension() != Level.NETHER,
+                Baritone.settings().allowSprint.value && baritone.getPlayerContext().player().getFoodData().getFoodLevel() > 6,
+                frostWalkerLevel(baritone.getPlayerContext().player()),
+                waterSpeedMultiplier(baritone.getPlayerContext().player())
+        );
+    }
+
+    // everything that needs a player or a world comes in as a parameter so you can build one of these with no game running
+    // all the settings get snapshotted in here so nobody can accidentally read them differently
+    protected CalculationContext(IBaritone baritone, boolean forUseOnAnotherThread, Level world, WorldData worldData, BlockStateInterface bsi, ToolSet toolSet, boolean hasThrowaway, boolean hasWaterBucket, boolean canSprint, int frostWalker, float waterSpeedMultiplier) {
+        this.precomputedData = PrecomputedData.forCurrentSettings();
         this.safeForThreadedUse = forUseOnAnotherThread;
         this.baritone = baritone;
-        LocalPlayer player = baritone.getPlayerContext().player();
-        this.world = baritone.getPlayerContext().world();
-        this.worldData = (WorldData) baritone.getPlayerContext().worldData();
-        this.bsi = new BlockStateInterface(baritone.getPlayerContext(), forUseOnAnotherThread);
-        this.toolSet = new ToolSet(player);
-        this.hasThrowaway = Baritone.settings().allowPlace.value && ((Baritone) baritone).getInventoryBehavior().hasGenericThrowaway();
-        this.hasWaterBucket = Baritone.settings().allowWaterBucketFall.value && Inventory.isHotbarSlot(player.getInventory().findSlotMatchingItem(STACK_BUCKET_WATER)) && world.dimension() != Level.NETHER;
-        this.canSprint = Baritone.settings().allowSprint.value && player.getFoodData().getFoodLevel() > 6;
+        this.world = world;
+        this.worldData = worldData;
+        this.bsi = bsi;
+        this.toolSet = toolSet;
+        this.hasThrowaway = hasThrowaway;
+        this.hasWaterBucket = hasWaterBucket;
+        this.canSprint = canSprint;
+        this.minY = bsi.minY;
+        this.maxY = bsi.maxY;
         this.placeBlockCost = Baritone.settings().blockPlacementPenalty.value;
         this.allowBreak = Baritone.settings().allowBreak.value;
         this.allowBreakAnyway = new ArrayList<>(Baritone.settings().allowBreakAnyway.value);
@@ -112,44 +147,19 @@ public class CalculationContext {
         this.allowParkourAscend = Baritone.settings().allowParkourAscend.value;
         this.assumeWalkOnWater = Baritone.settings().assumeWalkOnWater.value;
         this.allowFallIntoLava = false; // Super secret internal setting for ElytraBehavior
-        // todo: technically there can now be datapack enchants that replace blocks with any other at any range
-        int frostWalkerLevel = 0;
-        for (EquipmentSlot slot : EquipmentSlot.values()) {
-            ItemEnchantments itemEnchantments = baritone.getPlayerContext()
-                .player()
-                .getItemBySlot(slot)
-                .getEnchantments();
-            for (Holder<Enchantment> enchant : itemEnchantments.keySet()) {
-                if (enchant.is(Enchantments.FROST_WALKER)) {
-                    frostWalkerLevel = itemEnchantments.getLevel(enchant);
-                }
-            }
-        }
-        this.frostWalker = frostWalkerLevel;
+        this.frostWalker = frostWalker;
         this.allowDiagonalDescend = Baritone.settings().allowDiagonalDescend.value;
         this.allowDiagonalAscend = Baritone.settings().allowDiagonalAscend.value;
         this.allowDownward = Baritone.settings().allowDownward.value;
         this.minFallHeight = 3; // Minimum fall height used by MovementFall
         this.maxFallHeightNoWater = Baritone.settings().maxFallHeightNoWater.value;
         this.maxFallHeightBucket = Baritone.settings().maxFallHeightBucket.value;
-        float waterSpeedMultiplier = 1.0f;
-        OUTER: for (EquipmentSlot slot : EquipmentSlot.values()) {
-            ItemEnchantments itemEnchantments = baritone.getPlayerContext()
-                .player()
-                .getItemBySlot(slot)
-                .getEnchantments();
-            for (Holder<Enchantment> enchant : itemEnchantments.keySet()) {
-                List<EnchantmentAttributeEffect> effects = enchant.value()
-                    .getEffects(EnchantmentEffectComponents.ATTRIBUTES);
-                for (EnchantmentAttributeEffect effect : effects) {
-                    if (effect.attribute().is(Attributes.WATER_MOVEMENT_EFFICIENCY.unwrapKey().get())) {
-                        waterSpeedMultiplier = effect.amount().calculate(itemEnchantments.getLevel(enchant));
-                        break OUTER;
-                    }
-                }
-            }
+        double waterSpeed = ActionCosts.WALK_ONE_IN_WATER_COST * (1 - waterSpeedMultiplier) + ActionCosts.WALK_ONE_BLOCK_COST * waterSpeedMultiplier;
+        if (Baritone.settings().allowSwimming.value && this.canSprint) {
+            // sprint swimming beats wading on the bottom, unless depth strider is good enough to flip that
+            waterSpeed = Math.min(waterSpeed, ActionCosts.SWIM_ONE_BLOCK_COST);
         }
-        this.waterWalkSpeed = ActionCosts.WALK_ONE_IN_WATER_COST * (1 - waterSpeedMultiplier) + ActionCosts.WALK_ONE_BLOCK_COST * waterSpeedMultiplier;
+        this.waterWalkSpeed = waterSpeed;
         this.breakBlockAdditionalCost = Baritone.settings().blockBreakAdditionalPenalty.value;
         this.backtrackCostFavoringCoefficient = Baritone.settings().backtrackCostFavoringCoefficient.value;
         this.jumpPenalty = Baritone.settings().jumpPenalty.value;
@@ -158,7 +168,72 @@ public class CalculationContext {
         // why cache these things here, why not let the movements just get directly from settings?
         // because if some movements are calculated one way and others are calculated another way,
         // then you get a wildly inconsistent path that isn't optimal for either scenario.
-        this.worldBorder = new BetterWorldBorder(world.getWorldBorder());
+        this.worldBorder = bsi.worldBorder;
+    }
+
+    private static int frostWalkerLevel(LocalPlayer player) {
+        // todo: technically there can now be datapack enchants that replace blocks with any other at any range
+        int frostWalkerLevel = 0;
+        for (EquipmentSlot slot : EquipmentSlot.values()) {
+            ItemEnchantments itemEnchantments = player.getItemBySlot(slot).getEnchantments();
+            for (Holder<Enchantment> enchant : itemEnchantments.keySet()) {
+                if (enchant.is(Enchantments.FROST_WALKER) && enchant.value().matchingSlot(slot)) {
+                    frostWalkerLevel = itemEnchantments.getLevel(enchant);
+                }
+            }
+        }
+        return frostWalkerLevel;
+    }
+
+    private static float waterSpeedMultiplier(LocalPlayer player) {
+        for (EquipmentSlot slot : EquipmentSlot.values()) {
+            ItemEnchantments itemEnchantments = player.getItemBySlot(slot).getEnchantments();
+            for (Holder<Enchantment> enchant : itemEnchantments.keySet()) {
+                List<EnchantmentAttributeEffect> effects = enchant.value().getEffects(EnchantmentEffectComponents.ATTRIBUTES);
+                for (EnchantmentAttributeEffect effect : effects) {
+                    if (effect.attribute().is(Attributes.WATER_MOVEMENT_EFFICIENCY.unwrapKey().get())) {
+                        return effect.amount().calculate(itemEnchantments.getLevel(enchant));
+                    }
+                }
+            }
+        }
+        return 1.0f;
+    }
+
+    // the memo and the bsi's block cache used to be allocated in the constructor. that's 2.8mb, and PathingBehavior
+    // builds one of these every tick whether it paths or not, so it was 50mb/s of garbage for contexts that ask three
+    // questions and die. now the search that actually wants them makes them, and drops them when it's done
+    // it's also the only thread allowed to touch them. PathExecutor checks costs with this same context on the main thread,
+    // and two threads scribbling on one open addressed table is how you get the key from one block and the value from another
+    public synchronized void claimSearchCaches() {
+        if (miningOwner != null) {
+            return; // somebody else is searching with this context. they keep it, we go without
+        }
+        miningKeys = newMiningKeys();
+        miningKeysFalling = newMiningKeys();
+        miningVals = new double[1 << MINING_CACHE_BITS];
+        miningValsFalling = new double[1 << MINING_CACHE_BITS];
+        miningOwner = Thread.currentThread();
+        bsi.claimCache();
+    }
+
+    public synchronized void releaseSearchCaches() {
+        if (miningOwner != Thread.currentThread()) {
+            return;
+        }
+        miningOwner = null;
+        miningKeys = null;
+        miningKeysFalling = null;
+        miningVals = null;
+        miningValsFalling = null;
+        bsi.releaseCache();
+    }
+
+    private static long[] newMiningKeys() {
+        long[] keys = new long[1 << MINING_CACHE_BITS];
+        // -1 is the "nothing here" key, see getMiningDurationTicks for why that's safe
+        Arrays.fill(keys, -1L);
+        return keys;
     }
 
     public final IBaritone getBaritone() {

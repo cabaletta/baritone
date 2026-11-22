@@ -54,11 +54,6 @@
 -dontwarn baritone.utils.schematic.schematica.**
 -dontwarn baritone.utils.schematic.litematica.**
 
-# nether-pathfinder uses JNI to acess its own classes
-# and some of our builds include it before running proguard
-# conservatively keep all of it, even though only PathSegment.<init> is needed
--keep,allowoptimization class dev.babbaj.pathfinder.** { *; }
-
 # Keep - Applications. Keep all application classes, along with their 'main'
 # methods.
 -keepclasseswithmembers public class * {

@@ -93,8 +93,9 @@ public class WaypointCollection implements IWaypointCollection {
 
     private synchronized void save(Waypoint.Tag tag) {
         Path fileName = this.directory.resolve(tag.name().toLowerCase() + ".mp4");
+        Path tempFile = fileName.resolveSibling(fileName.getFileName() + ".tmp");
         try (
-                FileOutputStream fileOut = new FileOutputStream(fileName.toFile());
+                FileOutputStream fileOut = new FileOutputStream(tempFile.toFile());
                 BufferedOutputStream bufOut = new BufferedOutputStream(fileOut);
                 DataOutputStream out = new DataOutputStream(bufOut)
         ) {
@@ -107,6 +108,12 @@ public class WaypointCollection implements IWaypointCollection {
                 out.writeInt(waypoint.getLocation().getY());
                 out.writeInt(waypoint.getLocation().getZ());
             }
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            return;
+        }
+        try {
+            CacheFiles.moveIntoPlace(tempFile, fileName);
         } catch (IOException ex) {
             ex.printStackTrace();
         }
