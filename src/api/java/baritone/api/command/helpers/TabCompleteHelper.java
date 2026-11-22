@@ -207,7 +207,9 @@ public class TabCompleteHelper {
     /**
      * Filter out any element that doesn't start with {@code prefix} and return this object for chaining
      * <p>
-     * Assumes every element in this {@link TabCompleteHelper} is a {@link Identifier}
+     * Assumes every element in this {@link TabCompleteHelper} is a fully qualified {@link Identifier}.
+     * Unqualified prefixes match either the namespace or the path, across all supplied candidates.
+     * Explicit namespaces restrict the results to that namespace. Returned ids remain fully qualified.
      *
      * @param prefix The prefix to filter for
      * @return This {@link TabCompleteHelper}
@@ -218,7 +220,19 @@ public class TabCompleteHelper {
             stream = Stream.empty();
             return this;
         }
-        return filterPrefix(loc.toString());
+        if (prefix.indexOf(':') >= 0) {
+            return filterPrefix(loc.toString());
+        }
+
+        // Identifier parsing defaults an unqualified prefix to "minecraft:".
+        // That is appropriate for execution, but hides modded candidates while completing.
+        String search = prefix.toLowerCase(Locale.US);
+        return filter(id -> {
+            String candidate = id.toLowerCase(Locale.US);
+            int separator = candidate.indexOf(':');
+            return candidate.startsWith(search)
+                    || (separator >= 0 && candidate.substring(separator + 1).startsWith(search));
+        });
     }
 
     /**

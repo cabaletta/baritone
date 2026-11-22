@@ -47,7 +47,6 @@ dependencies {
         common sourceSet.output
         shadowCommon sourceSet.output
     }
-    include "dev.babbaj:nether-pathfinder:${project.nether_pathfinder_version}"
 }
 
 processResources {
