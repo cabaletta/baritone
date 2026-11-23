@@ -125,6 +125,7 @@ public class SetCommand extends Command {
                 logDirect("Please specify 'all' as an argument to reset to confirm you'd really like to do this");
                 logDirect("ALL settings will be reset. Use the 'set modified' or 'modified' commands to see what will be reset.");
                 logDirect("Specify a setting name instead of 'all' to only reset one setting");
+                return;
             } else if (args.peekString().equalsIgnoreCase("all")) {
                 SettingsUtil.modifiedSettings(Baritone.settings()).forEach(Settings.Setting::reset);
                 logDirect("All settings have been reset to their default values");
