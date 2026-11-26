@@ -49,6 +49,7 @@ public class PathExecutor implements IPathExecutor, Helper {
 
     private static final double MAX_MAX_DIST_FROM_PATH = 3;
     private static final double MAX_DIST_FROM_PATH = 2;
+    private static final double MAX_TRAVERSE_VERTICAL_OFFSET = 1.5D;
 
     /**
      * Default value is equal to 10 seconds. It's find to decrease it, but it must be at least 5.5s (110 ticks).
@@ -305,20 +306,44 @@ public class PathExecutor implements IPathExecutor, Helper {
     }
 
     private boolean possiblyOffPath(Tuple<Double, BlockPos> status, double leniency) {
-        double distanceFromPath = status.getA();
-        if (distanceFromPath > leniency) {
-            // when we're midair in the middle of a fall, we're very far from both the beginning and the end, but we aren't actually off path
-            if (path.movements().get(pathPosition) instanceof MovementFall) {
-                BlockPos fallDest = path.positions().get(pathPosition + 1); // .get(pathPosition) is the block we fell off of
-                return VecUtils.entityFlatDistanceToCenter(ctx.player(), fallDest) >= leniency; // ignore Y by using flat distance
-            } else {
-                return true;
+        boolean hasCurrentMovement = pathPosition >= 0
+                && pathPosition < path.movements().size()
+                && pathPosition + 1 < path.positions().size();
+
+        if (hasCurrentMovement) {
+            IMovement current = path.movements().get(pathPosition);
+            if (current instanceof MovementTraverse && !ctx.player().onGround()) {
+                BlockPos traverseSrc = path.positions().get(pathPosition);
+                double verticalOffset = Math.abs(ctx.player().position().y - traverseSrc.getY());
+                if (verticalOffset > MAX_TRAVERSE_VERTICAL_OFFSET) {
+                    return true;
+                }
             }
-        } else {
+        }
+
+        if (status.getA() <= leniency) {
             return false;
         }
-    }
+        if (!hasCurrentMovement) {
+            return true;
+        }
 
+        IMovement current = path.movements().get(pathPosition);
+        if (current instanceof MovementFall) {
+            BlockPos fallDest = path.positions().get(pathPosition + 1);
+            return VecUtils.entityFlatDistanceToCenter(ctx.player(), fallDest) >= leniency;
+        }
+        if (current instanceof MovementTraverse && !ctx.player().onGround()) {
+            BlockPos traverseSrc = path.positions().get(pathPosition);
+            BlockPos traverseDest = path.positions().get(pathPosition + 1);
+            double distanceFromTraverse = Math.min(
+                    VecUtils.entityFlatDistanceToCenter(ctx.player(), traverseSrc),
+                    VecUtils.entityFlatDistanceToCenter(ctx.player(), traverseDest)
+            );
+            return distanceFromTraverse >= leniency;
+        }
+        return true;
+    }
     /**
      * Regardless of current path position, snap to the current player feet if possible
      *
